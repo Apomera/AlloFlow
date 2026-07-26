@@ -18110,9 +18110,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function droneDiffStyle(id) {
           var dark = {
-            easy: 'bg-gradient-to-b from-green-800 to-green-900 text-green-200 border border-green-700/50 hover:from-green-700 hover:to-green-800',
-            normal: 'bg-gradient-to-b from-amber-800 to-amber-900 text-amber-200 border border-amber-700/50 hover:from-amber-700 hover:to-amber-800',
-            hard: 'bg-gradient-to-b from-red-800 to-red-900 text-red-200 border border-red-700/50 hover:from-red-700 hover:to-red-800'
+            easy: 'bg-gradient-to-b from-green-800 to-green-900 text-green-200 border border-green-700/50 hover:from-green-800 hover:to-green-800',
+            normal: 'bg-gradient-to-b from-amber-800 to-amber-900 text-amber-200 border border-amber-700/50 hover:from-amber-800 hover:to-amber-800',
+            hard: 'bg-gradient-to-b from-red-800 to-red-900 text-red-200 border border-red-700/50 hover:from-red-800 hover:to-red-800'
           };
           var light = {
             easy: 'bg-gradient-to-b from-green-50 to-green-100 text-green-800 border border-green-300 hover:from-green-100 hover:to-green-200',
@@ -18303,7 +18303,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { onClick: function() { upd('showBadges', !showBadges); }, 'aria-label': 'View badges (' + badgeCount + '/' + BADGE_DEFS.length + ' earned)', title: 'Badges: ' + badgeCount + '/' + BADGE_DEFS.length,
                 className: 'p-1.5 rounded-lg text-sm transition-all relative ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') },
                 '🏅',
-                badgeCount > 0 && h('span', { className: 'absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white bg-amber-500' }, badgeCount)),
+                badgeCount > 0 && h('span', { className: 'absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white bg-amber-700' }, badgeCount)),
               // Export colony report
               h('button', { onClick: exportColonyReport, title: __alloT('stem.beehive.export_colony_report_to_clipboard', 'Export colony report to clipboard'),
                 className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '📄'),
@@ -18943,7 +18943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'text-xs ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeEvent.desc))),
             h('div', { className: 'rounded-lg p-3 text-xs border ' + (dk ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-white text-slate-700 border-slate-200') },
               h('strong', null, __alloT('stem.beehive.science', '🔬 Science: ')), activeEvent.lesson),
-            h('button', { onClick: dismissEvent, className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-all' }, __alloT('stem.beehive.acknowledge', '✓ Acknowledge'))),
+            h('button', { onClick: dismissEvent, className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-sm font-bold hover:bg-amber-800 transition-all' }, __alloT('stem.beehive.acknowledge', '✓ Acknowledge'))),
 
           // Status bar (beekeeper mode only)
           viewMode === 'beekeeper' && h('div', { className: 'flex flex-wrap gap-3 items-center text-xs font-bold', role: 'status', 'aria-live': 'polite', 'aria-label': 'Colony status: ' + seasonNames[season] + ', Day ' + ((day % 30) + 1) + ', ' + honey + ' lbs honey, ' + fmtPop(workers) + ' workers' },
@@ -19513,7 +19513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', {
                 'aria-label': __alloT('stem.beehive.start_a_new_colony_from_scratch', 'Start a new colony from scratch'),
                 onClick: function() { updAll({ day: 0, workers: 10000, brood: 3000, drones: 500, queenHealth: 100, honey: 20, pollen: 15, wax: 5, varroaLevel: 5, morale: 80, foragingEfficiency: 70, score: 0, colonySurvived: true, pesticideExposure: 0, habitat: 50, actionPoints: 3, totalHoney: 0, eventsHandled: 0, eventLog: [], history: [], activeEvent: null, totalFlowerVisits: 0, yearReviewsSeen: [], journal: [], diseaseRisk: 0 }); if (addToast) addToast('\uD83D\uDC1D New colony established! Apply what you learned.', 'success'); },
-                className: 'px-6 py-2.5 bg-amber-600 text-white rounded-xl font-bold text-sm hover:bg-amber-700 shadow-md transition-all hover:scale-[1.02]'
+                className: 'px-6 py-2.5 bg-amber-700 text-white rounded-xl font-bold text-sm hover:bg-amber-800 shadow-md transition-all hover:scale-[1.02]'
               }, __alloT('stem.beehive.start_new_colony_apply_what_you_learne', '\uD83D\uDD04 Start New Colony \u2014 Apply What You Learned'))
             )
           ,
@@ -19652,7 +19652,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           p.isBinary ? (p.now > 0 ? '✓' : 'not yet') : (p.now + ' / ' + p.target))),
                       h('p', { className: 'text-[10px] leading-snug ' + (dk ? 'text-slate-300' : 'text-slate-600') }, bd.desc),
                       h('div', { className: 'h-1 mt-1 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200') },
-                        h('div', { style: { width: pctDisplay + '%' }, className: 'h-full bg-gradient-to-r from-amber-400 to-yellow-300 rounded-full transition-all' }))
+                        h('div', { style: { width: pctDisplay + '%' }, className: 'h-full bg-gradient-to-r from-amber-900 to-yellow-900 rounded-full transition-all' }))
                     )
                   );
                 })

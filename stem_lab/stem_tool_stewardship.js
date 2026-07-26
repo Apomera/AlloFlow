@@ -1022,7 +1022,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       '.stewardship-metric-label{display:block;color:#94a3b8;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
       '.stewardship-metric-value{display:block;margin-top:3px;color:#f8fafc;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
       '.stewardship-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px;}',
-      '.stewardship-primary{min-height:44px;padding:10px 16px;border:1px solid rgba(220,252,231,.42);border-radius:12px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(22,163,74,.22);transition:transform .18s,box-shadow .18s;}',
+      '.stewardship-primary{min-height:44px;padding:10px 16px;border:1px solid rgba(220,252,231,.42);border-radius:12px;background:linear-gradient(135deg,#15803d,#166534);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(22,163,74,.22);transition:transform .18s,box-shadow .18s;}',
       '.stewardship-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(22,163,74,.3);}',
       '.stewardship-action-note{color:#bbf7d0;font-size:10px;line-height:1.45;}',
       '.stewardship-inquiry{margin-bottom:14px;border:1px solid #334155;border-radius:14px;background:rgba(15,23,42,.78);overflow:hidden;}',

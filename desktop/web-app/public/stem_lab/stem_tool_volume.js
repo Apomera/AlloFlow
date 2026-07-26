@@ -2014,7 +2014,7 @@ window.StemLab = window.StemLab || {
                   value: dispObject.id,
                   onChange: function(e) { chooseSpecimen(e.target.value); },
                   'aria-label': 'Choose an object to measure',
-                  className: 'min-h-[2.75rem] w-full rounded-lg border-2 border-sky-300 bg-white px-3 py-2 text-sm font-bold text-sky-900'
+                  className: 'min-h-[2.75rem] w-full rounded-lg border-2 border-sky-600 bg-white px-3 py-2 text-sm font-bold text-sky-900'
                 }, availableDisplacementObjects.map(function(o) {
                   return h('option', { key: o.id, value: o.id }, o.label);
                 }))
@@ -2781,7 +2781,7 @@ window.StemLab = window.StemLab || {
                       upd({ activeBuildLayer: nextLayer });
                       announceToSR('Build layer ' + (nextLayer + 1) + ' selected.');
                     },
-                    className: 'mt-1 block h-10 w-full rounded-md border border-indigo-300 bg-white px-2 text-sm font-bold text-indigo-900'
+                    className: 'mt-1 block h-10 w-full rounded-md border border-indigo-500 bg-white px-2 text-sm font-bold text-indigo-900'
                   }, Array.from({ length: 10 }, function(_, index) {
                     return h('option', { key: index, value: index }, 'Layer ' + (index + 1));
                   }))
@@ -2798,7 +2798,7 @@ window.StemLab = window.StemLab || {
                       upd({ layerColors: nextColors });
                       announceToSR('Layer ' + (activeBuildLayer + 1) + ' color changed.');
                     },
-                    className: 'mt-1 block h-10 w-full cursor-pointer rounded-md border border-indigo-300 bg-white p-1'
+                    className: 'mt-1 block h-10 w-full cursor-pointer rounded-md border border-indigo-500 bg-white p-1'
                   })
                 )
               )
@@ -2888,7 +2888,7 @@ window.StemLab = window.StemLab || {
                 if (inFull) { var exit = document.exitFullscreen || document.webkitExitFullscreen; if (exit) exit.call(document); }
                 else { var enter = el.requestFullscreen || el.webkitRequestFullscreen; if (enter) enter.call(el); }
               },
-              className: 'min-h-8 rounded-lg border border-emerald-400/60 bg-emerald-600 px-3 py-1 text-[11px] font-black text-white transition-colors hover:bg-emerald-500'
+              className: 'min-h-8 rounded-lg border border-emerald-400/60 bg-emerald-700 px-3 py-1 text-[11px] font-black text-white transition-colors hover:bg-emerald-800'
             }, 'Fullscreen')
           ),
           h('div', {
@@ -3156,7 +3156,7 @@ window.StemLab = window.StemLab || {
                 var l = Math.floor(Math.random()*8)+1, w = Math.floor(Math.random()*6)+1, hh = Math.floor(Math.random()*6)+1;
                 upd({ dims: {l:l,w:w,h:hh}, challenge: {l:l,w:w,h:hh,answer:l*w*hh}, answer: '', feedback: null, showLayers: null });
               },
-              className: 'flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md',
+              className: 'flex-1 py-2 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-lg text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-md',
               title: __alloT('stem.volume.new_challenge_n', 'New challenge (N)')
             }, __alloT('stem.volume.random_challenge_2', '\uD83C\uDFB2 Random Challenge')),
             h('button', { 'aria-label': __alloT('stem.volume.reset_4', 'Reset'),
@@ -3169,27 +3169,27 @@ window.StemLab = window.StemLab || {
                 var pl=2+Math.floor(Math.random()*4), pw=2+Math.floor(Math.random()*3), ph=1+Math.floor(Math.random()*3);
                 upd({ mode: 'freeform', positions: [], builderChallenge: {type:'prism',target:{l:pl,w:pw,h:ph},answer:pl*pw*ph}, builderFeedback: null, challenge: null, feedback: null });
               },
-              className: 'flex-1 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-lg text-sm hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md'
+              className: 'flex-1 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-lg text-sm hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md'
             }, __alloT('stem.volume.build_prism_2', '\uD83C\uDFD7\uFE0F Build Prism')),
             h('button', { 'aria-label': __alloT('stem.volume.l_block_vol', 'L-Block Vol'),
               onClick: function() {
                 var lb = generateLBlock();
                 upd({ mode: 'freeform', positions: lb.positions, builderChallenge: {type:'volume',answer:lb.volume,shape:'L-Block'}, builderFeedback: null, challenge: null, feedback: null });
               },
-              className: 'flex-1 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'
+              className: 'flex-1 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'
             }, __alloT('stem.volume.l_block_vol_2', '\uD83D\uDCD0 L-Block Vol')),
             h('button', { 'aria-label': __alloT('stem.volume.random_vol', 'Random Vol'),
               onClick: function() {
                 var tv = 5+Math.floor(Math.random()*16);
                 upd({ mode: 'freeform', positions: [], builderChallenge: {type:'volume',answer:tv,shape:'any'}, builderFeedback: null, challenge: null, feedback: null });
               },
-              className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
+              className: 'flex-1 py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-lg text-sm hover:from-amber-700 hover:to-orange-700 transition-all shadow-md'
             }, __alloT('stem.volume.random_vol_2', '\uD83C\uDFB2 Random Vol')),
             h('button', { 'aria-label': __alloT('stem.volume.open_buildable_challenges_library', 'Open buildable challenges library'),
               onClick: function() { upd({ showBuildLibrary: !showBuildLibrary, mode: 'freeform' }); },
               'aria-expanded': showBuildLibrary,
               title: __alloT('stem.volume.browse_named_structures_to_build', 'Browse named structures to build'),
-              className: 'flex-1 py-2 bg-gradient-to-r from-pink-500 to-fuchsia-500 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-fuchsia-600 transition-all shadow-md'
+              className: 'flex-1 py-2 bg-gradient-to-r from-pink-600 to-fuchsia-600 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-fuchsia-600 transition-all shadow-md'
             }, __alloT('stem.volume.library', '\uD83D\uDCDA Library'))
           )
         ),
@@ -3293,7 +3293,7 @@ window.StemLab = window.StemLab || {
               className: 'px-3 py-1.5 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-xs',
               title: __alloT('stem.volume.get_a_hint_from_ai_2', 'Get a hint from AI')
             }, __alloT('stem.volume.hint_2', '\uD83E\uDDE0 Hint')),
-            h('button', { 'aria-label': __alloT('stem.volume.check_4', 'Check'), onClick: checkChallenge, className: 'ml-auto px-4 py-1.5 bg-indigo-500 text-white font-bold rounded-lg text-sm hover:bg-indigo-600' }, __alloT('stem.volume.check_5', '\u2714 Check'))
+            h('button', { 'aria-label': __alloT('stem.volume.check_4', 'Check'), onClick: checkChallenge, className: 'ml-auto px-4 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700' }, __alloT('stem.volume.check_5', '\u2714 Check'))
           ),
           builderFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (builderFeedback.correct ? 'text-green-600' : 'text-red-600') }, builderFeedback.msg)
         ),
@@ -3310,7 +3310,7 @@ window.StemLab = window.StemLab || {
                 announceToSR('Display unit changed to ' + (REAL_UNITS.find(function(u) { return u.id === e.target.value; }) || {}).long);
               },
               'aria-label': __alloT('stem.volume.real_world_unit_selector', 'Real-world unit selector'),
-              className: 'text-[11px] px-2 py-1 rounded border border-emerald-300 bg-emerald-50 text-emerald-800 font-mono'
+              className: 'text-[11px] px-2 py-1 rounded border border-emerald-600 bg-emerald-50 text-emerald-800 font-mono'
             }, REAL_UNITS.map(function(u) {
               return h('option', { key: u.id, value: u.id, title: u.desc }, u.short + ' — ' + u.long);
             })),

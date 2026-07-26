@@ -1318,7 +1318,7 @@ window.StemLab = window.StemLab || {
                           if (typeof announceToSR === 'function') announceToSR(compLabel + ' value set to ' + val + ' ohms');
                         }
                       },
-                      className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono bg-slate-900 border-slate-800 text-slate-100 focus:ring-1 focus:ring-yellow-500 focus:outline-none'
+                      className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono bg-slate-900 border-slate-500 text-slate-100 focus:ring-1 focus:ring-yellow-500 focus:outline-none'
                     }),
                     (comp.type === 'resistor' || comp.type === 'bulb') && h('span', { className: 'text-xs text-slate-400' }, '\u03A9'),
 
@@ -1348,7 +1348,7 @@ window.StemLab = window.StemLab || {
                           if (typeof announceToSR === 'function') announceToSR(compLabel + ' value set to ' + val + ' microfarads');
                         }
                       },
-                      className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono bg-slate-900 border-slate-800 text-slate-100 focus:ring-1 focus:ring-yellow-500 focus:outline-none'
+                      className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono bg-slate-900 border-slate-500 text-slate-100 focus:ring-1 focus:ring-yellow-500 focus:outline-none'
                     }),
                     comp.type === 'capacitor' && h('span', { className: 'text-xs text-slate-400' }, '\u00B5F'),
 
@@ -2032,7 +2032,7 @@ window.StemLab = window.StemLab || {
                   }
                   if (typeof addToast === 'function') addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
                 },
-                className: 'px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md shadow-indigo-500/10 hover:shadow-lg transition-all'
+                className: 'px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md shadow-indigo-500/10 hover:shadow-lg transition-all'
               }, '\uD83D\uDCF8 Snapshot'),
 
               // TTS button
@@ -2524,7 +2524,7 @@ window.StemLab = window.StemLab || {
                     var bonus = scenario.answerIndex === stg.picked ? 1 : 0;
                     setPoe({ stage: newStage, score: (state.score || 0) + bonus });
                   },
-                  className: 'px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none'
+                  className: 'px-3 py-1 rounded-md text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none'
                 }, stg.revealed ? '✓ Revealed' : 'Show answer'),
                 stg.revealed && h('span', { className: 'text-[11px] ' + (scenario.answerIndex === stg.picked ? 'text-green-700 font-bold' : 'text-rose-700 font-bold') },
                   scenario.answerIndex === stg.picked ? '✓ Correct' : '✗ Try the reasoning')
@@ -2715,7 +2715,7 @@ window.StemLab = window.StemLab || {
                     return h('button', {
                       key: opt.id,
                       onClick: function() { handlePick(opt.id); },
-                      className: 'px-2 py-1 rounded text-[11px] font-bold border bg-white text-slate-600 border-slate-300 hover:bg-amber-50 hover:border-amber-300 focus:ring-2 focus:ring-amber-400 focus:outline-none'
+                      className: 'px-2 py-1 rounded text-[11px] font-bold border bg-white text-slate-600 border-slate-300 hover:bg-amber-50 hover:border-amber-300 focus:ring-2 focus:ring-amber-600 focus:outline-none'
                     }, opt.label);
                   })
                 ),

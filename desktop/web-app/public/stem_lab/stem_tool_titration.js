@@ -2667,7 +2667,7 @@ return React.createElement("div", {
               onClick: function() {
                 updMulti({ challengeIdx: (challengeIdx + 1) % challengeQuestions.length, challengeAnswer: null });
               },
-              className: "px-4 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 transition-all"
+              className: "px-4 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 transition-all"
             }, __alloT('stem.titration.next_question_2', "Next Question \u2192"))
           )
         )
@@ -2766,7 +2766,7 @@ return React.createElement("div", {
             React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, selected.feedback),
             incidentIdx < incidentScenarios.length - 1 && React.createElement("button", { "aria-label": __alloT('stem.titration.next_scenario', "Next Scenario"),
               onClick: function() { updMulti({ incidentIdx: incidentIdx + 1, incidentAnswer: null }); },
-              className: "mt-2 px-4 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 transition-all"
+              className: "mt-2 px-4 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-red-600 to-orange-700 hover:from-red-600 hover:to-orange-700 transition-all"
             }, __alloT('stem.titration.next_scenario_2', "Next Scenario \u2192"))
           );
         })()
@@ -2977,7 +2977,7 @@ return React.createElement("div", {
 
       },
 
-      className: "px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full hover:from-cyan-600 hover:to-blue-700 shadow-md hover:shadow-lg transition-all"
+      className: "px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-700 to-blue-600 rounded-full hover:from-cyan-700 hover:to-blue-700 shadow-md hover:shadow-lg transition-all"
 
     }, __alloT('stem.titration.snapshot', "\uD83D\uDCF8 Snapshot")),
 
@@ -3257,7 +3257,7 @@ return React.createElement("div", {
         React.createElement('textarea', { id: 'bf-hypo', value: bf.hypothesis || '',
           onChange: function(e) { setBF({ hypothesis: e.target.value }); },
           placeholder: __alloT('stem.titration.what_single_condition_makes_the_differ', 'What single condition makes the difference between GOOD and POOR? Does ratio matter more than pKa? Does the starting pH matter at all? Type your own theory.'),
-          className: 'w-full text-[12px] border border-slate-600 rounded p-2 font-mono leading-snug bg-slate-900 text-slate-200', rows: 3 })
+          className: 'w-full text-[12px] border border-slate-500 rounded p-2 font-mono leading-snug bg-slate-900 text-slate-200', rows: 3 })
       ),
       React.createElement('div', { className: 'mb-3' },
         !bf.stuckRevealed && React.createElement('button', { onClick: function() { setBF({ stuckRevealed: true }); },

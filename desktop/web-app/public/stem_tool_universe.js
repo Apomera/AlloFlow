@@ -2129,7 +2129,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   if (cv) cv.dataset.time = String(activeCosmicMission.time);
                   updMulti(Object.assign({}, activeCosmicMission.setup || {}, { activeCosmicMission: activeCosmicMission.id, cosmicMissionsLaunched: launchList, cosmicTime: activeCosmicMission.time, cosmicEvidenceThread: activeCosmicMission.evidence, wwtTourStop: activeCosmicMission.wwtStop, isPlaying: false, showImages: true }));
                   if (typeof awardStemXP === 'function') awardStemXP('universe_guided_mission', 2, 'Launched mission: ' + activeCosmicMission.title);
-                }, className: "rounded-lg bg-rose-500 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-rose-400" }, activeMissionLaunched ? "Realign Mission" : "Begin Mission")
+                }, className: "rounded-lg bg-rose-600 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-rose-700" }, activeMissionLaunched ? "Realign Mission" : "Begin Mission")
               ),
               React.createElement("div", { className: "mt-3 grid grid-cols-1 md:grid-cols-5 gap-2" },
                 GUIDED_COSMIC_MISSIONS.map(function (mission) {
@@ -2215,7 +2215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   ),
                   React.createElement("p", { className: "mt-1 text-[11px] text-slate-300 leading-relaxed" }, "Pair the cinematic universe timeline with real survey imagery, telescope mosaics, and observation questions students can bring back into the model.")
                 ),
-                React.createElement("a", { href: "https://worldwidetelescope.org/webclient/", target: "_blank", rel: "noreferrer", className: "rounded-lg bg-violet-500 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-violet-400" }, "Launch WWT")
+                React.createElement("a", { href: "https://worldwidetelescope.org/webclient/", target: "_blank", rel: "noreferrer", className: "rounded-lg bg-violet-600 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-violet-700" }, "Launch WWT")
               ),
               React.createElement("div", { className: "mt-3 grid grid-cols-2 md:grid-cols-5 gap-2" },
                 WWT_REAL_DATA_TOUR.map(function (stop) {
@@ -2289,7 +2289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   var cv = document.querySelector('[data-universe-canvas]');
                   if (cv) cv.dataset.time = String(activeCosmicEvidence.time);
                   updMulti({ cosmicTime: activeCosmicEvidence.time, wwtTourStop: activeCosmicEvidence.wwtStop, cosmicEvidenceThread: activeCosmicEvidence.id, isPlaying: false });
-                }, className: "rounded-lg bg-cyan-500 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-cyan-400" }, "Align View")
+                }, className: "rounded-lg bg-cyan-700 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-cyan-800" }, "Align View")
               ),
               React.createElement("div", { className: "mt-3 grid grid-cols-2 md:grid-cols-5 gap-2" },
                 COSMIC_EVIDENCE_THREADS.map(function (thread) {
@@ -4468,7 +4468,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 ),
                 React.createElement("button", { "aria-label": "Dismiss tutorial and start exploring",
                   onClick: function() { upd('tutorialDismissed', true); playBeep(); },
-                  className: "mt-4 w-full py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 shadow-lg"
+                  className: "mt-4 w-full py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-600 hover:to-indigo-600 shadow-lg"
                 }, "\uD83C\uDF20 Start Exploring!")
               )
             ),
@@ -4476,7 +4476,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             // Snapshot button
             React.createElement("div", { className: "flex mt-3" },
 
-              React.createElement("button", { "aria-label": "Save snapshot of current universe state", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'uni-' + Date.now(), tool: 'universe', label: t('stem.universe.universe') + epoch.name, data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full hover:from-violet-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+              React.createElement("button", { "aria-label": "Save snapshot of current universe state", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'uni-' + Date.now(), tool: 'universe', label: t('stem.universe.universe') + epoch.name, data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full hover:from-violet-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
             )
 

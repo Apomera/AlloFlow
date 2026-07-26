@@ -92,6 +92,49 @@ describe('world-space simulation consistency', () => {
     expect(RR.vehicleFootprint('school_bus')).toEqual({ length: 10, width: 2.5 });
   });
 
+  it('places four tire contacts inside the oriented vehicle footprint', () => {
+    const points = RR.vehicleWheelContactPoints({ x: 10, y: 20, heading: 0 }, 'car');
+    expect(points).toHaveLength(4);
+    expect(new Set(points.map((point) => point.name)).size).toBe(4);
+    expect(points.find((point) => point.name === 'front_left')).toMatchObject({
+      axle: 'front', side: 'left'
+    });
+    expect(points.find((point) => point.name === 'front_left').x).toBeCloseTo(11.53, 5);
+    expect(points.find((point) => point.name === 'front_left').y).toBeCloseTo(20.684, 5);
+    const turned = RR.vehicleWheelContactPoints({ x: 10, y: 20, heading: Math.PI / 2 }, 'car');
+    expect(turned.find((point) => point.name === 'front_left').y).toBeCloseTo(21.53, 5);
+    expect(turned.find((point) => point.name === 'front_left').x).toBeCloseTo(9.316, 5);
+  });
+
+  it('samples and aggregates partial shoulder and standing-water contact', () => {
+    const contacts = RR.sampleVehicleWheelContacts(
+      { x: 0, y: 0, heading: 0 }, 'car',
+      (x) => x >= 0 ? 0 : 2,
+      (_x, y) => y > 0
+    );
+    const aggregate = RR.aggregateWheelSurfaceDynamics(contacts);
+    expect(aggregate).toMatchObject({
+      contactCount: 4, mixed: true, offRoadFraction: 0.5,
+      pavementFraction: 0.5, waterCoverage: 0.5
+    });
+    expect(aggregate.splitMu).toBeCloseTo(0.45, 8);
+    expect(aggregate.gripMultiplier).toBeGreaterThan(0.7);
+    expect(aggregate.gripMultiplier).toBeLessThan(0.78);
+    expect(aggregate.rollingMultiplier).toBeCloseTo(2.25, 6);
+    expect(aggregate.waterImbalance).toBe(1);
+  });
+
+  it('preserves normal pavement dynamics when every wheel is on the road', () => {
+    const contacts = RR.sampleVehicleWheelContacts(
+      { x: 0, y: 0, heading: 0 }, 'suv', () => 0, () => false
+    );
+    expect(RR.aggregateWheelSurfaceDynamics(contacts)).toMatchObject({
+      dominantSurface: 'pavement', mixed: false,
+      gripMultiplier: 1, steeringMultiplier: 1, rollingMultiplier: 1,
+      offRoadFraction: 0, pavementFraction: 1, waterCoverage: 0, splitMu: 0
+    });
+  });
+
   it('collides the rotated body with scenery even when the center cell is clear', () => {
     const size = RR.vehicleFootprint('car');
     const obstacleAt = (ox, oy, cell = 1) => (x, y) => x === ox && y === oy ? cell : 0;
@@ -129,6 +172,22 @@ describe('physical road layouts', () => {
     expect(highway.pavedHalfWidth).toBeCloseTo(10.4);
     expect(RR.roadsideOffsetFor(RR.CONTINUOUS_SCENARIO_PROFILES.highway, 1.2)).toBeCloseTo(11.6);
     expect(RR.roadsideOffsetFor(RR.CONTINUOUS_SCENARIO_PROFILES.residential, 1.2)).toBeCloseTo(5.3);
+  });
+
+  it('uses one authored lane frame for traffic recovery, passing, and shoulders', () => {
+    const highway = RR.CONTINUOUS_SCENARIO_PROFILES.highway;
+    expect(RR.authoredTrafficLaneOffsets(highway, 1)).toEqual([-2.3, -5.9]);
+    expect(RR.authoredTrafficLaneOffsets(highway, -1)).toEqual([2.3, 5.9]);
+    expect(RR.nearestAuthoredTrafficLaneOffset(highway, 1, -4.6)).toBeCloseTo(-5.9, 8);
+    expect(RR.nearestAuthoredTrafficLaneOffset(highway, -1, 1.9)).toBeCloseTo(2.3, 8);
+    expect(RR.trafficRightShoulderOffset(highway, 1)).toBeCloseTo(-8.9, 8);
+    expect(RR.trafficRightShoulderOffset(highway, -1)).toBeCloseTo(8.9, 8);
+    const residential = RR.CONTINUOUS_SCENARIO_PROFILES.residential;
+    expect(RR.trafficRightShoulderOffset(residential, 1)).toBeCloseTo(-3.53, 8);
+    const downtown = RR.CONTINUOUS_SCENARIO_PROFILES.downtown;
+    const downtownOffsets = RR.authoredTrafficLaneOffsets(downtown, -1);
+    expect(downtownOffsets[0]).toBeCloseTo(-2.1, 8);
+    expect(downtownOffsets[1]).toBeCloseTo(2.1, 8);
   });
 
   it('derives lane arrows from authored two-way and one-way lane geometry', () => {
@@ -243,6 +302,52 @@ describe('physical road layouts', () => {
     expect(crossRel.ahead).toBeCloseTo(11, 8);
     expect(crossRel.lateral).toBeCloseTo(0, 8);
     expect(RR.trafficRelativeRoadPosition(world, mainA, crossA).sameCorridor).toBe(false);
+  });
+
+
+  it('uses longitudinal road gaps for following and rejects adjacent or oncoming cars', () => {
+    const heading = 0.55;
+    const spline = {
+      centerAt: (station) => 48 + Math.tan(heading) * station,
+      headingAt: () => heading,
+      heightAt: () => 0
+    };
+    const world = { profile: { roadHalfWidth: 6.5, lanesPerDirection: 2 }, spline };
+    const pointAt = (station, lateral) => ({
+      x: spline.centerAt(station) + lateral * Math.cos(heading),
+      y: station - lateral * Math.sin(heading)
+    });
+    const travelHeading = Math.PI / 2 - heading;
+    const observer = { ...pointAt(10, -1.55), heading: travelHeading };
+    const leader = { ...pointAt(25, -1.55), heading: travelHeading };
+    const adjacent = { ...pointAt(22, -4.65), heading: travelHeading };
+    const oncoming = { ...pointAt(18, -1.55), heading: travelHeading + Math.PI };
+
+    expect(RR.followingVehicleRoadState(world, observer, leader, 1)).toMatchObject({
+      eligible: true, sameCorridor: true, sameDirection: true, sameLane: true
+    });
+    expect(RR.followingVehicleRoadState(world, observer, leader, 1).ahead)
+      .toBeCloseTo(15, 3);
+    expect(RR.followingVehicleRoadState(world, observer, adjacent, 1)).toMatchObject({
+      eligible: true, sameDirection: true, sameLane: false
+    });
+    expect(RR.followingVehicleRoadState(world, observer, oncoming, 1)).toMatchObject({
+      eligible: false, sameDirection: false, sameLane: false
+    });
+  });
+
+  it('uses the observer heading as the finite-course following frame', () => {
+    const observer = { x: 10, y: 10, heading: 0 };
+    const leader = { x: 18, y: 10.4, heading: 0.1 };
+    const adjacent = { x: 18, y: 13, heading: 0 };
+    const oncoming = { x: 18, y: 10, heading: Math.PI };
+    expect(RR.followingVehicleRoadState(null, observer, leader, 1)).toMatchObject({
+      eligible: true, sameDirection: true, sameLane: true, ahead: 8
+    });
+    expect(RR.followingVehicleRoadState(null, observer, adjacent, 1).sameLane).toBe(false);
+    expect(RR.followingVehicleRoadState(null, observer, oncoming, 1)).toMatchObject({
+      eligible: false, sameDirection: false, sameLane: false
+    });
   });
 
   it('reserves conflicting intersection paths while allowing separated opposing lanes', () => {
@@ -709,6 +814,11 @@ describe('tire, ABS, and standing-water dynamics', () => {
     const goodThreshold = RR.hydroplaneThresholdMph(32, 9, 0.35);
     const wornThreshold = RR.hydroplaneThresholdMph(32, 2, 0.35);
     const puddle = RR.computeTireDynamics('rain', 55, 0, 0.3, { tread32: 7, psi: 32, absEnabled: true }, true);
+    const oneWetWheel = RR.computeTireDynamics('rain', 70, 0, 0.3, { tread32: 7, psi: 32, absEnabled: true }, 0.25);
+    const fourWetWheels = RR.computeTireDynamics('rain', 70, 0, 0.3, { tread32: 7, psi: 32, absEnabled: true }, 1);
+    expect(oneWetWheel.waterCoverage).toBe(0.25);
+    expect(fourWetWheels.waterCoverage).toBe(1);
+    expect(fourWetWheels.hydroplaneSeverity).toBeGreaterThan(oneWetWheel.hydroplaneSeverity);
     expect(wornThreshold).toBeLessThan(goodThreshold);
     expect(puddle.hydroplaneSeverity).toBeGreaterThan(0);
     expect(puddle.mu).toBeLessThan(puddle.surfaceMu);

@@ -903,7 +903,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 className: "px-2 py-1 rounded-lg text-[10px] font-bold",
 
-                style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
+                style: { background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5' }
 
               }, "✕ Clear"),
 
@@ -1129,7 +1129,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 className: "mt-2 px-3 py-1 rounded-lg text-[10px] font-bold",
 
-                style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
+                style: { background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5' }
 
               }, "🗑 Clear All")
 

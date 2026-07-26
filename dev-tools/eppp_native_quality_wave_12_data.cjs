@@ -84,8 +84,8 @@ module.exports = {
           "url": "https://doi.org/10.1037/0003-066X.61.4.271",
           "title": "Evidence-Based Practice in Psychology",
           "organization": "American Psychological Association Presidential Task Force",
-          "summary": "The APA task-force report defines evidence-based practice as integrating the best available research with clinical expertise in the context of patient characteristics, culture, and preferences.",
-          "credibility": "This peer-reviewed American Psychologist policy article is the primary APA formulation of evidence-based practice in psychology. It directly describes the integrated decision model rather than reducing practice to one source of information."
+          "summary": "The APA task-force report defines evidence-based psychological practice as integrating the best available research with clinical expertise in the context of patient characteristics, culture, and preferences.",
+          "credibility": "This peer-reviewed American Psychologist policy article is the primary APA formulation of evidence-based practice in psychology and directly documents the integrated clinical decision model."
         }
       ],
       "sourceCheck": "The APA task-force report explicitly integrates research evidence, clinical expertise, and patient characteristics, culture, and preferences, supporting selection of an empirically supported intervention delivered competently and adapted collaboratively.",
@@ -124,8 +124,8 @@ module.exports = {
           "url": "https://doi.org/10.1037/0003-066X.61.4.271",
           "title": "Evidence-Based Practice in Psychology",
           "organization": "American Psychological Association Presidential Task Force",
-          "summary": "The APA task-force report defines evidence-based practice as integrating the best available research with clinical expertise in the context of patient characteristics, culture, and preferences.",
-          "credibility": "This peer-reviewed American Psychologist policy article is the primary APA formulation of evidence-based practice in psychology. It directly describes the integrated decision model rather than reducing practice to one source of information."
+          "summary": "The APA task-force report defines evidence-based psychological practice as integrating the best available research with clinical expertise in the context of patient characteristics, culture, and preferences.",
+          "credibility": "This peer-reviewed American Psychologist policy article is the primary APA formulation of evidence-based practice in psychology and directly documents the integrated clinical decision model."
         }
       ],
       "sourceCheck": "The APA framework treats research, expertise, and patient characteristics as interacting sources for clinical decisions and emphasizes monitoring progress, so poor response and cultural mismatch should prompt collaborative reassessment rather than allegiance to one pillar.",

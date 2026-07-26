@@ -63,6 +63,8 @@ describe('EPPP native content QA gate', () => {
     expect(report.summary.completeOptionFeedbackItems).toBe(1500);
     expect(eppp.items.every((item) => item.choiceRationales.length === 4 && item.choiceRationales.every((entry) => entry.trim().length >= 20))).toBe(true);
     const canonical = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_native_items.json'), 'utf8'));
+    expect(canonical.every((item) => item.choiceRationales[item.answerIndex] === item.rationale)).toBe(true);
+    expect(canonical.every((item) => item.choiceRationales.every((entry) => entry === entry.trim()))).toBe(true);
     const completedBacklog = canonical.filter((item) => item.optionFeedbackReviewWave === 'eppp-option-feedback-wave-01');
     expect(completedBacklog).toHaveLength(476);
     expect(completedBacklog.every((item) => item.choiceRationales[item.answerIndex] === item.rationale)).toBe(true);

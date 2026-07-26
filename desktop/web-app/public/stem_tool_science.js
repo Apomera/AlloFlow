@@ -543,7 +543,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
               React.createElement("button", { "aria-label": "Voltmeter", onClick: () => upd('components', [...d.components, { type: 'voltmeter', value: 0, id: Date.now() + 5 }]), className: "px-3 py-1.5 bg-orange-100 text-orange-800 font-bold rounded-lg text-sm border border-orange-300 hover:bg-orange-200 transition-all" }, "\uD83D\uDD0B Voltmeter"),
 
-              React.createElement("button", { "aria-label": "Clear", onClick: () => upd('components', []), className: "px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm border border-red-200 hover:bg-red-100 transition-all" }, "\uD83D\uDDD1 Clear"),
+              React.createElement("button", { "aria-label": "Clear", onClick: () => upd('components', []), className: "px-3 py-1.5 bg-red-50 text-red-700 font-bold rounded-lg text-sm border border-red-200 hover:bg-red-100 transition-all" }, "\uD83D\uDDD1 Clear"),
 
               d.components.length > 0 && React.createElement("span", { className: "self-center text-xs text-slate-500 ml-auto" }, d.components.length + " component" + (d.components.length > 1 ? 's' : ''))
 

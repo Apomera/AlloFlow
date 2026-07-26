@@ -175,7 +175,7 @@
             : '🌱 ' + t('stem.simShelf.ai_off', 'AI hints are off — the shelf still works, with built-in reflection prompts instead of the AI coach.')))),
         h('button', {
           onClick: openShelf,
-          className: 'px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-md shadow-amber-600/20 transition-all w-fit',
+          className: 'px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-md shadow-amber-600/20 transition-all w-fit',
           'aria-label': t('stem.simShelf.open_title', 'Open the Sim Shelf in a new window (PhET simulations with the Predict-Explore-Explain coach)')
         }, t('stem.simShelf.open', '🧪 Open Sim Shelf')),
         popupState === 'opening' && h('p', { className: 'text-xs text-sky-300' },

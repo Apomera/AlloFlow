@@ -60,6 +60,9 @@ const BASE = {
   sawAttract: false, sawRepel: false,
   turns: 20, current: 2, currentDir: 1, windingDir: 1, core: false, coilTouched: false,
   motorCurrent: 3, motorField: 4, motorCurrentDir: 1, motorFieldDir: 1, motorRunning: false, motorAngle: 90, motorRan: false, motorMode: 'forces',
+  motorView: '2d', motor3dStatus: 'loading', motor3dAttempt: 0, motor3dUsed: false, motor3dForces: true, motor3dCurrent: true,
+  chargeSign: 1, chargeField: 1, chargeSpeed: 5, chargeB: 4, chargeView: '2d',
+  chargeTilt: 45, chargeMass: 1, charge3dStatus: 'loading', charge3dAttempt: 0, charge3dUsed: false, charge3dProgress: 0, charge3dRunning: false, charge3dTrail: true, charge3dReference: null,
   benchLoadOhms: 40, benchFriction: 3, benchTurns: 80, benchField: 4, benchUsed: false,
   benchView: 'steady', benchRunning: false, benchTime: 0, benchOmega: 0, benchTemperature: 22,
   benchTrace: [], benchTrials: [], benchTrialCount: 0, benchMissionStatus: 'ready', benchCompareTrialId: null,
@@ -177,6 +180,62 @@ describe('magnetism tool — real physics', () => {
     expect(balanced.checks).toEqual([true, true, true, true]);
   });
 
+  it('keeps the 3D motor commutator, force pair, and torque direction physically linked', () => {
+    const dead = physics.motorSpatialState(0, 3, 4, 1, 1);
+    const maximum = physics.motorSpatialState(90, 3, 4, 1, 1);
+    const commutated = physics.motorSpatialState(180, 3, 4, 1, 1);
+    const reversed = physics.motorSpatialState(90, 3, 4, -1, 1);
+    expect(dead).toMatchObject({ halfTurn: 1, commutatorPhase: 1, deadSpot: true, torquePercent: 0 });
+    expect(maximum.deadSpot).toBe(false);
+    expect(maximum.torquePercent).toBeCloseTo(25, 9);
+    expect(maximum.force).toBeCloseTo(0.06, 9);
+    expect(commutated).toMatchObject({ halfTurn: 2, commutatorPhase: -1, segmentDirection: -1, deadSpot: true });
+    expect(maximum.torqueDirection).toBe(1);
+    expect(reversed.torqueDirection).toBe(-1);
+  });
+
+  it('decomposes 3D charged-particle motion into straight, helical, and circular paths', () => {
+    const straight = physics.chargedParticleHelix(1, 1, 6, 3, 0, 61);
+    const helix = physics.chargedParticleHelix(1, 1, 6, 3, 45, 61);
+    const circle = physics.chargedParticleHelix(1, 1, 6, 3, 90, 61);
+    expect(straight).toMatchObject({ motionType: 'straight', radius: 0, force: 0 });
+    expect(straight.points.every((point) => point.x === 0 && point.z === 0)).toBe(true);
+    expect(helix.motionType).toBe('helical');
+    expect(helix.parallelSpeed).toBeGreaterThan(0);
+    expect(helix.perpendicularSpeed).toBeGreaterThan(0);
+    expect(helix.radius).toBeCloseTo(helix.perpendicularSpeed / 3, 9);
+    expect(helix.pitch).toBeGreaterThan(0);
+    expect(circle.motionType).toBe('circular');
+    expect(circle.parallelSpeed).toBeCloseTo(0, 9);
+    expect(circle.pitch).toBeCloseTo(0, 9);
+
+    const reversedCharge = physics.chargedParticleHelix(-1, 1, 6, 3, 45, 61);
+    const reversedField = physics.chargedParticleHelix(1, -1, 6, 3, 45, 61);
+    expect(reversedCharge.handedness).toBe(-helix.handedness);
+    expect(reversedField.handedness).toBe(-helix.handedness);
+    expect(Math.sign(reversedCharge.points[0].z)).toBe(-Math.sign(helix.points[0].z));
+    expect(physics.chargedParticleHelix(1, 1, 6, 6, 45, 61).radius).toBeLessThan(helix.radius);
+    expect(physics.chargedParticleHelix(1, 1, 6, 6, 45, 61).pitch).toBeLessThan(helix.pitch);
+  });
+  it('scales gyro radius and pitch with mass and identifies fair particle comparisons', () => {
+    const reference = Object.assign(physics.chargedParticleHelix(1, 1, 6, 3, 45, 61, 1), {
+      chargeSign: 1, fieldSign: 1, speed: 6, field: 3, tilt: 45, mass: 1,
+    });
+    const heavy = Object.assign(physics.chargedParticleHelix(1, 1, 6, 3, 45, 61, 4), {
+      chargeSign: 1, fieldSign: 1, speed: 6, field: 3, tilt: 45, mass: 4,
+    });
+    expect(heavy.radius).toBeCloseTo(reference.radius * 4, 9);
+    expect(heavy.pitch).toBeCloseTo(reference.pitch * 4, 9);
+    expect(heavy.gyroPeriod).toBeCloseTo(reference.gyroPeriod * 4, 9);
+    expect(physics.chargedParticleComparison(heavy, reference)).toMatchObject({
+      keys: ['mass'], count: 1, fair: true, radiusRatio: 4, pitchRatio: 4,
+      radiusDirection: 'larger', pitchDirection: 'larger', handednessChanged: false,
+    });
+    const confounded = Object.assign({}, heavy, { speed: 8, field: 5 });
+    expect(physics.chargedParticleComparison(confounded, reference)).toMatchObject({
+      keys: ['speed', 'field', 'mass'], count: 3, fair: false,
+    });
+  });
   it('identifies controlled and confounded motor-generator trial changes', () => {
     const baseline = { loadOhms: 40, turns: 80, field: 4, current: 3, motorField: 4, friction: 3 };
     const controlled = Object.assign({}, baseline, { loadOhms: 10 });
@@ -580,6 +639,80 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(particle).not.toContain('Coupled motor–generator engineering bench');
   });
 
+  it('renders an accessible 3D motor torque lab with linked vectors and concept landmarks', () => {
+    const html = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'forces', motorView: '3d', motor3dStatus: 'ready', motorAngle: 180, notebookOpen: true,
+    }));
+    expect(html).toContain('3D torque lab');
+    expect(html).toContain('Interactive three-dimensional DC motor');
+    expect(html).toContain('split-ring commutator');
+    expect(html).toContain('Rotor angle');
+    expect(html).toContain('Relative torque');
+    expect(html).toContain('Commutator');
+    expect(html).toContain('half 2');
+    expect(html).toContain('Along field');
+    expect(html).toContain('Along shaft');
+    expect(html).toContain('Commutator close-up');
+    expect(html).toContain('Force + torque vectors: on');
+    expect(html).toContain('Current + moment vectors: on');
+    expect(html).toContain('0° · dead spot');
+    expect(html).toContain('90° · maximum torque');
+    expect(html).toContain('180° · commutator flips');
+    expect(html).toContain('The loop is at a torque dead spot');
+    expect(html).toContain('commutator half 2');
+    expect(html).toContain('0.060 N on each active side');
+
+    const failed = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'forces', motorView: '3d', motor3dStatus: 'error',
+    }));
+    expect(failed).toContain('3D graphics did not load');
+    expect(failed).toContain('complete 2D force diagram remains available');
+    expect(failed).toContain('Retry 3D');
+  });
+
+  it('renders an accessible 3D particle helix lab with mass analysis, pinned comparison, and fallback', () => {
+    const html = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'particle', chargeView: '3d', charge3dStatus: 'ready',
+      chargeTilt: 45, chargeMass: 2, chargeSign: -1, chargeField: 1, notebookOpen: true,
+      charge3dReference: { chargeSign: -1, fieldSign: 1, speed: 5, field: 4, tilt: 45, mass: 1 },
+    }));
+    expect(html).toContain('3D helix lab');
+    expect(html).toContain('Interactive three-dimensional charged-particle trajectory');
+    expect(html).toContain('Gyro radius');
+    expect(html).toContain('Pitch / turn');
+    expect(html).toContain('helical');
+    expect(html).toContain('B ↑ blue field arrows');
+    expect(html).toContain('v → gold velocity arrow');
+    expect(html).toContain('F → green force arrow');
+    expect(html).toContain('− two-ring particle marker');
+    expect(html).toContain('Along field');
+    expect(html).toContain('Run particle');
+    expect(html).toContain('Reset particle');
+    expect(html).toContain('Particle position (%)');
+    expect(html).toContain('0° · axial line');
+    expect(html).toContain('45° · helix');
+    expect(html).toContain('90° · circle');
+    expect(html).toContain('Velocity tilt from field axis (°)');
+    expect(html).toContain('Relative particle mass (m)');
+    expect(html).toContain('dashed pale reference path');
+    expect(html).toContain('Replace pinned path');
+    expect(html).toContain('Clear comparison');
+    expect(html).toContain('Fair comparison: only mass changed');
+    expect(html).toContain('radius is 2.00× the reference');
+    expect(html).toContain('relative mass 2.0');
+    expect(html).toContain('fair comparison');
+    expect(html).toContain('v∥');
+    expect(html).toContain('v⊥');
+    expect(html).toContain('tilt 45°');
+    expect(html).toContain('helical path');
+
+    const failed = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'particle', chargeView: '3d', charge3dStatus: 'error',
+    }));
+    expect(failed).toContain('3D graphics did not load');
+    expect(failed).toContain('complete 2D Lorentz-force diagram remains available');
+    expect(failed).toContain('Retry 3D');
+  });
   it('renders a coupled motor-generator bench with live load, loss, and speed feedback', () => {
     const heavyModel = physics.motorGeneratorBench(3, 4, 10, 3, 80, 4);
     const lightModel = physics.motorGeneratorBench(3, 4, 160, 3, 80, 4);
@@ -1125,6 +1258,8 @@ describe('magnetism tool — WCAG 2.2 interaction and alternate-state regression
       Object.assign({}, BASE, { tab: 'field', fieldView: '3d' }),
       Object.assign({}, BASE, { tab: 'electro', electroView: '3d' }),
       Object.assign({}, BASE, { tab: 'induce', induceMode: '3d' }),
+      Object.assign({}, BASE, { tab: 'motor', motorMode: 'forces', motorView: '3d' }),
+      Object.assign({}, BASE, { tab: 'motor', motorMode: 'particle', chargeView: '3d' }),
       Object.assign({}, BASE, { tab: 'induce', induceMode: 'hand' }),
     ].forEach((seed) => {
       const html = mountWithSeed(cfg, seed);
@@ -1139,11 +1274,13 @@ describe('magnetism tool — WCAG 2.2 interaction and alternate-state regression
     });
   }, 30000);
 
-  it('gives every 3D canvas a live load state, non-color pole key, and resolvable text alternative', () => {
+  it('gives every 3D canvas a live load state, non-color key, and resolvable text alternative', () => {
     [
       Object.assign({}, BASE, { tab: 'field', fieldView: '3d' }),
       Object.assign({}, BASE, { tab: 'electro', electroView: '3d' }),
       Object.assign({}, BASE, { tab: 'induce', induceMode: '3d' }),
+      Object.assign({}, BASE, { tab: 'motor', motorMode: 'forces', motorView: '3d' }),
+      Object.assign({}, BASE, { tab: 'motor', motorMode: 'particle', chargeView: '3d' }),
     ].forEach((seed) => {
       const html = mountWithSeed(cfg, seed);
       const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -1152,8 +1289,14 @@ describe('magnetism tool — WCAG 2.2 interaction and alternate-state regression
       const describedBy = (canvas.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
       expect(describedBy.length).toBeGreaterThanOrEqual(2);
       describedBy.forEach((id) => expect(doc.getElementById(id)).not.toBeNull());
-      expect(doc.querySelector('.mag-pole-key')).not.toBeNull();
-      expect(doc.querySelector('.mag-pole-chip').textContent).toBe('N');
+      if (seed.chargeView === '3d') {
+        const vectorKey = doc.querySelector('[aria-label="3D vector key"]');
+        expect(vectorKey).not.toBeNull();
+        expect(vectorKey.textContent).toContain('velocity arrow');
+      } else {
+        expect(doc.querySelector('.mag-pole-key')).not.toBeNull();
+        expect(doc.querySelector('.mag-pole-chip').textContent).toBe('N');
+      }
       expect(doc.querySelector('details.mag-scene-text')).not.toBeNull();
       expect(doc.querySelector('[role="status"][aria-live="polite"][aria-atomic="true"]')).not.toBeNull();
     });
@@ -1164,6 +1307,8 @@ describe('magnetism tool — WCAG 2.2 interaction and alternate-state regression
       Object.assign({}, BASE, { tab: 'field', fieldView: '3d' }),
       Object.assign({}, BASE, { tab: 'electro', electroView: '3d' }),
       Object.assign({}, BASE, { tab: 'induce', induceMode: '3d' }),
+      Object.assign({}, BASE, { tab: 'motor', motorMode: 'forces', motorView: '3d' }),
+      Object.assign({}, BASE, { tab: 'motor', motorMode: 'particle', chargeView: '3d' }),
     ];
     for (const seed of seeds) {
       const auditHost = document.createElement('main');
@@ -1204,6 +1349,8 @@ describe('magnetism tool — visual simulation instrumentation refinement', () =
       { seed: Object.assign({}, BASE, { tab: 'field', fieldView: '3d' }), labels: ['Probe |B|', 'Net / sources', 'x · y · z'] },
       { seed: Object.assign({}, BASE, { tab: 'electro', electroView: '3d' }), labels: ['Center field', 'Ampere-turns', 'coil axis · x'] },
       { seed: Object.assign({}, BASE, { tab: 'induce', induceMode: '3d' }), labels: ['Magnetic flux', 'Induced voltage', '−dΦ / dt'] },
+      { seed: Object.assign({}, BASE, { tab: 'motor', motorMode: 'forces', motorView: '3d' }), labels: ['Rotor angle', 'Relative torque', 'Commutator', 'shaft · y'] },
+      { seed: Object.assign({}, BASE, { tab: 'motor', motorMode: 'particle', chargeView: '3d' }), labels: ['Path', 'Gyro radius', 'Pitch / turn', 'B axis · y'] },
     ];
     cases.forEach(({ seed, labels }) => {
       const html = mountWithSeed(cfg, seed);

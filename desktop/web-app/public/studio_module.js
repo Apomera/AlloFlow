@@ -92,6 +92,8 @@
   };
   var ST_RECENT_PROJECTS_KEY = 'allostudio_recent_projects';
   var ST_RECENT_PROJECT_LIMIT = 8;
+  var ST_TEMPLATE_FAVORITES_KEY = 'allostudio_template_favorites';
+  var ST_TEMPLATE_FAVORITE_LIMIT = 40;
 
   function stClone(v) { return JSON.parse(JSON.stringify(v)); }
   function stCleanText(v, n) {
@@ -1040,6 +1042,39 @@
     return objects;
   }
 
+  function stResourceInsertPreview(cue, mode) {
+    cue = cue || {};
+    var modeId = stCleanText((mode && mode.id) || mode || 'smart-card', 40).toLowerCase() || 'smart-card';
+    var modeInfo = stResourceInsertModes(cue).filter(function (candidate) { return candidate && candidate.id === modeId; })[0] || { id: modeId, label: modeId.replace(/-/g, ' ') };
+    var objects = stObjectsFromResourceCue(cue, { insertAs: modeId, canvas: ST_CANVAS_PRESETS['letter-portrait'], x: 56, y: 72, w: 520 });
+    var textCount = 0, imageCount = 0, shapeCount = 0;
+    var labels = [];
+    objects.forEach(function (object) {
+      if (!object) return;
+      if (object.type === 'text') {
+        textCount++;
+        var txt = stCleanText(object.runs && object.runs[0] && object.runs[0].text, 70);
+        if (txt) labels.push(txt);
+      } else if (object.type === 'image') imageCount++;
+      else if (object.type === 'shape') shapeCount++;
+    });
+    var bits = [];
+    if (textCount) bits.push(textCount + ' text');
+    if (imageCount) bits.push(imageCount + ' image');
+    if (shapeCount) bits.push(shapeCount + ' shape');
+    return {
+      mode: modeId,
+      label: modeInfo.label,
+      objectCount: objects.length,
+      textCount: textCount,
+      imageCount: imageCount,
+      shapeCount: shapeCount,
+      hasText: textCount > 0,
+      hasImage: imageCount > 0,
+      summary: (bits.length ? bits.join(', ') : objects.length + ' item') + (labels.length ? ': ' + labels.slice(0, 2).join(' / ') : ''),
+      labels: labels.slice(0, 4)
+    };
+  }
   function stSuggestTextColor(doc, textObj) {
     if (!doc || !textObj || textObj.type !== 'text') return null;
     var run = (textObj.runs && textObj.runs[0]) || { style: {} };
@@ -2575,6 +2610,105 @@
   // top of the semantic element, so screen readers and the tagged-PDF typesetter
   // both see real structure. Decorative objects are aria-hidden. No scripts, no
   // editor chrome, no branding footer.
+  function stTemplateCategory(tpl) {
+    if (!tpl) return 'all';
+    if (tpl.key === 'flyer' || tpl.key === 'poster' || tpl.key === 'vocabPoster' || tpl.key === 'labSafety' || tpl.key === 'newsletter' || tpl.key === 'bookReport' || tpl.key === 'anchorChart' || tpl.key === 'onePageExplainer') return 'poster';
+    if (tpl.key === 'worksheet' || tpl.key === 'exitTicket' || tpl.key === 'checklist' || tpl.key === 'rubric' || tpl.key === 'labSheet' || tpl.key === 'reflectionPage') return 'worksheet';
+    if (tpl.key === 'cerOrganizer' || tpl.key === 'compareContrast' || tpl.key === 'visualSchedule' || tpl.key === 'socialStory' || tpl.key === 'choiceBoard' || tpl.key === 'vocabMat') return 'organizer';
+    if (tpl.key === 'blank') return 'blank';
+    return 'poster';
+  }
+
+  function stTemplateUseCases(tpl) {
+    var key = stCleanText(tpl && tpl.key, 80);
+    var map = {
+      flyer: ['event', 'family', 'visual'],
+      poster: ['student', 'visual'],
+      vocabPoster: ['vocabulary', 'literacy', 'visual'],
+      labSafety: ['science', 'safety', 'visual'],
+      newsletter: ['family', 'communication'],
+      bookReport: ['literacy', 'student', 'visual'],
+      anchorChart: ['lesson', 'visual'],
+      onePageExplainer: ['explainer', 'visual', 'lesson'],
+      worksheet: ['worksheet', 'assessment'],
+      exitTicket: ['assessment', 'reflection'],
+      checklist: ['worksheet', 'assessment'],
+      rubric: ['assessment', 'worksheet'],
+      labSheet: ['science', 'worksheet'],
+      reflectionPage: ['reflection', 'sel', 'worksheet'],
+      cerOrganizer: ['organizer', 'science', 'thinking'],
+      compareContrast: ['organizer', 'thinking'],
+      visualSchedule: ['sel', 'support', 'organizer'],
+      socialStory: ['sel', 'support'],
+      choiceBoard: ['organizer', 'student'],
+      vocabMat: ['vocabulary', 'literacy', 'organizer'],
+      blank: ['blank']
+    };
+    var out = (map[key] || []).slice();
+    var category = stTemplateCategory(tpl);
+    if (category && category !== 'all' && out.indexOf(category) < 0) out.push(category);
+    return out.filter(function (item, index) { return !!item && out.indexOf(item) === index; });
+  }
+
+  function stTemplateSearchText(tpl) {
+    if (!tpl) return '';
+    return [tpl.key, tpl.name, tpl.desc, stTemplateCategory(tpl)].concat(stTemplateUseCases(tpl)).join(' ').toLowerCase();
+  }
+
+  function stNormalizeTemplateFavoriteKeys(keys) {
+    var seen = {};
+    var out = [];
+    (Array.isArray(keys) ? keys : []).forEach(function (key) {
+      var clean = stCleanText(key, 80);
+      if (clean && !seen[clean]) {
+        seen[clean] = true;
+        out.push(clean);
+      }
+    });
+    return out.slice(0, ST_TEMPLATE_FAVORITE_LIMIT);
+  }
+
+  function stFilterTemplates(templates, options) {
+    options = options || {};
+    var list = Array.isArray(templates) ? templates : [];
+    var category = stCleanText(options.category || 'all', 40).toLowerCase();
+    var useCase = stCleanText(options.useCase || 'all', 40).toLowerCase();
+    var query = stCleanText(options.query || '', 160).toLowerCase();
+    var favoriteKeys = stNormalizeTemplateFavoriteKeys(options.favorites || []);
+    var favoriteMap = {};
+    favoriteKeys.forEach(function (key) { favoriteMap[key] = true; });
+    return list.filter(function (tpl) {
+      if (!tpl) return false;
+      if (category === 'favorites') {
+        if (!favoriteMap[tpl.key]) return false;
+      } else if (category && category !== 'all' && stTemplateCategory(tpl) !== category) return false;
+      if (useCase && useCase !== 'all' && stTemplateUseCases(tpl).indexOf(useCase) < 0) return false;
+      if (query && stTemplateSearchText(tpl).indexOf(query) < 0) return false;
+      return true;
+    });
+  }
+
+  function stReadTemplateFavorites() {
+    try {
+      var raw = localStorage.getItem(ST_TEMPLATE_FAVORITES_KEY);
+      if (!raw) return [];
+      return stNormalizeTemplateFavoriteKeys(JSON.parse(raw));
+    } catch (_) { return []; }
+  }
+
+  function stWriteTemplateFavorites(keys) {
+    var normalized = stNormalizeTemplateFavoriteKeys(keys);
+    try { localStorage.setItem(ST_TEMPLATE_FAVORITES_KEY, JSON.stringify(normalized)); } catch (_) {}
+    return normalized;
+  }
+
+  function stToggleTemplateFavorite(key) {
+    var clean = stCleanText(key, 80);
+    var current = stReadTemplateFavorites();
+    if (!clean) return current;
+    var exists = current.indexOf(clean) >= 0;
+    return stWriteTemplateFavorites(exists ? current.filter(function (item) { return item !== clean; }) : [clean].concat(current));
+  }
   function stEscapeHtml(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
@@ -2998,6 +3132,9 @@
     var fullscreen = _fullscreen[0], setFullscreenState = _fullscreen[1];
     var setFullscreen = function (v) { setFullscreenState(v); try { localStorage.setItem('alloStudioFullscreen_v1', v ? '1' : '0'); } catch (_) {} };
     var _templateFilter = React.useState('all'); var templateFilter = _templateFilter[0], setTemplateFilter = _templateFilter[1];
+    var _templateSearch = React.useState(''); var templateSearch = _templateSearch[0], setTemplateSearch = _templateSearch[1];
+    var _templateUseCase = React.useState('all'); var templateUseCase = _templateUseCase[0], setTemplateUseCase = _templateUseCase[1];
+    var _templateFavoritesTick = React.useState(0); var templateFavoritesTick = _templateFavoritesTick[0], setTemplateFavoritesTick = _templateFavoritesTick[1];
     var _resourceOpen = React.useState(false); var resourceOpen = _resourceOpen[0], setResourceOpen = _resourceOpen[1];
     var _resourceSearch = React.useState(''); var resourceSearch = _resourceSearch[0], setResourceSearch = _resourceSearch[1];
     var _recentTick = React.useState(0); var recentTick = _recentTick[0], setRecentTick = _recentTick[1];
@@ -4125,20 +4262,24 @@
       S.shell = Object.assign({}, S.shell, { width: '100vw', height: '100dvh', maxWidth: '100vw', maxHeight: '100dvh', borderRadius: 0 });
     }
 
-    var templateCategoryFor = function (tpl) {
-      if (!tpl) return 'all';
-      if (tpl.key === 'flyer' || tpl.key === 'poster' || tpl.key === 'vocabPoster' || tpl.key === 'labSafety' || tpl.key === 'newsletter' || tpl.key === 'bookReport' || tpl.key === 'anchorChart' || tpl.key === 'onePageExplainer') return 'poster';
-      if (tpl.key === 'worksheet' || tpl.key === 'exitTicket' || tpl.key === 'checklist' || tpl.key === 'rubric' || tpl.key === 'labSheet' || tpl.key === 'reflectionPage') return 'worksheet';
-      if (tpl.key === 'cerOrganizer' || tpl.key === 'compareContrast' || tpl.key === 'visualSchedule' || tpl.key === 'socialStory' || tpl.key === 'choiceBoard' || tpl.key === 'vocabMat') return 'organizer';
-      if (tpl.key === 'blank') return 'blank';
-      return 'poster';
-    };
+    var templateCategoryFor = stTemplateCategory;
     var templateFilters = [
       ['all', TT('studio.templates_all', 'All')],
+      ['favorites', TT('studio.templates_favorites', 'Saved')],
       ['poster', TT('studio.templates_posters', 'Flyers & posters')],
       ['worksheet', TT('studio.templates_worksheets', 'Worksheets')],
       ['organizer', TT('studio.templates_organizers', 'Organizers')],
       ['blank', TT('studio.templates_blank', 'Blank')]
+    ];
+    var templateUseCaseFilters = [
+      ['all', TT('studio.template_use_all', 'All uses')],
+      ['visual', TT('studio.template_use_visual', 'Visual')],
+      ['worksheet', TT('studio.template_use_worksheet', 'Worksheet')],
+      ['assessment', TT('studio.template_use_assessment', 'Assessment')],
+      ['sel', TT('studio.template_use_sel', 'SEL/support')],
+      ['science', TT('studio.template_use_science', 'Science')],
+      ['literacy', TT('studio.template_use_literacy', 'Literacy')],
+      ['family', TT('studio.template_use_family', 'Family')]
     ];
     var renderTemplatePreview = function (tpl, preset) {
       var previewDoc = null;
@@ -4169,7 +4310,8 @@
       // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ template picker ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
       var recentProjects = recentTick >= 0 ? stReadRecentProjects() : [];
       var allTemplates = stTemplates();
-      var shownTemplates = templateFilter === 'all' ? allTemplates : allTemplates.filter(function (tpl) { return templateCategoryFor(tpl) === templateFilter; });
+      var templateFavorites = templateFavoritesTick >= 0 ? stReadTemplateFavorites() : [];
+      var shownTemplates = stFilterTemplates(allTemplates, { category: templateFilter, query: templateSearch, useCase: templateUseCase, favorites: templateFavorites });
       return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'),
         onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); if (typeof props.onClose === 'function') props.onClose(); } } },
         h('div', { ref: _shellRef, style: fullscreen ? S.shell : Object.assign({}, S.shell, { width: layout.stacked ? layout.shellWidth : 'min(860px, 96vw)', height: 'auto', maxHeight: layout.stacked ? layout.shellHeight : '92vh' }) },
@@ -4218,6 +4360,16 @@
               var active = templateFilter === opt[0];
               return h('button', { key: opt[0], onClick: function () { setTemplateFilter(opt[0]); }, 'aria-pressed': active, style: Object.assign({}, S.tool, { padding: '6px 10px', textAlign: 'center' }, active ? { borderColor: C.accent, background: C.selectedBg } : null) }, opt[1]);
             })),
+          h('div', { style: { padding: '8px 18px 0', display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'minmax(220px, 1fr) 190px', gap: '8px', alignItems: 'end' } },
+            h('input', { type: 'search', value: templateSearch, placeholder: TT('studio.template_search', 'Search templates'), 'aria-label': TT('studio.template_search', 'Search templates'), style: S.input,
+              onKeyDown: function (e) { e.stopPropagation(); },
+              onChange: function (e) { setTemplateSearch(e.target.value); } }),
+            h('label', { style: { fontSize: '10px', color: C.muted, fontWeight: 800, textTransform: 'uppercase' } }, TT('studio.template_use_case', 'Use case'),
+              h('select', { value: templateUseCase, style: Object.assign({}, S.input, { marginTop: '3px' }), 'aria-label': TT('studio.template_use_case', 'Use case'),
+                onChange: function (e) { setTemplateUseCase(e.target.value); } },
+                templateUseCaseFilters.map(function (opt) { return h('option', { key: opt[0], value: opt[0] }, opt[1]); })))),
+          h('div', { style: { padding: '6px 18px 0', fontSize: '10px', color: C.soft }, role: 'status', 'aria-live': 'polite' },
+            shownTemplates.length + ' ' + TT('studio.templates_count', 'templates shown')),
           canAgentEdit ? h('div', { style: { margin: '12px 18px 0', padding: '12px', borderRadius: '12px', border: '1px solid ' + C.accent, background: C.panelAlt, display: 'flex', flexDirection: 'column', gap: '6px' } },
             h('strong', { style: { fontSize: '13px', color: C.text } }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ ' + TT('studio.compose_title', 'Start with AI')),
             h('span', { style: { fontSize: '11px', color: C.muted } }, TT('studio.compose_hint', 'Describe the page; the AI drafts it on a blank canvas as reviewable changes. Nothing applies until you approve each one.')),
@@ -4231,33 +4383,44 @@
                 h('option', { value: 'square' }, TT('studio.orient_square', 'Square'))),
               h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', flex: 1, textAlign: 'center', opacity: (aiBusy === 'agent' || !String(composePrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'agent' || !String(composePrompt).trim(), onClick: startWithAi }, aiBusy === 'agent' ? TT('studio.agent_thinking', 'PreparingÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦') : 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ ' + TT('studio.compose_go', 'Draft my page')))) : null,
           h('div', { style: { padding: '14px 18px 18px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '12px', overflowY: 'auto' } },
-            shownTemplates.map(function (tpl) {
+            shownTemplates.length ? shownTemplates.map(function (tpl) {
               var category = templateFilters.filter(function (opt) { return opt[0] === templateCategoryFor(tpl); })[0];
-              // Cards with an orientation choice render a fieldset of buttons
-              // (a card can't be one <button> and also hold nested buttons).
+              var favorite = templateFavorites.indexOf(tpl.key) >= 0;
+              var useCases = stTemplateUseCases(tpl).slice(0, 3);
+              var toggleFavorite = function (e) {
+                if (e && e.stopPropagation) e.stopPropagation();
+                var next = stToggleTemplateFavorite(tpl.key);
+                setTemplateFavoritesTick(function (n) { return n + 1; });
+                stAnnounce((next.indexOf(tpl.key) >= 0 ? TT('studio.template_saved', 'Template saved') : TT('studio.template_unsaved', 'Template removed')) + ': ' + tpl.name);
+              };
+              var favoriteButton = h('button', { type: 'button', onClick: toggleFavorite, 'aria-pressed': favorite, style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 8px', minHeight: '32px', whiteSpace: 'nowrap' }), title: favorite ? TT('studio.template_remove_favorite', 'Remove from saved templates') : TT('studio.template_add_favorite', 'Save this template') }, favorite ? TT('studio.template_favorited', 'Saved') : TT('studio.template_favorite', 'Save'));
+              var info = h('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-start' } },
+                h('span', { style: { fontSize: '26px', flex: '0 0 auto' }, 'aria-hidden': true }, tpl.emoji),
+                h('span', { style: { minWidth: 0 } },
+                  h('strong', { style: { display: 'block', fontSize: '14px', color: C.text } }, tpl.name),
+                  h('span', { style: { display: 'inline-block', margin: '4px 0', padding: '2px 7px', borderRadius: '999px', border: '1px solid ' + C.border, fontSize: '9px', color: C.muted, fontWeight: 800 } }, category ? category[1] : TT('studio.templates_posters', 'Flyers & posters')),
+                  h('span', { style: { display: 'block', fontSize: '11px', color: C.muted, lineHeight: 1.35 } }, tpl.desc),
+                  useCases.length ? h('span', { style: { display: 'block', marginTop: '5px', fontSize: '9.5px', color: C.soft, lineHeight: 1.25 } }, useCases.join(' / ')) : null));
               if (tpl.orientations) {
                 return h('div', { key: tpl.key, style: { textAlign: 'left', padding: '16px', borderRadius: '12px', border: '1px solid ' + C.border, background: C.panel, color: C.text, display: 'flex', flexDirection: 'column', gap: '10px' } },
                   renderTemplatePreview(tpl, 'letter-portrait'),
-                  h('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-start' } },
-                    h('span', { style: { fontSize: '26px' }, 'aria-hidden': true }, tpl.emoji),
-                    h('span', null,
-                      h('strong', { style: { display: 'block', fontSize: '14px', color: C.text } }, tpl.name),
-                      h('span', { style: { display: 'inline-block', margin: '4px 0', padding: '2px 7px', borderRadius: '999px', border: '1px solid ' + C.border, fontSize: '9px', color: C.muted, fontWeight: 800 } }, category ? category[1] : TT('studio.templates_blank', 'Blank')),
-                      h('span', { style: { fontSize: '11px', color: C.muted } }, tpl.desc))),
-                  h('div', { role: 'group', 'aria-label': tpl.name, style: { display: 'flex', gap: '6px' } },
-                    [['letter-portrait', TT('studio.orient_portrait', 'Portrait')], ['letter-landscape', TT('studio.orient_landscape', 'Landscape')], ['square', TT('studio.orient_square', 'Square')]].map(function (opt) {
-                      return h('button', { key: opt[0], onClick: function () { startFromTemplate(tpl, opt[0]); }, style: Object.assign({}, S.tool, { flex: 1, textAlign: 'center' }) }, opt[1]);
-                    })));
+                  info,
+                  h('div', { style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: '6px', alignItems: 'stretch' } },
+                    h('div', { role: 'group', 'aria-label': tpl.name, style: { display: 'flex', gap: '6px' } },
+                      [['letter-portrait', TT('studio.orient_portrait', 'Portrait')], ['letter-landscape', TT('studio.orient_landscape', 'Landscape')], ['square', TT('studio.orient_square', 'Square')]].map(function (opt) {
+                        return h('button', { key: opt[0], type: 'button', onClick: function () { startFromTemplate(tpl, opt[0]); }, style: Object.assign({}, S.tool, { flex: 1, textAlign: 'center' }) }, opt[1]);
+                      })),
+                    favoriteButton));
               }
-              return h('button', { key: tpl.key, onClick: function () { startFromTemplate(tpl); }, style: { textAlign: 'left', padding: '16px', borderRadius: '12px', border: '1px solid ' + C.border, background: C.panel, color: C.text, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '10px' } },
+              return h('div', { key: tpl.key, style: { textAlign: 'left', padding: '16px', borderRadius: '12px', border: '1px solid ' + C.border, background: C.panel, color: C.text, display: 'flex', flexDirection: 'column', gap: '10px' } },
                 renderTemplatePreview(tpl),
-                h('span', { style: { display: 'flex', gap: '10px', alignItems: 'flex-start' } },
-                  h('span', { style: { fontSize: '26px' }, 'aria-hidden': true }, tpl.emoji),
-                  h('span', null,
-                    h('strong', { style: { display: 'block', fontSize: '14px', color: C.text } }, tpl.name),
-                    h('span', { style: { display: 'inline-block', margin: '4px 0', padding: '2px 7px', borderRadius: '999px', border: '1px solid ' + C.border, fontSize: '9px', color: C.muted, fontWeight: 800 } }, category ? category[1] : TT('studio.templates_posters', 'Flyers & posters')),
-                    h('span', { style: { display: 'block', fontSize: '11px', color: C.muted, lineHeight: 1.35 } }, tpl.desc))));
-            })),
+                info,
+                h('div', { style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: '6px', marginTop: 'auto' } },
+                  h('button', { type: 'button', onClick: function () { startFromTemplate(tpl); }, style: Object.assign({}, S.tool, { textAlign: 'center' }) }, TT('studio.use_template', 'Use template')),
+                  favoriteButton));
+            }) : h('div', { style: { gridColumn: '1 / -1', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panel, color: C.text, padding: '16px' } },
+              h('strong', { style: { display: 'block', fontSize: '13px' } }, TT('studio.no_templates_match', 'No templates match')),
+              h('span', { style: { display: 'block', marginTop: '4px', fontSize: '11px', color: C.muted } }, TT('studio.no_templates_match_hint', 'Try clearing the search or changing the use case.')))),
           h('p', { style: { margin: '0 18px 14px', fontSize: '11px', color: C.muted } },
             TT('studio.privacy_note', 'Everything stays on this device. Your document ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â including its full process history ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â lives in a local save file.')),
           h('input', { ref: loadRef, type: 'file', accept: '.json,application/json', style: { display: 'none' }, onChange: onLoadFile })));
@@ -5060,7 +5223,10 @@
                     cue.text ? h('p', { style: { margin: '4px 0 6px', color: C.muted, fontSize: '10.5px', lineHeight: 1.35 } }, cue.text.slice(0, 150) + (cue.text.length > 150 ? '...' : '')) : null,
                     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '4px' }, role: 'group', 'aria-label': TT('studio.insert_resource_as', 'Insert resource as') + ': ' + cue.label },
                       stResourceInsertModes(cue).map(function (mode) {
-                        return h('button', { key: mode.id, style: Object.assign({}, S.tool, { textAlign: 'center', padding: '5px 6px', fontSize: '10px', minHeight: '28px' }), onClick: function () { insertResourceCue(cue, mode.id); }, title: TT('studio.insert_resource_as', 'Insert resource as') + ' ' + mode.label }, mode.label);
+                        var preview = stResourceInsertPreview(cue, mode.id);
+                        return h('button', { key: mode.id, style: Object.assign({}, S.tool, { textAlign: 'center', padding: '5px 6px', fontSize: '10px', minHeight: '40px', lineHeight: 1.15 }), onClick: function () { insertResourceCue(cue, mode.id); }, title: TT('studio.insert_resource_as', 'Insert resource as') + ' ' + mode.label + ' - ' + preview.summary },
+                          h('span', { style: { display: 'block' } }, mode.label),
+                          h('span', { style: { display: 'block', marginTop: '2px', color: C.muted, fontSize: '8.5px', fontWeight: 700 } }, preview.objectCount + ' ' + TT('studio.resource_preview_items', 'items')));
                       })));
                 })) : h('p', { style: { color: C.muted, fontSize: '10.5px', lineHeight: 1.35, margin: 0 } },
                 resourceCues.length ? TT('studio.no_resource_matches', 'No matching resources found.') : TT('studio.no_resources', 'No source history resources are available yet.'))) : null,
@@ -5176,6 +5342,14 @@
   AlloStudio.stValidateDoc = stValidateDoc;
   AlloStudio.stDescribeOp = stDescribeOp;
   AlloStudio.stTemplates = stTemplates;
+  AlloStudio.stTemplateCategory = stTemplateCategory;
+  AlloStudio.stTemplateUseCases = stTemplateUseCases;
+  AlloStudio.stTemplateSearchText = stTemplateSearchText;
+  AlloStudio.stFilterTemplates = stFilterTemplates;
+  AlloStudio.stNormalizeTemplateFavoriteKeys = stNormalizeTemplateFavoriteKeys;
+  AlloStudio.stReadTemplateFavorites = stReadTemplateFavorites;
+  AlloStudio.stWriteTemplateFavorites = stWriteTemplateFavorites;
+  AlloStudio.stToggleTemplateFavorite = stToggleTemplateFavorite;
   AlloStudio.stExportHtml = stExportHtml;
   AlloStudio.stEscapeHtml = stEscapeHtml;
   AlloStudio.stIsSafeDataImage = stIsSafeDataImage;
@@ -5191,6 +5365,7 @@
   AlloStudio.stBuildResourceCues = stBuildResourceCues;
   AlloStudio.stResourceInsertModes = stResourceInsertModes;
   AlloStudio.stObjectsFromResourceCue = stObjectsFromResourceCue;
+  AlloStudio.stResourceInsertPreview = stResourceInsertPreview;
   AlloStudio.stSuggestTextColor = stSuggestTextColor;
   AlloStudio.stBuildReadyActions = stBuildReadyActions;
   AlloStudio.stObjectReadyActions = stObjectReadyActions;

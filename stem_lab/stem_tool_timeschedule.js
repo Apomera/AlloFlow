@@ -594,7 +594,7 @@
                   [-60, -5, -1, 1, 5, 60].map(function (delta) {
                     return h('button', { key: delta, type: 'button',
                       onClick: function () { setClock(clock + delta); },
-                      className: 'rounded-lg border border-sky-200 bg-sky-50 px-2 py-2 text-xs font-black text-sky-800 hover:bg-sky-100 focus:ring-2 focus:ring-sky-500' },
+                      className: 'rounded-lg border border-sky-200 bg-sky-50 px-2 py-2 text-xs font-black text-sky-800 hover:bg-sky-100 focus:ring-2 focus:ring-sky-600' },
                       (delta > 0 ? '+' : '−') + Math.abs(delta) +
                       (Math.abs(delta) === 60 ? t('stem.timeschedule.hr', " hr") : t('stem.timeschedule.min', " min")));
                   })),
@@ -973,7 +973,7 @@
             h('label', { className: 'block text-xs font-black text-indigo-950 flex-1' },
               t('stem.timeschedule.difficulty', "Difficulty"),
               h('select', { value: challengeDifficulty, onChange: function(event) { chooseDifficulty(event.target.value); },
-                className: 'mt-1 block w-full rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm font-bold' },
+                className: 'mt-1 block w-full rounded-lg border border-indigo-500 bg-white px-3 py-2 text-sm font-bold' },
                 CHALLENGE_DIFFICULTIES.map(function(item) {
                   return h('option', { key: item.id, value: item.id }, item.label);
                 }))),

@@ -2080,7 +2080,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     React.createElement("p", { className: "text-[11px] text-amber-600" }, "Full chord grid, strum plate, and voice presets")
                   )
                 ),
-                React.createElement("button", { onClick: function() { upd('synthTab', 'harmonypad'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition-all shadow-sm" }, "\uD83C\uDF1F Open HarmonyPad \u2192")
+                React.createElement("button", { onClick: function() { upd('synthTab', 'harmonypad'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-all shadow-sm" }, "\uD83C\uDF1F Open HarmonyPad \u2192")
               ),
               false && React.createElement("div", { className: "REMOVED" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-2" },
@@ -2913,7 +2913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "flex items-center gap-2 mb-3 bg-gradient-to-r from-slate-50 to-purple-50 rounded-xl border border-purple-200/50 p-2 flex-wrap" },
                 React.createElement("button", { "aria-label": "Beats per minute",
                   onClick: function () { if (d.seqPlaying) stopSequencer(); else startSequencer(); },
-                  className: "px-4 py-2 rounded-lg text-sm font-bold transition-all " + (d.seqPlaying ? 'bg-red-700 text-white shadow-inner' : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-md')
+                  className: "px-4 py-2 rounded-lg text-sm font-bold transition-all " + (d.seqPlaying ? 'bg-red-700 text-white shadow-inner' : 'bg-gradient-to-r from-green-700 to-emerald-700 text-white hover:from-green-700 hover:to-emerald-700 shadow-md')
                 }, d.seqPlaying ? '\u23F9 Stop' : '\u25B6 Play'),
                 // BPM
                 React.createElement("div", { className: "flex items-center gap-1" },
@@ -2924,14 +2924,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 // Tap Tempo
                 React.createElement("button", { "aria-label": "Tap", onClick: tapTempo, className: "px-2 py-1.5 rounded-lg text-[11px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all border border-amber-600" }, "\uD83E\uDD4A Tap"),
                 // Pattern Length
-                React.createElement("select", { value: String(d.bpPatternLen || 16), onChange: function (e) { upd('bpPatternLen', parseInt(e.target.value)); }, className: "px-2 py-1 rounded text-[11px] font-bold bg-white border border-slate-400", title: "Pattern length in steps" },
+                React.createElement("select", { value: String(d.bpPatternLen || 16), onChange: function (e) { upd('bpPatternLen', parseInt(e.target.value)); }, className: "px-2 py-1 rounded text-[11px] font-bold bg-white border border-slate-500", title: "Pattern length in steps" },
                   React.createElement("option", { value: '8' }, "8 steps"),
                   React.createElement("option", { value: '16' }, "16 steps"),
                   React.createElement("option", { value: '32' }, "32 steps"),
                   React.createElement("option", { value: '64' }, "64 steps")
                 ),
                 // Swing
-                React.createElement("select", { value: d.seqSwing || '0', onChange: function (e) { upd('seqSwing', e.target.value); }, className: "px-2 py-1 rounded text-[11px] font-bold bg-white border border-slate-400" },
+                React.createElement("select", { value: d.seqSwing || '0', onChange: function (e) { upd('seqSwing', e.target.value); }, className: "px-2 py-1 rounded text-[11px] font-bold bg-white border border-slate-500" },
                   React.createElement("option", { value: '0' }, "No Swing"),
                   React.createElement("option", { value: '15' }, "Swing 15%"),
                   React.createElement("option", { value: '30' }, "Swing 30%"),
@@ -3080,7 +3080,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         onClick: function () { pushBpUndo(); var nm = (d.beatMelody || new Array(16).fill(0)).slice(); nm[i] = (nm[i] + 1) % (scNotes.notes.length + 1); upd('beatMelody', nm); },
                         onContextMenu: function (e) { e.preventDefault(); pushBpUndo(); var nm = (d.beatMelody || new Array(16).fill(0)).slice(); nm[i] = nm[i] <= 0 ? scNotes.notes.length : nm[i] - 1; upd('beatMelody', nm); },
                         className: "flex-1 h-7 rounded-sm cursor-pointer transition-all flex items-center justify-center text-[11px] font-bold select-none " +
-                          (ni > 0 ? 'bg-gradient-to-b from-purple-400 to-purple-500 text-white shadow-sm' : isCur ? 'bg-purple-100 ring-1 ring-purple-300' : isRec ? 'bg-red-100 ring-1 ring-red-300' : i % 4 === 0 ? 'bg-purple-50/80' : 'bg-slate-50 border border-slate-100') + ' hover:brightness-110',
+                          (ni > 0 ? 'bg-gradient-to-b from-purple-600 to-purple-600 text-white shadow-sm' : isCur ? 'bg-purple-100 ring-1 ring-purple-300' : isRec ? 'bg-red-100 ring-1 ring-red-300' : i % 4 === 0 ? 'bg-purple-50/80' : 'bg-slate-50 border border-slate-100') + ' hover:brightness-110',
                         style: { minWidth: '22px' },
                         title: ni > 0 ? scNotes.notes[ni - 1] : 'Click to add'
                       }, ni > 0 && ni <= scNotes.notes.length ? scNotes.notes[ni - 1].replace('4', '').replace('5', '\u2019') : '');
@@ -3373,7 +3373,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-rose-600 text-white hover:bg-rose-700 transition-all shadow-sm"
                   }, "\uD83C\uDFB2 Challenge me!"),
                   React.createElement("button", { "aria-label": "Random", onClick: function () { upd('bpRhythm', genRandomRhythm()); upd('bpRhythmScore', null); },
-                    className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-rose-100 text-rose-600 hover:bg-rose-200 transition-all"
+                    className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200 transition-all"
                   }, "\uD83C\uDFB2 Random")
                 ),
                 d.bpRhythm ? React.createElement("div", null,
@@ -3718,7 +3718,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 // Full strum button
                 React.createElement("button", { "aria-label": "Strum chord",
                   onClick: function () { strumHarmony(d.omniChordRoot || 'C', d.omniChordType || 'Major', d.omniVoice || 'harp'); },
-                  className: "w-full py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-500 to-rose-500 text-white hover:from-amber-600 hover:to-rose-600 shadow-md hover:shadow-lg transition-all"
+                  className: "w-full py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-700 to-rose-600 text-white hover:from-amber-700 hover:to-rose-600 shadow-md hover:shadow-lg transition-all"
                 }, "\uD83C\uDFB5 Strum " + (d.omniChordRoot || 'C') + " " + (d.omniChordType || 'Major'))
               )
             ),
@@ -4077,7 +4077,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         var next = isHarmActive && h.n !== 1 ? cur.filter(function(x) { return x !== h.n; }) : cur.indexOf(h.n) === -1 ? cur.concat([h.n]) : cur;
                         upd('activeHarmonics', next);
                       },
-                      className: "flex-1 py-3 rounded-xl border text-center hover:shadow-md transition-all group cursor-pointer " + (isHarmActive ? 'bg-gradient-to-b from-indigo-500 to-purple-500 border-indigo-400 text-white shadow-md' : 'bg-gradient-to-b from-indigo-50 to-purple-50 border-indigo-200')
+                      className: "flex-1 py-3 rounded-xl border text-center hover:shadow-md transition-all group cursor-pointer " + (isHarmActive ? 'bg-gradient-to-b from-indigo-600 to-purple-600 border-indigo-400 text-white shadow-md' : 'bg-gradient-to-b from-indigo-50 to-purple-50 border-indigo-200')
                     },
                       React.createElement("span", { className: "text-lg font-bold block group-hover:scale-110 transition-transform " + (isHarmActive ? 'text-white' : 'text-indigo-600') }, h.n),
                       React.createElement("span", { className: "text-[11px] block " + (isHarmActive ? 'text-indigo-200' : 'text-indigo-400') }, h.ratio),
@@ -4492,7 +4492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
             // ── Snapshot button (bottom) ──
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
-              React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: t('stem.synth_ui.synth') + (d.waveType || 'sine'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+              React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sy-' + Date.now(), tool: 'synth', label: t('stem.synth_ui.synth') + (d.waveType || 'sine'), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
             ),
 
             // \u2550\u2550\u2550 HARMONIC SERIES \u2550\u2550\u2550

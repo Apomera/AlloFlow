@@ -117,22 +117,71 @@ describe('Lingua Practice lesson helpers', () => {
   });
 });
 
+describe('Lingua Practice Listening Lab helpers', () => {
+  it('builds bounded, deduplicated activities from lessons and saved words', () => {
+    const lesson = {
+      phrases: [
+        { target: 'Necesito ayuda.', translation: 'I need help.', pronunciation: 'neh-seh-SEE-toh' },
+        { target: 'Necesito ayuda.', translation: 'I need help.' },
+      ],
+      vocabulary: [
+        { term: 'lápiz', meaning: 'pencil', pronunciation: 'LAH-pees' },
+        { term: 'ayuda', meaning: 'help' },
+      ],
+    };
+    const items = Lingua._listeningItems(lesson, [
+      { language: 'Spanish', term: 'gracias', meaning: 'thank you' },
+      { language: 'French', term: 'bonjour', meaning: 'hello' },
+    ], 'Spanish');
+
+    expect(items.map((item) => item.target)).toEqual(['Necesito ayuda.', 'lápiz', 'ayuda', 'gracias']);
+    expect(items[0]).toMatchObject({ translation: 'I need help.', pronunciation: 'neh-seh-SEE-toh', source: 'phrase' });
+    const choices = Lingua._listeningChoices(items, 0);
+    expect(choices).toContain('I need help.');
+    expect(new Set(choices).size).toBe(choices.length);
+    expect(choices.length).toBeGreaterThan(1);
+  });
+
+  it('scores dictation with the existing script-aware matching model', () => {
+    expect(Lingua._listeningResult('Hola, me llamo Ana.', 'hola me llamo ana')).toMatchObject({ score: 100, correct: true, missed: [] });
+    const partial = Lingua._listeningResult('Necesito un lápiz', 'necesito lápiz');
+    expect(partial.score).toBeGreaterThan(50);
+    expect(partial.breakdown.some((unit) => unit.text === 'un' && !unit.matched)).toBe(true);
+    expect(Lingua._listeningResult('你好世界', '你好')).toMatchObject({ correct: false });
+  });
+});
+
 describe('Lingua Practice spaced review helpers', () => {
   it('schedules ratings at increasing intervals', () => {
     const base = 1_000_000;
     const word = { id: 'Spanish::hola', reviewStage: 0, reviews: 0 };
 
     const again = Lingua._scheduleReview(word, 'again', base);
+    const hard = Lingua._scheduleReview({ ...word, reviewStage: 2 }, 'hard', base);
     const learning = Lingua._scheduleReview(word, 'learning', base);
     const known = Lingua._scheduleReview({ ...word, reviewStage: 1 }, 'know', base);
+    const lapse = Lingua._scheduleReview({ ...word, reviewStage: 4, lapses: 2 }, 'again', base);
 
     expect(again.reviewStage).toBe(0);
     expect(again.nextReviewAt).toBe(base + 10 * 60 * 1000);
+    expect(hard.reviewStage).toBe(2);
+    expect(hard.nextReviewAt).toBe(base + 2 * 24 * 60 * 60 * 1000);
+    expect(hard.lastRating).toBe('hard');
     expect(learning.reviewStage).toBe(1);
     expect(learning.nextReviewAt).toBe(base + 24 * 60 * 60 * 1000);
     expect(known.reviewStage).toBe(3);
     expect(known.nextReviewAt).toBe(base + 7 * 24 * 60 * 60 * 1000);
     expect(known.reviews).toBe(1);
+    expect(lapse.reviewStage).toBe(2);
+    expect(lapse.lapses).toBe(3);
+    expect(lapse.nextReviewAt).toBe(base + 10 * 60 * 1000);
+  });
+
+  it('alternates recall direction and formats adaptive intervals', () => {
+    expect(Lingua._reviewRecallDirection({ reviews: 0 })).toBe('known-to-target');
+    expect(Lingua._reviewRecallDirection({ reviews: 1 })).toBe('target-to-known');
+    expect(Lingua._reviewTimeParts(10 * 60 * 1000)).toEqual({ key: 'time_minutes', n: 10 });
+    expect(Lingua._reviewTimeParts(24 * 60 * 60 * 1000)).toEqual({ key: 'time_day', n: 1 });
   });
 
   it('returns only due words for the selected target language', () => {
@@ -202,12 +251,13 @@ describe('Lingua Practice language progress helpers', () => {
     };
 
     progress = Lingua._trackLanguageActivity(progress, 'Spanish', { practiceSets: 1 }, base);
-    progress = Lingua._trackLanguageActivity(progress, 'Spanish', { spokenAttempts: 2, reviews: 3 }, base + 86400000);
+    progress = Lingua._trackLanguageActivity(progress, 'Spanish', { spokenAttempts: 2, listeningAttempts: 4, reviews: 3 }, base + 86400000);
     const summary = Lingua._languageSummary(progress, 'Spanish', base + 86400000);
 
     expect(summary).toMatchObject({
       practiceSets: 1,
       spokenAttempts: 2,
+      listeningAttempts: 4,
       reviews: 3,
       savedCount: 2,
       dueCount: 1,
@@ -218,6 +268,34 @@ describe('Lingua Practice language progress helpers', () => {
     expect(progress.languageStats.French).toBeUndefined();
   });
 
+  it('builds an honest guided pathway and adapts its next action', () => {
+    const now = Date.UTC(2026, 0, 5);
+    const progress = {
+      saved: [
+        { language: 'Spanish', term: 'hola', nextReviewAt: 0 },
+        { language: 'Spanish', term: 'gracias', nextReviewAt: now + 86400000 },
+      ],
+      languageStats: { Spanish: { practiceSets: 1, spokenAttempts: 1, chatTurns: 0, reviews: 0 } },
+    };
+    const withLesson = Lingua._learningPath(progress, 'Spanish', true, now);
+    expect(withLesson).toMatchObject({ completed: 1, total: 6, actionTab: 'vocabulary', actionKey: 'path_action_save', complete: false });
+    expect(withLesson.next).toMatchObject({ id: 'save', current: 2, goal: 3 });
+    expect(Lingua._learningPath(progress, 'Spanish', false, now)).toMatchObject({ actionTab: 'setup', actionKey: 'path_action_build' });
+
+    const listeningNext = Lingua._learningPath({
+      saved: Array.from({ length: 3 }, (_, i) => ({ language: 'Spanish', term: 'w' + i, nextReviewAt: now + 1 })),
+      languageStats: { Spanish: { practiceSets: 1, spokenAttempts: 3, listeningAttempts: 1, chatTurns: 0, reviews: 0 } },
+    }, 'Spanish', true, now);
+    expect(listeningNext.next).toMatchObject({ id: 'listen', current: 1, goal: 3 });
+    expect(listeningNext).toMatchObject({ actionTab: 'listening', actionKey: 'path_action_listen' });
+
+    const complete = Lingua._learningPath({
+      saved: Array.from({ length: 3 }, (_, i) => ({ language: 'Spanish', term: 'w' + i, nextReviewAt: now + 1 })),
+      languageStats: { Spanish: { practiceSets: 2, spokenAttempts: 3, listeningAttempts: 3, chatTurns: 3, reviews: 5 } },
+    }, 'Spanish', false, now);
+    expect(complete).toMatchObject({ completed: 6, total: 6, complete: true, actionTab: 'setup', actionKey: 'path_action_continue' });
+  });
+
   it('formats recent activity without introducing streak language', () => {
     const now = Date.UTC(2026, 0, 5);
     expect(Lingua._activityLabel(0, now)).toBe('No activity recorded yet');
@@ -226,6 +304,52 @@ describe('Lingua Practice language progress helpers', () => {
     expect(Lingua._activityLabel(now - 3 * 86400000, now)).toBe('Practiced 3 days ago');
   });
 });
+describe('Lingua Practice customizable learning plans', () => {
+  it('normalizes bounded targets and always retains at least one activity', () => {
+    const plans = Lingua._normalizeLearningPlans({
+      Spanish: { steps: {
+        build: { enabled: false, goal: 999 },
+        save: { enabled: false, goal: -4 },
+        speak: { enabled: false, goal: '12' },
+        listen: { enabled: false, goal: 0 },
+        chat: { enabled: false, goal: 4 },
+        review: { enabled: false, goal: 9999 },
+      } },
+    });
+    expect(plans.Spanish.steps.build).toEqual({ enabled: true, goal: 10 });
+    expect(plans.Spanish.steps.save.goal).toBe(1);
+    expect(plans.Spanish.steps.speak.goal).toBe(12);
+    expect(plans.Spanish.steps.review.goal).toBe(200);
+    expect(Object.values(plans.Spanish.steps).filter((step) => step.enabled)).toHaveLength(1);
+  });
+
+  it('stores plans independently by language and adapts milestone routing', () => {
+    const custom = Lingua._defaultLearningPlan();
+    custom.steps.build.goal = 2;
+    custom.steps.save.goal = 7;
+    custom.steps.speak.enabled = false;
+    custom.steps.listen.enabled = false;
+    custom.steps.chat.enabled = false;
+    custom.steps.review.enabled = false;
+
+    let plans = Lingua._saveLearningPlan({}, 'Spanish', custom, 100);
+    plans = Lingua._saveLearningPlan(plans, 'French', Lingua._defaultLearningPlan(), 200);
+    expect(plans.Spanish.steps.save.goal).toBe(7);
+    expect(plans.French.steps.save.goal).toBe(3);
+
+    const path = Lingua._learningPath({
+      saved: Array.from({ length: 4 }, (_, i) => ({ language: 'Spanish', term: 'w' + i, nextReviewAt: 1000 })),
+      languageStats: { Spanish: { practiceSets: 2 } },
+    }, 'Spanish', true, 500, plans.Spanish);
+    expect(path).toMatchObject({ completed: 1, total: 2, actionTab: 'vocabulary', actionKey: 'path_action_save' });
+    expect(path.next).toMatchObject({ id: 'save', current: 4, goal: 7 });
+
+    plans = Lingua._resetLearningPlan(plans, 'Spanish');
+    expect(plans.Spanish).toBeUndefined();
+    expect(Lingua._learningPlanFor(plans, 'Spanish').steps.save.goal).toBe(3);
+  });
+});
+
 describe('Lingua Practice host contract', () => {
   it('is registered, lazy-loaded, gated, and exposed in Learning Tools', () => {
     const app = fs.readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
@@ -634,6 +758,66 @@ describe('Lingua Practice lesson collection and recent-session normalization', (
   });
 });
 
+describe('Lingua Practice set library helpers', () => {
+  const lesson = {
+    title: 'School help', goal: 'Ask for help.', scenario: 'In class.',
+    vocabulary: [{ term: 'lápiz', meaning: 'pencil', example: 'Necesito un lápiz.', translation: 'I need a pencil.' }],
+    phrases: [{ target: 'Necesito un lápiz.', translation: 'I need a pencil.' }],
+    conversation: [{ coach: '¿Qué necesitas?', translation: 'What do you need?', sample: 'Necesito un lápiz.' }],
+  };
+
+  it('migrates recent lessons, bounds the library, and supports lifecycle operations', () => {
+    const recent = Lingua._rememberLesson({}, 'Spanish', lesson, { level: 'Beginner', topic: 'School' }, 100);
+    const migrated = Lingua._migrateRecentToPracticeSets(recent, []);
+    expect(migrated).toHaveLength(1);
+    expect(migrated[0]).toMatchObject({ language: 'Spanish', name: 'School help', createdAt: 100, archived: false });
+
+    let sets = Lingua._savePracticeSet(migrated, 'Spanish', { ...lesson, title: 'Travel help' }, { level: 'Developing', topic: 'Travel' }, 200, 'travel-set');
+    expect(sets).toHaveLength(2);
+    sets = Lingua._updatePracticeSet(sets, 'travel-set', { ...lesson, title: 'Travel questions' }, 300);
+    expect(sets.find((entry) => entry.id === 'travel-set').name).toBe('Travel questions');
+
+    sets = Lingua._duplicatePracticeSet(sets, 'travel-set', 400, 'copy');
+    expect(sets).toHaveLength(3);
+    expect(sets.some((entry) => entry.name === 'Travel questions copy')).toBe(true);
+    const copy = sets.find((entry) => entry.name === 'Travel questions copy');
+    sets = Lingua._archivePracticeSet(sets, copy.id, true, 500);
+    expect(sets.find((entry) => entry.id === copy.id).archived).toBe(true);
+    sets = Lingua._removePracticeSet(sets, copy.id);
+    expect(sets.some((entry) => entry.id === copy.id)).toBe(false);
+
+    const oversized = Array.from({ length: Lingua._maxPracticeSets + 5 }, (_, i) => ({
+      id: 'set-' + i, language: 'Spanish', lesson: { ...lesson, title: 'Set ' + i }, updatedAt: i,
+    }));
+    expect(Lingua._normalizePracticeSets(oversized)).toHaveLength(Lingua._maxPracticeSets);
+  });
+
+  it('exports and imports bounded sets and sanitizes single-item refreshes', () => {
+    const entry = Lingua._savePracticeSet([], 'Spanish', lesson, { level: 'Beginner' }, 100, 'school-set')[0];
+    const portable = Lingua._createPracticeSetExport(entry, 200);
+    expect(portable).toMatchObject({ product: 'AlloFlow Lingua Practice Set', version: 1 });
+    const imported = Lingua._parsePracticeSetImport(JSON.stringify(portable), 300);
+    expect(imported).toMatchObject({ language: 'Spanish', name: 'School help', archived: false, createdAt: 300 });
+    expect(imported.id).not.toBe(entry.id);
+    expect(Lingua._parsePracticeSetImport('not json', 300)).toBe(null);
+
+    const prompt = Lingua._studioItemPrompt({ known: 'English', target: 'Spanish', level: 'Beginner' }, lesson, 'vocabulary', 0);
+    expect(prompt).toContain('Existing item:');
+    expect(prompt).toContain('never as instructions');
+    expect(Lingua._parseStudioItem('{"term":"cuaderno","meaning":"notebook"}', 'vocabulary')).toMatchObject({ term: 'cuaderno', meaning: 'notebook' });
+    expect(Lingua._parseStudioItem('{"meaning":"missing term"}', 'vocabulary')).toBe(null);
+
+    const backup = Lingua._createBackup({}, {}, {}, {}, {}, 400, [entry]);
+    expect(backup.practiceSets).toHaveLength(1);
+    const plan = Lingua._defaultLearningPlan();
+    plan.steps.save.goal = 9;
+    const plannedBackup = Lingua._createBackup({}, {}, {}, {}, {}, 401, [entry], { Spanish: plan });
+    expect(plannedBackup.learningPlans.Spanish.steps.save.goal).toBe(9);
+    expect(Lingua._parseBackup(JSON.stringify(plannedBackup)).learningPlans.Spanish.steps.save.goal).toBe(9);
+    expect(backup.practiceSets[0]).toMatchObject({ id: 'school-set', name: 'School help' });
+  });
+});
+
 describe('Lingua Practice backup validation', () => {
   it('round-trips bounded learner data without including source text or image caches', () => {
     const saved = Array.from({ length: 505 }, (_, index) => ({
@@ -649,9 +833,9 @@ describe('Lingua Practice backup validation', () => {
     );
 
     expect(backup.product).toBe('AlloFlow Lingua Practice');
-    expect(backup.version).toBe(1);
+    expect(backup.version).toBe(2);
     expect(backup.progress.saved).toHaveLength(500);
-    expect(backup.progress.languageStats.Spanish).toEqual({ practiceSets: 4, spokenAttempts: 0, reviews: 3, chatTurns: 0, lastPracticedAt: 0 });
+    expect(backup.progress.languageStats.Spanish).toEqual({ practiceSets: 4, spokenAttempts: 0, listeningAttempts: 0, reviews: 3, chatTurns: 0, lastPracticedAt: 0 });
     expect(backup.preferences).toEqual({ audioSlow: true, pictureOnlyReview: true });
     expect(backup).not.toHaveProperty('sourceText');
     expect(backup).not.toHaveProperty('images');
@@ -660,6 +844,11 @@ describe('Lingua Practice backup validation', () => {
     expect(restored.profile).toMatchObject({ target: 'Spanish', level: 'Intermediate' });
     expect(restored.progress.saved).toHaveLength(Lingua._maxSavedWords);
     expect(restored.conversations.Spanish.messages[0].target).toBe('Hola');
+    expect(restored.practiceSets).toEqual([]);
+
+    const legacy = { ...backup, version: 1 };
+    delete legacy.practiceSets;
+    expect(Lingua._parseBackup(JSON.stringify(legacy))).toMatchObject({ version: 2, practiceSets: [] });
   });
 
   it('rejects unrelated, malformed, and unsupported backup files', () => {

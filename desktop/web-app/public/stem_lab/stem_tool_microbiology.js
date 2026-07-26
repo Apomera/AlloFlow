@@ -4579,7 +4579,7 @@
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
             h('button', { onClick: function() { try { window.print(); } catch (e) {} },
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #047857 0%, #10b981 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, __alloT('stem.microbiology.print_save_as_pdf', '🖨 Print / Save as PDF'))
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #047857 0%, #065f46 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, __alloT('stem.microbiology.print_save_as_pdf', '🖨 Print / Save as PDF'))
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

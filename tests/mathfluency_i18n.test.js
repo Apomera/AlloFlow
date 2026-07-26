@@ -216,3 +216,129 @@ describe('Math Fluency probe modes and administration integrity', () => {
     delete document.hidden;
   });
 });
+
+describe('Math Fluency personalized practice workflow', () => {
+  it('turns a missed fact into persisted one-click focused practice', async () => {
+    const completed = [];
+    await mount({ onProbeComplete: (entry) => completed.push(entry) });
+    const practiceSet = host.querySelector('select[aria-label="Practice Set"]');
+    expect(practiceSet).toBeTruthy();
+    expect(practiceSet.options[practiceSet.selectedIndex].textContent).toContain('Grade 3 Recommended');
+
+    await click(host.querySelector('button[aria-label="Start practice"]'));
+    let dialog = document.querySelector('[role="dialog"]');
+    await change(dialog.querySelector('input[aria-label="Your answer"]'), '-1');
+    await click(dialog.querySelector('button[type="submit"]'));
+    await click(document.querySelector('button[aria-label="End probe early"]'));
+
+    expect(completed).toHaveLength(1);
+    expect(completed[0].data.focusFacts).toHaveLength(1);
+    expect(completed[0].data.factInsights[0]).toMatchObject({ attempts: 1, correct: 0, accuracy: 0 });
+    const storedMastery = JSON.parse(localStorage.getItem('allo_fluency_fact_mastery_v1'));
+    const storedRows = Object.values(storedMastery);
+    expect(storedRows).toHaveLength(1);
+    expect(storedRows[0]).toMatchObject({ attempts: 1, correct: 0, timedAttempts: 1 });
+
+    const retry = host.querySelector('button[aria-label="Practice missed facts"]');
+    expect(retry).toBeTruthy();
+    await click(retry);
+    dialog = document.querySelector('[role="dialog"]');
+    expect(dialog).toBeTruthy();
+    expect(dialog.textContent).toContain(completed[0].data.focusFacts[0].symbol);
+  });
+});
+
+describe('Math Fluency Accuracy Focus mode', () => {
+  it('completes an untimed focus run without speed scoring or a countdown', async () => {
+    localStorage.setItem('allo_fluency_fact_mastery_v1', JSON.stringify({
+      'add|2|3': {
+        key: 'add|2|3', a: 2, b: 3, op: 'add', symbol: '+', answer: 5,
+        attempts: 1, correct: 0, responseMsTotal: 3000, timedAttempts: 1,
+        lastSeen: '2026-07-26T12:00:00.000Z',
+      },
+    }));
+    const completed = [];
+    const scoreUpdates = [];
+    await mount({
+      onProbeComplete: (entry) => completed.push(entry),
+      handleScoreUpdate: (...args) => scoreUpdates.push(args),
+    });
+
+    const timerSelect = host.querySelector('select[aria-label="Time limit"]');
+    await change(timerSelect, '0');
+    expect(host.textContent).toContain('Accuracy Focus removes the countdown');
+    await click(host.querySelector('button[aria-label="Practice my focus facts"]'));
+
+    let dialog = document.querySelector('[role="dialog"]');
+    expect(dialog.textContent).toContain('Accuracy Focus');
+    expect(dialog.textContent.toLowerCase()).not.toContain('dcpm');
+    expect(dialog.querySelector('[role="progressbar"]').getAttribute('aria-label')).toContain('Problem progress');
+
+    for (let i = 0; i < 10; i += 1) {
+      dialog = document.querySelector('[role="dialog"]');
+      await change(dialog.querySelector('input[aria-label="Your answer"]'), '5');
+      await click(dialog.querySelector('button[type="submit"]'));
+    }
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 80)); });
+
+    expect(completed).toHaveLength(1);
+    expect(completed[0].data).toMatchObject({
+      mode: 'practice', difficulty: 'focus', untimed: true,
+      completionStatus: 'complete', validForComparison: false,
+      dcpm: null, totalCorrect: 10, accuracy: 100,
+    });
+    expect(scoreUpdates).toHaveLength(1);
+    expect(scoreUpdates[0][0]).toBe(2);
+    expect(host.textContent).toContain('Accuracy Focus Practice');
+    expect(host.textContent).toContain('Not scored in Accuracy Focus');
+    expect(host.querySelector('.mf-results-metrics')).toBeTruthy();
+  });
+});
+
+describe('Math Fluency Strategy Coach and mastery map', () => {
+  it('launches a mastery group and keeps coached retries on the same fact through answer reveal', async () => {
+    localStorage.setItem('allo_fluency_fact_mastery_v1', JSON.stringify({
+      'add|2|3': {
+        key: 'add|2|3', a: 2, b: 3, op: 'add', symbol: '+', answer: 5,
+        attempts: 1, correct: 0, responseMsTotal: 3000, timedAttempts: 1,
+        lastSeen: '2026-07-26T12:00:00.000Z',
+      },
+    }));
+    const completed = [];
+    await mount({ onProbeComplete: (entry) => completed.push(entry) });
+    expect(host.textContent).toContain('Fact Mastery Map');
+    expect(host.textContent).toContain('Needs Focus');
+
+    await change(host.querySelector('select[aria-label="Time limit"]'), '0');
+    const focusGroup = host.querySelector('button[aria-label^="Needs Focus: 1"]');
+    expect(focusGroup).toBeTruthy();
+    await click(focusGroup);
+
+    let dialog = document.querySelector('[role="dialog"]');
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      await change(dialog.querySelector('input[aria-label="Your answer"]'), '0');
+      await click(dialog.querySelector('button[type="submit"]'));
+      dialog = document.querySelector('[role="dialog"]');
+      expect(dialog.textContent).toContain('#1');
+      expect(dialog.querySelector('.mf-strategy-coach')).toBeTruthy();
+      if (attempt === 1) expect(dialog.textContent).toContain('Use a nearby double');
+      if (attempt === 2) expect(dialog.textContent).toContain('Build the addition');
+      if (attempt === 3) expect(dialog.textContent).toContain('The answer is 5');
+    }
+
+    await change(dialog.querySelector('input[aria-label="Your answer"]'), '5');
+    await click(dialog.querySelector('button[type="submit"]'));
+    dialog = document.querySelector('[role="dialog"]');
+    expect(dialog.textContent).toContain('#2');
+    await click(document.querySelector('button[aria-label="End probe early"]'));
+
+    expect(completed).toHaveLength(1);
+    expect(completed[0].data).toMatchObject({
+      strategyCoach: true, totalAttempted: 1, totalCorrect: 1,
+      firstTryCorrect: 0, accuracy: 0, totalPracticeAttempts: 4,
+    });
+    expect(completed[0].data.factInsights[0]).toMatchObject({ attempts: 4, correct: 1, accuracy: 25 });
+    const stored = JSON.parse(localStorage.getItem('allo_fluency_fact_mastery_v1'))['add|2|3'];
+    expect(stored).toMatchObject({ attempts: 5, correct: 1 });
+  });
+});

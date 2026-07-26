@@ -17535,14 +17535,14 @@ var d = (labToolData && labToolData._aquarium) || {};
           var mColor = modeColors[mode] || 'cyan';
 
           var modeTabs = [
-            { id: 'tank', icon: '\uD83D\uDC20', label: __alloT('stem.aquarium.aquarium_lab', 'Aquarium Lab'), activeClass: 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/25' },
-            { id: 'ocean', icon: '\uD83C\uDF0A', label: __alloT('stem.aquarium.ocean_ecology', 'Ocean Ecology'), activeClass: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25' },
-            { id: 'marine', icon: '\uD83D\uDD2C', label: __alloT('stem.aquarium.marine_science', 'Marine Science'), activeClass: 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25' },
-            { id: 'learn', icon: '\uD83D\uDCD6', label: __alloT('stem.aquarium.learn', 'Learn'), activeClass: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25' },
-            { id: 'quiz', icon: '\uD83C\uDFAF', label: __alloT('stem.aquarium.quiz', 'Quiz'), activeClass: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25' },
-            { id: 'waterlab', icon: '\uD83E\uDDEA', label: __alloT('stem.aquarium.water_lab', 'Water Lab'), activeClass: 'bg-gradient-to-r from-violet-500 to-violet-600 text-white shadow-lg shadow-violet-500/25' },
-            { id: 'designer', icon: '\u270F\uFE0F', label: __alloT('stem.aquarium.designer', 'Designer'), activeClass: 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg shadow-pink-500/25' },
-            { id: 'stressHunt', icon: '\uD83D\uDC1F', label: __alloT('stem.aquarium.stress_lab', 'Stress Lab'), activeClass: 'bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-lg shadow-rose-500/25' }
+            { id: 'tank', icon: '\uD83D\uDC20', label: __alloT('stem.aquarium.aquarium_lab', 'Aquarium Lab'), activeClass: 'bg-gradient-to-r from-cyan-700 to-cyan-700 text-white shadow-lg shadow-cyan-500/25' },
+            { id: 'ocean', icon: '\uD83C\uDF0A', label: __alloT('stem.aquarium.ocean_ecology', 'Ocean Ecology'), activeClass: 'bg-gradient-to-r from-blue-600 to-blue-600 text-white shadow-lg shadow-blue-500/25' },
+            { id: 'marine', icon: '\uD83D\uDD2C', label: __alloT('stem.aquarium.marine_science', 'Marine Science'), activeClass: 'bg-gradient-to-r from-indigo-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/25' },
+            { id: 'learn', icon: '\uD83D\uDCD6', label: __alloT('stem.aquarium.learn', 'Learn'), activeClass: 'bg-gradient-to-r from-emerald-700 to-emerald-700 text-white shadow-lg shadow-emerald-500/25' },
+            { id: 'quiz', icon: '\uD83C\uDFAF', label: __alloT('stem.aquarium.quiz', 'Quiz'), activeClass: 'bg-gradient-to-r from-amber-700 to-amber-700 text-white shadow-lg shadow-amber-500/25' },
+            { id: 'waterlab', icon: '\uD83E\uDDEA', label: __alloT('stem.aquarium.water_lab', 'Water Lab'), activeClass: 'bg-gradient-to-r from-violet-600 to-violet-600 text-white shadow-lg shadow-violet-500/25' },
+            { id: 'designer', icon: '\u270F\uFE0F', label: __alloT('stem.aquarium.designer', 'Designer'), activeClass: 'bg-gradient-to-r from-pink-600 to-pink-600 text-white shadow-lg shadow-pink-500/25' },
+            { id: 'stressHunt', icon: '\uD83D\uDC1F', label: __alloT('stem.aquarium.stress_lab', 'Stress Lab'), activeClass: 'bg-gradient-to-r from-rose-600 to-rose-600 text-white shadow-lg shadow-rose-500/25' }
           ];
 
           var activeModeMeta = modeTabs.filter(function (tab) { return tab.id === mode; })[0] || modeTabs[0];
@@ -18157,7 +18157,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     },
 
-                    className: "w-full py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg shadow-indigo-500/25 active:scale-[0.98]"
+                    className: "w-full py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg shadow-indigo-500/25 active:scale-[0.98]"
 
                   }, __alloT('stem.aquarium.i_studied_this_2_xp_2', "\uD83C\uDF93 I Studied This! (+2 XP)"))
 
@@ -18869,7 +18869,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                             })
                           ),
                           React.createElement("div", { "aria-hidden": "true", className: "text-lg font-black text-emerald-500" }, "\u2192"),
-                          React.createElement("div", { className: "rounded-xl border-2 border-emerald-400 bg-emerald-600 p-2 text-center text-white shadow-md" },
+                          React.createElement("div", { className: "rounded-xl border-2 border-emerald-400 bg-emerald-700 p-2 text-center text-white shadow-md" },
                             React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, selectedPlant.icon || '\uD83C\uDF3F'),
                             React.createElement("div", { className: "text-[9px] font-black" }, "PHOTOSYNTHESIS"),
                             React.createElement("div", { className: "mt-0.5 text-[8px] text-emerald-100" }, selectedPlantPhotosynthesisActive ? "active now" : "depends on light period")
@@ -19007,7 +19007,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       type: "button",
                       disabled: tankPlants.length >= 8,
                       onClick: function () { addPlant(selectedPlant.id); },
-                      className: "mt-3 w-full rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                      className: "mt-3 w-full rounded-lg bg-emerald-700 px-3 py-2 text-xs font-black text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-slate-300"
                     }, tankPlants.length >= 8 ? "Plant slots full" : "\uD83C\uDF31 Plant this species")
                   ),
 
@@ -20091,7 +20091,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   ),
                   waterChem && React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 bg-blue-50/70 px-3 py-2" },
                     React.createElement("label", { htmlFor: "aquarium-water-change-percent", className: "text-[11px] font-bold text-blue-800" }, "Water change:"),
-                    React.createElement("select", { id: "aquarium-water-change-percent", value: waterChangePercent, onChange: function(event) { upd('waterChangePercent', Number(event.target.value)); }, className: "rounded-lg border border-blue-300 bg-white px-2 py-1 text-[11px] font-bold text-blue-900", 'aria-label': "Water change percentage" },
+                    React.createElement("select", { id: "aquarium-water-change-percent", value: waterChangePercent, onChange: function(event) { upd('waterChangePercent', Number(event.target.value)); }, className: "rounded-lg border border-blue-500 bg-white px-2 py-1 text-[11px] font-bold text-blue-900", 'aria-label': "Water change percentage" },
                       [10, 25, 50].map(function(percentOption) {
                         return React.createElement("option", { key: percentOption, value: percentOption }, percentOption + "%");
                       })
@@ -20116,7 +20116,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         }
 
                       },
-                      className: "flex-1 py-2.5 font-bold rounded-xl text-sm transition-all shadow-md " + (simRunning ? "bg-red-700 text-white hover:bg-red-600 shadow-red-500/25" : "bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-cyan-500/25")
+                      className: "flex-1 py-2.5 font-bold rounded-xl text-sm transition-all shadow-md " + (simRunning ? "bg-red-700 text-white hover:bg-red-600 shadow-red-500/25" : "bg-gradient-to-r from-cyan-700 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-600 shadow-cyan-500/25")
 
                     }, simRunning ? "\u23F8 Pause" : "\u25B6 Run Simulation"),
 
@@ -20149,7 +20149,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       onClick: feedFish,
                       disabled: tankFish.length === 0,
 
-                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 hover:from-amber-100 hover:to-amber-200 border-amber-600")
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-800 hover:from-amber-100 hover:to-amber-200 border-amber-600")
 
                     }, __alloT('stem.aquarium.flake_2', "\uD83C\uDF7D\uFE0F Flake")),
 
@@ -20159,7 +20159,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       disabled: tankFish.length === 0,
 
-                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 border-red-600")
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-red-50 to-red-100 text-red-800 hover:from-red-100 hover:to-red-200 border-red-600")
 
                     }, __alloT('stem.aquarium.live_2', "\uD83E\uDD90 Live"))
 
@@ -20374,7 +20374,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                               'aria-label': "Name for " + (sp ? sp.name : "organism") + " " + (idx + 1),
                               onChange: function (event) { var updatedNames = Object.assign({}, fishNames); var nextName = event.target.value.slice(0, 24); if (nextName) updatedNames[fishKey] = nextName; else delete updatedNames[fishKey]; upd('fishNames', updatedNames); },
                               onBlur: function (event) { var completedName = event.target.value.trim(); if (completedName && (!lastCare || lastCare.msg !== 'Named ' + completedName)) appendFishCare(fishKey, 'Named ' + completedName); },
-                              className: "mb-1 w-full rounded border border-slate-300 bg-white px-1 py-0.5 text-[10px] text-slate-700"
+                              className: "mb-1 w-full rounded border border-slate-500 bg-white px-1 py-0.5 text-[10px] text-slate-700"
                             }),
                             React.createElement("div", { className: "mb-1 flex items-center gap-1 text-[10px] text-slate-600", 'aria-label': displayName + " care score " + careScore + " out of 100, age " + ageLabel + (isQuarantined ? ", in hospital tank for " + quarantineHours + " hours" : "") + (lastCare ? ". Latest care: " + lastCare.msg : "") },
                               React.createElement("span", { className: "font-bold whitespace-nowrap " + careScoreColor, title: "Care score combines hunger, stress, and illness" }, "Care " + careScore + "/100"),
@@ -20537,7 +20537,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   ),
 
-                  React.createElement("div", { className: "px-4 py-3 bg-gradient-to-b from-slate-50 to-white" },
+                  React.createElement("div", { className: "px-4 py-3 bg-gradient-to-b from-slate-500 to-white" },
 
                     React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, aiEvent.chosenOutcome)
 
@@ -20797,7 +20797,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     key: sp.id,
 
-                    className: "rounded-2xl p-3 border-2 text-center transition-all duration-300 shadow-sm " + (critical ? "border-red-300 bg-gradient-to-br from-red-50 to-red-100 shadow-red-500/10" : "border-slate-200/60 bg-gradient-to-br from-white to-slate-50 hover:shadow-md"),
+                    className: "rounded-2xl p-3 border-2 text-center transition-all duration-300 shadow-sm " + (critical ? "border-red-300 bg-gradient-to-br from-red-50 to-red-100 shadow-red-500/10" : "border-slate-200/60 bg-gradient-to-br from-white to-slate-500 hover:shadow-md"),
 
                     style: critical ? { animation: 'aquaCriticalPulse 2s ease-in-out infinite' } : {}
 
@@ -21061,7 +21061,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   onClick: stepOcean,
 
-                  className: "flex-1 py-2.5 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white font-bold rounded-xl text-sm hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 active:scale-[0.98]"
+                  className: "flex-1 py-2.5 bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 text-white font-bold rounded-xl text-sm hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-600/30 active:scale-[0.98]"
 
                 }, __alloT('stem.aquarium.advance_1_year_2', "\u23E9 Advance 1 Year")),
 
@@ -21291,7 +21291,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   onClick: generateQuiz,
 
-                  className: "flex-1 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md"
+                  className: "flex-1 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md"
 
                 }, __alloT('stem.aquarium.marine_science_quiz_2', "\uD83E\uDDE0 Marine Science Quiz")),
 
@@ -21339,7 +21339,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     onClick: generateQuiz,
 
-                    className: "mt-1 px-3 py-1 text-[11px] font-bold bg-indigo-500 text-white rounded-full hover:bg-indigo-600"
+                    className: "mt-1 px-3 py-1 text-[11px] font-bold bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
 
                   }, __alloT('stem.aquarium.next_question_2', "Next Question \u2192"))
 
@@ -21566,7 +21566,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         var next = (quizCurrent + 1) % filteredQuiz.length;
                         updMulti({ quizCurrent: next, quizShowExplanation: false });
                       },
-                      className: 'flex-1 sm:flex-none px-3 py-1.5 text-[11px] font-bold rounded-full bg-amber-600 text-white border-2 border-amber-600 hover:bg-amber-700'
+                      className: 'flex-1 sm:flex-none px-3 py-1.5 text-[11px] font-bold rounded-full bg-amber-700 text-white border-2 border-amber-600 hover:bg-amber-800'
                     }, __alloT('stem.aquarium.next_question_3', 'Next Question \u2192')),
                     React.createElement('button', {
                       onClick: function () {
@@ -21967,7 +21967,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                             React.createElement('button', { onClick: function () {
                               var ns = plantList.slice(); ns[si] = Object.assign({}, s, { qty: s.qty + 1 });
                               upd('designerPlants', ns);
-                            }, className: 'w-6 h-6 rounded bg-green-600 text-white font-black' }, '+')
+                            }, className: 'w-6 h-6 rounded bg-green-700 text-white font-black' }, '+')
                           );
                         })
                       )

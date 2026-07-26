@@ -1,0 +1,648 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "knowledge-check-wave-03",
+  "reviewDate": "2026-07-26",
+  "scope": "Third balanced source-review wave for learner-visible chapter knowledge checks, with two additional checks from each official EPPP content domain and explicit safeguards for clinical, legal, developmental, classic-study, and statistical inference.",
+  "summary": {
+    "items": 16,
+    "domains": 8,
+    "itemsPerDomain": 2,
+    "sourceReviewedEditorialPass": 16,
+    "independentExpertReviewPending": 16,
+    "productionValidationPending": 16,
+    "domainCounts": {
+      "Assessment & Diagnosis": 2,
+      "Biological Bases of Behavior": 2,
+      "Cognitive-Affective Bases of Behavior": 2,
+      "Ethical, Legal & Professional Issues": 2,
+      "Growth & Lifespan Development": 2,
+      "Research Methods & Statistics": 2,
+      "Social & Cultural Bases of Behavior": 2,
+      "Treatment, Intervention & Prevention": 2
+    }
+  },
+  "releasePolicy": "Only source-reviewed-editorial-pass records are emitted in chapter.knowledgeChecks for learner rendering. Preserved unreviewed records remain in the top-level inventory with review-required status.",
+  "safeguards": [
+    "Stable legacy IDs remain anchored to the preserved pre-revision prompt and choices.",
+    "Stable IDs remain anchored to legacy content while reviewed choice order may be permuted to maintain balanced answer-position coverage.",
+    "Clinical, behavioral, and legal items preserve individualized assessment, safety, scope, governing-law, and evidence-of-harm boundaries.",
+    "Classic studies and statistical procedures are taught with design, sampling, assumption, and inference limits rather than universal slogans.",
+    "Source review does not constitute independent expert validation or production validation."
+  ],
+  "items": [
+    {
+      "legacyId": "knowledge-check-3553ec5ab9049c0a",
+      "chapterId": "ch-1",
+      "sectionId": "ch-1-section-4",
+      "domainId": 1,
+      "domain": "Assessment & Diagnosis",
+      "prompt": "A revised personality inventory keeps the same score scale and standard deviation but raises its reliability estimate from .75 to .90. Under the conventional classical-test-theory SEM formula, which change follows?",
+      "choices": [
+        "The SEM increases from .50 SD to about .68 SD because a larger share of observed variance is true-score variance.",
+        "The SEM decreases from .50 SD to about .32 SD, so otherwise comparable conventional score intervals become narrower.",
+        "The SEM remains unchanged because only the number of items, not reliability, can alter measurement error.",
+        "The SEM becomes zero because a reliability coefficient of .90 is sufficient for error-free individual scores."
+      ],
+      "answerIndex": 1,
+      "rationale": "With the score standard deviation held constant, the conventional classical-test-theory expression is SEM = SD × √(1 − reliability). At .75 reliability, SEM is .50 SD; at .90, it is approximately .316 SD, a decrease of about 37% relative to the earlier SEM. Conventional intervals based on the same multiplier therefore narrow, although they do not become error-free. This comparison assumes the same population, score scale, reliability model, and relevant standard deviation. Reliability is not a universal property of a test, and a smaller overall SEM does not guarantee equal precision at every score level or justify a particular high-stakes use.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/content/dam/ets-india/pdfs/gre/gre-reliability-standard-error-measurement.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Reliability and Standard Error of Measurement",
+          "organization": "Educational Testing Service",
+          "url": "https://www.ets.org/content/dam/ets-india/pdfs/gre/gre-reliability-standard-error-measurement.pdf",
+          "whyReputable": "This official ETS psychometric supplement defines reliability and SEM, illustrates SEM-based score intervals, and distinguishes overall from conditional measurement error."
+        }
+      ],
+      "reviewNote": "Made the held-constant assumptions explicit, quantified the SEM change, and prevented reliability from being treated as error-free precision.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-ab9f44edb5dd32ea",
+      "chapterId": "ch-4",
+      "sectionId": "ch-4-section-5",
+      "domainId": 1,
+      "domain": "Assessment & Diagnosis",
+      "prompt": "A school team combines interviews, record review, and direct observation to develop a hypothesis about why a student's behavior occurs. A specialist then proposes controlled test and comparison conditions. Which distinction is most accurate?",
+      "choices": [
+        "The first is an indirect FBA, whereas the second is a descriptive assessment because antecedents and consequences are recorded in their natural sequence.",
+        "The first is a broader functional behavioral assessment process; the second is an experimental functional analysis that manipulates conditions to test causal hypotheses and is not automatically required in every case.",
+        "For a school-based FBA, federal requirements generally make experimental functional analysis the preferred evidentiary minimum before a behavior plan is implemented.",
+        "Because experimental functional analysis tests causal hypotheses, it should usually take priority over descriptive assessment even when severe behavior could be evoked and the added benefit is uncertain."
+      ],
+      "answerIndex": 1,
+      "rationale": "Functional behavioral assessment is the broader, iterative process of defining behavior, gathering information from multiple sources, developing and testing hypotheses about function, and using findings to plan and monitor support. Experimental functional analysis is one possible method within that process: it systematically manipulates antecedent and consequence conditions to strengthen causal inference. It is not automatically required for every FBA, and descriptive or indirect evidence should not be mislabeled as experimental proof. Method selection must consider the referral question, measurement quality, available expertise, setting, assent and consent where applicable, risk of evoking dangerous behavior, feasibility, and whether the added information is likely to improve a function-based plan.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://sites.ed.gov/idea/idea-files/using-functional-behavioral-assessments-to-create-supportive-learning-environments/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC2846577/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Using Functional Behavioral Assessments to Create Supportive Learning Environments",
+          "organization": "Office of Special Education Programs, U.S. Department of Education",
+          "url": "https://sites.ed.gov/idea/idea-files/using-functional-behavioral-assessments-to-create-supportive-learning-environments/",
+          "whyReputable": "Official federal education guidance describes FBA as a function-informed, data-based process for developing supportive interventions while preserving individualized and legal context."
+        },
+        {
+          "title": "Clinical Application of Functional Analysis Methodology",
+          "organization": "Behavior Analysis in Practice / PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2846577/",
+          "whyReputable": "This peer-reviewed clinical review explains controlled test and comparison conditions in functional analysis and the methodological and safety decisions required for clinical use."
+        }
+      ],
+      "reviewNote": "Separated the broad FBA process from experimental manipulation and added competence, feasibility, benefit, and behavior-escalation safeguards.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-0530630349fe0939",
+      "chapterId": "ch-8",
+      "sectionId": "ch-8-section-4",
+      "domainId": 2,
+      "domain": "Ethical, Legal & Professional Issues",
+      "prompt": "A supervisor assigns a trainee an assessment the trainee has never administered, provides no training or review, and signs the report without examining the data. Which conclusion is best supported?",
+      "choices": [
+        "The trainee bears primary responsibility for administration, so the supervisor's ethical duty is limited to confirming that a credentialed trainee signed the report.",
+        "The clinic's general disclosure that trainees provide services substantially satisfies the supervisor's delegation duty unless the client objects.",
+        "The facts directly raise a Standard 2.05 concern about competent delegation and oversight; any civil liability still depends on governing law and facts such as duty, breach, causation, harm, and agency.",
+        "The supervisory relationship is ordinarily sufficient to establish civil liability if the assessment later contributes to an adverse decision, even without a separate causation-and-harm analysis."
+      ],
+      "answerIndex": 2,
+      "rationale": "APA Ethics Code Standard 2.05 directs psychologists who delegate work to take reasonable steps to avoid assigning duties to people whose relationships could create exploitation or loss of objectivity, authorize only work the person can be expected to perform competently based on training or experience, and see that delegated work is performed competently. Assigning an unfamiliar assessment without training and signing an unchecked report therefore raises a direct ethical concern. That conclusion does not resolve a civil claim: liability standards, agency rules, available causes of action, duty, breach, causation, legally cognizable harm, defenses, and allocation of responsibility vary by jurisdiction and case facts. General consent neither supplies competence nor erases oversight obligations.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "The American Psychological Association is the issuing body for its Ethics Code; Standard 2.05 is the primary professional source for delegation-of-work duties."
+        }
+      ],
+      "reviewNote": "Kept the ethical delegation conclusion direct while separating it from strict-liability or universal civil-liability claims.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-75d41899e26687d2",
+      "chapterId": "ch-9",
+      "sectionId": "ch-9-section-3",
+      "domainId": 2,
+      "domain": "Ethical, Legal & Professional Issues",
+      "prompt": "A psychologist leaves a client's labeled intake folder in a waiting room. Another patient sees the folder but reportedly does not open it before staff retrieve it. The client alleges malpractice. Which conclusion is most defensible from these facts alone?",
+      "choices": [
+        "The lapse warrants ethical, privacy, mitigation, and documentation analysis, but malpractice cannot be decided from the exposure alone; governing law and proof of duty, breach, legally cognizable injury, and causation still matter.",
+        "The privacy lapse and a potential regulatory violation are sufficient to establish both breach and damages for a malpractice claim.",
+        "No confidentiality or security concern exists unless the psychologist intended another person to read the records.",
+        "Because the folder reportedly was not opened, the incident may warrant internal documentation but cannot support a negligence claim or an external response."
+      ],
+      "answerIndex": 0,
+      "rationale": "Leaving identifiable intake material accessible can raise serious confidentiality, record-security, notification, mitigation, documentation, ethics, licensing, contractual, or regulatory issues even if the exposure was brief and unintended. A professional-negligence claim is a separate legal question. Generally described elements include duty, breach of the applicable standard, causation, and legally cognizable damages, but their definitions, evidentiary rules, available remedies, and related causes of action vary by jurisdiction. The vignette does not establish what information was perceived, what injury occurred, or which law controls, so neither automatic success nor categorical failure follows. The psychologist should protect the record, assess and document the incident, follow applicable law and policy, and obtain qualified legal or risk-management guidance rather than offer the client a guaranteed litigation prediction.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code",
+        "https://www.law.cornell.edu/wex/malpractice"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "The official APA Ethics Code is the primary professional source for psychologists' privacy, confidentiality, record-protection, and competence obligations."
+        },
+        {
+          "title": "Malpractice",
+          "organization": "Legal Information Institute, Cornell Law School",
+          "url": "https://www.law.cornell.edu/wex/malpractice",
+          "whyReputable": "Cornell Law School's editor-reviewed legal reference defines malpractice as professional negligence and distinguishes duty, breach, causation, and damages from ethics rules."
+        }
+      ],
+      "reviewNote": "Removed a categorical lawsuit prediction and distinguished a serious privacy lapse from the jurisdiction-specific elements of malpractice.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-1929fee96d4cea5d",
+      "chapterId": "ch-13",
+      "sectionId": "ch-13-section-3",
+      "domainId": 3,
+      "domain": "Treatment, Intervention & Prevention",
+      "prompt": "Within traditional object-relations vocabulary, a client rapidly shifts from globally idealizing a partner to globally devaluing that partner after a minor disappointment. Which tentative formulation most closely matches that described pattern?",
+      "choices": [
+        "Projection, because the partner is described as having motives the client may be unwilling to acknowledge in herself",
+        "Reaction formation, because hostile feelings toward the partner are expressed through exaggerated praise before the disappointment",
+        "Splitting, meaning a polarized good-or-bad representation that may be explored as a hypothesis rather than treated as a diagnosis",
+        "Sublimation, because intense relationship affect is redirected into a socially acceptable account of the partner"
+      ],
+      "answerIndex": 2,
+      "rationale": "In traditional object-relations language, splitting refers to difficulty integrating positive and negative aspects of self or another person into a more complex whole, which can appear as sharply polarized idealization and devaluation. That makes splitting the best conceptual answer among the options: projection centers on attributing one's own unacceptable material, reaction formation on expressing an opposing attitude, and sublimation on redirecting impulses into valued activity. The term is a theory-laden formulation, not a directly observed mechanism, and one reported shift after a missed call does not establish a stable defense pattern, borderline personality disorder, or any other diagnosis. A clinician would examine recurrence across contexts, affect regulation, interpersonal expectations, alternative explanations, functional impact, culture, and the client's own meaning before using the formulation.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1177/00030651000480040801",
+        "https://www.nimh.nih.gov/health/publications/borderline-personality-disorder"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Reapproaching Mahler: New Perspectives on Normal Autism, Symbiosis, Splitting and Libidinal Object Constancy from Cognitive Developmental Theory",
+          "organization": "Journal of the American Psychoanalytic Association",
+          "url": "https://doi.org/10.1177/00030651000480040801",
+          "whyReputable": "This persistent DOI identifies peer-reviewed scholarship that critically locates splitting and object constancy within their historical object-relations framework."
+        },
+        {
+          "title": "Borderline Personality Disorder",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/borderline-personality-disorder",
+          "whyReputable": "NIMH is the U.S. federal mental-health research agency; its clinical overview supports broad assessment rather than diagnosing from one relationship vignette."
+        }
+      ],
+      "reviewNote": "Preserved the exam-recognition term while labeling it a tentative theoretical formulation and blocking single-vignette diagnostic overreach.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-ef42513ad95d1389",
+      "chapterId": "ch-16",
+      "sectionId": "ch-16-section-3",
+      "domainId": 3,
+      "domain": "Treatment, Intervention & Prevention",
+      "prompt": "A trainee presents Lambert's often-repeated 40/30/15/15 psychotherapy graphic as a replicated causal partition of outcome variance that applies to every disorder. Which correction is strongest?",
+      "choices": [
+        "Treat the graphic as a historical heuristic emphasizing multiple contributors, not a universal causal decomposition; categories overlap and estimates depend on constructs, designs, populations, therapists, and outcomes.",
+        "Retain the percentages as approximate empirical variance estimates because summing to 100% indicates that the four components were modeled as mutually exclusive.",
+        "Use the graphic to conclude that common factors generally account for outcome, while specific methods add meaningful benefit mainly when alliance is weak.",
+        "Use the percentages as prior weights in an individual treatment algorithm, with alliance scores determining whether to change modality or dose."
+      ],
+      "answerIndex": 0,
+      "rationale": "The 40/30/15/15 image is memorable historical teaching shorthand, not a universally replicated structural equation that partitions independent causal variance for every disorder, therapist, patient, and outcome. Patient and contextual factors, therapist effects, relationship processes, expectations, and treatment methods can be defined differently, overlap, interact, and vary by research design. Common-factors evidence supports taking alliance, empathy, expectations, adaptation, and therapist differences seriously; it does not establish that techniques are inert or that a fixed percentage can be assigned to an individual case. Evidence-based practice instead integrates the best available research with clinical expertise and patient characteristics, culture, and preferences while monitoring response.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1002/wps.20238",
+        "https://doi.org/10.1037/0003-066X.61.4.271"
+      ],
+      "sourceDetails": [
+        {
+          "title": "How Important Are the Common Factors in Psychotherapy? An Update",
+          "organization": "World Psychiatry",
+          "url": "https://doi.org/10.1002/wps.20238",
+          "whyReputable": "This peer-reviewed review synthesizes meta-analytic evidence on alliance, empathy, expectations, cultural adaptation, and therapist differences without reducing outcomes to one fixed pie chart."
+        },
+        {
+          "title": "Evidence-Based Practice in Psychology",
+          "organization": "American Psychological Association Presidential Task Force",
+          "url": "https://doi.org/10.1037/0003-066X.61.4.271",
+          "whyReputable": "This peer-reviewed APA task-force report is the primary professional formulation integrating research, expertise, and patient characteristics, culture, and preferences."
+        }
+      ],
+      "reviewNote": "Recast the percentage graphic as a historical heuristic and prevented it from erasing treatment-specific evidence or individualized monitoring.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-07d9448964f9f9c0",
+      "chapterId": "ch-20",
+      "sectionId": "ch-20-section-4",
+      "domainId": 4,
+      "domain": "Biological Bases of Behavior",
+      "prompt": "After a dominant-hemisphere stroke, a patient has fluent but often meaningless speech with paraphasias and neologisms, markedly impaired auditory comprehension, and poor repetition. Which answer gives the best exam-level association without overstating localization?",
+      "choices": [
+        "A classic Broca pattern caused specifically and exclusively by the left inferior frontal gyrus",
+        "A classic fluent or Wernicke aphasia pattern associated with a dominant posterior temporal language network, with lesion localization requiring full language assessment and imaging",
+        "Conduction aphasia proven to arise from an isolated arcuate-fasciculus lesion because repetition is impaired",
+        "A right parietal neglect syndrome because the patient appears unaware of some speech errors"
+      ],
+      "answerIndex": 1,
+      "rationale": "The combination of fluent output, semantic or phonemic errors, neologisms, poor auditory comprehension, and impaired repetition best matches the classic fluent or Wernicke aphasia syndrome among the choices. The traditional high-yield association is injury involving the dominant posterior temporal language network. It is not a one-to-one lesion map: aphasia profiles vary, vascular lesions often affect distributed cortical and white-matter networks, and awareness of errors is neither required nor sufficient for the label. Poor repetition alone does not prove an isolated arcuate-fasciculus lesion, and fluent aphasia should not be localized from a short vignette without neurological, hearing, language, reading, writing, cultural-linguistic, and imaging assessment.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.asha.org/practice-portal/clinical-topics/aphasia/",
+        "https://www.ncbi.nlm.nih.gov/books/NBK441951/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Aphasia",
+          "organization": "American Speech-Language-Hearing Association",
+          "url": "https://www.asha.org/practice-portal/clinical-topics/aphasia/",
+          "whyReputable": "ASHA's official practice portal synthesizes professional evidence on acquired language disorders, assessment across modalities, and person- and context-sensitive differential diagnosis."
+        },
+        {
+          "title": "Wernicke Aphasia",
+          "organization": "StatPearls / NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK441951/",
+          "whyReputable": "This clinician-reviewed NLM-hosted chapter describes the classic fluent-aphasia profile across speech, comprehension, repetition, naming, reading, and writing."
+        }
+      ],
+      "reviewNote": "Retained the high-yield fluent-aphasia association while rejecting single-spot localization and repetition-only tract conclusions.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-7f99f599ea05108b",
+      "chapterId": "ch-49",
+      "sectionId": "ch-49-section-1",
+      "domainId": 4,
+      "domain": "Biological Bases of Behavior",
+      "prompt": "Which medication class is best characterized by inhibition of a presynaptic serotonin transporter as an initial pharmacodynamic action, while not implying that an immediate cleft-level change fully explains therapeutic response?",
+      "choices": [
+        "Monoamine oxidase inhibitors, through inhibition of monoamine catabolism",
+        "Typical antipsychotics, through antagonism at dopamine D2 receptors",
+        "Benzodiazepines, through positive allosteric modulation of GABA-A receptors",
+        "Selective serotonin reuptake inhibitors, through inhibition of SERT and reduction of serotonin reuptake"
+      ],
+      "answerIndex": 3,
+      "rationale": "Selective serotonin reuptake inhibitors are named for inhibiting the serotonin transporter, thereby reducing neuronal reuptake of serotonin as an early pharmacodynamic action. The fluoxetine prescribing information describes inhibition of central neuronal serotonin uptake while also stating that the precise mechanism of antidepressant action is unknown. Thus transporter inhibition is a valid class-recognition distinction, but it does not establish the entire therapeutic mechanism, an instantaneous clinical effect, a simple serotonin-deficiency account of depression, or equivalent actions and risks across all agents. Clinical response and adverse effects reflect dose, time, downstream receptor and circuit adaptations, metabolism, interactions, diagnosis, comorbidity, and individual variation.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=0a2787f9-0166-4fa7-9f02-7d355609dabf&type=display"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Fluoxetine Capsules: Full Prescribing Information",
+          "organization": "DailyMed, U.S. National Library of Medicine",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=0a2787f9-0166-4fa7-9f02-7d355609dabf&type=display",
+          "whyReputable": "DailyMed provides current FDA-submitted labeling, including fluoxetine pharmacodynamics, stated mechanism limits, indications, warnings, and interaction information."
+        }
+      ],
+      "reviewNote": "Kept SERT inhibition as the class-level recognition target while rejecting a one-step cleft-concentration explanation of clinical response.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-779bafcc3807889c",
+      "chapterId": "ch-24",
+      "sectionId": "ch-24-section-3",
+      "domainId": 5,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "prompt": "Candy has repeatedly followed a child's grocery-store tantrums. When the parent first withholds candy, the tantrum becomes temporarily longer and more intense. Assuming candy was maintaining the behavior, what is the best description?",
+      "choices": [
+        "A possible extinction burst, meaning an early increase or change after reinforcement is withheld; the pattern is not inevitable and does not replace function-based safety planning",
+        "Spontaneous recovery, because the behavior has returned after a period without exposure following successful extinction",
+        "Stimulus generalization, because withholding candy has transferred the response to other settings with similar cues",
+        "Negative punishment, because withholding candy has already demonstrated a reduction in future tantrums"
+      ],
+      "answerIndex": 0,
+      "rationale": "An extinction burst is a possible early increase in frequency, duration, intensity, or variability when the consequence that previously maintained a response is withheld. The temporal pattern and stated reinforcement history make it the best answer, but a single escalation does not prove behavioral function, and bursting is possible, not inevitable. Empirical work found bursts in only a minority of reviewed treatment cases and less often when extinction was combined with alternative procedures. In practice, clinicians should confirm function, teach and reinforce a feasible replacement response, evaluate setting events and communication needs, monitor data, prepare caregivers consistently, and avoid extinction alone when escalation, self-injury, aggression, elopement, or other risks cannot be managed safely.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC1279794/",
+        "https://sites.ed.gov/idea/idea-files/using-functional-behavioral-assessments-to-create-supportive-learning-environments/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Prevalence of the Extinction Burst and Its Attenuation During Treatment",
+          "organization": "Journal of Applied Behavior Analysis / PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC1279794/",
+          "whyReputable": "This primary peer-reviewed study directly measured extinction bursting and found that it was not inevitable and was less prevalent with alternative procedures."
+        },
+        {
+          "title": "Using Functional Behavioral Assessments to Create Supportive Learning Environments",
+          "organization": "Office of Special Education Programs, U.S. Department of Education",
+          "url": "https://sites.ed.gov/idea/idea-files/using-functional-behavioral-assessments-to-create-supportive-learning-environments/",
+          "whyReputable": "Official federal guidance supports individualized, function-informed, proactive behavioral planning rather than using a single consequence procedure without context."
+        }
+      ],
+      "reviewNote": "Changed an inevitable-burst shortcut into a conditional recognition item with alternative-reinforcement and escalation-safety boundaries.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-afb4df58f3cc0a5e",
+      "chapterId": "ch-27",
+      "sectionId": "ch-27-section-2",
+      "domainId": 5,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "prompt": "In Dutton and Aron's classic field comparison, men crossed either a fear-arousing suspension bridge or a more stable bridge before interacting with a female interviewer. Which theoretical inference is most defensible?",
+      "choices": [
+        "The study primarily supports a James-Lange account because bodily feedback is the most direct explanation for the attraction-relevant responses.",
+        "The study primarily supports a Cannon-Bard account because arousal and interpretation were measured as parallel but independent responses.",
+        "The study favors a Lazarus-style account in which conscious appraisal was shown to precede physiological arousal on the bridge.",
+        "The pattern is compatible with context-dependent labeling or misattribution emphasized by two-factor accounts, but the field comparison does not uniquely establish that mechanism or each participant's attribution."
+      ],
+      "answerIndex": 3,
+      "rationale": "Dutton and Aron reported condition-related differences in attraction-relevant measures after encounters on fear-arousing versus comparison bridges, a pattern commonly interpreted as compatible with misattribution of arousal and the broader two-factor emphasis on situational interpretation. The field comparison does not uniquely establish that account: participants were not randomly assigned to which bridge they had chosen to cross, the outcomes were indirect and context-specific, and selection, timing, interviewer effects, arousal intensity, or other differences can contribute. Schachter and Singer's influential theory likewise should be taught as a historical model, not proof that undifferentiated arousal plus one conscious label is the complete mechanism of every emotion.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/4455773/",
+        "https://doi.org/10.1037/h0046234"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Some Evidence for Heightened Sexual Attraction under Conditions of High Anxiety",
+          "organization": "Journal of Personality and Social Psychology / PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/4455773/",
+          "whyReputable": "This National Library of Medicine record identifies the peer-reviewed primary Dutton and Aron report and its field and laboratory comparisons."
+        },
+        {
+          "title": "Cognitive, Social, and Physiological Determinants of Emotional State",
+          "organization": "Psychological Review",
+          "url": "https://doi.org/10.1037/h0046234",
+          "whyReputable": "This persistent DOI identifies Schachter and Singer's peer-reviewed primary article proposing the historically influential cognitive-physiological account."
+        }
+      ],
+      "reviewNote": "Preserved the familiar two-factor association while distinguishing a compatible result from unique causal proof or universal emotion theory.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-4e184d9f45c18dd0",
+      "chapterId": "ch-30",
+      "sectionId": "ch-30-section-3",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "What did the large meta-analysis of the classic actor-observer attribution hypothesis most directly support?",
+      "choices": [
+        "A reliable conventional asymmetry, although smaller than early textbook accounts implied",
+        "An essentially absent overall asymmetry, alongside effects under some moderators and a reversed pattern for some positive events",
+        "A reliably null asymmetry across study designs, because actor and observer explanations were statistically equivalent in nearly every included comparison",
+        "A cross-cultural moderation in which the conventional asymmetry was concentrated in collectivistic samples and attenuated in individualistic samples"
+      ],
+      "answerIndex": 1,
+      "rationale": "The meta-analysis synthesized 173 studies and found that the traditional actor-observer asymmetry was not a robust, pervasive average effect. Some differences appeared under particular methods, informational access, actor-observer familiarity, event valence, and other moderators, and the direction could reverse for positive events. The justified conclusion is neither a dependable conventional tendency nor a uniformly null result across all conditions, and the analysis did not locate the effect specifically in collectivistic samples. A meta-analytic average also does not determine how a particular client will explain an event; psychologists should examine available information, goals, language, power, relationship context, and the specific judgment being made.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/17073526/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Actor-Observer Asymmetry in Attribution: A (Surprising) Meta-Analysis",
+          "organization": "Psychological Bulletin / PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17073526/",
+          "whyReputable": "This peer-reviewed meta-analysis directly synthesizes 173 actor-observer studies and evaluates the overall effect, moderators, event valence, and reversals."
+        }
+      ],
+      "reviewNote": "Replaced a universal attribution slogan with the meta-analysis's near-zero average and explicitly moderated conclusion.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-4fec73f32cf59fa2",
+      "chapterId": "ch-31",
+      "sectionId": "ch-31-section-3",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "Which statement most accurately reports the best-known baseline condition in Milgram's obedience study without extending beyond its design?",
+      "choices": [
+        "About 65% of adults can be expected to carry out severe harmful orders when an authority is perceived as legitimate.",
+        "The participants' persistence is best explained by a dispositional subgroup with elevated authoritarian or sadistic traits.",
+        "The baseline result primarily validates the agentic-state account, with relational, interpretive, and demand-related explanations applying mainly to later variants.",
+        "Under that specific simulated-shock protocol, 26 of 40 recruited men continued through the final switch despite the learner's scripted protests."
+      ],
+      "answerIndex": 3,
+      "rationale": "Milgram's primary baseline report states that 26 of 40 participants continued to the final switch in a procedure using a simulated shock generator and scripted learner responses. That descriptive numerator, denominator, sample, and condition are the defensible recognition target. The study does not estimate how all adults behave under every authority, show that participants delivered lethal shocks, diagnose those who continued, or uniquely identify an agentic state as the sole causal mechanism. Generalization requires attention to recruitment, gender and historical context, institutional setting, experimenter behavior, participants' interpretations and suspicions, procedural variants, ethics, and later evidence. A memorable percentage should not erase the bounded conditions that produced it.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1037/h0040525"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Behavioral Study of Obedience",
+          "organization": "Stanley Milgram, Journal of Abnormal and Social Psychology",
+          "url": "https://doi.org/10.1037/h0040525",
+          "whyReputable": "This persistent DOI identifies Milgram's peer-reviewed primary report for the baseline laboratory protocol, observed completion count, sample, and procedure."
+        }
+      ],
+      "reviewNote": "Kept the exact baseline observation while blocking population-wide, diagnostic, actual-harm, and single-mechanism overclaims.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-06539c1509589991",
+      "chapterId": "ch-35",
+      "sectionId": "ch-35-section-3",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "A newborn has a low 1-minute Apgar score after a difficult delivery. Which interpretation is most accurate?",
+      "choices": [
+        "The low score is strong presumptive evidence of intrapartum asphyxia unless a congenital condition is documented.",
+        "The score can provide an individual neurologic prognosis when it is obtained at 1 minute and the delivery was difficult.",
+        "Initial stabilization can begin immediately, but definitive resuscitation decisions should generally wait for the standardized 1-minute score.",
+        "It describes the newborn's condition at that time and should be interpreted with serial scores, interventions, clinical course, and other evidence rather than used alone as a diagnosis or prognosis."
+      ],
+      "answerIndex": 3,
+      "rationale": "The Apgar score communicates a newborn's condition at specified times and response to resuscitative efforts using heart rate, respiratory effort, muscle tone, reflex irritability, and color. A low 1-minute score does not diagnose asphyxia, identify an etiology, or by itself produce a reliable individual neurologic prognosis. Interpretation belongs with the 5-minute and later scores when indicated, interventions, gestational age, medications, congenital conditions, blood gases, neurologic findings, placental and obstetric evidence, and the subsequent clinical course. Needed resuscitation begins from immediate clinical assessment and should not be delayed until the 1-minute score. Group-level associations at later time points do not turn one early score into deterministic prediction.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2015/10/the-apgar-score"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Apgar Score",
+          "organization": "American College of Obstetricians and Gynecologists and American Academy of Pediatrics",
+          "url": "https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2015/10/the-apgar-score",
+          "whyReputable": "This joint professional guidance is the authoritative clinical source on the score's purpose, timing, resuscitation relationship, and diagnostic and prognostic limits."
+        }
+      ],
+      "reviewNote": "Removed diagnosis and individual-prognosis misuse and clarified that resuscitation decisions precede, rather than wait for, the score.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-e138d772802db4b8",
+      "chapterId": "ch-37",
+      "sectionId": "ch-37-section-4",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "A child fails one verbally complex explicit false-belief task. What is the strongest conclusion?",
+      "choices": [
+        "The child lacks empathy across emotional, cognitive, and behavioral contexts.",
+        "The result is sufficient for an autism diagnosis because false-belief failure is autism-specific.",
+        "Performance may reflect mental-state reasoning together with language, memory, inhibition, task format, experience, and cultural context; broader evidence is needed.",
+        "Theory of mind cannot be studied scientifically because every false-belief task has demands."
+      ],
+      "answerIndex": 2,
+      "rationale": "An explicit false-belief task samples a bounded form of mental-state reasoning while also requiring comprehension of the narrative and question, working memory, inhibition of one's own knowledge, response selection, familiarity with the task format, and culturally situated communication. Failure can therefore generate a hypothesis for further assessment, not a global verdict about empathy or theory of mind. It is not an autism diagnosis and is not specific to autism; diagnostic evaluation requires developmental history, functioning, social-communication and restricted or repetitive behavior evidence, multiple methods, and appropriate cultural-linguistic interpretation. Cross-cultural and task-comparison research also shows that the age and pattern of success can change with elicited versus spontaneous formats and sociocultural experience.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3574387/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC6112688/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Early False-Belief Understanding in Traditional Non-Western Societies",
+          "organization": "Proceedings of the Royal Society B / PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3574387/",
+          "whyReputable": "This peer-reviewed cross-cultural study compares elicited and spontaneous-response tasks and directly demonstrates task-demand and sociocultural variation."
+        },
+        {
+          "title": "How Children Come to Understand False Beliefs: A Shared Intentionality Account",
+          "organization": "Proceedings of the National Academy of Sciences / PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6112688/",
+          "whyReputable": "This peer-reviewed developmental review distinguishes multiple theory-of-mind abilities and bounds conclusions from classic explicit false-belief performance."
+        }
+      ],
+      "reviewNote": "Replaced single-task diagnostic overreach with a construct, language, executive-demand, culture, and multi-method assessment boundary.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-9b00da33331b6245",
+      "chapterId": "ch-40",
+      "sectionId": "ch-40-section-4",
+      "domainId": 8,
+      "domain": "Research Methods & Statistics",
+      "prompt": "A behavior analyst wants to evaluate a treatment for dangerous self-injury across three feasible participants or settings, but withdrawing an effective treatment would be unsafe. Which listed single-case design is most appropriate?",
+      "choices": [
+        "A multiple-baseline design with adequate repeated measurement and staggered introduction across credible tiers",
+        "An ABA reversal, because one withdrawal can provide a planned replication while limiting the duration of renewed risk",
+        "An ABAB reversal, because repeated phase changes provide stronger experimental control when the target behavior is severe",
+        "An alternating-treatments design, because rapid alternation can substitute for a no-treatment comparison without carryover concerns"
+      ],
+      "answerIndex": 0,
+      "rationale": "A multiple-baseline design is the best listed option when treatment effects can be demonstrated through staggered introduction across participants, behaviors, or settings and withdrawing an effective intervention would be unsafe. Causal inference depends on more than drawing several baselines: the tiers must provide credible opportunities for prediction, verification, and replication; measurement must be repeated and reliable; intervention timing should be prospectively staggered; and change should occur when, not well before, treatment reaches each tier. Tiers also must be sufficiently independent for the question, and treatment should not be needlessly delayed when risk is urgent. Alternating-treatments designs compare rapidly alternated conditions and may be useful for other questions, but they are not automatically the best treatment-versus-no-treatment substitute.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://ies.ed.gov/ncee/wwc/Document/229",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC10016625/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Single-Case Design Technical Documentation",
+          "organization": "What Works Clearinghouse, Institute of Education Sciences, U.S. Department of Education",
+          "url": "https://ies.ed.gov/ncee/wwc/Document/229",
+          "whyReputable": "This official federal technical documentation specifies design standards for demonstrating effects with single-case methods, including repeated measurement and phase evidence."
+        },
+        {
+          "title": "The Family of Single-Case Experimental Designs",
+          "organization": "Perspectives on Behavior Science / PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10016625/",
+          "whyReputable": "This peer-reviewed methodological review distinguishes reversal, multiple-baseline, alternating-treatment, and related single-case designs and their inferential logic."
+        }
+      ],
+      "reviewNote": "Retained the no-withdrawal design choice while adding tier independence, staggered replication, measurement quality, and urgent-risk limits.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-4941690ab57fa348",
+      "chapterId": "ch-43",
+      "sectionId": "ch-43-section-2",
+      "domainId": 8,
+      "domain": "Research Methods & Statistics",
+      "prompt": "A researcher has one ordinal outcome from three independent groups and wants an omnibus test of whether the group distributions differ. Which listed procedure is the best match?",
+      "choices": [
+        "One-way ANOVA, solely because any sample with three groups requires a test of arithmetic means",
+        "Mann-Whitney U, because it is the omnibus rank procedure for three or more independent groups",
+        "Kruskal-Wallis H, using pooled ranks across the three independent groups",
+        "Friedman test, because it is designed for unrelated observations sampled independently across groups"
+      ],
+      "answerIndex": 2,
+      "rationale": "Kruskal-Wallis H is the best match among the options because there is one ordinal outcome, three independent groups, and an omnibus group comparison. Mann-Whitney U is the usual rank-based counterpart for two independent groups, while Friedman is for related, blocked, or repeated observations. The procedure still requires independent observations across groups, a meaningful ordinal ranking, and an appropriate sampling design. Its general null concerns equality of the group distributions, not merely a test of medians. A simple location or median interpretation is most defensible when distribution shapes and spreads are sufficiently comparable; otherwise significance can reflect other distributional differences. Likewise, nonnormal observed scores alone do not automatically invalidate ANOVA, whose model assumptions concern errors and the intended estimand.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1080/01621459.1952.10483441",
+        "https://www.itl.nist.gov/div898/handbook/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Use of Ranks in One-Criterion Variance Analysis",
+          "organization": "Journal of the American Statistical Association",
+          "url": "https://doi.org/10.1080/01621459.1952.10483441",
+          "whyReputable": "This persistent DOI identifies the peer-reviewed primary Kruskal and Wallis paper defining the pooled-rank statistic for multiple independent samples."
+        },
+        {
+          "title": "NIST/SEMATECH e-Handbook of Statistical Methods",
+          "organization": "National Institute of Standards and Technology, Statistical Engineering Division, and SEMATECH",
+          "url": "https://www.itl.nist.gov/div898/handbook/",
+          "whyReputable": "NIST is the U.S. federal measurement-science agency, and its technically edited handbook documents statistical assumptions, model selection, and interpretation."
+        }
+      ],
+      "reviewNote": "Kept the three-independent-group rank-test target while correcting median-only, nonnormality-only, and assumption-free interpretations.",
+      "reviewDate": "2026-07-26",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-03",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

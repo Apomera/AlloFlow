@@ -62,7 +62,7 @@ describe('Aquaculture Ecosystem Builder', () => {
     await act(async () => { heatwaveButton.dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
     const observation = host.querySelector('#aq-eco-observation');
     await act(async () => { setTextareaValue(observation, 'The heatwave lowered oxygen and moved kelp beyond its preferred temperature range.'); await Promise.resolve(); });
-    const saveButton = findButton(host, 'Save experiment evidence');
+    const saveButton = findButton(host, 'Save snapshot evidence');
     expect(saveButton.disabled).toBe(false);
     await act(async () => { saveButton.dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
     let saved = JSON.parse(window.localStorage.getItem('aquacultureLab.state.v1'));
@@ -82,4 +82,59 @@ describe('Aquaculture Ecosystem Builder', () => {
     saved = JSON.parse(window.localStorage.getItem('aquacultureLab.state.v1'));
     expect(saved.learnerProfile).toMatchObject({ role: 'teacher', configured: true });
   });
-});
+
+  it('projects a 12-month timeline and saves an A/B comparison report', async () => {
+    const helpers = window.AquacultureLearningHelpers;
+    const water = { temperature: 13, salinity: 30, oxygen: 8.8, pH: 8, ammonia: 0.04, exchange: 82 };
+    const baselineRun = helpers.simulateEcosystemYear({ environmentId: 'longline', organisms: { oyster: 2, mussel: 2, kelp: 2 }, water, disturbanceId: 'none' });
+    const heatwaveRun = helpers.simulateEcosystemYear({ environmentId: 'longline', organisms: { oyster: 2, mussel: 2, kelp: 2 }, water, disturbanceId: 'heatwave' });
+    const comparison = helpers.compareEcosystemRuns(baselineRun, heatwaveRun);
+    expect(baselineRun.timeline).toHaveLength(12);
+    expect(heatwaveRun.timeline.some((month) => month.event === 'Marine heatwave')).toBe(true);
+    expect(heatwaveRun.summary.minOxygen).toBeLessThan(baselineRun.summary.minOxygen);
+    expect(comparison.minOxygen).toBeLessThan(0);
+
+    await act(async () => { findButton(host, 'Ecosystem builder').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    await act(async () => { findButton(host, 'Save current as scenario A').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    await act(async () => { findButton(host, 'Marine heatwave').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    const observation = host.querySelector('#aq-eco-observation');
+    await act(async () => { setTextareaValue(observation, 'Scenario B adds a heatwave so I compared oxygen, survival, and risk months against A.'); await Promise.resolve(); });
+    const compareButton = findButton(host, 'Save A/B comparison');
+    expect(compareButton.disabled).toBe(false);
+    await act(async () => { compareButton.dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    const saved = JSON.parse(window.localStorage.getItem('aquacultureLab.state.v1'));
+    expect(saved.ecosystemWorkspace.experiments[0]).toMatchObject({ kind: 'comparison' });
+    expect(saved.ecosystemWorkspace.experiments[0].baselineSummary).toBeTruthy();
+    expect(host.textContent).toContain('A/B seasonal comparison');
+  });
+
+  it('completes the boat mission through the guided 2D equivalent', async () => {
+    await act(async () => { findButton(host, 'Boat mission').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    expect(host.textContent).toContain('Complete the same field decisions without WebGL');
+    await act(async () => { findButton(host, 'Start guided 2D mission').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    for (const label of ['Depart the landing', 'Keep red nun to starboard', 'Follow the marked channel']) {
+      await act(async () => { findButton(host, label).dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    }
+    for (let count = 1; count <= 5; count += 1) {
+      await act(async () => { findButton(host, `Deploy seeded dropper ${count} of 5`).dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    }
+    await act(async () => { findButton(host, 'Take probe reading').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    await act(async () => { findButton(host, 'Return and secure the vessel').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    const reflection = host.querySelector('#aq-guided-reflection');
+    await act(async () => { setTextareaValue(reflection, 'I kept the red nun to starboard, stayed in the channel, logged the probe, and returned safely.'); await Promise.resolve(); });
+    await act(async () => { findButton(host, 'Save mission evidence').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    const saved = JSON.parse(window.localStorage.getItem('aquacultureLab.state.v1'));
+    expect(saved.completedMissions['mission-1']).toMatchObject({ mode: 'guided-2d' });
+    expect(saved.probeReadings.at(-1)).toMatchObject({ mode: 'guided-2d', DO: '8.1' });
+  });
+
+  it('labels model scope and exposes official primary-source gateways', async () => {
+    await act(async () => { findButton(host, 'Ecosystem builder').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    const trust = host.querySelector('.aq-content-trust');
+    expect(trust).toBeTruthy();
+    expect(trust.textContent).toContain('Illustrative learning model');
+    const links = Array.from(trust.querySelectorAll('a')).map((link) => link.href);
+    expect(links.some((href) => href.includes('fisheries.noaa.gov'))).toBe(true);
+    expect(links.some((href) => href.includes('nal.usda.gov'))).toBe(true);
+    expect(window.AquacultureLearningHelpers.contentTrustForTopic('lease').label).toBe('Time-sensitive reference');
+  });});

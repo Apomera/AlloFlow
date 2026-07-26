@@ -907,8 +907,8 @@
         var domeFill = night ? '#070b18' : '#1d3a63';
         var els = [];
         // alt rings + cardinal points
-        [30, 60].forEach(function (a) { var ringRadius = R * (90 - a) / 90; els.push(h('circle', { key: 'ring' + a, cx: cx, cy: cy, r: ringRadius, fill: 'none', stroke: '#334155', strokeWidth: 1 })); els.push(h('text', { key: 'ring-label' + a, x: cx + ringRadius - 4, y: cy - 4, fill: '#64748b', fontSize: 8, textAnchor: 'end' }, a + '\u00B0')); });
-        [['N', 0], ['E', 90], ['S', 180], ['W', 270]].forEach(function (c) { var p = proj(0, c[1]); els.push(h('text', { key: 'c' + c[0], x: p[0], y: p[1], dx: c[1] === 90 ? -8 : (c[1] === 270 ? 8 : 0), dy: c[1] === 0 ? -4 : (c[1] === 180 ? 12 : 4), fill: '#64748b', fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, c[0])); });
+        [30, 60].forEach(function (a) { var ringRadius = R * (90 - a) / 90; els.push(h('circle', { key: 'ring' + a, cx: cx, cy: cy, r: ringRadius, fill: 'none', stroke: '#334155', strokeWidth: 1 })); els.push(h('text', { key: 'ring-label' + a, x: cx + ringRadius - 4, y: cy - 4, fill: '#cbd5e1', fontSize: 8, textAnchor: 'end' }, a + '\u00B0')); });
+        [['N', 0], ['E', 90], ['S', 180], ['W', 270]].forEach(function (c) { var p = proj(0, c[1]); els.push(h('text', { key: 'c' + c[0], x: p[0], y: p[1], dx: c[1] === 90 ? -8 : (c[1] === 270 ? 8 : 0), dy: c[1] === 0 ? -4 : (c[1] === 180 ? 12 : 4), fill: '#cbd5e1', fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, c[0])); });
         // stars (only above the horizon)
         sky.stars.forEach(function (s, i) { if (s.alt <= 0) return; var p = proj(s.alt, s.az); var rad = Math.max(0.6, 2.7 - s.mag * 0.55); els.push(h('circle', { key: 'st' + i, cx: p[0], cy: p[1], r: rad, fill: '#fff', opacity: night ? Math.min(1, Math.max(0.4, 1 - s.mag * 0.18)) : 0.25 })); if (s.mag < 0.6) els.push(h('text', { key: 'stl' + i, x: p[0] + 4, y: p[1] + 3, fill: '#cbd5e1', fontSize: 8.5, opacity: night ? 0.8 : 0.3 }, s.name)); });
         // planets
@@ -950,7 +950,7 @@
                 h('circle', { cx: cx, cy: cy, r: R, fill: domeFill, stroke: '#334155', strokeWidth: 1.5 }),
                 els,
                 sky.daytime ? h('text', { x: cx, y: 332, fill: '#fbbf24', fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, __alloT('stem.astronomy.daytime_note', '☀ Daytime — stars are up but the Sun outshines them')) :
-                  h('text', { x: cx, y: 332, fill: '#64748b', fontSize: 11, textAnchor: 'middle' }, localShown.toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' }) + ' · ' + loc.name)),
+                  h('text', { x: cx, y: 332, fill: '#cbd5e1', fontSize: 11, textAnchor: 'middle' }, localShown.toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' }) + ' · ' + loc.name)),
               h('div', { id: 'astronomy-sky-map-help', style: { maxWidth: 330, marginTop: 6, padding: '7px 9px', borderRadius: 8, background: '#0f172a', border: '1px solid #334155', color: '#94a3b8', fontSize: 10.5, lineHeight: 1.5 } },
                 h('strong', { style: { color: '#cbd5e1' } }, 'Diagram guide: '),
                 'North is at the top and east is on the left. The outer circle is the horizon; inner rings mark 30\u00B0 and 60\u00B0 altitude; the center is directly overhead.'
@@ -7545,7 +7545,7 @@
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
             h('button', { onClick: function() { try { window.print(); } catch (e) {} },
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, __alloT('stem.astronomy.print_save_as_pdf', '🖨 Print / Save as PDF'))
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, __alloT('stem.astronomy.print_save_as_pdf', '🖨 Print / Save as PDF'))
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

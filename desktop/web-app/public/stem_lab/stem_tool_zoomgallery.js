@@ -177,7 +177,7 @@
             : '🌱 ' + t('stem.zoomGallery.ai_off', 'AI hints are off — the gallery still works, with built-in observation prompts instead of the AI coach.')))),
         h('button', {
           onClick: openShelf,
-          className: 'px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 shadow-md shadow-sky-600/20 transition-all w-fit',
+          className: 'px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-sky-700 to-cyan-700 hover:from-sky-700 hover:to-cyan-700 shadow-md shadow-sky-600/20 transition-all w-fit',
           'aria-label': t('stem.zoomGallery.open_title', 'Open the Zoom Gallery in a new window (OpenSeadragon deep-zoom viewer with the Notice-Wonder coach)')
         }, t('stem.zoomGallery.open', '🔍 Open Zoom Gallery')),
         popupState === 'opening' && h('p', { className: 'text-xs text-sky-300' },

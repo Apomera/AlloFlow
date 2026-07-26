@@ -1213,7 +1213,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': 'Challenge',
               onClick: generateChallenge,
               title: 'Challenge Mode [C]',
-              className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-600 to-orange-700 shadow-md shadow-amber-600/20 hover:from-amber-700 hover:to-orange-800' : 'text-amber-900 bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30')
+              className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-700 to-orange-700 shadow-md shadow-amber-600/20 hover:from-amber-700 hover:to-orange-800' : 'text-amber-900 bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30')
             }, '\uD83C\uDFAF Challenge'),
             gd.challengeMode && h('button', { 'aria-label': 'Exit',
               onClick: function() { setLabToolData(function(prev) { return Object.assign({}, prev, { geoSandbox: Object.assign({}, prev.geoSandbox||{}, { challengeMode:false, challenge:null, challengeAnswer:'', challengeResult:null }) }); }); },
@@ -1222,7 +1222,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': 'Badges [B]',
               onClick: function() { updExt({ showBadges: !showBadges }); },
               title: 'Badges [B]',
-              className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (showBadges ? 'text-white bg-gradient-to-r from-purple-500 to-fuchsia-600 shadow-md' : 'text-purple-300 bg-purple-500/20 border border-purple-500/30 hover:bg-purple-500/30')
+              className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (showBadges ? 'text-white bg-gradient-to-r from-purple-600 to-fuchsia-600 shadow-md' : 'text-purple-300 bg-purple-500/20 border border-purple-500/30 hover:bg-purple-500/30')
             }, '\uD83C\uDFC5 ' + badgeCount + '/' + Object.keys(geoBadges).length),
             h('button', { 'aria-label': 'STL',
               onClick: askAI,
@@ -1643,7 +1643,7 @@ window.StemLab = window.StemLab || {
                   value: unitId,
                   onChange: function(e) { upd('unitId', e.target.value); if (announceToSR) announceToSR('Unit changed to ' + e.target.options[e.target.selectedIndex].text); },
                   'aria-label': 'Real-world unit',
-                  className: 'flex-1 text-[11px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200 font-mono'
+                  className: 'flex-1 text-[11px] bg-slate-900 border border-slate-500 rounded px-2 py-1 text-slate-200 font-mono'
                 }, GEO_UNITS.map(function(u) {
                   return h('option', { key: u.id, value: u.id }, u.short + ' — ' + u.long);
                 }))
@@ -1858,13 +1858,13 @@ window.StemLab = window.StemLab || {
               onKeyDown: function(e) { if (e.key === 'Enter') checkChallengeAnswer(); },
               placeholder: challenge.type === 'identify' ? 'Type the shape name...' : 'Enter your answer...',
               'aria-label': 'Challenge answer',
-              className: 'flex-1 px-4 py-3 bg-slate-900 border-2 border-amber-500/40 rounded-xl text-base text-white font-bold placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30',
+              className: 'flex-1 px-4 py-3 bg-slate-900 border-2 border-amber-500/40 rounded-xl text-base text-white font-bold placeholder-slate-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30',
               step: 'any'
             }),
             h('button', { 'aria-label': 'Check',
               onClick: checkChallengeAnswer,
               disabled: !challengeAnswer.trim(),
-              className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (challengeAnswer.trim() ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-600 hover:to-orange-700' : 'bg-slate-700 text-slate-600 cursor-not-allowed')
+              className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (challengeAnswer.trim() ? 'bg-gradient-to-r from-amber-700 to-orange-700 text-white shadow-md hover:from-amber-700 hover:to-orange-700' : 'bg-slate-700 text-slate-600 cursor-not-allowed')
             }, '\u2714 Check')
           ),
           // Result feedback
@@ -1881,7 +1881,7 @@ window.StemLab = window.StemLab || {
             ),
             h('button', { 'aria-label': 'Next Challenge',
               onClick: generateChallenge,
-              className: 'w-full px-4 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-600 hover:to-orange-700 transition-all'
+              className: 'w-full px-4 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-700 to-orange-700 text-white shadow-md hover:from-amber-700 hover:to-orange-700 transition-all'
             }, '\u27A1 Next Challenge')
           ),
           // Hint for numeric challenges

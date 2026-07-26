@@ -136,6 +136,41 @@ describe('bloomEditionsFor — cross-language edition linking', () => {
     expect(RL._bloomEditionsFor(null, idx)).toEqual([]);
   });
 });
+describe('editionsFor — generalized published translation families', () => {
+  const index = [
+    { slug: 'asb-en', title: 'The Rain Bird', language: 'English', workKey: 'asb-images-abc', contentType: 'story' },
+    { slug: 'asb-so', title: 'Shimbirta Roobka', language: 'Somali', workKey: 'asb-images-abc', contentType: 'story' },
+    { slug: 'asb-ti', title: 'ዑፍ ዝናብ', language: 'Tigrinya', workKey: 'asb-images-abc', contentType: 'story' },
+    { slug: 'asb-card', title: 'Card', language: 'French', workKey: 'asb-images-abc', contentType: 'open-access-source-card' },
+    { slug: 'other', title: 'Other', language: 'English', workKey: 'asb-images-other', contentType: 'story' },
+  ];
+
+  it('links explicit workKey siblings across languages and excludes cards/self', () => {
+    expect(RL._editionsFor(index[0], index).map((book) => book.slug)).toEqual(['asb-so', 'asb-ti']);
+    expect(RL._workIdentity(index[0])).toBe('asb-images-abc');
+  });
+
+  it('retains the Bloom legacy identity fallback', () => {
+    expect(RL._workIdentity({ slug: 'bloom-5a8f7349-title' })).toBe('bloom-instance-5a8f7349');
+  });
+});
+
+describe('synchronizedPageIndex — bilingual page alignment', () => {
+  it('keeps exact-count editions on the same page', () => {
+    expect(RL._synchronizedPageIndex(4, 10, 10)).toBe(4);
+  });
+
+  it('maps differing page counts by normalized reading progress', () => {
+    expect(RL._synchronizedPageIndex(4, 9, 5)).toBe(2);
+    expect(RL._synchronizedPageIndex(8, 9, 5)).toBe(4);
+  });
+
+  it('clamps malformed and out-of-range values safely', () => {
+    expect(RL._synchronizedPageIndex(99, 9, 5)).toBe(4);
+    expect(RL._synchronizedPageIndex(-2, 9, 5)).toBe(0);
+    expect(RL._synchronizedPageIndex(3, 9, 0)).toBe(0);
+  });
+});
 
 describe('bookPlainText / attributionLine', () => {
   const book = {
@@ -244,6 +279,39 @@ describe('textLayoutClass — picture-book text layout', () => {
   });
   it('never emits text-left (would break RTL start alignment)', () => {
     expect(RL._textLayoutClass('4', 'word '.repeat(80))).not.toContain('text-left');
+  });
+});
+describe('catalog discovery helpers', () => {
+  it('normalizes accents, punctuation, and spacing for search', () => {
+    expect(RL._normalizeSearchText('  Café—NIÑOS!  ')).toBe('cafe ninos');
+  });
+
+  it('finds synonym and small-spelling-error queries without broad false matches', () => {
+    const book = {
+      title: 'Looking at the Night Sky', language: 'English', sourceId: 'storyweaver',
+      authors: ['A. Writer'], description: 'A book for children.', subjects: ['Astronomy'], license: 'CC BY 4.0',
+    };
+    expect(RL._catalogSearchMatches(book, 'astronmy')).toBe(true);
+    expect(RL._catalogSearchMatches(book, 'kids space')).toBe(true);
+    expect(RL._catalogSearchMatches(book, 'medieval cooking')).toBe(false);
+  });
+
+  it('classifies broad topics without changing source-provided levels', () => {
+    expect(RL._topicIdsForBook({ title: 'A Friend', contentType: 'story', subjects: ['Emotions and life skills'] }))
+      .toEqual(expect.arrayContaining(['stories', 'social-emotional']));
+    expect(RL._topicIdsForBook({ title: 'Clinical Skills', contentType: 'open-textbook-chapter', subjects: ['Nursing'] }))
+      .toContain('science-health');
+  });
+
+  it('derives honest length and reuse facets from existing metadata', () => {
+    expect(RL._readingLengthId({ level: '2', wordCount: 400, contentType: 'story' })).toBe('quick');
+    expect(RL._readingLengthId({ level: '4', wordCount: 3000, contentType: 'story' })).toBe('medium');
+    expect(RL._readingLengthId({ level: '6', wordCount: 10000, contentType: 'public-domain-full-text' })).toBe('long');
+    expect(RL._readingLengthId({ level: '2', wordCount: 100, contentType: 'source-card' })).toBe('');
+    expect(RL._licenseFacetId({ license: 'CC BY-NC-SA 4.0' })).toBe('noncommercial');
+    expect(RL._licenseFacetId({ license: 'CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial' })).toBe('noncommercial');
+    expect(RL._licenseFacetId({ license: 'Public Domain in the U.S.' })).toBe('public-domain');
+    expect(RL._licenseFacetId({ license: 'CC BY-SA 4.0' })).toBe('share-alike');
   });
 });
 

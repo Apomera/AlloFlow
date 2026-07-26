@@ -1,7 +1,8 @@
 /**
- * sre_loader.js - AlloFlow spoken math (Speech Rule Engine)
+ * sre_loader.js - AlloFlow semantic math rendering and speech
  *
- * Converts LaTeX or MathML to deterministic spoken text before AlloFlow routes
+ * Converts LaTeX to semantic MathML for visual display and deterministic spoken
+ * text before AlloFlow routes
  * that text to Gemini, Kokoro, Piper, an OpenAI-compatible provider, or browser
  * speech synthesis.
  *
@@ -14,7 +15,8 @@
  */
 (function () {
   'use strict';
-  if (window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === 'function') return;
+  if (window.AlloMathRenderer && typeof window.AlloMathRenderer.renderToString === 'function' &&
+      window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === 'function') return;
 
   var SRE_VERSION = '4.1.4';
   var TEMML_VERSION = '0.10.34';
@@ -45,6 +47,11 @@
     'https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/temml.min.js',
     'https://unpkg.com/temml@0.10.34/dist/temml.min.js'
   ];
+  var TEMML_CSS_URLS = [
+    LOCAL_ASSET_BASE + 'Temml-Local.css',
+    'https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/Temml-Local.css',
+    'https://unpkg.com/temml@0.10.34/dist/Temml-Local.css'
+  ];
 
   // Every speech locale included in the pinned SRE release.
   var SUPPORTED_LOCALES = {
@@ -67,12 +74,14 @@
 
   var _scriptPromise = null;
   var _temmlPromise = null;
+  var _temmlCssPromise = null;
   var _engineQueue = Promise.resolve();
   var _engineSignature = null;
   var _engineMapBase = null;
   var _engineProfile = null;
   var _sreSource = null;
   var _temmlSource = null;
+  var _temmlCssSource = null;
 
   function readStoredSettings() {
     try {
@@ -140,6 +149,37 @@
     });
   }
 
+  function loadStyleChain(urls) {
+    return new Promise(function (resolve, reject) {
+      (function tryAt(index) {
+        if (index >= urls.length) { reject(new Error('all stylesheet sources failed')); return; }
+        var existing = document.querySelector('link[data-allo-temml-css="' + urls[index] + '"]');
+        if (existing) { resolve({ url: urls[index], index: index }); return; }
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = urls[index];
+        link.setAttribute('data-allo-temml-css', urls[index]);
+        link.onload = function () { resolve({ url: urls[index], index: index }); };
+        link.onerror = function () {
+          try { link.remove(); } catch (_) {}
+          tryAt(index + 1);
+        };
+        document.head.appendChild(link);
+      })(0);
+    });
+  }
+
+  function ensureTemmlStyles(settings) {
+    if (_temmlCssSource && document.querySelector('link[data-allo-temml-css]')) return Promise.resolve();
+    if (_temmlCssPromise) return _temmlCssPromise;
+    _temmlCssPromise = loadStyleChain(sourceUrls(TEMML_CSS_URLS, settings)).then(function (result) {
+      _temmlCssSource = result.url;
+    }).catch(function (error) {
+      _temmlCssPromise = null;
+      throw error;
+    });
+    return _temmlCssPromise;
+  }
   function ensureSreScript(settings) {
     if (window.SRE && typeof window.SRE.toSpeech === 'function' &&
         typeof window.SRE.setupEngine === 'function') return Promise.resolve();
@@ -156,18 +196,24 @@
     return _scriptPromise;
   }
 
-  function ensureTemml(settings) {
-    if (window.temml && typeof window.temml.renderToString === 'function') return Promise.resolve();
-    if (_temmlPromise) return _temmlPromise;
-    _temmlPromise = loadScriptChain(sourceUrls(TEMML_URLS, settings), function () {
-      return !!(window.temml && typeof window.temml.renderToString === 'function');
-    }).then(function (result) {
-      _temmlSource = result.url;
-    }).catch(function (error) {
-      _temmlPromise = null;
-      throw error;
+  function ensureTemml(settings, includeStyles) {
+    var runtime = (window.temml && typeof window.temml.renderToString === 'function')
+      ? Promise.resolve()
+      : _temmlPromise;
+    if (!runtime) {
+      _temmlPromise = loadScriptChain(sourceUrls(TEMML_URLS, settings), function () {
+        return !!(window.temml && typeof window.temml.renderToString === 'function');
+      }).then(function (result) {
+        _temmlSource = result.url;
+      }).catch(function (error) {
+        _temmlPromise = null;
+        throw error;
+      });
+      runtime = _temmlPromise;
+    }
+    return runtime.then(function () {
+      return includeStyles ? ensureTemmlStyles(settings) : null;
     });
-    return _temmlPromise;
   }
 
   function normalizedLanguageName(lang) {
@@ -247,13 +293,36 @@
     return match ? match[0] : null;
   }
 
-  function latexToMathML(latex, settings) {
-    return ensureTemml(settings).then(function () {
-      var html = window.temml.renderToString(latex, { displayMode: true });
+  function latexToMathML(latex, settings, displayMode, includeStyles) {
+    return ensureTemml(settings, includeStyles === true).then(function () {
+      var html;
+      try {
+        html = window.temml.renderToString(latex, {
+          displayMode: displayMode !== false,
+          throwOnError: false,
+          strict: 'warn',
+          trust: false
+        });
+      } catch (_) { return null; }
       if (!html || html.indexOf('<math') === -1) return null;
-      if (/temml-error|<merror/i.test(html)) return null;
+      if (/temml-error|<merror|<script|javascript:/i.test(html)) return null;
       return extractMathElement(html);
     });
+  }
+
+  function inputDisplayMode(src, opts) {
+    if (opts && typeof opts.displayMode === 'boolean') return opts.displayMode;
+    var value = String(src || '').trim();
+    return /^\$\$[\s\S]*\$\$$/.test(value) || /^\\\[[\s\S]*\\\]$/.test(value);
+  }
+
+  function renderMathML(input, opts) {
+    var options = opts || {};
+    var src = String(input == null ? '' : input).trim();
+    if (!src) return Promise.resolve(null);
+    if (/^<math[\s>]/i.test(src)) return Promise.resolve(extractMathElement(src));
+    var settings = effectiveSettings(options);
+    return latexToMathML(stripLatexDelims(src), settings, inputDisplayMode(src, options), true);
   }
 
   function withTimeout(work, timeoutMs) {
@@ -270,6 +339,29 @@
     });
   }
 
+  window.AlloMathRenderer = {
+    renderToString: renderMathML,
+    preload: function (opts) {
+      return ensureTemml(effectiveSettings(opts || {}), true)
+        .then(function () { return true; }).catch(function () { return false; });
+    },
+    ready: function () {
+      return !!(window.temml && typeof window.temml.renderToString === 'function' && _temmlCssSource);
+    },
+    diagnostics: function () {
+      return {
+        ready: !!(window.temml && typeof window.temml.renderToString === 'function'),
+        version: TEMML_VERSION,
+        temmlSource: _temmlSource,
+        temmlCssSource: _temmlCssSource,
+        cssSource: _temmlCssSource,
+        localAssetBase: LOCAL_ASSET_BASE,
+        role: 'semantic-math-renderer',
+        replaces: ['regex-display-primary'],
+        preserves: ['processMathHTML-fallback', 'AlgebraCAS-grading', 'MathLive-input', 'SRE-speech']
+      };
+    }
+  };
   window.AlloMathSpeech = {
     toSpeech: function (input, opts) {
       var options = opts || {};
@@ -282,7 +374,7 @@
         ? options.timeoutMs : 10000;
       var mathml = /<math[\s>]/i.test(src)
         ? Promise.resolve(extractMathElement(src))
-        : latexToMathML(stripLatexDelims(src), settings);
+        : latexToMathML(stripLatexDelims(src), settings, true, false);
       var work = mathml.then(function (value) {
         if (!value) return null;
         return withEngine(locale, settings, function () {
@@ -300,7 +392,7 @@
       var settings = effectiveSettings(options);
       var locale = resolveLocale(options.lang || options.locale || 'en', settings) || 'en';
       return Promise.all([
-        ensureTemml(settings),
+        ensureTemml(settings, false),
         withEngine(locale, settings, function () { return true; })
       ]).then(function () { return true; }).catch(function () { return false; });
     },
@@ -318,6 +410,7 @@
         temmlVersion: TEMML_VERSION,
         sreSource: _sreSource,
         temmlSource: _temmlSource,
+        temmlCssSource: _temmlCssSource,
         mathmapsSource: _engineMapBase,
         engineSignature: _engineSignature,
         engineProfile: _engineProfile,
@@ -328,5 +421,5 @@
     }
   };
 
-  console.log('[AlloMathSpeech] offline-first SRE ' + SRE_VERSION + ' ready (lazy ' + _settings.domain + ')');
+  console.log('[AlloMathRuntime] offline-first Temml ' + TEMML_VERSION + ' renderer + SRE ' + SRE_VERSION + ' speech ready');
 })();

@@ -9336,7 +9336,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           },
             visited && h('span', {
               'aria-hidden': true,
-              className: 'absolute top-2 right-2 z-10 bg-emerald-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md birdlab-pulse-ring'
+              className: 'absolute top-2 right-2 z-10 bg-emerald-700 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md birdlab-pulse-ring'
             }, '✓'),
             notReady && h('span', {
               'aria-hidden': true,
@@ -9649,7 +9649,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     autoComplete: 'off',
                     'aria-controls': 'birdlab-module-results',
                     'aria-describedby': 'birdlab-module-search-status',
-                    className: 'w-full rounded-lg border-2 border-slate-300 bg-white px-3 py-2 pr-10 text-sm text-slate-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-4 ring-emerald-500/20'
+                    className: 'w-full rounded-lg border-2 border-slate-500 bg-white px-3 py-2 pr-10 text-sm text-slate-900 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-4 ring-emerald-500/20'
                   }),
                   menuQuery && h('button', {
                     type: 'button',
@@ -9987,7 +9987,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               '.lifer .name { font-weight: 700; color: #0f172a; }' +
               '.lifer .sci { font-style: italic; color: #64748b; font-size: 11px; }' +
               '.lifer .meta { color: #475569; font-size: 10px; margin-top: 4px; margin-bottom: 0; }' +
-              '.empty { padding: 16px; text-align: center; color: #94a3b8; font-style: italic; background: #f8fafc; border-radius: 8px; }' +
+              '.empty { padding: 16px; text-align: center; color: #475569; font-style: italic; background: #f8fafc; border-radius: 8px; }' +
               '.note { font-size: 11px; color: #64748b; font-style: italic; margin-top: 24px; padding-top: 12px; border-top: 1px solid #e2e8f0; }' +
               '.print-btn { padding: 8px 16px; background: #047857; color: #fff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; margin-bottom: 16px; }' +
               '@media print { .print-btn { display: none; } body { margin: 0; padding: 16px; } }' +
@@ -10340,7 +10340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             role: 'status', 'aria-live': 'assertive',
             className: 'fixed top-20 left-1/2 z-[60] -translate-x-1/2 pointer-events-none'
           },
-            h('div', { className: 'bg-gradient-to-r from-sky-700 via-violet-700 to-amber-600 text-white px-7 py-4 rounded-2xl shadow-2xl border-4 border-white flex items-center gap-4' },
+            h('div', { className: 'bg-gradient-to-r from-sky-700 via-violet-700 to-amber-700 text-white px-7 py-4 rounded-2xl shadow-2xl border-4 border-white flex items-center gap-4' },
               h('span', { className: 'text-4xl', 'aria-hidden': 'true' }, rankCelebration.rank.icon),
               h('div', null,
                 h('div', { className: 'text-[10px] font-black uppercase tracking-[0.18em] text-sky-100' }, 'Field rank advanced'),
@@ -10356,7 +10356,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             className: 'fixed top-20 left-1/2 z-50 -translate-x-1/2 pointer-events-none',
             style: { animation: 'birdlab-lifer-rise 3.2s ease-out forwards' }
           },
-            h('div', { className: 'bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white px-6 py-4 rounded-2xl shadow-2xl border-4 border-white flex items-center gap-3' },
+            h('div', { className: 'bg-gradient-to-r from-amber-700 via-orange-700 to-rose-600 text-white px-6 py-4 rounded-2xl shadow-2xl border-4 border-white flex items-center gap-3' },
               h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, '🎉'),
               h('div', null,
                 h('div', { className: 'text-[10px] font-black uppercase tracking-widest opacity-90' }, __alloT('stem.birdlab.new_lifer', 'New lifer')),
@@ -10406,7 +10406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             },
               h('div', { className: 'flex items-center gap-3 p-3 flex-wrap' },
                 h('div', { 'aria-hidden': 'true', className: 'flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-md ' +
-                  (dailyComplete ? 'bg-emerald-500 text-white' : 'bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white')
+                  (dailyComplete ? 'bg-emerald-500 text-white' : 'bg-gradient-to-br from-indigo-600 to-fuchsia-600 text-white')
                 }, dailyComplete ? '✓' : dailyChallenge.icon),
                 h('div', { className: 'flex-1 min-w-0' },
                   h('div', { className: 'flex items-center gap-2 flex-wrap' },
@@ -10853,7 +10853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       },
                         isFound && h('span', {
                           'aria-hidden': true,
-                          style: { position: 'absolute', top: '-4px', right: '-4px', background: '#059669', color: '#fff', fontSize: '10px', fontWeight: 800, borderRadius: '999px', padding: '2px 5px' }
+                          style: { position: 'absolute', top: '-4px', right: '-4px', background: '#047857', color: '#fff', fontSize: '10px', fontWeight: 800, borderRadius: '999px', padding: '2px 5px' }
                         }, '✓')
                       )
                     );
@@ -20054,7 +20054,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('div', { className: 'text-xs uppercase tracking-wider text-violet-600 mb-2 font-bold' }, cur.topic),
             h('h2', { className: 'text-lg font-black text-violet-900 mb-4 tracking-tight' }, '❓ ' + cur.q),
             !show && h('button', { onClick: function() { setShow(true); },
-              className: 'px-4 py-2 rounded bg-emerald-600 text-white font-bold' }, __alloT('stem.birdlab.show_answer', 'Show answer')),
+              className: 'px-4 py-2 rounded bg-emerald-700 text-white font-bold' }, __alloT('stem.birdlab.show_answer', 'Show answer')),
             show && h('div', { className: 'p-4 bg-emerald-50 rounded text-sm text-slate-700' },
               h('b', null, 'Answer: '), cur.a)),
           h('div', { className: 'flex gap-2' },

@@ -1894,7 +1894,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           ' ',
           h('button', {
             onClick: function() { upd('distChallenge', null); },
-            style: { marginLeft: '8px', padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#6366f1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+            style: { marginLeft: '8px', padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#4f46e5', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
           }, t('stem.echotrainer.dismiss', 'Dismiss'))
         ) : null,
         // ── Material Quiz UI ──
@@ -1934,7 +1934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           ' ',
           h('button', {
             onClick: function() { upd('matQuiz', null); },
-            style: { marginLeft: '8px', padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#6366f1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+            style: { marginLeft: '8px', padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#4f46e5', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
           }, t('stem.echotrainer.dismiss_2', 'Dismiss'))
         ) : null,
         d.webglError ? h('div', {

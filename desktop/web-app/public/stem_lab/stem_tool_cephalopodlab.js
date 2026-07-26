@@ -10134,7 +10134,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', null, __alloT('stem.cephalopodlab.3d_engine_webgl_failed_to_load_or_init', '⚠ 3D engine / WebGL failed to load or initialize. WebGL might be disabled or unsupported.')),
               h('button', {
                 onClick: function() { setCL({ _threeError: false, _threeLoaded: false, _threeLoading: false }); },
-                style: { marginTop: '8px', padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
+                style: { marginTop: '8px', padding: '6px 12px', background: '#b91c1c', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
               }, __alloT('stem.cephalopodlab.retry', 'Retry'))
             )) : null,
 
@@ -17688,7 +17688,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             st.understood && h('textarea', {
               id: 'ch-explanation', value: st.explanation || '', onChange: function(e) { setCH({ explanation: e.target.value }); },
               placeholder: __alloT('stem.cephalopodlab.explain_in_your_own_words_what_does_ef', 'Explain in your own words: what does effective camouflage require? Why does pattern matter more on patchy substrates than on smooth ones? Why might disruptive coloration sometimes beat uniform matching?'),
-              className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug bg-white', rows: 4
+              className: 'w-full text-[12px] border border-emerald-600 rounded p-2 font-mono leading-snug bg-white', rows: 4
             }),
             st.understood && (st.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
               __alloT('stem.cephalopodlab.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))

@@ -304,7 +304,7 @@ fi
 # ── Step 10: Post-deploy verification ─────────────────────────────
 # The deploy is already live by now, so this step NEVER undoes anything — it
 # tells you whether the deploy is actually serving the bits you just built, and
-# surfaces issues you'd otherwise only find by hand-curling. Three checks:
+# surfaces issues you'd otherwise only find by hand-curling. Four checks:
 #   (1) Hash consistency  — root AlloFlowANTI.txt pluginCdnVersion == @BUILD_HASH
 #                            == the desktop/web-app/src mirror, and is a real
 #                            commit. Catches build.js-didn't-rewrite / drift.   [HARD]
@@ -312,6 +312,10 @@ fi
 #   (3) CDN modules        — alloflow-cdn.pages.dev key modules → 200 (HARD) and
 #                            md5 == local root module (FRESHNESS — soft warning,
 #                            Cloudflare Pages rebuilds async ~1-2 min after push).
+#   (4) veraPDF artifacts  — the configured validator route must contain the real
+#                            validator boot/handshake markers, and its CLI JAR
+#                            must be a plausible ZIP/JAR rather than the HTTP-200
+#                            SPA fallback. Both probes bypass edge caches.       [HARD]
 # HARD failures make the script exit 1 (so a "successful" deploy that didn't
 # actually land is loud). Skip with SKIP_POST_VERIFY=1 (e.g. offline re-deploys).
 PV_FAIL=0
@@ -333,13 +337,14 @@ else
   CDN_MODULES=(doc_pipeline_module.js view_pdf_audit_module.js gemini_api_module.js app/index.html app/sw.js lame.min.js)
   CDN_RETRIES="${POST_VERIFY_CDN_RETRIES:-4}"   # freshness re-checks (Cloudflare lag)
   CDN_WAIT="${POST_VERIFY_CDN_WAIT:-20}"        # seconds between freshness re-checks
+  POST_VERIFY_CACHE_BUST="${POST_VERIFY_CACHE_BUST:-${BUILD_HASH}-$(date +%s)}"
 
   pv_fail() { PV_FAIL=$((PV_FAIL+1)); PV_DETAILS="${PV_DETAILS}\n  ✗ $1"; printf "  \033[31m✗ %s\033[0m\n" "$1"; }
   pv_warn() { PV_WARN=$((PV_WARN+1)); PV_DETAILS="${PV_DETAILS}\n  ⚠ $1"; printf "  \033[33m⚠ %s\033[0m\n" "$1"; }
   pv_ok()   { printf "  \033[32m✓ %s\033[0m\n" "$1"; }
 
   # ── Check 1: hash consistency (local, deterministic) ──
-  echo "  [1/3] Hash consistency…"
+  echo "  [1/4] Hash consistency…"
   ROOT_VER=$(grep -m1 "var pluginCdnVersion = " AlloFlowANTI.txt 2>/dev/null | sed -E "s/.*'([^']*)'.*/\1/")
   MIRROR_VER=$(grep -m1 "var pluginCdnVersion = " desktop/web-app/src/AlloFlowANTI.txt 2>/dev/null | sed -E "s/.*'([^']*)'.*/\1/")
   if [[ -z "${ROOT_VER:-}" ]]; then
@@ -364,7 +369,7 @@ else
 
   # ── Check 2: Firebase host reachable when a school-owned target deployed ──
   if [[ "$FIREBASE_DEPLOYED" == "1" && -n "$FIREBASE_URL" ]]; then
-    echo "  [2/3] Firebase host ($FIREBASE_URL)…"
+    echo "  [2/4] Firebase host ($FIREBASE_URL)…"
     FB_RESP=$(curl -s -o /dev/null -w "%{http_code} %{size_download}" "$FIREBASE_URL" 2>/dev/null || echo "000 0")
     FB_CODE=${FB_RESP%% *}; FB_SIZE=${FB_RESP##* }
     if [[ "$FB_CODE" == "200" && "${FB_SIZE:-0}" -gt 1000 ]]; then
@@ -373,12 +378,12 @@ else
       pv_fail "host returned HTTP ${FB_CODE}, ${FB_SIZE} bytes (expected 200 + >1KB)"
     fi
   else
-    echo "  [2/3] Firebase host (not configured)…"
+    echo "  [2/4] Firebase host (not configured)…"
     pv_ok "Firebase intentionally skipped; no maintainer/demo project was touched"
   fi
 
   # ── Check 3: CDN modules reachable (HARD) + fresh (soft, retried) ──
-  echo "  [3/3] CDN modules ($CDN_BASE)…"
+  echo "  [3/4] CDN modules ($CDN_BASE)…"
   STALE=()
   for mod in "${CDN_MODULES[@]}"; do
     [[ -f "$mod" ]] || { pv_warn "local $mod missing — skipping CDN check"; continue; }
@@ -430,6 +435,65 @@ else
     # reads an EMPTY body (md5 d41d8cd9…) — a healthy deploy looks stale.
     echo "    for m in ${STALE[*]}; do curl -sL \"$CDN_BASE/\$m\" | md5sum; git show \"HEAD:\$m\" | md5sum; done"
   fi
+
+  # ── Check 4: veraPDF runtime artifacts (HARD) ──
+  # Cloudflare Pages serves index.html for unknown paths with HTTP 200. Status
+  # alone therefore cannot tell a working validator/JAR from the SPA fallback.
+  # Use the same HTML route opened by the PDF audit UI. Every retry uses a new
+  # query plus no-cache headers so an earlier edge object cannot hide an asset
+  # missing from the commit that was just deployed.
+  echo "  [4/4] veraPDF runtime artifacts ($CDN_BASE)…"
+  VERAPDF_VALIDATOR_ROUTE="verapdf/verapdf_validator.html"
+  VERAPDF_CLI_JAR_ROUTE="verapdf/verapdf-cli.jar"
+  VERA_HTML_VALID=0
+  VERA_JAR_VALID=0
+  VERA_HTML_REASON="not checked"
+  VERA_JAR_REASON="not checked"
+  VERAPDF_ATTEMPT=0
+  while [[ $VERAPDF_ATTEMPT -le $CDN_RETRIES ]]; do
+    VERA_QUERY="${POST_VERIFY_CACHE_BUST}-${VERAPDF_ATTEMPT}"
+
+    if [[ $VERA_HTML_VALID -ne 1 ]]; then
+      VERA_HTML_TMP=$(mktemp)
+      VERA_HTML_CODE=$(curl -sSL -H "Cache-Control: no-cache, no-store" -H "Pragma: no-cache" -o "$VERA_HTML_TMP" -w "%{http_code}" "$CDN_BASE/$VERAPDF_VALIDATOR_ROUTE?verify=$VERA_QUERY" 2>/dev/null || echo "000")
+      if [[ "$VERA_HTML_CODE" != "200" || ! -s "$VERA_HTML_TMP" ]]; then
+        VERA_HTML_REASON="HTTP ${VERA_HTML_CODE} / empty"
+      elif ! grep -Fq "Independent PDF/UA-1 validator" "$VERA_HTML_TMP" || ! grep -Fq "type: 'verapdf-ready'" "$VERA_HTML_TMP" || ! grep -Fq "boot();" "$VERA_HTML_TMP"; then
+        VERA_HTML_REASON="HTTP 200 without validator identity/ready/boot markers (likely SPA fallback)"
+      else
+        VERA_HTML_VALID=1
+      fi
+      rm -f "$VERA_HTML_TMP"
+    fi
+
+    if [[ $VERA_JAR_VALID -ne 1 ]]; then
+      VERA_JAR_TMP=$(mktemp)
+      VERA_JAR_HEADERS=$(mktemp)
+      VERA_JAR_CODE=$(curl -sSL -H "Cache-Control: no-cache, no-store" -H "Pragma: no-cache" -D "$VERA_JAR_HEADERS" -o "$VERA_JAR_TMP" -w "%{http_code}" "$CDN_BASE/$VERAPDF_CLI_JAR_ROUTE?verify=$VERA_QUERY" 2>/dev/null || echo "000")
+      VERA_JAR_TYPE=$(awk 'BEGIN { IGNORECASE=1 } /^content-type:/ { value=$0 } END { sub(/\r$/, "", value); sub(/^[^:]*:[[:space:]]*/, "", value); print tolower(value) }' "$VERA_JAR_HEADERS")
+      VERA_JAR_SIZE=$(wc -c < "$VERA_JAR_TMP" | tr -d '[:space:]')
+      VERA_JAR_MAGIC=$(od -An -tx1 -N4 "$VERA_JAR_TMP" 2>/dev/null | tr -d '[:space:]')
+      if [[ "$VERA_JAR_CODE" != "200" || ! -s "$VERA_JAR_TMP" ]]; then
+        VERA_JAR_REASON="HTTP ${VERA_JAR_CODE} / empty"
+      elif [[ "$VERA_JAR_TYPE" == text/html* || "$VERA_JAR_TYPE" == text/plain* ]]; then
+        VERA_JAR_REASON="content-type ${VERA_JAR_TYPE} (likely SPA fallback)"
+      elif [[ "$VERA_JAR_MAGIC" != "504b0304" || "${VERA_JAR_SIZE:-0}" -lt 1000000 ]]; then
+        VERA_JAR_REASON="not a plausible JAR (magic=${VERA_JAR_MAGIC:-<empty>}, bytes=${VERA_JAR_SIZE:-0}, type=${VERA_JAR_TYPE:-<missing>})"
+      else
+        VERA_JAR_VALID=1
+      fi
+      rm -f "$VERA_JAR_TMP" "$VERA_JAR_HEADERS"
+    fi
+
+    if [[ $VERA_HTML_VALID -eq 1 && $VERA_JAR_VALID -eq 1 ]]; then break; fi
+    if [[ $VERAPDF_ATTEMPT -lt $CDN_RETRIES ]]; then
+      echo "  … veraPDF artifacts still propagating; re-checking in ${CDN_WAIT}s (attempt $((VERAPDF_ATTEMPT+1))/${CDN_RETRIES})"
+      sleep "$CDN_WAIT"
+    fi
+    VERAPDF_ATTEMPT=$((VERAPDF_ATTEMPT+1))
+  done
+  if [[ $VERA_HTML_VALID -eq 1 ]]; then pv_ok "$VERAPDF_VALIDATOR_ROUTE is the validator (identity + ready/boot markers present)"; else pv_fail "$VERAPDF_VALIDATOR_ROUTE: $VERA_HTML_REASON"; fi
+  if [[ $VERA_JAR_VALID -eq 1 ]]; then pv_ok "$VERAPDF_CLI_JAR_ROUTE is a real JAR (PK magic + >1MB)"; else pv_fail "$VERAPDF_CLI_JAR_ROUTE: $VERA_JAR_REASON"; fi
 fi
 
 # ── Done ───────────────────────────────────────────────────────────

@@ -27,6 +27,10 @@ api key.txt
 *.key
 *.secret
 
+# Security: Never commit Firebase admin / GCP service-account keys (full backend access)
+serviceAccount*.json
+*-adminsdk*.json
+
 # Security: CSE API key config — deployed to Firebase only, never committed
 desktop/web-app/public/cse-config.json
 cse-config.json

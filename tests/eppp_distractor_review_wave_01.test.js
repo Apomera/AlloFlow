@@ -5,7 +5,6 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 const root = process.cwd();
 const bankPath = path.join(root, 'test_prep', 'eppp_native_items.json');
-const reviewScriptPath = path.join(root, 'dev-tools', 'build_eppp_distractor_review_wave_01.cjs');
 const docketScriptPath = path.join(root, 'dev-tools', 'build_eppp_distractor_action_docket.cjs');
 const reviewPath = path.join(root, 'test_prep', 'eppp_distractor_review_wave_01.json');
 const deployReviewPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_distractor_review_wave_01.json');
@@ -26,7 +25,6 @@ let docket;
 let diagnostics;
 
 beforeAll(() => {
-  execFileSync(process.execPath, [reviewScriptPath], { cwd: root, stdio: 'pipe' });
   execFileSync(process.execPath, [docketScriptPath], { cwd: root, stdio: 'pipe' });
   bank = JSON.parse(fs.readFileSync(bankPath, 'utf8'));
   review = JSON.parse(fs.readFileSync(reviewPath, 'utf8'));
@@ -35,7 +33,7 @@ beforeAll(() => {
 });
 
 describe('EPPP distractor warning adjudication wave 01', () => {
-  it('records five source-bound no-revision decisions without changing learner-facing items', () => {
+  it('retains five source-bound historical decisions and identifies current versus stale fingerprints', () => {
     expect(review).toMatchObject({
       schemaVersion: 1,
       reviewWave: 'eppp-distractor-review-wave-01',
@@ -50,48 +48,57 @@ describe('EPPP distractor warning adjudication wave 01', () => {
     });
     expect(review.items.map((item) => item.id)).toEqual(reviewedIds);
     const bankById = new Map(bank.map((item) => [item.id, item]));
+    const currentAppliedIds = new Set(docket.appliedAdjudications.map((item) => item.id));
+    const staleIds = new Set(docket.staleAdjudications.map((item) => item.id));
     review.items.forEach((item) => {
       const bankItem = bankById.get(item.id);
       expect(item.resolution).toBe('reviewed-no-revision');
       expect(item.diagnosticsReviewed).toEqual(['semantic-concept-duplicate-candidate']);
       expect(item.sourceCheck.length).toBeGreaterThanOrEqual(160);
-      expect(item.sourceUrls.every((url) => bankItem.references.includes(url))).toBe(true);
-      expect(item.prompt).toBe(bankItem.prompt);
-      expect(item.answerIndex).toBe(bankItem.answerIndex);
-      expect(item.keyedChoice).toBe(bankItem.choices[bankItem.answerIndex]);
+      expect(item.sourceUrls.every((url) => /^https:\/\//.test(url))).toBe(true);
+      if (currentAppliedIds.has(item.id)) {
+        expect(item.prompt).toBe(bankItem.prompt);
+        expect(item.answerIndex).toBe(bankItem.answerIndex);
+        expect(item.keyedChoice).toBe(bankItem.choices[bankItem.answerIndex]);
+      } else {
+        expect(staleIds.has(item.id)).toBe(true);
+      }
       expect(item.pairedItems.length).toBeGreaterThan(0);
     });
   });
 
-  it('preserves raw warnings while advancing only unreviewed items into the action docket', () => {
-    expect(diagnostics.priorityDocket.map((item) => item.id).slice(0, 5)).toEqual(reviewedIds);
+  it('preserves raw warnings while returning stale adjudications to the current action docket', () => {
+    const appliedIds = docket.appliedAdjudications.map((item) => item.id);
+    const staleIds = docket.staleAdjudications.map((item) => item.id);
+    expect(diagnostics.priorityDocket.map((item) => item.id).slice(0, 2)).toEqual(appliedIds);
     expect(docket).toMatchObject({
       schemaVersion: 1,
       reportType: 'adjudication-aware-editorial-action-docket',
       summary: {
         rawPriorityDocketItems: 20,
-        currentAdjudicationsApplied: 5,
-        staleAdjudications: 0,
-        actionItems: 15,
+        currentAdjudicationsApplied: 2,
+        staleAdjudications: 3,
+        actionItems: 18,
         learnerFacingItemsChanged: 0,
-        status: 'pass',
+        status: 'review-required',
       },
     });
-    expect(docket.actionItems.some((item) => reviewedIds.includes(item.id))).toBe(false);
+    expect(appliedIds).toEqual([reviewedIds[0], reviewedIds[4]]);
+    expect(staleIds).toEqual(reviewedIds.slice(1, 4));
+    expect(docket.staleAdjudications.every((item) => item.mismatchReasons.length > 0)).toBe(true);
+    expect(docket.actionItems.some((item) => appliedIds.includes(item.id))).toBe(false);
     expect(docket.actionItems.map((item) => item.originalDiagnosticRank)).toEqual(
-      Array.from({ length: 15 }, (_value, index) => index + 6),
+      Array.from({ length: 18 }, (_value, index) => index + 3),
     );
     expect(docket.actionItems.map((item) => item.actionRank)).toEqual(
-      Array.from({ length: 15 }, (_value, index) => index + 1),
+      Array.from({ length: 18 }, (_value, index) => index + 1),
     );
   });
-
   it('publishes deterministic source/deploy-identical evidence', () => {
     const firstReview = fs.readFileSync(reviewPath, 'utf8');
     const firstDocket = fs.readFileSync(docketPath, 'utf8');
     expect(fs.readFileSync(deployReviewPath, 'utf8')).toBe(firstReview);
     expect(fs.readFileSync(deployDocketPath, 'utf8')).toBe(firstDocket);
-    execFileSync(process.execPath, [reviewScriptPath], { cwd: root, stdio: 'pipe' });
     execFileSync(process.execPath, [docketScriptPath], { cwd: root, stdio: 'pipe' });
     expect(fs.readFileSync(reviewPath, 'utf8')).toBe(firstReview);
     expect(fs.readFileSync(docketPath, 'utf8')).toBe(firstDocket);

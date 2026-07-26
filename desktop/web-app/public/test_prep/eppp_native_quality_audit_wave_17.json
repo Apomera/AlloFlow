@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-17",
+  "reviewedAt": "2026-07-26",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next 10 selected items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 10,
+    "domainsCovered": 6,
+    "appliedOrAnalysisItems": 10,
+    "keyPositionsPreserved": 10,
+    "optionSpecificExplanations": 40,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 65,
+      "asymmetricExtremeDistractorCandidates": 140,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 116,
+      "semanticConceptDuplicateClusters": 59,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 67,
+      "asymmetricExtremeDistractorCandidates": 130,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 116,
+      "semanticConceptDuplicateClusters": 60,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountContext": {
+      "before": "Authored reviewed global diagnostic snapshot used to select wave 17; it is not recomputed from the current canonical replay input.",
+      "after": "Global diagnostics immediately after wave 17 and before the downstream distractor-halving campaign replays.",
+      "interpretation": "Use item-level diagnosticsBefore and diagnosticsAfter for wave-specific evidence, and use the final canonical diagnostic artifact for current global totals."
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v2-biological-033",
+      "domainId": "biological",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "biological-differentiate-nonfluent-aphasia-from-motor-speech-disorders",
+      "sourceCheck": "OpenStax supports the conventional nonfluent-versus-fluent aphasia contrast, and ASHA frames aphasia as a language disorder assessed across expression and comprehension. The item therefore uses converging behavioral findings rather than claiming that one symptom or one cortical point establishes the diagnosis.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-biological-032",
+      "domainId": "biological",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "biological-interpret-frontal-language-mapping-with-network-caution",
+      "sourceCheck": "OpenStax supplies the classical left-frontal and nonfluent-language association, while the Nature review supports interpreting language as a distributed and individually variable network. The keyed response deliberately states consistency and association instead of a one-region, one-function identity claim.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b026-assessment-4",
+      "domainId": "assessment",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "assessment-evaluate-norm-group-fit-and-administration-conditions",
+      "sourceCheck": "The joint testing Standards require evidence supporting the intended interpretation and use of scores, with attention to the relevant reference population and administration conditions. The revised vignette applies that principle to stale, age-mismatched norms rather than asking for the definition of a norm-referenced score.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b013-professional-1",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "professional-manage-interpreter-competence-roles-confidentiality-and-validity",
+      "sourceCheck": "The APA Ethics Code anchors competence, delegation, confidentiality, and responsible assessment-method use, while the joint testing Standards require evidence and disclosure for altered administration conditions. Together they support a structured decision about the interpreter and score limitations rather than automatic use or automatic refusal.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b009-professional-1",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-apply-justice-to-accessibility-barriers",
+      "sourceCheck": "The official APA Ethics Code describes Justice in terms of fairness, equal access to psychology's contributions, and safeguards against bias or limits that produce unjust practices. The item applies that aspirational principle to a concrete accessibility barrier without presenting it as a substitute for specific disability law.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b014-professional-1",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-apply-beneficence-and-nonmaleficence-to-benefit-risk-decisions",
+      "sourceCheck": "The official APA Ethics Code states that psychologists strive to benefit those with whom they work, protect welfare, and guard against harm. The scenario tests how that principle guides a proportionate choice under foreseeable risk, while avoiding the false claims that ethical care must be risk-free or that consent resolves the analysis.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b009-intervention-1",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-identify-act-flexibility-and-values-processes",
+      "sourceCheck": "The peer-reviewed ACT model article identifies psychological flexibility as the overarching target and links acceptance, defusion, values, and committed action. Every active element in the vignette maps to those processes, while the distractors substitute symptom control, cognitive content replacement, or reassurance dependence.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b013-social-1",
+      "domainId": "social-cultural",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "social-cultural-interpret-cultural-variation-in-correspondence-bias",
+      "sourceCheck": "The Psychological Bulletin review synthesizes evidence for both variation and shared attribution processes across cultures. The revised item therefore asks for a qualified group-level conclusion and makes overgeneralization, disappearance of dispositional inference, and proof of absence the neighboring errors.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b010-research-2",
+      "domainId": "research",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "research-diagnose-confounding-from-nonrandom-program-assignment",
+      "sourceCheck": "The What Works Clearinghouse standards treat assignment processes, baseline equivalence, and confounding factors as central to credible education-effect estimates. The vignette makes program access coincide with two plausible outcome causes, so the key identifies an alternative-explanation problem rather than sample size or posttest timing.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b014-research-2",
+      "domainId": "research",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "research-interpret-null-hypothesis-at-population-model-level",
+      "sourceCheck": "The NIST handbook explains conventional null-hypothesis tests in terms of a specified null model, sample evidence, critical values, and p values. The revised item distinguishes the population claim from exact sample equality, broad clinical utility, and the common error of treating alpha as the probability that the null is true.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

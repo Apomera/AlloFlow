@@ -122,8 +122,8 @@ describe('Guided Mode host wiring', () => {
   });
 
   it('keeps Guided Next step separate from explicit Skip step controls', () => {
-    expect(banner).toContain('{!isLast && stepDone && <button');
-    expect(banner).toContain('{!isLast && !stepDone && guidedStep > 0 && <button');
+    expect(banner).toContain('{!isLast && stepDone && !phaseCheckpointReady && <button');
+    expect(banner).toContain('{!isLast && !stepDone && !phaseCheckpointReady && guidedStep > 0 && <button');
     expect(banner).not.toContain('background: guidedEngaged ?');
   });
 
@@ -144,17 +144,20 @@ describe('Guided Mode host wiring', () => {
 
   it('sanitizes saved step IDs and persists skipped/session-created state', () => {
     expect(app).toContain('const normalizeGuidedProgress');
+    expect(app).toContain('const normalizeGuidedPlanBrief');
     expect(app).toContain('new Set(GUIDED_STEP_IDS)');
     expect(app).not.toContain("_sel.length + 1 : _sel.length) : 22");
     expect(app).toContain('skippedSteps: guidedSkippedIds');
     expect(app).toContain('createdHistoryIds: guidedCreatedHistoryIds');
+    expect(app).toContain('planBrief: guidedPlanBrief');
+    expect(app).toContain('guidedPlanBrief={guidedPlanBrief}');
     expect(banner).toContain('_createdIdSet.has(h.id)');
   });
 
   it('tracks explicit skips separately from completed steps', () => {
     expect(app).toContain('const handleGuidedSkip = (wasSkipped = false)');
     expect(app).toContain('setGuidedSkippedIds');
-    expect(banner).toContain('guidedSkippedIds.includes(s.id)');
+    expect(banner).toContain('guidedSkippedIds.includes(item.id)');
     expect(banner).toContain('handleGuidedSkip(true)');
     expect(banner).toContain('handleGuidedSkip(false)');
   });
@@ -191,7 +194,7 @@ describe('Guided Mode improvement wiring', () => {
     expect(app).toContain("TEACHER'S NEW REFINEMENT:");
     expect(app).toContain('generateGuidedPlanFromGoal={generateGuidedPlanFromGoal}');
     expect(banner).toContain("t('guided.ai_plan_privacy')");
-    expect(banner).toContain('applyGuidedPreset({ id: \'ai-plan\'');
+    expect(banner).toContain('applyGuidedPreset(appliedAiPlanPayload())');
     expect(banner).toContain('setPendingAiPlanApply(true)');
     expect(banner).toContain('requestAiPlanRefinement');
     expect(banner).toContain('guided-ai-roadmap-title');
@@ -207,6 +210,13 @@ describe('Guided Mode improvement wiring', () => {
     expect(banner).toContain("requestAiGuidedPlan('best-judgment')");
     expect(banner).toContain('guided-planner-recovery-title');
     expect(banner).toContain('guided-ai-changes-title');
+    expect(app).toContain('const applyGuidedPlanToRemaining = (preset) =>');
+    expect(app).toContain('applyGuidedPlanToRemaining={applyGuidedPlanToRemaining}');
+    expect(app).toContain("if (current.phase && following?.phase && current.phase !== following.phase) return;");
+    expect(banner).toContain('onClick={applyAiPlanToRemainingNow}');
+    expect(banner).toContain("localStorage.setItem('allo_guided_classroom_context'");
+    expect(banner).toContain("format: 'alloflow-guided-plans'");
+    expect(banner).toContain('className="allo-guided-phase-checkpoint"');
   });
   it('adds outcome phases, assignment directions, and comprehensive delivery as real milestones', () => {
     expect(app).toContain('const GUIDED_PHASES = [');
@@ -268,7 +278,7 @@ describe('Guided Mode controlled-journey safeguards', () => {
 
   it('counts entered source text as completed and ignores panel-shell clicks', () => {
     expect(banner).toContain("_effectiveCompletedSet.add('source-input')");
-    expect(banner).toContain('const done = _effectiveCompletedSet.has(s.id)');
+    expect(banner).toContain('const phaseDone = phaseSteps.length > 0');
     expect(app).toContain("target.closest('button, input, select, textarea, a[href]");
     expect(app).toContain("control.getAttribute('aria-expanded') != null");
   });

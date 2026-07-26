@@ -23,8 +23,36 @@ function writeFileWithRetry(filePath, contents) {
   throw lastError;
 }
 
-function runNativeQualityWave({ dataFile, waveNumber }) {
-  const { reviewedAt, reviewWave, warningCountsBefore, revisions } = require(path.resolve(__dirname, dataFile));
+function assertNativeQualityWaveReplayPreimage({ item, action, revision, reviewWave }) {
+  const matchesFrozenPrompt = item.prompt === revision.expectedPrompt;
+  const hasOwnWaveMarker = item.wordingReviewWave === reviewWave;
+  const matchesOwnWaveAfterState = hasOwnWaveMarker && item.prompt === revision.prompt;
+  const hasCampaignSupersession = hasOwnWaveMarker && (item.qualityReviewHistory || []).some((entry) => (
+    entry?.campaignId === 'eppp-distractor-halving-campaign-v1' && entry.mode === 'deep-rewrite'
+  ));
+  const matchesRecognizedAfterState = matchesOwnWaveAfterState || hasCampaignSupersession;
+  const matchesDocketRank = Boolean(action && action.actionRank === revision.expectedActionRank);
+
+  if (!matchesDocketRank && !matchesFrozenPrompt && !matchesRecognizedAfterState) {
+    throw new Error(revision.id + ' action-docket rank drifted.');
+  }
+  if (!matchesFrozenPrompt && !matchesRecognizedAfterState) {
+    throw new Error(revision.id + ' source prompt drifted.');
+  }
+
+  return {
+    matchesFrozenPrompt,
+    hasOwnWaveMarker,
+    matchesOwnWaveAfterState,
+    hasCampaignSupersession,
+    matchesDocketRank,
+  };
+}
+
+function runNativeQualityWave({ dataFile, waveNumber, expectedRevisionCount = 8 }) {
+  const {
+    reviewedAt, reviewWave, warningCountsBefore, warningCountContext = null, revisions,
+  } = require(path.resolve(__dirname, dataFile));
   const expectedWave = `eppp-native-quality-wave-${waveNumber}`;
   if (reviewWave !== expectedWave) throw new Error(`Expected ${expectedWave}; received ${reviewWave}.`);
 
@@ -51,8 +79,11 @@ function runNativeQualityWave({ dataFile, waveNumber }) {
   const actionDocket = JSON.parse(fs.readFileSync(actionDocketPath, 'utf8'));
   const diagnosticsBefore = JSON.parse(fs.readFileSync(diagnosticsPath, 'utf8'));
   if (!Array.isArray(bank) || bank.length !== 1500) throw new Error('Expected the 1,500-item EPPP native bank.');
-  if (!Array.isArray(revisions) || revisions.length !== 8) {
-    throw new Error(`Wave ${waveNumber} must contain exactly eight revisions.`);
+  if (!Number.isInteger(expectedRevisionCount) || expectedRevisionCount < 1) {
+    throw new Error(`Wave ${waveNumber} needs a positive integer revision-count contract.`);
+  }
+  if (!Array.isArray(revisions) || revisions.length !== expectedRevisionCount) {
+    throw new Error(`Wave ${waveNumber} must contain exactly ${expectedRevisionCount} revisions.`);
   }
   if (!warningCountsBefore || warningCountsBefore.totalItems !== 1500) {
     throw new Error(`Wave ${waveNumber} needs its reviewed pre-wave diagnostic snapshot.`);
@@ -71,13 +102,8 @@ function runNativeQualityWave({ dataFile, waveNumber }) {
     const item = bankById.get(revision.id);
     const action = actionById.get(revision.id);
     if (!item) throw new Error('Missing selected item: ' + revision.id);
-    if ((!action || action.actionRank !== revision.expectedActionRank) && item.wordingReviewWave !== reviewWave) {
-      throw new Error(revision.id + ' action-docket rank drifted.');
-    }
+    assertNativeQualityWaveReplayPreimage({ item, action, revision, reviewWave });
     if (item.answerIndex !== revision.expectedAnswerIndex) throw new Error(revision.id + ' answer position drifted.');
-    if (item.prompt !== revision.expectedPrompt && item.wordingReviewWave !== reviewWave) {
-      throw new Error(revision.id + ' source prompt drifted.');
-    }
     if (!Array.isArray(revision.choices) || revision.choices.length !== 4
       || new Set(revision.choices.map((choice) => choice.toLowerCase())).size !== 4) {
       throw new Error(revision.id + ' needs four distinct choices.');
@@ -201,7 +227,7 @@ function runNativeQualityWave({ dataFile, waveNumber }) {
     reviewWave,
     reviewedAt,
     reportType: 'source-checked-native-item-repair',
-    scope: 'Deep-rewrite the next eight unreviewed items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.',
+    scope: `Deep-rewrite the next ${expectedRevisionCount} selected items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.`,
     challengeCriteria: [
       'replace definition completion with application or analysis where difficulty warrants',
       'use adjacent, instructionally plausible distractors without stacked absolute cues',
@@ -221,6 +247,7 @@ function runNativeQualityWave({ dataFile, waveNumber }) {
       selectedWarningIdsAfter,
       warningCountsBefore: { ...warningCountsBefore },
       warningCountsAfter: { ...diagnosticsAfter.summary },
+      ...(warningCountContext ? { warningCountContext: { ...warningCountContext } } : {}),
       status: selectedWarningIdsAfter.length ? 'review-required' : 'pass',
     },
     items: auditItems,
@@ -239,6 +266,7 @@ Reviewed: ${reviewedAt}
 - ${report.summary.selectedItemsWithWarningsAfter
     ? `Kept ${report.summary.selectedItemsWithWarningsAfter} selected items in review because at least one warning remains: ${report.summary.selectedWarningIdsAfter.join(', ')}.`
     : 'Cleared all four warning families for the selected tranche.'}
+${warningCountContext ? '- Global-count context: ' + warningCountContext.interpretation : ''}
 
 > Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation.
 `;
@@ -254,4 +282,4 @@ Reviewed: ${reviewedAt}
   return report;
 }
 
-module.exports = { runNativeQualityWave };
+module.exports = { assertNativeQualityWaveReplayPreimage, runNativeQualityWave };

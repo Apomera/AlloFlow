@@ -3277,7 +3277,7 @@ window.StemLab = window.StemLab || {
           }),
           h('button', { onClick: askAITutor,
             disabled: aiLoading || !aiQuestion.trim(),
-            className: 'px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-sm hover:bg-sky-700 disabled:opacity-50 transition-all'
+            className: 'px-4 py-2 bg-sky-700 text-white font-bold rounded-lg text-sm hover:bg-sky-800 disabled:opacity-50 transition-all'
           }, aiLoading ? '\u23F3' : 'Ask')
         ),
         // Quick questions
@@ -3554,7 +3554,7 @@ window.StemLab = window.StemLab || {
                 value: wpFilter,
                 onChange: function(e) { upd({ wpFilter: e.target.value, wpIdx: 0, wpAnswer: '', wpFeedback: null, wpHintLevel: 0 }); },
                 'aria-label': 'Context filter',
-                className: 'text-[11px] px-2 py-1 rounded border border-amber-300 bg-white text-amber-800'
+                className: 'text-[11px] px-2 py-1 rounded border border-amber-600 bg-white text-amber-800'
               },
                 h('option', { value: 'all' }, 'All contexts'),
                 Object.keys(CONTEXTS).map(function(k) {
@@ -3568,7 +3568,7 @@ window.StemLab = window.StemLab || {
                 value: wpGrade,
                 onChange: function(e) { upd({ wpGrade: e.target.value, wpIdx: 0, wpAnswer: '', wpFeedback: null, wpHintLevel: 0 }); },
                 'aria-label': 'Difficulty filter',
-                className: 'text-[11px] px-2 py-1 rounded border border-amber-300 bg-white text-amber-800'
+                className: 'text-[11px] px-2 py-1 rounded border border-amber-600 bg-white text-amber-800'
               },
                 h('option', { value: 'all' }, 'All grades'),
                 h('option', { value: 'easy' }, 'Easy (3-4)'),
@@ -3603,7 +3603,7 @@ window.StemLab = window.StemLab || {
             }),
             h('button', {
               onClick: function() { checkWordProblem(problem, wpAnswer); },
-              className: 'px-4 py-2 bg-amber-600 text-white font-bold rounded-lg text-sm hover:bg-amber-700'
+              className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800'
             }, 'Check')
           ),
           wpFeedback && h('p', { className: 'text-sm font-bold ' + (wpFeedback.correct ? 'text-green-700' : 'text-red-700') }, wpFeedback.msg),
@@ -3642,7 +3642,7 @@ window.StemLab = window.StemLab || {
               h('button', {
                 onClick: function() { upd({ wpIdx: (wpIdx + 1) % filtered.length, wpAnswer: '', wpFeedback: null, wpHintLevel: 0 }); sfxNewChallenge(); },
                 'aria-label': 'Next problem',
-                className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700'
+                className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800'
               }, 'Next →')
             )
           )
@@ -3879,7 +3879,7 @@ window.StemLab = window.StemLab || {
           ),
           h('button', {
             onClick: startPizzaShop,
-            className: 'px-6 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl text-base hover:from-red-600 hover:to-orange-600 shadow-md'
+            className: 'px-6 py-3 bg-gradient-to-r from-red-600 to-orange-700 text-white font-bold rounded-xl text-base hover:from-red-600 hover:to-orange-700 shadow-md'
           }, '🍕 Start serving')
         );
       }
@@ -3939,7 +3939,7 @@ window.StemLab = window.StemLab || {
           ),
           h('button', {
             onClick: serveCustomer,
-            className: 'w-full px-4 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white font-bold rounded-xl text-base hover:from-red-700 hover:to-orange-700 shadow-md'
+            className: 'w-full px-4 py-3 bg-gradient-to-r from-red-600 to-orange-700 text-white font-bold rounded-xl text-base hover:from-red-700 hover:to-orange-700 shadow-md'
           }, '🍕 Serve ' + ps.slices + '/' + ps.totalSlices + ' to customer')
         )
       );
@@ -3987,7 +3987,7 @@ window.StemLab = window.StemLab || {
           ),
           h('button', {
             onClick: startFractionRace,
-            className: 'px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-xl text-base hover:from-blue-600 hover:to-cyan-600 shadow-md'
+            className: 'px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-700 text-white font-bold rounded-xl text-base hover:from-blue-600 hover:to-cyan-700 shadow-md'
           }, '🏁 Start race')
         );
       }
@@ -4098,7 +4098,7 @@ window.StemLab = window.StemLab || {
           ),
           h('button', {
             onClick: startEMGame,
-            className: 'px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-xl text-base hover:from-purple-600 hover:to-pink-600 shadow-md'
+            className: 'px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl text-base hover:from-purple-600 hover:to-pink-600 shadow-md'
           }, '🃏 Start matching')
         );
       }
@@ -4127,7 +4127,7 @@ window.StemLab = window.StemLab || {
               className: 'aspect-square rounded-xl text-lg font-bold transition-all flex items-center justify-center ' +
                 (isMatched ? 'bg-green-100 text-green-800 border-2 border-green-300' :
                  show ? 'bg-purple-100 text-purple-800 border-2 border-purple-400' :
-                 'bg-gradient-to-br from-purple-500 to-pink-500 text-white border-2 border-purple-700 hover:from-purple-600 hover:to-pink-600 cursor-pointer')
+                 'bg-gradient-to-br from-purple-600 to-pink-600 text-white border-2 border-purple-700 hover:from-purple-600 hover:to-pink-600 cursor-pointer')
             }, show ? card.n + '/' + card.d : '?');
           })
         ),
@@ -4189,7 +4189,7 @@ window.StemLab = window.StemLab || {
           ),
           h('button', {
             onClick: startFishGame,
-            className: 'px-6 py-3 bg-gradient-to-r from-cyan-500 to-teal-500 text-white font-bold rounded-xl text-base hover:from-cyan-600 hover:to-teal-600 shadow-md'
+            className: 'px-6 py-3 bg-gradient-to-r from-cyan-700 to-teal-700 text-white font-bold rounded-xl text-base hover:from-cyan-700 hover:to-teal-700 shadow-md'
           }, '🎣 Cast a line')
         );
       }
@@ -4200,7 +4200,7 @@ window.StemLab = window.StemLab || {
           h('h4', { className: 'text-xl font-black text-cyan-800' }, 'Game over!'),
           h('p', { className: 'text-base text-cyan-700' }, 'Final score: ', h('b', null, ff.score + ' fish caught')),
           h('button', { onClick: startFishGame,
-            className: 'px-6 py-3 bg-cyan-600 text-white font-bold rounded-xl hover:bg-cyan-700' }, '🎣 Cast again')
+            className: 'px-6 py-3 bg-cyan-700 text-white font-bold rounded-xl hover:bg-cyan-800' }, '🎣 Cast again')
         );
       }
 
@@ -4389,7 +4389,7 @@ window.StemLab = window.StemLab || {
             'See a sequence of fractions. What comes next?'
           ),
           h('button', { onClick: startPattern,
-            className: 'px-6 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700' }, '🔢 Start')
+            className: 'px-6 py-3 bg-green-700 text-white font-bold rounded-xl hover:bg-green-800' }, '🔢 Start')
         );
       }
       return h('div', { className: 'space-y-3' },
@@ -4420,7 +4420,7 @@ window.StemLab = window.StemLab || {
               className: 'flex-1 px-3 py-2 border border-green-400 rounded-lg text-base font-mono'
             }),
             h('button', { onClick: function() { guessNext(pb.answer || ''); },
-              className: 'px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700' }, 'Guess')
+              className: 'px-4 py-2 bg-green-700 text-white font-bold rounded-lg hover:bg-green-800' }, 'Guess')
           )
         )
       );
@@ -4507,7 +4507,7 @@ window.StemLab = window.StemLab || {
             '5×5 bingo card with fractions. Call a fraction, then mark any cell with an equivalent fraction. Get 5 in a row to win!'
           ),
           h('button', { onClick: startBingo,
-            className: 'px-6 py-3 bg-yellow-600 text-white font-bold rounded-xl hover:bg-yellow-700' }, '🎱 New card')
+            className: 'px-6 py-3 bg-yellow-700 text-white font-bold rounded-xl hover:bg-yellow-800' }, '🎱 New card')
         );
       }
       return h('div', { className: 'space-y-3' },
@@ -4544,7 +4544,7 @@ window.StemLab = window.StemLab || {
           )
         ),
         h('button', { onClick: callNumber,
-          className: 'w-full px-4 py-2 bg-yellow-600 text-white font-bold rounded-xl hover:bg-yellow-700' }, '🎲 Call a number')
+          className: 'w-full px-4 py-2 bg-yellow-700 text-white font-bold rounded-xl hover:bg-yellow-800' }, '🎲 Call a number')
       );
     };
 
@@ -4591,7 +4591,7 @@ window.StemLab = window.StemLab || {
           ),
           h('p', { className: 'text-[11px] text-orange-600' }, 'Wins so far: ' + (tw.score || 0)),
           h('button', { onClick: startTug,
-            className: 'px-6 py-3 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700' }, '🪢 Start tugging')
+            className: 'px-6 py-3 bg-orange-700 text-white font-bold rounded-xl hover:bg-orange-800' }, '🪢 Start tugging')
         );
       }
       var a = tw.round.a, b = tw.round.b;
@@ -4965,7 +4965,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-2' },
           h('button', {
             onClick: generateWorksheet,
-            className: 'flex-1 px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700'
+            className: 'flex-1 px-4 py-2 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800'
           }, '🔀 Generate ' + ws.count + ' problems'),
           generated && h('button', {
             onClick: printWorksheet,
@@ -5589,7 +5589,7 @@ window.StemLab = window.StemLab || {
             '2-player game. Place discs that show random fractions in the 7×6 grid. Have fun naming the fractions.'
           ),
           h('button', { onClick: startCf,
-            className: 'px-6 py-3 bg-cyan-600 text-white font-bold rounded-xl hover:bg-cyan-700' }, '⚪ Start game')
+            className: 'px-6 py-3 bg-cyan-700 text-white font-bold rounded-xl hover:bg-cyan-800' }, '⚪ Start game')
         );
       }
       return h('div', { className: 'space-y-3' },
@@ -5603,7 +5603,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid gap-1', style: { gridTemplateColumns: 'repeat(7, 1fr)' } },
             Array.from({ length: COLS }, function(_, c) {
               return h('button', { key: 'cf-col-' + c, onClick: function() { placeDisc(c); },
-                className: 'px-2 py-1 bg-cyan-500 text-white text-xs font-bold rounded hover:bg-cyan-600' }, '↓');
+                className: 'px-2 py-1 bg-cyan-700 text-white text-xs font-bold rounded hover:bg-cyan-800' }, '↓');
             })
           ),
           h('div', { className: 'grid gap-1 mt-2', style: { gridTemplateColumns: 'repeat(7, 1fr)' } },
@@ -5782,7 +5782,7 @@ window.StemLab = window.StemLab || {
             ETICKET_TOPICS.map(function(t) { return h('option', { key: 'et-' + t.id, value: t.id }, t.label); })
           ),
           h('button', { onClick: generateExitTicket,
-            className: 'w-full px-4 py-2 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700' }, '🖨 Generate and print exit ticket')
+            className: 'w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800' }, '🖨 Generate and print exit ticket')
         )
       );
     };
@@ -7349,7 +7349,7 @@ window.StemLab = window.StemLab || {
             'See a definition; pick the term. Master fraction vocabulary.'
           ),
           h('button', { onClick: startVq,
-            className: 'px-6 py-3 bg-sky-600 text-white font-bold rounded-xl hover:bg-sky-700' }, '📖 Start quiz')
+            className: 'px-6 py-3 bg-sky-700 text-white font-bold rounded-xl hover:bg-sky-800' }, '📖 Start quiz')
         );
       }
       return h('div', { className: 'space-y-3' },
@@ -7838,7 +7838,7 @@ window.StemLab = window.StemLab || {
               className: 'flex-1 px-3 py-2 border border-orange-400 rounded-lg text-sm font-mono'
             }),
             h('button', { onClick: checkStory,
-              className: 'px-4 py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700' }, 'Submit')
+              className: 'px-4 py-2 bg-orange-700 text-white font-bold rounded-lg hover:bg-orange-800' }, 'Submit')
           ),
           storyFeedback && h('p', { className: 'text-sm font-bold ' + (storyFeedback.correct ? 'text-green-700' : 'text-red-700') }, storyFeedback.msg),
           storyFeedback && storyFeedback.correct && h('div', { className: 'flex gap-2 mt-3' },
@@ -8345,7 +8345,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'flex gap-2' },
           h('button', { onClick: generateProbe,
-            className: 'flex-1 px-4 py-2 bg-teal-600 text-white font-bold rounded-xl hover:bg-teal-700' }, '🔀 Generate ' + probeCount + '-item probe'),
+            className: 'flex-1 px-4 py-2 bg-teal-700 text-white font-bold rounded-xl hover:bg-teal-800' }, '🔀 Generate ' + probeCount + '-item probe'),
           generatedProbe && h('button', { onClick: printProbe,
             className: 'flex-1 px-4 py-2 bg-teal-800 text-white font-bold rounded-xl hover:bg-teal-900' }, '🖨 Print probe')
         ),
@@ -8948,7 +8948,7 @@ window.StemLab = window.StemLab || {
             'Quickly estimate which benchmark a fraction is closest to. This is the fastest way to develop fraction number sense.'
           ),
           h('button', { onClick: startEst,
-            className: 'px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700' }, '🎯 Start training')
+            className: 'px-6 py-3 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800' }, '🎯 Start training')
         );
       }
       var er = estRound;
@@ -10231,7 +10231,7 @@ window.StemLab = window.StemLab || {
         !challenge
           ? h('button', { 'aria-label': 'Generate Challenge',
               onClick: generateChallenge,
-              className: 'w-full py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold rounded-xl text-sm hover:from-rose-600 hover:to-pink-600 transition-all shadow-md'
+              className: 'w-full py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold rounded-xl text-sm hover:from-rose-600 hover:to-pink-600 transition-all shadow-md'
             }, '\uD83C\uDFB2 Generate Challenge')
           : h('div', { className: 'space-y-2' },
               h('div', { className: 'flex items-center gap-2' },

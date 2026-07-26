@@ -1708,7 +1708,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   onClick: function() {
                     setWebglError(false);
                   },
-                  style: { padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
+                  style: { padding: '6px 12px', background: '#b91c1c', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
                 }, t('stem.echolocation.retry', 'Retry'))
               )
             : h('div', {
@@ -1816,16 +1816,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('button', {
               onTouchStart: function(ev) { ev.preventDefault(); var e = cave3dEngineRef.current; if (e) e.keys['KeyP'] = true; },
               onTouchEnd: function() { var e = cave3dEngineRef.current; if (e) e.keys['KeyP'] = false; },
-              className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: 'rgba(96,165,250,0.2)', border: '2px solid rgba(96,165,250,0.5)', color: '#60a5fa' }
+              className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: '#dbeafe', border: '2px solid #60a5fa', color: '#1e40af' }
             }, t('stem.echolocation.perch', '\uD83E\uDD87 Perch')),
             h('button', {
               onTouchStart: function(ev) { ev.preventDefault(); var e = cave3dEngineRef.current; if (e) e.keys['Space'] = true; },
               onTouchEnd: function() { var e = cave3dEngineRef.current; if (e) e.keys['Space'] = false; },
-              className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: 'rgba(167,139,250,0.2)', border: '2px solid rgba(167,139,250,0.5)', color: '#a78bfa' }
+              className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: '#ede9fe', border: '2px solid #a78bfa', color: '#5b21b6' }
             }, t('stem.echolocation.up', '\u2B06\uFE0F Up')),
             cave3dEngineRef.current && cave3dEngineRef.current.gameOver && h('button', {
               onTouchStart: function(ev) { ev.preventDefault(); var e = cave3dEngineRef.current; if (e) e.keys['KeyR'] = true; setTimeout(function() { if (e) e.keys['KeyR'] = false; }, 100); },
-              className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: 'rgba(239,68,68,0.2)', border: '2px solid rgba(239,68,68,0.5)', color: '#ef4444' }
+              className: 'px-4 py-2 rounded-xl font-bold text-sm', style: { background: '#fee2e2', border: '2px solid #ef4444', color: '#991b1b' }
             }, t('stem.echolocation.restart', '\uD83D\uDD04 Restart'))
           ),
           // Controls help

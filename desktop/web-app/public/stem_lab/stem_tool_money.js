@@ -2034,7 +2034,7 @@ window.StemLab = window.StemLab || {
 
             return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto animate-in fade-in duration-200" },
               // ── HEADER ──
-              React.createElement("div", { className: "bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 rounded-2xl p-5 text-white shadow-xl" },
+              React.createElement("div", { className: "bg-gradient-to-r from-emerald-700 via-green-700 to-teal-700 rounded-2xl p-5 text-white shadow-xl" },
                 React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-3" },
                   React.createElement("div", null,
                     React.createElement("h2", { className: "text-xl font-black flex items-center gap-2" }, __alloT('stem.money.money_math', "\uD83D\uDCB5 Money Math")),
@@ -2242,7 +2242,7 @@ window.StemLab = window.StemLab || {
                   ? React.createElement("div", { className: "text-center py-8" },
                       React.createElement("p", { className: "text-slate-600 text-sm mb-4" }, "Generate a problem to practice making change with " + cur.flag + " " + cur.name),
                       React.createElement("button", { "aria-label": __alloT('stem.money.generate_problem', "Generate Problem"), onClick: genChangeProblem,
-                        className: "px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all shadow-lg text-sm"
+                        className: "px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all shadow-lg text-sm"
                       }, __alloT('stem.money.generate_problem_2', "\u2728 Generate Problem"))
                     )
                   : React.createElement("div", { className: "space-y-4" },
@@ -2313,7 +2313,7 @@ window.StemLab = window.StemLab || {
                               return React.createElement('div', { key: 'return-' + piece.name + '-' + piece.value, role: 'listitem', 'aria-label': piece.count + ' times ' + piece.name + ', subtotal ' + fmt(piece.subtotal), className: 'relative flex items-center gap-2 rounded-lg bg-white border border-slate-200 p-2 min-w-0' },
                                 React.createElement('div', { className: 'relative flex-shrink-0' },
                                   piece.isBill ? renderBillVisual(piece.definition, true) : renderCoinVisual(piece.definition, true),
-                                  React.createElement('span', { className: 'absolute -right-1 -top-1 min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center shadow' }, '\u00D7' + piece.count)
+                                  React.createElement('span', { className: 'absolute -right-1 -top-1 min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-700 text-white text-[10px] font-black flex items-center justify-center shadow' }, '\u00D7' + piece.count)
                                 ),
                                 React.createElement('div', { className: 'min-w-0' },
                                   React.createElement('p', { className: 'text-[10px] font-bold text-slate-700 truncate' }, piece.name),
@@ -2678,7 +2678,7 @@ window.StemLab = window.StemLab || {
                           onKeyDown: function(e) { if(e.key === 'Enter') submitCashierAnswer(); },
                           placeholder: "Total...", autoFocus: true,
                           'aria-label': __alloT('stem.money.cashier_register_answer', 'Cashier register answer'),
-                          className: "w-full pl-12 pr-4 py-4 bg-zinc-800 border-2 border-zinc-600 rounded-xl text-zinc-100 font-mono text-xl font-bold focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all shadow-inner"
+                          className: "w-full pl-12 pr-4 py-4 bg-zinc-800 border-2 border-zinc-400 rounded-xl text-zinc-100 font-mono text-xl font-bold focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all shadow-inner"
                         })
                       ),
                       React.createElement("button", { "aria-label": "ENTER", onClick: submitCashierAnswer, disabled: !crAnswer,
@@ -3011,7 +3011,7 @@ window.StemLab = window.StemLab || {
                         upd('checkoutActive', true); upd('checkoutStep', 'payment'); upd('checkoutEstimate', d.cartGuessTotal); upd('weightItemIdx', null);
                         upd('checkoutEstimateFb', { ok: true, msg: __alloT('stem.money.mental_math_verified', 'Mental math verified. Choose how to pay.') });
                         upd('checkoutPayment', null); upd('checkoutTender', null); upd('checkoutReturned', []); upd('checkoutChangeFb', null);
-                      }, className: "w-full px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all text-sm shadow-md" }, __alloT('stem.money.continue_to_payment', '\uD83D\uDCB3 Continue to Payment')),
+                      }, className: "w-full px-4 py-2.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-black rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all text-sm shadow-md" }, __alloT('stem.money.continue_to_payment', '\uD83D\uDCB3 Continue to Payment')),
                       React.createElement("button", { "aria-label": __alloT('stem.money.clear_cart', "Clear Cart"), onClick: function () { upd('cart', []); upd('cartGuessSubtotal', null); upd('cartGuessTax', null); upd('cartGuessTotal', null); upd('cartCheckoutFb', null); resetGroceryCheckout(); }, className: "transition-colors w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, __alloT('stem.money.clear_cart_2', "Clear Cart"))
                     ),
                     // Complete Checkout Journey: estimate, choose payment, and make change.
@@ -3043,7 +3043,7 @@ window.StemLab = window.StemLab || {
                           upd('checkoutActive', true); upd('checkoutStep', 'estimate'); upd('checkoutEstimate', ''); upd('weightItemIdx', null);
                           upd('checkoutEstimateFb', null); upd('checkoutPayment', null); upd('checkoutTender', null);
                           upd('checkoutReturned', []); upd('checkoutChangeFb', null);
-                        }, className: "w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all text-sm shadow-md" }, __alloT('stem.money.start_complete_checkout', '\uD83D\uDED2 Start Complete Checkout')),
+                        }, className: "w-full px-4 py-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-black rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all text-sm shadow-md" }, __alloT('stem.money.start_complete_checkout', '\uD83D\uDED2 Start Complete Checkout')),
                         React.createElement("button", { "aria-label": __alloT('stem.money.clear_cart_3', "Clear Cart"), onClick: function () { upd('cart', []); resetGroceryCheckout(); }, className: "transition-colors w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, __alloT('stem.money.clear_cart_4', "Clear Cart"))
                       ) : React.createElement('div', { className: 'rounded-2xl border-2 border-teal-300 bg-white p-3 shadow-lg space-y-3' },
                         React.createElement('div', { className: 'flex items-center justify-between gap-2' },
@@ -3094,8 +3094,8 @@ window.StemLab = window.StemLab || {
                             upd('checkoutEstimateFb', { ok: closeEstimate, msg: closeEstimate
                               ? __alloT('stem.money.estimate_close', '\u2705 Good estimate! You were within 10% of the total.')
                               : __alloT('stem.money.estimate_learning', '\uD83D\uDCA1 Compare your estimate with the exact total before paying.') });
-                          }, className: 'w-full rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-black text-white hover:bg-sky-700 disabled:opacity-40' }, __alloT('stem.money.check_estimate', 'Check Estimate')) :
-                          React.createElement('button', { type: 'button', onClick: function () { upd('checkoutStep', 'payment'); }, className: 'w-full rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-black text-white hover:bg-teal-700' }, __alloT('stem.money.continue_to_payment', '\uD83D\uDCB3 Continue to Payment'))
+                          }, className: 'w-full rounded-xl bg-sky-700 px-4 py-2.5 text-sm font-black text-white hover:bg-sky-800 disabled:opacity-40' }, __alloT('stem.money.check_estimate', 'Check Estimate')) :
+                          React.createElement('button', { type: 'button', onClick: function () { upd('checkoutStep', 'payment'); }, className: 'w-full rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-black text-white hover:bg-teal-800' }, __alloT('stem.money.continue_to_payment', '\uD83D\uDCB3 Continue to Payment'))
                         ) : null,
                         checkoutStep === 'payment' ? React.createElement('div', { className: 'space-y-3' },
                           React.createElement('div', { className: 'flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2' },
@@ -3128,7 +3128,7 @@ window.StemLab = window.StemLab || {
                           React.createElement('button', { type: 'button', disabled: !checkoutPayment || (checkoutPayment === 'cash' && checkoutTender == null), onClick: function () {
                             if (checkoutPayment === 'cash') upd('checkoutStep', 'change');
                             else finishGroceryCheckout(checkoutPayment);
-                          }, className: 'w-full rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-black text-white hover:bg-teal-700 disabled:opacity-40' }, checkoutPayment === 'cash' ? __alloT('stem.money.continue_to_change', '\uD83D\uDCB5 Continue to Make Change') : __alloT('stem.money.pay_and_print', 'Pay & Print Receipt'))
+                          }, className: 'w-full rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-black text-white hover:bg-teal-800 disabled:opacity-40' }, checkoutPayment === 'cash' ? __alloT('stem.money.continue_to_change', '\uD83D\uDCB5 Continue to Make Change') : __alloT('stem.money.pay_and_print', 'Pay & Print Receipt'))
                         ) : null,
                         checkoutStep === 'change' ? React.createElement('div', { className: 'space-y-3' },
                           React.createElement('div', { className: 'grid grid-cols-3 gap-2 text-center' },
@@ -3162,11 +3162,11 @@ window.StemLab = window.StemLab || {
                               upd('checkoutChangeFb', correctReturn
                                 ? { ok: true, msg: __alloT('stem.money.change_correct', '\u2705 Correct change! The drawer balances.') }
                                 : { ok: false, msg: __alloT('stem.money.change_try_again', '\u274C The return tray does not match the change due yet.') });
-                            }, className: 'w-full rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-black text-white hover:bg-amber-700 disabled:opacity-40' }, __alloT('stem.money.check_returned_change', 'Check Returned Change')) :
-                            React.createElement('button', { type: 'button', onClick: function () { finishGroceryCheckout('cash'); }, className: 'w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-700' }, __alloT('stem.money.complete_and_print', '\u2705 Complete & Print Receipt'))
+                            }, className: 'w-full rounded-xl bg-amber-700 px-4 py-2.5 text-sm font-black text-white hover:bg-amber-800 disabled:opacity-40' }, __alloT('stem.money.check_returned_change', 'Check Returned Change')) :
+                            React.createElement('button', { type: 'button', onClick: function () { finishGroceryCheckout('cash'); }, className: 'w-full rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-800' }, __alloT('stem.money.complete_and_print', '\u2705 Complete & Print Receipt'))
                           ) : React.createElement('div', { className: 'rounded-xl border border-emerald-300 bg-emerald-50 p-3 text-center' },
                             React.createElement('p', { className: 'text-sm font-black text-emerald-800' }, __alloT('stem.money.exact_cash_no_change', '\u2705 Exact cash — no change is due.')),
-                            React.createElement('button', { type: 'button', onClick: function () { finishGroceryCheckout('cash'); }, className: 'mt-3 w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-700' }, __alloT('stem.money.complete_and_print', '\u2705 Complete & Print Receipt'))
+                            React.createElement('button', { type: 'button', onClick: function () { finishGroceryCheckout('cash'); }, className: 'mt-3 w-full rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-800' }, __alloT('stem.money.complete_and_print', '\u2705 Complete & Print Receipt'))
                           )
                         ) : null,
                         React.createElement('button', { type: 'button', onClick: resetGroceryCheckout, className: 'w-full rounded-lg px-3 py-1.5 text-[10px] font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-700' }, __alloT('stem.money.cancel_checkout', 'Cancel checkout and keep cart'))
@@ -3183,7 +3183,7 @@ window.StemLab = window.StemLab || {
                 !d.wpProblem && !d.wpLoading
                   ? React.createElement("div", { className: "text-center py-8" },
                       React.createElement("button", { "aria-label": __alloT('stem.money.generate_word_problem', "Generate Word Problem"), onClick: genWordProblem,
-                        className: "px-6 py-3 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-xl hover:from-violet-600 hover:to-purple-600 transition-all shadow-lg text-sm"
+                        className: "px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-xl hover:from-violet-600 hover:to-purple-600 transition-all shadow-lg text-sm"
                       }, __alloT('stem.money.generate_word_problem_2', "\u2728 Generate Word Problem"))
                     )
                   : d.wpLoading
@@ -3248,7 +3248,7 @@ window.StemLab = window.StemLab || {
                 !d.exchFrom
                   ? React.createElement("div", { className: "text-center py-6" },
                       React.createElement("button", { "aria-label": __alloT('stem.money.generate_conversion_problem', "Generate Conversion Problem"), onClick: genExchangeProblem,
-                        className: "px-6 py-3 bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-bold rounded-xl hover:from-sky-600 hover:to-cyan-600 transition-all shadow-lg text-sm"
+                        className: "px-6 py-3 bg-gradient-to-r from-sky-700 to-cyan-700 text-white font-bold rounded-xl hover:from-sky-700 hover:to-cyan-700 transition-all shadow-lg text-sm"
                       }, __alloT('stem.money.generate_conversion_problem_2', "\u2728 Generate Conversion Problem"))
                     )
                   : React.createElement("div", { className: "space-y-4" },
@@ -3285,7 +3285,7 @@ window.StemLab = window.StemLab || {
                             if (isRight && typeof addXP === 'function') addXP(20, 'Money Math: Currency conversion');
                             if (isRight && typeof awardStemXP === 'function') awardStemXP('moneyMath', 5, 'currency conversion');
                           },
-                          className: "px-5 py-2 bg-sky-500 text-white font-bold rounded-xl hover:bg-sky-600 transition-all text-sm"
+                          className: "px-5 py-2 bg-sky-700 text-white font-bold rounded-xl hover:bg-sky-800 transition-all text-sm"
                         }, __alloT('stem.money.check_8', "\u2714 Check"))
                       ),
                       d.exchFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.exchFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.exchFeedback.msg),
@@ -3307,7 +3307,7 @@ window.StemLab = window.StemLab || {
                   (d.tipMode || 'tip') === 'tip' && (!d.tipBill
                     ? React.createElement("div", { className: "text-center py-6" },
                         React.createElement("p", { className: "text-sm text-slate-600 mb-3" }, __alloT('stem.money.practice_calculating_restaurant_tips_a', "Practice calculating restaurant tips and splitting bills")),
-                        React.createElement("button", { "aria-label": __alloT('stem.money.generate_tip_problem', "Generate Tip Problem"), onClick: genTipProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, __alloT('stem.money.generate_tip_problem_2', "\u2728 Generate Tip Problem"))
+                        React.createElement("button", { "aria-label": __alloT('stem.money.generate_tip_problem', "Generate Tip Problem"), onClick: genTipProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, __alloT('stem.money.generate_tip_problem_2', "\u2728 Generate Tip Problem"))
                       )
                     : React.createElement("div", { className: "space-y-4" },
                         React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-pink-100" },
@@ -3345,7 +3345,7 @@ window.StemLab = window.StemLab || {
                   d.tipMode === 'discount' && (!d.discOriginal
                     ? React.createElement("div", { className: "text-center py-6" },
                         React.createElement("p", { className: "text-sm text-slate-600 mb-3" }, "Calculate sale prices with percentage discounts" + (gc.includePercent ? ' and coupons' : '')),
-                        React.createElement("button", { "aria-label": __alloT('stem.money.generate_discount_problem', "Generate Discount Problem"), onClick: genDiscountProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, __alloT('stem.money.generate_discount_problem_2', "\u2728 Generate Discount Problem"))
+                        React.createElement("button", { "aria-label": __alloT('stem.money.generate_discount_problem', "Generate Discount Problem"), onClick: genDiscountProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, __alloT('stem.money.generate_discount_problem_2', "\u2728 Generate Discount Problem"))
                       )
                     : React.createElement("div", { className: "space-y-4" },
                         React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-pink-100" },
@@ -3353,7 +3353,7 @@ window.StemLab = window.StemLab || {
                             React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.original_price', "Original Price")),
                             React.createElement("p", { className: "text-2xl font-black text-slate-600 line-through" }, fmt(d.discOriginal)),
                             React.createElement("div", { className: "flex items-center justify-center gap-2 mt-2" },
-                              React.createElement("span", { className: "px-3 py-1 bg-red-100 text-red-600 text-sm font-black rounded-full" }, d.discPercent + '% OFF'),
+                              React.createElement("span", { className: "px-3 py-1 bg-red-100 text-red-700 text-sm font-black rounded-full" }, d.discPercent + '% OFF'),
                               d.discCoupon > 0 && React.createElement("span", { className: "px-3 py-1 bg-amber-100 text-amber-800 text-sm font-black rounded-full" }, '+ ' + fmt(d.discCoupon) + ' coupon')
                             ),
                             React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, "What is the final price" + (d.discCoupon > 0 ? ' after discount AND coupon' : '') + '?')
@@ -3658,7 +3658,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-4 border border-indigo-200" },
                   React.createElement("div", { className: "flex items-center justify-between mb-3" },
                     React.createElement("h4", { className: "text-sm font-bold text-indigo-800" }, __alloT('stem.money.estimate_the_total', "\uD83E\uDDFE Estimate the Total")),
-                    React.createElement("button", { "aria-label": __alloT('stem.money.gen_estimate_total', "Gen Estimate Total"), onClick: genEstimateTotal, className: "px-3 py-1.5 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 transition-all" }, !d.estItems ? '\u2728 Start' : '\u21BB New')
+                    React.createElement("button", { "aria-label": __alloT('stem.money.gen_estimate_total', "Gen Estimate Total"), onClick: genEstimateTotal, className: "px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-all" }, !d.estItems ? '\u2728 Start' : '\u21BB New')
                   ),
                   d.estItems && React.createElement("div", { className: "space-y-2" },
                     React.createElement("div", { className: "bg-white rounded-lg border border-indigo-100 p-3 space-y-1" },
@@ -3683,7 +3683,7 @@ window.StemLab = window.StemLab || {
                           if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 10, 'estimate total');
                           if (typeof addXP === 'function') addXP(10, 'Money Math: Receipt estimation');
                         }
-                      }, className: "px-4 py-2 bg-indigo-500 text-white font-bold rounded-lg hover:bg-indigo-600 transition-all text-sm" }, "\u2714")
+                      }, className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-all text-sm" }, "\u2714")
                     ),
                     d.estFb && React.createElement("p", { className: "text-xs font-bold " + (d.estFb.ok ? 'text-green-600' : 'text-red-500') }, d.estFb.msg)
                   )

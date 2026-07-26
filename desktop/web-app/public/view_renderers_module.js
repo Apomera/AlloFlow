@@ -2834,13 +2834,25 @@ const _mpEsc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (ch) => ({ 
 const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onRecallArm, onRecallClose }) => {
   const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
   const hostRef = React.useRef(null);
+  const presentationRef = React.useRef(null);
+  const presentationNativeRef = React.useRef(false);
   const handleRef = React.useRef(null);
+  const calloutLineRef = React.useRef(null);
+  const calloutDotRef = React.useRef(null);
   const palaceRef = React.useRef(null);
   const [ready, setReady] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
+  const [presenting, setPresenting] = React.useState(false);
   const [glbReady, setGlbReady] = React.useState(false);
   const [furnishing, setFurnishing] = React.useState(null);
   const [nonce, setNonce] = React.useState(0);
+  const [routeEditing, setRouteEditing] = React.useState(false);
+  const [routeDraft, setRouteDraft] = React.useState([]);
+  const [routePreview, setRoutePreview] = React.useState(null);
+  const [routeUndo, setRouteUndo] = React.useState(null);
+  const [routeMasteryAck, setRouteMasteryAck] = React.useState(false);
+  const [routeAnnouncement, setRouteAnnouncement] = React.useState("");
+  const routeDragRef = React.useRef(null);
   const [current, setCurrent] = React.useState(null);
   const [nearbyEmpty, setNearbyEmpty] = React.useState(null);
   const nearbyEmptyRef = React.useRef(null);
@@ -2887,6 +2899,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const [canReveal, setCanReveal] = React.useState(false);
   const [typedAnswer, setTypedAnswer] = React.useState("");
   const [wrongFlash, setWrongFlash] = React.useState(false);
+  const [selfRevealId, setSelfRevealId] = React.useState(null);
   const [finished, setFinished] = React.useState(null);
   const [elapsed, setElapsed] = React.useState(0);
   const elapsedRef = React.useRef(0);
@@ -2896,7 +2909,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const dataKey = JSON.stringify({
     m: data?.main,
     b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items, mn: b.mnemonics })),
-    img: data?.memoryPalace?.generatedAt || 0
+    img: data?.memoryPalace?.generatedAt || 0,
+    route: data?.memoryPalace?.routeOrder || [],
+    routePreview: routePreview || []
   });
   const nowISO = React.useMemo(() => (/* @__PURE__ */ new Date()).toISOString(), []);
   const masteryKey = JSON.stringify(data?.memoryPalace?.mastery || {});
@@ -2964,9 +2979,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       setFailed(true);
       return void 0;
     }
-    palaceRef.current = MP.buildPalace(data || {});
+    const activeRouteOrder = routePreview || data?.memoryPalace?.routeOrder || void 0;
+    palaceRef.current = MP.buildPalace(data || {}, { routeOrder: activeRouteOrder });
     handleRef.current = MP.render(hostRef.current, data, {
       t,
+      routeOrder: activeRouteOrder,
       theme: data?.memoryPalace?.theme || "gallery",
       images: data?.memoryPalace?.images || {},
       depths: data?.memoryPalace?.depths || {},
@@ -2995,6 +3012,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         setRecallHint(r && r.attempts >= 2 && locus.mnemonic && !r.correct && !r.revealed ? locus.mnemonic : null);
         setCanReveal(!!(r && r.attempts >= 3 && !r.correct && !r.revealed));
         setTypedAnswer("");
+        setSelfRevealId(null);
       },
       onEmptyLocusApproach: (locus, near, idx, total, reason) => {
         if (!locus || recall) return;
@@ -3012,6 +3030,22 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         nearbyEmptyRef.current = locus.id;
         setNearbyEmpty({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1 });
         setCustomizeOpen(true);
+      },
+      onEmptyLocusAnchor: (id, point) => {
+        const line = calloutLineRef.current;
+        const dot = calloutDotRef.current;
+        if (!line || !dot) return;
+        if (!point || point.visible === false) {
+          line.style.opacity = "0";
+          dot.style.opacity = "0";
+          return;
+        }
+        line.setAttribute("x1", String(point.x));
+        line.setAttribute("y1", String(point.y));
+        dot.setAttribute("cx", String(point.x));
+        dot.setAttribute("cy", String(point.y));
+        line.style.opacity = "0.9";
+        dot.style.opacity = "1";
       }
     });
     return () => {
@@ -3032,6 +3066,54 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const handleSetTheme = (thm) => {
     if (!persist || thm === paletteTheme) return;
     persist({ ...mpRef.current || {}, theme: thm }, "memoryPalace");
+  };
+  React.useEffect(() => {
+    const getFullscreenElement = () => document.fullscreenElement || document.webkitFullscreenElement;
+    const onFullscreenChange = () => {
+      if (presentationNativeRef.current && !getFullscreenElement()) {
+        presentationNativeRef.current = false;
+        setPresenting(false);
+      }
+    };
+    const onPresentationKey = (event) => {
+      if (event.key === "Escape" && presenting && !getFullscreenElement()) setPresenting(false);
+    };
+    const previousOverflow = document.body.style.overflow;
+    if (presenting) document.body.style.overflow = "hidden";
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+    window.addEventListener("keydown", onPresentationKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", onFullscreenChange);
+      window.removeEventListener("keydown", onPresentationKey);
+    };
+  }, [presenting]);
+  const handlePresentation = async () => {
+    const node = presentationRef.current;
+    if (presenting) {
+      const leave = document.exitFullscreen || document.webkitExitFullscreen;
+      presentationNativeRef.current = false;
+      if ((document.fullscreenElement || document.webkitFullscreenElement) && leave) {
+        try {
+          await leave.call(document);
+        } catch (e) {
+        }
+      }
+      setPresenting(false);
+      return;
+    }
+    setPresenting(true);
+    const enter = node && (node.requestFullscreen || node.webkitRequestFullscreen);
+    if (enter) {
+      presentationNativeRef.current = true;
+      try {
+        await enter.call(node);
+      } catch (e) {
+        presentationNativeRef.current = false;
+      }
+    }
   };
   React.useEffect(() => {
     if (!recall || finished) return void 0;
@@ -3060,6 +3142,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     setCanReveal(false);
     setTypedAnswer("");
     setWrongFlash(false);
+    setSelfRevealId(null);
   };
   const startRecall = (mode, viaArm) => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
@@ -3072,9 +3155,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     }
     _resetRecallRun();
     const seed = Date.now() % 2147483647 || 7;
-    setRecallBank(MP.buildRecallBank(palace, seed));
+    setRecallBank(mode === "self" ? [] : MP.buildRecallBank(palace, seed));
     startedByArmRef.current = viaArm === true;
-    setRecall({ mode: mode === "type" ? "type" : "bank", seed, startAt: targets[0] });
+    setRecall({ mode: mode === "type" ? "type" : mode === "self" ? "self" : "bank", seed, startAt: targets[0] });
     if (addToast) addToast(t("memory_palace.recall_start") || "\u{1F9E0} The labels are covered. Walk the palace and recall what lives at each locus!", "info");
     if (isTeacherMode && viaArm !== true && typeof onRecallArm === "function") {
       try {
@@ -3110,7 +3193,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const targets = palace.route.filter((id) => id !== "__entry");
     _resetRecallRun();
     const seed = Date.now() % 2147483647 || 11;
-    setRecallBank(MP.buildRecallBank(palace, seed));
+    setRecallBank(mode === "self" ? [] : MP.buildRecallBank(palace, seed));
     setRecall({ mode, seed, startAt: targets[0] });
   };
   React.useEffect(() => {
@@ -3163,7 +3246,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       itemText: labelOf(id),
       attempts: res[id].attempts,
       revealed: !!res[id].revealed,
-      placedCategoryLabel: res[id].revealed ? "revealed" : "eventual",
+      placedCategoryLabel: res[id].revealed ? "revealed" : res[id].correct ? "eventual" : "missed",
       correctCategoryLabel: labelOf(id)
     }));
     if (score.perfect) {
@@ -3257,6 +3340,25 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     setTypedAnswer("");
     setAnswered((n) => n + 1);
     setTimeout(() => advanceRecall(), 700);
+  };
+  const revealSelfCheck = () => {
+    const cur = currentRef.current;
+    if (!cur || !recall || recall.mode !== "self" || finished || cur.id === "__entry") return;
+    if (handleRef.current) handleRef.current.revealLocus(cur.id);
+    setSelfRevealId(cur.id);
+  };
+  const markSelfCheck = (remembered) => {
+    const cur = currentRef.current;
+    if (!cur || !recall || recall.mode !== "self" || finished || selfRevealId !== cur.id) return;
+    const res = recallResultsRef.current;
+    if (res[cur.id]) return;
+    res[cur.id] = { attempts: 1, correct: !!remembered, revealed: false, selfChecked: true };
+    attemptsTotalRef.current += 1;
+    if (handleRef.current) handleRef.current.setLocusStatus(cur.id, remembered ? "correct" : "incorrect");
+    if (playSound) playSound(remembered ? "correct" : "reveal");
+    setAnswered((n) => n + 1);
+    setSelfRevealId(null);
+    _laterRecall(() => advanceRecall());
   };
   const objects3d = data?.memoryPalace?.objects || {};
   const objectCount = Object.keys(objects3d).length;
@@ -3671,7 +3773,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     if (type === "sculpture" && (!P3D || typeof window.callGemini !== "function")) return;
     const previous = originalPrevious || _quickSnapshot(locus.id);
     const subject = locus.mnemonic || locus.label;
-    const session = { ...locus, type, status: "generating", previous };
+    const session = { ...locus, type, status: "generating", previous, variants: Array.isArray(locus.variants) ? locus.variants : [] };
     setQuickCreate(session);
     if (handleRef.current?.setLocusBusy) handleRef.current.setLocusBusy(locus.id, true);
     const fail = () => {
@@ -3702,11 +3804,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         }
         persist(nx, "memoryPalace");
       } else {
-        if (live?.setLocusObject) live.setLocusObject(locus.id, value);
+        if ((session.variants.length || mpRef.current?.objects?.[locus.id]) && live?.replaceLocusObject) live.replaceLocusObject(locus.id, value);
+        else if (live?.setLocusObject) live.setLocusObject(locus.id, value);
         persist({ ...mpRef.current || {}, objects: { ...mpRef.current?.objects || {}, [locus.id]: value } }, "memoryPalace");
       }
       if (live?.setLocusBusy) live.setLocusBusy(locus.id, false);
-      setQuickCreate(nearbyEmptyRef.current === locus.id ? { ...session, status: "ready" } : null);
+      const nextVariants = [...session.variants, { type, value, depth: depthValue || null }].slice(-3);
+      setQuickCreate(nearbyEmptyRef.current === locus.id ? { ...session, status: "ready", variants: nextVariants, selected: nextVariants.length - 1 } : null);
       if (addToast) addToast(t("memory_palace.quick_ready") || "\u2728 Preview ready at this locus.", "success");
     };
     if (type === "sculpture") {
@@ -3745,8 +3849,139 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     if (!prev.image && !prev.object) setNearbyEmpty({ id: session.id, label: session.label, mnemonic: session.mnemonic, idx: session.idx, total: session.total });
     if (addToast) addToast(t("memory_palace.quick_undone") || "Undo complete. The previous locus cue is restored.", "info");
   };
+  const handleQuickVariant = (index) => {
+    const session = quickCreateRef.current;
+    const variant = session?.variants?.[index];
+    if (!session || session.status !== "ready" || !variant || !persist) return;
+    const live = handleRef.current;
+    if (variant.type === "image") {
+      if (variant.depth && live?.setLocusRelief) live.setLocusRelief(session.id, variant.value, variant.depth);
+      else if (live?.setLocusImage) live.setLocusImage(session.id, variant.value);
+      const nx = { ...mpRef.current || {}, images: { ...mpRef.current?.images || {}, [session.id]: variant.value } };
+      if (variant.depth) nx.depths = { ...mpRef.current?.depths || {}, [session.id]: variant.depth };
+      else if (nx.depths?.[session.id]) {
+        const d = { ...nx.depths };
+        delete d[session.id];
+        nx.depths = d;
+      }
+      persist(nx, "memoryPalace");
+    } else {
+      if (live?.replaceLocusObject) live.replaceLocusObject(session.id, variant.value);
+      persist({ ...mpRef.current || {}, objects: { ...mpRef.current?.objects || {}, [session.id]: variant.value } }, "memoryPalace");
+    }
+    setQuickCreate({ ...session, selected: index });
+  };
   const proximityLocus = quickCreate || nearbyEmpty;
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, recall ? t("memory_palace.recall_hint") || "\u{1F9E0} The labels are covered \u2014 the image is your cue. Recall what lives at each locus; after two misses the mnemonic appears." : t("memory_palace.hint") || "A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, recall ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_progress") || "{done}/{total} recalled").replace("{done}", String(answered)).replace("{total}", String((palaceRef.current?.route?.length || 1) - 1))), finished && /* @__PURE__ */ React.createElement(
+  const progressPalace = palaceRef.current;
+  const progressStops = progressPalace ? (progressPalace.route || []).slice(1).map((id) => (progressPalace.loci || []).find((l) => l.id === id)).filter(Boolean) : [];
+  const _visualStatus = (id) => {
+    if (quickCreate?.id === id && quickCreate.status === "generating") return "generating";
+    const hasImage = !!images[id];
+    const hasObject = !!objects3d[id];
+    return hasImage && hasObject ? "mixed" : hasImage ? "image" : hasObject ? "sculpture" : "empty";
+  };
+  const customizedCount = progressStops.filter((l) => _visualStatus(l.id) !== "empty" && _visualStatus(l.id) !== "generating").length;
+  const progressPercent = progressStops.length ? Math.round(customizedCount / progressStops.length * 100) : 0;
+  const progressColors = {
+    empty: "bg-slate-300 border-slate-500",
+    generating: "bg-indigo-500 border-indigo-700 motion-safe:animate-pulse",
+    image: "bg-sky-500 border-sky-700",
+    sculpture: "bg-violet-500 border-violet-700",
+    mixed: "bg-emerald-500 border-emerald-700"
+  };
+  const masteryRecords = data?.memoryPalace?.mastery || {};
+  const hasMasteryRings = progressStops.some((locus) => typeof masteryRecords[locus.id]?.strength === "number");
+  const _masteryLabel = (id) => {
+    const strength = masteryRecords[id]?.strength;
+    if (typeof strength !== "number") return null;
+    return strength >= 0.8 ? t("memory_palace.mastery_strong") || "strong" : strength >= 0.5 ? t("memory_palace.mastery_developing") || "developing" : t("memory_palace.mastery_practice") || "needs practice";
+  };
+  const _sameRoute = (a, b) => Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((id, index) => id === b[index]);
+  const routeDefaultOrder = progressPalace ? (progressPalace.loci || []).filter((locus) => locus.id !== "__entry").slice().sort((a, b) => a.branchIdx - b.branchIdx || a.itemIdx - b.itemIdx).map((locus) => locus.id) : [];
+  const routeSavedOrder = (() => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!routeDefaultOrder.length) return [];
+    if (MP?.normalizeRouteOrder) return MP.normalizeRouteOrder(["__entry", ...routeDefaultOrder], data?.memoryPalace?.routeOrder || []).slice(1);
+    return progressStops.map((locus) => locus.id);
+  })();
+  const routeHasMastery = Object.keys(masteryRecords).length > 0;
+  const routeHasChanges = routeDraft.length > 0 && !_sameRoute(routeDraft, routeSavedOrder);
+  const routeIsPreviewing = Array.isArray(routePreview) && _sameRoute(routePreview, routeDraft);
+  const routeLocus = (id) => (progressPalace?.loci || []).find((locus) => locus.id === id);
+  const beginRouteEdit = () => {
+    const order = routeSavedOrder.length ? routeSavedOrder : progressStops.map((locus) => locus.id);
+    setRouteDraft(order);
+    setRoutePreview(null);
+    setRouteMasteryAck(false);
+    setRouteEditing(true);
+    setNearbyEmpty(null);
+    setQuickCreate(null);
+    setDirectMode(false);
+    setDecorMode(false);
+    setCustomizeOpen(false);
+    setRouteAnnouncement(t("memory_palace.route_edit_started") || "Route arrangement opened.");
+  };
+  const moveRouteItem = (fromIndex, toIndex) => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= routeDraft.length || toIndex >= routeDraft.length) return;
+    const movedId = routeDraft[fromIndex];
+    const next = routeDraft.slice();
+    next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, movedId);
+    setRouteDraft(next);
+    setRoutePreview(null);
+    const locus = routeLocus(movedId);
+    setRouteAnnouncement((t("memory_palace.route_moved") || "{label} moved to position {position}.").replace("{label}", locus?.label || movedId).replace("{position}", String(toIndex + 1)));
+  };
+  const handleRouteDrop = (targetIndex) => {
+    const sourceId = routeDragRef.current;
+    routeDragRef.current = null;
+    const sourceIndex = routeDraft.indexOf(sourceId);
+    if (sourceIndex >= 0) moveRouteItem(sourceIndex, targetIndex);
+  };
+  const previewRouteDraft = () => {
+    if (!routeHasChanges) return;
+    setRoutePreview(routeDraft.slice());
+    setRouteAnnouncement(t("memory_palace.route_previewing") || "Previewing the draft route in the palace. Walk it before saving.");
+  };
+  const cancelRouteEdit = () => {
+    setRoutePreview(null);
+    setRouteEditing(false);
+    setRouteMasteryAck(false);
+    setRouteAnnouncement("");
+  };
+  const resetRouteDraft = () => {
+    setRouteDraft(routeDefaultOrder.slice());
+    setRoutePreview(null);
+    setRouteMasteryAck(false);
+    setRouteAnnouncement(t("memory_palace.route_reset_draft") || "Draft restored to the original source order. Preview it before saving.");
+  };
+  const saveRouteDraft = () => {
+    if (!persist || !routeHasChanges || !routeIsPreviewing || routeHasMastery && !routeMasteryAck) return;
+    const previous = mpRef.current?.routeOrder;
+    setRouteUndo({ hadOrder: Array.isArray(previous), order: Array.isArray(previous) ? previous.slice() : [] });
+    const nextStore = { ...mpRef.current || {} };
+    if (_sameRoute(routeDraft, routeDefaultOrder)) delete nextStore.routeOrder;
+    else nextStore.routeOrder = routeDraft.slice();
+    persist(Object.keys(nextStore).length ? nextStore : null, "memoryPalace");
+    setRoutePreview(null);
+    setRouteEditing(false);
+    setRouteMasteryAck(false);
+    setNonce((n) => n + 1);
+    if (addToast) addToast(t("memory_palace.route_saved") || "Walking route saved. Frame numbers now match the new order.", "success");
+  };
+  const undoRouteChange = () => {
+    if (!persist || !routeUndo) return;
+    const nextStore = { ...mpRef.current || {} };
+    if (routeUndo.hadOrder) nextStore.routeOrder = routeUndo.order.slice();
+    else delete nextStore.routeOrder;
+    persist(Object.keys(nextStore).length ? nextStore : null, "memoryPalace");
+    setRouteUndo(null);
+    setRoutePreview(null);
+    setRouteEditing(false);
+    setNonce((n) => n + 1);
+    if (addToast) addToast(t("memory_palace.route_undone") || "Previous walking route restored.", "info");
+  };
+  return /* @__PURE__ */ React.createElement("div", { ref: presentationRef, className: presenting ? "fixed inset-0 z-[9999] flex h-[100dvh] max-w-none flex-col overflow-hidden bg-slate-950 p-2 sm:p-4" : "max-w-6xl mx-auto", "aria-label": presenting ? t("memory_palace.presentation_aria") || "Memory Palace presentation" : void 0 }, /* @__PURE__ */ React.createElement("div", { className: (presenting ? "hidden " : "flex ") + "items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, recall ? t("memory_palace.recall_hint") || "\u{1F9E0} The labels are covered \u2014 the image is your cue. Recall what lives at each locus; after two misses the mnemonic appears." : t("memory_palace.hint") || "A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, recall ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_progress") || "{done}/{total} recalled").replace("{done}", String(answered)).replace("{total}", String((palaceRef.current?.route?.length || 1) - 1))), finished && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: retryRecall,
@@ -3765,17 +4000,27 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     "button",
     {
       onClick: () => startRecall("bank", false),
-      disabled: !!furnishing || !!sculpting,
+      disabled: !!furnishing || !!sculpting || routeEditing,
       className: "flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all motion-safe:animate-[pulse_3s_ease-in-out_infinite] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
       title: t("memory_palace.recall_tooltip") || "Practice: the labels are covered \u2014 walk the palace and recall what lives at each locus"
     },
     "\u{1F9E0} ",
     t("memory_palace.recall_play") || "Recall walk"
+  ), hasContent && !failed && recallEligible && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => startRecall("self", false),
+      disabled: !!furnishing || !!sculpting || routeEditing,
+      className: "flex items-center gap-1 bg-white text-indigo-700 border border-indigo-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+      title: t("memory_palace.self_check_tooltip") || "Move through the route, reveal each answer, then mark whether you remembered it"
+    },
+    "\u2728 ",
+    t("memory_palace.self_check") || "Guided self-check"
   ), hasContent && !failed && recallEligible && isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => startRecall("type", false),
-      disabled: !!furnishing || !!sculpting,
+      disabled: !!furnishing || !!sculpting || routeEditing,
       className: "flex items-center gap-1 bg-white text-amber-700 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
       title: t("memory_palace.recall_expert_tooltip") || "Expert mode: type each answer instead of picking from the bank (stronger retrieval practice; forgiving spelling)"
     },
@@ -3790,6 +4035,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F4C4} ",
     t("memory_palace.sheet") || "Study sheet"
+  ), hasContent && !failed && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handlePresentation,
+      disabled: routeEditing,
+      className: "flex items-center gap-1 bg-slate-900 text-white border border-slate-700 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-800 transition-colors disabled:cursor-not-allowed disabled:opacity-40",
+      title: t("memory_palace.presentation_tooltip") || "Open a distraction-free palace view for projection or independent study"
+    },
+    "\u26F6 ",
+    t("memory_palace.presentation") || "Present palace"
   ), hasContent && !failed && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -3900,7 +4155,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u21BA ",
     t("memory_palace.clear_generated") || "Clear generated art"
-  )))), !recall && dueInfo && dueInfo.dueCount > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u{1F501} ", (t("memory_palace.review_due") || "{count} loci are ready for review").replace("{count}", String(dueInfo.dueCount))), " ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-800" }, t("memory_palace.review_due_why") || "\u2014 walk the palace again to strengthen the ones fading from memory.")), recallEligible && /* @__PURE__ */ React.createElement(
+  )))), !presenting && !recall && dueInfo && dueInfo.dueCount > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u{1F501} ", (t("memory_palace.review_due") || "{count} loci are ready for review").replace("{count}", String(dueInfo.dueCount))), " ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-800" }, t("memory_palace.review_due_why") || "\u2014 walk the palace again to strengthen the ones fading from memory.")), recallEligible && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => startRecall("bank", false),
@@ -3908,16 +4163,181 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F501} ",
     t("memory_palace.review_now") || "Review now"
-  )), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F3DB}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("memory_palace.empty_title") || "No palace to walk yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("memory_palace.empty_body") || "Generate this organizer from a source text and the facts will become rooms and loci you can walk through.")) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" }), !recall && proximityLocus && persist && !failed && /* @__PURE__ */ React.createElement(
+  )), !presenting && !recall && progressStops.length > 0 && /* @__PURE__ */ React.createElement("section", { className: "mb-3 rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm", "aria-label": t("memory_palace.progress_map_aria") || "Visual palace progress map" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-extrabold text-slate-800" }, (t("memory_palace.customized_count") || "{done} of {total} loci customized").replace("{done}", String(customizedCount)).replace("{total}", String(progressStops.length))), /* @__PURE__ */ React.createElement(
     "div",
     {
-      className: "absolute z-20 left-3 right-3 bottom-3 mx-auto max-w-3xl rounded-2xl border-2 border-indigo-300 bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-md shadow-2xl px-4 py-3",
+      className: "mt-1 h-1.5 w-36 max-w-[38vw] overflow-hidden rounded-full bg-slate-200",
+      role: "progressbar",
+      "aria-valuemin": "0",
+      "aria-valuemax": progressStops.length,
+      "aria-valuenow": customizedCount
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-[width] motion-reduce:transition-none", style: { width: progressPercent + "%" } })
+  )), /* @__PURE__ */ React.createElement("div", { className: "hidden sm:flex items-center gap-2 text-[10px] font-bold text-slate-600", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { className: "mr-1 inline-block h-2.5 w-2.5 rounded-full bg-slate-300 border border-slate-500" }), t("memory_palace.status_empty") || "Empty"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { className: "mr-1 inline-block h-2.5 w-2.5 rounded-full bg-sky-500" }), t("memory_palace.status_image") || "Image"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { className: "mr-1 inline-block h-2.5 w-2.5 rounded-full bg-violet-500" }), t("memory_palace.status_sculpture") || "3D"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { className: "mr-1 inline-block h-2.5 w-2.5 rounded-full bg-emerald-500" }), t("memory_palace.status_both") || "Both"))), persist && progressStops.length > 1 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-2" }, !routeEditing && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: beginRouteEdit,
+      disabled: !!furnishing || !!sculpting || !!directBusy || quickCreate?.status === "generating",
+      className: "min-h-11 rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-extrabold text-indigo-800 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700"
+    },
+    "\u2195 ",
+    t("memory_palace.route_arrange") || "Arrange walking route"
+  ), routeUndo && !routeEditing && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: undoRouteChange,
+      className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-extrabold text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700"
+    },
+    "\u21B6 ",
+    t("memory_palace.route_undo") || "Undo route change"
+  )), routeEditing && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-2xl border-2 border-indigo-200 bg-indigo-50/70 p-3", role: "region", "aria-label": t("memory_palace.route_editor_aria") || "Arrange the Memory Palace walking route" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-extrabold text-indigo-950" }, t("memory_palace.route_editor_title") || "Shape your walking route"), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-xs text-indigo-800" }, t("memory_palace.route_editor_help") || "Drag stops, or use the arrow buttons. Room labels stay visible. Preview the route in 3D before saving.")), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: cancelRouteEdit,
+      className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+    },
+    t("common.cancel") || "Cancel"
+  )), routeHasMastery && routeHasChanges && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-950", role: "note" }, /* @__PURE__ */ React.createElement("span", { className: "font-extrabold" }, "\u26A0 ", t("memory_palace.route_mastery_warning_title") || "This palace has recall history."), " ", t("memory_palace.route_mastery_warning") || "Changing the route keeps every mastery score, but the new spatial sequence may feel unfamiliar at first."), /* @__PURE__ */ React.createElement("div", { className: "mt-3 max-h-80 space-y-2 overflow-y-auto pr-1", role: "list", "aria-label": t("memory_palace.route_draft_aria") || "Draft walking order" }, routeDraft.map((id, index) => {
+    const locus = routeLocus(id);
+    if (!locus) return null;
+    const prior = index > 0 ? routeLocus(routeDraft[index - 1]) : null;
+    const startsRoom = !prior || prior.roomIdx !== locus.roomIdx;
+    const room = progressPalace?.rooms?.[locus.roomIdx];
+    return /* @__PURE__ */ React.createElement(React.Fragment, { key: id }, startsRoom && /* @__PURE__ */ React.createElement("div", { className: "pt-1 text-[10px] font-extrabold uppercase tracking-widest text-indigo-700" }, t("memory_palace.room") || "Room", ": ", room?.label || locus.roomIdx), /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        role: "listitem",
+        draggable: true,
+        onDragStart: (event) => {
+          routeDragRef.current = id;
+          event.dataTransfer.effectAllowed = "move";
+          event.dataTransfer.setData("text/plain", id);
+        },
+        onDragOver: (event) => {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move";
+        },
+        onDrop: (event) => {
+          event.preventDefault();
+          handleRouteDrop(index);
+        },
+        onDragEnd: () => {
+          routeDragRef.current = null;
+        },
+        className: "flex items-center gap-2 rounded-xl border border-indigo-200 bg-white p-2 shadow-sm cursor-grab active:cursor-grabbing"
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-700 text-xs font-black text-white", "aria-hidden": "true" }, index + 1),
+      /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "block truncate text-xs font-extrabold text-slate-900" }, locus.label), /* @__PURE__ */ React.createElement("span", { className: "block truncate text-[10px] text-slate-500" }, room?.label || (t("memory_palace.room") || "Room"))),
+      /* @__PURE__ */ React.createElement("span", { className: "flex shrink-0 gap-1", role: "group", "aria-label": (t("memory_palace.route_move_aria") || "Move {label}").replace("{label}", locus.label) }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => moveRouteItem(index, index - 1),
+          disabled: index === 0,
+          "aria-label": (t("memory_palace.route_move_earlier") || "Move {label} earlier").replace("{label}", locus.label),
+          className: "flex h-11 w-11 items-center justify-center rounded-xl border border-slate-300 bg-white text-lg font-black text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35"
+        },
+        "\u2191"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => moveRouteItem(index, index + 1),
+          disabled: index === routeDraft.length - 1,
+          "aria-label": (t("memory_palace.route_move_later") || "Move {label} later").replace("{label}", locus.label),
+          className: "flex h-11 w-11 items-center justify-center rounded-xl border border-slate-300 bg-white text-lg font-black text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35"
+        },
+        "\u2193"
+      ))
+    ));
+  })), routeHasMastery && routeHasChanges && /* @__PURE__ */ React.createElement("label", { className: "mt-3 flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-amber-950" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: routeMasteryAck, onChange: (event) => setRouteMasteryAck(event.target.checked), className: "h-5 w-5 accent-amber-600" }), t("memory_palace.route_mastery_ack") || "I understand that changing an established spatial route may require another practice walk."), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: previewRouteDraft,
+      disabled: !routeHasChanges || routeIsPreviewing,
+      className: "min-h-11 rounded-xl bg-indigo-700 px-4 py-2 text-xs font-extrabold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-40"
+    },
+    "\u25B6 ",
+    routeIsPreviewing ? t("memory_palace.route_preview_active") || "Preview active" : t("memory_palace.route_preview") || "Preview route in 3D"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: saveRouteDraft,
+      disabled: !routeHasChanges || !routeIsPreviewing || routeHasMastery && !routeMasteryAck,
+      title: !routeIsPreviewing ? t("memory_palace.route_preview_first") || "Preview this route before saving" : void 0,
+      className: "min-h-11 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-extrabold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"
+    },
+    "\u2713 ",
+    t("memory_palace.route_save") || "Save walking route"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: resetRouteDraft,
+      disabled: _sameRoute(routeDraft, routeDefaultOrder),
+      className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+    },
+    "\u21BA ",
+    t("memory_palace.route_original") || "Original order"
+  )), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, routeAnnouncement)), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center gap-1.5 overflow-x-auto pb-1", role: "list", "aria-label": t("memory_palace.progress_route_aria") || "Loci in walking order; choose one to navigate" }, progressStops.map((locus, i) => {
+    const status = _visualStatus(locus.id);
+    const room = progressPalace.rooms?.[locus.roomIdx];
+    const prior = i > 0 ? progressStops[i - 1] : null;
+    const startsRoom = !prior || prior.roomIdx !== locus.roomIdx;
+    const isCurrent = current?.id === locus.id;
+    const statusLabel = status === "mixed" ? "image and sculpture" : status;
+    const strengthLabel = _masteryLabel(locus.id);
+    return /* @__PURE__ */ React.createElement(React.Fragment, { key: locus.id }, startsRoom && /* @__PURE__ */ React.createElement("span", { className: "ml-1 mr-0.5 shrink-0 text-[10px] font-extrabold uppercase tracking-wide text-slate-500" }, room?.label || (t("memory_palace.room") || "Room")), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "listitem",
+        onClick: () => handleRef.current?.goTo(i + 1),
+        "aria-current": isCurrent ? "step" : void 0,
+        "aria-label": i + 1 + ". " + locus.label + "; " + statusLabel + (strengthLabel ? "; memory strength " + strengthLabel : ""),
+        title: (room?.label || "") + ": " + locus.label + " \u2014 " + statusLabel + (strengthLabel ? " \xB7 memory strength " + strengthLabel : ""),
+        className: "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 text-[11px] font-black text-white shadow-sm transition-transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 motion-reduce:transition-none " + progressColors[status] + (isCurrent ? " ring-2 ring-amber-400 ring-offset-2" : "")
+      },
+      i + 1,
+      status === "generating" && /* @__PURE__ */ React.createElement("span", { className: "absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-white border-2 border-indigo-600", "aria-hidden": "true" })
+    ));
+  })), hasMasteryRings && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-bold text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, t("memory_palace.mastery_rings") || "Memory rings:"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { className: "mr-1 inline-block h-2.5 w-2.5 rounded-full border-2 border-red-500 align-[-1px]" }), t("memory_palace.mastery_practice") || "Needs practice"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { className: "mr-1 inline-block h-2.5 w-2.5 rounded-full border-2 border-amber-500 align-[-1px]" }), t("memory_palace.mastery_developing") || "Developing"), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("i", { className: "mr-1 inline-block h-2.5 w-2.5 rounded-full border-2 border-emerald-500 align-[-1px]" }), t("memory_palace.mastery_strong") || "Strong"))), /* @__PURE__ */ React.createElement("div", { className: "relative overflow-hidden border-2 border-slate-700 " + (presenting ? "min-h-0 flex-1 rounded-xl shadow-none" : "rounded-2xl shadow-xl"), style: { background: "#0b1020", height: presenting ? "100%" : "min(64vh, 560px)", minHeight: presenting ? 0 : "380px" } }, presenting && /* @__PURE__ */ React.createElement("div", { className: "pointer-events-none absolute left-3 top-3 z-30 flex max-w-[calc(100%_-_1.5rem)] items-center gap-2 rounded-full border border-slate-600 bg-slate-950/90 p-1.5 pr-3 text-white shadow-xl backdrop-blur" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: handlePresentation,
+      className: "pointer-events-auto min-h-11 rounded-full bg-white px-4 py-2 text-xs font-extrabold text-slate-900 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+    },
+    "\u2715 ",
+    t("memory_palace.presentation_exit") || "Exit presentation"
+  ), /* @__PURE__ */ React.createElement("span", { className: "hidden truncate text-xs font-bold text-slate-200 sm:block" }, data?.main || title || (t("memory_palace.title") || "Memory Palace")), /* @__PURE__ */ React.createElement("span", { className: "hidden text-[10px] text-slate-400 md:inline" }, t("memory_palace.presentation_escape") || "Esc also exits")), !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F3DB}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("memory_palace.empty_title") || "No palace to walk yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("memory_palace.empty_body") || "Generate this organizer from a source text and the facts will become rooms and loci you can walk through.")) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" }), !presenting && !recall && proximityLocus && persist && !failed && /* @__PURE__ */ React.createElement("svg", { className: "pointer-events-none absolute inset-0 z-[19] h-full w-full", viewBox: "0 0 100 100", preserveAspectRatio: "none", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("line", { ref: calloutLineRef, x1: "50", y1: "50", x2: "50", y2: "82", stroke: "#fbbf24", strokeWidth: "0.7", strokeDasharray: "2 1.5", vectorEffect: "non-scaling-stroke", style: { opacity: 0, transition: "opacity 120ms ease" } }), /* @__PURE__ */ React.createElement("circle", { ref: calloutDotRef, cx: "50", cy: "50", r: "1.6", fill: "#fbbf24", stroke: "#ffffff", strokeWidth: "0.6", vectorEffect: "non-scaling-stroke", style: { opacity: 0, transition: "opacity 120ms ease" } })), !presenting && !recall && proximityLocus && persist && !failed && /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "absolute z-20 left-2 right-2 bottom-2 sm:left-3 sm:right-3 sm:bottom-3 mx-auto max-h-[58%] sm:max-h-none max-w-3xl overflow-y-auto rounded-2xl border-2 border-indigo-300 bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-md shadow-2xl px-3 sm:px-4 py-2.5 sm:py-3",
       role: "region",
       "aria-label": t("memory_palace.empty_options_aria") || "Customization options for this gallery spot",
       "aria-live": "polite",
       "aria-busy": quickCreate?.status === "generating" ? "true" : "false"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl text-white shadow-md " + (quickCreate?.status === "ready" ? "bg-emerald-600" : "bg-gradient-to-br from-violet-600 to-indigo-600"), "aria-hidden": "true" }, quickCreate?.status === "generating" ? "\u2022\u2022\u2022" : quickCreate?.status === "ready" ? "\u2713" : "+"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-extrabold text-slate-900" }, quickCreate?.status === "generating" ? (t("memory_palace.quick_creating") || "Creating a {type} for {label}\u2026").replace("{type}", quickCreate.type).replace("{label}", quickCreate.label) : quickCreate?.status === "ready" ? (t("memory_palace.quick_preview") || "Preview ready: {label}").replace("{label}", quickCreate.label) : (t("memory_palace.empty_nearby") || "Empty gallery spot: {label}").replace("{label}", proximityLocus.label)), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-xs font-medium text-slate-700" }, quickCreate?.status === "generating" ? t("memory_palace.quick_creating_help") || "Watch the frame\u2014the progress cue will change as soon as your new memory cue is ready." : quickCreate?.status === "ready" ? t("memory_palace.quick_preview_help") || "Look at the frame, then keep it, regenerate another version, or restore what was here before." : t("memory_palace.empty_nearby_help") || "Make this stop memorable with one quick cue, or open the full creative controls."), quickCreate?.status === "generating" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 text-xs font-extrabold text-indigo-800" }, /* @__PURE__ */ React.createElement("span", { className: "motion-safe:animate-pulse", "aria-hidden": "true" }, "\u25CF"), t("memory_palace.quick_working") || "Creating at this locus\u2026") : quickCreate?.status === "ready" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl text-white shadow-md " + (quickCreate?.status === "ready" ? "bg-emerald-600" : "bg-gradient-to-br from-violet-600 to-indigo-600"), "aria-hidden": "true" }, quickCreate?.status === "generating" ? "\u2022\u2022\u2022" : quickCreate?.status === "ready" ? "\u2713" : "+"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-extrabold text-slate-900" }, quickCreate?.status === "generating" ? (t("memory_palace.quick_creating") || "Creating a {type} for {label}\u2026").replace("{type}", quickCreate.type).replace("{label}", quickCreate.label) : quickCreate?.status === "ready" ? (t("memory_palace.quick_preview") || "Preview ready: {label}").replace("{label}", quickCreate.label) : (t("memory_palace.empty_nearby") || "Empty gallery spot: {label}").replace("{label}", proximityLocus.label)), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 hidden text-xs font-medium text-slate-700 sm:block" }, quickCreate?.status === "generating" ? t("memory_palace.quick_creating_help") || "Watch the frame\u2014the progress cue will change as soon as your new memory cue is ready." : quickCreate?.status === "ready" ? t("memory_palace.quick_preview_help") || "Look at the frame, then keep it, regenerate another version, or restore what was here before." : t("memory_palace.empty_nearby_help") || "Make this stop memorable with one quick cue, or open the full creative controls."), quickCreate?.status === "generating" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 text-xs font-extrabold text-indigo-800" }, /* @__PURE__ */ React.createElement("span", { className: "motion-safe:animate-pulse", "aria-hidden": "true" }, "\u25CF"), t("memory_palace.quick_working") || "Creating at this locus\u2026") : quickCreate?.status === "ready" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, quickCreate.variants?.length > 1 && /* @__PURE__ */ React.createElement("div", { className: "mb-2 rounded-xl border border-indigo-200 bg-indigo-50/80 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "mb-1.5 text-[10px] font-extrabold uppercase tracking-wide text-indigo-800" }, t("memory_palace.quick_variants") || "Recent versions"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2", role: "list", "aria-label": t("memory_palace.quick_variants_aria") || "Recent generated variants" }, quickCreate.variants.map((variant, index) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: index,
+        type: "button",
+        role: "listitem",
+        onClick: () => handleQuickVariant(index),
+        "aria-pressed": quickCreate.selected === index ? "true" : "false",
+        "aria-label": (t("memory_palace.quick_variant") || "Preview version {number}").replace("{number}", String(index + 1)),
+        className: "relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border-2 bg-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 " + (quickCreate.selected === index ? "border-indigo-600 ring-2 ring-indigo-200" : "border-slate-300 hover:border-indigo-400")
+      },
+      variant.type === "image" ? /* @__PURE__ */ React.createElement("img", { src: variant.value, alt: "", className: "h-full w-full object-cover" }) : /* @__PURE__ */ React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, "\u{1F5FF}"),
+      /* @__PURE__ */ React.createElement("span", { className: "absolute bottom-0 right-0 rounded-tl bg-slate-900/80 px-1 text-[9px] font-black text-white" }, index + 1)
+    )))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -3947,7 +4367,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       },
       "\u21B6 ",
       t("memory_palace.quick_undo") || "Undo"
-    )) : /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, canImagen && /* @__PURE__ */ React.createElement(
+    ))) : /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, canImagen && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -4012,7 +4432,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       },
       "\xD7"
     ))
-  )), !recall && !directMode && current && !current.entry && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 mb-0.5" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", current.label), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.picture_this") || "Picture this:"), " ", current.mnemonic)), directMode && !recall && hasContent && !failed && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-fuchsia-50 border border-fuchsia-200 rounded-xl px-4 py-3" }, !current || current.entry ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-fuchsia-900" }, t("memory_palace.direct_at_entry") || "\u270D\uFE0F Walk to a locus (\u25B6 or WASD), then direct the AI to create its image or sculpture.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-fuchsia-800 mb-1" }, (t("memory_palace.direct_for") || "Direct the AI for: {label}").replace("{label}", current.label)), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-fuchsia-700 italic mb-2" }, t("memory_palace.picture_this") || "Picture this:", " ", current.mnemonic), objects3d[current.id] && /* @__PURE__ */ React.createElement("div", { className: "mb-3 pb-3 border-b border-fuchsia-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-fuchsia-800 mb-1.5" }, t("memory_palace.refine_title") || "Refine this sculpture"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("bigger"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F50D}+ ", t("memory_palace.refine_bigger") || "Bigger"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("smaller"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F50D}\u2212 ", t("memory_palace.refine_smaller") || "Smaller"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("rotate"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u27F3 ", t("memory_palace.refine_rotate") || "Rotate"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("recolor"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F3A8} ", t("memory_palace.refine_recolor") || "Recolor")), !objects3d[current.id].glbItem && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
+  )), !presenting && !recall && !directMode && current && !current.entry && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 mb-0.5" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", current.label), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.picture_this") || "Picture this:"), " ", current.mnemonic)), !presenting && directMode && !recall && hasContent && !failed && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-fuchsia-50 border border-fuchsia-200 rounded-xl px-4 py-3" }, !current || current.entry ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-fuchsia-900" }, t("memory_palace.direct_at_entry") || "\u270D\uFE0F Walk to a locus (\u25B6 or WASD), then direct the AI to create its image or sculpture.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-fuchsia-800 mb-1" }, (t("memory_palace.direct_for") || "Direct the AI for: {label}").replace("{label}", current.label)), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-fuchsia-700 italic mb-2" }, t("memory_palace.picture_this") || "Picture this:", " ", current.mnemonic), objects3d[current.id] && /* @__PURE__ */ React.createElement("div", { className: "mb-3 pb-3 border-b border-fuchsia-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-fuchsia-800 mb-1.5" }, t("memory_palace.refine_title") || "Refine this sculpture"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("bigger"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F50D}+ ", t("memory_palace.refine_bigger") || "Bigger"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("smaller"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F50D}\u2212 ", t("memory_palace.refine_smaller") || "Smaller"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("rotate"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u27F3 ", t("memory_palace.refine_rotate") || "Rotate"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("recolor"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F3A8} ", t("memory_palace.refine_recolor") || "Recolor")), !objects3d[current.id].glbItem && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
     e.preventDefault();
     handleAiRefine();
   }, className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
@@ -4051,7 +4471,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       className: `px-3 py-2 rounded-lg text-xs font-bold transition-colors ${voiceListening ? "bg-rose-600 text-white animate-pulse motion-reduce:animate-none" : "bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50"}`
     },
     voiceListening ? "\u{1F534} " + (t("memory_palace.voice_listening") || "Listening\u2026") : "\u{1F3A4} " + (t("memory_palace.voice_direct") || "Speak")
-  ), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-fuchsia-600" }, t("memory_palace.direct_note") || "The AI checks your prompt fits the fact and is school-appropriate before creating."), voiceHeard && /* @__PURE__ */ React.createElement("span", { className: "w-full text-xs text-fuchsia-500 italic" }, "\u201C", voiceHeard, "\u201D"))))), decorMode && !recall && hasContent && !failed && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3" }, !current || current.entry ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-emerald-900" }, t("memory_palace.decorate_at_entry") || "\u{1F381} Walk to a locus (\u25B6 or WASD), then pick a decoration for it.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-800 mb-0.5" }, (t("memory_palace.decorate_for") || "Decorate: {label}").replace("{label}", current.label)), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-emerald-700 mb-2" }, t("memory_palace.decorate_note") || "Built-in decorations \u2014 instant and free. Pick something that helps YOU picture this fact."), !!(window.AlloModules && window.AlloModules.Prim3D && window.AlloModules.Prim3D.PRESETS) && /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-800 mb-1.5" }, t("memory_palace.decorate_objects") || "3D decorations (stand beside the frame)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, window.AlloModules.Prim3D.PRESETS.map((p) => {
+  ), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-fuchsia-600" }, t("memory_palace.direct_note") || "The AI checks your prompt fits the fact and is school-appropriate before creating."), voiceHeard && /* @__PURE__ */ React.createElement("span", { className: "w-full text-xs text-fuchsia-500 italic" }, "\u201C", voiceHeard, "\u201D"))))), !presenting && decorMode && !recall && hasContent && !failed && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3" }, !current || current.entry ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-emerald-900" }, t("memory_palace.decorate_at_entry") || "\u{1F381} Walk to a locus (\u25B6 or WASD), then pick a decoration for it.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-800 mb-0.5" }, (t("memory_palace.decorate_for") || "Decorate: {label}").replace("{label}", current.label)), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-emerald-700 mb-2" }, t("memory_palace.decorate_note") || "Built-in decorations \u2014 instant and free. Pick something that helps YOU picture this fact."), !!(window.AlloModules && window.AlloModules.Prim3D && window.AlloModules.Prim3D.PRESETS) && /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-800 mb-1.5" }, t("memory_palace.decorate_objects") || "3D decorations (stand beside the frame)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, window.AlloModules.Prim3D.PRESETS.map((p) => {
     const label = t("memory_palace.preset_" + p.id) || p.label;
     return /* @__PURE__ */ React.createElement(
       "button",
@@ -4102,7 +4522,31 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u2716 ",
     t("memory_palace.decorate_remove") || "Remove art at this locus"
-  )))), recall && finished && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, finished.perfect ? t("memory_palace.recall_perfect") || "\u{1F3DB}\u2728 Perfect walk! Every locus recalled on the first try." : (t("memory_palace.recall_summary") || "Recalled {ok} of {total} ({first} on the first try).").replace("{ok}", String(finished.firstTry + finished.eventual)).replace("{total}", String(finished.total)).replace("{first}", String(finished.firstTry))), " ", "\xB7 \u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_points") || "{points} points").replace("{points}", String(finished.points))), recall && !finished && current && (current.entry ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600" }, t("memory_palace.recall_at_entry") || "Walk forward (\u25B6 or \u2192) to the first locus to begin recalling.") : /* @__PURE__ */ React.createElement("div", { className: `mt-3 rounded-xl px-4 py-3 border transition-colors ${wrongFlash ? "bg-red-50 border-red-300" : "bg-amber-50 border-amber-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800 mb-2" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", t("memory_palace.recall_q") || "What belongs at this locus?"), recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, t("memory_palace.recall_answered") || "Answered \u2014 walk on (\u25B6) or pick another frame.") : recall.mode === "bank" ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, recallBank.map((chip) => /* @__PURE__ */ React.createElement(
+  )))), !presenting && recall && finished && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, finished.perfect ? t("memory_palace.recall_perfect") || "\u{1F3DB}\u2728 Perfect walk! Every locus recalled on the first try." : (t("memory_palace.recall_summary") || "Recalled {ok} of {total} ({first} on the first try).").replace("{ok}", String(finished.firstTry + finished.eventual)).replace("{total}", String(finished.total)).replace("{first}", String(finished.firstTry))), " ", "\xB7 \u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_points") || "{points} points").replace("{points}", String(finished.points))), !presenting && recall && !finished && current && (current.entry ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600" }, t("memory_palace.recall_at_entry") || "Walk forward (\u25B6 or \u2192) to the first locus to begin recalling.") : /* @__PURE__ */ React.createElement("div", { className: `mt-3 rounded-xl px-4 py-3 border transition-colors ${wrongFlash ? "bg-red-50 border-red-300" : "bg-amber-50 border-amber-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800 mb-2" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", t("memory_palace.recall_q") || "What belongs at this locus?"), recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, t("memory_palace.recall_answered") || "Answered \u2014 walk on (\u25B6) or pick another frame.") : recall.mode === "self" ? selfRevealId === current.id ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-800", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, current.label), current.mnemonic ? /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-xs text-slate-600" }, "\u{1F4A1} ", current.mnemonic) : null), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2", "aria-label": t("memory_palace.self_check_result") || "How well did you remember this locus?" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => markSelfCheck(true),
+      className: "min-h-11 px-4 py-2 rounded-full text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+    },
+    "\u2713 ",
+    t("memory_palace.remembered") || "I remembered"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => markSelfCheck(false),
+      className: "min-h-11 px-4 py-2 rounded-full text-xs font-bold bg-white text-red-700 border border-red-300 hover:bg-red-50 transition-colors"
+    },
+    "\u21BB ",
+    t("memory_palace.missed") || "I missed it"
+  ))) : /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: revealSelfCheck,
+      className: "min-h-11 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+    },
+    "\u{1F441} ",
+    t("memory_palace.reveal_then_rate") || "Reveal, then rate my recall"
+  ) : recall.mode === "bank" ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, recallBank.map((chip) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: chip.id,
@@ -4138,7 +4582,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       className: "mt-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-red-700 border border-red-300 hover:bg-red-50 transition-colors"
     },
     t("memory_palace.recall_reveal") || "Reveal answer (no points)"
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("memory_palace.caption") || "Method of loci: a practice strategy with strong evidence for remembering ordered material \u2014 the effect comes from walking the route repeatedly and picturing each image vividly, not from the tool itself."));
+  ))), /* @__PURE__ */ React.createElement("p", { className: presenting ? "sr-only" : "text-xs text-slate-500 italic text-center mt-3" }, t("memory_palace.caption") || "Method of loci: a practice strategy with strong evidence for remembering ordered material \u2014 the effect comes from walking the route repeatedly and picturing each image vividly, not from the tool itself."));
 };
 const renderInteractiveMap = (deps) => {
   const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, getElbowPath, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, renderFlowShape, setConceptMapNodes, t } = deps;

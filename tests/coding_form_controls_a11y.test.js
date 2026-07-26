@@ -34,6 +34,7 @@ describe('Coding Lab form-control accessibility', () => {
     const html = renderTool('codingPlayground', {
       _codingPlayground: {
         tutorialDismissed: true,
+        codeMode: 'outline',
         blocks: [{ type: 'changeVar', varName: 'score', varDelta: 5 }],
         timelineFrames: [{ turtle: { x: 0, y: 0, angle: 0 }, lines: [], stepIdx: 0 }],
       },

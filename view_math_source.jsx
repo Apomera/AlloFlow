@@ -68,6 +68,64 @@ function MathView(props) {
   var addToast = props.addToast;
   // Components
   var MathSymbol = props.MathSymbol;
+  var callTTS = props.callTTS;
+  var selectedVoice = props.selectedVoice;
+
+  // Shared accessible math entry: this only inserts notation into the existing
+  // response/edit flows. It does not generate problems or grade answers.
+  var ensureAccessibleMathInput = () => {
+    if (window.AlloMathInput) return Promise.resolve(window.AlloMathInput);
+    if (typeof window.__alloLoadPlugin !== 'function') return Promise.reject(new Error('Math input loader is unavailable'));
+    return window.__alloLoadPlugin('mathlive_loader.js').then(() => window.AlloMathInput);
+  };
+  var playSpokenMath = async (formats) => {
+    const spoken = formats?.spoken || formats?.plainText || formats?.latex || '';
+    if (!spoken) return;
+    if (typeof callTTS === 'function') {
+      const url = await callTTS(spoken, selectedVoice);
+      if (url) {
+        const audio = new Audio(url);
+        await audio.play();
+      }
+      return;
+    }
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(spoken));
+    }
+  };
+  var appendInlineMath = (currentValue, latex) => {
+    const current = String(currentValue || '').trimEnd();
+    const math = `\\(${String(latex || '').trim()}\\)`;
+    return current ? `${current} ${math}` : math;
+  };
+  var openAccessibleMathInput = (options) => {
+    ensureAccessibleMathInput().then((mathInput) => {
+      if (!mathInput || typeof mathInput.promptEquation !== 'function') throw new Error('Accessible math input did not initialize');
+      return mathInput.promptEquation({
+        title: options.title || 'Enter math',
+        initialLatex: options.initialLatex || '',
+        insertLabel: options.insertLabel || 'Insert math',
+        onSpeak: playSpokenMath
+      });
+    }).then((result) => {
+      if (result) options.onInsert(result);
+    }).catch((error) => {
+      addToast(`Accessible math input is unavailable: ${error?.message || 'unknown error'}`, 'error');
+    });
+  };
+  var mathKeyboardButton = (onClick, label = 'Open accessible math keyboard') => (
+    <button
+      type="button"
+      data-math-input-launch="math-work"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+    >
+      <span aria-hidden="true">⌨</span> Math keyboard
+    </button>
+  );
   return (
                     <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10" data-help-key="math_panel">
                         <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100 shadow-sm">
@@ -141,6 +199,7 @@ function MathView(props) {
                                     </div>
                                     <div className="flex-grow">
                                         {isMathEditing(pIdx) ? (
+                                            <>
                                             <textarea
                                                 aria-label={t('math.edit_problem_question') || `Edit math problem ${pIdx + 1}`}
                                                 className="w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none resize-y bg-amber-50/50 font-serif text-lg leading-relaxed text-slate-800 min-h-[60px]"
@@ -148,6 +207,15 @@ function MathView(props) {
                                                 onChange={(e) => handleMathProblemEdit(pIdx, 'question', e.target.value)}
                                                 placeholder={t('common.placeholder_enter_problem_question')}
                                             />
+                                            {mathKeyboardButton(() => openAccessibleMathInput({
+                                                title: `Add math to problem ${pIdx + 1}`,
+                                                onInsert: (result) => handleMathProblemEdit(
+                                                    pIdx,
+                                                    'question',
+                                                    appendInlineMath(problem.question || problem.problem || '', result.latex)
+                                                )
+                                            }), 'Open accessible math keyboard for this problem')}
+                                            </>
                                         ) : (
                                             <div className="text-lg font-medium text-slate-800 font-serif">
                                                 {formatInlineText(formatMathQuestion(problem), false)}
@@ -300,6 +368,14 @@ function MathView(props) {
                                                         onChange={(e) => handleStudentInput(generatedContent.id, pIdx, e.target.value)}
                                                         data-help-key="math_student_work"
                                                     />
+                                                    {mathKeyboardButton(() => openAccessibleMathInput({
+                                                        title: `Add math to work for problem ${pIdx + 1}`,
+                                                        onInsert: (result) => handleStudentInput(
+                                                            generatedContent.id,
+                                                            pIdx,
+                                                            appendInlineMath(studentResponses[generatedContent.id]?.[pIdx] || '', result.latex)
+                                                        )
+                                                    }))}
                                                 </div>
                                             )}
                                         </div>
@@ -422,6 +498,14 @@ function MathView(props) {
                                                 onChange={(e) => handleStudentInput(generatedContent.id, pIdx, e.target.value)}
                                                 disabled={mathCheckResults[generatedContent.id]?.[pIdx]?.checking}
                                             />
+                                            {mathKeyboardButton(() => openAccessibleMathInput({
+                                                title: `Add math to work for problem ${pIdx + 1}`,
+                                                onInsert: (result) => handleStudentInput(
+                                                    generatedContent.id,
+                                                    pIdx,
+                                                    appendInlineMath(studentResponses[generatedContent.id]?.[pIdx] || '', result.latex)
+                                                )
+                                            }))}
                                         </div>
                                         {(() => {
                                             const checkResult = mathCheckResults[generatedContent.id]?.[pIdx];

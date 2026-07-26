@@ -3661,7 +3661,7 @@ window.StemLab = window.StemLab || {
                   }),
                   h('button', {
                     onClick: revealPrediction,
-                    className: 'px-3 py-1 rounded-lg text-[11px] font-bold bg-indigo-500 text-white hover:bg-indigo-600 transition-all'
+                    className: 'px-3 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all'
                   }, t('stem.geosandbox.reveal_build', 'Reveal & build')),
                   h('button', {
                     onClick: cancelPrediction,
@@ -4255,7 +4255,7 @@ window.StemLab = window.StemLab || {
                   value: unitId,
                   onChange: function(e) { upd('unitId', e.target.value); if (announceToSR) announceToSR('Unit changed to ' + e.target.options[e.target.selectedIndex].text); },
                   'aria-label': t('stem.geosandbox.real_world_unit', 'Real-world unit'),
-                  className: 'flex-1 text-[11px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200 font-mono'
+                  className: 'flex-1 text-[11px] bg-slate-900 border border-slate-500 rounded px-2 py-1 text-slate-200 font-mono'
                 }, GEO_UNITS.map(function(u) {
                   return h('option', { key: u.id, value: u.id }, u.short + ' — ' + u.long);
                 }))
@@ -4661,7 +4661,7 @@ window.StemLab = window.StemLab || {
               onKeyDown: function(e) { if (e.key === 'Enter') checkChallengeAnswer(); },
               placeholder: challenge.type === 'identify' ? 'Type the shape name...' : 'Enter your answer...',
               'aria-label': t('stem.geosandbox.challenge_answer', 'Challenge answer'),
-              className: 'flex-1 px-4 py-3 bg-slate-900 border-2 border-amber-500/40 rounded-xl text-base text-white font-bold placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30',
+              className: 'flex-1 px-4 py-3 bg-slate-900 border-2 border-amber-500/40 rounded-xl text-base text-white font-bold placeholder-slate-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30',
               step: 'any'
             }),
             h('button', { 'aria-label': t('stem.geosandbox.check', 'Check'),

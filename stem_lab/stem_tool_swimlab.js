@@ -86,7 +86,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       '.swimlab-metric-label{display:block;color:#94a3b8;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
       '.swimlab-metric-value{display:block;margin-top:3px;color:#f8fafc;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
       '.swimlab-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px;}',
-      '.swimlab-primary{min-height:44px;padding:10px 16px;border:1px solid rgba(224,242,254,.4);border-radius:12px;background:linear-gradient(135deg,#0284c7,#0369a1);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(2,132,199,.23);transition:transform .18s,box-shadow .18s;}',
+      '.swimlab-primary{min-height:44px;padding:10px 16px;border:1px solid rgba(224,242,254,.4);border-radius:12px;background:linear-gradient(135deg,#0369a1,#075985);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(2,132,199,.23);transition:transform .18s,box-shadow .18s;}',
       '.swimlab-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(2,132,199,.3);}',
       '.swimlab-action-note{color:#bae6fd;font-size:10px;line-height:1.4;}',
       '.swimlab-section{padding:16px;border:1px solid #334155;border-radius:16px;background:rgba(15,23,42,.65);}',

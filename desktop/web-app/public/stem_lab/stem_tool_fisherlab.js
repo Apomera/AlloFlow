@@ -12190,7 +12190,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   setCheckpointScore(function(prev) { return { correctCount: prev.correctCount + (correct ? 1 : 0), totalCount: prev.totalCount + 1 }; });
                   setCheckpointResult({ correct: correct, feedback: fb });
                 },
-                style: { flex: 1, padding: '8px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer', fontSize: 11.5 } }, '📥 Keep Specimen'),
+                style: { flex: 1, padding: '8px', background: '#10b981', color: '#052e16', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer', fontSize: 11.5 } }, '📥 Keep Specimen'),
               h('button', { key: 'release', type: 'button', className: 'fl-btn',
                 onClick: function() {
                   var correct = !checkpointSpecimen.isKeeper;

@@ -1387,7 +1387,7 @@ window.StemLab = window.StemLab || {
 
             return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto animate-in fade-in duration-200" },
               // ── HEADER ──
-              React.createElement("div", { className: "bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 rounded-2xl p-5 text-white shadow-xl" },
+              React.createElement("div", { className: "bg-gradient-to-r from-emerald-700 via-green-700 to-teal-700 rounded-2xl p-5 text-white shadow-xl" },
                 React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-3" },
                   React.createElement("div", null,
                     React.createElement("h2", { className: "text-xl font-black flex items-center gap-2" }, "\uD83D\uDCB5 Money Math"),
@@ -1568,7 +1568,7 @@ window.StemLab = window.StemLab || {
                   ? React.createElement("div", { className: "text-center py-8" },
                       React.createElement("p", { className: "text-slate-600 text-sm mb-4" }, "Generate a problem to practice making change with " + cur.flag + " " + cur.name),
                       React.createElement("button", { "aria-label": "Generate Problem", onClick: genChangeProblem,
-                        className: "px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all shadow-lg text-sm"
+                        className: "px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all shadow-lg text-sm"
                       }, "\u2728 Generate Problem")
                     )
                   : React.createElement("div", { className: "space-y-4" },
@@ -1870,7 +1870,7 @@ window.StemLab = window.StemLab || {
                           onKeyDown: function(e) { if(e.key === 'Enter') submitCashierAnswer(); },
                           placeholder: "Total...", autoFocus: true,
                           'aria-label': 'Cashier register answer',
-                          className: "w-full pl-8 pr-4 py-4 bg-zinc-800 border-2 border-zinc-600 rounded-xl text-zinc-100 font-mono text-xl font-bold focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all shadow-inner"
+                          className: "w-full pl-8 pr-4 py-4 bg-zinc-800 border-2 border-zinc-400 rounded-xl text-zinc-100 font-mono text-xl font-bold focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all shadow-inner"
                         })
                       ),
                       React.createElement("button", { "aria-label": "ENTER", onClick: submitCashierAnswer, disabled: !crAnswer,
@@ -2133,7 +2133,7 @@ window.StemLab = window.StemLab || {
                         if (typeof addXP === 'function') addXP(20, 'Money Math: Completed a grocery purchase');
                         if (typeof addToast === 'function') addToast('\uD83C\uDF89 Purchase complete! Total: ' + fmt(cartGrand), 'success');
                         upd('cart', []);
-                      }, className: "w-full mt-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all text-sm shadow-md" }, "\uD83D\uDCB3 Checkout"),
+                      }, className: "w-full mt-2 px-4 py-2 bg-gradient-to-r from-emerald-700 to-green-700 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all text-sm shadow-md" }, "\uD83D\uDCB3 Checkout"),
                       React.createElement("button", { "aria-label": "Clear Cart", onClick: function () { upd('cart', []); }, className: "w-full px-3 py-1.5 text-xs text-red-400 hover:text-red-600 font-bold" }, "Clear Cart")
                     )
                   )
@@ -2147,7 +2147,7 @@ window.StemLab = window.StemLab || {
                 !d.wpProblem && !d.wpLoading
                   ? React.createElement("div", { className: "text-center py-8" },
                       React.createElement("button", { "aria-label": "Generate Word Problem", onClick: genWordProblem,
-                        className: "px-6 py-3 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-xl hover:from-violet-600 hover:to-purple-600 transition-all shadow-lg text-sm"
+                        className: "px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-xl hover:from-violet-600 hover:to-purple-600 transition-all shadow-lg text-sm"
                       }, "\u2728 Generate Word Problem")
                     )
                   : d.wpLoading
@@ -2212,7 +2212,7 @@ window.StemLab = window.StemLab || {
                 !d.exchFrom
                   ? React.createElement("div", { className: "text-center py-6" },
                       React.createElement("button", { "aria-label": "Generate Conversion Problem", onClick: genExchangeProblem,
-                        className: "px-6 py-3 bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-bold rounded-xl hover:from-sky-600 hover:to-cyan-600 transition-all shadow-lg text-sm"
+                        className: "px-6 py-3 bg-gradient-to-r from-sky-700 to-cyan-700 text-white font-bold rounded-xl hover:from-sky-700 hover:to-cyan-700 transition-all shadow-lg text-sm"
                       }, "\u2728 Generate Conversion Problem")
                     )
                   : React.createElement("div", { className: "space-y-4" },
@@ -2249,7 +2249,7 @@ window.StemLab = window.StemLab || {
                             if (isRight && typeof addXP === 'function') addXP(20, 'Money Math: Currency conversion');
                             if (isRight && typeof awardStemXP === 'function') awardStemXP('moneyMath', 5, 'currency conversion');
                           },
-                          className: "px-5 py-2 bg-sky-500 text-white font-bold rounded-xl hover:bg-sky-600 transition-all text-sm"
+                          className: "px-5 py-2 bg-sky-700 text-white font-bold rounded-xl hover:bg-sky-800 transition-all text-sm"
                         }, "\u2714 Check")
                       ),
                       d.exchFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.exchFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.exchFeedback.msg),
@@ -2271,7 +2271,7 @@ window.StemLab = window.StemLab || {
                   (d.tipMode || 'tip') === 'tip' && (!d.tipBill
                     ? React.createElement("div", { className: "text-center py-6" },
                         React.createElement("p", { className: "text-sm text-slate-600 mb-3" }, "Practice calculating restaurant tips and splitting bills"),
-                        React.createElement("button", { "aria-label": "Generate Tip Problem", onClick: genTipProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, "\u2728 Generate Tip Problem")
+                        React.createElement("button", { "aria-label": "Generate Tip Problem", onClick: genTipProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, "\u2728 Generate Tip Problem")
                       )
                     : React.createElement("div", { className: "space-y-4" },
                         React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-pink-100" },
@@ -2309,7 +2309,7 @@ window.StemLab = window.StemLab || {
                   d.tipMode === 'discount' && (!d.discOriginal
                     ? React.createElement("div", { className: "text-center py-6" },
                         React.createElement("p", { className: "text-sm text-slate-600 mb-3" }, "Calculate sale prices with percentage discounts" + (gc.includePercent ? ' and coupons' : '')),
-                        React.createElement("button", { "aria-label": "Generate Discount Problem", onClick: genDiscountProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, "\u2728 Generate Discount Problem")
+                        React.createElement("button", { "aria-label": "Generate Discount Problem", onClick: genDiscountProblem, className: "px-6 py-3 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg text-sm" }, "\u2728 Generate Discount Problem")
                       )
                     : React.createElement("div", { className: "space-y-4" },
                         React.createElement("div", { className: "bg-white rounded-xl p-4 shadow-sm border border-pink-100" },
@@ -2317,7 +2317,7 @@ window.StemLab = window.StemLab || {
                             React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Original Price"),
                             React.createElement("p", { className: "text-2xl font-black text-slate-600 line-through" }, fmt(d.discOriginal)),
                             React.createElement("div", { className: "flex items-center justify-center gap-2 mt-2" },
-                              React.createElement("span", { className: "px-3 py-1 bg-red-100 text-red-600 text-sm font-black rounded-full" }, d.discPercent + '% OFF'),
+                              React.createElement("span", { className: "px-3 py-1 bg-red-100 text-red-700 text-sm font-black rounded-full" }, d.discPercent + '% OFF'),
                               d.discCoupon > 0 && React.createElement("span", { className: "px-3 py-1 bg-amber-100 text-amber-800 text-sm font-black rounded-full" }, '+ ' + fmt(d.discCoupon) + ' coupon')
                             ),
                             React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, "What is the final price" + (d.discCoupon > 0 ? ' after discount AND coupon' : '') + '?')
@@ -2510,7 +2510,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-4 border border-indigo-200" },
                   React.createElement("div", { className: "flex items-center justify-between mb-3" },
                     React.createElement("h4", { className: "text-sm font-bold text-indigo-800" }, "\uD83E\uDDFE Estimate the Total"),
-                    React.createElement("button", { "aria-label": "Gen Estimate Total", onClick: genEstimateTotal, className: "px-3 py-1.5 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 transition-all" }, !d.estItems ? '\u2728 Start' : '\u21BB New')
+                    React.createElement("button", { "aria-label": "Gen Estimate Total", onClick: genEstimateTotal, className: "px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-all" }, !d.estItems ? '\u2728 Start' : '\u21BB New')
                   ),
                   d.estItems && React.createElement("div", { className: "space-y-2" },
                     React.createElement("div", { className: "bg-white rounded-lg border border-indigo-100 p-3 space-y-1" },
@@ -2535,7 +2535,7 @@ window.StemLab = window.StemLab || {
                           if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 10, 'estimate total');
                           if (typeof addXP === 'function') addXP(10, 'Money Math: Receipt estimation');
                         }
-                      }, className: "px-4 py-2 bg-indigo-500 text-white font-bold rounded-lg hover:bg-indigo-600 transition-all text-sm" }, "\u2714")
+                      }, className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-all text-sm" }, "\u2714")
                     ),
                     d.estFb && React.createElement("p", { className: "text-xs font-bold " + (d.estFb.ok ? 'text-green-600' : 'text-red-500') }, d.estFb.msg)
                   )

@@ -46,6 +46,9 @@
       '@keyframes alloConfettiFall { 0% { transform: translateY(-20vh) rotate(0deg); opacity: 0; } 8% { opacity: 1; } 92% { opacity: 0.9; } 100% { transform: translateY(115vh) rotate(720deg); opacity: 0; } }',
       '.allo-confetti-piece { position: absolute; top: 0; border-radius: 2px; animation-name: alloConfettiFall; animation-timing-function: cubic-bezier(.55,.05,.45,.99); animation-fill-mode: forwards; pointer-events: none; }',
       '@media (prefers-reduced-motion: reduce) { .allo-confetti-piece { display: none !important; } }',
+      '@media (max-width: 640px), (max-height: 700px) { .mf-active-probe { justify-content: flex-start !important; overflow-y: auto !important; padding: 10px !important; } .mf-probe-progress { margin-bottom: 12px !important; } .mf-problem-card { padding: 20px 14px !important; } .mf-problem-card > div:first-child { margin-bottom: 16px !important; } .mf-results-panel { padding: 14px !important; } .mf-results-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; } .mf-config-grid { grid-template-columns: 1fr !important; } }',
+      '@media (max-width: 360px) { .mf-results-metrics { grid-template-columns: 1fr !important; } .mf-problem-card { padding-left: 10px !important; padding-right: 10px !important; } }',
+      '@supports (height: 100dvh) { .mf-active-probe { min-height: 100dvh; } }',
     ].join('\n');
     document.head.appendChild(mfA11yStyle);
   }
@@ -235,6 +238,356 @@
     return problems;
   }
 
+
+  var MF_FACT_MASTERY_KEY = 'allo_fluency_fact_mastery_v1';
+
+  function _practiceSymbol(op) {
+    return op === 'add' ? '+' : op === 'sub' ? '\u2212' : op === 'mul' ? '\u00d7' : '\u00f7';
+  }
+
+  function getRecommendedPracticeSet(grade, operation) {
+    var normalized = normalizeGrade(grade);
+    var gradeNumber = normalized === 'K' ? 0 : parseInt(normalized || '3', 10);
+    if (operation === 'add' || operation === 'sub') {
+      if (gradeNumber <= 1) return 'within10';
+      if (gradeNumber === 2) return 'within20';
+      return 'within100';
+    }
+    if (operation === 'mul' || operation === 'div') {
+      if (gradeNumber <= 2) return 'facts5';
+      if (gradeNumber === 3) return 'facts10';
+      return 'facts12';
+    }
+    return 'recommended';
+  }
+
+  function getPracticeSetOptions(operation, grade) {
+    var normalized = normalizeGrade(grade) || String(grade || '3');
+    var gradeLabel = normalized === 'K' ? 'Kindergarten' : 'Grade ' + normalized;
+    var options = [{ value: 'recommended', label: gradeLabel + ' Recommended' }];
+    if (operation === 'add' || operation === 'sub') {
+      options.push(
+        { value: 'within10', label: 'Within 10' },
+        { value: 'within20', label: 'Within 20' },
+        { value: 'within100', label: 'Within 100' },
+        { value: 'extended', label: 'Extended Facts' },
+        { value: 'mixed', label: 'Mixed Levels' }
+      );
+    } else if (operation === 'mul' || operation === 'div') {
+      options.push(
+        { value: 'facts5', label: 'Facts through 5' },
+        { value: 'facts10', label: 'Facts through 10' },
+        { value: 'facts12', label: 'Facts through 12' },
+        { value: 'extended', label: 'Extended Facts' },
+        { value: 'mixed', label: 'Mixed Levels' }
+      );
+    } else {
+      options.push(
+        { value: 'basic', label: 'Basic Facts' },
+        { value: 'extended', label: 'Extended Facts' },
+        { value: 'mixed', label: 'Mixed Levels' }
+      );
+    }
+    return options;
+  }
+
+  function describePracticeSet(grade, operation, practiceSet) {
+    var normalized = normalizeGrade(grade) || String(grade || '3');
+    if (practiceSet === 'recommended') {
+      if (operation === 'mixed') {
+        var gradeNumber = normalized === 'K' ? 0 : parseInt(normalized, 10);
+        var opText = gradeNumber <= 2 ? 'addition and subtraction' : 'all four operations';
+        var addSet = getRecommendedPracticeSet(normalized, 'add');
+        var factSet = getRecommendedPracticeSet(normalized, 'mul');
+        var addLabel = { within10: 'within 10', within20: 'within 20', within100: 'within 100' }[addSet] || addSet;
+        var factLabel = { facts5: 'facts through 5', facts10: 'facts through 10', facts12: 'facts through 12' }[factSet] || factSet;
+        return 'Grade ' + normalized + ' recommended practice: ' + opText + ', ' + addLabel + (gradeNumber <= 2 ? '.' : ' and ' + factLabel + '.');
+      }
+      return 'Grade ' + normalized + ' recommended practice: ' + ({
+        within10: 'facts within 10', within20: 'facts within 20', within100: 'facts within 100',
+        facts5: 'facts through 5', facts10: 'facts through 10', facts12: 'facts through 12'
+      }[getRecommendedPracticeSet(normalized, operation)] || 'grade-aligned facts') + '.';
+    }
+    return ({
+      within10: 'Practice facts with answers within 10.',
+      within20: 'Practice facts with answers within 20.',
+      within100: 'Practice facts with answers within 100.',
+      facts5: 'Practice multiplication or division facts through 5.',
+      facts10: 'Practice multiplication or division facts through 10.',
+      facts12: 'Practice multiplication or division facts through 12.',
+      basic: 'Practice basic facts.', extended: 'Practice extended facts.', mixed: 'Practice a mix of basic and extended facts.'
+    })[practiceSet] || 'Custom math-fact practice.';
+  }
+
+  function generatePracticeProblems(operation, practiceSet, grade, count) {
+    var requested = Math.max(1, Number(count) || 20);
+    if (practiceSet === 'basic') return generateProblems(operation, 'single', requested);
+    if (practiceSet === 'extended') return generateProblems(operation, 'double', requested);
+    if (practiceSet === 'mixed') return generateProblems(operation, 'mixed', requested);
+    var normalized = normalizeGrade(grade);
+    var gradeNumber = normalized === 'K' ? 0 : parseInt(normalized || '3', 10);
+    var allowedOps = operation === 'mixed'
+      ? (practiceSet === 'recommended' && gradeNumber <= 2 ? ['add', 'sub'] : ['add', 'sub', 'mul', 'div'])
+      : [operation];
+    var problems = [], used = {};
+    function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    for (var attempt = 0; attempt < 5000 && problems.length < requested; attempt++) {
+      var op = allowedOps[Math.floor(Math.random() * allowedOps.length)];
+      var resolved = practiceSet === 'recommended' ? getRecommendedPracticeSet(normalized, op) : practiceSet;
+      var a, b, answer;
+      if (op === 'add' || op === 'sub') {
+        var limit = resolved === 'within10' ? 10 : resolved === 'within20' ? 20 : resolved === 'within100' ? 100 : 12;
+        if (op === 'add') { a = rand(0, limit); b = rand(0, limit - a); answer = a + b; }
+        else { a = rand(0, limit); b = rand(0, a); answer = a - b; }
+      } else if (op === 'mul' || op === 'div') {
+        var factMax = resolved === 'facts5' ? 5 : resolved === 'facts10' ? 10 : 12;
+        if (op === 'mul') { a = rand(0, factMax); b = rand(0, factMax); answer = a * b; }
+        else { b = rand(1, Math.max(1, factMax)); answer = rand(0, factMax); a = b * answer; }
+      } else {
+        continue;
+      }
+      var key = a + '_' + op + '_' + b;
+      var allowRepeat = attempt > Math.max(300, requested * 12);
+      if (!used[key] || allowRepeat) {
+        used[key] = true;
+        problems.push({ a: a, b: b, op: op, symbol: _practiceSymbol(op), answer: answer, studentAnswer: null, correct: null, responseMs: null });
+      }
+    }
+    return problems;
+  }
+
+  function getFactKey(problem) {
+    if (!problem) return '';
+    var a = Number(problem.a), b = Number(problem.b), op = problem.op;
+    if ((op === 'add' || op === 'mul') && b < a) { var swap = a; a = b; b = swap; }
+    return op + '|' + a + '|' + b;
+  }
+
+  function summarizeFactResults(problems) {
+    var grouped = {};
+    function registerAttempt(problem, attempt) {
+      var key = getFactKey(problem);
+      if (!key) return;
+      if (!grouped[key]) grouped[key] = {
+        key: key, attempts: 0, correct: 0, responseMsTotal: 0, timedAttempts: 0,
+        problem: { a: problem.a, b: problem.b, op: problem.op, symbol: problem.symbol || _practiceSymbol(problem.op), answer: problem.answer }
+      };
+      var item = grouped[key];
+      item.attempts += 1;
+      if (attempt.correct) item.correct += 1;
+      if (Number.isFinite(attempt.responseMs)) { item.responseMsTotal += attempt.responseMs; item.timedAttempts += 1; }
+    }
+    (problems || []).forEach(function (problem) {
+      if (!problem) return;
+      (problem.attemptLog || []).forEach(function (attempt) { registerAttempt(problem, attempt); });
+      if (problem.studentAnswer !== null) registerAttempt(problem, problem);
+    });
+    return Object.keys(grouped).map(function (key) {
+      var item = grouped[key];
+      item.accuracy = Math.round((item.correct / Math.max(1, item.attempts)) * 100);
+      item.avgResponseMs = item.timedAttempts ? Math.round(item.responseMsTotal / item.timedAttempts) : null;
+      return item;
+    }).sort(function (a, b) {
+      var aMiss = a.attempts - a.correct, bMiss = b.attempts - b.correct;
+      if (bMiss !== aMiss) return bMiss - aMiss;
+      return (b.avgResponseMs || 0) - (a.avgResponseMs || 0);
+    });
+  }
+
+  function updateFactMastery(current, problems, timestamp) {
+    var next = Object.assign({}, current || {});
+    var when = timestamp || new Date().toISOString();
+    summarizeFactResults(problems).forEach(function (summary) {
+      var previous = next[summary.key] || {};
+      next[summary.key] = {
+        key: summary.key,
+        a: summary.problem.a, b: summary.problem.b, op: summary.problem.op,
+        symbol: summary.problem.symbol, answer: summary.problem.answer,
+        attempts: (previous.attempts || 0) + summary.attempts,
+        correct: (previous.correct || 0) + summary.correct,
+        responseMsTotal: (previous.responseMsTotal || 0) + summary.responseMsTotal,
+        timedAttempts: (previous.timedAttempts || 0) + summary.timedAttempts,
+        lastSeen: when
+      };
+    });
+    var keys = Object.keys(next).sort(function (a, b) {
+      return String(next[b].lastSeen || '').localeCompare(String(next[a].lastSeen || ''));
+    });
+    if (keys.length > 300) keys.slice(300).forEach(function (key) { delete next[key]; });
+    return next;
+  }
+
+  function getMasteryFocusFacts(mastery, limit) {
+    return Object.keys(mastery || {}).map(function (key) {
+      var item = mastery[key];
+      var attempts = Math.max(1, item.attempts || 0);
+      var accuracy = (item.correct || 0) / attempts;
+      var avgMs = item.timedAttempts ? (item.responseMsTotal || 0) / item.timedAttempts : 0;
+      return { item: item, priority: (1 - accuracy) * 100 + Math.min(20, avgMs / 500), accuracy: accuracy, avgMs: avgMs };
+    }).filter(function (row) {
+      return row.accuracy < 0.85 || (row.item.timedAttempts || 0) >= 2 && row.avgMs > 6000;
+    }).sort(function (a, b) { return b.priority - a.priority; }).slice(0, limit || 12).map(function (row) {
+      return { a: row.item.a, b: row.item.b, op: row.item.op, symbol: row.item.symbol || _practiceSymbol(row.item.op), answer: row.item.answer };
+    });
+  }
+
+  function getStrategyHint(problem, attemptNumber) {
+    if (!problem) return null;
+    var a = Number(problem.a), b = Number(problem.b), op = problem.op;
+    var attempt = Math.max(1, Number(attemptNumber) || 1);
+    if (attempt >= 3) {
+      return {
+        stage: 'reveal', title: 'Check and try it',
+        message: 'The answer is ' + problem.answer + '. Type it once to complete the fact.',
+        reveal: true, model: { type: 'equation', left: a + ' ' + (problem.symbol || _practiceSymbol(op)) + ' ' + b, right: problem.answer }
+      };
+    }
+    if (op === 'add') {
+      var larger = Math.max(a, b), smaller = Math.min(a, b), difference = larger - smaller;
+      if (attempt === 1 && difference <= 2) return {
+        stage: 'strategy', title: 'Use a nearby double',
+        message: 'Start with ' + smaller + ' + ' + smaller + ', then adjust by ' + difference + '.',
+        model: { type: 'number-line', start: smaller, change: smaller, direction: 'right' }
+      };
+      var nextTen = Math.ceil(larger / 10) * 10;
+      if (nextTen === larger) nextTen += 10;
+      var move = nextTen - larger;
+      if (attempt === 1 && move > 0 && smaller > move) return {
+        stage: 'strategy', title: 'Make the next ten',
+        message: 'Move ' + move + ' from ' + smaller + ' to ' + larger + '. Think ' + nextTen + ' plus what remains.',
+        model: { type: 'number-line', start: larger, change: move, direction: 'right' }
+      };
+      return {
+        stage: 'model', title: 'Build the addition',
+        message: 'Start with ' + larger + ' and count on ' + smaller + ' more.',
+        model: { type: 'number-line', start: larger, change: smaller, direction: 'right' }
+      };
+    }
+    if (op === 'sub') {
+      if (attempt === 1) return {
+        stage: 'strategy', title: 'Use the related addition fact',
+        message: 'Think: ' + b + ' plus what number equals ' + a + '?',
+        model: { type: 'number-line', start: b, change: a - b, direction: 'right' }
+      };
+      var toTen = a % 10;
+      return {
+        stage: 'model', title: 'Break apart the subtraction',
+        message: toTen > 0 && b > toTen
+          ? 'Subtract ' + toTen + ' to reach ' + (a - toTen) + ', then subtract the remaining ' + (b - toTen) + '.'
+          : 'Count back ' + b + ' steps from ' + a + '.',
+        model: { type: 'number-line', start: a, change: b, direction: 'left' }
+      };
+    }
+    if (op === 'mul') {
+      var split = b > 5 ? 5 : Math.max(1, Math.floor(b / 2));
+      return attempt === 1 ? {
+        stage: 'strategy', title: 'Break one factor apart',
+        message: 'Think ' + a + ' \u00d7 ' + split + ' plus ' + a + ' \u00d7 ' + (b - split) + '.',
+        model: { type: 'groups', groups: Math.min(a, 8), perGroup: Math.min(b, 12) }
+      } : {
+        stage: 'model', title: 'Build equal groups',
+        message: 'Picture ' + a + ' equal groups with ' + b + ' in each group.',
+        model: { type: 'groups', groups: Math.min(a, 8), perGroup: Math.min(b, 12) }
+      };
+    }
+    if (op === 'div') {
+      return attempt === 1 ? {
+        stage: 'strategy', title: 'Use the related multiplication fact',
+        message: 'Think: ' + b + ' \u00d7 what number equals ' + a + '?',
+        model: { type: 'groups', groups: Math.min(b, 8), total: a }
+      } : {
+        stage: 'model', title: 'Share into equal groups',
+        message: 'Share ' + a + ' into ' + b + ' equal groups, then count one group.',
+        model: { type: 'groups', groups: Math.min(b, 8), total: a }
+      };
+    }
+    return { stage: 'strategy', title: 'Try a smaller step', message: 'Use a related fact you already know.', model: { type: 'equation', left: a + ' ? ' + b, right: '?' } };
+  }
+
+  function buildFactMasteryDashboard(mastery) {
+    var categoryOrder = ['secure', 'developing', 'slow', 'focus'];
+    var categories = {
+      secure: { id: 'secure', label: 'Secure', facts: [] },
+      developing: { id: 'developing', label: 'Developing', facts: [] },
+      slow: { id: 'slow', label: 'Accurate but Slow', facts: [] },
+      focus: { id: 'focus', label: 'Needs Focus', facts: [] }
+    };
+    var operations = { add: { total: 0, secure: 0 }, sub: { total: 0, secure: 0 }, mul: { total: 0, secure: 0 }, div: { total: 0, secure: 0 } };
+    var totalAttempts = 0, totalCorrect = 0;
+    Object.keys(mastery || {}).forEach(function (key) {
+      var item = mastery[key];
+      if (!item || !operations[item.op]) return;
+      var attempts = Math.max(1, item.attempts || 0);
+      var accuracy = (item.correct || 0) / attempts;
+      var avgMs = item.timedAttempts ? (item.responseMsTotal || 0) / item.timedAttempts : null;
+      var status = accuracy < 0.7 ? 'focus'
+        : attempts < 3 || accuracy < 0.9 ? 'developing'
+        : avgMs != null && avgMs > 6000 ? 'slow'
+        : 'secure';
+      var fact = {
+        key: key, a: item.a, b: item.b, op: item.op, symbol: item.symbol || _practiceSymbol(item.op), answer: item.answer,
+        attempts: attempts, correct: item.correct || 0, accuracy: Math.round(accuracy * 100), avgResponseMs: avgMs == null ? null : Math.round(avgMs), status: status
+      };
+      categories[status].facts.push(fact);
+      operations[item.op].total += 1;
+      if (status === 'secure') operations[item.op].secure += 1;
+      totalAttempts += attempts;
+      totalCorrect += item.correct || 0;
+    });
+    categoryOrder.forEach(function (id) {
+      categories[id].facts.sort(function (a, b) {
+        if (a.accuracy !== b.accuracy) return a.accuracy - b.accuracy;
+        return (b.avgResponseMs || 0) - (a.avgResponseMs || 0);
+      });
+      categories[id].count = categories[id].facts.length;
+    });
+    return {
+      totalFacts: categoryOrder.reduce(function (sum, id) { return sum + categories[id].count; }, 0),
+      overallAccuracy: totalAttempts ? Math.round((totalCorrect / totalAttempts) * 100) : 0,
+      categories: categories, categoryOrder: categoryOrder, operations: operations
+    };
+  }
+
+  function buildFocusedProblems(facts, count) {
+    var unique = [], seen = {};
+    (facts || []).forEach(function (fact) {
+      var key = getFactKey(fact);
+      if (!key || seen[key] || !Number.isFinite(Number(fact.answer))) return;
+      seen[key] = true;
+      unique.push({ a: Number(fact.a), b: Number(fact.b), op: fact.op, symbol: fact.symbol || _practiceSymbol(fact.op), answer: Number(fact.answer) });
+    });
+    if (!unique.length) return [];
+    var requested = Math.max(unique.length, Number(count) || 10), result = [];
+    for (var i = 0; i < requested; i++) {
+      var base = unique[i % unique.length];
+      var reverse = i >= unique.length && (base.op === 'add' || base.op === 'mul') && Math.floor(i / unique.length) % 2 === 1;
+      result.push({
+        a: reverse ? base.b : base.a, b: reverse ? base.a : base.b,
+        op: base.op, symbol: base.symbol, answer: base.answer,
+        studentAnswer: null, correct: null, responseMs: null
+      });
+    }
+    return result;
+  }
+
+  function loadFactMastery() {
+    try { var raw = JSON.parse(localStorage.getItem(MF_FACT_MASTERY_KEY) || '{}'); return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}; }
+    catch (e) { return {}; }
+  }
+
+  function saveFactMastery(value) {
+    try { localStorage.setItem(MF_FACT_MASTERY_KEY, JSON.stringify(value || {})); } catch (e) {}
+  }
+
+  function mergeFactMastery(localValue, storedValue) {
+    var merged = Object.assign({}, localValue || {});
+    Object.keys(storedValue || {}).forEach(function (key) {
+      var incoming = storedValue[key];
+      if (!merged[key] || String(incoming.lastSeen || '') >= String(merged[key].lastSeen || '')) merged[key] = incoming;
+    });
+    return merged;
+  }
+
   function countDigits(n) { return Math.max(1, String(Math.abs(n)).length); }
 
   function countCorrectDigits(expected, actual) {
@@ -329,7 +682,7 @@
     // State
     var _a = useState(false), active = _a[0], setActive = _a[1];
     var _b = useState('add'), operation = _b[0], setOperation = _b[1];
-    var _c = useState('single'), difficulty = _c[0], setDifficulty = _c[1];
+    var _c = useState('recommended'), difficulty = _c[0], setDifficulty = _c[1];
     var _d = useState(120), timeLimit = _d[0], setTimeLimit = _d[1];
     var _e = useState(120), problemCount = _e[0], setProblemCount = _e[1];
     var _f = useState([]), problems = _f[0], setProblems = _f[1];
@@ -345,6 +698,8 @@
     var _p = useState('A'), probeForm = _p[0], setProbeForm = _p[1];
     var _q = useState(''), inputError = _q[0], setInputError = _q[1];
     var _r = useState(0), interruptionCount = _r[0], setInterruptionCount = _r[1];
+    var _s = useState(loadFactMastery()), factMastery = _s[0], setFactMastery = _s[1];
+    var _t = useState(0), coachAttempts = _t[0], setCoachAttempts = _t[1];
 
     var inputRef = useRef(null);
     var overlayRef = useRef(null);
@@ -360,6 +715,10 @@
     var visibilityPauseRef = useRef(null);
     var interruptionStatsRef = useRef({ count: 0, seconds: 0 });
     var warningPlayedRef = useRef(false);
+    var itemStartedAtRef = useRef(0);
+    var itemPausedMsRef = useRef(0);
+    var factMasteryRef = useRef(factMastery);
+    factMasteryRef.current = factMastery;
     timerValueRef.current = timer;
     problemsRef.current = problems;
     currentIndexRef.current = currentIndex;
@@ -380,6 +739,19 @@
       storageDB.get('allo_fluency_history').then(function (saved) {
         if (saved && Array.isArray(saved)) setHistory(saved.slice(-100));
       }).catch(function () { });
+    }, []);
+
+    // Load fact mastery from shared storage when available, while keeping a
+    // localStorage fallback for standalone and offline use.
+    useEffect(function () {
+      if (!storageDB) return;
+      storageDB.get(MF_FACT_MASTERY_KEY).then(function (saved) {
+        if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return;
+        var merged = mergeFactMastery(factMasteryRef.current, saved);
+        factMasteryRef.current = merged;
+        setFactMastery(merged);
+        saveFactMastery(merged);
+      }).catch(function () {});
     }, []);
 
     // Save history to storage
@@ -412,27 +784,38 @@
         interruptionStatsRef.current.seconds += pendingPauseMs / 1000;
         visibilityPauseRef.current = null;
       }
-      var elapsedSeconds = Math.max(0, Math.min(
-        config.timeLimit,
-        (finishTime - runTimingRef.current.startedAt - runTimingRef.current.pausedMs) / 1000
-      ));
+      var rawElapsedSeconds = Math.max(0, (finishTime - runTimingRef.current.startedAt - runTimingRef.current.pausedMs) / 1000);
+      var isUntimed = !!config.untimed;
+      var elapsedSeconds = isUntimed ? rawElapsedSeconds : Math.min(config.timeLimit, rawElapsedSeconds);
       var finishReason = reason || 'early';
       var wasInterrupted = config.mode === 'benchmark' && interruptionStatsRef.current.count > 0;
       var completionStatus = finishReason === 'early' ? 'incomplete' : (wasInterrupted ? 'interrupted' : 'complete');
-      var validForComparison = completionStatus === 'complete';
+      var validForComparison = completionStatus === 'complete' && !isUntimed;
       var elapsedMinutes = Math.max(1 / 60, elapsedSeconds / 60);
       var calculatedDcpm = Math.round(totalDigitsCorrect / elapsedMinutes);
       var dcpm = validForComparison ? calculatedDcpm : null;
-      var accuracy = attempted.length > 0 ? Math.round((correct.length / attempted.length) * 100) : 0;
+      var strategyCoach = !!config.strategyCoach;
+      var firstTryCorrect = attempted.filter(function (problem) { return problem.correct && (!problem.attemptLog || problem.attemptLog.length === 0); });
+      var accuracyCorrect = strategyCoach ? firstTryCorrect.length : correct.length;
+      var accuracy = attempted.length > 0 ? Math.round((accuracyCorrect / attempted.length) * 100) : 0;
       var reference = getBenchmark(config.grade, config.operation);
-      var referenceResult = validForComparison
-        ? getBenchmarkLabel(dcpm, reference)
-        : {
-            label: completionStatus === 'interrupted' ? 'Interrupted run' : 'Incomplete run',
-            color: '#64748b',
-            emoji: completionStatus === 'interrupted' ? '\u26a0\ufe0f' : '\u23f9\ufe0f'
-          };
+      var referenceResult = isUntimed && completionStatus === 'complete'
+        ? { label: tt('math_fluency.accuracy_focus_practice', 'Accuracy Focus Practice'), color: '#6d28d9', emoji: '\uD83C\uDFAF', tier: 'accuracy-focus' }
+        : validForComparison
+          ? getBenchmarkLabel(dcpm, reference)
+          : {
+              label: completionStatus === 'interrupted' ? 'Interrupted run' : 'Incomplete run',
+              color: '#64748b',
+              emoji: completionStatus === 'interrupted' ? '\u26a0\ufe0f' : '\u23f9\ufe0f'
+            };
       var errorAnalysis = analyzeErrors(snapshot);
+      var factInsights = summarizeFactResults(snapshot);
+      var focusFacts = factInsights.filter(function (item) { return item.correct < item.attempts; }).slice(0, 12).map(function (item) { return item.problem; });
+      var nextMastery = updateFactMastery(factMasteryRef.current, snapshot);
+      factMasteryRef.current = nextMastery;
+      setFactMastery(nextMastery);
+      saveFactMastery(nextMastery);
+      if (storageDB) storageDB.set(MF_FACT_MASTERY_KEY, nextMastery).catch(function () {});
       var comparisonKey = buildComparisonKey(config);
 
       var result = {
@@ -445,9 +828,13 @@
         dcpm: dcpm,
         accuracy: accuracy,
         totalCorrect: correct.length,
+        firstTryCorrect: firstTryCorrect.length,
         totalAttempted: attempted.length,
         totalDigitsCorrect: totalDigitsCorrect,
         timeLimit: config.timeLimit,
+        untimed: isUntimed,
+        strategyCoach: strategyCoach,
+        totalPracticeAttempts: factInsights.reduce(function (sum, item) { return sum + item.attempts; }, 0),
         elapsedSeconds: elapsedSeconds,
         problemCount: config.problemCount,
         finishReason: finishReason,
@@ -458,7 +845,9 @@
         comparisonKey: comparisonKey,
         benchmark: reference,
         benchmarkResult: referenceResult,
-        errorAnalysis: errorAnalysis
+        errorAnalysis: errorAnalysis,
+        factInsights: factInsights,
+        focusFacts: focusFacts
       };
       setResults(result);
       setHistory(function (items) { return items.concat([result]).slice(-100); });
@@ -471,9 +860,59 @@
         data: result
       });
 
-      var xp = validForComparison ? Math.round(dcpm / 10) : 0;
+      var xp = validForComparison ? Math.round(dcpm / 10) : (isUntimed && completionStatus === 'complete' ? Math.max(1, Math.round(correct.length / 5)) : 0);
       if (xp > 0) handleScoreUpdate(xp, tt('math_fluency.math_fluency', 'Math Fluency'), 'fluency-probe');
-    }, [timeLimit, operation, difficulty, gradeLevel, onProbeComplete, handleScoreUpdate]);
+    }, [timeLimit, operation, difficulty, gradeLevel, onProbeComplete, handleScoreUpdate, storageDB]);
+
+    var beginProbe = useCallback(function (nextProblems, config) {
+      if (!nextProblems || !nextProblems.length) {
+        addToast(tt('math_fluency.no_problems_generated', 'No problems could be generated for these settings.'), 'warning');
+        return;
+      }
+      finishedRef.current = false;
+      runConfigRef.current = config;
+      var startTime = nowMs();
+      deadlineRef.current = config.untimed ? 0 : startTime + config.timeLimit * 1000;
+      runTimingRef.current = { startedAt: startTime, pausedMs: 0 };
+      itemStartedAtRef.current = startTime;
+      itemPausedMsRef.current = 0;
+      visibilityPauseRef.current = null;
+      interruptionStatsRef.current = { count: 0, seconds: 0 };
+      warningPlayedRef.current = false;
+      setInterruptionCount(0);
+      problemsRef.current = nextProblems;
+      currentIndexRef.current = 0;
+      timerValueRef.current = config.untimed ? 0 : config.timeLimit;
+      setProblems(nextProblems);
+      setCurrentIndex(0);
+      setResults(null);
+      setStudentInput('');
+      setInputError('');
+      setTimer(config.untimed ? 0 : config.timeLimit);
+      setLastFeedback(null);
+      setCoachAttempts(0);
+      setActive(true);
+
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+      if (!config.untimed) {
+        timerRef.current = setInterval(function () {
+          if (visibilityPauseRef.current !== null) return;
+          var next = Math.max(0, Math.ceil((deadlineRef.current - nowMs()) / 1000));
+          timerValueRef.current = next;
+          setTimer(next);
+          if (next === 0) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+            setTimeout(function () { finishProbe('time'); }, 0);
+          } else if (next <= 10 && !warningPlayedRef.current && soundEnabled && config.mode !== 'benchmark') {
+            warningPlayedRef.current = true;
+            playTimeWarning();
+          }
+        }, 250);
+      }
+
+      setTimeout(function () { if (inputRef.current) inputRef.current.focus(); }, 100);
+    }, [finishProbe, soundEnabled, addToast]);
 
     var startProbe = useCallback(function () {
       var normalizedGrade = normalizeGrade(gradeLevel);
@@ -486,63 +925,36 @@
           addToast(tt('math_fluency.fixed_form_unavailable', 'A fixed comparable form is unavailable for this grade. Choose Practice mode.'), 'warning');
           return;
         }
-        nextProblems = bank.problems.map(function (prob) { return Object.assign({}, prob, { studentAnswer: null, correct: null }); });
+        nextProblems = bank.problems.map(function (prob) { return Object.assign({}, prob, { studentAnswer: null, correct: null, responseMs: null }); });
         config = {
           mode: 'benchmark', form: probeForm, grade: normalizedGrade,
           operation: bank.operation || 'mixed', difficulty: bank.difficulty || 'fixed-form',
           timeLimit: Number(bank.timeLimit) || 120, problemCount: nextProblems.length
         };
       } else {
-        nextProblems = generateProblems(operation, difficulty, problemCount);
+        nextProblems = generatePracticeProblems(operation, difficulty, normalizedGrade || gradeLevel, problemCount);
         config = {
           mode: 'practice', form: null, grade: normalizedGrade || String(gradeLevel || 'Unknown'),
-          operation: operation, difficulty: difficulty, timeLimit: timeLimit, problemCount: nextProblems.length
+          operation: operation, difficulty: difficulty, practiceSet: difficulty,
+          timeLimit: timeLimit, untimed: timeLimit === 0, strategyCoach: timeLimit === 0, problemCount: nextProblems.length
         };
       }
-      if (!nextProblems.length) {
-        addToast(tt('math_fluency.no_problems_generated', 'No problems could be generated for these settings.'), 'warning');
-        return;
-      }
+      beginProbe(nextProblems, config);
+    }, [timeLimit, operation, difficulty, problemCount, gradeLevel, probeMode, probeForm, beginProbe, addToast]);
 
-      finishedRef.current = false;
-      runConfigRef.current = config;
-      var startTime = nowMs();
-      deadlineRef.current = startTime + config.timeLimit * 1000;
-      runTimingRef.current = { startedAt: startTime, pausedMs: 0 };
-      visibilityPauseRef.current = null;
-      interruptionStatsRef.current = { count: 0, seconds: 0 };
-      warningPlayedRef.current = false;
-      setInterruptionCount(0);
-      problemsRef.current = nextProblems;
-      currentIndexRef.current = 0;
-      timerValueRef.current = config.timeLimit;
-      setProblems(nextProblems);
-      setCurrentIndex(0);
-      setResults(null);
-      setStudentInput('');
-      setInputError('');
-      setTimer(config.timeLimit);
-      setLastFeedback(null);
-      setActive(true);
-
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = setInterval(function () {
-        if (visibilityPauseRef.current !== null) return;
-        var next = Math.max(0, Math.ceil((deadlineRef.current - nowMs()) / 1000));
-        timerValueRef.current = next;
-        setTimer(next);
-        if (next === 0) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-          setTimeout(function () { finishProbe('time'); }, 0);
-        } else if (next <= 10 && !warningPlayedRef.current && soundEnabled && config.mode !== 'benchmark') {
-          warningPlayedRef.current = true;
-          playTimeWarning();
-        }
-      }, 250);
-
-      setTimeout(function () { if (inputRef.current) inputRef.current.focus(); }, 100);
-    }, [timeLimit, operation, difficulty, problemCount, gradeLevel, probeMode, probeForm, finishProbe, soundEnabled, addToast]);
+    function startFocusedPractice(facts) {
+      setProbeMode('practice');
+      var focusedCount = Math.min(20, Math.max(10, (facts || []).length * 3));
+      var nextProblems = buildFocusedProblems(facts, focusedCount);
+      var ops = {};
+      nextProblems.forEach(function (problem) { ops[problem.op] = true; });
+      var opKeys = Object.keys(ops);
+      beginProbe(nextProblems, {
+        mode: 'practice', form: null, grade: normalizeGrade(gradeLevel) || String(gradeLevel || 'Unknown'),
+        operation: opKeys.length === 1 ? opKeys[0] : 'mixed', difficulty: 'focus', practiceSet: 'focus',
+        timeLimit: timeLimit, untimed: timeLimit === 0, strategyCoach: timeLimit === 0, problemCount: nextProblems.length, focusedPractice: true
+      });
+    }
 
     var submitAnswer = useCallback(function (skip) {
       var isSkip = skip === true;
@@ -558,15 +970,43 @@
       var idx = currentIndexRef.current;
       var updated = problemsRef.current.slice();
       if (idx >= updated.length) return;
-      var isCorrect = !isSkip && parsed.value === updated[idx].answer;
-      updated[idx] = Object.assign({}, updated[idx], {
+      var problem = updated[idx];
+      var isCorrect = !isSkip && parsed.value === problem.answer;
+      var responseMs = Math.max(0, nowMs() - itemStartedAtRef.current - itemPausedMsRef.current);
+      var configNow = runConfigRef.current || {};
+      var isFixedRun = configNow.mode === 'benchmark';
+      var coachActive = !isFixedRun && !!configNow.strategyCoach;
+
+      if (coachActive && !isSkip && !isCorrect) {
+        var attemptLog = (problem.attemptLog || []).concat([{
+          studentAnswer: parsed.value, correct: false, responseMs: Math.round(responseMs)
+        }]);
+        updated[idx] = Object.assign({}, problem, { attemptLog: attemptLog });
+        problemsRef.current = updated;
+        setProblems(updated);
+        setCoachAttempts(attemptLog.length);
+        if (soundEnabled) playIncorrect();
+        setLastFeedback('wrong');
+        setTimeout(function () { setLastFeedback(null); }, 400);
+        setStudentInput('');
+        setInputError('');
+        itemStartedAtRef.current = nowMs();
+        itemPausedMsRef.current = 0;
+        var coaching = getStrategyHint(problem, attemptLog.length);
+        if (coaching) _mfAnnounce(coaching.title + '. ' + coaching.message);
+        setTimeout(function () { if (inputRef.current) inputRef.current.focus(); }, 50);
+        return;
+      }
+
+      updated[idx] = Object.assign({}, problem, {
         studentAnswer: isSkip ? 'SKIP' : parsed.value,
-        correct: isSkip ? false : isCorrect
+        correct: isSkip ? false : isCorrect,
+        firstTryCorrect: isCorrect && (!problem.attemptLog || problem.attemptLog.length === 0),
+        responseMs: Math.round(responseMs)
       });
       problemsRef.current = updated;
       setProblems(updated);
 
-      var isFixedRun = runConfigRef.current && runConfigRef.current.mode === 'benchmark';
       if (!isFixedRun && soundEnabled && !isSkip) {
         if (isCorrect) playCorrect(); else playIncorrect();
       }
@@ -576,9 +1016,12 @@
       }
       setStudentInput('');
       setInputError('');
+      setCoachAttempts(0);
 
       var next = idx + 1;
       currentIndexRef.current = next;
+      itemStartedAtRef.current = nowMs();
+      itemPausedMsRef.current = 0;
       setCurrentIndex(next);
       if (next >= updated.length) setTimeout(function () { finishProbe('complete'); }, 50);
       else setTimeout(function () { if (inputRef.current) inputRef.current.focus(); }, 50);
@@ -641,6 +1084,7 @@
           deadlineRef.current += pausedMs;
           runTimingRef.current.pausedMs += pausedMs;
           interruptionStatsRef.current.seconds += pausedMs / 1000;
+          itemPausedMsRef.current += pausedMs;
           visibilityPauseRef.current = null;
         }
       }
@@ -669,10 +1113,14 @@
     if (active && problems.length > 0 && currentIndex < problems.length) {
       var prob = problems[currentIndex];
       var isFixedRun = runConfigRef.current && runConfigRef.current.mode === 'benchmark';
+      var isUntimedRun = !!(runConfigRef.current && runConfigRef.current.untimed);
       var correctCount = problems.filter(function (p) { return p.correct; }).length;
       var activeTimeLimit = (runConfigRef.current && runConfigRef.current.timeLimit) || timeLimit;
-      var timerPct = Math.max(0, Math.min(100, (timer / activeTimeLimit) * 100));
-      var isLowTime = timer <= 10;
+      var timerPct = isUntimedRun
+        ? Math.max(0, Math.min(100, (currentIndex / Math.max(1, problems.length)) * 100))
+        : Math.max(0, Math.min(100, (timer / Math.max(1, activeTimeLimit)) * 100));
+      var isLowTime = !isUntimedRun && timer <= 10;
+      var strategyHint = isUntimedRun && coachAttempts > 0 ? getStrategyHint(prob, coachAttempts) : null;
       // Live DCPM — digits-correct-per-minute, the gold-standard fluency
       // measure. We compute it from the same formula that finishProbe uses,
       // so the live number matches what the results will show. Shown to the
@@ -689,6 +1137,7 @@
 
       return h('div', {
         ref: overlayRef,
+        className: 'mf-active-probe fixed inset-0',
         role: 'dialog',
         'aria-modal': 'true',
         'aria-label': tt('math_fluency.active_probe', 'Active math fluency probe'),
@@ -700,14 +1149,14 @@
         }
       },
         // Timer bar + live DCPM ticker
-        h('div', { style: { width: '100%', maxWidth: '28rem', marginBottom: '2rem' } },
+        h('div', { className: 'mf-probe-progress', style: { width: '100%', maxWidth: '28rem', marginBottom: '2rem', flexShrink: 0 } },
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '8px', flexWrap: 'wrap' } },
-            h('span', { style: { fontSize: '14px', fontWeight: 800, color: isLowTime ? '#dc2626' : '#b45309', animation: isLowTime ? 'pulse 1s infinite' : 'none' } },
-              '\u23f1\ufe0f ' + Math.floor(timer / 60) + ':' + String(timer % 60).padStart(2, '0')),
+            h('span', { style: { fontSize: '14px', fontWeight: 800, color: isUntimedRun ? '#6d28d9' : (isLowTime ? '#dc2626' : '#b45309'), animation: isLowTime ? 'pulse 1s infinite' : 'none' } },
+              isUntimedRun ? '\uD83C\uDFAF ' + tt('math_fluency.accuracy_focus', 'Accuracy Focus') : '\u23f1\ufe0f ' + Math.floor(timer / 60) + ':' + String(timer % 60).padStart(2, '0')),
             // Live DCPM pill — updates every second as the timer ticks. Low
             // opacity until at least 10s have elapsed so the number isn't
             // noisy at the start of the probe when the sample is tiny.
-            !isFixedRun ? h('span', {
+            !isFixedRun && !isUntimedRun ? h('span', {
               style: {
                 fontSize: '13px', fontWeight: 800,
                 padding: '3px 10px', borderRadius: '999px',
@@ -727,15 +1176,17 @@
           h('div', { style: { height: '12px', background: '#e2e8f0', borderRadius: '9999px', overflow: 'hidden' } },
             h('div', { role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100,
               'aria-valuenow': Math.round(timerPct),
-              'aria-label': tt('math_fluency.time_remaining', 'Time remaining: ') + timer + tt('math_fluency.seconds', ' seconds'), style: {
+              'aria-label': isUntimedRun
+                ? tt('math_fluency.problem_progress', 'Problem progress: {current} of {total}', { current: currentIndex, total: problems.length })
+                : tt('math_fluency.time_remaining', 'Time remaining: ') + timer + tt('math_fluency.seconds', ' seconds'), style: {
               height: '100%', borderRadius: '9999px', transition: 'width 1s linear',
-              background: isLowTime ? 'linear-gradient(to right, #ef4444, #dc2626)' : 'linear-gradient(to right, #f59e0b, #f97316)',
+              background: isUntimedRun ? 'linear-gradient(to right, #7c3aed, #a78bfa)' : (isLowTime ? 'linear-gradient(to right, #ef4444, #dc2626)' : 'linear-gradient(to right, #f59e0b, #f97316)'),
               width: timerPct + '%'
             } })
           )
         ),
         // Problem card
-        h('div', { role: 'group',
+        h('div', { className: 'mf-problem-card', role: 'group',
           'aria-label': tt('math_fluency.problem_of', 'Problem {current} of {total}', { current: currentIndex + 1, total: problems.length }),
           style: {
             background: '#fff', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.1)', border: '2px solid #fde68a',
@@ -744,6 +1195,23 @@
         },
           h('div', { style: { fontSize: 'clamp(2.5rem, 8vw, 3.5rem)', fontWeight: 900, color: '#1e293b', letterSpacing: '-1px', marginBottom: '2rem', fontFamily: 'ui-monospace, monospace' } },
             prob.a + ' ' + prob.symbol + ' ' + prob.b + ' = ?'),
+          strategyHint ? h('div', {
+            className: 'mf-strategy-coach', role: 'status', 'aria-live': 'polite',
+            style: { margin: '-8px 0 18px', padding: '12px 14px', borderRadius: '12px', background: strategyHint.reveal ? '#fef2f2' : '#f5f3ff', border: '1px solid ' + (strategyHint.reveal ? '#fca5a5' : '#c4b5fd'), color: strategyHint.reveal ? '#991b1b' : '#5b21b6', textAlign: 'left' }
+          },
+            h('div', { style: { fontSize: '12px', fontWeight: 900, marginBottom: '4px' } }, '\uD83E\uDDE0 ' + tt('math_fluency.strategy_coach', 'Strategy Coach') + ' \u2022 ' + tr(strategyHint.title)),
+            h('div', { style: { fontSize: '13px', lineHeight: 1.45, fontWeight: 650 } }, tr(strategyHint.message)),
+            strategyHint.model ? (strategyHint.model.type === 'groups'
+              ? h('div', { 'aria-hidden': 'true', style: { display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: '9px' } },
+                  Array.from({ length: Math.max(1, strategyHint.model.groups || 1) }).map(function (_, i) {
+                    return h('span', { key: i, style: { minWidth: '30px', padding: '4px 6px', borderRadius: '7px', background: '#fff', border: '1px solid #c4b5fd', textAlign: 'center', fontSize: '11px', fontWeight: 800 } }, strategyHint.model.perGroup != null ? strategyHint.model.perGroup : '\u25cf');
+                  }))
+              : h('div', { 'aria-hidden': 'true', style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '9px', fontFamily: 'ui-monospace, monospace', fontWeight: 900 } },
+                  h('span', { style: { padding: '4px 8px', background: '#fff', borderRadius: '7px' } }, strategyHint.model.left || strategyHint.model.start),
+                  h('span', null, strategyHint.model.direction === 'left' ? '\u2190 ' + strategyHint.model.change : strategyHint.model.direction === 'right' ? '+' + strategyHint.model.change + ' \u2192' : '='),
+                  h('span', { style: { padding: '4px 8px', background: '#fff', borderRadius: '7px' } }, strategyHint.model.right != null ? strategyHint.model.right : '?')))
+              : null
+          ) : null,
           h('form', { noValidate: true, onSubmit: function (e) { e.preventDefault(); submitAnswer(false); } },
             h('input', {
               ref: inputRef, type: 'number', inputMode: 'numeric', step: 1, value: studentInput,
@@ -799,7 +1267,7 @@
       });
       var maxDcpm = Math.max.apply(null, comparisonHistory.map(function (x) { return x.dcpm; }).concat([1]));
 
-      return h('div', { role: 'region', 'aria-label': tt('math_fluency.fluency_probe_results', 'Fluency Probe Results'), style: {
+      return h('div', { className: 'mf-results-panel', role: 'region', 'aria-label': tt('math_fluency.fluency_probe_results', 'Fluency Probe Results'), style: {
           background: 'linear-gradient(135deg, #fffbeb, #fff7ed)', borderRadius: '16px',
           border: '2px solid #fde68a', padding: '24px', marginBottom: '24px',
           animation: 'fadeIn 0.3s ease-out'
@@ -827,9 +1295,11 @@
             h('div', { style: { fontWeight: 800, color: bm.color, fontSize: '14px' } }, bm.label),
             h('div', { style: { fontSize: '12px', color: '#64748b' } },
               !results.validForComparison
-                ? (results.completionStatus === 'interrupted'
-                  ? tt('math_fluency.interrupted_result_detail', 'The page was left during this fixed form, so the run is not comparable.')
-                  : tt('math_fluency.incomplete_result_detail', 'The probe ended early, so the run is incomplete.'))
+                ? (results.untimed && results.completionStatus === 'complete'
+                  ? tt('math_fluency.accuracy_focus_result_detail', 'Completed without a countdown or speed score. Accuracy and fact practice are still recorded.')
+                  : results.completionStatus === 'interrupted'
+                    ? tt('math_fluency.interrupted_result_detail', 'The page was left during this fixed form, so the run is not comparable.')
+                    : tt('math_fluency.incomplete_result_detail', 'The probe ended early, so the run is incomplete.'))
                 : (results.benchmark.available
                   ? tt('math_fluency.instructional_reference_detail', 'Grade {grade} {season} instructional reference: {target} DCPM', { grade: results.benchmark.grade, season: results.benchmark.season, target: results.benchmark.target })
                   : (results.mode === 'benchmark'
@@ -838,15 +1308,17 @@
             h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '3px' } },
               results.validForComparison
                 ? tt('math_fluency.reference_disclaimer', 'Instructional reference only - not a diagnostic or standardized classification.')
-                : tt('math_fluency.excluded_result_detail', 'Saved for review, but excluded from trends, instructional references, and XP.'))
+                : results.untimed && results.completionStatus === 'complete'
+                  ? tt('math_fluency.accuracy_focus_excluded_detail', 'Accuracy Focus is saved for practice review and excluded from speed trends and instructional references.')
+                  : tt('math_fluency.excluded_result_detail', 'Saved for review, but excluded from trends, instructional references, and XP.'))
           )
         ),
 
         // Metrics grid
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' } },
+        h('div', { className: 'mf-results-metrics', style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' } },
           [
-            { val: results.dcpm == null ? '\u2014' : results.dcpm, label: 'DCPM', sub: tt('math_fluency.digits_correct_min', 'Digits Correct/Min'), color: '#d97706' },
-            { val: results.accuracy + '%', label: tt('math_fluency.accuracy', 'Accuracy'), sub: '', color: '#16a34a' },
+            { val: results.dcpm == null ? '\u2014' : results.dcpm, label: results.untimed ? tt('math_fluency.speed', 'Speed') : 'DCPM', sub: results.untimed ? tt('math_fluency.not_scored_accuracy_focus', 'Not scored in Accuracy Focus') : tt('math_fluency.digits_correct_min', 'Digits Correct/Min'), color: '#d97706' },
+            { val: results.accuracy + '%', label: results.strategyCoach ? tt('math_fluency.first_try_accuracy', 'First-Try Accuracy') : tt('math_fluency.accuracy', 'Accuracy'), sub: results.strategyCoach ? tt('math_fluency.attempts_recorded', '{count} attempts recorded', { count: results.totalPracticeAttempts }) : '', color: '#16a34a' },
             { val: results.totalCorrect + '/' + results.totalAttempted, label: tt('math_fluency.correct', 'Correct'), sub: '', color: '#2563eb' },
             { val: results.totalDigitsCorrect, label: tt('math_fluency.total_digits', 'Total Digits'), sub: '', color: '#9333ea' }
           ].map(function (m, i) {
@@ -872,6 +1344,25 @@
               '\u2022 ' + p);
           })
         ) : null,
+
+        // Personalized fact insight turns this result into the next practice step.
+        results.factInsights && results.factInsights.length ? (function () {
+          var focusRows = results.factInsights.filter(function (item) { return item.correct < item.attempts || item.avgResponseMs > 6000; }).slice(0, 5);
+          if (!focusRows.length) return null;
+          return h('div', {
+            style: { background: '#f5f3ff', borderRadius: '12px', padding: '12px 16px', border: '1px solid #ddd6fe', marginBottom: '16px' },
+            'aria-label': tt('math_fluency.next_practice_focus', 'Next practice focus')
+          },
+            h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#6d28d9', marginBottom: '8px' } }, '\uD83C\uDFAF ' + tt('math_fluency.next_practice_focus', 'Next Practice Focus')),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+              focusRows.map(function (item) {
+                var problem = item.problem;
+                var detail = item.correct + '/' + item.attempts + ' correct' + (item.avgResponseMs != null ? ' \u2022 ' + (item.avgResponseMs / 1000).toFixed(1) + 's avg' : '');
+                return h('span', { key: item.key, title: detail, style: { padding: '5px 9px', background: '#fff', border: '1px solid #c4b5fd', borderRadius: '8px', color: '#5b21b6', fontSize: '12px', fontWeight: 800, fontFamily: 'ui-monospace, monospace' } }, problem.a + ' ' + problem.symbol + ' ' + problem.b);
+              })
+            )
+          );
+        })() : null,
 
         // DCPM Trend — bar chart per session with a trend delta and personal-best
         // marker so the student immediately sees "am I improving?" instead of
@@ -942,7 +1433,12 @@
         })() : null,
 
         // Actions
-        h('div', { style: { display: 'flex', gap: '8px', marginTop: '16px' } },
+        h('div', { style: { display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' } },
+          results.focusFacts && results.focusFacts.length ? h('button', {
+            'aria-label': tt('math_fluency.practice_missed_facts', 'Practice missed facts'),
+            onClick: function () { startFocusedPractice(results.focusFacts); },
+            style: { flex: '1 1 180px', padding: '10px', background: 'linear-gradient(to right, #7c3aed, #6d28d9)', color: '#fff', fontWeight: 800, borderRadius: '12px', fontSize: '14px', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(109,40,217,0.25)' }
+          }, '\uD83C\uDFAF ' + tt('math_fluency.practice_missed_facts', 'Practice Missed Facts') + ' (' + results.focusFacts.length + ')') : null,
           h('button', { 'aria-label': tt('math_fluency.run_again', 'Run again'),
             onClick: startProbe,
             style: {
@@ -1005,7 +1501,7 @@
       ),
 
       // Config grid
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '12px' } },
+      h('div', { className: 'mf-config-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '12px' } },
         h('div', null,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.probe_mode', 'Probe Mode')),
           h('select', {
@@ -1031,7 +1527,7 @@
         h('div', null,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.operation', 'Operation')),
           h('select', {
-            value: operation, onChange: function (e) { setOperation(e.target.value); }, disabled: probeMode === 'benchmark',
+            value: operation, onChange: function (e) { setOperation(e.target.value); setDifficulty('recommended'); }, disabled: probeMode === 'benchmark',
             'aria-label': tt('math_fluency.math_operation', 'Math operation'),
             style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
           },
@@ -1042,17 +1538,17 @@
             h('option', { value: 'mixed' }, tt('math_fluency.mixed', '\ud83d\udd00 Mixed'))
           )
         ),
-        // Difficulty
+        // Grade-aligned practice set. Fixed benchmark forms keep their bank metadata.
         h('div', null,
-          h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.difficulty', 'Difficulty')),
+          h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.practice_set', 'Practice Set')),
           h('select', {
             value: difficulty, onChange: function (e) { setDifficulty(e.target.value); }, disabled: probeMode === 'benchmark',
-            'aria-label': tt('math_fluency.difficulty_level', 'Difficulty level'),
+            'aria-label': tt('math_fluency.practice_set', 'Practice Set'),
             style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
           },
-            h('option', { value: 'single' }, tt('math_fluency.basic_facts', 'Basic Facts')),
-            h('option', { value: 'double' }, tt('math_fluency.extended_facts', 'Extended Facts')),
-            h('option', { value: 'mixed' }, tt('math_fluency.mixed_levels', 'Mixed Levels'))
+            getPracticeSetOptions(operation, gradeLevel).map(function (option) {
+              return h('option', { key: option.value, value: option.value }, tr(option.label));
+            })
           )
         ),
         // Timer
@@ -1063,6 +1559,7 @@
             'aria-label': tt('math_fluency.time_limit', 'Time limit'),
             style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
           },
+            h('option', { value: 0 }, tt('math_fluency.untimed_accuracy_focus', 'Untimed (Accuracy Focus)')),
             h('option', { value: 60 }, tt('math_fluency.60_seconds', '60 seconds')),
             h('option', { value: 120 }, tt('math_fluency.120_seconds', '120 seconds')),
             h('option', { value: 180 }, tt('math_fluency.180_seconds', '180 seconds'))
@@ -1097,12 +1594,68 @@
           text = bank
             ? tt('math_fluency.fixed_form_summary', 'Fixed Form {form}: {count} grade-aligned problems, {seconds} seconds. Settings are locked for comparability.', { form: probeForm, count: bank.problems.length, seconds: bank.timeLimit || 120 })
             : tt('math_fluency.fixed_form_unavailable_summary', 'No fixed form is available for this grade. Choose Practice mode.');
+        } else if (timeLimit === 0) {
+          text = tr(describePracticeSet(gradeLevel, operation, difficulty)) + ' ' + tt('math_fluency.accuracy_focus_summary', 'Accuracy Focus removes the countdown and speed score, adds graduated Strategy Coach support after errors, and preserves personalized fact practice.');
         } else if (reference.available) {
-          text = tt('math_fluency.instructional_reference_summary', 'Grade {grade} {season} instructional reference: {target} DCPM. Descriptive only - not diagnostic.', { grade: reference.grade, season: reference.season, target: reference.target });
+          text = tr(describePracticeSet(gradeLevel, operation, difficulty)) + ' ' + tt('math_fluency.instructional_reference_summary', 'Grade {grade} {season} instructional reference: {target} DCPM. Descriptive only - not diagnostic.', { grade: reference.grade, season: reference.season, target: reference.target });
         } else {
-          text = tt('math_fluency.no_reference_summary', 'Practice score only. No instructional reference is available for this grade or operation.');
+          text = tr(describePracticeSet(gradeLevel, operation, difficulty)) + ' ' + tt('math_fluency.no_reference_summary', 'Practice score only. No instructional reference is available for this grade or operation.');
         }
         return h('div', { role: 'note', style: { background: '#fff', borderRadius: '8px', padding: '8px 12px', marginBottom: '12px', border: '1px solid #fef3c7', fontSize: '12px', color: '#64748b' } }, text);
+      })(),
+
+      // Visual mastery dashboard: persistent categories are clickable practice sets.
+      (function () {
+        var dashboard = buildFactMasteryDashboard(factMastery);
+        if (probeMode !== 'practice' || !dashboard.totalFacts) return null;
+        var colors = {
+          secure: { bg: '#dcfce7', border: '#86efac', color: '#166534', icon: '\u2705' },
+          developing: { bg: '#fef3c7', border: '#fcd34d', color: '#92400e', icon: '\uD83C\uDF31' },
+          slow: { bg: '#e0f2fe', border: '#7dd3fc', color: '#075985', icon: '\u23F1\uFE0F' },
+          focus: { bg: '#fee2e2', border: '#fca5a5', color: '#991b1b', icon: '\uD83C\uDFAF' }
+        };
+        var opLabels = { add: tt('math_fluency.addition', 'Addition'), sub: tt('math_fluency.subtraction', 'Subtraction'), mul: tt('math_fluency.multiplication', 'Multiplication'), div: tt('math_fluency.division', 'Division') };
+        return h('details', { open: true, style: { background: '#fff', border: '1px solid #ddd6fe', borderRadius: '12px', padding: '10px 12px', marginBottom: '12px' } },
+          h('summary', { style: { cursor: 'pointer', color: '#5b21b6', fontSize: '12px', fontWeight: 900 } }, '\uD83D\uDDFA\uFE0F ' + tt('math_fluency.fact_mastery_map', 'Fact Mastery Map') + ' \u2022 ' + dashboard.totalFacts + ' facts \u2022 ' + dashboard.overallAccuracy + '%'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '7px', marginTop: '10px' } },
+            dashboard.categoryOrder.map(function (id) {
+              var category = dashboard.categories[id], palette = colors[id];
+              return h('button', {
+                key: id, type: 'button', disabled: !category.count,
+                onClick: function () { if (category.count) startFocusedPractice(category.facts.slice(0, 12)); },
+                'aria-label': tr(category.label) + ': ' + category.count + ' facts. Start focused practice.',
+                style: { padding: '9px 8px', borderRadius: '9px', background: palette.bg, border: '1px solid ' + palette.border, color: palette.color, cursor: category.count ? 'pointer' : 'default', opacity: category.count ? 1 : 0.5, textAlign: 'left' }
+              },
+                h('span', { 'aria-hidden': 'true', style: { marginRight: '5px' } }, palette.icon),
+                h('span', { style: { fontSize: '11px', fontWeight: 850 } }, tr(category.label)),
+                h('strong', { style: { float: 'right', fontSize: '14px' } }, String(category.count))
+              );
+            })
+          ),
+          h('div', { style: { display: 'grid', gap: '5px', marginTop: '10px' } },
+            Object.keys(dashboard.operations).map(function (op) {
+              var row = dashboard.operations[op];
+              if (!row.total) return null;
+              var pct = Math.round((row.secure / row.total) * 100);
+              return h('div', { key: op, style: { display: 'grid', gridTemplateColumns: '82px 1fr 48px', gap: '7px', alignItems: 'center', fontSize: '10px', color: '#64748b' } },
+                h('span', { style: { fontWeight: 750 } }, opLabels[op]),
+                h('span', { style: { height: '7px', borderRadius: '999px', background: '#ede9fe', overflow: 'hidden' } }, h('span', { style: { display: 'block', height: '100%', width: pct + '%', background: '#22c55e' } })),
+                h('span', null, row.secure + '/' + row.total)
+              );
+            })
+          )
+        );
+      })(),
+
+      // Persistent focus practice remains available when the student returns.
+      (function () {
+        var savedFocus = getMasteryFocusFacts(factMastery, 12);
+        if (probeMode !== 'practice' || !savedFocus.length) return null;
+        return h('button', {
+          type: 'button', onClick: function () { startFocusedPractice(savedFocus); },
+          'aria-label': tt('math_fluency.practice_my_focus_facts', 'Practice my focus facts'),
+          style: { width: '100%', padding: '9px', marginBottom: '8px', background: '#ede9fe', color: '#6d28d9', border: '1px solid #c4b5fd', borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+        }, '\uD83C\uDFAF ' + tt('math_fluency.practice_my_focus_facts', 'Practice My Focus Facts') + ' (' + savedFocus.length + ')');
       })(),
 
       // Start button
@@ -1249,6 +1802,51 @@
     return grid;
   }
 
+  // Pure maze helpers shared by hints, chase movement, scoring keys, and tests.
+  function findMazePathStep(maze, start, target) {
+    if (!Array.isArray(maze) || !maze.length || !Array.isArray(maze[0]) || !start || !target) return null;
+    var rows = maze.length, cols = maze[0].length;
+    if (start.r === target.r && start.c === target.c) return null;
+    if (start.r < 0 || start.c < 0 || start.r >= rows || start.c >= cols || target.r < 0 || target.c < 0 || target.r >= rows || target.c >= cols) return null;
+    var queue = [{ r: start.r, c: start.c, firstDirection: null }], visited = {}, head = 0;
+    visited[start.r + ',' + start.c] = true;
+    while (head < queue.length) {
+      var cur = queue[head++], cell = maze[cur.r] && maze[cur.r][cur.c];
+      if (!cell || !cell.walls) continue;
+      var candidates = [];
+      if (!cell.walls.top && cur.r > 0) candidates.push({ r: cur.r - 1, c: cur.c, direction: 'up' });
+      if (!cell.walls.right && cur.c < cols - 1) candidates.push({ r: cur.r, c: cur.c + 1, direction: 'right' });
+      if (!cell.walls.bottom && cur.r < rows - 1) candidates.push({ r: cur.r + 1, c: cur.c, direction: 'down' });
+      if (!cell.walls.left && cur.c > 0) candidates.push({ r: cur.r, c: cur.c - 1, direction: 'left' });
+      for (var i = 0; i < candidates.length; i++) {
+        var next = candidates[i], key = next.r + ',' + next.c;
+        if (visited[key]) continue;
+        visited[key] = true;
+        var firstDirection = cur.firstDirection || next.direction;
+        if (next.r === target.r && next.c === target.c) {
+          var delta = { up: [-1, 0], right: [0, 1], down: [1, 0], left: [0, -1] }[firstDirection];
+          return { direction: firstDirection, r: start.r + delta[0], c: start.c + delta[1] };
+        }
+        queue.push({ r: next.r, c: next.c, firstDirection: firstDirection });
+      }
+    }
+    return null;
+  }
+  function buildMazeBestKey(operation, mazeSize, difficulty, controlMode, chaseMode) {
+    return [operation, mazeSize, difficulty, controlMode || 'classic', chaseMode ? 'chase' : 'standard'].join('|');
+  }
+  function generateMazeProblem(operation, difficulty) {
+    var a, b, op = operation === 'mixed' ? ['add','sub','mul','div'][Math.floor(Math.random() * 4)] : operation;
+    var extended = difficulty === 'double', minN = extended ? 10 : 1, maxN = extended ? 99 : 12;
+    function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    if (op === 'add') { a=rand(minN,maxN); b=rand(minN,maxN); return { text:a+' + '+b, answer:a+b, op:op }; }
+    if (op === 'sub') { a=rand(minN,maxN); b=rand(minN,a); return { text:a+' \u2212 '+b, answer:a-b, op:op }; }
+    if (op === 'mul') { a=rand(extended?10:1,extended?20:12); b=rand(extended?10:1,extended?20:12); return { text:a+' \u00d7 '+b, answer:a*b, op:op }; }
+    if (op === 'div') { b=rand(extended?10:2,extended?15:12); var ans=rand(extended?10:1,extended?20:12); a=b*ans; return { text:a+' \u00f7 '+b, answer:ans, op:op }; }
+    if (op === 'volume') { var maxAxis=extended?8:6,L=rand(2,maxAxis),W=rand(2,maxAxis),HH=rand(2,maxAxis),asL=L>=3&&W>=3&&HH>=3&&Math.random()<0.25; if(asL){var nL=Math.max(1,Math.floor(L/3)),nW=Math.max(1,Math.floor(W/3)),nH=Math.max(1,Math.floor(HH/3));return {text:'V = ?',answer:(L*W*HH)-(nL*nW*nH),op:'volume',type:'visual',shape:'lblock',dims:{l:L,w:W,h:HH},notch:{l:nL,w:nW,h:nH}};} return {text:'V = ?',answer:L*W*HH,op:'volume',type:'visual',shape:'rect',dims:{l:L,w:W,h:HH}}; }
+    return { text:'1 + 1', answer:2, op:'add' };
+  }
+
   // Daily streak — counts consecutive calendar days the maze was
   // played. Stored as { lastPlayedDate: 'YYYY-MM-DD', current: N,
   // longest: N }. Computed lazily so the streak record updates on
@@ -1322,9 +1920,6 @@
     var handleScoreUpdate = props.handleScoreUpdate;
     var t = props.t || function(k) { return k; };
 
-    var _s = useState;
-    var mode = _s('setup')[0], setMode = _s[1]; // actually use individual calls
-    // Re-declare properly
     // Settings persistence — restore last-used prefs so returning
     // students don't have to re-pick. Falls back to current defaults
     // if no record (or storage blocked).
@@ -1356,6 +1951,9 @@
     var mazeSizeState = useState(_prefs.mazeSize || 'medium');
     var mazeSize = mazeSizeState[0];
     var setMazeSize = function(v) { mazeSizeState[1](v); _savePrefs({ mazeSize: v }); };
+    var performance2DState = useState(!!_prefs.performance2D);
+    var performance2D = performance2DState[0];
+    var setPerformance2D = function(v) { performance2DState[1](v); _savePrefs({ performance2D: v }); };
     // Player avatar — emoji rendered on the 2D minimap / fallback. Persists
     // to _prefs so each student keeps their chosen character across runs.
     // Stored as the literal emoji string (canvas fillText draws it).
@@ -1533,6 +2131,8 @@
     // already read from localStorage at module load).
     var mutedLocalState = useState(_mfMuted);
     var mutedLocal = mutedLocalState[0], setMutedLocal = mutedLocalState[1];
+    var customSettingsState = useState(false);
+    var showCustomSettings = customSettingsState[0], setShowCustomSettings = customSettingsState[1];
     function _toggleMute() {
       var next = !mutedLocal;
       _mfSetMuted(next);
@@ -1543,87 +2143,26 @@
     // initial state value) reads the current pause status without
     // needing to be torn down + recreated on every toggle.
     var pausedRef = useRef(false);
-    useEffect(function() { pausedRef.current = paused; }, [paused]);
+    var monsterBlockedRef = useRef(false);
+    var timerBlockedRef = useRef(false);
+    pausedRef.current = paused;
+    timerBlockedRef.current = paused || helpOpen || !tutorialSeen;
+    monsterBlockedRef.current = timerBlockedRef.current || !!currentProblem;
 
     function makeProblem() {
-      var a, b, op = operation === 'mixed' ? ['add','sub','mul','div'][Math.floor(Math.random() * 4)] : operation;
-      var maxN = difficulty === 'single' ? 12 : 20;
-      if (op === 'add') { a = Math.floor(Math.random() * maxN) + 1; b = Math.floor(Math.random() * maxN) + 1; return { text: a + ' + ' + b, answer: a + b, op: op }; }
-      if (op === 'sub') { a = Math.floor(Math.random() * maxN) + 1; b = Math.floor(Math.random() * a) + 1; return { text: a + ' − ' + b, answer: a - b, op: op }; }
-      if (op === 'mul') { a = Math.floor(Math.random() * 12) + 1; b = Math.floor(Math.random() * 12) + 1; return { text: a + ' × ' + b, answer: a * b, op: op }; }
-      if (op === 'div') { b = Math.floor(Math.random() * 11) + 2; var ans = Math.floor(Math.random() * 12) + 1; a = b * ans; return { text: a + ' ÷ ' + b, answer: ans, op: op }; }
-      if (op === 'volume') {
-        // Visual volume gate. Pick L,W,H so the prism stays readable
-        // (no axis larger than 6 single / 8 double) and total volume
-        // stays manageable to count by hand.
-        var maxAxis = difficulty === 'single' ? 6 : 8;
-        var L = Math.floor(Math.random() * (maxAxis - 1)) + 2;
-        var W = Math.floor(Math.random() * (maxAxis - 1)) + 2;
-        var H = Math.floor(Math.random() * (maxAxis - 1)) + 2;
-        // 25% chance of L-block — only when each axis is at least 3,
-        // so we have room to carve a notch without collapsing the prism.
-        var asLBlock = (L >= 3 && W >= 3 && H >= 3 && Math.random() < 0.25);
-        if (asLBlock) {
-          var nL = Math.max(1, Math.floor(L / 3));
-          var nW = Math.max(1, Math.floor(W / 3));
-          var nH = Math.max(1, Math.floor(H / 3));
-          var vol = (L * W * H) - (nL * nW * nH);
-          return { text: 'V = ?', answer: vol, op: 'volume', type: 'visual', shape: 'lblock', dims: { l: L, w: W, h: H }, notch: { l: nL, w: nW, h: nH } };
-        }
-        return { text: 'V = ?', answer: L * W * H, op: 'volume', type: 'visual', shape: 'rect', dims: { l: L, w: W, h: H } };
-      }
-      return { text: '1 + 1', answer: 2, op: 'add' };
+      return generateMazeProblem(operation, difficulty);
     }
 
     function getMazeSize() { var s = MAZE_SIZES[mazeSize] || MAZE_SIZES.medium; return { cols: s.cols, rows: s.rows }; }
     var MAZE_COLS = getMazeSize().cols;
     var MAZE_ROWS = getMazeSize().rows;
 
-    // BFS from player cell to exit cell respecting wall openings. Returns
-    // the direction ('up'|'down'|'left'|'right') of the first step along
-    // the shortest path, or null if no path exists (shouldn't happen for a
-    // valid maze).
+    // Hints follow the current objective: reach the key first, then the exit.
     function findHintDir() {
       if (!maze) return null;
-      var start = playerPosRef.current;
-      if (start.r === MAZE_ROWS - 1 && start.c === MAZE_COLS - 1) return null;
-      var visited = {};
-      visited[start.r + ',' + start.c] = null; // predecessor marker
-      var queue = [start];
-      var head = 0;
-      while (head < queue.length) {
-        var cur = queue[head++];
-        if (cur.r === MAZE_ROWS - 1 && cur.c === MAZE_COLS - 1) {
-          // Walk back to start-1 to find the first move direction.
-          var node = cur;
-          while (visited[node.r + ',' + node.c]) {
-            var prev = visited[node.r + ',' + node.c];
-            if (prev.r === start.r && prev.c === start.c) {
-              if (node.r < prev.r) return 'up';
-              if (node.r > prev.r) return 'down';
-              if (node.c < prev.c) return 'left';
-              if (node.c > prev.c) return 'right';
-            }
-            node = prev;
-          }
-          return null;
-        }
-        var cellH = maze[cur.r][cur.c];
-        var neighbors = [];
-        if (!cellH.walls.top && cur.r > 0) neighbors.push({ r: cur.r - 1, c: cur.c });
-        if (!cellH.walls.bottom && cur.r < MAZE_ROWS - 1) neighbors.push({ r: cur.r + 1, c: cur.c });
-        if (!cellH.walls.left && cur.c > 0) neighbors.push({ r: cur.r, c: cur.c - 1 });
-        if (!cellH.walls.right && cur.c < MAZE_COLS - 1) neighbors.push({ r: cur.r, c: cur.c + 1 });
-        for (var ni = 0; ni < neighbors.length; ni++) {
-          var n = neighbors[ni];
-          var key = n.r + ',' + n.c;
-          if (!(key in visited)) {
-            visited[key] = cur;
-            queue.push(n);
-          }
-        }
-      }
-      return null;
+      var target = !keyCollected && keyPosRef.current ? { r: keyPosRef.current.r, c: keyPosRef.current.c } : { r: MAZE_ROWS - 1, c: MAZE_COLS - 1 };
+      var step = findMazePathStep(maze, playerPosRef.current, target);
+      return step ? step.direction : null;
     }
 
     function requestHint() {
@@ -1631,6 +2170,8 @@
       var dir = findHintDir();
       if (!dir) return;
       setHintDir(dir);
+      var objectiveName = !keyCollected ? tt('math_fluency.golden_key', 'golden key') : tt('math_fluency.exit_2', 'exit');
+      _mfAnnounce(tt('math_fluency.maze_hint_announcement', 'Hint toward the {objective}: move {direction}.', { objective: objectiveName, direction: dir }));
       setScore(function(p) { return Math.max(0, p - 5); });
       setStreak(0); // using a hint resets combo — keeps it honest
       playTone(660, 0.08, 'sine', 0.04);
@@ -1668,6 +2209,7 @@
       setCurrentProblem(null);
       setScore(0); setCorrect(0); setWrong(0); setMoveCount(0); setElapsed(0);
       setGameOver(false); setWon(false); setFeedback('');
+      setPaused(false); setHelpOpen(false);
       setStreak(0); setHintDir(null);
       setKeyCollected(false);
       setMedal(null);
@@ -1698,21 +2240,15 @@
       setMode('playing');
       // Timer
       if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = setInterval(function() { if (!pausedRef.current) setElapsed(function(p) { return p + 1; }); }, 1000);
+      timerRef.current = setInterval(function() { if (!timerBlockedRef.current && !(typeof document !== 'undefined' && document.hidden)) setElapsed(function(p) { return p + 1; }); }, 1000);
       // Monster chase timer (moves every 4 seconds)
       if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
       if (chaseMode) {
         monsterTimerRef.current = setInterval(function() {
+          if (monsterBlockedRef.current || (typeof document !== 'undefined' && document.hidden)) return;
           setMonsterPos(function(mp) {
-            // BFS toward player — simple chase AI
-            // Just move one step closer (Manhattan distance)
-            var pr = playerPosRef.current.r, pc = playerPosRef.current.c;
-            var mr = mp.r, mc = mp.c;
-            if (mr < pr) return { r: mr + 1, c: mc };
-            if (mr > pr) return { r: mr - 1, c: mc };
-            if (mc < pc) return { r: mr, c: mc + 1 };
-            if (mc > pc) return { r: mr, c: mc - 1 };
-            return mp;
+            var step = findMazePathStep(newMaze, mp, playerPosRef.current);
+            return step ? { r: step.r, c: step.c } : mp;
           });
         }, 4000);
       }
@@ -1995,7 +2531,7 @@
           // Legacy 'fluency_maze_best' (single global) is preserved as a
           // fallback so existing students don't lose their prior best.
           try {
-            var bestKey = operation + '|' + mazeSize + '|' + difficulty;
+            var bestKey = buildMazeBestKey(operation, mazeSize, difficulty, controlMode, chaseMode);
             var bestStore = JSON.parse(localStorage.getItem('fluency_maze_bests') || '{}');
             var prior = bestStore[bestKey];
             // Stash a frozen copy so the results screen can compare against
@@ -2003,7 +2539,7 @@
             // closure can't see further mutations of bestStore.
             setPriorBestSnapshot(prior ? { score: prior.score, time: prior.time, correct: prior.correct, wrong: prior.wrong } : null);
             if (!prior || finalScore > prior.score) {
-              bestStore[bestKey] = { score: finalScore, correct: correct + 1, wrong: wrong, time: elapsed, op: operation, size: mazeSize, difficulty: difficulty, savedAt: Date.now() };
+              bestStore[bestKey] = { score: finalScore, correct: correct + 1, wrong: wrong, time: elapsed, op: operation, size: mazeSize, difficulty: difficulty, controlMode: controlMode, chaseMode: chaseMode, savedAt: Date.now() };
               localStorage.setItem('fluency_maze_bests', JSON.stringify(bestStore));
               if (prior) _mfAnnounce(tt('math_fluency.new_personal_best_for_this_mode', 'New personal best for this mode: ') + finalScore + ' points.');
             }
@@ -2128,6 +2664,10 @@
     useEffect(function() {
       function handleKey(e) {
         if (mode !== 'playing') return;
+        if (paused) {
+          if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') { e.preventDefault(); setPaused(false); }
+          return;
+        }
         if (currentProblem) {
           if (e.key === 'Enter') { e.preventDefault(); submitAnswer(); }
           return;
@@ -2482,7 +3022,7 @@
       var frame = 0;
       var tick = function() {
         frame++;
-        if (frame % 3 === 0) {
+        if (frame % 10 === 0 && !pausedRef.current && !(typeof document !== 'undefined' && document.hidden)) {
           minimapTickRef.current = frame;
           setMinimapTick(frame); // triggers minimap redraw via the render cycle
         }
@@ -3084,6 +3624,8 @@
         cancelAnimationFrame(maze3dAnimRef.current);
         try { if (ro) ro.disconnect(); } catch (e) {}
         try { if (eng._lookCleanup) eng._lookCleanup(); } catch (e) {}
+        try { if (eng.scene) eng.scene.traverse(function(obj) { if (obj.geometry && obj.geometry.dispose) obj.geometry.dispose(); if (obj.material) { var mats = Array.isArray(obj.material) ? obj.material : [obj.material]; mats.forEach(function(mat) { if (mat.map && mat.map.dispose) mat.map.dispose(); if (mat.dispose) mat.dispose(); }); } }); } catch (e) {}
+        try { if (eng.renderer && eng.renderer.dispose) eng.renderer.dispose(); } catch (e) {}
         if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
         maze3dEngRef.current = null;
       };
@@ -3149,9 +3691,6 @@
     useEffect(function() {
       if (mode !== 'playing') return;
       function pauseIfPlaying() {
-        // Respect explicit gate state — if a problem is showing, the
-        // existing gate already blocks movement, no need to pause too.
-        if (currentProblem) return;
         setPaused(true);
       }
       function onVisChange() { if (document.hidden) pauseIfPlaying(); }
@@ -3161,7 +3700,7 @@
         window.removeEventListener('blur', pauseIfPlaying);
         document.removeEventListener('visibilitychange', onVisChange);
       };
-    }, [mode, currentProblem]);
+    }, [mode]);
 
     // ── Render ──
     if (mode === 'setup') {
@@ -3169,14 +3708,12 @@
       // wrapper from AlloFlowContent and reads like an unrolled scroll on
       // a torchlit table. Replaces the previous slate/violet palette which
       // clashed with the warm dungeon visuals on the canvas.
-      // Read prior personal-best for this exact (op, size, difficulty).
-      // Falls back to the legacy global record so students see something
-      // even before they've completed a run in the new keyed-store era.
+      // Read the prior personal best for these exact gameplay settings.
       var bestRecord = null;
       try {
-        var bestKey = operation + '|' + mazeSize + '|' + difficulty;
+        var bestKey = buildMazeBestKey(operation, mazeSize, difficulty, controlMode, chaseMode);
         var keyed = JSON.parse(localStorage.getItem('fluency_maze_bests') || '{}');
-        bestRecord = keyed[bestKey] || JSON.parse(localStorage.getItem('fluency_maze_best') || 'null');
+        bestRecord = keyed[bestKey] || null;
       } catch (e) { bestRecord = null; }
       return h('div', { style: { maxWidth: 460, margin: '0 auto', padding: '20px 24px', textAlign: 'center', background: 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)', borderRadius: '14px', border: '2px solid #d97706', boxShadow: '0 8px 24px rgba(146,64,14,0.15), inset 0 0 32px rgba(217,119,6,0.08)' } },
         h('div', { style: { fontSize: '36px', marginBottom: '8px' } }, '\uD83C\uDFAF'),
@@ -3193,7 +3730,13 @@
           },
           'aria-label': tt('math_fluency.personal_best', 'Personal best: ') + bestRecord.score + ' points in ' + bestRecord.time + ' seconds'
         }, '\uD83C\uDFC6 Best (this mode): ' + bestRecord.score + ' pts ' + (bestRecord.time ? '(' + bestRecord.time + 's)' : '')),
-        (function() {
+        h('button', {
+          onClick: function() { setShowCustomSettings(!showCustomSettings); },
+          'aria-expanded': showCustomSettings,
+          'aria-controls': 'fluency-maze-custom-settings',
+          style: { width: '100%', padding: '8px 14px', marginBottom: '12px', borderRadius: '9px', border: '1px solid #d97706', background: 'rgba(254,243,199,0.8)', color: '#78350f', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+        }, (showCustomSettings ? '\u25B2 Hide Custom Settings' : '\u25BC Customize Maze') + '  \u00b7  ' + operation + ' / ' + difficulty + ' / ' + mazeSize + (performance2D ? ' / 2D' : ' / 3D Auto')),
+        showCustomSettings && (function() {
           var lt = null;
           try { lt = JSON.parse(localStorage.getItem('fluency_maze_lifetime') || 'null'); } catch (e) {}
           if (!lt || !lt.gatesUnlocked) return null;
@@ -3237,7 +3780,7 @@
         // Mastery badges per operation — bronze (50+), silver (200+),
         // gold (500+) per fact family. Renders only operations the
         // student has earned at least bronze in.
-        (function() {
+        showCustomSettings && (function() {
           var counts = null;
           try { counts = JSON.parse(localStorage.getItem('fluency_maze_op_counts') || '{}'); } catch (e) { counts = {}; }
           var opNames = { add: 'Add', sub: 'Sub', mul: 'Mul', div: 'Div', volume: tt('math_fluency.volume', 'Volume') };
@@ -3274,7 +3817,7 @@
         // Avatar picker — small row of emoji buttons. The chosen one
         // renders as the player on the 2D minimap / fallback canvas.
         // Persisted via _savePrefs so each student keeps their pick.
-        (function() {
+        showCustomSettings && (function() {
           var avatars = ['🐱', '🐶', '🦊', '🐉', '🤖', '👻', '🦁', '🐼'];
           return h('div', {
             style: { display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center', marginBottom: '12px' },
@@ -3301,7 +3844,7 @@
         // Control mode — Classic (every step is a question, fluency drill)
         // vs Explorer (each path is a question, free-look 3D camera, fog of
         // war on minimap). Toggle persisted via _prefs.controlMode.
-        (function() {
+        showCustomSettings && (function() {
           var modes = [
             { id: 'classic',  label: '🎯 Classic',  hint: tt('math_fluency.every_step_is_a_question_fluency_drill', 'Every step is a question — fluency drill') },
             { id: 'explorer', label: '🎮 Explorer', hint: tt('math_fluency.each_path_is_a_question_adventure_with_f', 'Each path is a question — adventure with free look + fog of war') }
@@ -3368,6 +3911,7 @@
             }, p.label);
           }));
         })(),
+        h('div', { id: 'fluency-maze-custom-settings', hidden: !showCustomSettings },
         // Operation selector
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
           ['add', 'sub', 'mul', 'div', 'mixed', 'volume'].map(function(op) {
@@ -3392,7 +3936,7 @@
                 background: diffSel ? 'linear-gradient(135deg, #ea580c, #c2410c)' : '#fef3c7',
                 color: diffSel ? '#fff' : '#78350f',
                 border: diffSel ? '2px solid #9a3412' : '2px solid #fcd34d' }
-            }, d === 'single' ? tt('math_fluency.single_digit_0_12_2', 'Single Digit (0-12)') : tt('math_fluency.double_digit_0_20', 'Double Digit (0-20)'));
+            }, d === 'single' ? tt('math_fluency.single_digit_0_12_2', 'Single Digit (0-12)') : tt('math_fluency.extended_numbers', 'Extended (10-99; facts 10-20)'));
           })
         ),
         // Maze size selector
@@ -3409,9 +3953,14 @@
           })
         ),
         // Chase mode toggle
-        h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px', fontSize: '12px', color: '#78350f', fontWeight: 600, cursor: 'pointer' } },
+        h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px', fontSize: '12px', color: '#78350f', fontWeight: 600, cursor: 'pointer' } },
           h('input', { type: 'checkbox', checked: chaseMode, onChange: function() { setChaseMode(!chaseMode); }, style: { accentColor: '#b45309' } }),
           '\uD83D\uDC7E Chase Mode', h('span', { style: { fontSize: '10px', color: '#475569' } }, '(monster pursues you!)')
+        ),
+        h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px', fontSize: '12px', color: '#78350f', fontWeight: 600, cursor: 'pointer' } },
+          h('input', { type: 'checkbox', checked: performance2D, onChange: function() { setPerformance2D(!performance2D); }, style: { accentColor: '#15803d' } }),
+          tt('math_fluency.performance_2d_mode', '2D Performance Mode'), h('span', { style: { fontSize: '10px', color: '#475569' } }, tt('math_fluency.performance_2d_detail', '(for older or shared devices)'))
+        ),
         ),
         // Start button
         h('button', { onClick: startMaze,
@@ -3624,7 +4173,20 @@
       );
     }
 
-    var has3D = !!window.THREE;
+    var has3D = !!window.THREE && !performance2D;
+    var objectiveText = keyCollected ? tt('math_fluency.objective_reach_exit', 'Exit unlocked - reach the star portal') : tt('math_fluency.objective_find_key', 'Objective: find the golden key');
+    var objectiveIcon = keyCollected ? '\u2B50' : '\uD83D\uDDDD\uFE0F';
+    function mazeDirectionAvailable(dir) {
+      if (!maze || !maze[playerPos.r] || !maze[playerPos.r][playerPos.c] || currentProblem || paused || helpOpen || !tutorialSeen) return false;
+      var walls = maze[playerPos.r][playerPos.c].walls;
+      return dir === 'up' ? !walls.top : dir === 'right' ? !walls.right : dir === 'down' ? !walls.bottom : !walls.left;
+    }
+    function movementButtonStyle(dir) {
+      var enabled = mazeDirectionAvailable(dir);
+      var hinted = enabled && hintDir === dir;
+      return { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: hinted ? 'linear-gradient(180deg, #fde68a 0%, #f59e0b 100%)' : (enabled ? 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)' : '#3a2e26'), color: hinted ? '#78350f' : (enabled ? '#fef3c7' : '#78716c'), border: '2px solid ' + (hinted ? '#fef3c7' : (enabled ? '#78350f' : '#57534e')), fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: enabled ? 'pointer' : 'not-allowed', boxShadow: hinted ? '0 0 18px rgba(251,191,36,0.9)' : (enabled ? 'inset 0 -2px 0 rgba(0,0,0,0.25)' : 'none'), minHeight: isFullscreen ? '64px' : '44px', opacity: enabled ? 1 : 0.5, transform: hinted ? 'scale(1.08)' : 'scale(1)', transition: 'transform 160ms, box-shadow 160ms, background 160ms' };
+
+    }
 
     // Playing mode
     return h('div', {
@@ -3741,7 +4303,7 @@
         h('button', {
           onClick: requestHint,
           disabled: !!hintDir,
-          title: tt('math_fluency.show_direction_toward_exit_h_key_costs_5', 'Show direction toward exit (H key) — costs 5 points, resets streak'),
+          title: tt('math_fluency.show_direction_toward_objective', 'Show direction toward the current objective (H key) - costs 5 points, resets streak'),
           style: {
             padding: '4px 10px', fontSize: '11px', fontWeight: 700,
             background: hintDir ? '#fbbf24' : 'linear-gradient(135deg, #b45309, #7c2d12)', color: '#fff',
@@ -3750,6 +4312,10 @@
           }
         }, '\uD83D\uDCA1 Hint (-5)')
       ),
+      h('div', {
+        role: 'status', 'aria-live': 'polite',
+        style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '7px 12px', marginBottom: '6px', borderRadius: '9px', background: keyCollected ? 'linear-gradient(90deg, rgba(217,119,6,0.28), rgba(251,191,36,0.18))' : 'linear-gradient(90deg, rgba(109,40,217,0.28), rgba(124,58,237,0.16))', border: '1px solid ' + (keyCollected ? '#d97706' : '#7c3aed'), color: isFullscreen ? '#fef3c7' : '#78350f', fontSize: isFullscreen ? '13px' : '11px', fontWeight: 800, letterSpacing: '0.03em' }
+      }, h('span', { 'aria-hidden': 'true', style: { fontSize: '18px' } }, objectiveIcon), objectiveText, !has3D ? h('span', { style: { marginLeft: '6px', padding: '2px 7px', borderRadius: '999px', background: 'rgba(21,128,61,0.18)', color: isFullscreen ? '#bbf7d0' : '#166534', fontSize: '9px' } }, '2D') : null),
       // Exploration progress bar - visited cells / total cells. Visual
       // gauge of how much of the maze the student has uncovered. Does not
       // reveal direction info, just progress. Label flips to tt('math_fluency.key_in_hand', 'Key in hand')
@@ -3975,7 +4541,7 @@
               : '0 0 0 2px rgba(58,46,38,0.6), 0 12px 40px rgba(0,0,0,0.6), inset 0 0 24px rgba(255,180,80,0.10)',
           zIndex: 10,
           width: isFullscreen ? 'min(460px, calc(100vw - 48px))' : 'min(320px, calc(100vw - 24px))',
-          maxWidth: '92vw',
+          maxWidth: '92vw', maxHeight: 'calc(100vh - 32px)', overflowY: 'auto',
           transition: 'background 200ms, border-color 200ms, box-shadow 200ms'
         }
       },
@@ -4076,44 +4642,20 @@
               );
             })()
           : h('div', { style: { fontSize: isFullscreen ? '42px' : '30px', fontWeight: 800, color: '#fef3c7', marginBottom: '10px', fontFamily: 'monospace', textShadow: '0 0 12px rgba(251,191,36,0.45)' } }, currentProblem.problem.text + ' = ?'),
-        // Answer display (read-only echo of userInput so taps on numpad show).
-        // Highlights red on wrong / green on correct so the student gets
-        // direct visual feedback on the answer they actually entered.
-        h('div', {
-          style: {
-            display: 'inline-block', minWidth: isFullscreen ? '160px' : '120px', padding: isFullscreen ? '10px 16px' : '8px 12px', marginBottom: '10px',
-            fontSize: isFullscreen ? '36px' : '26px', fontWeight: 800, fontFamily: 'monospace', textAlign: 'center',
-            color: feedback === 'wrong' ? '#fee2e2' : (feedback === 'correct' ? '#bbf7d0' : '#fff'),
-            background: feedback === 'wrong' ? '#7f1d1d' : (feedback === 'correct' ? '#14532d' : '#2a221c'),
-            border: '2px solid ' + (feedback === 'wrong' ? '#ef4444' : (feedback === 'correct' ? '#22c55e' : '#a8957d')),
-            borderRadius: '8px',
-            letterSpacing: '0.08em',
-            transition: 'background 200ms, color 200ms, border-color 200ms'
-          }
-        }, userInput || '\u2014'),
-        // Hidden input still present for keyboard users + autofocus + Enter handling
-        h('input', { ref: inputRef, type: 'number', value: userInput, onChange: function(e) { setUserInput(e.target.value); },
-          'aria-label': tt('math_fluency.type_your_answer_to', 'Type your answer to ') + currentProblem.problem.text,
+        // Visible answer input supports keyboard, touch keyboard, and the on-screen number pad.
+        h('input', {
+          ref: inputRef, type: 'text', value: userInput,
+          onChange: function(e) { if (/^-?\d*$/.test(e.target.value)) setUserInput(e.target.value); },
           onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(); else if (e.key === 'Escape') setUserInput(''); },
-          style: { position: 'absolute', opacity: 0, pointerEvents: 'none', width: '1px', height: '1px' },
-          inputMode: 'numeric', autoFocus: true
+          'aria-label': tt('math_fluency.type_your_answer_to', 'Type your answer to ') + currentProblem.problem.text,
+          inputMode: 'numeric', enterKeyHint: 'done', autoComplete: 'off', autoFocus: true,
+          style: { display: 'block', width: isFullscreen ? '180px' : '140px', padding: isFullscreen ? '10px 16px' : '8px 12px', margin: '0 auto 10px', fontSize: isFullscreen ? '36px' : '26px', fontWeight: 800, fontFamily: 'monospace', textAlign: 'center', color: feedback === 'wrong' ? '#fee2e2' : (feedback === 'correct' ? '#bbf7d0' : '#fff'), background: feedback === 'wrong' ? '#7f1d1d' : (feedback === 'correct' ? '#14532d' : '#2a221c'), border: '2px solid ' + (feedback === 'wrong' ? '#ef4444' : (feedback === 'correct' ? '#22c55e' : '#a8957d')), borderRadius: '8px', letterSpacing: '0.08em', outlineOffset: '3px' }
         }),
-        // \u2500\u2500 Number pad (3 cols x 4 rows) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isFullscreen ? '8px' : '6px', maxWidth: isFullscreen ? '320px' : '220px', margin: '0 auto' } },
           ['1','2','3','4','5','6','7','8','9'].map(function(d) {
-            return h('button', {
-              key: 'pad-' + d,
-              onClick: function() { setUserInput(function(prev) { return (prev || '') + d; }); if (inputRef.current) inputRef.current.focus(); },
-              'aria-label': tt('math_fluency.enter_digit', 'Enter digit ') + d,
-              style: {
-                padding: isFullscreen ? '16px 0' : '12px 0', fontSize: isFullscreen ? '26px' : '20px', fontWeight: 700, fontFamily: 'monospace',
-                background: '#5b4d3f', color: '#fef3c7', border: '2px solid #a8957d',
-                borderRadius: '8px', cursor: 'pointer', minHeight: '44px',
-                boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3)'
-              }
-            }, d);
+            return h('button', { key: 'pad-' + d, onClick: function() { setUserInput(function(prev) { return (prev || '') + d; }); if (inputRef.current) inputRef.current.focus(); }, 'aria-label': tt('math_fluency.enter_digit', 'Enter digit ') + d, style: { padding: isFullscreen ? '16px 0' : '12px 0', fontSize: isFullscreen ? '26px' : '20px', fontWeight: 700, fontFamily: 'monospace', background: '#5b4d3f', color: '#fef3c7', border: '2px solid #a8957d', borderRadius: '8px', cursor: 'pointer', minHeight: '44px', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3)' } }, d);
           }),
-          // Bottom row: Clear, 0, Submit
+        // Bottom row: Clear, 0, Submit
           h('button', {
             key: 'pad-clear',
             onClick: function() { setUserInput(''); if (inputRef.current) inputRef.current.focus(); },
@@ -4166,13 +4708,13 @@
         h('p', { style: { fontSize: '10px', color: '#a8957d', marginTop: attemptCount > 0 ? '4px' : '10px', marginBottom: 0 } }, tt('math_fluency.tap_pad_or_use_keyboard_enter_to_submit', 'Tap pad or use keyboard \u2022 Enter to submit \u2022 Esc to clear'))
       ),
       // Arrow buttons (mobile friendly)
-      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: isFullscreen ? '8px' : '4px', maxWidth: isFullscreen ? '240px' : '160px', margin: isFullscreen ? '14px auto 0' : '8px auto 0' } },
+      h('div', { 'aria-label': tt('math_fluency.available_maze_directions', 'Available maze directions'), style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: isFullscreen ? '8px' : '4px', maxWidth: isFullscreen ? '240px' : '160px', margin: isFullscreen ? '14px auto 0' : '8px auto 0' } },
         h('div'),
-        h('button', { onClick: function() { tryMove('up'); }, 'aria-label': tt('math_fluency.move_up', 'Move up'), title: tt('math_fluency.move_up_up_arrow_or_w_key', 'Move up (up arrow or W key)'), style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25B2'),
+        h('button', { disabled: !mazeDirectionAvailable('up'), 'aria-current': hintDir === 'up' ? 'step' : undefined, onClick: function() { tryMove('up'); }, 'aria-label': tt('math_fluency.move_up', 'Move up'), title: tt('math_fluency.move_up_up_arrow_or_w_key', 'Move up (up arrow or W key)'), style: movementButtonStyle('up') }, '\u25B2'),
         h('div'),
-        h('button', { onClick: function() { tryMove('left'); }, 'aria-label': tt('math_fluency.move_left', 'Move left'), title: tt('math_fluency.move_left_left_arrow_or_a_key', 'Move left (left arrow or A key)'), style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25C0'),
-        h('button', { onClick: function() { tryMove('down'); }, 'aria-label': tt('math_fluency.move_down', 'Move down'), title: tt('math_fluency.move_down_down_arrow_or_s_key', 'Move down (down arrow or S key)'), style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25BC'),
-        h('button', { onClick: function() { tryMove('right'); }, 'aria-label': tt('math_fluency.move_right', 'Move right'), title: tt('math_fluency.move_right_right_arrow_or_d_key', 'Move right (right arrow or D key)'), style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25B6')
+        h('button', { disabled: !mazeDirectionAvailable('left'), 'aria-current': hintDir === 'left' ? 'step' : undefined, onClick: function() { tryMove('left'); }, 'aria-label': tt('math_fluency.move_left', 'Move left'), title: tt('math_fluency.move_left_left_arrow_or_a_key', 'Move left (left arrow or A key)'), style: movementButtonStyle('left') }, '\u25C0'),
+        h('button', { disabled: !mazeDirectionAvailable('down'), 'aria-current': hintDir === 'down' ? 'step' : undefined, onClick: function() { tryMove('down'); }, 'aria-label': tt('math_fluency.move_down', 'Move down'), title: tt('math_fluency.move_down_down_arrow_or_s_key', 'Move down (down arrow or S key)'), style: movementButtonStyle('down') }, '\u25BC'),
+        h('button', { disabled: !mazeDirectionAvailable('right'), 'aria-current': hintDir === 'right' ? 'step' : undefined, onClick: function() { tryMove('right'); }, 'aria-label': tt('math_fluency.move_right', 'Move right'), title: tt('math_fluency.move_right_right_arrow_or_d_key', 'Move right (right arrow or D key)'), style: movementButtonStyle('right') }, '\u25B6')
       ),
       h('p', { style: { fontSize: isFullscreen ? '13px' : '10px', color: isFullscreen ? '#fbbf24' : '#92400e', textAlign: 'center', marginTop: isFullscreen ? '12px' : '8px', fontStyle: 'italic' } }, 'Arrow keys or WASD to move \u2022 H for hint \u2022 F for fullscreen \u2022 3-in-a-row for bonus')
     );
@@ -4189,7 +4731,14 @@
     getBenchmark: getBenchmark, getBenchmarkLabel: getBenchmarkLabel,
     analyzeErrors: analyzeErrors, getSeason: getSeason, BENCHMARKS: BENCHMARKS,
     normalizeGrade: normalizeGrade, generateProblems: generateProblems,
+    getRecommendedPracticeSet: getRecommendedPracticeSet, getPracticeSetOptions: getPracticeSetOptions,
+    describePracticeSet: describePracticeSet, generatePracticeProblems: generatePracticeProblems,
+    getFactKey: getFactKey, summarizeFactResults: summarizeFactResults, updateFactMastery: updateFactMastery,
+    getStrategyHint: getStrategyHint, buildFactMasteryDashboard: buildFactMasteryDashboard,
+    getMasteryFocusFacts: getMasteryFocusFacts, buildFocusedProblems: buildFocusedProblems,
     parseStudentAnswer: parseStudentAnswer, countCorrectDigits: countCorrectDigits,
+    findMazePathStep: findMazePathStep, buildMazeBestKey: buildMazeBestKey,
+    generateMazeProblem: generateMazeProblem,
   };
   console.log('[CDN] MathFluency + FluencyMaze modules registered');
 })();

@@ -1,205 +1,275 @@
 {
-  "timestamp": "2026-07-25T21:16:44.039Z",
+  "timestamp": "2026-07-26T06:53:29.469Z",
   "summary": {
-    "total": 18,
-    "critical": 18,
-    "major": 0,
-    "minor": 0,
+    "total": 23,
+    "critical": 1,
+    "major": 8,
+    "minor": 14,
     "filesScanned": 1,
     "checksRun": 15
   },
   "byCheck": [
     {
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
+      "checkId": "FOCUS-001",
+      "name": "outline:none without visible focus replacement",
+      "wcag": "2.4.7 Focus Visible",
       "severity": "critical",
-      "count": 18,
+      "count": 1,
       "files": [
-        "stem_lab\\stem_tool_artstudio.js"
+        "dynamic_assessment_module.js"
+      ]
+    },
+    {
+      "checkId": "INPUT-001",
+      "name": "Input without programmatic label",
+      "wcag": "3.3.2 Labels or Instructions",
+      "severity": "major",
+      "count": 8,
+      "files": [
+        "dynamic_assessment_module.js"
+      ]
+    },
+    {
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "count": 14,
+      "files": [
+        "dynamic_assessment_module.js"
       ]
     }
   ],
   "findings": [
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 158,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
+      "file": "dynamic_assessment_module.js",
+      "line": 7431,
+      "checkId": "FOCUS-001",
+      "name": "outline:none without visible focus replacement",
+      "wcag": "2.4.7 Focus Visible",
       "severity": "critical",
-      "snippet": "var _wheelBmp = document.createElement('canvas');",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "snippet": "style: { outline: \"none\" }",
+      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 877,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var offscreen = document.createElement('canvas'); offscreen.width = W; offscreen.height = H;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 6563,
+      "checkId": "INPUT-001",
+      "name": "Input without programmatic label",
+      "wcag": "3.3.2 Labels or Instructions",
+      "severity": "major",
+      "snippet": "var ta = document.createElement(\"textarea\");",
+      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 939,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var c = document.createElement('canvas'); c.width = W; c.height = H;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 9286,
+      "checkId": "INPUT-001",
+      "name": "Input without programmatic label",
+      "wcag": "3.3.2 Labels or Instructions",
+      "severity": "major",
+      "snippet": "h(\"input\", {",
+      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 1387,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var c = document.createElement('canvas'); c.width = W; c.height = H;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 9873,
+      "checkId": "INPUT-001",
+      "name": "Input without programmatic label",
+      "wcag": "3.3.2 Labels or Instructions",
+      "severity": "major",
+      "snippet": "var input = document.createElement(\"input\");",
+      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 1397,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var src = document.createElement('canvas'); src.width = W; src.height = H;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 10217,
+      "checkId": "INPUT-001",
+      "name": "Input without programmatic label",
+      "wcag": "3.3.2 Labels or Instructions",
+      "severity": "major",
+      "snippet": "h(\"input\", {",
+      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 1471,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var c = document.createElement('canvas'); c.width = W; c.height = H;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 11078,
+      "checkId": "INPUT-001",
+      "name": "Input without programmatic label",
+      "wcag": "3.3.2 Labels or Instructions",
+      "severity": "major",
+      "snippet": "h(\"textarea\", {",
+      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 5285,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var c = document.createElement('canvas'); c.width = img.width; c.height = img.height;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 11193,
+      "checkId": "INPUT-001",
+      "name": "Input without programmatic label",
+      "wcag": "3.3.2 Labels or Instructions",
+      "severity": "major",
+      "snippet": "canDetach ? h(\"select\", {",
+      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 6135,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var tempCanvas = document.createElement('canvas'); tempCanvas.width = kfs[0].width; tempCanvas.height = kfs[0].height;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 11287,
+      "checkId": "INPUT-001",
+      "name": "Input without programmatic label",
+      "wcag": "3.3.2 Labels or Instructions",
+      "severity": "major",
+      "snippet": "h(\"textarea\", {",
+      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 6181,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var temp = document.createElement('canvas'); temp.width = kf.width; temp.height = kf.height;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 13991,
+      "checkId": "INPUT-001",
+      "name": "Input without programmatic label",
+      "wcag": "3.3.2 Labels or Instructions",
+      "severity": "major",
+      "snippet": "h(\"textarea\", {",
+      "fix": "Add aria-label with descriptive text, or wrap in <label> with htmlFor/id association."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 6235,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var c = document.createElement('canvas'); c.width = 400; c.height = 400;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 12323,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Band\"),",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 6273,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var temp = document.createElement('canvas'); temp.width = ud.width; temp.height = ud.height;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 12324,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Items\"),",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 6384,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var c = document.createElement('canvas'); c.width = 400; c.height = 400;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 12325,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Constructs\"),",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 6430,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var temp = document.createElement('canvas'); temp.width = ad.width; temp.height = ad.height;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 12326,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Instructional read\")",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 6669,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var c = document.createElement('canvas'); c.width = 400; c.height = 400;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 12352,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Pattern\"),",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 6861,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var tc = document.createElement('canvas'); tc.width = kf.width; tc.height = kf.height;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 12353,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Items\")",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 6943,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var c2 = document.createElement('canvas'); c2.width = kf.width; c2.height = kf.height;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 12370,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Scaffold Level\"),",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 6989,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var fc = document.createElement('canvas'); fc.width = dmW; fc.height = dmH;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 12371,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Type\"),",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     },
     {
-      "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 7009,
-      "checkId": "CANVAS-001",
-      "name": "Canvas element without text alternative",
-      "wcag": "1.1.1 Non-text Content",
-      "severity": "critical",
-      "snippet": "var tc = document.createElement('canvas'); tc.width = srcData.width; tc.height = srcData.height;",
-      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
+      "file": "dynamic_assessment_module.js",
+      "line": 12372,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Items\")",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
+    },
+    {
+      "file": "dynamic_assessment_module.js",
+      "line": 12396,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Item\"),",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
+    },
+    {
+      "file": "dynamic_assessment_module.js",
+      "line": 12397,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Phase\"),",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
+    },
+    {
+      "file": "dynamic_assessment_module.js",
+      "line": 12398,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Scaffold L\"),",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
+    },
+    {
+      "file": "dynamic_assessment_module.js",
+      "line": 12399,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Score\"),",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
+    },
+    {
+      "file": "dynamic_assessment_module.js",
+      "line": 12400,
+      "checkId": "SCOPE-001",
+      "name": "Table header without scope attribute",
+      "wcag": "1.3.1 Info and Relationships",
+      "severity": "minor",
+      "snippet": "h(\"th\", null, \"Observation\")",
+      "fix": "Add scope=\"col\" to column headers, scope=\"row\" to row headers."
     }
   ]
 }

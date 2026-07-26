@@ -50,7 +50,7 @@ describe('GIS Studio', () => {
   it('renders layers, spatial reasoning, sonification, and a table twin', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const html = renderTool('gisStudio', {});
-    for (const text of ['Layer workspace', 'Visible layers', 'Spatial pattern coach', 'Spatial analysis workbench', 'Spatial analysis results', 'Accessible data-table twin', 'Sonify values', 'Maine missions', 'Change over time', 'Compare + export', 'Import data', 'Projection lab', 'Satellite imagery']) {
+    for (const text of ['Layer workspace', 'Visible layers', 'Spatial pattern coach', 'Spatial analysis workbench', 'Spatial analysis results', 'Accessible data-table twin', 'Sonify values', 'Project', 'Maine missions', 'Change over time', 'Compare + export', 'Import data', 'Projection lab', 'Satellite imagery']) {
       expect(html).toContain(text);
     }
     expect(html).toContain('<table');
@@ -201,6 +201,42 @@ describe('GIS Studio', () => {
     }
     expect(html).toContain('type="range"');
     expect(html).toContain('<table');
+  });
+
+  it('creates and validates versioned GIS project documents', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const project = tool.testing.createGISProject({
+      title: 'Watershed study',
+      provenance: { source: 'Maine agency', units: 'percent' },
+      data: { importedRows: [{ name: 'A', lat: 44, lon: -69, value: 12 }], geoData: null, timeDataset: { rows: [] } }
+    }, '2026-07-25T00:00:00.000Z');
+    expect(tool.testing.validateGISProject(project)).toBe(project);
+    expect(project.format).toBe('alloflow-gis-studio-project');
+    expect(project.version).toBe(1);
+    expect(project.provenance.source).toBe('Maine agency');
+    expect(() => tool.testing.validateGISProject({ format: 'wrong', version: 1 })).toThrow(/not a GIS Studio/);
+    expect(() => tool.testing.validateGISProject({ ...project, version: 2 })).toThrow(/newer/);
+  });
+
+  it('flags precise or identifier-like coordinates and rounds immutably', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const rows = [{ name: 'Student home', lat: 44.12345, lon: -69.98765, value: 1 }];
+    const assessment = tool.testing.assessCoordinatePrivacy(rows, []);
+    expect(assessment.highPrecision).toBe(1);
+    expect(assessment.identifierWarnings).toBe(1);
+    const rounded = tool.testing.roundPointCoordinates(rows, 3);
+    expect(rounded[0].lat).toBe(44.123);
+    expect(rounded[0].lon).toBe(-69.988);
+    expect(rows[0].lat).toBe(44.12345);
+  });
+
+  it('renders project save, recovery, provenance, and privacy controls', () => {
+    loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const html = renderTool('gisStudio', { gisTab: 'project' });
+    for (const text of ['Save, reopen, and recover projects', 'Download project file', 'Open GIS Studio project', 'Data provenance manifest', 'Project inventory', 'Recorded transformations', 'Coordinate privacy review', 'Round imported + timeline points', 'Before sharing']) {
+      expect(html).toContain(text);
+    }
+    expect(html).toContain('type="file"');
   });
   it('renders the projection lab from restored state', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');

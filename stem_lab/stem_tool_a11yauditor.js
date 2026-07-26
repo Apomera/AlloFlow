@@ -738,7 +738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               }),
               h('button', { 'aria-label': t('stem.a11yauditor.run_title_ii_audit', 'Run Title II audit'),
                 onClick: runGovAudit, disabled: !govUrl.trim() || auditLoading,
-                className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 transition-colors'
+                className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 disabled:opacity-40 transition-colors'
               }, auditLoading ? 'Auditing...' : '\u2696\uFE0F Title II Audit')
             ),
             h('p', { className: 'text-[11px] text-slate-600 mt-1' }, t('stem.a11yauditor.checks_wcag_2_1_aa_ada_coordinator_inf', 'Checks WCAG 2.1 AA + ADA Coordinator info, accessibility statement, grievance procedure, PDF tagging, form accessibility, captions, and third-party tools.'))
@@ -809,7 +809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   );
                 })
               ),
-              h('button', { 'aria-label': t('stem.a11yauditor.file_complaint_about_findings', 'File complaint about findings'), onClick: function() { if (!window.confirm('These findings are AI-generated guesses, not a verified audit. Only continue if you have independently confirmed each issue is real. Continue?')) return; upd('tab', 'action'); }, className: 'mt-3 w-full px-3 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors' }, t('stem.a11yauditor.take_action_generate_complaint_letter', '\u270D\uFE0F Take Action \u2014 Generate Complaint Letter'))
+              h('button', { 'aria-label': t('stem.a11yauditor.file_complaint_about_findings', 'File complaint about findings'), onClick: function() { if (!window.confirm('These findings are AI-generated guesses, not a verified audit. Only continue if you have independently confirmed each issue is real. Continue?')) return; upd('tab', 'action'); }, className: 'mt-3 w-full px-3 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-colors' }, t('stem.a11yauditor.take_action_generate_complaint_letter', '\u270D\uFE0F Take Action \u2014 Generate Complaint Letter'))
             ),
 
             // Issues

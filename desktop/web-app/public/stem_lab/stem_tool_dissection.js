@@ -174,7 +174,7 @@
 .diss-stage__status { max-width: 50%; padding: .42rem .6rem; border: 1px solid #cbdcf0; border-radius: 999px; background: #eef6ff; color: #24517f; font-size: .68rem; font-weight: 850; text-align: right; }
 .diss-canvas-layout { display: grid; gap: .65rem; }
 .diss-canvas-layout[data-split="true"] { grid-template-columns: minmax(0, 1fr) minmax(11rem, .56fr); align-items: stretch; }
-.diss-canvas-frame { overflow: hidden; padding: .4rem; border: 1px solid #91a8c4; border-radius: 1rem; background: #0f172a; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.diss-canvas-frame { overflow: hidden; padding: .48rem; border: 1px solid #71849c; border-radius: 1rem; background: linear-gradient(145deg, #64748b 0%, #26364b 16%, #0f172a 78%, #475569 100%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.16), inset 0 -8px 18px rgba(2,6,23,.34), 0 14px 28px rgba(15,23,42,.16); }
 .diss-canvas { display: block; width: min(100%, 650px) !important; height: auto; margin: 0 auto; border: 0 !important; border-radius: .75rem !important; box-shadow: 0 14px 32px rgba(2,6,23,.24); }
 .diss-split-reference { display: flex; min-width: 0; flex-direction: column; padding: .5rem; border: 1px solid #91a8c4; border-radius: 1rem; background: #0f172a; color: #e2e8f0; }
 .diss-split-reference__header { display: flex; align-items: flex-start; justify-content: space-between; gap: .4rem; margin-bottom: .45rem; }
@@ -204,10 +204,22 @@
 .diss-procedure__mode button { min-height: 2rem !important; padding: .35rem .55rem; border: 0; border-radius: .45rem; background: transparent; color: #466a68; font-size: .66rem; font-weight: 850; cursor: pointer; }
 .diss-procedure__mode button[aria-pressed="true"] { background: #0f766e; color: #fff; }
 .diss-instruments { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.2rem, 1fr)); gap: .35rem; margin-top: .65rem; }
-.diss-instrument { min-height: 2.8rem !important; padding: .35rem .25rem; border: 1px solid #b8ccc9; border-radius: .65rem; background: #fff; color: #315b58; font-size: .67rem; font-weight: 850; cursor: pointer; }
+.diss-instrument { min-height: 3.25rem !important; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .12rem; padding: .35rem .25rem; border: 1px solid #b8ccc9; border-radius: .65rem; background: #fff; color: #315b58; font-size: .67rem; font-weight: 850; cursor: pointer; }
 .diss-instrument[aria-checked="true"] { border-color: #0f766e; background: #0f766e; box-shadow: 0 5px 14px rgba(15,118,110,.18); color: #fff; }
+.diss-instrument__state { font-size: .54rem; font-weight: 900; letter-spacing: .045em; opacity: .78; text-transform: uppercase; }
+.diss-instrument[data-readiness="ready"] .diss-instrument__state { color: #047857; }
+.diss-instrument[data-readiness="complete"] .diss-instrument__state { color: #2563eb; }
+.diss-instrument[aria-checked="true"] .diss-instrument__state { color: #fff; opacity: 1; }
+.diss-active-tool { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .55rem; margin-top: .65rem; padding: .58rem .65rem; border: 1px solid #99c7be; border-radius: .7rem; background: #fff; color: #315b58; }
+.diss-active-tool__icon { display: grid; width: 2rem; height: 2rem; place-items: center; border-radius: 999px; background: #ccfbf1; color: #0f766e; font-size: 1rem; font-weight: 900; }
+.diss-active-tool strong, .diss-active-tool span { display: block; }
+.diss-active-tool strong { color: #134e4a; font-size: .72rem; }
+.diss-active-tool span { margin-top: .1rem; color: #496966; font-size: .64rem; line-height: 1.35; }
+.diss-active-tool__badge { padding: .25rem .42rem; border-radius: 999px; background: #fef3c7; color: #92400e; font-size: .56rem; font-weight: 900; letter-spacing: .045em; text-transform: uppercase; white-space: nowrap; }
+.diss-active-tool[data-readiness="ready"] .diss-active-tool__badge { background: #d1fae5; color: #065f46; }
+.diss-active-tool[data-readiness="complete"] .diss-active-tool__badge { background: #dbeafe; color: #1d4ed8; }
 .diss-procedure__steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .28rem; margin-top: .6rem; }
-.diss-procedure__step { min-width: 0; padding: .3rem .2rem; border-radius: .45rem; background: #dfeae9; color: #5c7472; font-size: .61rem; font-weight: 800; text-align: center; }
+.diss-procedure__step { min-width: 0; padding: .3rem .2rem; border-radius: .45rem; background: #dfeae9; color: #3f5f5c; font-size: .61rem; font-weight: 800; text-align: center; }
 .diss-procedure__step[data-complete="true"] { background: #ccfbf1; color: #0f766e; }
 .diss-procedure__step[data-current="true"] { box-shadow: inset 0 0 0 2px #f59e0b; background: #fffbeb; color: #92400e; }
 .diss-procedure__controls { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; margin-top: .65rem; }
@@ -216,6 +228,7 @@
 .diss-procedure__controls button:disabled { cursor: not-allowed; opacity: .55; }
 .diss-procedure__feedback { margin: .55rem 0 0; padding: .5rem .6rem; border-left: 4px solid #0f766e; border-radius: .45rem; background: #fff; color: #355754; font-size: .7rem; line-height: 1.4; }
 .diss-procedure__feedback[data-tone="caution"] { border-left-color: #f59e0b; background: #fffbeb; color: #7c3f10; }
+.diss-procedure__feedback[data-tone="working"] { border-left-color: #2563eb; background: #eff6ff; color: #1e40af; }
 .diss-procedure__notice { margin: .5rem 0 0; color: #5a6d73; font-size: .64rem; line-height: 1.4; }
 .diss-procedure__metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(6.2rem, 1fr)); gap: .35rem; margin-top: .6rem; }
 .diss-procedure__metric { min-width: 0; padding: .45rem; border: 1px solid #c3d8d4; border-radius: .55rem; background: rgba(255,255,255,.84); }
@@ -505,95 +518,95 @@ var d = labToolData.dissection || {};
 
                 skin: [
 
-                  { id: 'dorsal_skin', name: 'Dorsal Skin', x: 0.50, y: 0.35, fn: 'Green-brown pigmented surface with chromatophores. Mucous glands keep skin moist for cutaneous respiration (up to 50% of gas exchange).', clinical: 'Chytrid fungus attacks frog skin keratin, causing global amphibian declines.' },
+                  { id: 'dorsal_skin', name: 'Dorsal Skin', x: 0.50, y: 0.38, fn: 'Green-brown pigmented surface with chromatophores. Mucous glands keep skin moist for cutaneous respiration (up to 50% of gas exchange).', clinical: 'Chytrid fungus attacks frog skin keratin, causing global amphibian declines.' },
 
-                  { id: 'ventral_skin', name: 'Ventral Skin', x: 0.50, y: 0.65, fn: 'Lighter, thinner ventral surface. Highly vascularized \u2014 frogs absorb water through skin, not by drinking.', clinical: 'Permeable skin makes frogs sensitive bioindicators of environmental pollution.' },
+                  { id: 'ventral_skin', name: 'Ventral Skin', x: 0.50, y: 0.58, fn: 'Lighter, thinner ventral surface. Highly vascularized \u2014 frogs absorb water through skin, not by drinking.', clinical: 'Permeable skin makes frogs sensitive bioindicators of environmental pollution.' },
 
-                  { id: 'tympanum', name: 'Tympanic Membrane', x: 0.62, y: 0.18, fn: 'External eardrum behind eye. Transmits sound to columella and inner ear. Size indicates sex (larger = male).', clinical: 'Used for species and sex identification in field studies.' },
+                  { id: 'tympanum', name: 'Tympanic Membrane', x: 0.65, y: 0.24, fn: 'External eardrum behind eye. Transmits sound to columella and inner ear. Size indicates sex (larger = male).', clinical: 'Used for species and sex identification in field studies.' },
 
-                  { id: 'nictitating', name: 'Nictitating Membrane', x: 0.58, y: 0.15, fn: 'Transparent third eyelid protecting eye underwater. Homologous to human plica semilunaris (vestigial).', clinical: 'Present in many vertebrates \u2014 vestigial in humans as plica semilunaris.' }
+                  { id: 'nictitating', name: 'Nictitating Membrane', x: 0.60, y: 0.18, fn: 'Transparent third eyelid protecting eye underwater. Homologous to human plica semilunaris (vestigial).', clinical: 'Present in many vertebrates \u2014 vestigial in humans as plica semilunaris.' }
 
                 ],
 
                 muscle: [
 
-                  { id: 'pectoralis', name: 'Pectoralis', x: 0.50, y: 0.42, fn: 'Chest muscle adducting forelimb. Assists landing absorption after jumps. Homologous to human pectoralis major.', clinical: 'Comparative anatomy: same muscle, different function \u2014 landing in frogs vs pushing in humans.' },
+                  { id: 'pectoralis', name: 'Pectoralis', x: 0.50, y: 0.36, fn: 'Chest muscle adducting forelimb. Assists landing absorption after jumps. Homologous to human pectoralis major.', clinical: 'Comparative anatomy: same muscle, different function \u2014 landing in frogs vs pushing in humans.' },
 
-                  { id: 'rectus_abd', name: 'Rectus Abdominis', x: 0.50, y: 0.55, fn: 'Ventral abdominal muscle from sternum to pelvis. Flexes trunk and compresses cavity for buccal pump breathing.', clinical: 'Frogs use buccal pumping (throat) rather than diaphragmatic breathing like mammals.' },
+                  { id: 'rectus_abd', name: 'Rectus Abdominis', x: 0.50, y: 0.52, fn: 'Ventral abdominal muscle from sternum to pelvis. Flexes trunk and compresses cavity for buccal pump breathing.', clinical: 'Frogs use buccal pumping (throat) rather than diaphragmatic breathing like mammals.' },
 
-                  { id: 'gastrocnemius', name: 'Gastrocnemius', x: 0.35, y: 0.78, fn: 'Large calf muscle powering jumps. Can generate 2\u00D7 body weight force. Galvani used frog legs to discover bioelectricity (1780s).', clinical: 'Classic muscle for physiology experiments \u2014 Galvani\'s frog leg experiments founded bioelectricity.' },
+                  { id: 'gastrocnemius', name: 'Gastrocnemius', x: 0.24, y: 0.69, fn: 'Large calf muscle powering jumps. Can generate 2\u00D7 body weight force. Galvani used frog legs to discover bioelectricity (1780s).', clinical: 'Classic muscle for physiology experiments \u2014 Galvani\'s frog leg experiments founded bioelectricity.' },
 
-                  { id: 'triceps_fem', name: 'Triceps Femoris', x: 0.38, y: 0.68, fn: 'Three-headed thigh muscle (homolog of quadriceps). Primary knee extensor during jumping.', clinical: 'Frogs can jump 20\u00D7 body length due to elastic energy storage in tendons.' },
+                  { id: 'triceps_fem', name: 'Triceps Femoris', x: 0.31, y: 0.57, fn: 'Three-headed thigh muscle (homolog of quadriceps). Primary knee extensor during jumping.', clinical: 'Frogs can jump 20\u00D7 body length due to elastic energy storage in tendons.' },
 
-                  { id: 'sartorius', name: 'Sartorius', x: 0.42, y: 0.65, fn: 'Thin strap on medial thigh. Flexes and rotates hip. Assists drawing legs into swimming position.', clinical: 'Longest muscle in both frogs and humans \u2014 a homologous structure across vertebrates.' },
+                  { id: 'sartorius', name: 'Sartorius', x: 0.37, y: 0.60, fn: 'Thin strap on medial thigh. Flexes and rotates hip. Assists drawing legs into swimming position.', clinical: 'Longest muscle in both frogs and humans \u2014 a homologous structure across vertebrates.' },
 
-                  { id: 'deltoid', name: 'Deltoideus', x: 0.38, y: 0.38, fn: 'Shoulder muscle elevating/rotating forelimb. Smaller than hindlimb muscles \u2014 frogs are hindlimb-dominant.' }
+                  { id: 'deltoid', name: 'Deltoideus', x: 0.35, y: 0.36, fn: 'Shoulder muscle elevating/rotating forelimb. Smaller than hindlimb muscles \u2014 frogs are hindlimb-dominant.' }
 
                 ],
 
                 organs: [
 
-                  { id: 'heart', name: 'Heart (3-chamber)', x: 0.50, y: 0.38, fn: '2 atria + 1 ventricle. Spiral valve in conus arteriosus separates blood with ~90% efficiency despite single ventricle.', clinical: 'Frog hearts beat without neural input (myogenic) and can beat in saline for hours \u2014 used in cardiac physiology research.' },
+                  { id: 'heart', name: 'Heart (3-chamber)', x: 0.50, y: 0.35, fn: '2 atria + 1 ventricle. Spiral valve in conus arteriosus separates blood with ~90% efficiency despite single ventricle.', clinical: 'Frog hearts beat without neural input (myogenic) and can beat in saline for hours \u2014 used in cardiac physiology research.' },
 
-                  { id: 'lungs', name: 'Lungs', x: 0.45, y: 0.40, fn: 'Simple thin-walled sacs (no alveoli). Supplemented by cutaneous respiration. Inflated by buccal pumping \u2014 not diaphragm.', clinical: 'The Bornean flat-headed frog is completely lungless \u2014 breathes entirely through skin.' },
+                  { id: 'lungs', name: 'Lungs', x: 0.43, y: 0.35, fn: 'Simple thin-walled sacs (no alveoli). Supplemented by cutaneous respiration. Inflated by buccal pumping \u2014 not diaphragm.', clinical: 'The Bornean flat-headed frog is completely lungless \u2014 breathes entirely through skin.' },
 
-                  { id: 'liver', name: 'Liver (3 lobes)', x: 0.50, y: 0.45, fn: 'Large three-lobed organ. Produces bile, detoxifies blood, stores glycogen. Largest internal organ.', clinical: 'Liver color/size indicates environmental contamination in ecotoxicology studies.' },
+                  { id: 'liver', name: 'Liver (3 lobes)', x: 0.50, y: 0.44, fn: 'Large three-lobed organ. Produces bile, detoxifies blood, stores glycogen. Largest internal organ.', clinical: 'Liver color/size indicates environmental contamination in ecotoxicology studies.' },
 
-                  { id: 'gallbladder', name: 'Gallbladder', x: 0.52, y: 0.47, fn: 'Small green sac between liver lobes. Stores/concentrates bile. Bright green color \u2014 key dissection landmark.', clinical: 'Bright green color makes it one of the easiest organs to identify in dissection.' },
+                  { id: 'gallbladder', name: 'Gallbladder', x: 0.53, y: 0.45, fn: 'Small green sac between liver lobes. Stores/concentrates bile. Bright green color \u2014 key dissection landmark.', clinical: 'Bright green color makes it one of the easiest organs to identify in dissection.' },
 
-                  { id: 'stomach', name: 'Stomach', x: 0.48, y: 0.50, fn: 'J-shaped muscular organ. Frogs swallow prey whole and use eye retraction to push food down.', clinical: 'Frogs push food into stomach by retracting eyes into mouth roof \u2014 unique swallowing mechanism.' },
+                  { id: 'stomach', name: 'Stomach', x: 0.41, y: 0.51, fn: 'J-shaped muscular organ. Frogs swallow prey whole and use eye retraction to push food down.', clinical: 'Frogs push food into stomach by retracting eyes into mouth roof \u2014 unique swallowing mechanism.' },
 
-                  { id: 'sm_intestine', name: 'Small Intestine', x: 0.50, y: 0.58, fn: 'Coiled tube (duodenum + ileum). Primary nutrient absorption site. Shorter than in herbivorous tadpoles.', clinical: 'Tadpoles (herbivores) have much longer intestines than adult frogs (carnivores) \u2014 diet drives gut length.' },
+                  { id: 'sm_intestine', name: 'Small Intestine', x: 0.50, y: 0.59, fn: 'Coiled tube (duodenum + ileum). Primary nutrient absorption site. Shorter than in herbivorous tadpoles.', clinical: 'Tadpoles (herbivores) have much longer intestines than adult frogs (carnivores) \u2014 diet drives gut length.' },
 
-                  { id: 'lg_intestine', name: 'Large Intestine', x: 0.50, y: 0.65, fn: 'Short wide tube to cloaca. Absorbs water. Opens into cloaca (shared digestive/urinary/reproductive exit).', clinical: 'The cloaca \u2014 shared exit for 3 systems \u2014 is the ancestral vertebrate condition; separate openings evolved later.' },
+                  { id: 'lg_intestine', name: 'Large Intestine', x: 0.50, y: 0.66, fn: 'Short wide tube to cloaca. Absorbs water. Opens into cloaca (shared digestive/urinary/reproductive exit).', clinical: 'The cloaca \u2014 shared exit for 3 systems \u2014 is the ancestral vertebrate condition; separate openings evolved later.' },
 
-                  { id: 'spleen', name: 'Spleen', x: 0.46, y: 0.53, fn: 'Small reddish organ near stomach. Filters blood, removes old RBCs, immune function.', clinical: 'Spleen plus antimicrobial skin peptides form a dual immune defense system.' },
+                  { id: 'spleen', name: 'Spleen', x: 0.41, y: 0.55, fn: 'Small reddish organ near stomach. Filters blood, removes old RBCs, immune function.', clinical: 'Spleen plus antimicrobial skin peptides form a dual immune defense system.' },
 
-                  { id: 'kidneys', name: 'Kidneys', x: 0.50, y: 0.70, fn: 'Elongated, dorsal organs. Mesonephric kidneys \u2014 intermediate between fish and mammal kidney types. Drains to cloaca.', clinical: 'Frog kidneys (mesonephric) are ancestral \u2014 mammals evolved more advanced metanephric kidneys.' },
+                  { id: 'kidneys', name: 'Kidneys', x: 0.50, y: 0.62, fn: 'Elongated, dorsal organs. Mesonephric kidneys \u2014 intermediate between fish and mammal kidney types. Drains to cloaca.', clinical: 'Frog kidneys (mesonephric) are ancestral \u2014 mammals evolved more advanced metanephric kidneys.' },
 
-                  { id: 'fat_bodies', name: 'Fat Bodies', x: 0.48, y: 0.35, fn: 'Yellow finger-like structures on kidneys/gonads. Energy reserves for hibernation and reproduction.', clinical: 'Fat body size indicates nutritional status \u2014 shrunken = environmental stress.' },
+                  { id: 'fat_bodies', name: 'Fat Bodies', x: 0.43, y: 0.42, fn: 'Yellow finger-like structures on kidneys/gonads. Energy reserves for hibernation and reproduction.', clinical: 'Fat body size indicates nutritional status \u2014 shrunken = environmental stress.' },
 
-                  { id: 'pancreas', name: 'Pancreas', x: 0.53, y: 0.52, fn: 'Thin pale organ between stomach and duodenum. Produces digestive enzymes and insulin/glucagon.', clinical: 'Frog pancreatic islets used in early insulin research.' },
+                  { id: 'pancreas', name: 'Pancreas', x: 0.53, y: 0.54, fn: 'Thin pale organ between stomach and duodenum. Produces digestive enzymes and insulin/glucagon.', clinical: 'Frog pancreatic islets used in early insulin research.' },
 
-                  { id: 'cloaca', name: 'Cloaca', x: 0.50, y: 0.75, fn: 'Common chamber for digestive, urinary, and reproductive output. Present in amphibians, reptiles, birds.', clinical: 'Represents ancestral vertebrate design \u2014 separate openings evolved independently in mammals.' }
+                  { id: 'cloaca', name: 'Cloaca', x: 0.50, y: 0.72, fn: 'Common chamber for digestive, urinary, and reproductive output. Present in amphibians, reptiles, birds.', clinical: 'Represents ancestral vertebrate design \u2014 separate openings evolved independently in mammals.' }
 
                 ],
 
                 skeleton: [
 
-                  { id: 'skull', name: 'Skull', x: 0.50, y: 0.15, fn: 'Broad flat skull with large orbits. Frontoparietal bone fused (unique to frogs). Maxillary + vomerine teeth.', clinical: 'Frogs have teeth on upper jaw only \u2014 toads have no teeth at all.' },
+                  { id: 'skull', name: 'Skull', x: 0.50, y: 0.17, fn: 'Broad flat skull with large orbits. Frontoparietal bone fused (unique to frogs). Maxillary + vomerine teeth.', clinical: 'Frogs have teeth on upper jaw only \u2014 toads have no teeth at all.' },
 
-                  { id: 'vertebral_col', name: 'Vertebral Column', x: 0.50, y: 0.40, fn: 'Only 9 presacral vertebrae (mammals have 24+). Short rigid spine for jumping.', clinical: 'Fewest vertebrae of any tetrapod \u2014 extreme spinal reduction for jumping.' },
+                  { id: 'vertebral_col', name: 'Vertebral Column', x: 0.50, y: 0.44, fn: 'Only 9 presacral vertebrae (mammals have 24+). Short rigid spine for jumping.', clinical: 'Fewest vertebrae of any tetrapod \u2014 extreme spinal reduction for jumping.' },
 
-                  { id: 'urostyle', name: 'Urostyle', x: 0.50, y: 0.55, fn: 'Fused caudal vertebrae forming rod-like tailbone. Absorbs landing shock. Unique to frogs/toads.', clinical: 'The urostyle is found only in anurans \u2014 a defining skeletal feature of frogs and toads.' },
+                  { id: 'urostyle', name: 'Urostyle', x: 0.50, y: 0.63, fn: 'Fused caudal vertebrae forming rod-like tailbone. Absorbs landing shock. Unique to frogs/toads.', clinical: 'The urostyle is found only in anurans \u2014 a defining skeletal feature of frogs and toads.' },
 
-                  { id: 'pelvic_girdle', name: 'Pelvic Girdle', x: 0.50, y: 0.60, fn: 'Elongated ilium creates lever for powerful jumps. Highly modified compared to other vertebrates.', clinical: 'Elongated pelvic girdle is the key anatomical adaptation enabling the frog jump.' },
+                  { id: 'pelvic_girdle', name: 'Pelvic Girdle', x: 0.50, y: 0.59, fn: 'Elongated ilium creates lever for powerful jumps. Highly modified compared to other vertebrates.', clinical: 'Elongated pelvic girdle is the key anatomical adaptation enabling the frog jump.' },
 
-                  { id: 'pectoral_gird', name: 'Pectoral Girdle', x: 0.50, y: 0.32, fn: 'Supports forelimbs. Acts as shock absorber during landing. Clavicle, coracoid, scapula, suprascapula.', clinical: 'The pectoral girdle absorbs impact forces that would fracture bones in most other animals.' },
+                  { id: 'pectoral_gird', name: 'Pectoral Girdle', x: 0.50, y: 0.34, fn: 'Supports forelimbs. Acts as shock absorber during landing. Clavicle, coracoid, scapula, suprascapula.', clinical: 'The pectoral girdle absorbs impact forces that would fracture bones in most other animals.' },
 
-                  { id: 'femur', name: 'Femur', x: 0.40, y: 0.65, fn: 'Long thigh bone. Proportionally longer than most vertebrates for jumping leverage.', clinical: 'Frog femur is proportionally longer than human femur relative to body size.' },
+                  { id: 'femur', name: 'Femur', x: 0.32, y: 0.59, fn: 'Long thigh bone. Proportionally longer than most vertebrates for jumping leverage.', clinical: 'Frog femur is proportionally longer than human femur relative to body size.' },
 
-                  { id: 'tibiofibula', name: 'Tibio-fibula', x: 0.38, y: 0.75, fn: 'Fused tibia + fibula (single bone). Reduces weight while maintaining strength. 5 digits with webbing.', clinical: 'Bone fusion reduces weight \u2014 an adaptation for efficient jumping.' },
+                  { id: 'tibiofibula', name: 'Tibio-fibula', x: 0.24, y: 0.67, fn: 'Fused tibia + fibula (single bone). Reduces weight while maintaining strength. 5 digits with webbing.', clinical: 'Bone fusion reduces weight \u2014 an adaptation for efficient jumping.' },
 
-                  { id: 'radioulna', name: 'Radio-ulna', x: 0.30, y: 0.42, fn: 'Fused radius + ulna. 4 digits on forelimb (digit I lost). Simplified limb for landing.', clinical: 'Loss of digit I and bone fusion are weight reduction adaptations.' },
+                  { id: 'radioulna', name: 'Radio-ulna', x: 0.29, y: 0.43, fn: 'Fused radius + ulna. 4 digits on forelimb (digit I lost). Simplified limb for landing.', clinical: 'Loss of digit I and bone fusion are weight reduction adaptations.' },
 
-                  { id: 'astragalus', name: 'Elongated Ankle Bones', x: 0.36, y: 0.82, fn: 'Astragalus and calcaneus elongated to add extra leg segment \u2014 increases jump distance. Unique to frogs.', clinical: 'Elongated ankles function as an extra leg segment \u2014 key innovation for saltatory locomotion.' }
+                  { id: 'astragalus', name: 'Elongated Ankle Bones', x: 0.27, y: 0.78, fn: 'Astragalus and calcaneus elongated to add extra leg segment \u2014 increases jump distance. Unique to frogs.', clinical: 'Elongated ankles function as an extra leg segment \u2014 key innovation for saltatory locomotion.' }
 
                 ],
 
                 nervous: [
 
-                  { id: 'brain', name: 'Brain', x: 0.50, y: 0.12, fn: 'Small brain with prominent optic lobes (largest region). Olfactory lobes, cerebrum, cerebellum (small), medulla.', clinical: 'Vision dominates \u2014 classic Lettvin 1959 study: "What the Frog\'s Eye Tells the Frog\'s Brain."' },
+                  { id: 'brain', name: 'Brain', x: 0.50, y: 0.17, fn: 'Small brain with prominent optic lobes (largest region). Olfactory lobes, cerebrum, cerebellum (small), medulla.', clinical: 'Vision dominates \u2014 classic Lettvin 1959 study: "What the Frog\'s Eye Tells the Frog\'s Brain."' },
 
-                  { id: 'spinal_cord', name: 'Spinal Cord', x: 0.50, y: 0.40, fn: '10 spinal nerve pairs. Ends with filum terminale. Classic spinal frog preparation demonstrates reflexes.', clinical: 'A "spinal frog" (brain destroyed) still shows coordinated reflex responses \u2014 foundational neuroscience.' },
+                  { id: 'spinal_cord', name: 'Spinal Cord', x: 0.50, y: 0.44, fn: '10 spinal nerve pairs. Ends with filum terminale. Classic spinal frog preparation demonstrates reflexes.', clinical: 'A "spinal frog" (brain destroyed) still shows coordinated reflex responses \u2014 foundational neuroscience.' },
 
-                  { id: 'sciatic_n', name: 'Sciatic Nerve', x: 0.42, y: 0.68, fn: 'Largest nerve. Runs along posterior thigh. Branches from sacral plexus (spinal nerves 8-9).', clinical: 'Frog sciatic nerve was the model system for early electrophysiology experiments.' },
+                  { id: 'sciatic_n', name: 'Sciatic Nerve', x: 0.32, y: 0.63, fn: 'Largest nerve. Runs along posterior thigh. Branches from sacral plexus (spinal nerves 8-9).', clinical: 'Frog sciatic nerve was the model system for early electrophysiology experiments.' },
 
-                  { id: 'brachial_n', name: 'Brachial Nerves', x: 0.38, y: 0.35, fn: 'Spinal nerves 2-3 forming brachial plexus for forelimb. Smaller than sciatic due to smaller forelimb.', clinical: 'Smaller brachial vs larger sciatic reflects hindlimb dominance in frogs.' },
+                  { id: 'brachial_n', name: 'Brachial Nerves', x: 0.36, y: 0.36, fn: 'Spinal nerves 2-3 forming brachial plexus for forelimb. Smaller than sciatic due to smaller forelimb.', clinical: 'Smaller brachial vs larger sciatic reflects hindlimb dominance in frogs.' },
 
-                  { id: 'cranial_n', name: 'Cranial Nerves', x: 0.55, y: 0.14, fn: '10 pairs (mammals have 12). Key: optic (II, large), trigeminal (V), vagus (X, viscera).', clinical: 'Frogs have 10 cranial nerve pairs vs 12 in mammals \u2014 lacking spinal accessory (XI) and hypoglossal (XII).' },
+                  { id: 'cranial_n', name: 'Cranial Nerves', x: 0.57, y: 0.20, fn: '10 pairs (mammals have 12). Key: optic (II, large), trigeminal (V), vagus (X, viscera).', clinical: 'Frogs have 10 cranial nerve pairs vs 12 in mammals \u2014 lacking spinal accessory (XI) and hypoglossal (XII).' },
 
-                  { id: 'optic_lobe', name: 'Optic Lobes (Tectum)', x: 0.52, y: 0.10, fn: 'Largest brain region processing visual "bug detector" neurons \u2014 respond to small moving dark objects.', clinical: 'Optic tectum "bug detectors" inspired early computer vision and AI motion detection algorithms.' }
+                  { id: 'optic_lobe', name: 'Optic Lobes (Tectum)', x: 0.52, y: 0.16, fn: 'Largest brain region processing visual "bug detector" neurons \u2014 respond to small moving dark objects.', clinical: 'Optic tectum "bug detectors" inspired early computer vision and AI motion detection algorithms.' }
 
                 ]
 
@@ -640,51 +653,51 @@ var d = labToolData.dissection || {};
 
                 skin: [
 
-                  { id: 'cuticle', name: 'Cuticle', x: 0.50, y: 0.30, fn: 'Transparent outer covering. Keeps skin moist for gas exchange \u2014 earthworms breathe through skin.', clinical: 'Earthworms die if skin dries out \u2014 cutaneous respiration requires moisture.' },
+                  { id: 'cuticle', name: 'Cuticle', x: 0.52, y: 0.30, fn: 'Transparent outer covering. Keeps skin moist for gas exchange \u2014 earthworms breathe through skin.', clinical: 'Earthworms die if skin dries out \u2014 cutaneous respiration requires moisture.' },
 
-                  { id: 'setae', name: 'Setae', x: 0.35, y: 0.55, fn: 'Tiny chitinous bristles (4 pairs/segment). Grip soil during peristaltic locomotion.', clinical: 'Setae are homologous to marine polychaete parapodia.' },
+                  { id: 'setae', name: 'Setae', x: 0.46, y: 0.55, fn: 'Tiny chitinous bristles (4 pairs/segment). Grip soil during peristaltic locomotion.', clinical: 'Setae are homologous to marine polychaete parapodia.' },
 
-                  { id: 'clitellum', name: 'Clitellum', x: 0.50, y: 0.25, fn: 'Glandular band (segments 32-37). Secretes cocoon for eggs. Indicates sexual maturity.', clinical: 'Clitellum position varies by species \u2014 used for identification.' },
+                  { id: 'clitellum', name: 'Clitellum', x: 0.51, y: 0.33, fn: 'Glandular band (segments 32-37). Secretes cocoon for eggs. Indicates sexual maturity.', clinical: 'Clitellum position varies by species \u2014 used for identification.' },
 
-                  { id: 'prostomium', name: 'Prostomium', x: 0.50, y: 0.08, fn: 'Fleshy lip over mouth. Sensory: detects light, chemicals, vibrations. Not a true segment.', clinical: '"Worm grunting" exploits vibration sensitivity to harvest bait worms.' }
+                  { id: 'prostomium', name: 'Prostomium', x: 0.51, y: 0.07, fn: 'Fleshy lip over mouth. Sensory: detects light, chemicals, vibrations. Not a true segment.', clinical: '"Worm grunting" exploits vibration sensitivity to harvest bait worms.' }
 
                 ],
 
                 muscle: [
 
-                  { id: 'circular_m', name: 'Circular Muscles', x: 0.55, y: 0.40, fn: 'Outer layer running around each segment. Contraction = longer/thinner (elongation phase).', clinical: 'Same peristaltic mechanism humans use for intestinal movement.' },
+                  { id: 'circular_m', name: 'Circular Muscles', x: 0.52, y: 0.40, fn: 'Outer layer running around each segment. Contraction = longer/thinner (elongation phase).', clinical: 'Same peristaltic mechanism humans use for intestinal movement.' },
 
-                  { id: 'longitudinal_m', name: 'Longitudinal Muscles', x: 0.45, y: 0.50, fn: 'Inner layer along body length. Contraction = shorter/fatter (anchoring phase). Antagonistic to circular.', clinical: 'Hydrostatic skeleton (fluid-filled coelom) transmits force between the two layers.' },
+                  { id: 'longitudinal_m', name: 'Longitudinal Muscles', x: 0.48, y: 0.50, fn: 'Inner layer along body length. Contraction = shorter/fatter (anchoring phase). Antagonistic to circular.', clinical: 'Hydrostatic skeleton (fluid-filled coelom) transmits force between the two layers.' },
 
-                  { id: 'septa', name: 'Septa', x: 0.50, y: 0.45, fn: 'Muscular partitions between segments. Each segment = independent hydraulic unit.', clinical: 'Segmentation allows independent control \u2014 damage to one segment doesn\'t disable others.' }
+                  { id: 'septa', name: 'Septa', x: 0.51, y: 0.45, fn: 'Muscular partitions between segments. Each segment = independent hydraulic unit.', clinical: 'Segmentation allows independent control \u2014 damage to one segment doesn\'t disable others.' }
 
                 ],
 
                 organs: [
 
-                  { id: 'pharynx', name: 'Pharynx', x: 0.50, y: 0.12, fn: 'Muscular pump (segments 1-5). Sucks in soil and organic matter.', clinical: 'Earthworms eat their own weight in soil daily, aerating tons of soil per acre.' },
+                  { id: 'pharynx', name: 'Pharynx', x: 0.52, y: 0.15, fn: 'Muscular pump (segments 1-5). Sucks in soil and organic matter.', clinical: 'Earthworms eat their own weight in soil daily, aerating tons of soil per acre.' },
 
-                  { id: 'crop', name: 'Crop', x: 0.50, y: 0.28, fn: 'Thin-walled storage chamber (segments 15-16). Temporary food storage.', clinical: 'Similar function to a bird\'s crop \u2014 convergent evolution of food storage.' },
+                  { id: 'crop', name: 'Crop', x: 0.51, y: 0.31, fn: 'Thin-walled storage chamber (segments 15-16). Temporary food storage.', clinical: 'Similar function to a bird\'s crop \u2014 convergent evolution of food storage.' },
 
-                  { id: 'gizzard', name: 'Gizzard', x: 0.50, y: 0.33, fn: 'Thick muscular grinder (segments 17-18). Uses sand grains to crush food. No teeth.', clinical: 'Like a bird\'s gizzard \u2014 independent evolution of grit-grinding organs.' },
+                  { id: 'gizzard', name: 'Gizzard', x: 0.51, y: 0.36, fn: 'Thick muscular grinder (segments 17-18). Uses sand grains to crush food. No teeth.', clinical: 'Like a bird\'s gizzard \u2014 independent evolution of grit-grinding organs.' },
 
-                  { id: 'intestine', name: 'Intestine', x: 0.50, y: 0.55, fn: 'Straight tube with typhlosole (dorsal fold increasing surface area). Digestion and absorption.', clinical: 'Typhlosole is a simple version of intestinal villi \u2014 same principle, different solution.' },
+                  { id: 'intestine', name: 'Intestine', x: 0.50, y: 0.58, fn: 'Straight tube with typhlosole (dorsal fold increasing surface area). Digestion and absorption.', clinical: 'Typhlosole is a simple version of intestinal villi \u2014 same principle, different solution.' },
 
-                  { id: 'aortic_arches', name: 'Aortic Arches (5 Hearts)', x: 0.48, y: 0.22, fn: '5 pairs of contractile vessels (segments 7-11). Pump blood in closed circulatory system.', clinical: 'Often called "5 hearts" \u2014 actually muscular blood vessels. Among first studied for closed circulation.' },
+                  { id: 'aortic_arches', name: 'Aortic Arches (5 Hearts)', x: 0.52, y: 0.23, fn: '5 pairs of contractile vessels (segments 7-11). Pump blood in closed circulatory system.', clinical: 'Often called "5 hearts" \u2014 actually muscular blood vessels. Among first studied for closed circulation.' },
 
-                  { id: 'nephridia', name: 'Nephridia', x: 0.55, y: 0.48, fn: 'Paired excretory organs per segment. Filter coelomic fluid. Equivalent of kidneys.', clinical: 'Segmentally repeated kidneys \u2014 unique annelid design with one pair per segment.' },
+                  { id: 'nephridia', name: 'Nephridia', x: 0.54, y: 0.52, fn: 'Paired excretory organs per segment. Filter coelomic fluid. Equivalent of kidneys.', clinical: 'Segmentally repeated kidneys \u2014 unique annelid design with one pair per segment.' },
 
-                  { id: 'seminal_v', name: 'Seminal Vesicles', x: 0.45, y: 0.20, fn: 'White organs (segments 9-12). Store sperm. Earthworms are hermaphrodites but cross-fertilize.', clinical: 'Despite being hermaphrodites, self-fertilization is rare \u2014 they mate with partners.' }
+                  { id: 'seminal_v', name: 'Seminal Vesicles', x: 0.50, y: 0.25, fn: 'White organs (segments 9-12). Store sperm. Earthworms are hermaphrodites but cross-fertilize.', clinical: 'Despite being hermaphrodites, self-fertilization is rare \u2014 they mate with partners.' }
 
                 ],
 
                 nervous: [
 
-                  { id: 'cerebral_g', name: 'Cerebral Ganglia', x: 0.50, y: 0.08, fn: 'Paired ganglia above pharynx (segment 3). Process sensory input. "Brain."', clinical: 'Very simple \u2014 a headless earthworm can still burrow, eat, and mate.' },
+                  { id: 'cerebral_g', name: 'Cerebral Ganglia', x: 0.51, y: 0.12, fn: 'Paired ganglia above pharynx (segment 3). Process sensory input. "Brain."', clinical: 'Very simple \u2014 a headless earthworm can still burrow, eat, and mate.' },
 
-                  { id: 'ventral_cord', name: 'Ventral Nerve Cord', x: 0.50, y: 0.50, fn: 'Runs entire ventral length. Giant fibers enable rapid escape contraction (20-45 m/s).', clinical: 'Giant axons transmit signals fast \u2014 enabling rapid withdrawal when disturbed.' },
+                  { id: 'ventral_cord', name: 'Ventral Nerve Cord', x: 0.50, y: 0.58, fn: 'Runs entire ventral length. Giant fibers enable rapid escape contraction (20-45 m/s).', clinical: 'Giant axons transmit signals fast \u2014 enabling rapid withdrawal when disturbed.' },
 
-                  { id: 'segmental_g', name: 'Segmental Ganglia', x: 0.48, y: 0.40, fn: 'Paired ganglia per segment. Control local reflexes independently.', clinical: 'Each ganglion controls its segment \u2014 why cut segments still move.' }
+                  { id: 'segmental_g', name: 'Segmental Ganglia', x: 0.51, y: 0.44, fn: 'Paired ganglia per segment. Control local reflexes independently.', clinical: 'Each ganglion controls its segment \u2014 why cut segments still move.' }
 
                 ]
 
@@ -726,75 +739,75 @@ var d = labToolData.dissection || {};
 
                 skin: [
 
-                  { id: 'epidermis_p', name: 'Epidermis', x: 0.50, y: 0.35, fn: 'Stratified squamous epithelium. Pig skin is closest animal model to human skin.', clinical: 'Pig skin used in burn treatment research and skin graft studies.' },
+                  { id: 'epidermis_p', name: 'Epidermis', x: 0.53, y: 0.34, fn: 'Stratified squamous epithelium. Pig skin is closest animal model to human skin.', clinical: 'Pig skin used in burn treatment research and skin graft studies.' },
 
-                  { id: 'umbilical', name: 'Umbilical Cord', x: 0.50, y: 0.55, fn: '2 umbilical arteries + 1 umbilical vein in Wharton\'s jelly. Same structure as human.', clinical: 'Single umbilical artery may indicate congenital abnormalities in both pigs and humans.' },
+                  { id: 'umbilical', name: 'Umbilical Cord', x: 0.51, y: 0.58, fn: '2 umbilical arteries + 1 umbilical vein in Wharton\'s jelly. Same structure as human.', clinical: 'Single umbilical artery may indicate congenital abnormalities in both pigs and humans.' },
 
-                  { id: 'mammary', name: 'Mammary Papillae', x: 0.42, y: 0.60, fn: '6-7 pairs along ventral surface (vs 1 pair in humans). Along embryonic "milk line."', clinical: 'Supernumerary nipples occur in 1-5% of humans along the vestigial milk line.' }
+                  { id: 'mammary', name: 'Mammary Papillae', x: 0.55, y: 0.56, fn: '6-7 pairs along ventral surface (vs 1 pair in humans). Along embryonic "milk line."', clinical: 'Supernumerary nipples occur in 1-5% of humans along the vestigial milk line.' }
 
                 ],
 
                 muscle: [
 
-                  { id: 'diaphragm_p', name: 'Diaphragm', x: 0.50, y: 0.42, fn: 'Dome separating thorax/abdomen. Primary respiratory muscle. Phrenic nerve (C3-C5). Identical to human.', clinical: 'Diaphragm is a key mammalian innovation \u2014 enables negative-pressure breathing.' },
+                  { id: 'diaphragm_p', name: 'Diaphragm', x: 0.47, y: 0.43, fn: 'Dome separating thorax/abdomen. Primary respiratory muscle. Phrenic nerve (C3-C5). Identical to human.', clinical: 'Diaphragm is a key mammalian innovation \u2014 enables negative-pressure breathing.' },
 
-                  { id: 'masseter_p', name: 'Masseter', x: 0.55, y: 0.12, fn: 'Powerful jaw muscle. Larger than human \u2014 pigs process tough plant material.', clinical: 'Homologous to human masseter \u2014 strongest muscle by weight in both species.' },
+                  { id: 'masseter_p', name: 'Masseter', x: 0.26, y: 0.42, fn: 'Powerful jaw muscle. Larger than human \u2014 pigs process tough plant material.', clinical: 'Homologous to human masseter \u2014 strongest muscle by weight in both species.' },
 
-                  { id: 'ext_oblique_p', name: 'External Oblique', x: 0.55, y: 0.45, fn: 'Largest abdominal wall muscle. Same function as human external oblique.', clinical: 'Identical innervation pattern to humans \u2014 used in surgical training.' }
+                  { id: 'ext_oblique_p', name: 'External Oblique', x: 0.58, y: 0.46, fn: 'Largest abdominal wall muscle. Same function as human external oblique.', clinical: 'Identical innervation pattern to humans \u2014 used in surgical training.' }
 
                 ],
 
                 organs: [
 
-                  { id: 'heart_p', name: 'Heart (4-chamber)', x: 0.50, y: 0.32, fn: '4 chambers identical to human. Complete separation of oxygenated/deoxygenated blood. Coronary arteries present.', clinical: 'Pig heart valves replace human valves in cardiac surgery. Pig-to-human heart xenotransplantation research ongoing.' },
+                  { id: 'heart_p', name: 'Heart (4-chamber)', x: 0.44, y: 0.44, fn: '4 chambers identical to human. Complete separation of oxygenated/deoxygenated blood. Coronary arteries present.', clinical: 'Pig heart valves replace human valves in cardiac surgery. Pig-to-human heart xenotransplantation research ongoing.' },
 
-                  { id: 'lungs_p', name: 'Lungs', x: 0.45, y: 0.34, fn: 'Lobed with alveolar structure identical to human. Right: 4 lobes. Left: 2-3 lobes. Pleural membranes.', clinical: 'Pig lungs used for surgical technique practice. Lobation differs slightly from human.' },
+                  { id: 'lungs_p', name: 'Lungs', x: 0.41, y: 0.42, fn: 'Lobed with alveolar structure identical to human. Right: 4 lobes. Left: 2-3 lobes. Pleural membranes.', clinical: 'Pig lungs used for surgical technique practice. Lobation differs slightly from human.' },
 
-                  { id: 'liver_p', name: 'Liver', x: 0.52, y: 0.40, fn: '5 lobes (more lobed than human). Bile production, detoxification, protein synthesis, glycogen storage.', clinical: 'Pig liver studied for xenotransplantation. Functionally identical to human liver.' },
+                  { id: 'liver_p', name: 'Liver', x: 0.55, y: 0.44, fn: '5 lobes (more lobed than human). Bile production, detoxification, protein synthesis, glycogen storage.', clinical: 'Pig liver studied for xenotransplantation. Functionally identical to human liver.' },
 
-                  { id: 'stomach_p', name: 'Stomach', x: 0.48, y: 0.45, fn: 'Monogastric (simple stomach like human). Cardiac, fundic, pyloric regions. Produces HCl and pepsin.', clinical: 'Unlike ruminants (cows), pigs have simple stomachs like humans \u2014 ideal gastric research model.' },
+                  { id: 'stomach_p', name: 'Stomach', x: 0.54, y: 0.49, fn: 'Monogastric (simple stomach like human). Cardiac, fundic, pyloric regions. Produces HCl and pepsin.', clinical: 'Unlike ruminants (cows), pigs have simple stomachs like humans \u2014 ideal gastric research model.' },
 
-                  { id: 'sm_int_p', name: 'Small Intestine', x: 0.50, y: 0.55, fn: 'Long (~15m adult). Duodenum, jejunum, ileum. Villi for nutrient absorption.', clinical: 'Proportionally longer than human \u2014 used for surgical anastomosis training.' },
+                  { id: 'sm_int_p', name: 'Small Intestine', x: 0.59, y: 0.55, fn: 'Long (~15m adult). Duodenum, jejunum, ileum. Villi for nutrient absorption.', clinical: 'Proportionally longer than human \u2014 used for surgical anastomosis training.' },
 
-                  { id: 'lg_int_p', name: 'Spiral Colon', x: 0.50, y: 0.62, fn: 'Distinctive spiral colon (coiled). Cecum present. Absorbs water.', clinical: 'Spiral colon is uniquely porcine \u2014 coiled like a watch spring.' },
+                  { id: 'lg_int_p', name: 'Spiral Colon', x: 0.65, y: 0.53, fn: 'Distinctive spiral colon (coiled). Cecum present. Absorbs water.', clinical: 'Spiral colon is uniquely porcine \u2014 coiled like a watch spring.' },
 
-                  { id: 'kidneys_p', name: 'Kidneys', x: 0.55, y: 0.48, fn: 'Bean-shaped, retroperitoneal. Multipyramidal like human. Filter blood, regulate electrolytes.', clinical: 'Leading xenotransplantation candidates \u2014 closest to human in structure/function.' },
+                  { id: 'kidneys_p', name: 'Kidneys', x: 0.62, y: 0.39, fn: 'Bean-shaped, retroperitoneal. Multipyramidal like human. Filter blood, regulate electrolytes.', clinical: 'Leading xenotransplantation candidates \u2014 closest to human in structure/function.' },
 
-                  { id: 'thymus_p', name: 'Thymus', x: 0.50, y: 0.25, fn: 'Enormous in fetus (much larger than adult). T-cell maturation. Extends from mediastinum into neck.', clinical: 'Fetal thymus demonstrates critical early immune development role.' },
+                  { id: 'thymus_p', name: 'Thymus', x: 0.36, y: 0.39, fn: 'Enormous in fetus (much larger than adult). T-cell maturation. Extends from mediastinum into neck.', clinical: 'Fetal thymus demonstrates critical early immune development role.' },
 
-                  { id: 'pancreas_p', name: 'Pancreas', x: 0.52, y: 0.50, fn: 'Exocrine enzymes + endocrine insulin/glucagon. Nearly identical to human.', clinical: 'Porcine insulin treated human diabetes for decades before synthetic insulin.' },
+                  { id: 'pancreas_p', name: 'Pancreas', x: 0.60, y: 0.53, fn: 'Exocrine enzymes + endocrine insulin/glucagon. Nearly identical to human.', clinical: 'Porcine insulin treated human diabetes for decades before synthetic insulin.' },
 
-                  { id: 'bladder_p', name: 'Urinary Bladder', x: 0.50, y: 0.68, fn: 'Large distensible organ. Allantoic bladder with urachus in fetus.', clinical: 'Patent urachus is a congenital anomaly in both pigs and humans.' }
+                  { id: 'bladder_p', name: 'Urinary Bladder', x: 0.67, y: 0.53, fn: 'Large distensible organ. Allantoic bladder with urachus in fetus.', clinical: 'Patent urachus is a congenital anomaly in both pigs and humans.' }
 
                 ],
 
                 skeleton: [
 
-                  { id: 'skull_p', name: 'Skull', x: 0.25, y: 0.22, fn: 'Elongated snout. Largely cartilaginous in fetus. Internal anatomy similar to human.', clinical: 'Elongated pig skull vs rounded human skull, but cranial contents are similar.' },
+                  { id: 'skull_p', name: 'Skull', x: 0.24, y: 0.40, fn: 'Elongated snout. Largely cartilaginous in fetus. Internal anatomy similar to human.', clinical: 'Elongated pig skull vs rounded human skull, but cranial contents are similar.' },
 
-                  { id: 'vert_col_p', name: 'Vertebral Column', x: 0.50, y: 0.38, fn: '7C, 14-15T, 6-7L, 4S, 20-23 caudal. More vertebrae than human. 7 cervical constant across mammals.', clinical: 'Cervical count (7) is constant across nearly all mammals \u2014 giraffe to mouse.' },
+                  { id: 'vert_col_p', name: 'Vertebral Column', x: 0.52, y: 0.35, fn: '7C, 14-15T, 6-7L, 4S, 20-23 caudal. More vertebrae than human. 7 cervical constant across mammals.', clinical: 'Cervical count (7) is constant across nearly all mammals \u2014 giraffe to mouse.' },
 
-                  { id: 'ribs_p', name: 'Ribs', x: 0.55, y: 0.35, fn: '14-15 pairs (vs 12 human). Cartilaginous in fetus. Protect thoracic organs.', clinical: '"Spare ribs" in cooking come from this ventral rib region.' },
+                  { id: 'ribs_p', name: 'Ribs', x: 0.43, y: 0.39, fn: '14-15 pairs (vs 12 human). Cartilaginous in fetus. Protect thoracic organs.', clinical: '"Spare ribs" in cooking come from this ventral rib region.' },
 
-                  { id: 'pelvis_p', name: 'Pelvis', x: 0.70, y: 0.42, fn: 'Ilium, ischium, pubis â€” largely cartilaginous in fetus. Same tripartite structure as human pelvis but horizontally oriented for quadrupedal stance.', clinical: 'Pig pelvis is oriented horizontally vs vertically in bipedal humans â€” key comparative anatomy difference.' },
+                  { id: 'pelvis_p', name: 'Pelvis', x: 0.68, y: 0.43, fn: 'Ilium, ischium, pubis â€” largely cartilaginous in fetus. Same tripartite structure as human pelvis but horizontally oriented for quadrupedal stance.', clinical: 'Pig pelvis is oriented horizontally vs vertically in bipedal humans â€” key comparative anatomy difference.' },
 
-                  { id: 'scapula_p', name: 'Scapula', x: 0.30, y: 0.35, fn: 'Triangular shoulder blade with prominent spine and acromion. Cartilaginous in fetus. Attachment for supraspinatus and infraspinatus muscles.', clinical: 'Pig scapula is more vertically oriented than human â€” adaptation for quadrupedal weight bearing.' },
+                  { id: 'scapula_p', name: 'Scapula', x: 0.36, y: 0.39, fn: 'Triangular shoulder blade with prominent spine and acromion. Cartilaginous in fetus. Attachment for supraspinatus and infraspinatus muscles.', clinical: 'Pig scapula is more vertically oriented than human â€” adaptation for quadrupedal weight bearing.' },
 
-                  { id: 'humerus_p', name: 'Forelimb Bones', x: 0.35, y: 0.40, fn: 'Humerus (upper), radius and ulna (lower). Articulate with shoulder and carpals. Ulna has prominent olecranon process for triceps attachment.', clinical: 'Pig limb proportions differ from human but bone homology is exact â€” used in orthopedic research.' },
+                  { id: 'humerus_p', name: 'Forelimb Bones', x: 0.37, y: 0.55, fn: 'Humerus (upper), radius and ulna (lower). Articulate with shoulder and carpals. Ulna has prominent olecranon process for triceps attachment.', clinical: 'Pig limb proportions differ from human but bone homology is exact â€” used in orthopedic research.' },
 
-                  { id: 'femur_p', name: 'Hindlimb Bones', x: 0.68, y: 0.42, fn: 'Femur (thigh), tibia and fibula (leg). Terminates in cloven hoof (digits III and IV). Other digits are vestigial dewclaws.', clinical: 'Pig walks on digits III-IV â€” an even-toed ungulate (Artiodactyla). Humans walk on entire foot sole.' },
+                  { id: 'femur_p', name: 'Hindlimb Bones', x: 0.68, y: 0.55, fn: 'Femur (thigh), tibia and fibula (leg). Terminates in cloven hoof (digits III and IV). Other digits are vestigial dewclaws.', clinical: 'Pig walks on digits III-IV â€” an even-toed ungulate (Artiodactyla). Humans walk on entire foot sole.' },
 
-                  { id: 'sternum_p', name: 'Sternum', x: 0.50, y: 0.40, fn: 'Segmented breastbone with 6-7 sternebrae. Largely cartilaginous in fetus with ossification centers. Ribs articulate laterally.', clinical: 'Segmented pig sternum reveals the fetal ossification process â€” each sternebra starts as cartilage.' }
+                  { id: 'sternum_p', name: 'Sternum', x: 0.45, y: 0.47, fn: 'Segmented breastbone with 6-7 sternebrae. Largely cartilaginous in fetus with ossification centers. Ribs articulate laterally.', clinical: 'Segmented pig sternum reveals the fetal ossification process â€” each sternebra starts as cartilage.' }
 
                 ],
 
                 nervous: [
 
-                  { id: 'brain_p', name: 'Brain', x: 0.50, y: 0.08, fn: 'Mammalian brain with sulci/gyri. Large olfactory bulbs. Structure very similar to human.', clinical: 'Pig brains used in neurosurgery training \u2014 closer to human than any common lab animal except primates.' },
+                  { id: 'brain_p', name: 'Brain', x: 0.24, y: 0.39, fn: 'Mammalian brain with sulci/gyri. Large olfactory bulbs. Structure very similar to human.', clinical: 'Pig brains used in neurosurgery training \u2014 closer to human than any common lab animal except primates.' },
 
-                  { id: 'spinal_p', name: 'Spinal Cord', x: 0.50, y: 0.40, fn: 'Full vertebral length in fetus. Cervical/lumbar enlargements. Gray/white matter identical to human.', clinical: 'Spinal cord organization (dorsal sensory, ventral motor) identical to human.' },
+                  { id: 'spinal_p', name: 'Spinal Cord', x: 0.50, y: 0.36, fn: 'Full vertebral length in fetus. Cervical/lumbar enlargements. Gray/white matter identical to human.', clinical: 'Spinal cord organization (dorsal sensory, ventral motor) identical to human.' },
 
-                  { id: 'vagus_p', name: 'Vagus Nerve (CN X)', x: 0.48, y: 0.22, fn: 'Longest cranial nerve. Heart, lungs, GI innervation. Runs with carotid/jugular.', clinical: 'Pig vagus nerve studies led to human vagus nerve stimulator implants for epilepsy.' }
+                  { id: 'vagus_p', name: 'Vagus Nerve (CN X)', x: 0.35, y: 0.40, fn: 'Longest cranial nerve. Heart, lungs, GI innervation. Runs with carotid/jugular.', clinical: 'Pig vagus nerve studies led to human vagus nerve stimulator implants for epilepsy.' }
 
                 ]
 
@@ -836,51 +849,51 @@ var d = labToolData.dissection || {};
 
                 skin: [
 
-                  { id: 'scales', name: 'Ctenoid Scales', x: 0.50, y: 0.40, fn: 'Overlapping bony scales with growth rings \u2014 used to determine fish age like tree rings.', clinical: 'Scale annuli counting is the standard method for aging fish in fisheries biology.' },
+                  { id: 'scales', name: 'Ctenoid Scales', x: 0.52, y: 0.43, fn: 'Overlapping bony scales with growth rings \u2014 used to determine fish age like tree rings.', clinical: 'Scale annuli counting is the standard method for aging fish in fisheries biology.' },
 
-                  { id: 'lat_line', name: 'Lateral Line', x: 0.50, y: 0.45, fn: 'Sensory system detecting water pressure changes. Enables schooling, predator detection, murky-water navigation.', clinical: 'A "sixth sense" unique to fish/aquatic amphibians \u2014 no equivalent in terrestrial vertebrates.' },
+                  { id: 'lat_line', name: 'Lateral Line', x: 0.53, y: 0.445, fn: 'Sensory system detecting water pressure changes. Enables schooling, predator detection, murky-water navigation.', clinical: 'A "sixth sense" unique to fish/aquatic amphibians \u2014 no equivalent in terrestrial vertebrates.' },
 
-                  { id: 'operculum', name: 'Operculum', x: 0.25, y: 0.35, fn: 'Bony gill cover. Protects gills and pumps water for respiration.', clinical: 'Only bony fish have opercula \u2014 sharks have exposed gill slits.' },
+                  { id: 'operculum', name: 'Operculum', x: 0.31, y: 0.44, fn: 'Bony gill cover. Protects gills and pumps water for respiration.', clinical: 'Only bony fish have opercula \u2014 sharks have exposed gill slits.' },
 
-                  { id: 'fins_ext', name: 'Fins (7 types)', x: 0.60, y: 0.25, fn: 'Dorsal (spiny + soft), caudal, anal, pelvic, pectoral. Pectoral/pelvic are homologous to tetrapod limbs.', clinical: 'Fish fins are evolutionary precursors of tetrapod limbs \u2014 pectoral=arms, pelvic=legs.' }
+                  { id: 'fins_ext', name: 'Fins (7 types)', x: 0.58, y: 0.27, fn: 'Dorsal (spiny + soft), caudal, anal, pelvic, pectoral. Pectoral/pelvic are homologous to tetrapod limbs.', clinical: 'Fish fins are evolutionary precursors of tetrapod limbs \u2014 pectoral=arms, pelvic=legs.' }
 
                 ],
 
                 muscle: [
 
-                  { id: 'myomeres', name: 'Myomeres', x: 0.50, y: 0.42, fn: 'W-shaped muscle blocks separated by myosepta. Contract in waves for swimming. White (fast) + red (slow) fibers.', clinical: 'Visible as "flakes" in cooked fish \u2014 each flake is one myomere.' },
+                  { id: 'myomeres', name: 'Myomeres', x: 0.53, y: 0.43, fn: 'W-shaped muscle blocks separated by myosepta. Contract in waves for swimming. White (fast) + red (slow) fibers.', clinical: 'Visible as "flakes" in cooked fish \u2014 each flake is one myomere.' },
 
-                  { id: 'epaxial', name: 'Epaxial Muscles', x: 0.50, y: 0.32, fn: 'Dorsal muscle mass above lateral septum. Main swimming power. Bulk of body musculature.', clinical: 'This is the "fillet" \u2014 mostly epaxial muscle, the main edible portion.' }
+                  { id: 'epaxial', name: 'Epaxial Muscles', x: 0.52, y: 0.36, fn: 'Dorsal muscle mass above lateral septum. Main swimming power. Bulk of body musculature.', clinical: 'This is the "fillet" \u2014 mostly epaxial muscle, the main edible portion.' }
 
                 ],
 
                 organs: [
 
-                  { id: 'gills', name: 'Gills', x: 0.25, y: 0.38, fn: '4 gill arches with filaments/lamellae. Countercurrent flow extracts 80% of dissolved O\u2082.', clinical: 'Fish gills extract proportionally more oxygen from water than lungs from air.' },
+                  { id: 'gills', name: 'Gills', x: 0.31, y: 0.44, fn: '4 gill arches with filaments/lamellae. Countercurrent flow extracts 80% of dissolved O\u2082.', clinical: 'Fish gills extract proportionally more oxygen from water than lungs from air.' },
 
-                  { id: 'heart_f', name: 'Heart (2-chamber)', x: 0.22, y: 0.45, fn: '1 atrium + 1 ventricle. Single-circuit circulation: heart\u2192gills\u2192body\u2192heart.', clinical: 'Simplest vertebrate heart. Evolution: 2 (fish) \u2192 3 (amphibian) \u2192 4 (mammal/bird).' },
+                  { id: 'heart_f', name: 'Heart (2-chamber)', x: 0.32, y: 0.51, fn: '1 atrium + 1 ventricle. Single-circuit circulation: heart\u2192gills\u2192body\u2192heart.', clinical: 'Simplest vertebrate heart. Evolution: 2 (fish) \u2192 3 (amphibian) \u2192 4 (mammal/bird).' },
 
-                  { id: 'swim_bladder', name: 'Swim Bladder', x: 0.50, y: 0.35, fn: 'Gas-filled sac for buoyancy. Closed type \u2014 gas secreted/absorbed via rete mirabile. Neutral buoyancy without effort.', clinical: 'Homologous to the tetrapod lung \u2014 both evolved from pharyngeal outpocketing in ancestral fish.' },
+                  { id: 'swim_bladder', name: 'Swim Bladder', x: 0.51, y: 0.40, fn: 'Gas-filled sac for buoyancy. Closed type \u2014 gas secreted/absorbed via rete mirabile. Neutral buoyancy without effort.', clinical: 'Homologous to the tetrapod lung \u2014 both evolved from pharyngeal outpocketing in ancestral fish.' },
 
-                  { id: 'liver_f', name: 'Liver', x: 0.35, y: 0.42, fn: 'Large lobed organ. Bile production, glycogen/lipid storage.', clinical: 'Fish liver oil is a concentrated energy reserve \u2014 cod liver oil rich in vitamins A and D.' },
+                  { id: 'liver_f', name: 'Liver', x: 0.40, y: 0.47, fn: 'Large lobed organ. Bile production, glycogen/lipid storage.', clinical: 'Fish liver oil is a concentrated energy reserve \u2014 cod liver oil rich in vitamins A and D.' },
 
-                  { id: 'stomach_f', name: 'Stomach', x: 0.40, y: 0.48, fn: 'J-shaped. HCl + pepsin. Expandable for large prey.', clinical: 'Not all fish have stomachs \u2014 carp and minnows lack them entirely.' },
+                  { id: 'stomach_f', name: 'Stomach', x: 0.46, y: 0.50, fn: 'J-shaped. HCl + pepsin. Expandable for large prey.', clinical: 'Not all fish have stomachs \u2014 carp and minnows lack them entirely.' },
 
-                  { id: 'pyloric_ceca', name: 'Pyloric Ceca', x: 0.42, y: 0.52, fn: 'Finger-like pouches at stomach-intestine junction (3-5 in perch). Increase absorption area.', clinical: 'Unique to fish \u2014 no mammalian homolog. Number used in species identification.' },
+                  { id: 'pyloric_ceca', name: 'Pyloric Ceca', x: 0.50, y: 0.53, fn: 'Finger-like pouches at stomach-intestine junction (3-5 in perch). Increase absorption area.', clinical: 'Unique to fish \u2014 no mammalian homolog. Number used in species identification.' },
 
-                  { id: 'kidneys_f', name: 'Kidneys', x: 0.50, y: 0.30, fn: 'Dark elongated organs along dorsal wall. Head kidney (immune) + trunk kidney (excretion).', clinical: 'Freshwater fish excrete dilute urine \u2014 constantly fighting water influx through gills.' },
+                  { id: 'kidneys_f', name: 'Kidneys', x: 0.52, y: 0.37, fn: 'Dark elongated organs along dorsal wall. Head kidney (immune) + trunk kidney (excretion).', clinical: 'Freshwater fish excrete dilute urine \u2014 constantly fighting water influx through gills.' },
 
-                  { id: 'gonads_f', name: 'Gonads', x: 0.50, y: 0.50, fn: 'Paired dorsal organs. External fertilization. Ovaries can be 20-30% of body weight when full.', clinical: 'Enormous reproductive investment \u2014 some fish produce millions of eggs per spawning.' }
+                  { id: 'gonads_f', name: 'Gonads', x: 0.59, y: 0.46, fn: 'Paired dorsal organs. External fertilization. Ovaries can be 20-30% of body weight when full.', clinical: 'Enormous reproductive investment \u2014 some fish produce millions of eggs per spawning.' }
 
                 ],
 
                 skeleton: [
 
-                  { id: 'skull_f', name: 'Skull', x: 0.18, y: 0.35, fn: 'Complex with 60+ separate bones \u2014 more than any other vertebrate class.', clinical: 'Fish skulls have the most individual bones of any vertebrate group.' },
+                  { id: 'skull_f', name: 'Skull', x: 0.25, y: 0.44, fn: 'Complex with 60+ separate bones \u2014 more than any other vertebrate class.', clinical: 'Fish skulls have the most individual bones of any vertebrate group.' },
 
-                  { id: 'vert_col_f', name: 'Vertebral Column', x: 0.50, y: 0.38, fn: 'Neural arches (spinal cord) + hemal arches (caudal vessels). Trunk + caudal regions only.', clinical: 'No distinct cervical/thoracic/lumbar regions \u2014 the "neck" is a tetrapod innovation.' },
+                  { id: 'vert_col_f', name: 'Vertebral Column', x: 0.54, y: 0.43, fn: 'Neural arches (spinal cord) + hemal arches (caudal vessels). Trunk + caudal regions only.', clinical: 'No distinct cervical/thoracic/lumbar regions \u2014 the "neck" is a tetrapod innovation.' },
 
-                  { id: 'fin_rays', name: 'Fin Rays', x: 0.55, y: 0.22, fn: 'Spiny (hard, sharp, defense) and soft (segmented, flexible) rays support fin membranes.', clinical: 'Perch spiny rays are sharp enough to puncture skin \u2014 defensive adaptation.' }
+                  { id: 'fin_rays', name: 'Fin Rays', x: 0.58, y: 0.27, fn: 'Spiny (hard, sharp, defense) and soft (segmented, flexible) rays support fin membranes.', clinical: 'Perch spiny rays are sharp enough to puncture skin \u2014 defensive adaptation.' }
 
                 ]
 
@@ -920,49 +933,49 @@ var d = labToolData.dissection || {};
 
                 skin: [
 
-                  { id: 'carapace', name: 'Carapace', x: 0.40, y: 0.32, fn: 'Fused dorsal shell covering cephalothorax. Chitin + CaCO\u2083. Must molt (ecdysis) to grow.', clinical: 'Soft-shell stage after molting makes them vulnerable \u2014 many crustaceans hide while hardening.' },
+                  { id: 'carapace', name: 'Carapace', x: 0.47, y: 0.37, fn: 'Fused dorsal shell covering cephalothorax. Chitin + CaCO\u2083. Must molt (ecdysis) to grow.', clinical: 'Soft-shell stage after molting makes them vulnerable \u2014 many crustaceans hide while hardening.' },
 
-                  { id: 'telson', name: 'Telson & Uropods', x: 0.80, y: 0.40, fn: 'Tail fan for escape response ("tail flip"). Swims backward at 2 m/s in milliseconds.', clinical: 'Tail flip is one of the fastest animal movements \u2014 mediated by giant nerve fibers.' },
+                  { id: 'telson', name: 'Telson & Uropods', x: 0.89, y: 0.45, fn: 'Tail fan for escape response ("tail flip"). Swims backward at 2 m/s in milliseconds.', clinical: 'Tail flip is one of the fastest animal movements \u2014 mediated by giant nerve fibers.' },
 
-                  { id: 'chelipeds', name: 'Chelipeds (Claws)', x: 0.18, y: 0.42, fn: 'First walking legs modified into pincers. Defense, feeding, territorial displays. Can regenerate if lost.', clinical: 'Lost claws regenerate over several molts \u2014 remarkable crustacean regenerative ability.' },
+                  { id: 'chelipeds', name: 'Chelipeds (Claws)', x: 0.19, y: 0.62, fn: 'First walking legs modified into pincers. Defense, feeding, territorial displays. Can regenerate if lost.', clinical: 'Lost claws regenerate over several molts \u2014 remarkable crustacean regenerative ability.' },
 
-                  { id: 'compound_eye', name: 'Compound Eyes', x: 0.22, y: 0.30, fn: '~3,000 ommatidia per eye on moveable stalks. Motion detection specialist.', clinical: 'Compound eyes excel at motion detection but have lower resolution than vertebrate eyes.' }
+                  { id: 'compound_eye', name: 'Compound Eyes', x: 0.27, y: 0.35, fn: '~3,000 ommatidia per eye on moveable stalks. Motion detection specialist.', clinical: 'Compound eyes excel at motion detection but have lower resolution than vertebrate eyes.' }
 
                 ],
 
                 muscle: [
 
-                  { id: 'flexor_m', name: 'Abdominal Flexors', x: 0.65, y: 0.42, fn: 'Powerful ventral muscles for escape tail-flip. Among fastest muscle contractions in animal kingdom.', clinical: 'This is the edible "crawfish tail" \u2014 these flexor muscles are the commercial meat.' },
+                  { id: 'flexor_m', name: 'Abdominal Flexors', x: 0.72, y: 0.48, fn: 'Powerful ventral muscles for escape tail-flip. Among fastest muscle contractions in animal kingdom.', clinical: 'This is the edible "crawfish tail" \u2014 these flexor muscles are the commercial meat.' },
 
-                  { id: 'extensor_m', name: 'Abdominal Extensors', x: 0.65, y: 0.35, fn: 'Dorsal muscles returning abdomen to rest position. Slower than flexors.', clinical: 'Antagonistic flexor/extensor system works same as in vertebrate limbs.' },
+                  { id: 'extensor_m', name: 'Abdominal Extensors', x: 0.72, y: 0.41, fn: 'Dorsal muscles returning abdomen to rest position. Slower than flexors.', clinical: 'Antagonistic flexor/extensor system works same as in vertebrate limbs.' },
 
-                  { id: 'cheliped_m', name: 'Cheliped Muscles', x: 0.22, y: 0.38, fn: 'Closer (adductor) much larger than opener. Crushing force >50N in large specimens.', clinical: 'Claw joint leverages amplify muscle force \u2014 a biological lever system.' }
+                  { id: 'cheliped_m', name: 'Cheliped Muscles', x: 0.24, y: 0.58, fn: 'Closer (adductor) much larger than opener. Crushing force >50N in large specimens.', clinical: 'Claw joint leverages amplify muscle force \u2014 a biological lever system.' }
 
                 ],
 
                 organs: [
 
-                  { id: 'heart_c', name: 'Heart', x: 0.45, y: 0.30, fn: 'Single-chambered dorsal heart. Open circulatory system \u2014 hemolymph flows through sinuses, not vessels.', clinical: 'Low-pressure open circulation limits crustacean maximum body size.' },
+                  { id: 'heart_c', name: 'Heart', x: 0.54, y: 0.40, fn: 'Single-chambered dorsal heart. Open circulatory system \u2014 hemolymph flows through sinuses, not vessels.', clinical: 'Low-pressure open circulation limits crustacean maximum body size.' },
 
-                  { id: 'gills_c', name: 'Gills', x: 0.35, y: 0.30, fn: 'Feather-like gills in branchial chamber. Gill bailer creates water current. Attached to leg bases.', clinical: 'Walking legs ventilate gills \u2014 movement and breathing are linked.' },
+                  { id: 'gills_c', name: 'Gills', x: 0.47, y: 0.35, fn: 'Feather-like gills in branchial chamber. Gill bailer creates water current. Attached to leg bases.', clinical: 'Walking legs ventilate gills \u2014 movement and breathing are linked.' },
 
-                  { id: 'gastric_mill', name: 'Gastric Mill', x: 0.32, y: 0.35, fn: '3 calcified teeth (ossicles) inside stomach. Grind food after swallowing. Gastroliths store calcium for molting.', clinical: '"Teeth in the stomach" \u2014 crustaceans chew food after eating it.' },
+                  { id: 'gastric_mill', name: 'Gastric Mill', x: 0.38, y: 0.45, fn: '3 calcified teeth (ossicles) inside stomach. Grind food after swallowing. Gastroliths store calcium for molting.', clinical: '"Teeth in the stomach" \u2014 crustaceans chew food after eating it.' },
 
-                  { id: 'green_gland', name: 'Green Glands', x: 0.25, y: 0.32, fn: 'Excretory organs at antenna base. Filter hemolymph, produce urine. Equivalent of kidneys.', clinical: 'Excrete ammonia directly \u2014 possible because aquatic environments flush waste.' },
+                  { id: 'green_gland', name: 'Green Glands', x: 0.30, y: 0.39, fn: 'Excretory organs at antenna base. Filter hemolymph, produce urine. Equivalent of kidneys.', clinical: 'Excrete ammonia directly \u2014 possible because aquatic environments flush waste.' },
 
-                  { id: 'hepato', name: 'Hepatopancreas', x: 0.42, y: 0.38, fn: 'Combined liver + pancreas. Digestive enzymes, nutrient absorption, energy storage. Largest internal organ.', clinical: 'Called "tomalley" in lobster cuisine. Accumulates toxins in polluted waters.' },
+                  { id: 'hepato', name: 'Hepatopancreas', x: 0.48, y: 0.47, fn: 'Combined liver + pancreas. Digestive enzymes, nutrient absorption, energy storage. Largest internal organ.', clinical: 'Called "tomalley" in lobster cuisine. Accumulates toxins in polluted waters.' },
 
-                  { id: 'gonads_c', name: 'Gonads', x: 0.50, y: 0.35, fn: 'Dorsal to hepatopancreas. Females carry eggs on swimmerets ("berried" females).', clinical: 'Males identified by modified first swimmerets (gonopods) for sperm transfer.' }
+                  { id: 'gonads_c', name: 'Gonads', x: 0.57, y: 0.44, fn: 'Dorsal to hepatopancreas. Females carry eggs on swimmerets ("berried" females).', clinical: 'Males identified by modified first swimmerets (gonopods) for sperm transfer.' }
 
                 ],
 
                 nervous: [
 
-                  { id: 'brain_c', name: 'Supraesophageal Ganglion', x: 0.25, y: 0.30, fn: 'Fused ganglia above esophagus. Processes eyes, antennae input. Supports learning and social hierarchies.', clinical: 'Simple brain but complex behavior \u2014 crayfish establish dominance hierarchies.' },
+                  { id: 'brain_c', name: 'Supraesophageal Ganglion', x: 0.34, y: 0.44, fn: 'Fused ganglia above esophagus. Processes eyes, antennae input. Supports learning and social hierarchies.', clinical: 'Simple brain but complex behavior \u2014 crayfish establish dominance hierarchies.' },
 
-                  { id: 'ventral_c', name: 'Ventral Nerve Cord', x: 0.50, y: 0.42, fn: 'Double cord with giant fibers mediating escape. Segmental ganglia control appendages.', clinical: 'Crayfish giant axons were foundational to neuroscience \u2014 among first where action potentials recorded.' },
+                  { id: 'ventral_c', name: 'Ventral Nerve Cord', x: 0.68, y: 0.48, fn: 'Double cord with giant fibers mediating escape. Segmental ganglia control appendages.', clinical: 'Crayfish giant axons were foundational to neuroscience \u2014 among first where action potentials recorded.' },
 
-                  { id: 'antennae_n', name: 'Antennae & Antennules', x: 0.18, y: 0.32, fn: 'Long pair: touch/taste. Short pair: chemoreception + balance (statocyst).', clinical: 'Classic experiment: iron filings in statocyst + magnet = inverted orientation.' }
+                  { id: 'antennae_n', name: 'Antennae & Antennules', x: 0.19, y: 0.32, fn: 'Long pair: touch/taste. Short pair: chemoreception + balance (statocyst).', clinical: 'Classic experiment: iron filings in statocyst + magnet = inverted orientation.' }
 
                 ]
 
@@ -998,37 +1011,37 @@ var d = labToolData.dissection || {};
 
                 skin: [
 
-                  { id: 'cornea', name: 'Cornea', x: 0.30, y: 0.45, fn: 'Transparent anterior surface. Provides 2/3 of refractive power. Avascular \u2014 nourished by aqueous humor and tears. 5 layers.', clinical: 'LASIK reshapes the cornea with laser. Corneal transplants are the most common transplant surgery worldwide.' },
+                  { id: 'cornea', name: 'Cornea', x: 0.20, y: 0.45, fn: 'Transparent anterior surface. Provides 2/3 of refractive power. Avascular \u2014 nourished by aqueous humor and tears. 5 layers.', clinical: 'LASIK reshapes the cornea with laser. Corneal transplants are the most common transplant surgery worldwide.' },
 
-                  { id: 'sclera', name: 'Sclera', x: 0.70, y: 0.45, fn: 'Tough white outer coat. Dense connective tissue protecting eye contents. Attachment for extraocular muscles. "White of the eye."', clinical: 'Yellow sclera (scleral icterus) = jaundice from liver disease. Blue sclera = osteogenesis imperfecta.' },
+                  { id: 'sclera', name: 'Sclera', x: 0.72, y: 0.28, fn: 'Tough white outer coat. Dense connective tissue protecting eye contents. Attachment for extraocular muscles. "White of the eye."', clinical: 'Yellow sclera (scleral icterus) = jaundice from liver disease. Blue sclera = osteogenesis imperfecta.' },
 
-                  { id: 'optic_nerve', name: 'Optic Nerve', x: 0.82, y: 0.50, fn: '~1.2 million retinal ganglion cell axons. Exits at optic disc (blind spot). Surrounded by meninges extension.', clinical: 'Optic disc has no photoreceptors = blind spot. Papilledema (optic disc swelling) = increased intracranial pressure.' },
+                  { id: 'optic_nerve', name: 'Optic Nerve', x: 0.84, y: 0.51, fn: '~1.2 million retinal ganglion cell axons. Exits at optic disc (blind spot). Surrounded by meninges extension.', clinical: 'Optic disc has no photoreceptors = blind spot. Papilledema (optic disc swelling) = increased intracranial pressure.' },
 
-                  { id: 'ext_muscles', name: 'Extraocular Muscles', x: 0.75, y: 0.30, fn: '6 muscles control eye movement: 4 rectus (sup/inf/med/lat) + 2 oblique (sup/inf). Cranial nerves III, IV, VI.', clinical: 'CN III palsy: eye "down and out," ptosis. CN IV: difficulty looking down stairs. CN VI: medial deviation.' },
+                  { id: 'ext_muscles', name: 'Extraocular Muscles', x: 0.67, y: 0.17, fn: '6 muscles control eye movement: 4 rectus (sup/inf/med/lat) + 2 oblique (sup/inf). Cranial nerves III, IV, VI.', clinical: 'CN III palsy: eye "down and out," ptosis. CN IV: difficulty looking down stairs. CN VI: medial deviation.' },
 
-                  { id: 'conjunctiva', name: 'Conjunctiva', x: 0.35, y: 0.30, fn: 'Thin mucous membrane lining eyelids (palpebral) and covering sclera (bulbar). Produces mucin for tear film.', clinical: 'Conjunctivitis ("pink eye") = inflamed conjunctiva. Subconjunctival hemorrhage looks alarming but is usually benign.' },
+                  { id: 'conjunctiva', name: 'Conjunctiva', x: 0.27, y: 0.30, fn: 'Thin mucous membrane lining eyelids (palpebral) and covering sclera (bulbar). Produces mucin for tear film.', clinical: 'Conjunctivitis ("pink eye") = inflamed conjunctiva. Subconjunctival hemorrhage looks alarming but is usually benign.' },
 
-                  { id: 'fat_pad', name: 'Orbital Fat', x: 0.70, y: 0.65, fn: 'Cushions and insulates the eye within the orbit. Acts as shock absorber.', clinical: 'Orbital fat atrophy causes sunken eyes (enophthalmos). Graves disease causes fat expansion \u2192 proptosis.' }
+                  { id: 'fat_pad', name: 'Orbital Fat', x: 0.72, y: 0.68, fn: 'Cushions and insulates the eye within the orbit. Acts as shock absorber.', clinical: 'Orbital fat atrophy causes sunken eyes (enophthalmos). Graves disease causes fat expansion \u2192 proptosis.' }
 
                 ],
 
                 organs: [
 
-                  { id: 'iris', name: 'Iris & Pupil', x: 0.35, y: 0.45, fn: 'Pigmented muscular diaphragm. Dilator (sympathetic) and sphincter (parasympathetic) muscles control pupil size. Regulates light entry.', clinical: 'Anisocoria (unequal pupils): may indicate CN III palsy, Horner syndrome, or elevated ICP. Iris color from melanin amount.' },
+                  { id: 'iris', name: 'Iris & Pupil', x: 0.33, y: 0.43, fn: 'Pigmented muscular diaphragm. Dilator (sympathetic) and sphincter (parasympathetic) muscles control pupil size. Regulates light entry.', clinical: 'Anisocoria (unequal pupils): may indicate CN III palsy, Horner syndrome, or elevated ICP. Iris color from melanin amount.' },
 
-                  { id: 'lens', name: 'Crystalline Lens', x: 0.42, y: 0.45, fn: 'Biconvex, transparent, avascular. Changes shape for focusing (accommodation). Held by zonular fibers attached to ciliary body. Contains crystallin proteins.', clinical: 'Cataracts = lens clouding (most common surgery worldwide). Presbyopia = lens stiffening with age.' },
+                  { id: 'lens', name: 'Crystalline Lens', x: 0.39, y: 0.45, fn: 'Biconvex, transparent, avascular. Changes shape for focusing (accommodation). Held by zonular fibers attached to ciliary body. Contains crystallin proteins.', clinical: 'Cataracts = lens clouding (most common surgery worldwide). Presbyopia = lens stiffening with age.' },
 
-                  { id: 'ciliary_body', name: 'Ciliary Body', x: 0.38, y: 0.35, fn: 'Ring of muscle + epithelium. Ciliary muscle changes lens shape for focusing. Epithelium produces aqueous humor.', clinical: 'Glaucoma: excess aqueous humor \u2192 increased IOP \u2192 optic nerve damage. Treated with drugs reducing production.' },
+                  { id: 'ciliary_body', name: 'Ciliary Body', x: 0.35, y: 0.31, fn: 'Ring of muscle + epithelium. Ciliary muscle changes lens shape for focusing. Epithelium produces aqueous humor.', clinical: 'Glaucoma: excess aqueous humor \u2192 increased IOP \u2192 optic nerve damage. Treated with drugs reducing production.' },
 
-                  { id: 'retina', name: 'Retina', x: 0.65, y: 0.45, fn: 'Neural sensory tissue containing rods and cones. In the sheep specimen, observe the retina as a delicate layer against the choroid; avoid applying human fovea and macula measurements directly to sheep anatomy.', clinical: 'Retinal detachment = surgical emergency. Diabetic retinopathy. Macular degeneration = leading cause of blindness in elderly.' },
+                  { id: 'retina', name: 'Retina', x: 0.69, y: 0.35, fn: 'Neural sensory tissue containing rods and cones. In the sheep specimen, observe the retina as a delicate layer against the choroid; avoid applying human fovea and macula measurements directly to sheep anatomy.', clinical: 'Retinal detachment = surgical emergency. Diabetic retinopathy. Macular degeneration = leading cause of blindness in elderly.' },
 
-                  { id: 'tapetum', name: 'Tapetum Lucidum', x: 0.65, y: 0.55, fn: 'Reflective layer behind retina in sheep (absent in humans). Reflects light back through retina for enhanced night vision. Causes "eyeshine."', clinical: 'Present in many animals (cats, dogs, sheep) but not humans or pigs. This is why animal eyes glow in headlights.' },
+                  { id: 'tapetum', name: 'Tapetum Lucidum', x: 0.67, y: 0.27, fn: 'Reflective layer behind retina in sheep (absent in humans). Reflects light back through retina for enhanced night vision. Causes "eyeshine."', clinical: 'Present in many animals (cats, dogs, sheep) but not humans or pigs. This is why animal eyes glow in headlights.' },
 
-                  { id: 'vitreous', name: 'Vitreous Humor', x: 0.55, y: 0.45, fn: 'Clear gel filling posterior 80% of eye. Maintains eye shape. 99% water + collagen + hyaluronic acid. Does not regenerate.', clinical: 'Floaters = collagen clumps in vitreous. Posterior vitreous detachment common with aging.' },
+                  { id: 'vitreous', name: 'Vitreous Humor', x: 0.57, y: 0.47, fn: 'Clear gel filling posterior 80% of eye. Maintains eye shape. 99% water + collagen + hyaluronic acid. Does not regenerate.', clinical: 'Floaters = collagen clumps in vitreous. Posterior vitreous detachment common with aging.' },
 
-                  { id: 'aqueous', name: 'Aqueous Humor', x: 0.33, y: 0.50, fn: 'Clear fluid in anterior/posterior chambers (in front of lens). Produced by ciliary body, drains via trabecular meshwork at angle.', clinical: 'Blocked drainage \u2192 increased IOP \u2192 glaucoma. Acute angle-closure = emergency.' },
+                  { id: 'aqueous', name: 'Aqueous Humor', x: 0.28, y: 0.49, fn: 'Clear fluid in anterior/posterior chambers (in front of lens). Produced by ciliary body, drains via trabecular meshwork at angle.', clinical: 'Blocked drainage \u2192 increased IOP \u2192 glaucoma. Acute angle-closure = emergency.' },
 
-                  { id: 'choroid', name: 'Choroid', x: 0.60, y: 0.35, fn: 'Vascular layer between sclera and retina. Blood supply for outer retina. Heavily pigmented to absorb stray light.', clinical: 'Choroidal melanoma is the most common primary intraocular malignancy in adults.' }
+                  { id: 'choroid', name: 'Choroid', x: 0.73, y: 0.57, fn: 'Vascular layer between sclera and retina. Blood supply for outer retina. Heavily pigmented to absorb stray light.', clinical: 'Choroidal melanoma is the most common primary intraocular malignancy in adults.' }
 
                 ]
 
@@ -1064,43 +1077,43 @@ var d = labToolData.dissection || {};
 
                 skin: [
 
-                  { id: 'pericardium', name: 'Pericardium', x: 0.50, y: 0.30, fn: 'Double-walled sac enclosing heart. Fibrous (outer, tough) and serous (inner, 2 layers with fluid). Anchors heart. 15-50mL pericardial fluid reduces friction.', clinical: 'Pericarditis: inflammation causing chest pain. Cardiac tamponade: fluid compresses heart = emergency. Beck triad: hypotension, JVD, muffled sounds.' },
+                  { id: 'pericardium', name: 'Pericardium', x: 0.50, y: 0.32, fn: 'Double-walled sac enclosing heart. Fibrous (outer, tough) and serous (inner, 2 layers with fluid). Anchors heart. 15-50mL pericardial fluid reduces friction.', clinical: 'Pericarditis: inflammation causing chest pain. Cardiac tamponade: fluid compresses heart = emergency. Beck triad: hypotension, JVD, muffled sounds.' },
 
-                  { id: 'aorta_h', name: 'Aorta', x: 0.45, y: 0.15, fn: 'Largest artery. The ascending aorta exits the left ventricle and distributes oxygenated blood to the body. Aortic-arch branch patterns differ between sheep and humans.', clinical: 'Aortic aneurysm: >5.5cm \u2192 surgical repair risk. Aortic dissection: tearing pain, emergency surgery.' },
+                  { id: 'aorta_h', name: 'Aorta', x: 0.54, y: 0.12, fn: 'Largest artery. The ascending aorta exits the left ventricle and distributes oxygenated blood to the body. Aortic-arch branch patterns differ between sheep and humans.', clinical: 'Aortic aneurysm: >5.5cm \u2192 surgical repair risk. Aortic dissection: tearing pain, emergency surgery.' },
 
-                  { id: 'pulm_trunk', name: 'Pulmonary Trunk', x: 0.55, y: 0.18, fn: 'Exits RV, bifurcates into R and L pulmonary arteries carrying deoxygenated blood to lungs. Only arteries carrying deoxy blood.', clinical: 'Pulmonary embolism: clot lodges here. Saddle PE across bifurcation is life-threatening.' },
+                  { id: 'pulm_trunk', name: 'Pulmonary Trunk', x: 0.62, y: 0.20, fn: 'Exits RV, bifurcates into R and L pulmonary arteries carrying deoxygenated blood to lungs. Only arteries carrying deoxy blood.', clinical: 'Pulmonary embolism: clot lodges here. Saddle PE across bifurcation is life-threatening.' },
 
-                  { id: 'coronary_aa', name: 'Coronary Arteries', x: 0.40, y: 0.40, fn: 'Left main \u2192 LAD + circumflex. Right coronary artery (RCA). Supply myocardium with oxygenated blood. First aortic branches.', clinical: 'LAD = "widow maker." Coronary artery disease is #1 cause of death. CABG bypasses blockages using vein/artery grafts.' },
+                  { id: 'coronary_aa', name: 'Coronary Arteries', x: 0.49, y: 0.45, fn: 'Left main \u2192 LAD + circumflex. Right coronary artery (RCA). Supply myocardium with oxygenated blood. First aortic branches.', clinical: 'LAD = "widow maker." Coronary artery disease is #1 cause of death. CABG bypasses blockages using vein/artery grafts.' },
 
-                  { id: 'sup_vena_h', name: 'Cranial (Superior) Vena Cava', x: 0.55, y: 0.12, fn: 'Returns deoxygenated blood from upper body to RA. Formed by brachiocephalic veins.', clinical: 'SVC syndrome from lung cancer: facial swelling and dyspnea.' },
+                  { id: 'sup_vena_h', name: 'Cranial (Superior) Vena Cava', x: 0.69, y: 0.14, fn: 'Returns deoxygenated blood from upper body to RA. Formed by brachiocephalic veins.', clinical: 'SVC syndrome from lung cancer: facial swelling and dyspnea.' },
 
-                  { id: 'inf_vena_h', name: 'Caudal (Inferior) Vena Cava', x: 0.55, y: 0.70, fn: 'Returns blood from lower body to RA. Largest vein.', clinical: 'IVC filter prevents PE from DVT. Compression in pregnancy causes supine hypotension.' },
+                  { id: 'inf_vena_h', name: 'Caudal (Inferior) Vena Cava', x: 0.69, y: 0.66, fn: 'Returns blood from lower body to RA. Largest vein.', clinical: 'IVC filter prevents PE from DVT. Compression in pregnancy causes supine hypotension.' },
 
-                  { id: 'apex', name: 'Apex', x: 0.45, y: 0.75, fn: 'Inferior tip of heart formed by LV. Points left and anterior. PMI (point of maximum impulse) at 5th intercostal space, midclavicular line.', clinical: 'Displaced PMI = ventricular enlargement. PMI palpation is key clinical exam finding.' }
+                  { id: 'apex', name: 'Apex', x: 0.45, y: 0.73, fn: 'Inferior tip of heart formed by LV. Points left and anterior. PMI (point of maximum impulse) at 5th intercostal space, midclavicular line.', clinical: 'Displaced PMI = ventricular enlargement. PMI palpation is key clinical exam finding.' }
 
                 ],
 
                 organs: [
 
-                  { id: 'ra', name: 'Right Atrium', x: 0.60, y: 0.38, fn: 'Receives deoxygenated blood from SVC (upper body), IVC (lower body), and coronary sinus (heart). Thin-walled. SA node here sets heart rhythm.', clinical: 'SA node = "pacemaker of the heart" \u2014 sets sinus rhythm at 60-100 bpm. Atrial fibrillation: chaotic atrial activity.' },
+                  { id: 'ra', name: 'Right Atrium', x: 0.59, y: 0.35, fn: 'Receives deoxygenated blood from SVC (upper body), IVC (lower body), and coronary sinus (heart). Thin-walled. SA node here sets heart rhythm.', clinical: 'SA node = "pacemaker of the heart" \u2014 sets sinus rhythm at 60-100 bpm. Atrial fibrillation: chaotic atrial activity.' },
 
-                  { id: 'rv', name: 'Right Ventricle', x: 0.55, y: 0.55, fn: 'Pumps blood to the lungs through the pulmonary trunk. Its wall is thinner than the left ventricle because it works against lower pulmonary resistance; exact pressures vary by species and condition.', clinical: 'RV failure from pulmonary hypertension or massive PE. RV infarction from RCA occlusion.' },
+                  { id: 'rv', name: 'Right Ventricle', x: 0.57, y: 0.54, fn: 'Pumps blood to the lungs through the pulmonary trunk. Its wall is thinner than the left ventricle because it works against lower pulmonary resistance; exact pressures vary by species and condition.', clinical: 'RV failure from pulmonary hypertension or massive PE. RV infarction from RCA occlusion.' },
 
-                  { id: 'la', name: 'Left Atrium', x: 0.45, y: 0.35, fn: 'Receives oxygenated blood from 4 pulmonary veins. Smooth walled. Left atrial appendage is common site of thrombus formation in AFib.', clinical: 'Atrial appendage clots in AFib = stroke risk. Anticoagulation or appendage occlusion devices prevent this.' },
+                  { id: 'la', name: 'Left Atrium', x: 0.43, y: 0.34, fn: 'Receives oxygenated blood from 4 pulmonary veins. Smooth walled. Left atrial appendage is common site of thrombus formation in AFib.', clinical: 'Atrial appendage clots in AFib = stroke risk. Anticoagulation or appendage occlusion devices prevent this.' },
 
-                  { id: 'lv', name: 'Left Ventricle', x: 0.42, y: 0.55, fn: 'The thick-walled systemic pump. It sends oxygenated blood through the aorta; its muscular wall is substantially thicker than the right ventricle. Exact pressure values vary by species and condition.', clinical: 'LV hypertrophy from chronic hypertension or aortic stenosis. LV ejection fraction (normal 55-70%) = key cardiac metric.' },
+                  { id: 'lv', name: 'Left Ventricle', x: 0.43, y: 0.55, fn: 'The thick-walled systemic pump. It sends oxygenated blood through the aorta; its muscular wall is substantially thicker than the right ventricle. Exact pressure values vary by species and condition.', clinical: 'LV hypertrophy from chronic hypertension or aortic stenosis. LV ejection fraction (normal 55-70%) = key cardiac metric.' },
 
-                  { id: 'tricuspid', name: 'Tricuspid Valve', x: 0.58, y: 0.45, fn: 'AV valve with 3 cusps between RA and RV. Chordae tendineae attach to papillary muscles preventing prolapse during systole.', clinical: 'Tricuspid regurgitation: blood leaks backward. Endocarditis in IV drug users often affects tricuspid.' },
+                  { id: 'tricuspid', name: 'Tricuspid Valve', x: 0.57, y: 0.43, fn: 'AV valve with 3 cusps between RA and RV. Chordae tendineae attach to papillary muscles preventing prolapse during systole.', clinical: 'Tricuspid regurgitation: blood leaks backward. Endocarditis in IV drug users often affects tricuspid.' },
 
-                  { id: 'mitral', name: 'Mitral (Bicuspid) Valve', x: 0.43, y: 0.42, fn: 'AV valve with 2 cusps between LA and LV. Most commonly affected valve in rheumatic heart disease. "Bicuspid" = 2 leaflets.', clinical: 'Mitral stenosis from rheumatic fever. Mitral valve prolapse (MVP) in 2-3% of population. "Lub" = AV valves closing.' },
+                  { id: 'mitral', name: 'Mitral (Bicuspid) Valve', x: 0.44, y: 0.43, fn: 'AV valve with 2 cusps between LA and LV. Most commonly affected valve in rheumatic heart disease. "Bicuspid" = 2 leaflets.', clinical: 'Mitral stenosis from rheumatic fever. Mitral valve prolapse (MVP) in 2-3% of population. "Lub" = AV valves closing.' },
 
-                  { id: 'aortic_v', name: 'Aortic Valve', x: 0.45, y: 0.25, fn: '3 semilunar cusps at LV-aorta junction. Opens during systole for ejection. Coronary ostia just above valve.', clinical: 'Aortic stenosis: calcified valve \u2192 syncope, angina, HF. "Dub" = semilunar valves closing. Bicuspid aortic valve (1-2% prevalence).' },
+                  { id: 'aortic_v', name: 'Aortic Valve', x: 0.48, y: 0.29, fn: '3 semilunar cusps at LV-aorta junction. Opens during systole for ejection. Coronary ostia just above valve.', clinical: 'Aortic stenosis: calcified valve \u2192 syncope, angina, HF. "Dub" = semilunar valves closing. Bicuspid aortic valve (1-2% prevalence).' },
 
-                  { id: 'pulm_v', name: 'Pulmonary Valve', x: 0.55, y: 0.28, fn: '3 semilunar cusps at RV-pulmonary trunk junction. Prevents backflow into RV during diastole.', clinical: 'Pulmonary stenosis: congenital narrowing (part of Tetralogy of Fallot). Least commonly affected valve.' },
+                  { id: 'pulm_v', name: 'Pulmonary Valve', x: 0.57, y: 0.30, fn: '3 semilunar cusps at RV-pulmonary trunk junction. Prevents backflow into RV during diastole.', clinical: 'Pulmonary stenosis: congenital narrowing (part of Tetralogy of Fallot). Least commonly affected valve.' },
 
-                  { id: 'septum', name: 'Interventricular Septum', x: 0.48, y: 0.52, fn: 'Muscular wall separating L and R ventricles. Thick muscular portion + thin membranous portion. LAD supplies anterior septum.', clinical: 'VSD (ventricular septal defect): most common congenital heart defect. Septal MI from LAD occlusion.' },
+                  { id: 'septum', name: 'Interventricular Septum', x: 0.50, y: 0.53, fn: 'Muscular wall separating L and R ventricles. Thick muscular portion + thin membranous portion. LAD supplies anterior septum.', clinical: 'VSD (ventricular septal defect): most common congenital heart defect. Septal MI from LAD occlusion.' },
 
-                  { id: 'chordae', name: 'Chordae Tendineae', x: 0.50, y: 0.48, fn: '"Heart strings" \u2014 fibrous cords connecting AV valve leaflets to papillary muscles. Prevent valve prolapse during ventricular contraction.', clinical: 'Ruptured chordae = sudden severe valve regurgitation = acute heart failure. Can occur in endocarditis or MI.' },
+                  { id: 'chordae', name: 'Chordae Tendineae', x: 0.50, y: 0.49, fn: '"Heart strings" \u2014 fibrous cords connecting AV valve leaflets to papillary muscles. Prevent valve prolapse during ventricular contraction.', clinical: 'Ruptured chordae = sudden severe valve regurgitation = acute heart failure. Can occur in endocarditis or MI.' },
 
                   { id: 'conduction', name: 'Conduction System', x: 0.52, y: 0.42, fn: 'SA node \u2192 AV node \u2192 atrioventricular bundle \u2192 right and left bundle branches \u2192 Purkinje fibers. This pathway coordinates contraction; normal rates differ between sheep and humans.', clinical: 'Heart blocks: 1st degree (delayed), 2nd degree (dropped beats), 3rd degree (complete dissociation). Pacemaker implantation.' }
 
@@ -1189,6 +1202,25 @@ var d = labToolData.dissection || {};
             inspected: false, incisionStarted: false, incisionExtended: false,
             retracted: false, pins: [], probed: false, errors: 0, history: [], actionLog: [], cautionLog: []
           }, procedureByLayer[activeLayer] || {});
+
+          // Nearest-target hit testing also treats laid-out labels as interactive targets.
+          function closestVisibleOrganAt(x, y, radius) {
+            var labelHit = (canvas && canvas._hotspotLabelBoxes || []).find(function (box) {
+              return x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height;
+            });
+            if (labelHit) {
+              var labelOrgan = organs.find(function (organ) { return organ.id === labelHit.id; });
+              if (labelOrgan && viewOrganVisibility(labelOrgan) === 'visible') return labelOrgan;
+            }
+            var nearestOrgan = null, nearestDistance = radius;
+            organs.forEach(function (organ) {
+              if (viewOrganVisibility(organ) !== 'visible') return;
+              var point = variedOrganPoint(organ), dx = x - point.x, dy = y - point.y;
+              var distance = Math.sqrt(dx * dx + dy * dy);
+              if (distance <= nearestDistance) { nearestDistance = distance; nearestOrgan = organ; }
+            });
+            return nearestOrgan;
+          }
 
           var CURATED_ANATOMY_RELATIONSHIPS = {
             frog: [
@@ -1402,6 +1434,44 @@ var d = labToolData.dissection || {};
             if ((state.pins || []).length < 2) return 4;
             if (!state.probed) return 5;
             return 6;
+          }
+          function procedureInstrumentStatus(toolId) {
+            if (revealedLayers[activeLayer]) return { readiness: 'complete', label: 'Layer complete', instruction: 'Continue to the next available layer.' };
+            if (toolId === 'dropper') {
+              return currentProcedure.surfaceCleared
+                ? { readiness: 'complete', label: 'Applied', instruction: 'The simulated viewing surface is clear.' }
+                : { readiness: 'ready', label: 'Ready', instruction: 'Select the specimen surface or use Apply controlled drop.' };
+            }
+            if (toolId === 'scalpel') {
+              if (currentProcedure.incisionStarted) return { readiness: 'complete', label: 'Complete', instruction: 'The initial incision is recorded. Continue with scissors.' };
+              return currentProcedure.inspected
+                ? { readiness: 'ready', label: 'Ready', instruction: 'Drag from one end of the teaching corridor to the other, or use the action button.' }
+                : { readiness: 'waiting', label: 'Inspect first', instruction: 'Use Inspect and orient the layer before making an incision.' };
+            }
+            if (toolId === 'scissors') {
+              if (currentProcedure.incisionExtended) return { readiness: 'complete', label: 'Complete', instruction: 'The opening is extended. Continue with forceps.' };
+              return currentProcedure.incisionStarted
+                ? { readiness: 'ready', label: 'Ready', instruction: 'Drag through the existing opening, or use the action button.' }
+                : { readiness: 'waiting', label: 'Incise first', instruction: 'Complete the shallow scalpel incision before extending it.' };
+            }
+            if (toolId === 'forceps') {
+              if (currentProcedure.retracted) return { readiness: 'complete', label: 'Complete', instruction: 'The layer is retracted. Continue with pins.' };
+              return currentProcedure.incisionExtended
+                ? { readiness: 'ready', label: 'Ready', instruction: 'Select near the opened corridor to lift the layer, or use the action button.' }
+                : { readiness: 'waiting', label: 'Extend first', instruction: 'Extend the opening with scissors before retracting the layer.' };
+            }
+            if (toolId === 'pin') {
+              var pinCount = (currentProcedure.pins || []).length;
+              if (pinCount >= 2) return { readiness: 'complete', label: '2 placed', instruction: 'The layer is secured. Continue with the probe.' };
+              return currentProcedure.retracted
+                ? { readiness: 'ready', label: pinCount ? '1 of 2' : 'Ready', instruction: pinCount ? 'Select the opposite end of the corridor for the second pin.' : 'Select an end of the opened corridor to place the first pin.' }
+                : { readiness: 'waiting', label: 'Retract first', instruction: 'Retract the opened layer with forceps before placing pins.' };
+            }
+            if (currentProcedure.probed) return { readiness: 'complete', label: 'Complete', instruction: 'A structure has been traced. Record evidence or complete the layer.' };
+            if ((currentProcedure.pins || []).length >= 2) return { readiness: 'ready', label: 'Ready', instruction: 'Select a visible structure on the specimen to trace it.' };
+            return currentProcedure.inspected
+              ? { readiness: 'waiting', label: 'Later step', instruction: 'Complete the access sequence and place two pins before tracing a structure.' }
+              : { readiness: 'ready', label: 'Start here', instruction: 'Use Inspect and orient the layer to begin the technique sequence.' };
           }
           function procedureGuidePoints() {
             var view = d.anatomicalView || anatomicalView;
@@ -1768,6 +1838,11 @@ var d = labToolData.dissection || {};
             canvas._toolInputType = e.pointerType || 'mouse';
             canvas._toolSamples = [{ pressure: canvas._toolPressure, at: Date.now(), pointerType: canvas._toolInputType }];
             canvas._toolResistance = { level: 'low', value: 0.12 };
+            var liveStatus = document.querySelector('[data-diss-tool-status]');
+            if (liveStatus) {
+              liveStatus.setAttribute('data-tone', 'working');
+              liveStatus.textContent = (activeInstrument === 'scissors' ? 'Scissors' : 'Scalpel') + ' engaged. Keep dragging through the teaching corridor, then release to check the stroke.';
+            }
             if (canvas.setPointerCapture && e.pointerId != null) canvas.setPointerCapture(e.pointerId); e.preventDefault();
           }
           function appendProcedureStroke(e) {
@@ -1854,33 +1929,38 @@ var d = labToolData.dissection || {};
             if (typeof announceToSR === 'function') announceToSR(correct ? 'Correct. ' + quizQ.name + '.' : 'Not quite. The correct structure is ' + quizQ.name + '.');
           }
           function peelCurrentLayer() {
-
-            // Trigger animated incision line before peeling
-            sfxDisCut(); // Scalpel cutting sound
+            var fromLayerDef = spec.layers[currentLayerIdx] || spec.layers[0];
+            var toLayerDef = spec.layers[currentLayerIdx + 1] || null;
+            var prefersReducedLayerMotion = false;
+            try { prefersReducedLayerMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+            var incisionDelay = prefersReducedLayerMotion ? 0 : 500;
+            sfxDisCut();
             if (window._alloHaptic) window._alloHaptic('break');
             upd('_incisionAnim', { active: true, startTick: Date.now(), layerName: activeLayer });
 
-            // Delay the actual peel so the scalpel cut animation plays first (~500ms)
             setTimeout(function () {
               var newRevealed = Object.assign({}, revealedLayers);
               newRevealed[activeLayer] = true;
-              upd('revealedLayers', newRevealed);
-
-              if (currentLayerIdx < spec.layers.length - 1) {
-                upd('activeLayer', spec.layers[currentLayerIdx + 1].id);
-                upd('selectedOrgan', null);
-                if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'layerPeel', 'Peeled ' + (spec.layers[currentLayerIdx] || {}).name + ' layer. Now viewing ' + spec.layers[currentLayerIdx + 1].name + ' layer with ' + ((spec.organs[spec.layers[currentLayerIdx + 1].id] || []).length) + ' structures.', { debounce: 1000 });
-              }
-
-              upd('_incisionAnim', null);
+              var transitionDuration = prefersReducedLayerMotion ? 650 : 1150;
+              var layerTransition = toLayerDef ? {
+                active: true, startedAt: Date.now(), duration: transitionDuration, reducedMotion: prefersReducedLayerMotion,
+                specimenShape: spec.bodyShape, fromLayerId: fromLayerDef.id, toLayerId: toLayerDef.id,
+                fromName: fromLayerDef.name, toName: toLayerDef.name, fromIcon: fromLayerDef.icon || '', toIcon: toLayerDef.icon || '',
+                fromColor: fromLayerDef.color || '#8f5960', toColor: toLayerDef.color || '#fbbf24'
+              } : null;
+              var transitionPatch = {
+                revealedLayers: newRevealed, selectedOrgan: null, _incisionAnim: null, _layerTransition: layerTransition,
+                procedureFeedback: { message: toLayerDef ? fromLayerDef.name + ' retracted. ' + toLayerDef.name + ' is now visible.' : fromLayerDef.name + ' completed.', tone: 'success', at: Date.now() }
+              };
+              if (toLayerDef) transitionPatch.activeLayer = toLayerDef.id;
+              updMany(transitionPatch);
+              if (toLayerDef && typeof canvasNarrate === 'function') canvasNarrate('dissection', 'layerPeel', 'Peeled ' + fromLayerDef.name + ' layer. Now viewing ' + toLayerDef.name + ' layer with ' + ((spec.organs[toLayerDef.id] || []).length) + ' structures.', { debounce: 1000 });
+              if (toLayerDef) setTimeout(function () { upd('_layerTransition', null); }, transitionDuration + 120);
               awardStemXP('dissection', 3, 'Peeled ' + activeLayer + ' layer');
-              sfxDisReveal(); // Layer reveal chime
+              sfxDisReveal();
               if (addToast) addToast('\uD83D\uDD2C +3 XP Layer revealed!', 'success');
-            }, 500);
-
+            }, incisionDelay);
           }
-
-
 
           // Canvas renderer
 
@@ -2103,13 +2183,43 @@ var d = labToolData.dissection || {};
 
               if (sceneDetail) {
                 ctx.save();
-                var trayTopBevel = ctx.createLinearGradient(0, 4, 0, 30);
+                // Recessed stainless tray well with a sealed inner gasket and reflected rim light.
+                var trayWellGradient = ctx.createRadialGradient(W * 0.48, H * 0.40, Math.min(W, H) * 0.08, W * 0.50, H * 0.48, Math.max(W, H) * 0.72);
+                trayWellGradient.addColorStop(0, 'rgba(148,163,184,0.045)');
+                trayWellGradient.addColorStop(0.72, 'rgba(15,23,42,0.035)');
+                trayWellGradient.addColorStop(1, 'rgba(2,6,23,0.24)');
+                ctx.fillStyle = trayWellGradient;
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(10, 10, W - 20, H - 20, 16); ctx.fill(); }
+                else ctx.fillRect(10, 10, W - 20, H - 20);
+                ctx.strokeStyle = 'rgba(226,232,240,0.13)'; ctx.lineWidth = 1.2;
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(11.5, 11.5, W - 23, H - 23, 15); ctx.stroke(); }
+                else ctx.strokeRect(11.5, 11.5, W - 23, H - 23);
+                ctx.strokeStyle = 'rgba(2,6,23,0.46)'; ctx.lineWidth = 2.4;
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(17, 17, W - 34, H - 34, 11); ctx.stroke(); }
+                else ctx.strokeRect(17, 17, W - 34, H - 34);                var trayTopBevel = ctx.createLinearGradient(0, 4, 0, 30);
                 trayTopBevel.addColorStop(0, 'rgba(255,255,255,0.15)'); trayTopBevel.addColorStop(1, 'rgba(255,255,255,0)');
                 ctx.fillStyle = trayTopBevel; ctx.fillRect(7, 7, W - 14, 28);
                 var trayBottomBevel = ctx.createLinearGradient(0, H - 38, 0, H - 6);
                 trayBottomBevel.addColorStop(0, 'rgba(2,6,23,0)'); trayBottomBevel.addColorStop(1, 'rgba(2,6,23,0.42)');
                 ctx.fillStyle = trayBottomBevel; ctx.fillRect(7, H - 38, W - 14, 31);
-                ctx.strokeStyle = 'rgba(255,255,255,0.055)'; ctx.lineWidth = 18;
+                // Engraved edge ticks suggest a calibrated teaching tray without competing with the scale tool.
+                ctx.save(); ctx.strokeStyle = 'rgba(203,213,225,0.20)'; ctx.fillStyle = 'rgba(203,213,225,0.32)'; ctx.lineWidth = 0.75;
+                var trayTickCount = 18;
+                for (var trayTickIndex = 0; trayTickIndex <= trayTickCount; trayTickIndex++) {
+                  var trayTickX = 30 + (W - 60) * trayTickIndex / trayTickCount;
+                  var trayTickLong = trayTickIndex % 3 === 0;
+                  ctx.beginPath(); ctx.moveTo(trayTickX, 18); ctx.lineTo(trayTickX, 18 + (trayTickLong ? 6 : 3)); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(trayTickX, H - 18); ctx.lineTo(trayTickX, H - 18 - (trayTickLong ? 6 : 3)); ctx.stroke();
+                  if (trayTickLong && trayTickIndex > 0 && trayTickIndex < trayTickCount) {
+                    ctx.font = '6px Inter, system-ui'; ctx.fillText(String(trayTickIndex / 3), trayTickX - 2, H - 7);
+                  }
+                }
+                for (var traySideTick = 1; traySideTick < 10; traySideTick++) {
+                  var trayTickY = 26 + (H - 52) * traySideTick / 10;
+                  ctx.beginPath(); ctx.moveTo(18, trayTickY); ctx.lineTo(22 + (traySideTick % 2 ? 0 : 3), trayTickY); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(W - 18, trayTickY); ctx.lineTo(W - 22 - (traySideTick % 2 ? 0 : 3), trayTickY); ctx.stroke();
+                }
+                ctx.restore();                ctx.strokeStyle = 'rgba(255,255,255,0.055)'; ctx.lineWidth = 18;
                 ctx.beginPath(); ctx.moveTo(W * 0.12, H * 0.08); ctx.lineTo(W * 0.78, H * 0.92); ctx.stroke();
                 [[16,16],[W-16,16],[16,H-16],[W-16,H-16]].forEach(function (fastener) {
                   var fastenerGrad = ctx.createRadialGradient(fastener[0] - 2, fastener[1] - 2, 1, fastener[0], fastener[1], 5);
@@ -2131,12 +2241,55 @@ var d = labToolData.dissection || {};
               var specimenScale = specimenScaleFactors();
               if (sceneDetail) {
                 var depthProfile = SPECIMEN_MATERIAL_PROFILES[spec.bodyShape] || SPECIMEN_MATERIAL_PROFILES.frog;
+                // A specimen-shaped absorbent pad grounds the body and catches the preservation-fluid meniscus.
+                var padCenterX = depthProfile.cx * W - parallaxX * 0.16;
+                var padCenterY = depthProfile.cy * H + depthProfile.ry * H * 0.18;
+                var padRadiusX = depthProfile.rx * W * 1.10;
+                var padRadiusY = Math.max(22, depthProfile.ry * H * 0.79);
+                ctx.save();
+                var padGradient = ctx.createRadialGradient(padCenterX - padRadiusX * 0.18, padCenterY - padRadiusY * 0.24, 4, padCenterX, padCenterY, padRadiusX);
+                padGradient.addColorStop(0, 'rgba(226,232,240,0.12)');
+                padGradient.addColorStop(0.58, 'rgba(148,163,184,0.075)');
+                padGradient.addColorStop(1, 'rgba(30,41,59,0.025)');
+                ctx.beginPath(); ctx.ellipse(padCenterX, padCenterY, padRadiusX, padRadiusY, -0.015, 0, Math.PI * 2);
+                ctx.fillStyle = padGradient; ctx.fill(); ctx.strokeStyle = 'rgba(203,213,225,0.11)'; ctx.lineWidth = 0.8; ctx.stroke();
+                ctx.save(); ctx.beginPath(); ctx.ellipse(padCenterX, padCenterY, padRadiusX * 0.97, padRadiusY * 0.94, -0.015, 0, Math.PI * 2); ctx.clip();
+                ctx.globalAlpha = (d.visualRealism || visualRealism) === 'accessible' ? 0.08 : 0.16;
+                ctx.strokeStyle = 'rgba(226,232,240,0.28)'; ctx.lineWidth = 0.55;
+                for (var padFiberIndex = 0; padFiberIndex < 22; padFiberIndex++) {
+                  var padFiberAngle = specimenVariationValue('tray-pad-angle-' + padFiberIndex) * Math.PI * 2;
+                  var padFiberRadius = Math.sqrt(specimenVariationValue('tray-pad-radius-' + padFiberIndex));
+                  var padFiberX = padCenterX + Math.cos(padFiberAngle) * padRadiusX * padFiberRadius;
+                  var padFiberY = padCenterY + Math.sin(padFiberAngle) * padRadiusY * padFiberRadius;
+                  var padFiberLength = 4 + specimenVariationValue('tray-pad-length-' + padFiberIndex) * 11;
+                  ctx.beginPath(); ctx.moveTo(padFiberX - padFiberLength * 0.5, padFiberY - 1.2); ctx.quadraticCurveTo(padFiberX, padFiberY + 1.4, padFiberX + padFiberLength * 0.5, padFiberY); ctx.stroke();
+                }
+                ctx.restore(); ctx.restore();
                 var depthShadowX = depthProfile.cx * W - parallaxX * 1.5;
                 var depthShadowY = depthProfile.cy * H + depthProfile.ry * H * 0.54 - parallaxY * 0.35;
                 ctx.save(); ctx.globalAlpha = (d.visualRealism || visualRealism) === 'accessible' ? 0.11 : 0.2;
                 var depthShadow = ctx.createRadialGradient(depthShadowX, depthShadowY, 6, depthShadowX, depthShadowY, depthProfile.rx * W * 0.92);
                 depthShadow.addColorStop(0, 'rgba(2,6,23,0.72)'); depthShadow.addColorStop(0.58, 'rgba(2,6,23,0.28)'); depthShadow.addColorStop(1, 'rgba(2,6,23,0)');
                 ctx.fillStyle = depthShadow; ctx.beginPath(); ctx.ellipse(depthShadowX, depthShadowY, depthProfile.rx * W * 0.88, Math.max(12, depthProfile.ry * H * 0.33), 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+
+                // A cool preservation-fluid halo and small condensation beads give the tray depth without obscuring anatomy.
+                ctx.save();
+                var trayFluidX = depthProfile.cx * W - parallaxX * 0.32;
+                var trayFluidY = depthProfile.cy * H + depthProfile.ry * H * 0.28;
+                var trayFluid = ctx.createRadialGradient(trayFluidX, trayFluidY, 8, trayFluidX, trayFluidY, depthProfile.rx * W * 1.06);
+                trayFluid.addColorStop(0, 'rgba(186,230,253,0.055)');
+                trayFluid.addColorStop(0.72, 'rgba(56,189,248,0.022)');
+                trayFluid.addColorStop(1, 'rgba(56,189,248,0)');
+                ctx.fillStyle = trayFluid;
+                ctx.beginPath(); ctx.ellipse(trayFluidX, trayFluidY, depthProfile.rx * W, Math.max(18, depthProfile.ry * H * 0.62), -0.02, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = 'rgba(186,230,253,0.075)'; ctx.lineWidth = 0.7;
+                ctx.beginPath(); ctx.ellipse(trayFluidX, trayFluidY, depthProfile.rx * W * 0.94, Math.max(15, depthProfile.ry * H * 0.54), -0.02, 0, Math.PI * 2); ctx.stroke();
+                [[W*0.10,H*0.18,3.2],[W*0.88,H*0.72,2.2],[W*0.82,H*0.16,1.7]].forEach(function (bead) {
+                  var beadGlow = ctx.createRadialGradient(bead[0]-0.7, bead[1]-0.7, 0.2, bead[0], bead[1], bead[2]);
+                  beadGlow.addColorStop(0, 'rgba(248,250,252,0.38)'); beadGlow.addColorStop(0.35, 'rgba(186,230,253,0.13)'); beadGlow.addColorStop(1, 'rgba(14,116,144,0.02)');
+                  ctx.beginPath(); ctx.arc(bead[0], bead[1], bead[2], 0, Math.PI * 2); ctx.fillStyle = beadGlow; ctx.fill();
+                });
+                ctx.restore();
               }
               ctx.save(); ctx.translate(parallaxX, parallaxY); ctx.translate(cx, cy); ctx.transform(1, parallaxY * 0.0007, parallaxX * 0.0007, 1, 0, 0); ctx.scale(specimenScale.x, specimenScale.y); ctx.translate(-cx, -cy);
 
@@ -2211,7 +2364,8 @@ var d = labToolData.dissection || {};
 
                   var sy_t = cy + (Math.cos(stip * 47.3) * H * 0.30);
 
-                  ctx.beginPath(); ctx.arc(sx, sy_t, Math.random() * 2 + 0.5, 0, Math.PI * 2);
+                  var stableStippleSize = 0.5 + specimenVariationValue('tissue-stipple-size-' + stip) * 2;
+                  ctx.beginPath(); ctx.arc(sx, sy_t, stableStippleSize, 0, Math.PI * 2);
 
                   ctx.fillStyle = stip % 2 === 0 ? '#000' : '#fff'; ctx.fill();
 
@@ -2221,46 +2375,55 @@ var d = labToolData.dissection || {};
 
               }
 
-              // Dissection tools illustration (bottom-right corner)
+              // Compact instrument bay: grounded metal tools replace the earlier faint line-art corner icons.
+              if (sceneDetail) {
+                ctx.save();
+                var instrumentBayX = W - 142, instrumentBayY = H - 94, instrumentBayW = 122, instrumentBayH = 57;
+                ctx.shadowColor = 'rgba(2,6,23,0.54)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+                var instrumentBayGradient = ctx.createLinearGradient(instrumentBayX, instrumentBayY, instrumentBayX, instrumentBayY + instrumentBayH);
+                instrumentBayGradient.addColorStop(0, 'rgba(148,163,184,0.18)');
+                instrumentBayGradient.addColorStop(0.45, 'rgba(30,41,59,0.34)');
+                instrumentBayGradient.addColorStop(1, 'rgba(2,6,23,0.40)');
+                ctx.fillStyle = instrumentBayGradient;
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(instrumentBayX, instrumentBayY, instrumentBayW, instrumentBayH, 8); ctx.fill(); }
+                else ctx.fillRect(instrumentBayX, instrumentBayY, instrumentBayW, instrumentBayH);
+                ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+                ctx.strokeStyle = 'rgba(203,213,225,0.24)'; ctx.lineWidth = 0.8;
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(instrumentBayX + 0.5, instrumentBayY + 0.5, instrumentBayW - 1, instrumentBayH - 1, 8); ctx.stroke(); }
+                else ctx.strokeRect(instrumentBayX + 0.5, instrumentBayY + 0.5, instrumentBayW - 1, instrumentBayH - 1);
+                ctx.font = 'bold 6px Inter, system-ui'; ctx.fillStyle = 'rgba(226,232,240,0.58)'; ctx.fillText('INSTRUMENT BAY', instrumentBayX + 9, instrumentBayY + 11);
 
-              ctx.globalAlpha = 0.15;
+                // Scalpel with a brushed handle and a distinct beveled blade.
+                ctx.save(); ctx.translate(instrumentBayX + 34, instrumentBayY + 33); ctx.rotate(-0.28);
+                var bayScalpelHandle = ctx.createLinearGradient(-24, -3, 13, 3);
+                bayScalpelHandle.addColorStop(0, '#475569'); bayScalpelHandle.addColorStop(0.48, '#cbd5e1'); bayScalpelHandle.addColorStop(1, '#64748b');
+                ctx.fillStyle = bayScalpelHandle; ctx.fillRect(-24, -2.4, 37, 4.8);
+                ctx.strokeStyle = 'rgba(248,250,252,0.45)'; ctx.lineWidth = 0.65; ctx.strokeRect(-24, -2.4, 37, 4.8);
+                ctx.beginPath(); ctx.moveTo(13, -2.6); ctx.lineTo(28, -1.4); ctx.lineTo(31, 0); ctx.lineTo(13, 2.6); ctx.closePath();
+                var bayBlade = ctx.createLinearGradient(13, -3, 30, 3); bayBlade.addColorStop(0, '#94a3b8'); bayBlade.addColorStop(0.5, '#f8fafc'); bayBlade.addColorStop(1, '#64748b');
+                ctx.fillStyle = bayBlade; ctx.fill(); ctx.strokeStyle = '#334155'; ctx.lineWidth = 0.55; ctx.stroke();
+                ctx.restore();
 
-              // Scalpel
+                // Forceps keep a visible spring gap and fine gripping tips.
+                ctx.save(); ctx.translate(instrumentBayX + 84, instrumentBayY + 34); ctx.rotate(0.24);
+                var bayForceps = ctx.createLinearGradient(-27, 0, 25, 0); bayForceps.addColorStop(0, '#64748b'); bayForceps.addColorStop(0.55, '#e2e8f0'); bayForceps.addColorStop(1, '#94a3b8');
+                ctx.strokeStyle = bayForceps; ctx.lineWidth = 2.1; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.moveTo(-27, -5); ctx.quadraticCurveTo(-5, -2.4, 25, -1); ctx.moveTo(-27, 5); ctx.quadraticCurveTo(-5, 2.4, 25, 1); ctx.stroke();
+                ctx.strokeStyle = 'rgba(248,250,252,0.42)'; ctx.lineWidth = 0.55;
+                ctx.beginPath(); ctx.moveTo(-19, -3.8); ctx.lineTo(18, -1.2); ctx.moveTo(-19, 3.8); ctx.lineTo(18, 1.2); ctx.stroke();
+                ctx.restore();
 
-              ctx.beginPath(); ctx.moveTo(W - 60, H - 60); ctx.lineTo(W - 35, H - 35);
-
-              ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.stroke();
-
-              ctx.beginPath(); ctx.moveTo(W - 35, H - 35); ctx.lineTo(W - 30, H - 32);
-
-              ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 3; ctx.stroke();
-
-              // Forceps
-
-              ctx.beginPath(); ctx.moveTo(W - 80, H - 55); ctx.lineTo(W - 55, H - 40);
-
-              ctx.moveTo(W - 80, H - 48); ctx.lineTo(W - 55, H - 40);
-
-              ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5; ctx.stroke();
-
-              // Pins
-
-              for (var pi_tool = 0; pi_tool < 3; pi_tool++) {
-
-                ctx.beginPath(); ctx.arc(W - 90 + pi_tool * 8, H - 70, 1.5, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#94a3b8'; ctx.fill();
-
-                ctx.beginPath(); ctx.moveTo(W - 90 + pi_tool * 8, H - 70); ctx.lineTo(W - 90 + pi_tool * 8, H - 62);
-
-                ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.5; ctx.stroke();
-
+                // Three color-headed pins sit in a magnetic rail below the instruments.
+                ctx.strokeStyle = 'rgba(148,163,184,0.34)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(instrumentBayX + 10, instrumentBayY + 49); ctx.lineTo(instrumentBayX + instrumentBayW - 10, instrumentBayY + 49); ctx.stroke();
+                ['#f9a8d4','#7dd3fc','#fde68a'].forEach(function (bayPinColor, bayPinIndex) {
+                  var bayPinX = instrumentBayX + 42 + bayPinIndex * 13;
+                  ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(bayPinX, instrumentBayY + 43); ctx.lineTo(bayPinX + 5, instrumentBayY + 51); ctx.stroke();
+                  var bayPinGradient = ctx.createRadialGradient(bayPinX - 1, instrumentBayY + 42, 0.5, bayPinX, instrumentBayY + 43, 3);
+                  bayPinGradient.addColorStop(0, '#ffffff'); bayPinGradient.addColorStop(1, bayPinColor);
+                  ctx.beginPath(); ctx.arc(bayPinX, instrumentBayY + 43, 2.7, 0, Math.PI * 2); ctx.fillStyle = bayPinGradient; ctx.fill();
+                });
+                ctx.restore();
               }
-
-              ctx.globalAlpha = 1;
-
-
-
               // Get current layer styling
 
               var curLayer = spec.layers[currentLayerIdx] || spec.layers[0];
@@ -2298,1499 +2461,744 @@ var d = labToolData.dissection || {};
 // €â€ Draw organ pins â€â€”€â”€ Draw specimen body based on bodyShape â”€â”€
 
               if (spec.bodyShape === 'frog') {
-
-  // €â€ Draw organ pins â€â€•â• ANATOMICALLY ACCURATE FROG (Rana temporaria) â•â•
-
-                var bS = breathScale;
-
-
-
-  // €â€ Draw organ pins â€â€”€â”€ Hindlimbs (drawn first, behind body) â”€â”€
-
-                [-1, 1].forEach(function (sx) {
-
-                  var hipX = cx + sx * W * 0.13, hipY = cy + H * 0.20;
-
-                  var kneeX = cx + sx * W * 0.26, kneeY = cy + H * 0.18;
-
-                  var ankleX = cx + sx * W * 0.28, ankleY = cy + H * 0.30;
-
-                  var footX = cx + sx * W * 0.22, footY = cy + H * 0.38;
-
-                  // Thigh (femur region â€“ thick)
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(hipX, hipY);
-
-                  ctx.bezierCurveTo(hipX + sx * W * 0.04, hipY - H * 0.02, kneeX - sx * W * 0.02, kneeY - H * 0.04, kneeX, kneeY);
-
-                  ctx.bezierCurveTo(kneeX + sx * W * 0.02, kneeY + H * 0.02, hipX + sx * W * 0.06, hipY + H * 0.06, hipX + sx * W * 0.02, hipY + H * 0.04);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
-
-                  // Calf (tibia-fibula â€“ tapers)
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(kneeX, kneeY);
-
-                  ctx.bezierCurveTo(kneeX + sx * W * 0.01, kneeY + H * 0.04, ankleX + sx * W * 0.02, ankleY - H * 0.03, ankleX, ankleY);
-
-                  ctx.bezierCurveTo(ankleX - sx * W * 0.03, ankleY + H * 0.01, kneeX - sx * W * 0.03, kneeY + H * 0.04, kneeX - sx * W * 0.02, kneeY + H * 0.02);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
-
-                  // Elongated ankle (astragalus/calcaneus â€“ frog adaptation)
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(ankleX, ankleY);
-
-                  ctx.lineTo(footX, footY - H * 0.02);
-
-                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.stroke();
-
-                  // Foot with 5 webbed toes
-
-                  var toeAngles = [-0.45, -0.22, 0, 0.22, 0.45];
-
-                  var toeLens = [0.07, 0.09, 0.10, 0.09, 0.06];
-
-                  toeAngles.forEach(function (ang, ti) {
-
-                    var toeEndX = footX + Math.sin(ang + sx * 0.1) * W * toeLens[ti] * sx;
-
-                    var toeEndY = footY + Math.cos(ang) * H * toeLens[ti] * 0.7;
-
-                    ctx.beginPath(); ctx.moveTo(footX, footY - H * 0.02);
-
-                    ctx.lineTo(toeEndX, toeEndY);
-
-                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
-                    // Toe tip bulb
-
-                    ctx.beginPath(); ctx.arc(toeEndX, toeEndY, 1.5, 0, Math.PI * 2);
-
-                    ctx.fillStyle = layerColor; ctx.fill();
-
-                  });
-
-                  // Webbing between toes
-
-                  ctx.globalAlpha = 0.15;
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(footX + Math.sin(toeAngles[0] + sx * 0.1) * W * toeLens[0] * sx, footY + Math.cos(toeAngles[0]) * H * toeLens[0] * 0.7);
-
-                  for (var tw = 1; tw < 5; tw++) {
-
-                    ctx.lineTo(footX + Math.sin(toeAngles[tw] + sx * 0.1) * W * toeLens[tw] * sx, footY + Math.cos(toeAngles[tw]) * H * toeLens[tw] * 0.7);
-
-                  }
-
-                  ctx.lineTo(footX, footY - H * 0.02); ctx.closePath();
-
-                  ctx.fillStyle = layerColor; ctx.fill();
-
-                  ctx.globalAlpha = 1;
-
-                });
-
-
-
-  // €â€ Draw organ pins â€â€”€â”€ Forelimbs (drawn behind body) â”€â”€
-
-                [-1, 1].forEach(function (sx) {
-
-                  var shX = cx + sx * W * 0.15, shY = cy - H * 0.12;
-
-                  var elbX = cx + sx * W * 0.22, elbY = cy - H * 0.06;
-
-                  var wristX = cx + sx * W * 0.24, wristY = cy + H * 0.02;
-
-                  // Upper arm
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(shX, shY);
-
-                  ctx.bezierCurveTo(shX + sx * W * 0.03, shY + H * 0.01, elbX - sx * W * 0.02, elbY - H * 0.02, elbX, elbY);
-
-                  ctx.bezierCurveTo(elbX - sx * W * 0.01, elbY + H * 0.02, shX + sx * W * 0.01, shY + H * 0.04, shX - sx * W * 0.01, shY + H * 0.02);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
-
-                  // Forearm (radioulna)
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(elbX, elbY);
-
-                  ctx.bezierCurveTo(elbX + sx * W * 0.01, elbY + H * 0.03, wristX, wristY - H * 0.03, wristX, wristY);
-
-                  ctx.bezierCurveTo(wristX - sx * W * 0.02, wristY, elbX - sx * W * 0.02, elbY + H * 0.03, elbX - sx * W * 0.01, elbY + H * 0.01);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                  // 4 digits (digit I lost in frogs)
-
-                  var dAngles = [-0.5, -0.15, 0.15, 0.45];
-
-                  dAngles.forEach(function (da) {
-
-                    var dEndX = wristX + Math.sin(da + sx * 0.2) * W * 0.04 * sx;
-
-                    var dEndY = wristY + Math.cos(da) * H * 0.04;
-
-                    ctx.beginPath(); ctx.moveTo(wristX, wristY);
-
-                    ctx.lineTo(dEndX, dEndY);
-
-                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
-
-                    ctx.beginPath(); ctx.arc(dEndX, dEndY, 1, 0, Math.PI * 2);
-
-                    ctx.fillStyle = layerColor; ctx.fill();
-
-                  });
-
-                });
-
-
-
-  // €â€ Draw organ pins â€â€”€â”€ Main body (Rana dorsal silhouette â€“ BÃ©zier contour) â”€â”€
-
-                ctx.beginPath();
-
-                // Start at anterior (top of body, behind head junction)
-
-                ctx.moveTo(cx, cy - H * 0.20 * bS);
-
-                // Right shoulder curve (wider)
-
-                ctx.bezierCurveTo(cx + W * 0.10, cy - H * 0.20 * bS, cx + W * 0.17 * bS, cy - H * 0.14, cx + W * 0.18 * bS, cy - H * 0.05);
-
-                // Right waist (narrower â€“ amphibian body shape)
-
-                ctx.bezierCurveTo(cx + W * 0.17 * bS, cy + H * 0.05, cx + W * 0.14 * bS, cy + H * 0.10, cx + W * 0.13 * bS, cy + H * 0.12);
-
-                // Right pelvic flare
-
-                ctx.bezierCurveTo(cx + W * 0.15 * bS, cy + H * 0.16, cx + W * 0.16 * bS, cy + H * 0.20, cx + W * 0.14 * bS, cy + H * 0.24 * bS);
-
-                // Posterior (cloaca)
-
-                ctx.bezierCurveTo(cx + W * 0.08, cy + H * 0.26 * bS, cx - W * 0.08, cy + H * 0.26 * bS, cx - W * 0.14 * bS, cy + H * 0.24 * bS);
-
-                // Left pelvic flare
-
-                ctx.bezierCurveTo(cx - W * 0.16 * bS, cy + H * 0.20, cx - W * 0.15 * bS, cy + H * 0.16, cx - W * 0.13 * bS, cy + H * 0.12);
-
-                // Left waist
-
-                ctx.bezierCurveTo(cx - W * 0.14 * bS, cy + H * 0.10, cx - W * 0.17 * bS, cy + H * 0.05, cx - W * 0.18 * bS, cy - H * 0.05);
-
-                // Left shoulder curve
-
-                ctx.bezierCurveTo(cx - W * 0.17 * bS, cy - H * 0.14, cx - W * 0.10, cy - H * 0.20 * bS, cx, cy - H * 0.20 * bS);
-
-                ctx.closePath();
-
-                ctx.fillStyle = bodyGrad; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
-                ctx.shadowBlur = 0;
-
-
-
-                // Body highlight (3D volume)
-
-                ctx.beginPath(); ctx.ellipse(cx - W * 0.03, cy - H * 0.06, W * 0.09, H * 0.12, -0.1, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fill();
-
-
-
-  // €â€ Draw organ pins â€â€”€â”€ Head (triangular snout, not oval) â”€â”€
-
-                var headCy = cy - H * 0.25;
-
-                var headGrad = ctx.createRadialGradient(cx - W * 0.01, headCy - H * 0.02, 3, cx, headCy, W * 0.13);
-
-                headGrad.addColorStop(0, layerColor); headGrad.addColorStop(1, layerStroke);
-
-                ctx.beginPath();
-
-                // Triangular head: wide behind eyes, narrows to round snout
-
-                ctx.moveTo(cx, headCy - H * 0.07);  // snout tip
-
-                ctx.bezierCurveTo(cx + W * 0.04, headCy - H * 0.07, cx + W * 0.09, headCy - H * 0.04, cx + W * 0.12, headCy);
-
-                ctx.bezierCurveTo(cx + W * 0.13, headCy + H * 0.03, cx + W * 0.10, headCy + H * 0.06, cx + W * 0.05, headCy + H * 0.06);
-
-                ctx.lineTo(cx - W * 0.05, headCy + H * 0.06);
-
-                ctx.bezierCurveTo(cx - W * 0.10, headCy + H * 0.06, cx - W * 0.13, headCy + H * 0.03, cx - W * 0.12, headCy);
-
-                ctx.bezierCurveTo(cx - W * 0.09, headCy - H * 0.04, cx - W * 0.04, headCy - H * 0.07, cx, headCy - H * 0.07);
-
-                ctx.closePath();
-
-                ctx.fillStyle = headGrad; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
-
-                // Maxillary ridge (subtle line)
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.10, headCy - H * 0.01);
-
-                ctx.quadraticCurveTo(cx, headCy - H * 0.04, cx + W * 0.10, headCy - H * 0.01);
-
-                ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 0.8; ctx.stroke();
-
-                // Nostrils (pair at snout tip)
-
-                [-1, 1].forEach(function (s) {
-
-                  ctx.beginPath(); ctx.ellipse(cx + s * W * 0.025, headCy - H * 0.06, 2, 1.5, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = layerStroke; ctx.fill();
-
-                });
-
-
-
-  // €â€ Draw organ pins â€â€”€â”€ Tympanic membranes (large circular, behind eyes) â”€â”€
-
-                [-1, 1].forEach(function (s) {
-
-                  ctx.beginPath(); ctx.arc(cx + s * W * 0.10, headCy + H * 0.01, W * 0.022, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(139,92,246,0.15)'; ctx.fill();
-
-                  ctx.strokeStyle = 'rgba(139,92,246,0.35)'; ctx.lineWidth = 0.8; ctx.stroke();
-
-                  // Inner detail ring
-
-                  ctx.beginPath(); ctx.arc(cx + s * W * 0.10, headCy + H * 0.01, W * 0.012, 0, Math.PI * 2);
-
-                  ctx.strokeStyle = 'rgba(139,92,246,0.2)'; ctx.lineWidth = 0.4; ctx.stroke();
-
-                });
-
-
-
-  // €â€ Draw organ pins â€â€”€â”€ Eyes (protruding bulbous amphibian eyes) â”€â”€
-
-                [-1, 1].forEach(function (s) {
-
-                  var eyeX = cx + s * W * 0.09, eyeY = headCy - H * 0.04;
-
-                  var eyeR = W * 0.032;
-
-                  // Eye socket shadow
-
-                  ctx.beginPath(); ctx.arc(eyeX, eyeY + 1, eyeR + 2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.fill();
-
-                  // Eyeball (multicolor iris gradient)
-
-                  var irisGrad = ctx.createRadialGradient(eyeX - 1, eyeY - 1, 0, eyeX, eyeY, eyeR);
-
-                  irisGrad.addColorStop(0, '#d4a017');
-
-                  irisGrad.addColorStop(0.3, '#b8860b');
-
-                  irisGrad.addColorStop(0.6, '#8B6914');
-
-                  irisGrad.addColorStop(0.85, '#5c4a1e');
-
-                  irisGrad.addColorStop(1, '#2d2010');
-
-                  ctx.beginPath(); ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2);
-
-                  ctx.fillStyle = irisGrad; ctx.fill();
-
-                  ctx.strokeStyle = '#1a1206'; ctx.lineWidth = 1.2; ctx.stroke();
-
-                  // Horizontal slit pupil (amphibian characteristic)
-
-                  ctx.beginPath();
-
-                  ctx.ellipse(eyeX, eyeY, eyeR * 0.55, eyeR * 0.25, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#0a0a0a'; ctx.fill();
-
-                  // Specular highlight (top-left)
-
-                  ctx.beginPath(); ctx.arc(eyeX - eyeR * 0.3, eyeY - eyeR * 0.3, eyeR * 0.2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fill();
-
-                  // Secondary highlight (smaller)
-
-                  ctx.beginPath(); ctx.arc(eyeX + eyeR * 0.2, eyeY + eyeR * 0.15, eyeR * 0.08, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fill();
-
-                });
-
-
-
-  // €â€ Draw organ pins â€â€”€â”€ Skin layer details â”€â”€
-
-                if (activeLayer === 'skin' && !revealedLayers['skin']) {
-
-                  // Irregular blotch pattern (realistic chromatophore clusters)
-
-                  ctx.globalAlpha = 0.30;
-
-                  var blotchSeeds = [
-
-                    { x: -0.06, y: -0.10, r: 0.035, c: '#14532d' }, { x: 0.08, y: -0.08, r: 0.03, c: '#166534' },
-
-                    { x: -0.03, y: 0.05, r: 0.045, c: '#14532d' }, { x: 0.05, y: 0.02, r: 0.028, c: '#15803d' },
-
-                    { x: -0.10, y: 0.12, r: 0.032, c: '#166534' }, { x: 0.10, y: 0.10, r: 0.038, c: '#14532d' },
-
-                    { x: 0.00, y: 0.15, r: 0.025, c: '#15803d' }, { x: -0.08, y: -0.01, r: 0.022, c: '#166534' },
-
-                    { x: 0.11, y: -0.04, r: 0.020, c: '#14532d' }, { x: -0.04, y: 0.18, r: 0.028, c: '#15803d' },
-
-                    { x: 0.02, y: -0.15, r: 0.018, c: '#166534' }, { x: -0.12, y: 0.05, r: 0.020, c: '#14532d' },
-
-                    { x: 0.07, y: 0.16, r: 0.024, c: '#166534' }, { x: -0.02, y: -0.05, r: 0.030, c: '#15803d' }
-
-                  ];
-
-                  blotchSeeds.forEach(function (b) {
-
-                    var bx = cx + b.x * W, by = cy + b.y * H, br = b.r * W;
-
-                    // Irregular blotch using overlapping ellipses
-
-                    var bg = ctx.createRadialGradient(bx, by, 0, bx, by, br);
-
-                    bg.addColorStop(0, b.c); bg.addColorStop(0.6, b.c); bg.addColorStop(1, 'transparent');
-
-                    ctx.save();
-
-                    ctx.translate(bx, by); ctx.rotate(Math.sin(b.x * 10) * 0.5); ctx.translate(-bx, -by);
-
-                    ctx.beginPath(); ctx.ellipse(bx, by, br, br * 0.7, 0, 0, Math.PI * 2);
-
-                    ctx.fillStyle = bg; ctx.fill();
-
-                    ctx.restore();
-
-                  });
-
-                  ctx.globalAlpha = 1;
-
-
-
-                  // Dorsolateral folds (raised ridges running along back)
-
-                  ctx.globalAlpha = 0.18;
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx + s * W * 0.06, cy - H * 0.18);
-
-                    ctx.bezierCurveTo(cx + s * W * 0.07, cy - H * 0.05, cx + s * W * 0.06, cy + H * 0.08, cx + s * W * 0.05, cy + H * 0.20);
-
-                    ctx.strokeStyle = '#15803d'; ctx.lineWidth = 2; ctx.stroke();
-
-                  });
-
-                  ctx.globalAlpha = 1;
-
-
-
-                  // Moisture sheen gradient (glistening moist skin)
-
-                  ctx.globalAlpha = 0.06;
-
-                  var sheenGrad = ctx.createLinearGradient(cx - W * 0.15, cy - H * 0.15, cx + W * 0.10, cy + H * 0.10);
-
-                  sheenGrad.addColorStop(0, 'transparent'); sheenGrad.addColorStop(0.4, '#ffffff');
-
-                  sheenGrad.addColorStop(0.6, '#ffffff'); sheenGrad.addColorStop(1, 'transparent');
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy, W * 0.16, H * 0.22, -0.2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = sheenGrad; ctx.fill();
-
-                  ctx.globalAlpha = 1;
-
-
-
-                  // Ventral skin indication (lighter belly)
-
-                  ctx.globalAlpha = 0.08;
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.08, W * 0.10, H * 0.12, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fef9c3'; ctx.fill();
-
-                  ctx.globalAlpha = 1;
-
+                // Frog: integrated head-and-torso silhouette with articulated limbs and nested anatomy.
+                var frogAccessible = (d.visualRealism || visualRealism) === 'accessible';
+                var frogRealistic = (d.visualRealism || visualRealism) === 'realistic';
+                var frogVentral = anatomicalView === 'ventral' || anatomicalView === 'internal';
+                var frogBreath = dissMotionReduced ? 1 : breathScale;
+                var frogDeepLayer = activeLayer !== 'skin';
+                var frogOutline = frogAccessible ? '#14532d' : '#263f27';
+                var frogDorsalLight = frogAccessible ? '#4ade80' : '#657a3d';
+                var frogDorsalMid = frogAccessible ? '#22c55e' : '#465d31';
+                var frogDorsalDark = frogAccessible ? '#15803d' : '#263f27';
+                var frogVentralLight = frogAccessible ? '#d9f99d' : '#b7b58b';
+                var frogVentralDark = frogAccessible ? '#65a30d' : '#74795c';
+
+                function frogSkinGradient(x1, y1, x2, y2) {
+                  var gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+                  gradient.addColorStop(0, frogVentral ? frogVentralLight : frogDorsalLight);
+                  gradient.addColorStop(0.48, frogVentral ? '#a8aa7d' : frogDorsalMid);
+                  gradient.addColorStop(1, frogVentral ? frogVentralDark : frogDorsalDark);
+                  return gradient;
                 }
 
+                function traceFrogTorso() {
+                  ctx.beginPath();
+                  ctx.moveTo(cx, cy - H * 0.34);
+                  ctx.bezierCurveTo(cx + W * 0.075, cy - H * 0.345, cx + W * 0.145, cy - H * 0.31, cx + W * 0.16, cy - H * 0.255);
+                  ctx.bezierCurveTo(cx + W * 0.185, cy - H * 0.205, cx + W * 0.19, cy - H * 0.145, cx + W * 0.175, cy - H * 0.095);
+                  ctx.bezierCurveTo(cx + W * 0.18 * frogBreath, cy - H * 0.015, cx + W * 0.15 * frogBreath, cy + H * 0.085, cx + W * 0.135, cy + H * 0.15);
+                  ctx.bezierCurveTo(cx + W * 0.16, cy + H * 0.20, cx + W * 0.13, cy + H * 0.245, cx + W * 0.075, cy + H * 0.265);
+                  ctx.bezierCurveTo(cx + W * 0.035, cy + H * 0.282, cx - W * 0.035, cy + H * 0.282, cx - W * 0.075, cy + H * 0.265);
+                  ctx.bezierCurveTo(cx - W * 0.13, cy + H * 0.245, cx - W * 0.16, cy + H * 0.20, cx - W * 0.135, cy + H * 0.15);
+                  ctx.bezierCurveTo(cx - W * 0.15 * frogBreath, cy + H * 0.085, cx - W * 0.18 * frogBreath, cy - H * 0.015, cx - W * 0.175, cy - H * 0.095);
+                  ctx.bezierCurveTo(cx - W * 0.19, cy - H * 0.145, cx - W * 0.185, cy - H * 0.205, cx - W * 0.16, cy - H * 0.255);
+                  ctx.bezierCurveTo(cx - W * 0.145, cy - H * 0.31, cx - W * 0.075, cy - H * 0.345, cx, cy - H * 0.34);
+                  ctx.closePath();
+                }
 
+                function drawFrogLimbSegment(x1, y1, x2, y2, r1, r2, alpha) {
+                  var dx = x2 - x1; var dy = y2 - y1;
+                  var length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+                  var nx = -dy / length; var ny = dx / length;
+                  ctx.save(); ctx.globalAlpha = alpha;
+                  ctx.beginPath();
+                  ctx.moveTo(x1 + nx * r1, y1 + ny * r1);
+                  ctx.bezierCurveTo(x1 + dx * 0.34 + nx * r1, y1 + dy * 0.34 + ny * r1, x1 + dx * 0.72 + nx * r2, y1 + dy * 0.72 + ny * r2, x2 + nx * r2, y2 + ny * r2);
+                  ctx.quadraticCurveTo(x2 + dx / length * r2, y2 + dy / length * r2, x2 - nx * r2, y2 - ny * r2);
+                  ctx.bezierCurveTo(x1 + dx * 0.72 - nx * r2, y1 + dy * 0.72 - ny * r2, x1 + dx * 0.34 - nx * r1, y1 + dy * 0.34 - ny * r1, x1 - nx * r1, y1 - ny * r1);
+                  ctx.quadraticCurveTo(x1 - dx / length * r1, y1 - dy / length * r1, x1 + nx * r1, y1 + ny * r1);
+                  ctx.closePath(); ctx.fillStyle = frogSkinGradient(x1 + nx * r1, y1 + ny * r1, x1 - nx * r1, y1 - ny * r1); ctx.fill();
+                  ctx.strokeStyle = frogOutline; ctx.lineWidth = frogAccessible ? 1.45 : 0.85; ctx.stroke();
+                  ctx.restore();
+                }
 
-  // €â€ Draw organ pins â€â€”€â”€ Frog layer-specific internal anatomy â”€â”€
+                function drawFrogHindFoot(side, footX, footY, alpha) {
+                  var toeSpread = [-0.062,-0.032,0,0.035,0.069];
+                  var toeLengths = [0.065,0.088,0.102,0.088,0.062];
+                  var toeTips = [];
+                  for (var toeIndex = 0; toeIndex < 5; toeIndex++) {
+                    toeTips.push({
+                      x: footX + side * W * toeSpread[toeIndex],
+                      y: footY + H * toeLengths[toeIndex]
+                    });
+                  }
+                  ctx.save(); ctx.globalAlpha = alpha * (frogAccessible ? 0.28 : 0.38);
+                  ctx.beginPath(); ctx.moveTo(footX, footY - H * 0.008);
+                  toeTips.forEach(function (tip) { ctx.lineTo(tip.x, tip.y - H * 0.006); });
+                  ctx.closePath(); ctx.fillStyle = frogVentral ? frogVentralLight : frogDorsalMid; ctx.fill(); ctx.restore();
+                  ctx.save(); ctx.globalAlpha = alpha; ctx.strokeStyle = frogOutline; ctx.lineCap = 'round';
+                  toeTips.forEach(function (tip, toeIndex) {
+                    ctx.beginPath(); ctx.moveTo(footX, footY); ctx.quadraticCurveTo((footX + tip.x) / 2 + side * (toeIndex - 2) * 0.6, (footY + tip.y) / 2, tip.x, tip.y);
+                    ctx.lineWidth = toeIndex === 2 ? 1.25 : 0.95; ctx.stroke();
+                    ctx.beginPath(); ctx.ellipse(tip.x, tip.y, 1.7, 1.15, 0, 0, Math.PI * 2); ctx.fillStyle = frogVentral ? frogVentralLight : frogDorsalMid; ctx.fill();
+                  });
+                  ctx.restore();
+                }
 
-                // Muscle layer: animated fiber contraction
+                function drawFrogHindLimb(side, alpha) {
+                  var hipX = cx + side * W * 0.115; var hipY = cy + H * 0.13;
+                  var kneeX = cx + side * W * 0.275; var kneeY = cy + H * 0.105;
+                  var ankleX = cx + side * W * 0.315; var ankleY = cy + H * 0.245;
+                  var footX = cx + side * W * 0.265; var footY = cy + H * 0.355;
+                  drawFrogLimbSegment(hipX, hipY, kneeX, kneeY, W * 0.036, W * 0.028, alpha);
+                  drawFrogLimbSegment(kneeX, kneeY, ankleX, ankleY, W * 0.026, W * 0.017, alpha);
+                  drawFrogLimbSegment(ankleX, ankleY, footX, footY, W * 0.015, W * 0.008, alpha);
+                  drawFrogHindFoot(side, footX, footY, alpha);
+                  ctx.save(); ctx.globalAlpha = alpha * 0.22; ctx.strokeStyle = 'rgba(248,250,252,0.65)'; ctx.lineWidth = 0.55;
+                  ctx.beginPath(); ctx.moveTo(hipX + side * 2, hipY - 2); ctx.quadraticCurveTo(kneeX, kneeY - 3, ankleX, ankleY - 2); ctx.stroke(); ctx.restore();
+                }
+
+                function drawFrogForelimb(side, alpha) {
+                  var shoulderX = cx + side * W * 0.145; var shoulderY = cy - H * 0.12;
+                  var elbowX = cx + side * W * 0.225; var elbowY = cy - H * 0.045;
+                  var wristX = cx + side * W * 0.205; var wristY = cy + H * 0.065;
+                  drawFrogLimbSegment(shoulderX, shoulderY, elbowX, elbowY, W * 0.021, W * 0.015, alpha);
+                  drawFrogLimbSegment(elbowX, elbowY, wristX, wristY, W * 0.015, W * 0.008, alpha);
+                  ctx.save(); ctx.globalAlpha = alpha; ctx.strokeStyle = frogOutline; ctx.lineCap = 'round';
+                  var fingerOffsets = [-0.035,-0.014,0.013,0.032];
+                  var fingerLengths = [0.041,0.052,0.049,0.036];
+                  fingerOffsets.forEach(function (offset, fingerIndex) {
+                    var tipX = wristX + side * W * offset;
+                    var tipY = wristY + H * fingerLengths[fingerIndex];
+                    ctx.beginPath(); ctx.moveTo(wristX, wristY); ctx.quadraticCurveTo((wristX + tipX) / 2, tipY - H * 0.012, tipX, tipY);
+                    ctx.lineWidth = 0.85; ctx.stroke();
+                    ctx.beginPath(); ctx.ellipse(tipX, tipY, 1.25, 0.9, 0, 0, Math.PI * 2); ctx.fillStyle = frogVentral ? frogVentralLight : frogDorsalMid; ctx.fill();
+                  });
+                  ctx.restore();
+                }
+
+                // Folded hindlimbs and smaller forelimbs establish the characteristic resting posture.
+                drawFrogHindLimb(-1, frogDeepLayer ? 0.34 : 0.92);
+                drawFrogHindLimb(1, frogDeepLayer ? 0.34 : 0.92);
+                drawFrogForelimb(-1, frogDeepLayer ? 0.32 : 0.88);
+                drawFrogForelimb(1, frogDeepLayer ? 0.32 : 0.88);
+
+                var frogBodyGradient = frogSkinGradient(cx - W * 0.13, cy - H * 0.25, cx + W * 0.15, cy + H * 0.22);
+                ctx.save(); ctx.globalAlpha = frogDeepLayer ? (frogAccessible ? 0.28 : 0.36) : 1;
+                traceFrogTorso(); ctx.fillStyle = frogBodyGradient; ctx.fill(); ctx.strokeStyle = frogOutline; ctx.lineWidth = frogAccessible ? 2 : 1.15; ctx.stroke();
+                ctx.restore(); ctx.shadowBlur = 0;
+
+                // Dorsolateral folds, chromatophores, and moisture all conform to the unified torso.
+                if (!frogDeepLayer || activeLayer === 'skin') {
+                  ctx.save(); traceFrogTorso(); ctx.clip();
+                  if (!frogVentral) {
+                    ctx.globalAlpha = frogAccessible ? 0.22 : 0.34;
+                    for (var frogSpot = 0; frogSpot < 44; frogSpot++) {
+                      var spotAngle = frogSpot * 2.399963;
+                      var spotRadius = Math.sqrt((frogSpot + 0.7) / 44);
+                      var spotX = cx + Math.cos(spotAngle) * W * 0.135 * spotRadius;
+                      var spotY = cy - H * 0.025 + Math.sin(spotAngle) * H * 0.235 * spotRadius;
+                      var spotSize = 1.2 + (frogSpot % 5) * 0.72;
+                      ctx.beginPath(); ctx.ellipse(spotX, spotY, spotSize * 1.5, spotSize, spotAngle * 0.15, 0, Math.PI * 2);
+                      ctx.fillStyle = frogSpot % 4 === 0 ? 'rgba(24,48,25,0.72)' : 'rgba(47,73,31,0.54)'; ctx.fill();
+                    }
+                    [-1,1].forEach(function (side) {
+                      ctx.beginPath(); ctx.moveTo(cx + side * W * 0.095, cy - H * 0.245);
+                      ctx.bezierCurveTo(cx + side * W * 0.115, cy - H * 0.09, cx + side * W * 0.10, cy + H * 0.08, cx + side * W * 0.075, cy + H * 0.20);
+                      ctx.strokeStyle = 'rgba(31,65,35,0.72)'; ctx.lineWidth = 2.3; ctx.stroke();
+                      ctx.beginPath(); ctx.moveTo(cx + side * W * 0.088, cy - H * 0.245);
+                      ctx.bezierCurveTo(cx + side * W * 0.103, cy - H * 0.09, cx + side * W * 0.09, cy + H * 0.08, cx + side * W * 0.067, cy + H * 0.20);
+                      ctx.strokeStyle = 'rgba(226,232,240,0.12)'; ctx.lineWidth = 0.65; ctx.stroke();
+                    });
+                  } else {
+                    var bellyGrad = ctx.createRadialGradient(cx - W * 0.035, cy - H * 0.06, 2, cx, cy + H * 0.02, W * 0.16);
+                    bellyGrad.addColorStop(0, 'rgba(236,232,190,0.48)'); bellyGrad.addColorStop(1, 'rgba(203,205,158,0.08)');
+                    ctx.fillStyle = bellyGrad; ctx.fillRect(cx - W * 0.18, cy - H * 0.27, W * 0.36, H * 0.54);
+                  }
+                  if (!frogAccessible) {
+                    var frogSheen = ctx.createLinearGradient(cx - W * 0.13, cy - H * 0.24, cx + W * 0.12, cy + H * 0.14);
+                    frogSheen.addColorStop(0, 'rgba(255,255,255,0)'); frogSheen.addColorStop(0.38, 'rgba(255,255,255,0.15)'); frogSheen.addColorStop(0.56, 'rgba(255,255,255,0.025)'); frogSheen.addColorStop(1, 'rgba(255,255,255,0)');
+                    ctx.fillStyle = frogSheen; ctx.fillRect(cx - W * 0.2, cy - H * 0.35, W * 0.4, H * 0.64);
+                  }
+                  ctx.restore();
+                }
+
+                // The head is continuous with the trunk; eyes and tympana are embedded landmarks.
+                var frogHeadY = cy - H * 0.265;
+                [-1,1].forEach(function (side) {
+                  var frogEyeX = cx + side * W * 0.102;
+                  var frogEyeY = frogHeadY - H * 0.012;
+                  var frogEyeR = W * 0.026;
+                  ctx.save(); ctx.globalAlpha = frogDeepLayer ? 0.36 : 1;
+                  ctx.beginPath(); ctx.ellipse(frogEyeX, frogEyeY + 1.2, frogEyeR * 1.10, frogEyeR * 0.88, 0, 0, Math.PI * 2); ctx.fillStyle = 'rgba(19,31,18,0.40)'; ctx.fill();
+                  var frogIris = ctx.createRadialGradient(frogEyeX - 1, frogEyeY - 1, 0.6, frogEyeX, frogEyeY, frogEyeR);
+                  frogIris.addColorStop(0, 'rgba(194,168,84,0.94)'); frogIris.addColorStop(0.5, 'rgba(116,91,42,0.98)'); frogIris.addColorStop(1, 'rgba(35,29,18,1)');
+                  ctx.beginPath(); ctx.ellipse(frogEyeX, frogEyeY, frogEyeR, frogEyeR * 0.82, 0, 0, Math.PI * 2); ctx.fillStyle = frogIris; ctx.fill(); ctx.strokeStyle = 'rgba(18,22,15,0.9)'; ctx.lineWidth = 0.9; ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(frogEyeX, frogEyeY, frogEyeR * 0.58, frogEyeR * 0.19, 0, 0, Math.PI * 2); ctx.fillStyle = '#080b08'; ctx.fill();
+                  ctx.beginPath(); ctx.moveTo(frogEyeX - frogEyeR * 0.88, frogEyeY + frogEyeR * 0.18); ctx.quadraticCurveTo(frogEyeX, frogEyeY + frogEyeR * 0.42, frogEyeX + frogEyeR * 0.88, frogEyeY + frogEyeR * 0.18);
+                  ctx.strokeStyle = 'rgba(214,222,183,0.46)'; ctx.lineWidth = frogAccessible ? 1.2 : 0.65; ctx.stroke();
+                  if (!frogAccessible) { ctx.beginPath(); ctx.ellipse(frogEyeX - 2, frogEyeY - 2, 1.5, 0.65, -0.4, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,0.30)'; ctx.fill(); }
+                  ctx.restore();
+
+                  var tympanumX = cx + side * W * 0.145; var tympanumY = frogHeadY + H * 0.043;
+                  ctx.save(); ctx.globalAlpha = frogDeepLayer ? 0.30 : 0.82;
+                  var tympanumGrad = ctx.createRadialGradient(tympanumX - 1, tympanumY - 1, 1, tympanumX, tympanumY, W * 0.022);
+                  tympanumGrad.addColorStop(0, frogVentral ? '#9c9674' : '#6f7746'); tympanumGrad.addColorStop(0.72, frogVentral ? '#6f6c55' : '#424d31'); tympanumGrad.addColorStop(1, '#253026');
+                  ctx.beginPath(); ctx.arc(tympanumX, tympanumY, W * 0.0215, 0, Math.PI * 2); ctx.fillStyle = tympanumGrad; ctx.fill(); ctx.strokeStyle = 'rgba(25,34,24,0.78)'; ctx.lineWidth = 0.8; ctx.stroke();
+                  ctx.beginPath(); ctx.arc(tympanumX, tympanumY, W * 0.013, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(203,213,174,0.22)'; ctx.lineWidth = 0.5; ctx.stroke(); ctx.restore();
+                });
+                ctx.save(); ctx.globalAlpha = frogDeepLayer ? 0.32 : 0.78;
+                [-1,1].forEach(function (side) { ctx.beginPath(); ctx.ellipse(cx + side * W * 0.034, cy - H * 0.326, 2.1, 1.25, side * 0.12, 0, Math.PI * 2); ctx.fillStyle = frogOutline; ctx.fill(); });
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.115, cy - H * 0.286); ctx.quadraticCurveTo(cx, cy - H * 0.255, cx + W * 0.115, cy - H * 0.286); ctx.strokeStyle = 'rgba(24,34,22,0.54)'; ctx.lineWidth = 0.8; ctx.stroke(); ctx.restore();
 
                 if (activeLayer === 'muscle') {
-
-                  ctx.globalAlpha = 0.25;
-
-                  ctx.strokeStyle = '#991b1b';
-
-                  ctx.lineWidth = 0.6;
-
-                  // Abdominal muscle fibers with contraction wave
-
-                  var contractionWave = Math.sin(dissTick * 0.04);
-
-                  for (var mf = 0; mf < 12; mf++) {
-
-                    var mfy = cy - H * 0.15 + mf * H * 0.035;
-
-                    var mfContract = Math.sin(dissTick * 0.04 + mf * 0.5) * 2;
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx - W * 0.10, mfy);
-
-                    ctx.quadraticCurveTo(cx, mfy + mfContract, cx + W * 0.10, mfy);
-
-                    ctx.lineWidth = 0.6 + Math.abs(mfContract) * 0.15;
-
-                    ctx.stroke();
-
-                  }
-
-                  // Muscle tension indicator
-
-                  ctx.globalAlpha = 0.15;
-
-                  var tensionColor = 'rgba(220,38,38,' + (0.1 + Math.abs(contractionWave) * 0.12) + ')';
-
-                  ctx.fillStyle = tensionColor;
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy, W * 0.12, H * 0.20, 0, 0, Math.PI * 2);
-
-                  ctx.fill();
-
-                  // Leg muscle detail
-
-                  [-1, 1].forEach(function (side) {
-
-                    for (var lm = 0; lm < 5; lm++) {
-
-                      ctx.beginPath();
-
-                      ctx.moveTo(cx + side * W * 0.12, cy + H * 0.24 + lm * H * 0.03);
-
-                      ctx.quadraticCurveTo(cx + side * W * 0.18, cy + H * 0.28 + lm * H * 0.02, cx + side * W * 0.20, cy + H * 0.32 + lm * H * 0.01);
-
-                      ctx.stroke();
-
-                    }
-
+                  // Layered muscle masses replace generic animated stripes.
+                  ctx.save(); ctx.globalAlpha = 0.72;
+                  var pectoralGrad = ctx.createLinearGradient(cx, cy - H * 0.16, cx, cy - H * 0.01); pectoralGrad.addColorStop(0, '#fca5a5'); pectoralGrad.addColorStop(1, '#b91c1c');
+                  [-1,1].forEach(function (side) {
+                    ctx.beginPath(); ctx.moveTo(cx + side * W * 0.015, cy - H * 0.145); ctx.bezierCurveTo(cx + side * W * 0.105, cy - H * 0.16, cx + side * W * 0.13, cy - H * 0.065, cx + side * W * 0.035, cy - H * 0.015); ctx.lineTo(cx, cy - H * 0.055); ctx.closePath(); ctx.fillStyle = pectoralGrad; ctx.fill(); ctx.strokeStyle = '#7f1d1d'; ctx.lineWidth = 0.65; ctx.stroke();
                   });
-
-                  ctx.globalAlpha = 1;
-
+                  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(cx - W * 0.052, cy - H * 0.035, W * 0.104, H * 0.235, 8) : ctx.rect(cx - W * 0.052, cy - H * 0.035, W * 0.104, H * 0.235);
+                  ctx.fillStyle = 'rgba(248,113,113,0.84)'; ctx.fill(); ctx.strokeStyle = '#991b1b'; ctx.lineWidth = 0.7; ctx.stroke();
+                  ctx.strokeStyle = 'rgba(127,29,29,0.66)'; ctx.lineWidth = 0.5;
+                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.03); ctx.lineTo(cx, cy + H * 0.19); ctx.stroke();
+                  for (var rectusBand = 1; rectusBand < 6; rectusBand++) { var bandY = cy - H * 0.025 + rectusBand * H * 0.036; ctx.beginPath(); ctx.moveTo(cx - W * 0.047, bandY); ctx.lineTo(cx + W * 0.047, bandY); ctx.stroke(); }
+                  [-1,1].forEach(function (side) {
+                    ctx.beginPath(); ctx.ellipse(cx + side * W * 0.185, cy + H * 0.13, W * 0.065, H * 0.052, side * 0.25, 0, Math.PI * 2); ctx.fillStyle = '#dc5b5b'; ctx.fill(); ctx.strokeStyle = '#991b1b'; ctx.stroke();
+                    ctx.beginPath(); ctx.ellipse(cx + side * W * 0.285, cy + H * 0.19, W * 0.036, H * 0.082, side * 0.13, 0, Math.PI * 2); ctx.fillStyle = '#ef7770'; ctx.fill(); ctx.stroke();
+                    ctx.strokeStyle = 'rgba(254,202,202,0.42)'; ctx.lineWidth = 0.5;
+                    for (var muscleFiber = -2; muscleFiber <= 2; muscleFiber++) { ctx.beginPath(); ctx.moveTo(cx + side * W * 0.16, cy + H * (0.10 + muscleFiber * 0.012)); ctx.lineTo(cx + side * W * 0.31, cy + H * (0.22 + muscleFiber * 0.015)); ctx.stroke(); }
+                  });
+                  ctx.restore();
                 }
-
-                // Organs layer: draw simplified organ shapes inside body
 
                 if (activeLayer === 'organs') {
-
-                  ctx.globalAlpha = 0.55;
-
-                  // Heart (anterior)
-
-                  ctx.beginPath(); ctx.arc(cx, cy - H * 0.08, W * 0.03, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#dc2626'; ctx.fill();
-
-                  ctx.strokeStyle = '#991b1b'; ctx.lineWidth = 0.8; ctx.stroke();
-
-                  // Aorta line from heart
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.11);
-
-                  ctx.lineTo(cx, cy - H * 0.18);
-
-                  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                  // Lungs (paired)
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.ellipse(cx + s * W * 0.06, cy - H * 0.06, W * 0.03, H * 0.04, 0, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#fca5a5'; ctx.fill();
-
-                    ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  });
-
-                  // Liver (3 lobes)
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.02, W * 0.10, H * 0.04, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#92400e'; ctx.fill();
-
-                  ctx.strokeStyle = '#78350f'; ctx.lineWidth = 0.6; ctx.stroke();
-
-                  // Gallbladder
-
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.04, cy + H * 0.03, W * 0.015, H * 0.02, 0.3, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#22c55e'; ctx.fill(); ctx.strokeStyle = '#15803d'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  // Stomach
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.03, cy + H * 0.08, W * 0.04, H * 0.025, -0.3, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fde68a'; ctx.fill(); ctx.strokeStyle = '#d97706'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  // Small intestine (coiled)
-
-                  ctx.beginPath();
-
-                  ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2;
-
-                  ctx.moveTo(cx - W * 0.01, cy + H * 0.10);
-
-                  for (var gi = 0; gi < 6; gi++) {
-
-                    ctx.quadraticCurveTo(cx + (gi % 2 ? 1 : -1) * W * 0.06, cy + H * 0.11 + gi * H * 0.015, cx + (gi % 2 ? -1 : 1) * W * 0.02, cy + H * 0.12 + gi * H * 0.015);
-
-                  }
-
-                  ctx.stroke();
-
-                  // Fat bodies (yellow fingers)
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.ellipse(cx + s * W * 0.05, cy - H * 0.10, W * 0.008, H * 0.03, s * 0.3, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#fbbf24'; ctx.fill();
-
-                  });
-
-                  // Bladder
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.15, W * 0.025, H * 0.018, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(186,230,253,0.4)'; ctx.fill();
-
-                  ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  // Stomach churning animation
-
-                  if (activeLayer === 'organs') {
-
-                    ctx.globalAlpha = 0.12;
-
-                    var churnPhase = Math.sin(dissTick * 0.04);
-
-                    ctx.beginPath();
-
-                    ctx.ellipse(cx - W * 0.02, cy - H * 0.04, W * 0.02 + churnPhase * W * 0.005, H * 0.015 - churnPhase * H * 0.003, 0, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#fbbf24'; ctx.fill();
-
-                    ctx.globalAlpha = 0.5;
-
-                  }
-
-                  // Spleen (small red organ near stomach)
-
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.06, cy - H * 0.03, W * 0.012, H * 0.008, 0.3, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#7f1d1d'; ctx.fill();
-
-                  // Pancreas (thin, yellowish)
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.02, cy - H * 0.04);
-
-                  ctx.quadraticCurveTo(cx + W * 0.05, cy - H * 0.02, cx + W * 0.08, cy - H * 0.01);
-
-                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.globalAlpha = 0.4; ctx.stroke(); ctx.globalAlpha = 0.5;
-
-                  // Adrenal glands (on top of kidneys)
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.ellipse(cx + s * W * 0.06, cy + H * 0.07, W * 0.008, H * 0.004, 0, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#fbbf24'; ctx.fill();
-
-                  });
-
-                  // Peritoneum lining (body cavity membrane)
-
-                  ctx.globalAlpha = 0.04;
-
-                  ctx.beginPath();
-
-                  ctx.ellipse(cx, cy, W * 0.14, H * 0.25, 0, 0, Math.PI * 2);
-
-                  ctx.strokeStyle = '#fef08a'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]); ctx.stroke(); ctx.setLineDash([]);
-
-                  ctx.globalAlpha = 0.5;
-
-                  ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(254,240,138,0.4)';
-
-                  ctx.fillText('Peritoneum', cx + W * 0.12, cy + H * 0.22);
-
-                  // Mesentery (translucent membrane connecting organs)
-
-                  ctx.globalAlpha = 0.06;
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(cx - W * 0.05, cy - H * 0.08);
-
-                  ctx.quadraticCurveTo(cx + W * 0.08, cy, cx - W * 0.03, cy + H * 0.10);
-
-                  ctx.quadraticCurveTo(cx + W * 0.06, cy + H * 0.05, cx - W * 0.05, cy - H * 0.08);
-
-                  ctx.fillStyle = '#fde68a'; ctx.fill();
-
-                  ctx.globalAlpha = 0.5;
-
-                  // Animated blood flow paths
-
-                  var bloodT = (dissTick * 0.03) % 1;
-
-                  // Arterial flow (red, from heart outward)
-
-                  ctx.setLineDash([4, 8]);
-
-                  ctx.lineDashOffset = -dissTick * 0.5;
-
-                  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1; ctx.globalAlpha = 0.4;
-
-                  // Aorta â†’ body
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.11);
-
-                  ctx.quadraticCurveTo(cx + W * 0.03, cy - H * 0.15, cx + W * 0.05, cy - H * 0.18);
-
-                  ctx.stroke();
-
-                  // To legs
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.moveTo(cx + s * W * 0.02, cy + H * 0.10);
-
-                    ctx.lineTo(cx + s * W * 0.10, cy + H * 0.30);
-
-                    ctx.stroke();
-
-                  });
-
-                  // Venous return (blue)
-
-                  ctx.strokeStyle = '#3b82f6';
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.moveTo(cx + s * W * 0.12, cy + H * 0.32);
-
-                    ctx.quadraticCurveTo(cx + s * W * 0.04, cy + H * 0.15, cx + s * W * 0.01, cy - H * 0.05);
-
-                    ctx.stroke();
-
-                  });
-
-                  ctx.setLineDash([]); ctx.lineDashOffset = 0;
-
-                  ctx.globalAlpha = 1;
-
+                  // Organs are drawn posterior-to-anterior so overlap conveys their position in the coelom.
+                  ctx.save(); ctx.globalAlpha = frogAccessible ? 0.9 : 0.78;
+                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.015, W * 0.132, H * 0.215, 0, 0, Math.PI * 2); ctx.fillStyle = 'rgba(252,231,207,0.16)'; ctx.fill(); ctx.strokeStyle = 'rgba(254,240,138,0.32)'; ctx.lineWidth = 0.8; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+                  // Dorsal kidneys remain partially visible behind the gut.
+                  [-1,1].forEach(function (side) { ctx.beginPath(); ctx.ellipse(cx + side * W * 0.052, cy + H * 0.115, W * 0.025, H * 0.088, side * 0.08, 0, Math.PI * 2); ctx.fillStyle = '#5b3429'; ctx.fill(); ctx.strokeStyle = '#3f241d'; ctx.lineWidth = 0.55; ctx.stroke(); });
+                  // Paired sac-like lungs.
+                  [-1,1].forEach(function (side) { ctx.beginPath(); ctx.ellipse(cx + side * W * 0.071, cy - H * 0.105, W * 0.035, H * 0.057, side * 0.08, 0, Math.PI * 2); ctx.fillStyle = '#eaa1a1'; ctx.fill(); ctx.strokeStyle = '#a83a42'; ctx.lineWidth = 0.55; ctx.stroke(); ctx.save(); ctx.globalAlpha = 0.28; ctx.strokeStyle = '#7f1d1d'; ctx.lineWidth = 0.35; for(var alveolar=0; alveolar<5; alveolar++){ctx.beginPath(); ctx.arc(cx + side * W * (0.061 + (alveolar%2)*0.018), cy - H * (0.13 - Math.floor(alveolar/2)*0.025), 2.4, 0, Math.PI*2); ctx.stroke();} ctx.restore(); });
+                  // Yellow branched fat bodies flank the anterior kidneys.
+                  [-1,1].forEach(function (side) { for(var fatFinger=0; fatFinger<4; fatFinger++){ var fatX=cx+side*W*(0.035+fatFinger*0.013); ctx.beginPath(); ctx.moveTo(cx+side*W*0.04,cy-H*0.045); ctx.quadraticCurveTo(fatX,cy+H*0.005,fatX+side*W*0.01,cy+H*(0.035+fatFinger*0.012)); ctx.strokeStyle='#fbbf24'; ctx.lineWidth=2.1-fatFinger*0.2; ctx.stroke(); } });
+                  // Three-chambered heart: paired atria over one muscular ventricle and conus.
+                  var frogHeartX = cx; var frogHeartY = cy - H * 0.105;
+                  [-1,1].forEach(function (side) { ctx.beginPath(); ctx.ellipse(frogHeartX + side * W * 0.019, frogHeartY - H * 0.008, W * 0.022, H * 0.022, side * 0.15, 0, Math.PI * 2); ctx.fillStyle = side < 0 ? '#b4535a' : '#a64752'; ctx.fill(); ctx.strokeStyle='#7f1d1d';ctx.lineWidth=0.5;ctx.stroke(); });
+                  ctx.beginPath(); ctx.ellipse(frogHeartX, frogHeartY + H * 0.027, W * 0.031, H * 0.037, 0, 0, Math.PI * 2); ctx.fillStyle='#b91c1c';ctx.fill();ctx.strokeStyle='#7f1d1d';ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(frogHeartX + W * 0.012, frogHeartY - H * 0.022); ctx.quadraticCurveTo(frogHeartX + W * 0.032, frogHeartY - H * 0.075, frogHeartX + W * 0.018, frogHeartY - H * 0.102); ctx.strokeStyle='#dc2626';ctx.lineWidth=3;ctx.stroke();
+                  // Three liver lobes overlap the posterior heart margin.
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.057, cy - H * 0.015, W * 0.056, H * 0.055, -0.12, 0, Math.PI*2); ctx.fillStyle='#6f3529';ctx.fill();ctx.strokeStyle='#4a251f';ctx.lineWidth=0.55;ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.057, cy - H * 0.015, W * 0.056, H * 0.055, 0.12, 0, Math.PI*2); ctx.fillStyle='#74372b';ctx.fill();ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.018, W * 0.052, H * 0.046, 0, 0, Math.PI*2); ctx.fillStyle='#653027';ctx.fill();ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.027, cy + H * 0.018, W * 0.013, H * 0.022, 0.2, 0, Math.PI*2);ctx.fillStyle='#4d9a50';ctx.fill();ctx.strokeStyle='#1f6d35';ctx.lineWidth=0.45;ctx.stroke();
+                  // J-shaped stomach with a duodenal turn.
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.055, cy + H * 0.03); ctx.bezierCurveTo(cx - W * 0.105, cy + H * 0.035, cx - W * 0.105, cy + H * 0.12, cx - W * 0.055, cy + H * 0.13); ctx.bezierCurveTo(cx - W * 0.018, cy + H * 0.138, cx - W * 0.012, cy + H * 0.10, cx - W * 0.036, cy + H * 0.083); ctx.bezierCurveTo(cx - W * 0.06, cy + H * 0.065, cx - W * 0.035, cy + H * 0.045, cx - W * 0.055, cy + H * 0.03); ctx.closePath(); var stomachGrad=ctx.createLinearGradient(cx-W*0.10,cy+H*0.04,cx-W*0.02,cy+H*0.13);stomachGrad.addColorStop(0,'#f4d39a');stomachGrad.addColorStop(1,'#c88852');ctx.fillStyle=stomachGrad;ctx.fill();ctx.strokeStyle='#9a5b32';ctx.lineWidth=0.6;ctx.stroke();
+                  ctx.beginPath();ctx.moveTo(cx-W*0.01,cy+H*0.105);ctx.quadraticCurveTo(cx+W*0.035,cy+H*0.115,cx+W*0.068,cy+H*0.09);ctx.strokeStyle='#eabf72';ctx.lineWidth=3.2;ctx.stroke();
+                  ctx.beginPath();ctx.moveTo(cx-W*0.012,cy+H*0.10);ctx.quadraticCurveTo(cx+W*0.028,cy+H*0.092,cx+W*0.067,cy+H*0.078);ctx.strokeStyle='#e7b54d';ctx.lineWidth=1.4;ctx.stroke();
+                  ctx.beginPath();ctx.ellipse(cx-W*0.092,cy+H*0.115,W*0.012,H*0.009,-0.2,0,Math.PI*2);ctx.fillStyle='#7f1d1d';ctx.fill();
+                  // Coiled ileum sits centrally and feeds a short, broad large intestine.
+                  ctx.strokeStyle='#d78349';ctx.lineWidth=4.1;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(cx+W*0.055,cy+H*0.10);ctx.bezierCurveTo(cx+W*0.09,cy+H*0.13,cx-W*0.07,cy+H*0.14,cx-W*0.025,cy+H*0.17);ctx.bezierCurveTo(cx+W*0.04,cy+H*0.20,cx+W*0.085,cy+H*0.145,cx+W*0.035,cy+H*0.135);ctx.bezierCurveTo(cx-W*0.025,cy+H*0.12,cx-W*0.07,cy+H*0.19,cx+W*0.015,cy+H*0.21);ctx.stroke();
+                  ctx.beginPath();ctx.moveTo(cx+W*0.015,cy+H*0.205);ctx.bezierCurveTo(cx+W*0.02,cy+H*0.235,cx+W*0.008,cy+H*0.25,cx,cy+H*0.262);ctx.strokeStyle='#b86b42';ctx.lineWidth=6.2;ctx.stroke();
+                  // Bilobed urinary bladder and shared cloacal outlet.
+                  ctx.save();ctx.globalAlpha=0.48;[-1,1].forEach(function(side){ctx.beginPath();ctx.ellipse(cx+side*W*0.025,cy+H*0.245,W*0.027,H*0.024,side*0.18,0,Math.PI*2);ctx.fillStyle='#bae6fd';ctx.fill();ctx.strokeStyle='#60a5fa';ctx.lineWidth=0.5;ctx.stroke();});ctx.restore();
+                  ctx.beginPath();ctx.ellipse(cx,cy+H*0.268,W*0.013,H*0.008,0,0,Math.PI*2);ctx.fillStyle='#704838';ctx.fill();
+                  ctx.restore();
                 }
-
-                // Skeleton layer: draw bone outlines
 
                 if (activeLayer === 'skeleton') {
-
-                  ctx.globalAlpha = 0.6;
-
-                  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
-
-                  // Skull
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.25, W * 0.09, H * 0.055, 0, 0, Math.PI * 2);
-
-                  ctx.stroke();
-
-                  // Orbits
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.arc(cx + s * W * 0.05, cy - H * 0.26, W * 0.025, 0, Math.PI * 2);
-
-                    ctx.stroke();
-
+                  ctx.save(); ctx.globalAlpha = frogAccessible ? 0.9 : 0.72; var frogBone='#d9d6c7'; var frogBoneEdge='#8f9188';
+                  ctx.beginPath(); ctx.moveTo(cx-W*0.105,cy-H*0.31);ctx.quadraticCurveTo(cx,cy-H*0.35,cx+W*0.105,cy-H*0.31);ctx.lineTo(cx+W*0.12,cy-H*0.245);ctx.quadraticCurveTo(cx,cy-H*0.22,cx-W*0.12,cy-H*0.245);ctx.closePath();ctx.fillStyle='rgba(217,214,199,0.26)';ctx.fill();ctx.strokeStyle=frogBone;ctx.lineWidth=1.25;ctx.stroke();
+                  for(var frogVert=0;frogVert<9;frogVert++){var frogVertY=cy-H*0.205+frogVert*H*0.041;ctx.beginPath();ctx.ellipse(cx,frogVertY,W*0.012,H*0.009,0,0,Math.PI*2);ctx.fillStyle=frogBone;ctx.fill();ctx.strokeStyle=frogBoneEdge;ctx.lineWidth=0.4;ctx.stroke();}
+                  ctx.beginPath();ctx.moveTo(cx,cy+H*0.12);ctx.lineTo(cx,cy+H*0.255);ctx.strokeStyle=frogBone;ctx.lineWidth=3.5;ctx.stroke();
+                  ctx.beginPath();ctx.moveTo(cx-W*0.105,cy-H*0.14);ctx.lineTo(cx,cy-H*0.09);ctx.lineTo(cx+W*0.105,cy-H*0.14);ctx.moveTo(cx-W*0.09,cy-H*0.08);ctx.lineTo(cx,cy-H*0.12);ctx.lineTo(cx+W*0.09,cy-H*0.08);ctx.strokeStyle=frogBone;ctx.lineWidth=1.6;ctx.stroke();
+                  ctx.beginPath();ctx.moveTo(cx-W*0.09,cy+H*0.15);ctx.lineTo(cx,cy+H*0.20);ctx.lineTo(cx+W*0.09,cy+H*0.15);ctx.moveTo(cx-W*0.09,cy+H*0.15);ctx.lineTo(cx-W*0.13,cy+H*0.22);ctx.moveTo(cx+W*0.09,cy+H*0.15);ctx.lineTo(cx+W*0.13,cy+H*0.22);ctx.strokeStyle=frogBone;ctx.lineWidth=2;ctx.stroke();
+                  [-1,1].forEach(function(side){
+                    ctx.beginPath();ctx.moveTo(cx+side*W*0.12,cy+H*0.16);ctx.lineTo(cx+side*W*0.275,cy+H*0.105);ctx.lineTo(cx+side*W*0.315,cy+H*0.245);ctx.lineTo(cx+side*W*0.265,cy+H*0.355);ctx.strokeStyle=frogBone;ctx.lineWidth=2.35;ctx.stroke();
+                    ctx.beginPath();ctx.moveTo(cx+side*W*0.14,cy-H*0.12);ctx.lineTo(cx+side*W*0.225,cy-H*0.045);ctx.lineTo(cx+side*W*0.205,cy+H*0.065);ctx.strokeStyle=frogBone;ctx.lineWidth=1.65;ctx.stroke();
                   });
-
-                  // Vertebral column (9 vertebrae)
-
-                  for (var vi = 0; vi < 9; vi++) {
-
-                    var vy = cy - H * 0.18 + vi * (H * 0.36 / 9);
-
-                    ctx.beginPath(); ctx.ellipse(cx, vy, W * 0.015, H * 0.01, 0, 0, Math.PI * 2);
-
-                    ctx.fillStyle = 'rgba(226,232,240,0.4)'; ctx.fill();
-
-                    ctx.stroke();
-
-                  }
-
-                  // Urostyle
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.15);
-
-                  ctx.lineTo(cx, cy + H * 0.24);
-
-                  ctx.lineWidth = 3; ctx.stroke();
-
-                  // Pelvic girdle
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.16, W * 0.08, H * 0.025, 0, 0, Math.PI * 2);
-
-                  ctx.lineWidth = 1.5; ctx.stroke();
-
-                  // Pectoral girdle
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.16, W * 0.10, H * 0.02, 0, 0, Math.PI * 2);
-
-                  ctx.stroke();
-
-                  // Femur + tibiofibula outlines
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx + s * W * 0.08, cy + H * 0.18);
-
-                    ctx.lineTo(cx + s * W * 0.16, cy + H * 0.26);
-
-                    ctx.lineTo(cx + s * W * 0.18, cy + H * 0.36);
-
-                    ctx.lineWidth = 2.5; ctx.stroke();
-
-                    // Humerus + radioulna
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx + s * W * 0.10, cy - H * 0.14);
-
-                    ctx.lineTo(cx + s * W * 0.18, cy - H * 0.08);
-
-                    ctx.lineTo(cx + s * W * 0.20, cy - H * 0.02);
-
-                    ctx.lineWidth = 2; ctx.stroke();
-
-                  });
-
-                  ctx.globalAlpha = 1;
-
+                  ctx.restore();
                 }
-
-                // Nervous layer: draw nerve pathways
 
                 if (activeLayer === 'nervous') {
-
-                  ctx.globalAlpha = 0.6;
-
-                  // Brain
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.25, W * 0.05, H * 0.03, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(167,139,250,0.4)'; ctx.fill();
-
-                  ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                  // Optic lobes
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.28, W * 0.03, H * 0.015, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(196,181,253,0.4)'; ctx.fill(); ctx.stroke();
-
-                  // Spinal cord
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.22); ctx.lineTo(cx, cy + H * 0.18);
-
-                  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2.5; ctx.setLineDash([4, 2]); ctx.stroke(); ctx.setLineDash([]);
-
-                  // Spinal nerves (10 pairs)
-
-                  for (var sn = 0; sn < 10; sn++) {
-
-                    var sny = cy - H * 0.18 + sn * (H * 0.36 / 10);
-
-                    [-1, 1].forEach(function (s) {
-
-                      ctx.beginPath(); ctx.moveTo(cx, sny);
-
-                      ctx.lineTo(cx + s * W * 0.08, sny + H * 0.01);
-
-                      ctx.strokeStyle = 'rgba(167,139,250,0.3)'; ctx.lineWidth = 0.8; ctx.stroke();
-
-                    });
-
-                  }
-
-                  // Sciatic nerves
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.moveTo(cx + s * W * 0.04, cy + H * 0.15);
-
-                    ctx.quadraticCurveTo(cx + s * W * 0.10, cy + H * 0.25, cx + s * W * 0.16, cy + H * 0.38);
-
-                    ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2; ctx.setLineDash([3, 2]); ctx.stroke(); ctx.setLineDash([]);
-
-                  });
-
-                  // Optic nerves to eyes
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.moveTo(cx + s * W * 0.03, cy - H * 0.26);
-
-                    ctx.lineTo(cx + s * W * 0.07, cy - H * 0.28);
-
-                    ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 1; ctx.stroke();
-
-                  });
-
-                  ctx.globalAlpha = 1;
-
+                  ctx.save(); ctx.globalAlpha = frogAccessible ? 0.92 : 0.76;
+                  ctx.beginPath();ctx.ellipse(cx,cy-H*0.285,W*0.045,H*0.026,0,0,Math.PI*2);ctx.fillStyle='rgba(196,181,253,0.76)';ctx.fill();ctx.strokeStyle='#7c3aed';ctx.lineWidth=0.9;ctx.stroke();
+                  [-1,1].forEach(function(side){ctx.beginPath();ctx.ellipse(cx+side*W*0.025,cy-H*0.292,W*0.019,H*0.014,0,0,Math.PI*2);ctx.fillStyle='#a78bfa';ctx.fill();ctx.beginPath();ctx.moveTo(cx+side*W*0.027,cy-H*0.29);ctx.lineTo(cx+side*W*0.088,cy-H*0.275);ctx.strokeStyle='#c084fc';ctx.lineWidth=1;ctx.stroke();});
+                  ctx.beginPath();ctx.moveTo(cx,cy-H*0.255);ctx.lineTo(cx,cy+H*0.19);ctx.strokeStyle='#a78bfa';ctx.lineWidth=2.2;ctx.stroke();
+                  for(var frogNerve=0;frogNerve<9;frogNerve++){var nerveY=cy-H*0.19+frogNerve*H*0.046;ctx.beginPath();ctx.moveTo(cx,nerveY);ctx.lineTo(cx-W*0.085,nerveY+H*0.012);ctx.moveTo(cx,nerveY);ctx.lineTo(cx+W*0.085,nerveY+H*0.012);ctx.strokeStyle='rgba(192,132,252,0.58)';ctx.lineWidth=0.65;ctx.stroke();}
+                  [-1,1].forEach(function(side){ctx.beginPath();ctx.moveTo(cx+side*W*0.035,cy+H*0.14);ctx.bezierCurveTo(cx+side*W*0.13,cy+H*0.18,cx+side*W*0.23,cy+H*0.24,cx+side*W*0.29,cy+H*0.34);ctx.strokeStyle='#c084fc';ctx.lineWidth=1.8;ctx.stroke();ctx.beginPath();ctx.moveTo(cx+side*W*0.02,cy-H*0.12);ctx.quadraticCurveTo(cx+side*W*0.10,cy-H*0.09,cx+side*W*0.19,cy-H*0.025);ctx.strokeStyle='#a78bfa';ctx.lineWidth=1.1;ctx.stroke();});
+                  ctx.restore();
                 }
-
 
 
               } else if (spec.bodyShape === 'worm') {
 
-  // €â€ Draw organ pins â€â€•â• EARTHWORM (Lumbricus) â€” segmented annelid â•â•
-
+                // Earthworm geometry is built from one curved centerline so surface
+                // segments, setae, and internal systems remain anatomically registered.
                 var wormTop = cy - H * 0.38;
+                var wormLength = H * 0.76;
+                var wormBaseWidth = W * 0.047;
+                var wormSegmentCount = 40;
+                var wormAccessible = (d.visualRealism || visualRealism) === 'accessible';
+                var wormRealistic = (d.visualRealism || visualRealism) === 'realistic';
 
-                var wormBot = cy + H * 0.38;
+                function earthwormPoint(t) {
+                  var clamped = Math.max(0, Math.min(1, t));
+                  return {
+                    x: cx + Math.sin(clamped * Math.PI * 2.15 + 0.32) * W * 0.026 + Math.sin(clamped * Math.PI * 5.1) * W * 0.005,
+                    y: wormTop + wormLength * clamped
+                  };
+                }
+                function earthwormWidth(t) {
+                  var anteriorTaper = Math.min(1, Math.max(0, t / 0.055));
+                  var posteriorTaper = Math.min(1, Math.max(0, (1 - t) / 0.105));
+                  var taper = 0.34 + Math.min(anteriorTaper, posteriorTaper) * 0.66;
+                  var clitellumExpansion = t >= 0.29 && t <= 0.39 ? 1.16 : 1;
+                  return wormBaseWidth * taper * clitellumExpansion;
+                }
+                function earthwormFrame(t) {
+                  var before = earthwormPoint(Math.max(0, t - 0.004));
+                  var after = earthwormPoint(Math.min(1, t + 0.004));
+                  var tx = after.x - before.x, ty = after.y - before.y;
+                  var tangentLength = Math.sqrt(tx * tx + ty * ty) || 1;
+                  tx /= tangentLength; ty /= tangentLength;
+                  return { point: earthwormPoint(t), tx: tx, ty: ty, nx: -ty, ny: tx, width: earthwormWidth(t) };
+                }
+                function traceEarthwormBody() {
+                  var bodySamples = 56;
+                  ctx.beginPath();
+                  for (var leftSample = 0; leftSample <= bodySamples; leftSample++) {
+                    var leftT = leftSample / bodySamples, leftFrame = earthwormFrame(leftT);
+                    var leftX = leftFrame.point.x + leftFrame.nx * leftFrame.width;
+                    var leftY = leftFrame.point.y + leftFrame.ny * leftFrame.width;
+                    if (leftSample === 0) ctx.moveTo(leftX, leftY); else ctx.lineTo(leftX, leftY);
+                  }
+                  for (var rightSample = bodySamples; rightSample >= 0; rightSample--) {
+                    var rightT = rightSample / bodySamples, rightFrame = earthwormFrame(rightT);
+                    ctx.lineTo(rightFrame.point.x - rightFrame.nx * rightFrame.width, rightFrame.point.y - rightFrame.ny * rightFrame.width);
+                  }
+                  ctx.closePath();
+                }
+                function traceEarthwormLine(offsetRatio, startT, endT) {
+                  var lineSteps = 44;
+                  ctx.beginPath();
+                  for (var lineStep = 0; lineStep <= lineSteps; lineStep++) {
+                    var lineT = startT + (endT - startT) * lineStep / lineSteps;
+                    var lineFrame = earthwormFrame(lineT);
+                    var lineX = lineFrame.point.x + lineFrame.nx * lineFrame.width * offsetRatio;
+                    var lineY = lineFrame.point.y + lineFrame.ny * lineFrame.width * offsetRatio;
+                    if (lineStep === 0) ctx.moveTo(lineX, lineY); else ctx.lineTo(lineX, lineY);
+                  }
+                }
+                function traceEarthwormBand(startT, endT, widthScale) {
+                  var bandSteps = 12;
+                  ctx.beginPath();
+                  for (var bandLeft = 0; bandLeft <= bandSteps; bandLeft++) {
+                    var bandLeftT = startT + (endT - startT) * bandLeft / bandSteps;
+                    var bandLeftFrame = earthwormFrame(bandLeftT);
+                    var bandLeftX = bandLeftFrame.point.x + bandLeftFrame.nx * bandLeftFrame.width * widthScale;
+                    var bandLeftY = bandLeftFrame.point.y + bandLeftFrame.ny * bandLeftFrame.width * widthScale;
+                    if (bandLeft === 0) ctx.moveTo(bandLeftX, bandLeftY); else ctx.lineTo(bandLeftX, bandLeftY);
+                  }
+                  for (var bandRight = bandSteps; bandRight >= 0; bandRight--) {
+                    var bandRightT = startT + (endT - startT) * bandRight / bandSteps;
+                    var bandRightFrame = earthwormFrame(bandRightT);
+                    ctx.lineTo(bandRightFrame.point.x - bandRightFrame.nx * bandRightFrame.width * widthScale, bandRightFrame.point.y - bandRightFrame.ny * bandRightFrame.width * widthScale);
+                  }
+                  ctx.closePath();
+                }
 
-                var ww = W * 0.045;
-
-  // €â€ Draw organ pins â€â€”€â”€ Body (S-curved) â”€â”€
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - ww, wormTop);
-
-                ctx.bezierCurveTo(cx - ww - W * 0.02, wormTop + H * 0.20, cx - ww + W * 0.02, wormTop + H * 0.40, cx - ww - W * 0.01, wormBot);
-
-                ctx.quadraticCurveTo(cx, wormBot + H * 0.02, cx + ww + W * 0.01, wormBot);
-
-                ctx.bezierCurveTo(cx + ww + W * 0.02, wormTop + H * 0.40, cx + ww - W * 0.02, wormTop + H * 0.20, cx + ww, wormTop);
-
-                ctx.quadraticCurveTo(cx, wormTop - H * 0.015, cx - ww, wormTop);
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
+                var wormSurfaceGradient = ctx.createLinearGradient(cx - wormBaseWidth * 1.4, 0, cx + wormBaseWidth * 1.4, 0);
+                wormSurfaceGradient.addColorStop(0, layerStroke);
+                wormSurfaceGradient.addColorStop(0.24, layerColor);
+                wormSurfaceGradient.addColorStop(0.52, wormAccessible ? '#ddd6fe' : layerColor);
+                wormSurfaceGradient.addColorStop(0.78, layerColor);
+                wormSurfaceGradient.addColorStop(1, layerStroke);
+                traceEarthwormBody(); ctx.fillStyle = wormSurfaceGradient; ctx.fill();
+                ctx.strokeStyle = layerStroke; ctx.lineWidth = wormAccessible ? 2 : 1.15; ctx.stroke();
                 ctx.shadowBlur = 0;
 
-  // €â€ Draw organ pins â€â€”€â”€ Segmentation rings â”€â”€
+                // Soft dorsal shading and moist sheen follow the same curved axis.
+                ctx.save(); traceEarthwormBody(); ctx.clip();
+                var wormVolumeGradient = ctx.createLinearGradient(cx - wormBaseWidth, 0, cx + wormBaseWidth, 0);
+                wormVolumeGradient.addColorStop(0, 'rgba(35,20,36,' + (wormRealistic ? '0.24' : '0.13') + ')');
+                wormVolumeGradient.addColorStop(0.42, 'rgba(255,255,255,0.16)');
+                wormVolumeGradient.addColorStop(0.62, 'rgba(255,255,255,0.035)');
+                wormVolumeGradient.addColorStop(1, 'rgba(35,20,36,0.18)');
+                ctx.fillStyle = wormVolumeGradient; ctx.fillRect(cx - W * 0.11, wormTop - H * 0.02, W * 0.22, wormLength + H * 0.04);
+                ctx.globalAlpha = wormAccessible ? 0.12 : 0.2;
+                traceEarthwormLine(-0.28, 0.035, 0.96);
+                var wormMoistPalette = (typeof window !== 'undefined' && window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { text: '#ffffff' };
+                ctx.strokeStyle = wormMoistPalette.text || '#ffffff'; ctx.lineWidth = wormBaseWidth * 0.32; ctx.lineCap = 'round'; ctx.stroke();
+                ctx.restore();
 
-                ctx.globalAlpha = 0.15;
-
-                var numSegs = 32;
-
-                for (var seg = 1; seg < numSegs; seg++) {
-
-                  var segY = wormTop + seg * (wormBot - wormTop) / numSegs;
-
-                  var xOff = Math.sin(seg * 0.2) * W * 0.008;
-
-                  ctx.beginPath(); ctx.moveTo(cx - ww + xOff, segY); ctx.lineTo(cx + ww + xOff, segY);
-
-                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
-
+                // Fine annuli are perpendicular to the local body tangent and tighten at both ends.
+                ctx.globalAlpha = wormAccessible ? 0.34 : (wormRealistic ? 0.28 : 0.2);
+                for (var wormSegment = 1; wormSegment < wormSegmentCount; wormSegment++) {
+                  var segmentT = wormSegment / wormSegmentCount;
+                  var segmentFrame = earthwormFrame(segmentT);
+                  var segmentInset = segmentT >= 0.29 && segmentT <= 0.39 ? 0.97 : 0.9;
+                  ctx.beginPath();
+                  ctx.moveTo(segmentFrame.point.x + segmentFrame.nx * segmentFrame.width * segmentInset, segmentFrame.point.y + segmentFrame.ny * segmentFrame.width * segmentInset);
+                  ctx.lineTo(segmentFrame.point.x - segmentFrame.nx * segmentFrame.width * segmentInset, segmentFrame.point.y - segmentFrame.ny * segmentFrame.width * segmentInset);
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = wormAccessible ? 0.9 : 0.55; ctx.stroke();
                 }
-
                 ctx.globalAlpha = 1;
 
-  // €â€ Draw organ pins â€â€”€â”€ Prostomium â”€â”€
+                // The clitellum is a gently expanded glandular saddle integrated into the annuli.
+                traceEarthwormBand(0.29, 0.39, 1.015);
+                ctx.fillStyle = wormAccessible ? 'rgba(253,230,138,0.48)' : 'rgba(221,176,156,' + (wormRealistic ? '0.46' : '0.34') + ')'; ctx.fill();
+                ctx.strokeStyle = wormAccessible ? '#92400e' : layerStroke; ctx.lineWidth = wormAccessible ? 1.5 : 0.8; ctx.stroke();
+                [0.29, 0.39].forEach(function (clitellumEdgeT) {
+                  var edgeFrame = earthwormFrame(clitellumEdgeT);
+                  ctx.beginPath();
+                  ctx.moveTo(edgeFrame.point.x + edgeFrame.nx * edgeFrame.width, edgeFrame.point.y + edgeFrame.ny * edgeFrame.width);
+                  ctx.lineTo(edgeFrame.point.x - edgeFrame.nx * edgeFrame.width, edgeFrame.point.y - edgeFrame.ny * edgeFrame.width);
+                  ctx.strokeStyle = 'rgba(83,54,56,0.48)'; ctx.lineWidth = 1; ctx.stroke();
+                });
 
-                ctx.beginPath(); ctx.ellipse(cx, wormTop - H * 0.005, ww * 0.6, H * 0.008, 0, 0, Math.PI * 2);
-
+                // Anterior prostomium forms a small sensory lip over the mouth.
+                var prostomiumFrame = earthwormFrame(0);
+                var prostomiumAngle = Math.atan2(prostomiumFrame.ty, prostomiumFrame.tx);
+                ctx.save(); ctx.translate(prostomiumFrame.point.x, prostomiumFrame.point.y - H * 0.004); ctx.rotate(prostomiumAngle);
+                ctx.beginPath(); ctx.ellipse(-H * 0.004, 0, H * 0.012, wormBaseWidth * 0.46, 0, 0, Math.PI * 2);
                 ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
+                ctx.beginPath(); ctx.arc(-H * 0.009, 0, 1.15, 0, Math.PI * 2); ctx.fillStyle = 'rgba(52,31,39,0.58)'; ctx.fill();
+                ctx.restore();
 
-  // €â€ Draw organ pins â€â€”€â”€ Clitellum â”€â”€
-
-                var clitTop = wormTop + 12 * (wormBot - wormTop) / numSegs;
-
-                var clitBot = wormTop + 15 * (wormBot - wormTop) / numSegs;
-
-                ctx.beginPath(); ctx.rect(cx - ww - W * 0.005, clitTop, ww * 2 + W * 0.01, clitBot - clitTop);
-
-                ctx.fillStyle = 'rgba(0,0,0,0.06)'; ctx.fill();
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.6; ctx.stroke();
-
-                ctx.beginPath(); ctx.rect(cx - ww * 0.5, clitTop, ww, clitBot - clitTop);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fill();
-
-  // €â€ Draw organ pins â€â€”€â”€ Setae â”€â”€
-
-                ctx.globalAlpha = 0.2;
-
-                for (var st = 2; st < numSegs - 1; st++) {
-
-                  var stY = wormTop + st * (wormBot - wormTop) / numSegs + (wormBot - wormTop) / numSegs / 2;
-
-                  var stOff = Math.sin(st * 0.2) * W * 0.008;
-
-                  ctx.beginPath(); ctx.moveTo(cx - ww + stOff, stY);
-
-                  ctx.lineTo(cx - ww - W * 0.008 + stOff, stY - 1); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx - ww + stOff, stY);
-
-                  ctx.lineTo(cx - ww - W * 0.008 + stOff, stY + 1); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx + ww + stOff, stY);
-
-                  ctx.lineTo(cx + ww + W * 0.008 + stOff, stY - 1); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx + ww + stOff, stY);
-
-                  ctx.lineTo(cx + ww + W * 0.008 + stOff, stY + 1); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.5; ctx.stroke();
-
+                // Four paired setal positions are suggested on alternating segments without exaggeration.
+                ctx.globalAlpha = wormAccessible ? 0.68 : 0.42;
+                for (var setaSegment = 3; setaSegment < wormSegmentCount - 2; setaSegment += 2) {
+                  var setaT = (setaSegment + 0.5) / wormSegmentCount;
+                  if (setaT >= 0.29 && setaT <= 0.39) continue;
+                  var setaFrame = earthwormFrame(setaT);
+                  [-1, 1].forEach(function (setaSide) {
+                    [0.76, 0.94].forEach(function (setaBand, setaIndex) {
+                      var setaBaseX = setaFrame.point.x + setaFrame.nx * setaFrame.width * setaBand * setaSide;
+                      var setaBaseY = setaFrame.point.y + setaFrame.ny * setaFrame.width * setaBand * setaSide;
+                      ctx.beginPath(); ctx.moveTo(setaBaseX, setaBaseY);
+                      ctx.lineTo(setaBaseX + setaFrame.nx * setaSide * (3.2 + setaIndex), setaBaseY + setaFrame.ny * setaSide * (3.2 + setaIndex) - setaFrame.ty * 1.4);
+                      ctx.strokeStyle = wormAccessible ? '#27272a' : 'rgba(70,47,43,0.8)'; ctx.lineWidth = 0.55; ctx.stroke();
+                    });
+                  });
                 }
-
                 ctx.globalAlpha = 1;
-
-  // €â€ Draw organ pins â€â€”€â”€ Moisture sheen â”€â”€
-
-                ctx.globalAlpha = 0.05;
-
-                ctx.beginPath(); ctx.rect(cx - ww * 0.3, wormTop + H * 0.05, ww * 0.4, wormBot - wormTop - H * 0.10);
-
-                // Theme-aware moisture sheen — use palette.text so it reads as a faint highlight
-                // in both light + dark modes (was hardcoded white, broke in light theme).
-                var _moistPalette = (typeof window !== 'undefined' && window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { text: '#ffffff' };
-                ctx.fillStyle = _moistPalette.text || '#ffffff';
-                ctx.fill();
-
-                ctx.globalAlpha = 1;
-
-  // €â€ Draw organ pins â€â€”€â”€ Layer overlays â”€â”€
 
                 if (activeLayer === 'skin') {
-
-                  ctx.globalAlpha = 0.1;
-
-                  for (var mg = 0; mg < 20; mg++) {
-
-                    ctx.beginPath(); ctx.arc(cx - ww * 0.5, wormTop + H * 0.05 + mg * H * 0.035, 1.5, 0, Math.PI * 2);
-
-                    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fill();
-
+                  // Deterministic mucus-gland points reinforce cutaneous respiration without sparkle.
+                  ctx.globalAlpha = wormAccessible ? 0.34 : 0.2;
+                  for (var mucusGland = 0; mucusGland < 28; mucusGland++) {
+                    var mucusT = 0.04 + ((mucusGland * 29) % 91) / 100;
+                    var mucusFrame = earthwormFrame(mucusT);
+                    var mucusOffset = ((mucusGland % 5) - 2) / 2.7;
+                    ctx.beginPath(); ctx.arc(mucusFrame.point.x + mucusFrame.nx * mucusFrame.width * mucusOffset, mucusFrame.point.y + mucusFrame.ny * mucusFrame.width * mucusOffset, 0.7, 0, Math.PI * 2);
+                    ctx.fillStyle = wormMoistPalette.text || '#ffffff'; ctx.fill();
                   }
-
                   ctx.globalAlpha = 1;
-
                 }
 
                 if (activeLayer === 'muscle') {
-
-                  ctx.globalAlpha = 0.3;
-
-                  for (var lm = 0; lm < 3; lm++) {
-
-                    ctx.beginPath(); ctx.moveTo(cx - ww * 0.5 + lm * ww * 0.5, wormTop + H * 0.02);
-
-                    ctx.lineTo(cx - ww * 0.5 + lm * ww * 0.5, wormBot - H * 0.02);
-
-                    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1; ctx.stroke();
-
-                  }
-
-                  for (var cm = 0; cm < 15; cm++) {
-
-                    ctx.beginPath(); ctx.moveTo(cx - ww, wormTop + cm * H * 0.05 + H * 0.03);
-
-                    ctx.lineTo(cx + ww, wormTop + cm * H * 0.05 + H * 0.03);
-
+                  ctx.globalAlpha = wormAccessible ? 0.68 : 0.46;
+                  [-0.5, 0, 0.5].forEach(function (muscleOffset) {
+                    traceEarthwormLine(muscleOffset, 0.025, 0.975);
+                    ctx.strokeStyle = '#b91c1c'; ctx.lineWidth = muscleOffset === 0 ? 1.15 : 0.8; ctx.stroke();
+                  });
+                  for (var circularBand = 2; circularBand < wormSegmentCount - 1; circularBand += 2) {
+                    var circularFrame = earthwormFrame(circularBand / wormSegmentCount);
+                    ctx.beginPath();
+                    ctx.moveTo(circularFrame.point.x + circularFrame.nx * circularFrame.width * 0.88, circularFrame.point.y + circularFrame.ny * circularFrame.width * 0.88);
+                    ctx.lineTo(circularFrame.point.x - circularFrame.nx * circularFrame.width * 0.88, circularFrame.point.y - circularFrame.ny * circularFrame.width * 0.88);
                     ctx.strokeStyle = '#f87171'; ctx.lineWidth = 0.8; ctx.stroke();
-
                   }
-
                   ctx.globalAlpha = 1;
-
                 }
 
                 if (activeLayer === 'organs') {
-
-                  ctx.globalAlpha = 0.5;
-
-                  for (var aa = 0; aa < 5; aa++) {
-
-                    ctx.beginPath(); ctx.arc(cx, wormTop + H * 0.15 + aa * H * 0.04, W * 0.012, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#dc2626'; ctx.fill();
-
+                  ctx.globalAlpha = wormAccessible ? 0.82 : 0.64;
+                  // Digestive tube, pharynx, crop, and muscular gizzard follow the body axis.
+                  traceEarthwormLine(0, 0.055, 0.95); ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = wormBaseWidth * 0.48; ctx.stroke();
+                  var pharynxFrame = earthwormFrame(0.105);
+                  ctx.beginPath(); ctx.ellipse(pharynxFrame.point.x, pharynxFrame.point.y, wormBaseWidth * 0.52, H * 0.018, 0.05, 0, Math.PI * 2); ctx.fillStyle = '#fcd34d'; ctx.fill();
+                  var cropFrame = earthwormFrame(0.315);
+                  ctx.beginPath(); ctx.ellipse(cropFrame.point.x, cropFrame.point.y, wormBaseWidth * 0.62, H * 0.018, -0.04, 0, Math.PI * 2); ctx.fillStyle = '#fde68a'; ctx.fill(); ctx.strokeStyle = '#d97706'; ctx.lineWidth = 0.6; ctx.stroke();
+                  var gizzardFrame = earthwormFrame(0.37);
+                  ctx.beginPath(); ctx.ellipse(gizzardFrame.point.x, gizzardFrame.point.y, wormBaseWidth * 0.72, H * 0.02, 0.04, 0, Math.PI * 2); ctx.fillStyle = '#c084fc'; ctx.fill(); ctx.strokeStyle = '#7c3aed'; ctx.stroke();
+                  // Five paired aortic arches encircle the anterior digestive tract.
+                  for (var archIndex = 0; archIndex < 5; archIndex++) {
+                    var archFrame = earthwormFrame(0.16 + archIndex * 0.026);
+                    ctx.beginPath(); ctx.ellipse(archFrame.point.x, archFrame.point.y, archFrame.width * 0.72, H * 0.009, 0, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.3; ctx.stroke();
                   }
-
-                  ctx.beginPath(); ctx.ellipse(cx, wormTop + H * 0.35, ww * 0.6, H * 0.02, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fde68a'; ctx.fill();
-
-                  ctx.beginPath(); ctx.ellipse(cx, wormTop + H * 0.40, ww * 0.7, H * 0.02, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#a78bfa'; ctx.fill();
-
-                  ctx.beginPath(); ctx.moveTo(cx, wormTop + H * 0.42);
-
-                  ctx.lineTo(cx, wormBot - H * 0.05);
-
-                  ctx.strokeStyle = '#f97316'; ctx.lineWidth = ww * 0.6; ctx.stroke();
-
+                  // Paired seminal vesicles sit beside the arches.
+                  [0.22, 0.25].forEach(function (vesicleT) {
+                    var vesicleFrame = earthwormFrame(vesicleT);
+                    [-1, 1].forEach(function (vesicleSide) {
+                      ctx.beginPath(); ctx.ellipse(vesicleFrame.point.x + vesicleFrame.nx * vesicleFrame.width * 0.46 * vesicleSide, vesicleFrame.point.y + vesicleFrame.ny * vesicleFrame.width * 0.46 * vesicleSide, W * 0.007, H * 0.008, 0, 0, Math.PI * 2);
+                      ctx.fillStyle = '#f8fafc'; ctx.fill(); ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 0.5; ctx.stroke();
+                    });
+                  });
                   ctx.globalAlpha = 1;
-
                 }
 
                 if (activeLayer === 'nervous') {
-
-                  ctx.globalAlpha = 0.6;
-
-                  ctx.beginPath(); ctx.arc(cx, wormTop + H * 0.04, W * 0.012, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fbbf24'; ctx.fill();
-
-                  ctx.beginPath(); ctx.moveTo(cx, wormTop + H * 0.04);
-
-                  ctx.lineTo(cx, wormBot - H * 0.02);
-
-                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                  for (var sg2 = 0; sg2 < 12; sg2++) {
-
-                    ctx.beginPath(); ctx.arc(cx, wormTop + H * 0.08 + sg2 * H * 0.06, 2.5, 0, Math.PI * 2);
-
+                  ctx.globalAlpha = wormAccessible ? 0.88 : 0.72;
+                  // Ventral cord sits slightly off the digestive midline in this teaching view.
+                  traceEarthwormLine(0.28, 0.06, 0.97); ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = wormAccessible ? 2 : 1.35; ctx.stroke();
+                  var cerebralFrame = earthwormFrame(0.065);
+                  [-1, 1].forEach(function (ganglionSide) {
+                    ctx.beginPath(); ctx.ellipse(cerebralFrame.point.x + cerebralFrame.nx * ganglionSide * W * 0.006, cerebralFrame.point.y + cerebralFrame.ny * ganglionSide * W * 0.006, W * 0.0065, H * 0.006, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fde047'; ctx.fill();
+                  });
+                  for (var ganglionIndex = 4; ganglionIndex < wormSegmentCount - 1; ganglionIndex += 3) {
+                    var ganglionFrame = earthwormFrame(ganglionIndex / wormSegmentCount);
+                    ctx.beginPath(); ctx.arc(ganglionFrame.point.x + ganglionFrame.nx * ganglionFrame.width * 0.28, ganglionFrame.point.y + ganglionFrame.ny * ganglionFrame.width * 0.28, wormAccessible ? 2.5 : 1.8, 0, Math.PI * 2);
                     ctx.fillStyle = '#f59e0b'; ctx.fill();
-
                   }
-
                   ctx.globalAlpha = 1;
-
                 }
-
-
-
 
 
               } else if (spec.bodyShape === 'pig') {
 
-  // €â€ Draw organ pins â€â€•â• FETAL PIG (Sus scrofa) â•â•
+                // Fetal pig in a natural side-lying teaching-specimen posture. The
+                // restrained landmarks and closed eyelid avoid a mascot-like face.
+                var pigAccessible = (d.visualRealism || visualRealism) === 'accessible';
+                var pigRealistic = (d.visualRealism || visualRealism) === 'realistic';
+                var pigOutlineWidth = pigAccessible ? 2.2 : 1.25;
+                var pigTissueGradient = ctx.createLinearGradient(cx - W * 0.16, cy - H * 0.15, cx + W * 0.20, cy + H * 0.16);
+                pigTissueGradient.addColorStop(0, layerStroke);
+                pigTissueGradient.addColorStop(0.18, layerColor);
+                pigTissueGradient.addColorStop(0.58, layerColor);
+                pigTissueGradient.addColorStop(1, layerStroke);
 
-  // €â€ Draw organ pins â€â€”€â”€ Body (barrel-shaped torso) â”€â”€
+                function tracePigBody() {
+                  ctx.beginPath();
+                  ctx.moveTo(cx - W * 0.17, cy - H * 0.105);
+                  ctx.bezierCurveTo(cx - W * 0.09, cy - H * 0.155, cx + W * 0.055, cy - H * 0.17, cx + W * 0.155, cy - H * 0.125);
+                  ctx.bezierCurveTo(cx + W * 0.225, cy - H * 0.095, cx + W * 0.245, cy - H * 0.018, cx + W * 0.215, cy + H * 0.075);
+                  ctx.bezierCurveTo(cx + W * 0.185, cy + H * 0.145, cx + W * 0.075, cy + H * 0.17, cx - W * 0.055, cy + H * 0.145);
+                  ctx.bezierCurveTo(cx - W * 0.145, cy + H * 0.13, cx - W * 0.19, cy + H * 0.075, cx - W * 0.185, cy - H * 0.015);
+                  ctx.bezierCurveTo(cx - W * 0.185, cy - H * 0.055, cx - W * 0.18, cy - H * 0.085, cx - W * 0.17, cy - H * 0.105);
+                  ctx.closePath();
+                }
 
-                ctx.beginPath();
+                function drawPigLimb(shoulderX, shoulderY, kneeX, kneeY, hoofX, hoofY, farSide) {
+                  ctx.save();
+                  ctx.globalAlpha = farSide ? 0.55 : 0.96;
+                  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                  ctx.beginPath(); ctx.moveTo(shoulderX, shoulderY);
+                  ctx.quadraticCurveTo((shoulderX + kneeX) / 2 - W * 0.012, (shoulderY + kneeY) / 2, kneeX, kneeY);
+                  ctx.quadraticCurveTo((kneeX + hoofX) / 2 + W * 0.008, (kneeY + hoofY) / 2, hoofX, hoofY);
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = farSide ? W * 0.027 : W * 0.033; ctx.stroke();
+                  ctx.strokeStyle = layerColor; ctx.lineWidth = farSide ? W * 0.021 : W * 0.027; ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(kneeX, kneeY, W * 0.018, H * 0.012, -0.25, 0, Math.PI * 2);
+                  ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.7; ctx.stroke();
+                  var hoofAngle = Math.atan2(hoofY - kneeY, hoofX - kneeX);
+                  ctx.save(); ctx.translate(hoofX, hoofY); ctx.rotate(hoofAngle - Math.PI / 2);
+                  [-1, 1].forEach(function (hoofSide) {
+                    ctx.beginPath();
+                    ctx.ellipse(hoofSide * W * 0.008, H * 0.005, W * 0.0075, H * 0.016, hoofSide * 0.08, 0, Math.PI * 2);
+                    ctx.fillStyle = pigAccessible ? '#3f3f46' : 'rgba(63,47,46,0.78)'; ctx.fill();
+                  });
+                  ctx.restore(); ctx.restore();
+                }
 
-                ctx.moveTo(cx - W * 0.18, cy - H * 0.14);
+                // Far-side limbs sit behind the torso and are deliberately quieter.
+                drawPigLimb(cx - W * 0.085, cy + H * 0.075, cx - W * 0.055, cy + H * 0.17, cx + W * 0.005, cy + H * 0.235, true);
+                drawPigLimb(cx + W * 0.135, cy + H * 0.075, cx + W * 0.205, cy + H * 0.155, cx + W * 0.235, cy + H * 0.225, true);
 
-                ctx.bezierCurveTo(cx - W * 0.08, cy - H * 0.18, cx + W * 0.10, cy - H * 0.18, cx + W * 0.20, cy - H * 0.12);
-
-                ctx.bezierCurveTo(cx + W * 0.24, cy - H * 0.06, cx + W * 0.24, cy + H * 0.08, cx + W * 0.20, cy + H * 0.14);
-
-                ctx.bezierCurveTo(cx + W * 0.10, cy + H * 0.18, cx - W * 0.08, cy + H * 0.18, cx - W * 0.18, cy + H * 0.14);
-
-                ctx.bezierCurveTo(cx - W * 0.22, cy + H * 0.08, cx - W * 0.22, cy - H * 0.06, cx - W * 0.18, cy - H * 0.14);
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
+                tracePigBody();
+                ctx.fillStyle = pigTissueGradient; ctx.fill();
+                ctx.strokeStyle = layerStroke; ctx.lineWidth = pigOutlineWidth; ctx.stroke();
                 ctx.shadowBlur = 0;
 
-                // Body midline highlight (3D volume)
+                // Directional volume and mild preservation mottling stay inside the torso.
+                ctx.save(); tracePigBody(); ctx.clip();
+                var pigVolume = ctx.createRadialGradient(cx - W * 0.055, cy - H * 0.08, W * 0.01, cx, cy, W * 0.29);
+                pigVolume.addColorStop(0, 'rgba(255,255,255,' + (pigAccessible ? '0.16' : '0.22') + ')');
+                pigVolume.addColorStop(0.58, 'rgba(255,255,255,0.015)');
+                pigVolume.addColorStop(1, 'rgba(49,24,31,' + (pigRealistic ? '0.18' : '0.10') + ')');
+                ctx.fillStyle = pigVolume; ctx.fillRect(cx - W * 0.24, cy - H * 0.2, W * 0.5, H * 0.4);
+                if (!pigAccessible) {
+                  ctx.globalAlpha = pigRealistic ? 0.13 : 0.075;
+                  for (var pigMottle = 0; pigMottle < 34; pigMottle++) {
+                    var mottleX = cx - W * 0.15 + ((pigMottle * 47) % 101) / 100 * W * 0.35;
+                    var mottleY = cy - H * 0.11 + ((pigMottle * 73) % 101) / 100 * H * 0.23;
+                    ctx.beginPath(); ctx.ellipse(mottleX, mottleY, W * (0.004 + (pigMottle % 4) * 0.0015), H * 0.003, 0.3, 0, Math.PI * 2);
+                    ctx.fillStyle = pigMottle % 3 ? layerStroke : '#f8d7d2'; ctx.fill();
+                  }
+                }
+                ctx.restore();
 
-                ctx.beginPath(); ctx.ellipse(cx - W * 0.02, cy - H * 0.04, W * 0.12, H * 0.08, -0.05, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fill();
-
-
-
-  // €â€ Draw organ pins â€â€”€â”€ Head (elongated snout) â”€â”€
-
+                // Neck and head use a tapered fetal profile instead of a circular face.
                 ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.18, cy - H * 0.10);
-
-                ctx.bezierCurveTo(cx - W * 0.22, cy - H * 0.12, cx - W * 0.28, cy - H * 0.10, cx - W * 0.30, cy - H * 0.04);
-
-                ctx.bezierCurveTo(cx - W * 0.32, cy + H * 0.01, cx - W * 0.30, cy + H * 0.06, cx - W * 0.26, cy + H * 0.08);
-
-                ctx.bezierCurveTo(cx - W * 0.22, cy + H * 0.10, cx - W * 0.18, cy + H * 0.08, cx - W * 0.18, cy + H * 0.04);
-
+                ctx.moveTo(cx - W * 0.165, cy - H * 0.09);
+                ctx.bezierCurveTo(cx - W * 0.205, cy - H * 0.115, cx - W * 0.235, cy - H * 0.115, cx - W * 0.262, cy - H * 0.075);
+                ctx.bezierCurveTo(cx - W * 0.282, cy - H * 0.047, cx - W * 0.305, cy - H * 0.035, cx - W * 0.325, cy - H * 0.014);
+                ctx.bezierCurveTo(cx - W * 0.333, cy + H * 0.003, cx - W * 0.322, cy + H * 0.026, cx - W * 0.297, cy + H * 0.042);
+                ctx.bezierCurveTo(cx - W * 0.265, cy + H * 0.072, cx - W * 0.22, cy + H * 0.085, cx - W * 0.18, cy + H * 0.052);
+                ctx.bezierCurveTo(cx - W * 0.158, cy + H * 0.025, cx - W * 0.15, cy - H * 0.055, cx - W * 0.165, cy - H * 0.09);
                 ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
-
-                // Snout (disk-shaped pig nose)
-
-                ctx.beginPath(); ctx.ellipse(cx - W * 0.31, cy - H * 0.01, W * 0.028, H * 0.035, 0, 0, Math.PI * 2);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.stroke();
-
-                // Nostrils
-
-                ctx.beginPath(); ctx.ellipse(cx - W * 0.32, cy - H * 0.025, 2, 1.5, 0.3, 0, Math.PI * 2);
-
-                ctx.fillStyle = layerStroke; ctx.fill();
-
-                ctx.beginPath(); ctx.ellipse(cx - W * 0.32, cy + H * 0.005, 2, 1.5, -0.3, 0, Math.PI * 2);
-
-                ctx.fillStyle = layerStroke; ctx.fill();
-
-                // Eye
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.24, cy - H * 0.06, 4, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#1a1a1a'; ctx.fill();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.237, cy - H * 0.065, 1.5, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
-
-                // Ears (floppy pig ears)
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.22, cy - H * 0.10);
-
-                ctx.bezierCurveTo(cx - W * 0.24, cy - H * 0.16, cx - W * 0.20, cy - H * 0.18, cx - W * 0.17, cy - H * 0.14);
-
-                ctx.bezierCurveTo(cx - W * 0.16, cy - H * 0.12, cx - W * 0.19, cy - H * 0.10, cx - W * 0.20, cy - H * 0.09);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                // Inner ear shading
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.215, cy - H * 0.11);
-
-                ctx.bezierCurveTo(cx - W * 0.23, cy - H * 0.15, cx - W * 0.19, cy - H * 0.16, cx - W * 0.175, cy - H * 0.13);
-
-                ctx.fillStyle = 'rgba(0,0,0,0.06)'; ctx.fill();
-
-
-
-  // €â€ Draw organ pins â€â€”€â”€ Legs (anatomically shaped with joints) â”€â”€
-
-                // Front-left leg
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.14, cy + H * 0.12);
-
-                ctx.bezierCurveTo(cx - W * 0.15, cy + H * 0.16, cx - W * 0.14, cy + H * 0.22, cx - W * 0.135, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx - W * 0.13, cy + H * 0.28, cx - W * 0.12, cy + H * 0.29, cx - W * 0.115, cy + H * 0.30);
-
-                ctx.lineTo(cx - W * 0.095, cy + H * 0.30);
-
-                ctx.bezierCurveTo(cx - W * 0.09, cy + H * 0.29, cx - W * 0.10, cy + H * 0.28, cx - W * 0.105, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx - W * 0.11, cy + H * 0.22, cx - W * 0.12, cy + H * 0.16, cx - W * 0.11, cy + H * 0.12);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                // Front-right leg (behind)
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.12, cy + H * 0.12);
-
-                ctx.bezierCurveTo(cx - W * 0.13, cy + H * 0.16, cx - W * 0.12, cy + H * 0.22, cx - W * 0.115, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx - W * 0.11, cy + H * 0.28, cx - W * 0.10, cy + H * 0.29, cx - W * 0.095, cy + H * 0.30);
-
-                ctx.lineTo(cx - W * 0.075, cy + H * 0.30);
-
-                ctx.bezierCurveTo(cx - W * 0.07, cy + H * 0.29, cx - W * 0.08, cy + H * 0.28, cx - W * 0.085, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx - W * 0.09, cy + H * 0.22, cx - W * 0.10, cy + H * 0.16, cx - W * 0.09, cy + H * 0.12);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                // Rear-left leg
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx + W * 0.10, cy + H * 0.12);
-
-                ctx.bezierCurveTo(cx + W * 0.09, cy + H * 0.16, cx + W * 0.10, cy + H * 0.22, cx + W * 0.105, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx + W * 0.11, cy + H * 0.28, cx + W * 0.12, cy + H * 0.29, cx + W * 0.125, cy + H * 0.30);
-
-                ctx.lineTo(cx + W * 0.145, cy + H * 0.30);
-
-                ctx.bezierCurveTo(cx + W * 0.15, cy + H * 0.29, cx + W * 0.14, cy + H * 0.28, cx + W * 0.135, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx + W * 0.13, cy + H * 0.22, cx + W * 0.12, cy + H * 0.16, cx + W * 0.13, cy + H * 0.12);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                // Rear-right leg (behind)
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx + W * 0.12, cy + H * 0.12);
-
-                ctx.bezierCurveTo(cx + W * 0.11, cy + H * 0.16, cx + W * 0.12, cy + H * 0.22, cx + W * 0.125, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx + W * 0.13, cy + H * 0.28, cx + W * 0.14, cy + H * 0.29, cx + W * 0.145, cy + H * 0.30);
-
-                ctx.lineTo(cx + W * 0.165, cy + H * 0.30);
-
-                ctx.bezierCurveTo(cx + W * 0.17, cy + H * 0.29, cx + W * 0.16, cy + H * 0.28, cx + W * 0.155, cy + H * 0.26);
-
-                ctx.bezierCurveTo(cx + W * 0.15, cy + H * 0.22, cx + W * 0.14, cy + H * 0.16, cx + W * 0.15, cy + H * 0.12);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-
-
-  // €â€ Draw organ pins â€â€”€â”€ Hooves (dark, split/cloven) â”€â”€
-
-                // Front hooves
-
-                [cx - W * 0.115, cx - W * 0.095].forEach(function (hx) {
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(hx - W * 0.01, cy + H * 0.30);
-
-                  ctx.lineTo(hx - W * 0.012, cy + H * 0.33);
-
-                  ctx.lineTo(hx - W * 0.002, cy + H * 0.33);
-
-                  ctx.lineTo(hx, cy + H * 0.31);
-
-                  ctx.lineTo(hx + W * 0.002, cy + H * 0.33);
-
-                  ctx.lineTo(hx + W * 0.012, cy + H * 0.33);
-
-                  ctx.lineTo(hx + W * 0.01, cy + H * 0.30);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = '#292524'; ctx.fill();
-
+                var pigHeadGradient = ctx.createLinearGradient(cx - W * 0.31, cy - H * 0.09, cx - W * 0.17, cy + H * 0.08);
+                pigHeadGradient.addColorStop(0, layerColor); pigHeadGradient.addColorStop(0.72, layerColor); pigHeadGradient.addColorStop(1, layerStroke);
+                ctx.fillStyle = pigHeadGradient; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = pigOutlineWidth; ctx.stroke();
+
+                // Blunt tapered muzzle, small nares, and a closed eyelid read as fetal anatomy.
+                ctx.beginPath(); ctx.ellipse(cx - W * 0.322, cy + H * 0.006, W * 0.021, H * 0.024, -0.18, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
+                [-1, 1].forEach(function (nostrilSide) {
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.326, cy + H * 0.006 + nostrilSide * H * 0.009, W * 0.0032, H * 0.0028, nostrilSide * 0.35, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(58,35,39,0.72)'; ctx.fill();
                 });
-
-                [cx - W * 0.075].forEach(function (hx) {
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(hx - W * 0.01, cy + H * 0.30);
-
-                  ctx.lineTo(hx - W * 0.012, cy + H * 0.33);
-
-                  ctx.lineTo(hx - W * 0.002, cy + H * 0.33);
-
-                  ctx.lineTo(hx, cy + H * 0.31);
-
-                  ctx.lineTo(hx + W * 0.002, cy + H * 0.33);
-
-                  ctx.lineTo(hx + W * 0.012, cy + H * 0.33);
-
-                  ctx.lineTo(hx + W * 0.01, cy + H * 0.30);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = '#292524'; ctx.fill();
-
-                });
-
-                // Rear hooves
-
-                [cx + W * 0.125, cx + W * 0.145, cx + W * 0.165].forEach(function (hx) {
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(hx - W * 0.01, cy + H * 0.30);
-
-                  ctx.lineTo(hx - W * 0.012, cy + H * 0.33);
-
-                  ctx.lineTo(hx - W * 0.002, cy + H * 0.33);
-
-                  ctx.lineTo(hx, cy + H * 0.31);
-
-                  ctx.lineTo(hx + W * 0.002, cy + H * 0.33);
-
-                  ctx.lineTo(hx + W * 0.012, cy + H * 0.33);
-
-                  ctx.lineTo(hx + W * 0.01, cy + H * 0.30);
-
-                  ctx.closePath();
-
-                  ctx.fillStyle = '#292524'; ctx.fill();
-
-                });
-
-
-
-  // €â€ Draw organ pins â€â€”€â”€ Curly tail â”€â”€
-
                 ctx.beginPath();
+                ctx.moveTo(cx - W * 0.265, cy - H * 0.049);
+                ctx.quadraticCurveTo(cx - W * 0.246, cy - H * 0.057, cx - W * 0.231, cy - H * 0.046);
+                ctx.strokeStyle = pigAccessible ? '#27272a' : 'rgba(61,38,43,0.72)'; ctx.lineWidth = pigAccessible ? 1.8 : 1.15; ctx.stroke();
+                ctx.beginPath(); ctx.arc(cx - W * 0.245, cy - H * 0.048, 1.15, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(61,38,43,0.48)'; ctx.fill();
 
-                ctx.moveTo(cx + W * 0.22, cy - H * 0.02);
+                // Thin folded pinna with a visible attachment and inner ridge.
+                ctx.beginPath();
+                ctx.moveTo(cx - W * 0.215, cy - H * 0.09);
+                ctx.bezierCurveTo(cx - W * 0.228, cy - H * 0.155, cx - W * 0.187, cy - H * 0.178, cx - W * 0.158, cy - H * 0.125);
+                ctx.bezierCurveTo(cx - W * 0.17, cy - H * 0.098, cx - W * 0.19, cy - H * 0.085, cx - W * 0.215, cy - H * 0.09);
+                ctx.closePath(); ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.208, cy - H * 0.103);
+                ctx.quadraticCurveTo(cx - W * 0.198, cy - H * 0.143, cx - W * 0.169, cy - H * 0.127);
+                ctx.strokeStyle = 'rgba(70,39,45,0.28)'; ctx.lineWidth = 0.9; ctx.stroke();
 
-                ctx.bezierCurveTo(cx + W * 0.26, cy - H * 0.06, cx + W * 0.28, cy - H * 0.10, cx + W * 0.26, cy - H * 0.12);
+                // Near-side limbs show different flexion at elbow/knee and hock.
+                drawPigLimb(cx - W * 0.125, cy + H * 0.065, cx - W * 0.175, cy + H * 0.16, cx - W * 0.118, cy + H * 0.245, false);
+                drawPigLimb(cx + W * 0.125, cy + H * 0.07, cx + W * 0.19, cy + H * 0.165, cx + W * 0.105, cy + H * 0.255, false);
 
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.stroke();
+                // Shoulder, flank, jaw, and hock contours add anatomical structure.
+                ctx.strokeStyle = 'rgba(75,45,49,' + (pigAccessible ? '0.48' : '0.24') + ')'; ctx.lineWidth = pigAccessible ? 1.4 : 0.8;
+                ctx.beginPath(); ctx.arc(cx - W * 0.12, cy - H * 0.012, W * 0.042, -1.1, 1.15); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.105, cy - H * 0.105); ctx.quadraticCurveTo(cx + W * 0.145, cy - H * 0.01, cx + W * 0.12, cy + H * 0.095); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.29, cy + H * 0.04); ctx.quadraticCurveTo(cx - W * 0.25, cy + H * 0.062, cx - W * 0.205, cy + H * 0.052); ctx.stroke();
 
+                // Fetal-specific external landmark: a short, softly modeled umbilical stump.
+                if (activeLayer === 'skin') {
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.005, cy + H * 0.132);
+                  ctx.bezierCurveTo(cx + W * 0.018, cy + H * 0.165, cx + W * 0.012, cy + H * 0.19, cx + W * 0.028, cy + H * 0.207);
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = W * 0.013; ctx.stroke();
+                  ctx.strokeStyle = layerColor; ctx.lineWidth = W * 0.009; ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.029, cy + H * 0.21, W * 0.009, H * 0.006, 0.35, 0, Math.PI * 2);
+                  ctx.fillStyle = layerStroke; ctx.fill();
+                }
 
-
-  // €â€ Draw organ pins â€â€”€â”€ Skin layer details â”€â”€
+                // The fetal tail is a narrow taper with one relaxed curve, not an adult corkscrew.
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.218, cy - H * 0.055);
+                ctx.bezierCurveTo(cx + W * 0.268, cy - H * 0.08, cx + W * 0.286, cy - H * 0.125, cx + W * 0.26, cy - H * 0.15);
+                ctx.strokeStyle = layerStroke; ctx.lineWidth = pigAccessible ? 2.5 : 1.8; ctx.lineCap = 'round'; ctx.stroke();
 
                 if (activeLayer === 'skin') {
-
-                  ctx.globalAlpha = 0.08;
-
-                  for (var hf = 0; hf < 50; hf++) {
-
-                    var hfx = cx - W * 0.18 + (hf % 10) * W * 0.04;
-
-                    var hfy = cy - H * 0.12 + Math.floor(hf / 10) * H * 0.05;
-
-                    ctx.beginPath(); ctx.moveTo(hfx, hfy);
-
-                    ctx.lineTo(hfx + (Math.sin(hf * 2.7) * 1.5), hfy - 3);
-
-                    ctx.strokeStyle = '#78716c'; ctx.lineWidth = 0.4; ctx.stroke();
-
+                  // Sparse deterministic follicles and soft skin creases avoid plastic flatness.
+                  ctx.save(); tracePigBody(); ctx.clip();
+                  ctx.globalAlpha = pigAccessible ? 0.1 : (pigRealistic ? 0.22 : 0.14);
+                  for (var pigFollicle = 0; pigFollicle < 42; pigFollicle++) {
+                    var follicleX = cx - W * 0.15 + ((pigFollicle * 37) % 97) / 96 * W * 0.34;
+                    var follicleY = cy - H * 0.105 + ((pigFollicle * 61) % 89) / 88 * H * 0.21;
+                    ctx.beginPath(); ctx.moveTo(follicleX, follicleY);
+                    ctx.lineTo(follicleX + Math.sin(pigFollicle * 1.7) * 1.2, follicleY - 1.8);
+                    ctx.strokeStyle = '#5f4548'; ctx.lineWidth = 0.45; ctx.stroke();
                   }
-
+                  ctx.restore();
+                  ctx.globalAlpha = pigAccessible ? 0.3 : 0.16;
+                  [ -0.055, 0.002, 0.057 ].forEach(function (foldOffset) {
+                    ctx.beginPath(); ctx.moveTo(cx - W * 0.07, cy + H * foldOffset);
+                    ctx.quadraticCurveTo(cx + W * 0.005, cy + H * (foldOffset - 0.012), cx + W * 0.075, cy + H * foldOffset);
+                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.65; ctx.stroke();
+                  });
                   ctx.globalAlpha = 1;
-
-                  // Skin folds
-
-                  ctx.globalAlpha = 0.05;
-
-                  for (var sf = 0; sf < 4; sf++) {
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx - W * 0.10, cy - H * 0.08 + sf * H * 0.05);
-
-                    ctx.quadraticCurveTo(cx, cy - H * 0.10 + sf * H * 0.05, cx + W * 0.10, cy - H * 0.08 + sf * H * 0.05);
-
-                    ctx.strokeStyle = '#78716c'; ctx.lineWidth = 0.6; ctx.stroke();
-
-                  }
-
-                  ctx.globalAlpha = 1;
-
                 }
-
-
-
-  // €â€ Draw organ pins â€â€”€â”€ Pig layer overlays â”€â”€
-
                 if (activeLayer === 'organs') {
+                  // Side-lying visceral cavity with thoracic and abdominal organs registered to the torso.
+                  ctx.save(); tracePigBody(); ctx.clip();
+                  var pigOrganAlpha = pigAccessible ? 0.95 : 0.84;
+                  ctx.globalAlpha = pigOrganAlpha;
 
-                  ctx.globalAlpha = 0.5;
+                  // Peritoneal cavity opening provides a shared depth field rather than isolated symbols.
+                  ctx.beginPath();
+                  ctx.moveTo(cx - W * 0.145, cy - H * 0.092);
+                  ctx.bezierCurveTo(cx - W * 0.055, cy - H * 0.135, cx + W * 0.13, cy - H * 0.12, cx + W * 0.188, cy - H * 0.065);
+                  ctx.bezierCurveTo(cx + W * 0.215, cy - H * 0.012, cx + W * 0.178, cy + H * 0.105, cx + W * 0.105, cy + H * 0.132);
+                  ctx.bezierCurveTo(cx + W * 0.015, cy + H * 0.165, cx - W * 0.115, cy + H * 0.12, cx - W * 0.145, cy + H * 0.055);
+                  ctx.bezierCurveTo(cx - W * 0.164, cy + H * 0.005, cx - W * 0.165, cy - H * 0.05, cx - W * 0.145, cy - H * 0.092);
+                  ctx.closePath();
+                  var pigCavityGrad = ctx.createRadialGradient(cx - W * 0.035, cy - H * 0.045, 4, cx + W * 0.04, cy + H * 0.02, W * 0.25);
+                  pigCavityGrad.addColorStop(0, 'rgba(102,55,57,0.72)'); pigCavityGrad.addColorStop(0.62, 'rgba(70,38,43,0.86)'); pigCavityGrad.addColorStop(1, 'rgba(39,25,31,0.92)');
+                  ctx.fillStyle = pigCavityGrad; ctx.fill(); ctx.strokeStyle = 'rgba(254,205,211,0.36)'; ctx.lineWidth = 0.85; ctx.stroke();
 
-                  // Heart
+                  // Dorsal aorta and vena cava remain visible behind the viscera.
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.125, cy - H * 0.082); ctx.bezierCurveTo(cx - W * 0.015, cy - H * 0.105, cx + W * 0.105, cy - H * 0.09, cx + W * 0.18, cy - H * 0.065);
+                  ctx.strokeStyle = 'rgba(220,38,38,0.72)'; ctx.lineWidth = 1.6; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.12, cy - H * 0.068); ctx.bezierCurveTo(cx - W * 0.01, cy - H * 0.078, cx + W * 0.105, cy - H * 0.065, cx + W * 0.18, cy - H * 0.045);
+                  ctx.strokeStyle = 'rgba(59,130,246,0.62)'; ctx.lineWidth = 1.2; ctx.stroke();
 
-                  ctx.beginPath(); ctx.arc(cx - W * 0.04, cy - H * 0.06, W * 0.025, 0, Math.PI * 2);
+                  // Large fetal thymus extends from the neck into the anterior mediastinum.
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.155, cy - H * 0.065);
+                  ctx.bezierCurveTo(cx - W * 0.135, cy - H * 0.10, cx - W * 0.10, cy - H * 0.095, cx - W * 0.088, cy - H * 0.055);
+                  ctx.bezierCurveTo(cx - W * 0.078, cy - H * 0.018, cx - W * 0.11, cy + H * 0.005, cx - W * 0.145, cy - H * 0.012);
+                  ctx.closePath(); ctx.fillStyle = '#d9a0a7'; ctx.fill(); ctx.strokeStyle = '#9f5e68'; ctx.lineWidth = 0.55; ctx.stroke();
+                  for (var thymusLobe = 0; thymusLobe < 4; thymusLobe++) { ctx.beginPath(); ctx.arc(cx - W * (0.142 - thymusLobe * 0.015), cy - H * (0.055 - (thymusLobe % 2) * 0.018), W * 0.012, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(126,59,71,0.38)'; ctx.lineWidth = 0.4; ctx.stroke(); }
 
-                  ctx.fillStyle = '#dc2626'; ctx.fill();
+                  // Lobed fetal lungs surround the four-chambered heart.
+                  function drawPigLungLobe(x, y, rx, ry, rotation, alpha) {
+                    ctx.save(); ctx.globalAlpha = alpha;
+                    var lungGrad = ctx.createRadialGradient(x - rx * 0.25, y - ry * 0.25, 1, x, y, Math.max(rx, ry));
+                    lungGrad.addColorStop(0, '#f4b7b2'); lungGrad.addColorStop(0.62, '#d98282'); lungGrad.addColorStop(1, '#a85360');
+                    ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rotation, 0, Math.PI * 2); ctx.fillStyle = lungGrad; ctx.fill(); ctx.strokeStyle = '#8d4652'; ctx.lineWidth = 0.5; ctx.stroke();
+                    ctx.strokeStyle = 'rgba(127,29,29,0.25)'; ctx.lineWidth = 0.35;
+                    ctx.beginPath(); ctx.moveTo(x - rx * 0.65, y); ctx.quadraticCurveTo(x, y - ry * 0.22, x + rx * 0.65, y + ry * 0.18); ctx.stroke();
+                    ctx.restore();
+                  }
+                  drawPigLungLobe(cx - W * 0.092, cy - H * 0.025, W * 0.042, H * 0.055, -0.16, 0.78);
+                  drawPigLungLobe(cx - W * 0.035, cy - H * 0.035, W * 0.039, H * 0.06, 0.08, 0.88);
+                  drawPigLungLobe(cx - W * 0.064, cy + H * 0.018, W * 0.035, H * 0.036, -0.12, 0.84);
 
-                  // Lungs
+                  var pigHeartX = cx - W * 0.058; var pigHeartY = cy - H * 0.012;
+                  ctx.beginPath(); ctx.moveTo(pigHeartX, pigHeartY - H * 0.042);
+                  ctx.bezierCurveTo(pigHeartX - W * 0.037, pigHeartY - H * 0.05, pigHeartX - W * 0.045, pigHeartY - H * 0.005, pigHeartX - W * 0.018, pigHeartY + H * 0.042);
+                  ctx.bezierCurveTo(pigHeartX - W * 0.002, pigHeartY + H * 0.066, pigHeartX + W * 0.037, pigHeartY + H * 0.025, pigHeartX + W * 0.034, pigHeartY - H * 0.012);
+                  ctx.bezierCurveTo(pigHeartX + W * 0.03, pigHeartY - H * 0.045, pigHeartX + W * 0.012, pigHeartY - H * 0.048, pigHeartX, pigHeartY - H * 0.042); ctx.closePath();
+                  var pigHeartGrad = ctx.createLinearGradient(pigHeartX - W * 0.03, pigHeartY - H * 0.04, pigHeartX + W * 0.03, pigHeartY + H * 0.05); pigHeartGrad.addColorStop(0,'#ca5358');pigHeartGrad.addColorStop(1,'#7f2734');ctx.fillStyle=pigHeartGrad;ctx.fill();ctx.strokeStyle='#631f2b';ctx.lineWidth=0.65;ctx.stroke();
+                  ctx.beginPath();ctx.moveTo(pigHeartX,pigHeartY-H*0.033);ctx.lineTo(pigHeartX-W*0.002,pigHeartY+H*0.038);ctx.strokeStyle='rgba(254,202,202,0.42)';ctx.lineWidth=0.55;ctx.stroke();
 
-                  [-1, 1].forEach(function (s) {
+                  // The diaphragm forms a curved muscular boundary between thorax and abdomen.
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.022, cy - H * 0.095); ctx.bezierCurveTo(cx - W * 0.002, cy - H * 0.02, cx + W * 0.003, cy + H * 0.065, cx - W * 0.005, cy + H * 0.112);
+                  ctx.strokeStyle = 'rgba(248,113,113,0.75)'; ctx.lineWidth = 2.4; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.014, cy - H * 0.09); ctx.bezierCurveTo(cx + W * 0.005, cy - H * 0.015, cx + W * 0.01, cy + H * 0.06, cx + W * 0.002, cy + H * 0.105); ctx.strokeStyle='rgba(254,202,202,0.35)';ctx.lineWidth=0.6;ctx.stroke();
 
-                    ctx.beginPath(); ctx.ellipse(cx + s * W * 0.08 - W * 0.04, cy - H * 0.04, W * 0.04, H * 0.06, 0, 0, Math.PI * 2);
+                  // Five liver lobes overlap near the cranial abdomen.
+                  var pigLiverLobes = [
+                    [0.018,-0.052,0.055,0.044,-0.15],[0.062,-0.038,0.052,0.05,0.10],[0.026,0.005,0.052,0.042,0.12],[0.082,0.012,0.048,0.04,-0.08],[0.108,-0.012,0.034,0.035,0.20]
+                  ];
+                  pigLiverLobes.forEach(function (lobe, lobeIndex) { ctx.beginPath();ctx.ellipse(cx+W*lobe[0],cy+H*lobe[1],W*lobe[2],H*lobe[3],lobe[4],0,Math.PI*2);ctx.fillStyle=lobeIndex%2?'#71362d':'#7c3d32';ctx.fill();ctx.strokeStyle='#4f2925';ctx.lineWidth=0.45;ctx.stroke(); });
 
-                    ctx.fillStyle = '#fca5a5'; ctx.fill(); ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.5; ctx.stroke();
-
+                  // Bean-shaped kidneys stay dorsal and posterior, one partly occluded by bowel.
+                  [-1,1].forEach(function (kidneySide) {
+                    var kidneyX = cx + W * (0.115 + kidneySide * 0.028); var kidneyY = cy - H * (0.06 - kidneySide * 0.008);
+                    ctx.save(); ctx.globalAlpha = kidneySide < 0 ? 0.52 : 0.84;
+                    ctx.beginPath(); ctx.ellipse(kidneyX, kidneyY, W * 0.028, H * 0.045, 0.12, 0, Math.PI * 2);ctx.fillStyle='#78463a';ctx.fill();ctx.strokeStyle='#4c2c26';ctx.lineWidth=0.5;ctx.stroke();
+                    ctx.beginPath();ctx.arc(kidneyX-W*0.008,kidneyY,W*0.008,-1.2,1.2);ctx.strokeStyle='rgba(248,190,150,0.42)';ctx.lineWidth=0.55;ctx.stroke();ctx.restore();
                   });
 
-                  // Liver
+                  // Monogastric stomach, spleen, and pancreas share a visible spatial relationship.
+                  var pigStomachX = cx + W * 0.062; var pigStomachY = cy + H * 0.038;
+                  ctx.beginPath();ctx.moveTo(pigStomachX-W*0.025,pigStomachY-H*0.035);ctx.bezierCurveTo(pigStomachX+W*0.045,pigStomachY-H*0.04,pigStomachX+W*0.055,pigStomachY+H*0.02,pigStomachX+W*0.015,pigStomachY+H*0.052);ctx.bezierCurveTo(pigStomachX-W*0.02,pigStomachY+H*0.075,pigStomachX-W*0.055,pigStomachY+H*0.025,pigStomachX-W*0.025,pigStomachY-H*0.035);ctx.closePath();var pigStomachGrad=ctx.createLinearGradient(pigStomachX,pigStomachY-H*0.04,pigStomachX,pigStomachY+H*0.06);pigStomachGrad.addColorStop(0,'#e7c18f');pigStomachGrad.addColorStop(1,'#b77a52');ctx.fillStyle=pigStomachGrad;ctx.fill();ctx.strokeStyle='#835236';ctx.lineWidth=0.55;ctx.stroke();
+                  ctx.beginPath();ctx.ellipse(pigStomachX-W*0.045,pigStomachY+H*0.018,W*0.011,H*0.05,-0.35,0,Math.PI*2);ctx.fillStyle='#762c38';ctx.fill();ctx.strokeStyle='#4c1d2a';ctx.lineWidth=0.45;ctx.stroke();
+                  ctx.beginPath();ctx.moveTo(pigStomachX-W*0.008,pigStomachY+H*0.048);ctx.bezierCurveTo(pigStomachX+W*0.035,pigStomachY+H*0.06,pigStomachX+W*0.065,pigStomachY+H*0.035,pigStomachX+W*0.09,pigStomachY+H*0.05);ctx.strokeStyle='#eabf6a';ctx.lineWidth=2.1;ctx.stroke();
 
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.02, cy + H * 0.02, W * 0.10, H * 0.04, 0, 0, Math.PI * 2);
+                  // Jejunal loops sit ventrally while the porcine spiral colon forms a watch-spring coil.
+                  ctx.strokeStyle='#d88a57';ctx.lineWidth=3.8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(cx+W*0.105,cy+H*0.072);ctx.bezierCurveTo(cx+W*0.14,cy+H*0.09,cx+W*0.065,cy+H*0.11,cx+W*0.105,cy+H*0.125);ctx.bezierCurveTo(cx+W*0.155,cy+H*0.145,cx+W*0.085,cy+H*0.155,cx+W*0.055,cy+H*0.125);ctx.bezierCurveTo(cx+W*0.025,cy+H*0.095,cx+W*0.075,cy+H*0.075,cx+W*0.12,cy+H*0.09);ctx.stroke();
+                  var colonCx = cx + W * 0.155; var colonCy = cy + H * 0.075;
+                  ctx.strokeStyle='#a95f43';ctx.lineWidth=3.4;ctx.beginPath();
+                  for(var colonStep=0;colonStep<=54;colonStep++){var colonT=colonStep/54*Math.PI*4.7;var colonRadius=W*(0.041-colonStep/54*0.034);var colonX=colonCx+Math.cos(colonT)*colonRadius;var colonY=colonCy+Math.sin(colonT)*colonRadius*0.58;if(colonStep===0)ctx.moveTo(colonX,colonY);else ctx.lineTo(colonX,colonY);}ctx.stroke();
 
-                  ctx.fillStyle = '#92400e'; ctx.fill();
+                  // Urinary bladder and urachus connect directly toward the umbilical stump.
+                  var pigBladderX = cx + W * 0.18; var pigBladderY = cy + H * 0.085;
+                  ctx.save();ctx.globalAlpha=0.62;ctx.beginPath();ctx.ellipse(pigBladderX,pigBladderY,W*0.028,H*0.038,0.18,0,Math.PI*2);ctx.fillStyle='#bae6fd';ctx.fill();ctx.strokeStyle='#60a5fa';ctx.lineWidth=0.55;ctx.stroke();ctx.restore();
+                  ctx.beginPath();ctx.moveTo(pigBladderX-W*0.008,pigBladderY+H*0.028);ctx.bezierCurveTo(cx+W*0.13,cy+H*0.13,cx+W*0.07,cy+H*0.155,cx+W*0.025,cy+H*0.19);ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1.1;ctx.stroke();
 
-                  // Stomach
+                  // Umbilical vein courses to the liver; paired arteries return alongside the bladder.
+                  ctx.beginPath();ctx.moveTo(cx+W*0.025,cy+H*0.19);ctx.bezierCurveTo(cx+W*0.04,cy+H*0.12,cx+W*0.04,cy+H*0.055,cx+W*0.055,cy+H*0.012);ctx.strokeStyle='#a855f7';ctx.lineWidth=2.2;ctx.stroke();
+                  [-1,1].forEach(function (arterySide) {ctx.beginPath();ctx.moveTo(cx+W*0.025,cy+H*0.19);ctx.quadraticCurveTo(cx+W*(0.10+arterySide*0.012),cy+H*0.13,pigBladderX+arterySide*W*0.018,pigBladderY);ctx.strokeStyle='#dc5265';ctx.lineWidth=0.9;ctx.stroke();});
 
-                  ctx.beginPath(); ctx.ellipse(cx, cy + H * 0.06, W * 0.06, H * 0.03, 0.2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fde68a'; ctx.fill(); ctx.strokeStyle = '#d97706'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                  // Intestines
-
-                  ctx.beginPath(); ctx.strokeStyle = '#f97316'; ctx.lineWidth = 1.5;
-
-                  ctx.moveTo(cx - W * 0.05, cy + H * 0.08);
-
-                  for (var pi = 0; pi < 5; pi++) {
-
-                    ctx.quadraticCurveTo(cx + (pi % 2 ? 1 : -1) * W * 0.08, cy + H * 0.09 + pi * H * 0.012, cx + (pi % 2 ? -1 : 1) * W * 0.03, cy + H * 0.10 + pi * H * 0.012);
-
-                  }
-
-                  ctx.stroke();
-
-                  // Umbilical cord
-
-                  ctx.beginPath(); ctx.moveTo(cx, cy + H * 0.14);
-
-                  ctx.quadraticCurveTo(cx + W * 0.05, cy + H * 0.20, cx + W * 0.02, cy + H * 0.26);
-
-                  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 3; ctx.stroke();
-
-                  ctx.globalAlpha = 1;
-
+                  ctx.font='6px Inter, system-ui';ctx.fillStyle='rgba(254,226,226,0.58)';ctx.fillText('thorax',cx-W*0.135,cy-H*0.105);ctx.fillText('abdomen',cx+W*0.035,cy-H*0.105);
+                  ctx.restore();
                 }
-
                 if (activeLayer === 'skeleton') {
 
                   // Use higher opacity and darker colors for visibility
@@ -4037,6 +3445,14 @@ var d = labToolData.dissection || {};
 
               } else if (spec.bodyShape === 'fish') {
 
+                var fishAccessible = (d.visualRealism || visualRealism) === 'accessible';
+                var fishRealistic = (d.visualRealism || visualRealism) === 'realistic';
+                var fishBodyGradient = ctx.createLinearGradient(cx, cy - H * 0.15, cx, cy + H * 0.14);
+                fishBodyGradient.addColorStop(0, fishAccessible ? layerColor : 'rgba(240,220,132,0.96)');
+                fishBodyGradient.addColorStop(0.34, fishAccessible ? layerColor : 'rgba(176,166,78,0.98)');
+                fishBodyGradient.addColorStop(0.62, fishAccessible ? layerColor : 'rgba(116,121,66,0.98)');
+                fishBodyGradient.addColorStop(1, fishAccessible ? layerColor : 'rgba(78,88,54,0.98)');
+
                 // ══ PERCH (Perca) — fusiform bony fish ══
 
                 // ======== FINS (drawn first so body covers fin bases) ========
@@ -4176,7 +3592,20 @@ var d = labToolData.dissection || {};
 
                 ctx.closePath();
 
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.fillStyle = fishBodyGradient; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = fishRealistic ? 1.15 : 1.5; ctx.stroke();
+
+                if (!fishAccessible) {
+                  ctx.save();
+                  ctx.globalAlpha = fishRealistic ? 0.18 : 0.11;
+                  var fishIridescence = ctx.createLinearGradient(cx - W * 0.18, cy - H * 0.07, cx + W * 0.20, cy + H * 0.07);
+                  fishIridescence.addColorStop(0, 'rgba(226,232,240,0)');
+                  fishIridescence.addColorStop(0.42, 'rgba(224,242,254,0.82)');
+                  fishIridescence.addColorStop(0.62, 'rgba(254,249,195,0.54)');
+                  fishIridescence.addColorStop(1, 'rgba(226,232,240,0)');
+                  ctx.fillStyle = fishIridescence;
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.01, cy - H * 0.025, W * 0.23, H * 0.075, -0.04, 0, Math.PI * 2); ctx.fill();
+                  ctx.restore();
+                }
 
                 ctx.shadowBlur = 0;
 
@@ -4202,15 +3631,21 @@ var d = labToolData.dissection || {};
 
                 // ── Eye ──
 
-                ctx.beginPath(); ctx.arc(cx - W * 0.23, cy - H * 0.02, 6, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#fef9c3'; ctx.fill(); ctx.strokeStyle = '#854d0e'; ctx.lineWidth = 1; ctx.stroke();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.23, cy - H * 0.02, 3, 0, Math.PI * 2); ctx.fillStyle = '#1a1a1a'; ctx.fill();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.225, cy - H * 0.03, 1.5, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fill();
+                var fishEyeX = cx - W * 0.23;
+                var fishEyeY = cy - H * 0.02;
+                var fishEyeGradient = ctx.createRadialGradient(fishEyeX - 1.5, fishEyeY - 1.4, 0.8, fishEyeX, fishEyeY, 6);
+                fishEyeGradient.addColorStop(0, 'rgba(226,232,240,0.72)');
+                fishEyeGradient.addColorStop(0.24, 'rgba(148,136,66,0.96)');
+                fishEyeGradient.addColorStop(0.62, 'rgba(55,48,24,0.98)');
+                fishEyeGradient.addColorStop(1, 'rgba(15,23,42,0.96)');
+                ctx.beginPath(); ctx.ellipse(fishEyeX, fishEyeY, 6.2, 5.6, -0.1, 0, Math.PI * 2);
+                ctx.fillStyle = fishEyeGradient; ctx.fill(); ctx.strokeStyle = 'rgba(15,23,42,0.82)'; ctx.lineWidth = 0.9; ctx.stroke();
+                ctx.beginPath(); ctx.ellipse(fishEyeX + 0.3, fishEyeY, 2.35, 2.75, -0.1, 0, Math.PI * 2);
+                ctx.fillStyle = '#05070a'; ctx.fill();
+                if (!fishAccessible) {
+                  ctx.beginPath(); ctx.ellipse(fishEyeX - 1.6, fishEyeY - 1.5, 1.25, 0.58, -0.35, 0, Math.PI * 2);
+                  ctx.fillStyle = 'rgba(226,232,240,0.35)'; ctx.fill();
+                }
 
                 // ── Mouth ──
 
@@ -4290,51 +3725,167 @@ var d = labToolData.dissection || {};
   // €â€ Draw organ pins â€â€”€â”€ Layer overlays â”€â”€
 
                 if (activeLayer === 'organs') {
+                  // Perch internal cutaway: dorsal buoyancy/excretory organs and ventral viscera share one coelomic cavity.
+                  var perchOrganAlpha = fishAccessible ? 0.98 : (fishRealistic ? 0.93 : 0.88);
+                  var swimBladderPulse = dissMotionReduced ? 0 : Math.sin(dissTick * 0.022) * H * 0.0018;
 
-                  ctx.globalAlpha = 0.5;
-
-                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.04, W * 0.10, H * 0.035, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = 'rgba(219,234,254,0.6)'; ctx.fill();
-
-                  ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 0.8; ctx.stroke();
-
-                  ctx.beginPath(); ctx.arc(cx - W * 0.20, cy + H * 0.04, W * 0.015, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#dc2626'; ctx.fill();
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.10, cy + H * 0.02, W * 0.05, H * 0.03, 0.2, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#92400e'; ctx.fill();
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.03, cy + H * 0.04, W * 0.04, H * 0.02, -0.1, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fde68a'; ctx.fill();
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.01, cy + H * 0.04);
-
-                  ctx.quadraticCurveTo(cx + W * 0.08, cy + H * 0.06, cx + W * 0.12, cy + H * 0.04);
-
-                  ctx.strokeStyle = '#f97316'; ctx.lineWidth = 2; ctx.stroke();
-
-                  for (var gf = 0; gf < 5; gf++) {
-
-                    ctx.beginPath(); ctx.moveTo(cx - W * 0.175, cy - H * 0.06 + gf * H * 0.025);
-
-                    ctx.lineTo(cx - W * 0.20, cy - H * 0.06 + gf * H * 0.025);
-
-                    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
-
+                  function tracePerchCoelom() {
+                    ctx.beginPath();
+                    ctx.moveTo(cx - W * 0.205, cy - H * 0.075);
+                    ctx.bezierCurveTo(cx - W * 0.13, cy - H * 0.115, cx + W * 0.055, cy - H * 0.112, cx + W * 0.205, cy - H * 0.067);
+                    ctx.bezierCurveTo(cx + W * 0.225, cy - H * 0.018, cx + W * 0.19, cy + H * 0.087, cx + W * 0.105, cy + H * 0.102);
+                    ctx.bezierCurveTo(cx - W * 0.015, cy + H * 0.125, cx - W * 0.155, cy + H * 0.092, cx - W * 0.205, cy + H * 0.045);
+                    ctx.bezierCurveTo(cx - W * 0.225, cy + H * 0.006, cx - W * 0.222, cy - H * 0.042, cx - W * 0.205, cy - H * 0.075);
+                    ctx.closePath();
                   }
 
-                  ctx.beginPath(); ctx.ellipse(cx, cy - H * 0.08, W * 0.12, H * 0.012, 0, 0, Math.PI * 2);
+                  function drawPerchGillArch(archIndex) {
+                    var archX = cx - W * (0.205 - archIndex * 0.011);
+                    var archTopY = cy - H * (0.060 - archIndex * 0.003);
+                    var archBottomY = cy + H * (0.045 - archIndex * 0.002);
+                    ctx.beginPath();
+                    ctx.moveTo(archX, archTopY);
+                    ctx.bezierCurveTo(archX - W * 0.018, cy - H * 0.018, archX - W * 0.018, cy + H * 0.018, archX, archBottomY);
+                    ctx.strokeStyle = fishAccessible ? '#dc2626' : 'rgba(153,27,27,0.96)';
+                    ctx.lineWidth = 2.4 - archIndex * 0.18; ctx.stroke();
+                    for (var filamentIndex = 0; filamentIndex < 7; filamentIndex++) {
+                      var filamentT = (filamentIndex + 1) / 8;
+                      var filamentY = archTopY + (archBottomY - archTopY) * filamentT;
+                      var filamentReach = W * (0.018 + Math.sin(filamentT * Math.PI) * 0.010);
+                      ctx.beginPath(); ctx.moveTo(archX - W * 0.007, filamentY);
+                      ctx.lineTo(archX - filamentReach, filamentY - H * 0.004);
+                      ctx.strokeStyle = fishAccessible ? '#fb7185' : 'rgba(248,113,113,0.86)';
+                      ctx.lineWidth = 0.9; ctx.stroke();
+                    }
+                  }
 
-                  ctx.fillStyle = '#78350f'; ctx.fill();
+                  ctx.save();
+                  tracePerchCoelom();
+                  var perchCavityGradient = ctx.createLinearGradient(cx, cy - H * 0.11, cx, cy + H * 0.11);
+                  perchCavityGradient.addColorStop(0, fishAccessible ? 'rgba(30,41,59,0.96)' : 'rgba(74,45,42,0.90)');
+                  perchCavityGradient.addColorStop(0.52, fishAccessible ? 'rgba(51,65,85,0.96)' : 'rgba(91,55,45,0.92)');
+                  perchCavityGradient.addColorStop(1, fishAccessible ? 'rgba(71,85,105,0.96)' : 'rgba(61,38,34,0.94)');
+                  ctx.fillStyle = perchCavityGradient; ctx.globalAlpha = perchOrganAlpha; ctx.fill();
+                  ctx.strokeStyle = fishAccessible ? '#fbbf24' : 'rgba(253,230,138,0.62)';
+                  ctx.lineWidth = fishAccessible ? 1.8 : 1.15; ctx.stroke();
+                  tracePerchCoelom(); ctx.clip(); ctx.globalAlpha = 1;
 
-                  ctx.globalAlpha = 1;
+                  // A faint dorsal peritoneal reflection helps the cutaway read as depth rather than a flat diagram.
+                  var perchCavitySheen = ctx.createLinearGradient(cx, cy - H * 0.11, cx, cy + H * 0.02);
+                  perchCavitySheen.addColorStop(0, 'rgba(226,232,240,0.14)');
+                  perchCavitySheen.addColorStop(1, 'rgba(226,232,240,0)');
+                  ctx.fillStyle = perchCavitySheen; ctx.fillRect(cx - W * 0.22, cy - H * 0.12, W * 0.46, H * 0.15);
 
+                  // The kidney is a dark, elongated organ fixed against the dorsal body wall.
+                  ctx.beginPath();
+                  ctx.moveTo(cx - W * 0.145, cy - H * 0.088);
+                  ctx.bezierCurveTo(cx - W * 0.055, cy - H * 0.106, cx + W * 0.105, cy - H * 0.100, cx + W * 0.190, cy - H * 0.072);
+                  ctx.bezierCurveTo(cx + W * 0.115, cy - H * 0.069, cx - W * 0.045, cy - H * 0.071, cx - W * 0.145, cy - H * 0.061);
+                  ctx.closePath();
+                  var perchKidneyGradient = ctx.createLinearGradient(cx, cy - H * 0.102, cx, cy - H * 0.060);
+                  perchKidneyGradient.addColorStop(0, fishAccessible ? '#7f1d1d' : 'rgba(69,26,31,0.98)');
+                  perchKidneyGradient.addColorStop(1, fishAccessible ? '#991b1b' : 'rgba(103,35,39,0.94)');
+                  ctx.fillStyle = perchKidneyGradient; ctx.fill();
+                  ctx.strokeStyle = 'rgba(254,202,202,0.30)'; ctx.lineWidth = 0.7; ctx.stroke();
+
+                  // Dorsal aorta follows the roof of the cavity; the ventral aorta feeds the gill arches.
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.175, cy - H * 0.058); ctx.bezierCurveTo(cx - W * 0.02, cy - H * 0.082, cx + W * 0.11, cy - H * 0.074, cx + W * 0.205, cy - H * 0.052);
+                  ctx.strokeStyle = fishAccessible ? '#ef4444' : 'rgba(239,68,68,0.72)'; ctx.lineWidth = 1.15; ctx.stroke();
+
+                  // Swim bladder: a thin-walled dorsal sac with a vascular rete mirabile patch.
+                  ctx.beginPath();
+                  ctx.ellipse(cx + W * 0.015, cy - H * 0.043, W * 0.120, H * 0.032 + swimBladderPulse, -0.025, 0, Math.PI * 2);
+                  var perchBladderGradient = ctx.createRadialGradient(cx - W * 0.025, cy - H * 0.058, 2, cx + W * 0.015, cy - H * 0.043, W * 0.125);
+                  perchBladderGradient.addColorStop(0, fishAccessible ? 'rgba(255,255,255,0.96)' : 'rgba(239,246,255,0.90)');
+                  perchBladderGradient.addColorStop(0.56, fishAccessible ? 'rgba(186,230,253,0.90)' : 'rgba(191,219,254,0.63)');
+                  perchBladderGradient.addColorStop(1, fishAccessible ? 'rgba(56,189,248,0.72)' : 'rgba(96,165,250,0.32)');
+                  ctx.fillStyle = perchBladderGradient; ctx.fill();
+                  ctx.strokeStyle = fishAccessible ? '#38bdf8' : 'rgba(147,197,253,0.82)'; ctx.lineWidth = 1.1; ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.022, cy - H * 0.057, W * 0.052, H * 0.009, -0.04, Math.PI * 1.08, Math.PI * 1.88);
+                  ctx.strokeStyle = 'rgba(255,255,255,0.52)'; ctx.lineWidth = 1; ctx.stroke();
+
+                  // Rete mirabile is represented as a compact vascular network along the anterior bladder wall.
+                  for (var reteIndex = 0; reteIndex < 7; reteIndex++) {
+                    var reteAngle = reteIndex * Math.PI * 2 / 7;
+                    var reteX = cx - W * 0.080 + Math.cos(reteAngle) * W * 0.012;
+                    var reteY = cy - H * 0.035 + Math.sin(reteAngle) * H * 0.010;
+                    ctx.beginPath(); ctx.moveTo(cx - W * 0.080, cy - H * 0.035); ctx.lineTo(reteX, reteY);
+                    ctx.strokeStyle = reteIndex % 2 ? '#60a5fa' : '#f87171'; ctx.lineWidth = 0.75; ctx.stroke();
+                  }
+
+                  // Paired gonads sit between the swim bladder and gut and taper posteriorly.
+                  [-1, 1].forEach(function (gonadSide) {
+                    ctx.beginPath();
+                    ctx.ellipse(cx + W * 0.095, cy + H * (0.007 + gonadSide * 0.014), W * 0.090, H * 0.014, gonadSide * 0.035, 0, Math.PI * 2);
+                    ctx.fillStyle = fishAccessible ? 'rgba(253,224,71,0.90)' : 'rgba(250,204,21,0.64)'; ctx.fill();
+                    ctx.strokeStyle = 'rgba(254,240,138,0.52)'; ctx.lineWidth = 0.65; ctx.stroke();
+                  });
+
+                  // Three overlapping liver lobes occupy the anterior ventral cavity.
+                  [[-0.115, 0.026, 0.060, 0.033, -0.12], [-0.080, 0.046, 0.050, 0.028, 0.10], [-0.135, 0.052, 0.038, 0.024, -0.28]].forEach(function (liverLobe) {
+                    ctx.beginPath(); ctx.ellipse(cx + W * liverLobe[0], cy + H * liverLobe[1], W * liverLobe[2], H * liverLobe[3], liverLobe[4], 0, Math.PI * 2);
+                    var perchLiverGradient = ctx.createRadialGradient(cx + W * (liverLobe[0] - 0.012), cy + H * (liverLobe[1] - 0.010), 1, cx + W * liverLobe[0], cy + H * liverLobe[1], W * liverLobe[2]);
+                    perchLiverGradient.addColorStop(0, fishAccessible ? '#b45309' : 'rgba(180,83,9,0.96)');
+                    perchLiverGradient.addColorStop(1, fishAccessible ? '#78350f' : 'rgba(120,53,15,0.96)');
+                    ctx.fillStyle = perchLiverGradient; ctx.fill(); ctx.strokeStyle = 'rgba(253,186,116,0.34)'; ctx.lineWidth = 0.6; ctx.stroke();
+                  });
+
+                  // J-shaped stomach passes posteriorly before turning into the pyloric region.
+                  ctx.beginPath();
+                  ctx.moveTo(cx - W * 0.070, cy + H * 0.027);
+                  ctx.bezierCurveTo(cx - W * 0.030, cy + H * 0.018, cx + W * 0.012, cy + H * 0.035, cx + W * 0.010, cy + H * 0.058);
+                  ctx.bezierCurveTo(cx + W * 0.008, cy + H * 0.080, cx - W * 0.022, cy + H * 0.086, cx - W * 0.038, cy + H * 0.070);
+                  ctx.bezierCurveTo(cx - W * 0.050, cy + H * 0.058, cx - W * 0.050, cy + H * 0.040, cx - W * 0.070, cy + H * 0.027);
+                  ctx.closePath();
+                  var perchStomachGradient = ctx.createLinearGradient(cx - W * 0.05, cy + H * 0.02, cx, cy + H * 0.085);
+                  perchStomachGradient.addColorStop(0, fishAccessible ? '#fed7aa' : 'rgba(253,186,116,0.90)');
+                  perchStomachGradient.addColorStop(1, fishAccessible ? '#fb923c' : 'rgba(194,65,12,0.86)');
+                  ctx.fillStyle = perchStomachGradient; ctx.fill(); ctx.strokeStyle = 'rgba(255,237,213,0.58)'; ctx.lineWidth = 0.9; ctx.stroke();
+
+                  // Pyloric ceca are distinct blind fingers, not a single generic line.
+                  ctx.lineCap = 'round';
+                  for (var cecumIndex = 0; cecumIndex < 5; cecumIndex++) {
+                    var cecumBaseX = cx + W * (0.002 + cecumIndex * 0.008);
+                    var cecumBaseY = cy + H * (0.063 + cecumIndex * 0.003);
+                    ctx.beginPath(); ctx.moveTo(cecumBaseX, cecumBaseY);
+                    ctx.quadraticCurveTo(cecumBaseX + W * 0.014, cecumBaseY + H * 0.012, cecumBaseX + W * (0.010 + cecumIndex * 0.004), cecumBaseY + H * (0.034 + cecumIndex * 0.002));
+                    ctx.strokeStyle = fishAccessible ? '#fef3c7' : 'rgba(254,215,170,0.88)'; ctx.lineWidth = fishAccessible ? 2.4 : 1.8; ctx.stroke();
+                  }
+
+                  // Intestine loops compactly through the posterior ventral cavity and exits near the anus.
+                  ctx.beginPath();
+                  ctx.moveTo(cx + W * 0.018, cy + H * 0.071);
+                  ctx.bezierCurveTo(cx + W * 0.070, cy + H * 0.102, cx + W * 0.105, cy + H * 0.052, cx + W * 0.135, cy + H * 0.076);
+                  ctx.bezierCurveTo(cx + W * 0.165, cy + H * 0.100, cx + W * 0.185, cy + H * 0.056, cx + W * 0.122, cy + H * 0.045);
+                  ctx.bezierCurveTo(cx + W * 0.082, cy + H * 0.038, cx + W * 0.080, cy + H * 0.082, cx + W * 0.183, cy + H * 0.084);
+                  ctx.lineTo(cx + W * 0.215, cy + H * 0.080);
+                  ctx.strokeStyle = fishAccessible ? '#fdba74' : 'rgba(234,88,12,0.86)'; ctx.lineWidth = fishAccessible ? 4.6 : 3.4; ctx.stroke();
+                  ctx.strokeStyle = 'rgba(255,237,213,0.34)'; ctx.lineWidth = 0.8; ctx.stroke();
+
+                  // Four branchial arches carry dense filaments; the operculum remains visible outside the cutaway.
+                  for (var gillArchIndex = 0; gillArchIndex < 4; gillArchIndex++) drawPerchGillArch(gillArchIndex);
+
+                  // Two functional chambers are shown with the sinus venosus and bulbus arteriosus in series.
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.205, cy + H * 0.050, W * 0.013, H * 0.013, -0.20, 0, Math.PI * 2);
+                  ctx.fillStyle = fishAccessible ? '#7dd3fc' : 'rgba(56,189,248,0.72)'; ctx.fill();
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.188, cy + H * 0.056, W * 0.018, H * 0.018, 0.20, 0, Math.PI * 2);
+                  ctx.fillStyle = fishAccessible ? '#be123c' : 'rgba(190,24,93,0.90)'; ctx.fill(); ctx.strokeStyle = 'rgba(254,205,211,0.56)'; ctx.lineWidth = 0.7; ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.165, cy + H * 0.068, W * 0.022, H * 0.024, -0.12, 0, Math.PI * 2);
+                  var perchVentricleGradient = ctx.createRadialGradient(cx - W * 0.172, cy + H * 0.058, 1, cx - W * 0.165, cy + H * 0.068, W * 0.024);
+                  perchVentricleGradient.addColorStop(0, fishAccessible ? '#fb7185' : 'rgba(244,63,94,0.96)');
+                  perchVentricleGradient.addColorStop(1, fishAccessible ? '#9f1239' : 'rgba(136,19,55,0.98)');
+                  ctx.fillStyle = perchVentricleGradient; ctx.fill(); ctx.strokeStyle = 'rgba(254,205,211,0.62)'; ctx.lineWidth = 1; ctx.stroke();
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.142, cy + H * 0.051, W * 0.017, H * 0.012, -0.38, 0, Math.PI * 2);
+                  ctx.fillStyle = fishAccessible ? '#fda4af' : 'rgba(251,113,133,0.84)'; ctx.fill();
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.142, cy + H * 0.049); ctx.bezierCurveTo(cx - W * 0.165, cy + H * 0.028, cx - W * 0.178, cy + H * 0.010, cx - W * 0.190, cy - H * 0.005);
+                  ctx.strokeStyle = fishAccessible ? '#fb7185' : 'rgba(251,113,133,0.86)'; ctx.lineWidth = 1.8; ctx.stroke();
+
+                  // Small spleen sits beside the stomach as a dark red reference landmark.
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.016, cy + H * 0.042, W * 0.020, H * 0.009, 0.30, 0, Math.PI * 2);
+                  ctx.fillStyle = fishAccessible ? '#7f1d1d' : 'rgba(127,29,29,0.88)'; ctx.fill();
+
+                  ctx.restore();
                 }
-
                 if (activeLayer === 'skeleton') {
 
                   ctx.globalAlpha = 0.7; var boneC = '#94a3b8';
@@ -4388,727 +3939,585 @@ var d = labToolData.dissection || {};
 
 
               } else if (spec.bodyShape === 'crayfish') {
+                // Crayfish: articulated calcified plates, jointed appendages, and a layered tail fan.
+                var crayAccessible = (d.visualRealism || visualRealism) === 'accessible';
+                var crayRealistic = (d.visualRealism || visualRealism) === 'realistic';
+                var crayOutlineWidth = crayAccessible ? 1.7 : 1.05;
+                var crayShellLight = crayAccessible ? layerColor : 'rgba(184,70,54,0.98)';
+                var crayShellMid = crayAccessible ? layerColor : 'rgba(132,48,39,0.99)';
+                var crayShellDark = crayAccessible ? layerColor : 'rgba(74,31,30,0.99)';
 
-  // €â€ Draw organ pins â€â€•â• CRAYFISH (Cambarus) â€” crustacean â•â•
+                function drawCraySegment(x1, y1, x2, y2, r1, r2, alpha) {
+                  var dx = x2 - x1; var dy = y2 - y1;
+                  var len = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+                  var nx = -dy / len; var ny = dx / len;
+                  ctx.save(); ctx.globalAlpha = alpha == null ? 1 : alpha;
+                  var segmentGrad = ctx.createLinearGradient(x1 + nx * r1, y1 + ny * r1, x1 - nx * r1, y1 - ny * r1);
+                  segmentGrad.addColorStop(0, crayShellLight); segmentGrad.addColorStop(0.48, crayShellMid); segmentGrad.addColorStop(1, crayShellDark);
+                  ctx.beginPath();
+                  ctx.moveTo(x1 + nx * r1, y1 + ny * r1);
+                  ctx.lineTo(x2 + nx * r2, y2 + ny * r2);
+                  ctx.quadraticCurveTo(x2 + dx / len * r2, y2 + dy / len * r2, x2 - nx * r2, y2 - ny * r2);
+                  ctx.lineTo(x1 - nx * r1, y1 - ny * r1);
+                  ctx.quadraticCurveTo(x1 - dx / len * r1, y1 - dy / len * r1, x1 + nx * r1, y1 + ny * r1);
+                  ctx.closePath(); ctx.fillStyle = segmentGrad; ctx.fill();
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = crayOutlineWidth * 0.75; ctx.stroke();
+                  ctx.restore();
+                }
 
-  // €â€ Draw organ pins â€â€”€â”€ Cephalothorax â”€â”€
+                function drawCrayWalkingLeg(side, index, alpha) {
+                  var hipX = cx - W * 0.07 + index * W * 0.047;
+                  var hipY = cy + side * H * (0.095 + index * 0.002);
+                  var kneeX = hipX - W * (0.018 - index * 0.002);
+                  var kneeY = cy + side * H * (0.17 + index * 0.012);
+                  var ankleX = hipX - W * (0.055 - index * 0.004);
+                  var ankleY = cy + side * H * (0.235 + index * 0.012);
+                  var tipX = ankleX - W * (0.035 - index * 0.003);
+                  var tipY = cy + side * H * (0.255 + index * 0.012);
+                  drawCraySegment(hipX, hipY, kneeX, kneeY, 2.8, 2.1, alpha);
+                  drawCraySegment(kneeX, kneeY, ankleX, ankleY, 2.2, 1.25, alpha);
+                  ctx.save(); ctx.globalAlpha = alpha;
+                  ctx.beginPath(); ctx.moveTo(ankleX, ankleY); ctx.quadraticCurveTo(tipX - W * 0.01, tipY, tipX, tipY);
+                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.05; ctx.stroke();
+                  ctx.beginPath(); ctx.arc(kneeX, kneeY, 1.8, 0, Math.PI * 2); ctx.fillStyle = crayShellDark; ctx.fill();
+                  ctx.restore();
+                }
 
+                function drawCrayCheliped(side) {
+                  var shoulderX = cx - W * 0.13; var shoulderY = cy + side * H * 0.075;
+                  var elbowX = cx - W * 0.22; var elbowY = cy + side * H * 0.145;
+                  var wristX = cx - W * 0.285; var wristY = cy + side * H * 0.205;
+                  var palmX = cx - W * 0.325; var palmY = cy + side * H * 0.225;
+                  drawCraySegment(shoulderX, shoulderY, elbowX, elbowY, 5.5, 4.5, side < 0 ? 0.78 : 0.96);
+                  drawCraySegment(elbowX, elbowY, wristX, wristY, 4.2, 3.4, side < 0 ? 0.82 : 1);
+                  ctx.save(); ctx.globalAlpha = side < 0 ? 0.84 : 1;
+                  ctx.beginPath(); ctx.ellipse(palmX, palmY, W * 0.043, H * 0.027, side * 0.13, 0, Math.PI * 2);
+                  var clawPalm = ctx.createLinearGradient(palmX, palmY - H * 0.03, palmX, palmY + H * 0.03);
+                  clawPalm.addColorStop(0, crayShellLight); clawPalm.addColorStop(0.56, crayShellMid); clawPalm.addColorStop(1, crayShellDark);
+                  ctx.fillStyle = clawPalm; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = crayOutlineWidth; ctx.stroke();
+                  var clawTipX = cx - W * 0.405;
+                  ctx.beginPath(); ctx.moveTo(palmX - W * 0.025, palmY - side * H * 0.006);
+                  ctx.bezierCurveTo(cx - W * 0.355, palmY - side * H * 0.035, cx - W * 0.39, palmY - side * H * 0.028, clawTipX, palmY - side * H * 0.008);
+                  ctx.bezierCurveTo(cx - W * 0.382, palmY - side * H * 0.014, cx - W * 0.35, palmY - side * H * 0.005, palmX - W * 0.018, palmY + side * H * 0.005);
+                  ctx.closePath(); ctx.fillStyle = clawPalm; ctx.fill(); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(palmX - W * 0.022, palmY + side * H * 0.010);
+                  ctx.bezierCurveTo(cx - W * 0.355, palmY + side * H * 0.040, cx - W * 0.382, palmY + side * H * 0.032, cx - W * 0.397, palmY + side * H * 0.016);
+                  ctx.bezierCurveTo(cx - W * 0.373, palmY + side * H * 0.020, cx - W * 0.35, palmY + side * H * 0.012, palmX - W * 0.016, palmY + side * H * 0.003);
+                  ctx.closePath(); ctx.fillStyle = clawPalm; ctx.fill(); ctx.stroke();
+                  ctx.strokeStyle = 'rgba(248,250,252,0.16)'; ctx.lineWidth = 0.6;
+                  ctx.beginPath(); ctx.moveTo(palmX - W * 0.018, palmY - side * H * 0.010); ctx.lineTo(clawTipX + W * 0.006, palmY - side * H * 0.009); ctx.stroke();
+                  ctx.restore();
+                }
+
+                // Fine antennae sit behind the shell, while the shorter antennules angle toward the tray.
+                ctx.save(); ctx.strokeStyle = layerStroke; ctx.lineCap = 'round';
+                [-1, 1].forEach(function (side) {
+                  ctx.globalAlpha = side < 0 ? 0.62 : 0.9;
+                  ctx.lineWidth = 0.85;
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.20, cy + side * H * 0.045);
+                  ctx.bezierCurveTo(cx - W * 0.28, cy + side * H * 0.12, cx - W * 0.36, cy + side * H * 0.08, cx - W * 0.45, cy + side * H * 0.14); ctx.stroke();
+                  ctx.lineWidth = 0.55;
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.215, cy + side * H * 0.025);
+                  ctx.bezierCurveTo(cx - W * 0.275, cy + side * H * 0.055, cx - W * 0.32, cy + side * H * 0.025, cx - W * 0.355, cy + side * H * 0.06); ctx.stroke();
+                });
+                ctx.restore();
+
+                // Far-side appendages are subdued to create depth.
+                for (var farLeg = 0; farLeg < 4; farLeg++) drawCrayWalkingLeg(-1, farLeg, 0.48);
+                drawCrayCheliped(-1);
+
+                // Swimmerets emerge beneath each abdominal plate.
+                ctx.save(); ctx.globalAlpha = 0.42; ctx.strokeStyle = layerStroke;
+                for (var swim = 0; swim < 5; swim++) {
+                  var swimX = cx + W * (0.145 + swim * 0.041);
+                  [-1, 1].forEach(function (side) {
+                    ctx.beginPath(); ctx.moveTo(swimX, cy + side * H * 0.045);
+                    ctx.quadraticCurveTo(swimX + W * 0.012, cy + side * H * 0.082, swimX + W * 0.002, cy + side * H * 0.098);
+                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.55; ctx.stroke();
+                  });
+                }
+                ctx.restore();
+
+                // Overlapping abdomen plates taper naturally into the telson.
+                for (var craySeg = 5; craySeg >= 0; craySeg--) {
+                  var plateX = cx + W * (0.115 + craySeg * 0.041);
+                  var plateHalfW = W * 0.030;
+                  var plateHalfH = H * (0.103 - craySeg * 0.009);
+                  var plateGrad = ctx.createLinearGradient(plateX, cy - plateHalfH, plateX, cy + plateHalfH);
+                  plateGrad.addColorStop(0, crayShellLight); plateGrad.addColorStop(0.52, crayShellMid); plateGrad.addColorStop(1, crayShellDark);
+                  ctx.beginPath();
+                  ctx.moveTo(plateX - plateHalfW, cy - plateHalfH * 0.78);
+                  ctx.bezierCurveTo(plateX - plateHalfW * 0.2, cy - plateHalfH, plateX + plateHalfW * 0.75, cy - plateHalfH * 0.84, plateX + plateHalfW, cy - plateHalfH * 0.58);
+                  ctx.lineTo(plateX + plateHalfW, cy + plateHalfH * 0.58);
+                  ctx.bezierCurveTo(plateX + plateHalfW * 0.75, cy + plateHalfH * 0.84, plateX - plateHalfW * 0.2, cy + plateHalfH, plateX - plateHalfW, cy + plateHalfH * 0.78);
+                  ctx.closePath(); ctx.fillStyle = plateGrad; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = crayOutlineWidth * 0.72; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(plateX - plateHalfW * 0.55, cy - plateHalfH * 0.62);
+                  ctx.quadraticCurveTo(plateX, cy - plateHalfH * 0.77, plateX + plateHalfW * 0.56, cy - plateHalfH * 0.50);
+                  ctx.strokeStyle = 'rgba(248,250,252,0.14)'; ctx.lineWidth = 0.6; ctx.stroke();
+                }
+
+                // Tail fan: central telson plus paired overlapping uropods and reinforcing rays.
+                var crayTailBase = cx + W * 0.35;
+                var tailFanGrad = ctx.createLinearGradient(crayTailBase, cy - H * 0.09, crayTailBase + W * 0.085, cy + H * 0.09);
+                tailFanGrad.addColorStop(0, crayShellLight); tailFanGrad.addColorStop(0.55, crayShellMid); tailFanGrad.addColorStop(1, crayShellDark);
+                [-1, 1].forEach(function (side) {
+                  ctx.save(); ctx.globalAlpha = side < 0 ? 0.76 : 0.92;
+                  ctx.beginPath(); ctx.moveTo(crayTailBase - W * 0.006, cy + side * H * 0.035);
+                  ctx.bezierCurveTo(crayTailBase + W * 0.025, cy + side * H * 0.105, crayTailBase + W * 0.092, cy + side * H * 0.10, crayTailBase + W * 0.085, cy + side * H * 0.025);
+                  ctx.bezierCurveTo(crayTailBase + W * 0.045, cy + side * H * 0.018, crayTailBase + W * 0.018, cy + side * H * 0.018, crayTailBase - W * 0.006, cy + side * H * 0.035);
+                  ctx.closePath(); ctx.fillStyle = tailFanGrad; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = crayOutlineWidth * 0.75; ctx.stroke();
+                  for (var fanRay = 1; fanRay <= 3; fanRay++) {
+                    ctx.beginPath(); ctx.moveTo(crayTailBase + W * 0.012, cy + side * H * 0.032);
+                    ctx.lineTo(crayTailBase + W * (0.035 + fanRay * 0.013), cy + side * H * (0.03 + fanRay * 0.014));
+                    ctx.strokeStyle = 'rgba(248,250,252,0.13)'; ctx.lineWidth = 0.45; ctx.stroke();
+                  }
+                  ctx.restore();
+                });
+                ctx.beginPath(); ctx.moveTo(crayTailBase - W * 0.008, cy - H * 0.045);
+                ctx.bezierCurveTo(crayTailBase + W * 0.032, cy - H * 0.052, crayTailBase + W * 0.072, cy - H * 0.025, crayTailBase + W * 0.087, cy);
+                ctx.bezierCurveTo(crayTailBase + W * 0.072, cy + H * 0.025, crayTailBase + W * 0.032, cy + H * 0.052, crayTailBase - W * 0.008, cy + H * 0.045);
+                ctx.closePath(); ctx.fillStyle = tailFanGrad; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = crayOutlineWidth; ctx.stroke();
+
+                // Unified cephalothorax and rostrum, avoiding the former separate triangle-and-oval look.
+                var crayCarapaceGradient = ctx.createLinearGradient(cx - W * 0.08, cy - H * 0.15, cx + W * 0.03, cy + H * 0.15);
+                crayCarapaceGradient.addColorStop(0, crayShellLight); crayCarapaceGradient.addColorStop(0.46, crayShellMid); crayCarapaceGradient.addColorStop(1, crayShellDark);
                 ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.18, cy - H * 0.06);
-
-                ctx.bezierCurveTo(cx - W * 0.20, cy - H * 0.10, cx - W * 0.12, cy - H * 0.14, cx - W * 0.02, cy - H * 0.14);
-
-                ctx.bezierCurveTo(cx + W * 0.06, cy - H * 0.14, cx + W * 0.10, cy - H * 0.12, cx + W * 0.12, cy - H * 0.08);
-
-                ctx.bezierCurveTo(cx + W * 0.12, cy - H * 0.04, cx + W * 0.10, cy + H * 0.04, cx + W * 0.12, cy + H * 0.08);
-
-                ctx.bezierCurveTo(cx + W * 0.10, cy + H * 0.12, cx + W * 0.06, cy + H * 0.14, cx - W * 0.02, cy + H * 0.14);
-
-                ctx.bezierCurveTo(cx - W * 0.12, cy + H * 0.14, cx - W * 0.20, cy + H * 0.10, cx - W * 0.18, cy + H * 0.06);
-
-                ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
+                ctx.moveTo(cx - W * 0.29, cy);
+                ctx.lineTo(cx - W * 0.215, cy - H * 0.048);
+                ctx.bezierCurveTo(cx - W * 0.19, cy - H * 0.115, cx - W * 0.105, cy - H * 0.145, cx - W * 0.015, cy - H * 0.14);
+                ctx.bezierCurveTo(cx + W * 0.07, cy - H * 0.135, cx + W * 0.115, cy - H * 0.103, cx + W * 0.125, cy - H * 0.055);
+                ctx.bezierCurveTo(cx + W * 0.135, cy - H * 0.018, cx + W * 0.135, cy + H * 0.018, cx + W * 0.125, cy + H * 0.055);
+                ctx.bezierCurveTo(cx + W * 0.115, cy + H * 0.103, cx + W * 0.07, cy + H * 0.135, cx - W * 0.015, cy + H * 0.14);
+                ctx.bezierCurveTo(cx - W * 0.105, cy + H * 0.145, cx - W * 0.19, cy + H * 0.115, cx - W * 0.215, cy + H * 0.048);
+                ctx.closePath(); ctx.fillStyle = crayCarapaceGradient; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = crayOutlineWidth; ctx.stroke();
                 ctx.shadowBlur = 0;
 
-                // Cervical groove
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.04, cy - H * 0.13);
-
-                ctx.quadraticCurveTo(cx - W * 0.06, cy, cx - W * 0.04, cy + H * 0.13);
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.globalAlpha = 0.4; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // Carapace texture
-
-                ctx.globalAlpha = 0.06;
-
-                for (var ct = 0; ct < 30; ct++) {
-
-                  ctx.beginPath(); ctx.arc(cx - W * 0.12 + (ct % 6) * W * 0.04, cy - H * 0.10 + Math.floor(ct / 6) * H * 0.04, 1.5, 0, Math.PI * 2);
-
-                  // Theme-aware texture dots (was hardcoded black) — use deepest palette tone for contrast on any theme
-                  var _dotPalette = (typeof window !== 'undefined' && window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { deeper: '#020617' };
-                  ctx.fillStyle = _dotPalette.deeper || _dotPalette.canvas || '#020617';
-                  ctx.fill();
-
+                // Cervical groove, branchial contours, and calcified microtexture.
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.035, cy - H * 0.132);
+                ctx.bezierCurveTo(cx - W * 0.055, cy - H * 0.062, cx - W * 0.055, cy + H * 0.062, cx - W * 0.035, cy + H * 0.132);
+                ctx.strokeStyle = 'rgba(40,18,20,0.64)'; ctx.lineWidth = 1.1; ctx.stroke();
+                [-1, 1].forEach(function (side) {
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.015, cy + side * H * 0.075);
+                  ctx.quadraticCurveTo(cx + W * 0.055, cy + side * H * 0.115, cx + W * 0.105, cy + side * H * 0.074);
+                  ctx.strokeStyle = 'rgba(248,250,252,0.12)'; ctx.lineWidth = 0.7; ctx.stroke();
+                });
+                if (!crayAccessible) {
+                  ctx.save(); ctx.globalAlpha = crayRealistic ? 0.19 : 0.12;
+                  for (var shellDot = 0; shellDot < 36; shellDot++) {
+                    var shellCol = shellDot % 9; var shellRow = Math.floor(shellDot / 9);
+                    var shellX = cx - W * 0.17 + shellCol * W * 0.031;
+                    var shellY = cy - H * 0.085 + shellRow * H * 0.052 + (shellCol % 2) * H * 0.008;
+                    ctx.beginPath(); ctx.ellipse(shellX, shellY, 1.1, 0.65, -0.25, 0, Math.PI * 2);
+                    ctx.fillStyle = shellRow % 2 ? 'rgba(248,250,252,0.48)' : 'rgba(15,23,42,0.58)'; ctx.fill();
+                  }
+                  ctx.restore();
                 }
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.175, cy - H * 0.09);
+                ctx.quadraticCurveTo(cx - W * 0.03, cy - H * 0.135, cx + W * 0.085, cy - H * 0.083);
+                ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1.5; ctx.stroke();
 
-                ctx.globalAlpha = 1;
-
-  // €â€ Draw organ pins â€â€”€â”€ Rostrum â”€â”€
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.18, cy - H * 0.04);
-
-                ctx.lineTo(cx - W * 0.26, cy); ctx.lineTo(cx - W * 0.18, cy + H * 0.04);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
-
-  // €â€ Draw organ pins â€â€”€â”€ Compound eyes â”€â”€
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.18, cy - H * 0.06);
-
-                ctx.lineTo(cx - W * 0.22, cy - H * 0.10);
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.22, cy - H * 0.10, 3.5, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#1a1a1a'; ctx.fill();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.218, cy - H * 0.105, 1.2, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fill();
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.18, cy + H * 0.06);
-
-                ctx.lineTo(cx - W * 0.22, cy + H * 0.10);
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.5; ctx.stroke();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.22, cy + H * 0.10, 3.5, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#1a1a1a'; ctx.fill();
-
-  // €â€ Draw organ pins â€â€”€â”€ Antennae â”€â”€
-
-                ctx.strokeStyle = layerStroke; ctx.lineWidth = 1;
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.20, cy - H * 0.08);
-
-                ctx.bezierCurveTo(cx - W * 0.28, cy - H * 0.14, cx - W * 0.30, cy - H * 0.08, cx - W * 0.34, cy - H * 0.10);
-
-                ctx.stroke();
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.20, cy + H * 0.08);
-
-                ctx.bezierCurveTo(cx - W * 0.28, cy + H * 0.14, cx - W * 0.30, cy + H * 0.08, cx - W * 0.34, cy + H * 0.10);
-
-                ctx.stroke();
-
-                ctx.lineWidth = 0.6;
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy - H * 0.04);
-
-                ctx.lineTo(cx - W * 0.28, cy - H * 0.06); ctx.stroke();
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy + H * 0.04);
-
-                ctx.lineTo(cx - W * 0.28, cy + H * 0.06); ctx.stroke();
-
-  // €â€ Draw organ pins â€â€”€â”€ Abdomen â”€â”€
-
-                for (var seg = 0; seg < 6; seg++) {
-
-                  var segX = cx + W * 0.12 + seg * W * 0.035;
-
-                  var segH2 = H * (0.10 - seg * 0.008);
-
-                  ctx.beginPath(); ctx.rect(segX, cy - segH2, W * 0.035, segH2 * 2);
-
-                  ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                }
-
-  // €â€ Draw organ pins â€â€”€â”€ Telson + Uropods â”€â”€
-
-                var tailX = cx + W * 0.33;
-
-                ctx.beginPath(); ctx.moveTo(tailX, cy - H * 0.04);
-
-                ctx.lineTo(tailX + W * 0.06, cy); ctx.lineTo(tailX, cy + H * 0.04); ctx.closePath();
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.8; ctx.stroke();
-
-                ctx.beginPath(); ctx.moveTo(tailX, cy - H * 0.04);
-
-                ctx.bezierCurveTo(tailX + W * 0.03, cy - H * 0.10, tailX + W * 0.06, cy - H * 0.08, tailX + W * 0.05, cy - H * 0.02);
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.6; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
-
-                ctx.beginPath(); ctx.moveTo(tailX, cy + H * 0.04);
-
-                ctx.bezierCurveTo(tailX + W * 0.03, cy + H * 0.10, tailX + W * 0.06, cy + H * 0.08, tailX + W * 0.05, cy + H * 0.02);
-
-                ctx.fillStyle = layerColor; ctx.globalAlpha = 0.6; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.stroke(); ctx.globalAlpha = 1;
-
-  // €â€ Draw organ pins â€â€”€â”€ Chelipeds (claws) â”€â”€
-
-                [-1, 1].forEach(function (s) {
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.14, cy + s * H * 0.10);
-
-                  ctx.lineTo(cx - W * 0.22, cy + s * H * 0.16);
-
-                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.22, cy + s * H * 0.16);
-
-                  ctx.lineTo(cx - W * 0.28, cy + s * H * 0.20);
-
-                  ctx.strokeStyle = layerStroke; ctx.lineWidth = 2.5; ctx.stroke();
-
-                  // Pincer
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.28, cy + s * H * 0.20);
-
-                  ctx.bezierCurveTo(cx - W * 0.32, cy + s * H * 0.18, cx - W * 0.34, cy + s * H * 0.19, cx - W * 0.34, cy + s * H * 0.20);
-
-                  ctx.bezierCurveTo(cx - W * 0.34, cy + s * H * 0.21, cx - W * 0.32, cy + s * H * 0.22, cx - W * 0.28, cy + s * H * 0.20);
-
-                  ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
-
+                // Movable eye stalks with faceted, low-glare compound eyes.
+                [-1, 1].forEach(function (side) {
+                  var eyeStalkX = cx - W * 0.215; var eyeStalkY = cy + side * H * 0.073;
+                  var crayEyeX = cx - W * 0.245; var crayEyeY = cy + side * H * 0.101;
+                  drawCraySegment(eyeStalkX, eyeStalkY, crayEyeX, crayEyeY, 2.4, 2.05, side < 0 ? 0.8 : 1);
+                  ctx.save(); ctx.globalAlpha = side < 0 ? 0.84 : 1;
+                  var compoundEyeGrad = ctx.createRadialGradient(crayEyeX - 1, crayEyeY - 1, 0.5, crayEyeX, crayEyeY, 5);
+                  compoundEyeGrad.addColorStop(0, 'rgba(82,82,72,0.9)'); compoundEyeGrad.addColorStop(0.42, 'rgba(17,24,39,0.98)'); compoundEyeGrad.addColorStop(1, 'rgba(2,6,23,1)');
+                  ctx.beginPath(); ctx.ellipse(crayEyeX, crayEyeY, 4.9, 4.0, side * 0.18, 0, Math.PI * 2); ctx.fillStyle = compoundEyeGrad; ctx.fill();
+                  ctx.strokeStyle = 'rgba(148,163,184,0.35)'; ctx.lineWidth = 0.35;
+                  ctx.beginPath(); ctx.moveTo(crayEyeX - 3.4, crayEyeY); ctx.lineTo(crayEyeX + 3.4, crayEyeY); ctx.moveTo(crayEyeX, crayEyeY - 2.8); ctx.lineTo(crayEyeX, crayEyeY + 2.8); ctx.stroke();
+                  ctx.restore();
                 });
 
-  // €â€ Draw organ pins â€â€”€â”€ Walking legs (4 pairs) â”€â”€
+                // Near-side walking legs and cheliped overlap the body edge for readable articulation.
+                for (var nearLeg = 0; nearLeg < 4; nearLeg++) drawCrayWalkingLeg(1, nearLeg, 0.94);
+                drawCrayCheliped(1);
 
-                for (var wl = 0; wl < 4; wl++) {
-
-                  [-1, 1].forEach(function (s) {
-
-                    var lx = cx - W * 0.04 + wl * W * 0.04;
-
-                    ctx.beginPath(); ctx.moveTo(lx, cy + s * H * 0.12);
-
-                    ctx.lineTo(lx - W * 0.02, cy + s * H * 0.20);
-
-                    ctx.lineTo(lx - W * 0.04, cy + s * H * 0.26);
-
-                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 1.2; ctx.lineCap = 'round'; ctx.stroke();
-
-                    ctx.beginPath(); ctx.arc(lx - W * 0.02, cy + s * H * 0.20, 1.5, 0, Math.PI * 2);
-
-                    ctx.fillStyle = layerStroke; ctx.fill();
-
+                if (activeLayer === 'muscle') {
+                  ctx.save(); ctx.globalAlpha = 0.54;
+                  for (var muscleSeg = 0; muscleSeg < 6; muscleSeg++) {
+                    var muscleX = cx + W * (0.125 + muscleSeg * 0.041);
+                    var muscleH = H * (0.065 - muscleSeg * 0.004);
+                    ctx.beginPath(); ctx.ellipse(muscleX, cy + H * 0.012, W * 0.020, muscleH, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = muscleSeg % 2 ? '#fca5a5' : '#ef4444'; ctx.fill();
+                    ctx.strokeStyle = 'rgba(127,29,29,0.65)'; ctx.lineWidth = 0.45; ctx.stroke();
+                  }
+                  [-1,1].forEach(function (side) {
+                    ctx.beginPath(); ctx.ellipse(cx - W * 0.245, cy + side * H * 0.18, W * 0.037, H * 0.017, side * 0.55, 0, Math.PI * 2);
+                    ctx.fillStyle = '#f87171'; ctx.fill();
                   });
-
+                  ctx.restore();
                 }
-
-  // €â€ Draw organ pins â€â€”€â”€ Swimmerets â”€â”€
-
-                ctx.globalAlpha = 0.3;
-
-                for (var sw = 0; sw < 5; sw++) {
-
-                  var swx = cx + W * 0.14 + sw * W * 0.035;
-
-                  [-1, 1].forEach(function (s) {
-
-                    ctx.beginPath(); ctx.moveTo(swx, cy + s * H * 0.04);
-
-                    ctx.lineTo(swx + W * 0.01, cy + s * H * 0.08);
-
-                    ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.6; ctx.stroke();
-
-                  });
-
-                }
-
-                ctx.globalAlpha = 1;
-
-  // €â€ Draw organ pins â€â€”€â”€ Layer overlays â”€â”€
 
                 if (activeLayer === 'organs') {
-
-                  ctx.globalAlpha = 0.5;
-
-                  ctx.beginPath(); ctx.arc(cx + W * 0.04, cy, W * 0.02, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#dc2626'; ctx.fill();
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.02, cy, W * 0.05, H * 0.06, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#92400e'; ctx.fill();
-
-                  ctx.beginPath(); ctx.arc(cx - W * 0.10, cy, W * 0.018, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fde68a'; ctx.fill();
-
-                  for (var cg = 0; cg < 3; cg++) {
-
-                    ctx.beginPath(); ctx.ellipse(cx + W * 0.06, cy + (cg - 1) * H * 0.04, W * 0.015, H * 0.02, 0, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#fca5a5'; ctx.fill();
-
-                  }
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.02, cy);
-
-                  ctx.lineTo(cx + W * 0.32, cy);
-
-                  ctx.strokeStyle = '#f97316'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                  ctx.globalAlpha = 1;
-
+                  ctx.save(); ctx.globalAlpha = 0.62;
+                  // Gastric mill and paired green glands at the anterior end.
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.12, cy, W * 0.038, H * 0.048, 0, 0, Math.PI * 2); ctx.fillStyle = '#fcd34d'; ctx.fill();
+                  ctx.strokeStyle = '#92400e'; ctx.lineWidth = 0.65;
+                  for (var tooth = -1; tooth <= 1; tooth++) { ctx.beginPath(); ctx.moveTo(cx - W * 0.14, cy + tooth * H * 0.014); ctx.lineTo(cx - W * 0.10, cy - tooth * H * 0.006); ctx.stroke(); }
+                  [-1,1].forEach(function (side) {
+                    ctx.beginPath(); ctx.arc(cx - W * 0.205, cy + side * H * 0.038, W * 0.012, 0, Math.PI * 2); ctx.fillStyle = '#86efac'; ctx.fill();
+                  });
+                  // Hepatopancreas lobes, dorsal heart, gonad, and feathery gills.
+                  [-1,1].forEach(function (side) {
+                    ctx.beginPath(); ctx.ellipse(cx - W * 0.015, cy + side * H * 0.034, W * 0.057, H * 0.036, side * 0.12, 0, Math.PI * 2); ctx.fillStyle = '#d97706'; ctx.fill();
+                  });
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.035, cy - H * 0.035, W * 0.027, H * 0.022, 0, 0, Math.PI * 2); ctx.fillStyle = '#dc2626'; ctx.fill();
+                  ctx.beginPath(); ctx.ellipse(cx + W * 0.075, cy, W * 0.042, H * 0.016, 0, 0, Math.PI * 2); ctx.fillStyle = '#f9a8d4'; ctx.fill();
+                  [-1,1].forEach(function (side) {
+                    for (var gill = 0; gill < 4; gill++) {
+                      var gillX = cx - W * 0.015 + gill * W * 0.033;
+                      ctx.beginPath(); ctx.moveTo(gillX, cy + side * H * 0.072); ctx.lineTo(gillX + W * 0.012, cy + side * H * 0.112);
+                      ctx.strokeStyle = '#fda4af'; ctx.lineWidth = 1.4; ctx.stroke();
+                      ctx.lineWidth = 0.45;
+                      for (var filament = 1; filament <= 3; filament++) {
+                        var fy = cy + side * H * (0.075 + filament * 0.009);
+                        ctx.beginPath(); ctx.moveTo(gillX + W * 0.002, fy); ctx.lineTo(gillX + W * 0.014, fy + side * H * 0.004); ctx.stroke();
+                      }
+                    }
+                  });
+                  ctx.restore();
                 }
 
                 if (activeLayer === 'nervous') {
-
-                  ctx.globalAlpha = 0.6;
-
-                  ctx.beginPath(); ctx.arc(cx - W * 0.14, cy, W * 0.018, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#fbbf24'; ctx.fill();
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.12, cy);
-
-                  ctx.lineTo(cx + W * 0.32, cy);
-
-                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.stroke();
-
-                  for (var ng = 0; ng < 8; ng++) {
-
-                    ctx.beginPath(); ctx.arc(cx - W * 0.10 + ng * W * 0.05, cy, 3, 0, Math.PI * 2);
-
-                    ctx.fillStyle = '#f59e0b'; ctx.fill();
-
+                  ctx.save(); ctx.globalAlpha = 0.76;
+                  ctx.beginPath(); ctx.ellipse(cx - W * 0.17, cy, W * 0.021, H * 0.017, 0, 0, Math.PI * 2); ctx.fillStyle = '#fde047'; ctx.fill();
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.148, cy + H * 0.018);
+                  ctx.bezierCurveTo(cx - W * 0.04, cy + H * 0.04, cx + W * 0.18, cy + H * 0.035, cx + W * 0.34, cy + H * 0.018);
+                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.9; ctx.stroke();
+                  for (var ganglion = 0; ganglion < 8; ganglion++) {
+                    var ganglionX = cx - W * 0.11 + ganglion * W * 0.061;
+                    ctx.beginPath(); ctx.ellipse(ganglionX, cy + H * 0.032, 3.1, 2.2, 0, 0, Math.PI * 2); ctx.fillStyle = '#f59e0b'; ctx.fill();
                   }
-
-                  ctx.globalAlpha = 1;
-
+                  ctx.strokeStyle = 'rgba(253,224,71,0.72)'; ctx.lineWidth = 0.65;
+                  [-1,1].forEach(function (side) {
+                    ctx.beginPath(); ctx.moveTo(cx - W * 0.17, cy); ctx.quadraticCurveTo(cx - W * 0.25, cy + side * H * 0.04, cx - W * 0.34, cy + side * H * 0.10); ctx.stroke();
+                  });
+                  ctx.restore();
                 }
-
-
-
 
 
               } else if (spec.bodyShape === 'eye') {
+                // Sheep eye: layered lateral cross-section with a transparent optical path.
+                var eyeAccessible = (d.visualRealism || visualRealism) === 'accessible';
+                var eyeRealistic = (d.visualRealism || visualRealism) === 'realistic';
+                var eyeCloudy = (d.specimenCondition || specimenCondition) === 'cloudy';
+                var eyeR = Math.min(W * 0.285, H * 0.36);
+                var eyeCx = cx + W * 0.015;
+                var eyeCy = cy;
+                var eyeRx = eyeR;
+                var eyeRy = eyeR * 0.83;
 
-                // Sheep eye â€” cross-section
+                function traceSheepEyeGlobe(scaleX, scaleY) {
+                  var rx = eyeRx * (scaleX == null ? 1 : scaleX);
+                  var ry = eyeRy * (scaleY == null ? 1 : scaleY);
+                  ctx.beginPath();
+                  ctx.ellipse(eyeCx, eyeCy, rx, ry, -0.015, 0, Math.PI * 2);
+                }
 
-                ctx.beginPath(); ctx.arc(cx, cy, W * 0.30, 0, Math.PI * 2);
+                // Orbital fat and extraocular muscle remnants sit behind the isolated globe.
+                if (activeLayer === 'skin') {
+                  ctx.save(); ctx.globalAlpha = eyeAccessible ? 0.34 : 0.5;
+                  [[0.48,-0.78,0.24,0.13,-0.35],[0.72,-0.48,0.20,0.12,0.2],[0.70,0.57,0.23,0.13,-0.18],[0.42,0.80,0.20,0.11,0.3]].forEach(function (fat) {
+                    ctx.beginPath(); ctx.ellipse(eyeCx + eyeRx * fat[0], eyeCy + eyeRy * fat[1], eyeR * fat[2], eyeR * fat[3], fat[4], 0, Math.PI * 2);
+                    var fatGrad = ctx.createRadialGradient(eyeCx + eyeRx * fat[0] - 3, eyeCy + eyeRy * fat[1] - 3, 1, eyeCx + eyeRx * fat[0], eyeCy + eyeRy * fat[1], eyeR * fat[2]);
+                    fatGrad.addColorStop(0, 'rgba(254,240,138,0.72)'); fatGrad.addColorStop(1, 'rgba(161,98,7,0.28)');
+                    ctx.fillStyle = fatGrad; ctx.fill(); ctx.strokeStyle = 'rgba(120,53,15,0.3)'; ctx.lineWidth = 0.55; ctx.stroke();
+                  });
+                  [-1,1].forEach(function (side) {
+                    ctx.beginPath(); ctx.moveTo(eyeCx - eyeRx * 0.10, eyeCy + side * eyeRy * 0.92);
+                    ctx.bezierCurveTo(eyeCx + eyeRx * 0.22, eyeCy + side * eyeRy * 1.12, eyeCx + eyeRx * 0.62, eyeCy + side * eyeRy * 1.04, eyeCx + eyeRx * 0.84, eyeCy + side * eyeRy * 0.72);
+                    ctx.strokeStyle = side < 0 ? 'rgba(190,24,93,0.58)' : 'rgba(159,18,57,0.48)'; ctx.lineWidth = eyeR * 0.075; ctx.stroke();
+                    ctx.strokeStyle = 'rgba(254,205,211,0.25)'; ctx.lineWidth = 1; ctx.stroke();
+                  });
+                  ctx.restore();
+                }
 
-                ctx.fillStyle = '#f1f5f9'; ctx.fill(); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 3; ctx.stroke();
-
+                // Dense collagen of the sclera receives a restrained pearly gradient.
+                var scleraGrad = ctx.createRadialGradient(eyeCx - eyeRx * 0.30, eyeCy - eyeRy * 0.34, eyeR * 0.08, eyeCx, eyeCy, eyeR * 1.12);
+                scleraGrad.addColorStop(0, eyeAccessible ? '#f8fafc' : '#f5f1e8');
+                scleraGrad.addColorStop(0.64, eyeAccessible ? '#e2e8f0' : '#d8d1c4');
+                scleraGrad.addColorStop(1, eyeAccessible ? '#94a3b8' : '#8f877d');
+                traceSheepEyeGlobe(); ctx.fillStyle = scleraGrad; ctx.fill(); ctx.strokeStyle = eyeAccessible ? '#475569' : '#6b625b'; ctx.lineWidth = eyeAccessible ? 2.2 : 1.45; ctx.stroke();
                 ctx.shadowBlur = 0;
 
-                // Choroid (dark inner layer)
-
-                ctx.beginPath(); ctx.arc(cx, cy, W * 0.27, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#1e1b4b'; ctx.fill();
-
-                // Retina (inner)
-
-                ctx.beginPath(); ctx.arc(cx, cy, W * 0.25, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#fef3c7'; ctx.fill();
-
-                // Vitreous humor (clear)
-
-                ctx.beginPath(); ctx.arc(cx, cy, W * 0.23, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(219,234,254,0.5)'; ctx.fill();
-
-                // Lens
-
-                ctx.beginPath(); ctx.ellipse(cx - W * 0.12, cy, W * 0.06, H * 0.10, 0, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fill(); ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Cornea (front bulge)
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.28, cy, W * 0.08, -Math.PI * 0.4, Math.PI * 0.4);
-
-                ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2.5; ctx.stroke();
-
-                // Iris
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.16, cy, H * 0.08, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#7c3aed'; ctx.globalAlpha = 0.6; ctx.fill(); ctx.globalAlpha = 1;
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.16, cy, H * 0.03, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#0f172a'; ctx.fill(); // pupil
-
-                // Optic nerve with myelin sheath
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.30, cy);
-
-                ctx.lineTo(cx + W * 0.38, cy + H * 0.05);
-
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 6; ctx.stroke();
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.30, cy);
-
-                ctx.lineTo(cx + W * 0.38, cy + H * 0.05);
-
-                ctx.strokeStyle = '#fde68a'; ctx.lineWidth = 3; ctx.stroke();
-
-                // Blood vessels on retina
-
-                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 0.8; ctx.globalAlpha = 0.4;
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.10, cy);
-
-                ctx.quadraticCurveTo(cx + W * 0.05, cy - H * 0.10, cx - W * 0.05, cy - H * 0.12); ctx.stroke();
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.10, cy);
-
-                ctx.quadraticCurveTo(cx + W * 0.05, cy + H * 0.08, cx - W * 0.05, cy + H * 0.10); ctx.stroke();
-
-                ctx.globalAlpha = 1;
-
-                // Tapetum reflection
-
-                ctx.beginPath(); ctx.arc(cx + W * 0.10, cy, W * 0.08, -0.5, 0.5);
-
-                ctx.strokeStyle = 'rgba(34,211,238,0.3)'; ctx.lineWidth = 8; ctx.shadowColor = 'rgba(34,211,238,0.6)'; ctx.shadowBlur = 10; ctx.stroke(); ctx.shadowBlur = 0;
-
-                // Animated light refraction ray
-
-                var rayPhase = (dissTick * 0.02) % (Math.PI * 2);
-
-                var rayAlpha = 0.3 + Math.sin(rayPhase) * 0.15;
-
-                ctx.globalAlpha = rayAlpha;
-
-                // Incoming ray
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.45, cy - H * 0.08);
-
-                ctx.lineTo(cx - W * 0.28, cy); // hits cornea
-
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Ray through cornea â†’ aqueous humor â†’ lens (bends)
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.28, cy);
-
-                ctx.quadraticCurveTo(cx - W * 0.20, cy + H * 0.01, cx - W * 0.12, cy); // through pupil/lens
-
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Ray through vitreous â†’ hits retina (converges)
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.12, cy);
-
-                ctx.lineTo(cx + W * 0.10, cy + H * 0.02); // focal point on retina
-
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Focal point glow
-
-                ctx.beginPath(); ctx.arc(cx + W * 0.10, cy + H * 0.02, 4, 0, Math.PI * 2);
-
-                var focalGrad = ctx.createRadialGradient(cx + W * 0.10, cy + H * 0.02, 0, cx + W * 0.10, cy + H * 0.02, 4);
-
-                focalGrad.addColorStop(0, 'rgba(251,191,36,0.8)');
-
-                focalGrad.addColorStop(1, 'rgba(251,191,36,0)');
-
-                ctx.fillStyle = focalGrad; ctx.fill();
-
-                // Ray label
-
-                ctx.font = '8px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
-
-                ctx.fillText('Light Ray', cx - W * 0.44, cy - H * 0.10);
-
-                ctx.globalAlpha = 1;
-
-                // Aqueous humor label
-
-                ctx.font = '7px Inter, system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.25)';
-
-                ctx.fillText('Aqueous Humor', cx - W * 0.24, cy + H * 0.06);
-
-                ctx.fillText('Vitreous Humor', cx - W * 0.05, cy + H * 0.10);
-
-                // Ciliary body
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.14, cy - H * 0.08, W * 0.015, 0, Math.PI);
-
-                ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1; ctx.stroke();
-
-                ctx.beginPath(); ctx.arc(cx - W * 0.14, cy + H * 0.08, W * 0.015, Math.PI, Math.PI * 2);
-
-                ctx.strokeStyle = '#a78bfa'; ctx.stroke();
-
-                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillText('Ciliary Body', cx - W * 0.18, cy - H * 0.11);
-
-                // Suspensory ligaments (zonules)
-
-                ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 0.4;
-
-                for (var zl = 0; zl < 6; zl++) {
-
-                  var za = -0.5 + zl * 0.2;
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.14 + Math.cos(za) * W * 0.015, cy + Math.sin(za) * H * 0.08);
-
-                  ctx.lineTo(cx - W * 0.12 + Math.cos(za) * W * 0.04, cy + Math.sin(za) * H * 0.06);
-
-                  ctx.stroke();
-
-                }
-
-                // Fovea centralis (center of macula)
-
-                ctx.beginPath(); ctx.arc(cx + W * 0.10, cy, 2.5, 0, Math.PI * 2);
-
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1; ctx.stroke();
-
-                ctx.fillStyle = 'rgba(251,191,36,0.3)'; ctx.fillText('Fovea', cx + W * 0.12, cy - H * 0.02);
-
-                // Blind spot (optic disc)
-
-                ctx.beginPath(); ctx.arc(cx + W * 0.18, cy + H * 0.03, 3, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(251,191,36,0.4)'; ctx.fill();
-
-                ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillText('Optic Disc', cx + W * 0.20, cy + H * 0.02);
-
-                // Iris sphincter muscle detail
-
-                ctx.globalAlpha = 0.15;
-
-                for (var ism = 0; ism < 12; ism++) {
-
-                  var ismA = (ism / 12) * Math.PI * 2;
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.24 + Math.cos(ismA) * W * 0.06, cy + Math.sin(ismA) * H * 0.04);
-
-                  ctx.lineTo(cx - W * 0.24 + Math.cos(ismA) * W * 0.08, cy + Math.sin(ismA) * H * 0.06);
-
-                  ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                }
-
-                ctx.globalAlpha = 1;
-
-                // Macula lutea region
-
-                ctx.beginPath(); ctx.ellipse(cx + W * 0.10, cy, W * 0.03, H * 0.02, 0, 0, Math.PI * 2);
-
-                ctx.strokeStyle = 'rgba(251,191,36,0.2)'; ctx.lineWidth = 0.5; ctx.stroke();
-
-                ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fillText('Macula', cx + W * 0.12, cy + H * 0.03);
-
-                // Rod and cone cell detail on retina
-
-                ctx.globalAlpha = 0.15;
-
-                for (var rc = 0; rc < 20; rc++) {
-
-                  var rcAngle = Math.PI * 0.65 + rc * Math.PI * 0.02;
-
-                  var rcR = W * 0.28;
-
-                  var rcx = cx + Math.cos(rcAngle) * rcR;
-
-                  var rcy = cy + Math.sin(rcAngle) * rcR;
-
-                  ctx.beginPath();
-
-                  if (rc % 3 === 0) {
-
-                    // Cone cell (triangle shape)
-
-                    ctx.moveTo(rcx, rcy - 1.5); ctx.lineTo(rcx - 1, rcy + 1.5); ctx.lineTo(rcx + 1, rcy + 1.5); ctx.closePath();
-
-                    ctx.fillStyle = '#3b82f6'; ctx.fill();
-
-                  } else {
-
-                    // Rod cell (rectangle shape)
-
-                    ctx.fillStyle = '#94a3b8';
-
-                    ctx.fillRect(rcx - 0.5, rcy - 2, 1, 4);
-
+                // Choroid: thin, vascular, heavily pigmented band inside the sclera.
+                var choroidGrad = ctx.createRadialGradient(eyeCx - eyeRx * 0.2, eyeCy - eyeRy * 0.25, eyeR * 0.08, eyeCx, eyeCy, eyeR);
+                choroidGrad.addColorStop(0, 'rgba(101,61,48,0.98)'); choroidGrad.addColorStop(0.72, 'rgba(54,33,34,0.99)'); choroidGrad.addColorStop(1, 'rgba(24,18,22,1)');
+                traceSheepEyeGlobe(0.945,0.925); ctx.fillStyle = choroidGrad; ctx.fill();
+
+                // Tapetum lucidum occupies the dorsal posterior fundus in sheep, not a full neon ring.
+                ctx.save();
+                ctx.beginPath();
+                ctx.ellipse(eyeCx + eyeRx * 0.19, eyeCy - eyeRy * 0.08, eyeRx * 0.71, eyeRy * 0.79, -0.02, -1.03, 0.16);
+                var tapetumGrad = ctx.createLinearGradient(eyeCx, eyeCy - eyeRy * 0.70, eyeCx + eyeRx * 0.78, eyeCy + eyeRy * 0.15);
+                tapetumGrad.addColorStop(0, 'rgba(125,211,252,0.56)'); tapetumGrad.addColorStop(0.44, 'rgba(94,234,212,0.46)'); tapetumGrad.addColorStop(0.76, 'rgba(190,242,100,0.28)'); tapetumGrad.addColorStop(1, 'rgba(148,163,184,0.05)');
+                ctx.strokeStyle = tapetumGrad; ctx.lineWidth = eyeR * 0.055; ctx.stroke();
+                ctx.restore();
+
+                // Retina is a delicate translucent lining over the choroid and tapetum.
+                traceSheepEyeGlobe(0.89,0.865);
+                ctx.fillStyle = eyeAccessible ? 'rgba(254,249,195,0.92)' : 'rgba(244,230,183,0.72)'; ctx.fill();
+                ctx.strokeStyle = 'rgba(253,230,138,0.65)'; ctx.lineWidth = eyeAccessible ? 1.5 : 0.85; ctx.stroke();
+
+                // Vitreous gel fills the posterior globe with soft depth and condition-aware clarity.
+                var vitreousGrad = ctx.createRadialGradient(eyeCx - eyeRx * 0.28, eyeCy - eyeRy * 0.30, 2, eyeCx + eyeRx * 0.05, eyeCy, eyeRx * 0.86);
+                vitreousGrad.addColorStop(0, eyeCloudy ? 'rgba(226,232,240,0.58)' : 'rgba(240,249,255,0.48)');
+                vitreousGrad.addColorStop(0.62, eyeCloudy ? 'rgba(203,213,225,0.45)' : 'rgba(186,230,253,0.22)');
+                vitreousGrad.addColorStop(1, eyeCloudy ? 'rgba(148,163,184,0.35)' : 'rgba(125,211,252,0.08)');
+                traceSheepEyeGlobe(0.845,0.81); ctx.fillStyle = vitreousGrad; ctx.fill();
+
+                // Posterior optic nerve with layered dural sheath and central axon bundle.
+                var nerveStartX = eyeCx + eyeRx * 0.88; var nerveStartY = eyeCy + eyeRy * 0.11;
+                var nerveEndX = eyeCx + eyeRx * 1.31; var nerveEndY = eyeCy + eyeRy * 0.24;
+                ctx.beginPath(); ctx.moveTo(nerveStartX, nerveStartY); ctx.lineTo(nerveEndX, nerveEndY);
+                ctx.strokeStyle = 'rgba(203,213,225,0.92)'; ctx.lineWidth = eyeR * 0.12; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(nerveStartX, nerveStartY); ctx.lineTo(nerveEndX, nerveEndY);
+                ctx.strokeStyle = 'rgba(226,190,110,0.9)'; ctx.lineWidth = eyeR * 0.065; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(nerveStartX, nerveStartY); ctx.lineTo(nerveEndX, nerveEndY);
+                ctx.strokeStyle = 'rgba(113,63,18,0.52)'; ctx.lineWidth = 0.7; ctx.stroke();
+
+                // Corneal dome and anterior chamber form a true bulge rather than a painted arc.
+                var corneaBaseX = eyeCx - eyeRx * 0.82;
+                var corneaTipX = eyeCx - eyeRx * 1.105;
+                ctx.beginPath();
+                ctx.moveTo(corneaBaseX, eyeCy - eyeRy * 0.48);
+                ctx.bezierCurveTo(eyeCx - eyeRx * 1.03, eyeCy - eyeRy * 0.42, corneaTipX, eyeCy - eyeRy * 0.20, corneaTipX, eyeCy);
+                ctx.bezierCurveTo(corneaTipX, eyeCy + eyeRy * 0.20, eyeCx - eyeRx * 1.03, eyeCy + eyeRy * 0.42, corneaBaseX, eyeCy + eyeRy * 0.48);
+                ctx.bezierCurveTo(eyeCx - eyeRx * 0.88, eyeCy + eyeRy * 0.24, eyeCx - eyeRx * 0.88, eyeCy - eyeRy * 0.24, corneaBaseX, eyeCy - eyeRy * 0.48);
+                ctx.closePath();
+                var corneaGrad = ctx.createLinearGradient(corneaTipX, eyeCy, corneaBaseX, eyeCy);
+                corneaGrad.addColorStop(0, eyeCloudy ? 'rgba(226,232,240,0.62)' : 'rgba(224,242,254,0.34)');
+                corneaGrad.addColorStop(0.58, eyeCloudy ? 'rgba(203,213,225,0.48)' : 'rgba(186,230,253,0.16)');
+                corneaGrad.addColorStop(1, 'rgba(125,211,252,0.05)');
+                ctx.fillStyle = corneaGrad; ctx.fill(); ctx.strokeStyle = eyeAccessible ? '#38bdf8' : 'rgba(125,211,252,0.82)'; ctx.lineWidth = eyeAccessible ? 2.2 : 1.35; ctx.stroke();
+
+                // Ciliary body, iris leaflets, and zonular fibers surround the biconvex lens.
+                var lensX = eyeCx - eyeRx * 0.43;
+                var lensRx = eyeRx * 0.19; var lensRy = eyeRy * 0.37;
+                [-1,1].forEach(function (side) {
+                  var ciliaryY = eyeCy + side * eyeRy * 0.43;
+                  ctx.beginPath(); ctx.ellipse(eyeCx - eyeRx * 0.57, ciliaryY, eyeRx * 0.12, eyeRy * 0.095, side * 0.28, 0, Math.PI * 2);
+                  ctx.fillStyle = eyeAccessible ? '#92400e' : '#68453c'; ctx.fill(); ctx.strokeStyle = 'rgba(45,28,28,0.72)'; ctx.lineWidth = 0.75; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(eyeCx - eyeRx * 0.67, ciliaryY - side * eyeRy * 0.025);
+                  ctx.bezierCurveTo(eyeCx - eyeRx * 0.66, eyeCy + side * eyeRy * 0.28, eyeCx - eyeRx * 0.61, eyeCy + side * eyeRy * 0.16, eyeCx - eyeRx * 0.58, eyeCy + side * eyeRy * 0.115);
+                  ctx.strokeStyle = eyeAccessible ? '#78350f' : '#54352f'; ctx.lineWidth = eyeR * 0.055; ctx.stroke();
+                  for (var zonule = 0; zonule < 5; zonule++) {
+                    var zf = zonule / 4;
+                    var zonuleStartX = eyeCx - eyeRx * (0.53 - zf * 0.025);
+                    var zonuleStartY = eyeCy + side * eyeRy * (0.34 + zf * 0.055);
+                    var zonuleEndX = lensX + eyeRx * (0.03 + zf * 0.08);
+                    var zonuleEndY = eyeCy + side * lensRy * (0.68 + zf * 0.07);
+                    ctx.beginPath(); ctx.moveTo(zonuleStartX, zonuleStartY); ctx.lineTo(zonuleEndX, zonuleEndY);
+                    ctx.strokeStyle = 'rgba(226,232,240,0.48)'; ctx.lineWidth = 0.48; ctx.stroke();
                   }
+                });
 
+                var lensGrad = ctx.createRadialGradient(lensX - lensRx * 0.34, eyeCy - lensRy * 0.35, 1, lensX, eyeCy, lensRy);
+                lensGrad.addColorStop(0, eyeCloudy ? 'rgba(248,250,252,0.95)' : 'rgba(255,255,255,0.82)');
+                lensGrad.addColorStop(0.55, eyeCloudy ? 'rgba(203,213,225,0.88)' : 'rgba(224,242,254,0.48)');
+                lensGrad.addColorStop(1, eyeCloudy ? 'rgba(148,163,184,0.75)' : 'rgba(125,211,252,0.22)');
+                ctx.beginPath(); ctx.ellipse(lensX, eyeCy, lensRx, lensRy, 0, 0, Math.PI * 2);
+                ctx.fillStyle = lensGrad; ctx.fill(); ctx.strokeStyle = eyeAccessible ? '#0ea5e9' : 'rgba(186,230,253,0.82)'; ctx.lineWidth = eyeAccessible ? 1.5 : 0.9; ctx.stroke();
+                if (!eyeAccessible) {
+                  ctx.beginPath(); ctx.ellipse(lensX - lensRx * 0.2, eyeCy - lensRy * 0.22, lensRx * 0.34, lensRy * 0.55, -0.08, Math.PI * 0.84, Math.PI * 1.52);
+                  ctx.strokeStyle = 'rgba(255,255,255,0.34)'; ctx.lineWidth = 1.1; ctx.stroke();
                 }
 
-                ctx.globalAlpha = 1;
+                // The iris is shown as two pigmented leaflets with an open optical aperture.
+                [-1,1].forEach(function (side) {
+                  ctx.beginPath();
+                  ctx.moveTo(eyeCx - eyeRx * 0.68, eyeCy + side * eyeRy * 0.34);
+                  ctx.bezierCurveTo(eyeCx - eyeRx * 0.72, eyeCy + side * eyeRy * 0.24, eyeCx - eyeRx * 0.70, eyeCy + side * eyeRy * 0.12, eyeCx - eyeRx * 0.63, eyeCy + side * eyeRy * 0.075);
+                  ctx.bezierCurveTo(eyeCx - eyeRx * 0.58, eyeCy + side * eyeRy * 0.12, eyeCx - eyeRx * 0.59, eyeCy + side * eyeRy * 0.27, eyeCx - eyeRx * 0.63, eyeCy + side * eyeRy * 0.35);
+                  ctx.closePath(); ctx.fillStyle = eyeAccessible ? '#a16207' : '#6b4a32'; ctx.fill(); ctx.strokeStyle = 'rgba(41,27,20,0.76)'; ctx.lineWidth = 0.7; ctx.stroke();
+                });
 
-                ctx.font = '5px Inter, system-ui'; ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                // Aqueous humor in the anterior chamber remains visibly distinct from vitreous gel.
+                ctx.save(); ctx.globalAlpha = eyeCloudy ? 0.34 : 0.18;
+                ctx.beginPath(); ctx.ellipse(eyeCx - eyeRx * 0.74, eyeCy, eyeRx * 0.19, eyeRy * 0.34, 0, 0, Math.PI * 2);
+                ctx.fillStyle = eyeCloudy ? '#cbd5e1' : '#7dd3fc'; ctx.fill(); ctx.restore();
 
-                ctx.fillText('Rods', cx + W * 0.22, cy - H * 0.14);
+                // Optic disc and retinal vessels emerge where the nerve exits the globe.
+                var opticDiscX = eyeCx + eyeRx * 0.76; var opticDiscY = eyeCy + eyeRy * 0.10;
+                ctx.beginPath(); ctx.ellipse(opticDiscX, opticDiscY, eyeR * 0.035, eyeR * 0.026, 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(253,186,116,0.86)'; ctx.fill(); ctx.strokeStyle = 'rgba(154,52,18,0.55)'; ctx.lineWidth = 0.55; ctx.stroke();
+                ctx.save(); ctx.globalAlpha = 0.46; ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 0.7;
+                [-0.55,-0.18,0.20,0.52].forEach(function (vesselOffset) {
+                  ctx.beginPath(); ctx.moveTo(opticDiscX, opticDiscY);
+                  ctx.bezierCurveTo(eyeCx + eyeRx * 0.48, eyeCy + eyeRy * vesselOffset * 0.44, eyeCx + eyeRx * 0.12, eyeCy + eyeRy * vesselOffset * 0.72, eyeCx - eyeRx * 0.05, eyeCy + eyeRy * vesselOffset * 0.80); ctx.stroke();
+                });
+                ctx.restore();
 
-                ctx.fillStyle = 'rgba(59,130,246,0.15)';
+                // Sheep retinal specialization is represented as an area centralis, not a human fovea/macula.
+                ctx.beginPath(); ctx.ellipse(eyeCx + eyeRx * 0.52, eyeCy - eyeRy * 0.02, eyeRx * 0.075, eyeRy * 0.038, -0.08, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(250,204,21,0.42)'; ctx.lineWidth = 0.75; ctx.stroke();
+                ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(254,240,138,0.58)';
+                ctx.fillText('Area centralis', eyeCx + eyeRx * 0.43, eyeCy - eyeRy * 0.08);
+                ctx.fillStyle = 'rgba(253,186,116,0.58)'; ctx.fillText('Optic disc', opticDiscX + 5, opticDiscY + 2);
 
-                ctx.fillText('Cones', cx + W * 0.22, cy - H * 0.12);
+                // Animated rays retain the optics lesson while respecting reduced-motion preferences.
+                var rayPhase = dissMotionReduced ? 0 : (dissTick * 0.02) % (Math.PI * 2);
+                var rayAlpha = eyeAccessible ? 0.72 : 0.43 + Math.sin(rayPhase) * 0.08;
+                var corneaHitX = eyeCx - eyeRx * 1.02;
+                var pupilX = eyeCx - eyeRx * 0.63;
+                var focusX = eyeCx + eyeRx * 0.79;
+                ctx.save(); ctx.globalAlpha = rayAlpha; ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = eyeAccessible ? 1.8 : 1.15;
+                ctx.beginPath(); ctx.moveTo(eyeCx - eyeRx * 1.47, eyeCy - eyeRy * 0.24); ctx.lineTo(corneaHitX, eyeCy - eyeRy * 0.07); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(corneaHitX, eyeCy - eyeRy * 0.07); ctx.quadraticCurveTo(pupilX, eyeCy - eyeRy * 0.02, lensX, eyeCy); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(lensX, eyeCy); ctx.lineTo(focusX, eyeCy + eyeRy * 0.035); ctx.stroke();
+                var focusGlow = ctx.createRadialGradient(focusX, eyeCy + eyeRy * 0.035, 0, focusX, eyeCy + eyeRy * 0.035, 5);
+                focusGlow.addColorStop(0, 'rgba(251,191,36,0.82)'); focusGlow.addColorStop(1, 'rgba(251,191,36,0)');
+                ctx.beginPath(); ctx.arc(focusX, eyeCy + eyeRy * 0.035, 5, 0, Math.PI * 2); ctx.fillStyle = focusGlow; ctx.fill();
+                ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#fbbf24'; ctx.fillText('Refracted light', eyeCx - eyeRx * 1.46, eyeCy - eyeRy * 0.29);
+                ctx.restore();
+
+                if (eyeRealistic && !eyeCloudy) {
+                  ctx.beginPath(); ctx.ellipse(eyeCx - eyeRx * 0.86, eyeCy - eyeRy * 0.18, eyeRx * 0.10, eyeRy * 0.17, -0.24, Math.PI * 0.84, Math.PI * 1.52);
+                  ctx.strokeStyle = 'rgba(255,255,255,0.32)'; ctx.lineWidth = 1.15; ctx.stroke();
+                }
+
 
               } else if (spec.bodyShape === 'heart') {
-
-                // Sheep heart â€” anatomical shape with beating animation
-
-                var heartPhase = (dissTick * 0.04) % (Math.PI * 2);
-
-                var systole = Math.max(0, Math.sin(heartPhase));
-
-                var heartScale = 1 + systole * 0.03;
-
-                ctx.save();
-
-                ctx.translate(cx, cy);
-
-                ctx.scale(heartScale, heartScale);
-
-                ctx.translate(-cx, -cy);
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx, cy - H * 0.25);
-
-                ctx.quadraticCurveTo(cx - W * 0.22, cy - H * 0.30, cx - W * 0.25, cy - H * 0.10);
-
-                ctx.quadraticCurveTo(cx - W * 0.26, cy + H * 0.05, cx - W * 0.15, cy + H * 0.18);
-
-                ctx.quadraticCurveTo(cx - W * 0.05, cy + H * 0.30, cx, cy + H * 0.28);
-
-                ctx.quadraticCurveTo(cx + W * 0.05, cy + H * 0.30, cx + W * 0.15, cy + H * 0.18);
-
-                ctx.quadraticCurveTo(cx + W * 0.26, cy + H * 0.05, cx + W * 0.25, cy - H * 0.10);
-
-                ctx.quadraticCurveTo(cx + W * 0.22, cy - H * 0.30, cx, cy - H * 0.25);
-
-                ctx.fillStyle = layerColor; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 2; ctx.stroke();
-
-                ctx.shadowBlur = 0;
-
-                // Septum line
-
-                ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.20); ctx.lineTo(cx, cy + H * 0.25);
-
-                ctx.strokeStyle = layerStroke; ctx.globalAlpha = 0.3; ctx.lineWidth = 1; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // Great vessels stubs
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.08, cy - H * 0.25); ctx.lineTo(cx - W * 0.10, cy - H * 0.35);
-
-                ctx.lineTo(cx - W * 0.04, cy - H * 0.35); ctx.closePath();
-
-                ctx.fillStyle = '#ef4444'; ctx.fill(); // aorta stub
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.08, cy - H * 0.25); ctx.lineTo(cx + W * 0.10, cy - H * 0.35);
-
-                ctx.lineTo(cx + W * 0.04, cy - H * 0.35); ctx.closePath();
-
-                ctx.fillStyle = '#3b82f6'; ctx.fill(); // pulm trunk stub
-
-                // Left coronary artery (LAD)
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.06, cy - H * 0.18);
-
-                ctx.quadraticCurveTo(cx - W * 0.15, cy, cx - W * 0.10, cy + H * 0.15);
-
-                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.globalAlpha = 0.7; ctx.stroke();
-
-                // Right coronary artery
-
-                ctx.beginPath(); ctx.moveTo(cx + W * 0.06, cy - H * 0.18);
-
-                ctx.quadraticCurveTo(cx + W * 0.18, cy - H * 0.05, cx + W * 0.12, cy + H * 0.10);
-
-                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Coronary sinus (venous drainage)
-
-                ctx.beginPath(); ctx.moveTo(cx - W * 0.12, cy + H * 0.12);
-
-                ctx.quadraticCurveTo(cx, cy + H * 0.18, cx + W * 0.10, cy + H * 0.12);
-
-                ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1; ctx.stroke();
-
-                // Pericardium outline (outer membrane)
-
-                ctx.beginPath();
-
-                ctx.ellipse(cx, cy, W * 0.28, H * 0.30, 0, 0, Math.PI * 2);
-
-                ctx.strokeStyle = 'rgba(148,163,184,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
-
-                ctx.globalAlpha = 1;
-
-                // ECG waveform display (bottom of canvas)
-
-                var ecgY = H - 35; var ecgW = W * 0.6; var ecgX = (W - ecgW) / 2;
-
-                ctx.fillStyle = 'rgba(15,23,42,0.7)';
-
-                ctx.fillRect(ecgX - 5, ecgY - 20, ecgW + 10, 35);
-
-                ctx.strokeStyle = 'rgba(34,197,94,0.15)'; ctx.lineWidth = 0.3;
-
-                // Grid lines
-
-                for (var eg = 0; eg < 6; eg++) { ctx.beginPath(); ctx.moveTo(ecgX, ecgY - 15 + eg * 5); ctx.lineTo(ecgX + ecgW, ecgY - 15 + eg * 5); ctx.stroke(); }
-
-                // ECG trace
-
-                ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1.5; ctx.beginPath();
-
-                for (var ep = 0; ep < ecgW; ep++) {
-
-                  var et = ((ep + dissTick * 2) % ecgW) / ecgW;
-
-                  var ey = ecgY;
-
-                  // P wave
-
-                  if (et > 0.05 && et < 0.15) ey -= Math.sin((et - 0.05) * 10 * Math.PI) * 4;
-
-                  // QRS complex
-
-                  else if (et > 0.20 && et < 0.22) ey += (et - 0.20) * 200;
-
-                  else if (et > 0.22 && et < 0.26) ey -= 15 - (et - 0.22) * 375;
-
-                  else if (et > 0.26 && et < 0.28) ey += (et - 0.26) * 150;
-
-                  // T wave
-
-                  else if (et > 0.35 && et < 0.50) ey -= Math.sin((et - 0.35) * 6.67 * Math.PI) * 5;
-
-                  ep === 0 ? ctx.moveTo(ecgX + ep, ey) : ctx.lineTo(ecgX + ep, ey);
-
+                // Sheep heart: asymmetric ventricular mass, atrial appendages, and anatomically routed great vessels.
+                var heartPhase = dissMotionReduced ? 0 : (dissTick * 0.04) % (Math.PI * 2);
+                var systole = dissMotionReduced ? 0 : Math.max(0, Math.sin(heartPhase));
+                var heartScale = 1 + systole * 0.018;
+                var heartAccessible = (d.visualRealism || visualRealism) === 'accessible';
+                var heartRealistic = (d.visualRealism || visualRealism) === 'realistic';
+
+                function traceSheepHeartBody() {
+                  ctx.beginPath();
+                  ctx.moveTo(cx - W * 0.055, cy + H * 0.29);
+                  ctx.bezierCurveTo(cx - W * 0.145, cy + H * 0.235, cx - W * 0.235, cy + H * 0.095, cx - W * 0.215, cy - H * 0.035);
+                  ctx.bezierCurveTo(cx - W * 0.205, cy - H * 0.125, cx - W * 0.145, cy - H * 0.205, cx - W * 0.065, cy - H * 0.20);
+                  ctx.bezierCurveTo(cx - W * 0.015, cy - H * 0.245, cx + W * 0.095, cy - H * 0.225, cx + W * 0.155, cy - H * 0.155);
+                  ctx.bezierCurveTo(cx + W * 0.235, cy - H * 0.075, cx + W * 0.215, cy + H * 0.08, cx + W * 0.115, cy + H * 0.185);
+                  ctx.bezierCurveTo(cx + W * 0.055, cy + H * 0.25, cx - W * 0.015, cy + H * 0.295, cx - W * 0.055, cy + H * 0.29);
+                  ctx.closePath();
                 }
 
+                ctx.save();
+                ctx.translate(cx, cy); ctx.scale(heartScale, heartScale); ctx.translate(-cx, -cy);
+
+                // Great vessels are layered behind the myocardial mass and retain lumen depth.
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                var aortaGrad = ctx.createLinearGradient(cx - W * 0.08, cy - H * 0.36, cx + W * 0.16, cy - H * 0.20);
+                aortaGrad.addColorStop(0, '#7f1d1d'); aortaGrad.addColorStop(0.46, '#dc2626'); aortaGrad.addColorStop(1, '#991b1b');
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.035, cy - H * 0.12);
+                ctx.bezierCurveTo(cx - W * 0.045, cy - H * 0.25, cx - W * 0.02, cy - H * 0.34, cx + W * 0.055, cy - H * 0.34);
+                ctx.bezierCurveTo(cx + W * 0.125, cy - H * 0.34, cx + W * 0.155, cy - H * 0.285, cx + W * 0.155, cy - H * 0.225);
+                ctx.strokeStyle = 'rgba(69,10,10,0.9)'; ctx.lineWidth = W * 0.043; ctx.stroke();
+                ctx.strokeStyle = aortaGrad; ctx.lineWidth = W * 0.032; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.025, cy - H * 0.335); ctx.lineTo(cx + W * 0.015, cy - H * 0.405);
+                ctx.moveTo(cx + W * 0.070, cy - H * 0.335); ctx.lineTo(cx + W * 0.076, cy - H * 0.405);
+                ctx.moveTo(cx + W * 0.112, cy - H * 0.31); ctx.lineTo(cx + W * 0.14, cy - H * 0.375);
+                ctx.strokeStyle = '#b91c1c'; ctx.lineWidth = W * 0.013; ctx.stroke();
+
+                var pulmGrad = ctx.createLinearGradient(cx + W * 0.015, cy - H * 0.12, cx + W * 0.17, cy - H * 0.30);
+                pulmGrad.addColorStop(0, '#1e3a8a'); pulmGrad.addColorStop(0.52, '#2563eb'); pulmGrad.addColorStop(1, '#1e40af');
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.035, cy - H * 0.08); ctx.bezierCurveTo(cx + W * 0.055, cy - H * 0.19, cx + W * 0.09, cy - H * 0.26, cx + W * 0.145, cy - H * 0.29);
+                ctx.strokeStyle = 'rgba(23,37,84,0.88)'; ctx.lineWidth = W * 0.038; ctx.stroke(); ctx.strokeStyle = pulmGrad; ctx.lineWidth = W * 0.027; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.135, cy - H * 0.282); ctx.quadraticCurveTo(cx + W * 0.20, cy - H * 0.29, cx + W * 0.235, cy - H * 0.255);
+                ctx.moveTo(cx + W * 0.13, cy - H * 0.286); ctx.quadraticCurveTo(cx + W * 0.09, cy - H * 0.34, cx + W * 0.045, cy - H * 0.35);
+                ctx.strokeStyle = pulmGrad; ctx.lineWidth = W * 0.017; ctx.stroke();
+
+                // Cranial and caudal venae cavae enter the right atrium from opposite directions.
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.17, cy - H * 0.09); ctx.lineTo(cx + W * 0.19, cy - H * 0.36);
+                ctx.moveTo(cx + W * 0.16, cy + H * 0.055); ctx.lineTo(cx + W * 0.205, cy + H * 0.235);
+                ctx.strokeStyle = 'rgba(30,58,138,0.92)'; ctx.lineWidth = W * 0.031; ctx.stroke();
+                ctx.strokeStyle = 'rgba(59,130,246,0.78)'; ctx.lineWidth = W * 0.021; ctx.stroke();
+
+                var myocardiumGrad = ctx.createRadialGradient(cx - W * 0.11, cy - H * 0.14, W * 0.018, cx, cy + H * 0.04, W * 0.30);
+                myocardiumGrad.addColorStop(0, heartAccessible ? layerColor : '#c95f59');
+                myocardiumGrad.addColorStop(0.43, heartAccessible ? layerColor : '#a83f3f');
+                myocardiumGrad.addColorStop(0.78, heartAccessible ? layerColor : '#762f36');
+                myocardiumGrad.addColorStop(1, heartAccessible ? layerColor : '#4c2230');
+                traceSheepHeartBody(); ctx.fillStyle = myocardiumGrad; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = heartAccessible ? 2.1 : 1.35; ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Atrial auricles break the silhouette at the base, as in a preserved mammalian heart.
+                ctx.beginPath();
+                ctx.moveTo(cx - W * 0.075, cy - H * 0.18);
+                ctx.bezierCurveTo(cx - W * 0.13, cy - H * 0.245, cx - W * 0.205, cy - H * 0.20, cx - W * 0.19, cy - H * 0.125);
+                ctx.bezierCurveTo(cx - W * 0.15, cy - H * 0.145, cx - W * 0.11, cy - H * 0.14, cx - W * 0.075, cy - H * 0.18);
+                ctx.closePath(); ctx.fillStyle = heartAccessible ? layerColor : '#8f3940'; ctx.fill(); ctx.strokeStyle = layerStroke; ctx.lineWidth = 0.9; ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(cx + W * 0.105, cy - H * 0.17);
+                ctx.bezierCurveTo(cx + W * 0.155, cy - H * 0.225, cx + W * 0.215, cy - H * 0.17, cx + W * 0.19, cy - H * 0.105);
+                ctx.bezierCurveTo(cx + W * 0.155, cy - H * 0.125, cx + W * 0.13, cy - H * 0.13, cx + W * 0.105, cy - H * 0.17);
+                ctx.closePath(); ctx.fillStyle = heartAccessible ? layerColor : '#74343c'; ctx.fill(); ctx.stroke();
+
+                // Directional myocardial fibers follow the ventricular spiral rather than a flat fill.
+                if (!heartAccessible && sceneDetail) {
+                  ctx.save(); traceSheepHeartBody(); ctx.clip(); ctx.globalAlpha = heartRealistic ? 0.16 : 0.1;
+                  for (var fiber = 0; fiber < 18; fiber++) {
+                    var fiberT = fiber / 17;
+                    var fiberY = cy - H * 0.15 + fiberT * H * 0.38;
+                    ctx.beginPath(); ctx.moveTo(cx - W * (0.18 - fiberT * 0.10), fiberY);
+                    ctx.bezierCurveTo(cx - W * 0.04, fiberY + H * 0.045, cx + W * 0.08, fiberY + H * 0.025, cx + W * (0.17 - fiberT * 0.08), fiberY - H * 0.025);
+                    ctx.strokeStyle = fiber % 3 === 0 ? 'rgba(254,202,202,0.72)' : 'rgba(69,10,10,0.62)'; ctx.lineWidth = 0.55; ctx.stroke();
+                  }
+                  ctx.restore();
+                }
+
+                // Interventricular and atrioventricular grooves anchor the external surface anatomy.
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.02, cy - H * 0.13);
+                ctx.bezierCurveTo(cx - W * 0.005, cy - H * 0.01, cx - W * 0.02, cy + H * 0.13, cx - W * 0.055, cy + H * 0.275);
+                ctx.strokeStyle = 'rgba(60,16,28,0.78)'; ctx.lineWidth = 2.2; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.17, cy - H * 0.075); ctx.bezierCurveTo(cx - W * 0.04, cy - H * 0.02, cx + W * 0.095, cy - H * 0.02, cx + W * 0.18, cy - H * 0.085);
+                ctx.strokeStyle = 'rgba(69,10,10,0.62)'; ctx.lineWidth = 1.4; ctx.stroke();
+
+                // Coronary vessels branch along the sulci with a subtle paired venous channel.
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.015, cy - H * 0.135);
+                ctx.bezierCurveTo(cx - W * 0.015, cy - H * 0.005, cx - W * 0.02, cy + H * 0.14, cx - W * 0.055, cy + H * 0.26);
+                ctx.strokeStyle = '#dc2626'; ctx.lineWidth = heartAccessible ? 2.5 : 1.65; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.008, cy - H * 0.09);
+                ctx.bezierCurveTo(cx - W * 0.04, cy + H * 0.02, cx - W * 0.07, cy + H * 0.11, cx - W * 0.13, cy + H * 0.18);
+                ctx.moveTo(cx - W * 0.005, cy + H * 0.03); ctx.quadraticCurveTo(cx + W * 0.055, cy + H * 0.095, cx + W * 0.09, cy + H * 0.17);
+                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 0.9; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.028, cy - H * 0.115); ctx.bezierCurveTo(cx + W * 0.01, cy + H * 0.02, cx - W * 0.005, cy + H * 0.15, cx - W * 0.04, cy + H * 0.255);
+                ctx.strokeStyle = 'rgba(37,99,235,0.72)'; ctx.lineWidth = 0.75; ctx.stroke();
+
+                // Pericardial reflection follows the organ rather than a generic ellipse.
+                ctx.save(); ctx.setLineDash([4,4]); traceSheepHeartBody(); ctx.strokeStyle = 'rgba(226,232,240,0.22)'; ctx.lineWidth = 0.85; ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.15, cy - H * 0.13); ctx.quadraticCurveTo(cx - W * 0.07, cy - H * 0.20, cx + W * 0.02, cy - H * 0.18);
+                ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1.7; ctx.stroke();
+
+                // Left ventricular wall remains visibly more substantial than the right.
+                ctx.beginPath(); ctx.moveTo(cx - W * 0.035, cy - H * 0.08); ctx.bezierCurveTo(cx - W * 0.17, cy + H * 0.03, cx - W * 0.14, cy + H * 0.18, cx - W * 0.06, cy + H * 0.25);
+                ctx.strokeStyle = 'rgba(127,29,29,0.20)'; ctx.lineWidth = 12; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx + W * 0.04, cy - H * 0.09); ctx.bezierCurveTo(cx + W * 0.15, cy + H * 0.01, cx + W * 0.12, cy + H * 0.13, cx + W * 0.04, cy + H * 0.20);
+                ctx.strokeStyle = 'rgba(30,58,138,0.13)'; ctx.lineWidth = 7; ctx.stroke();
+                ctx.restore();
+
+                // ECG display stays fixed while the specimen subtly contracts above it.
+                var ecgY = H - 35; var ecgW = W * 0.6; var ecgX = (W - ecgW) / 2;
+                var ecgPanel = ctx.createLinearGradient(ecgX, ecgY - 20, ecgX, ecgY + 15);
+                ecgPanel.addColorStop(0, 'rgba(2,6,23,0.86)'); ecgPanel.addColorStop(1, 'rgba(15,23,42,0.66)');
+                ctx.fillStyle = ecgPanel; ctx.fillRect(ecgX - 5, ecgY - 20, ecgW + 10, 35);
+                ctx.strokeStyle = 'rgba(34,197,94,0.14)'; ctx.lineWidth = 0.3;
+                for (var eg = 0; eg < 6; eg++) { ctx.beginPath(); ctx.moveTo(ecgX, ecgY - 15 + eg * 5); ctx.lineTo(ecgX + ecgW, ecgY - 15 + eg * 5); ctx.stroke(); }
+                ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 1.35; ctx.beginPath();
+                for (var ep = 0; ep < ecgW; ep++) {
+                  var et = ((ep + (dissMotionReduced ? 0 : dissTick * 2)) % ecgW) / ecgW;
+                  var ey = ecgY;
+                  if (et > 0.05 && et < 0.15) ey -= Math.sin((et - 0.05) * 10 * Math.PI) * 4;
+                  else if (et > 0.20 && et < 0.22) ey += (et - 0.20) * 200;
+                  else if (et > 0.22 && et < 0.26) ey -= 15 - (et - 0.22) * 375;
+                  else if (et > 0.26 && et < 0.28) ey += (et - 0.26) * 150;
+                  else if (et > 0.35 && et < 0.50) ey -= Math.sin((et - 0.35) * 6.67 * Math.PI) * 5;
+                  ep === 0 ? ctx.moveTo(ecgX + ep, ey) : ctx.lineTo(ecgX + ep, ey);
+                }
                 ctx.stroke();
-
-                // BPM display
-
-                var bpm = 72 + Math.floor(Math.sin(dissTick * 0.02) * 5);
-
-                ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#22c55e';
-
-                ctx.fillText(bpm + ' BPM', ecgX + ecgW + 8, ecgY);
-
-                ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(34,197,94,0.5)';
-
+                var bpm = dissMotionReduced ? 72 : 72 + Math.floor(Math.sin(dissTick * 0.02) * 5);
+                ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#22c55e'; ctx.fillText(bpm + ' BPM', ecgX + ecgW + 8, ecgY);
+                ctx.font = '6px Inter, system-ui'; ctx.fillStyle = 'rgba(34,197,94,0.58)';
                 ctx.fillText('P', ecgX + ecgW * 0.10, ecgY - 18); ctx.fillText('QRS', ecgX + ecgW * 0.23, ecgY - 18); ctx.fillText('T', ecgX + ecgW * 0.42, ecgY - 18);
-
-                // Chamber shading (left side thicker wall)
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx - W * 0.04, cy - H * 0.15);
-
-                ctx.quadraticCurveTo(cx - W * 0.20, cy, cx - W * 0.10, cy + H * 0.20);
-
-                ctx.strokeStyle = 'rgba(239,68,68,0.15)'; ctx.lineWidth = 12; ctx.stroke();
-
-                // Right side (thinner wall)
-
-                ctx.beginPath();
-
-                ctx.moveTo(cx + W * 0.04, cy - H * 0.15);
-
-                ctx.quadraticCurveTo(cx + W * 0.18, cy, cx + W * 0.10, cy + H * 0.18);
-
-                ctx.strokeStyle = 'rgba(59,130,246,0.12)'; ctx.lineWidth = 8; ctx.stroke();
-
-                ctx.restore(); // End heartbeat scale
-
                 // Conduction system animation
 
-                if (activeLayer === 'nervous' || activeLayer === 'conduction') {
+                if (activeLayer === 'nervous' || activeLayer === 'conduction' || (activeLayer === 'organs' && d.selectedOrgan === 'conduction')) {
 
                   ctx.globalAlpha = 0.7;
 
@@ -5206,156 +4615,155 @@ var d = labToolData.dissection || {};
 
                 }
 
-                // Internal chambers when on interior/chambers layer
-
-                if (activeLayer === 'chambers' || activeLayer === 'interior') {
-
-                  ctx.globalAlpha = 0.4;
-
-                  // Left atrium
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.10, cy - H * 0.10, W * 0.08, H * 0.06, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#dc2626'; ctx.fill();
-
-                  ctx.font = '8px Inter'; ctx.fillStyle = '#ffffff'; ctx.fillText('LA', cx - W * 0.11, cy - H * 0.09);
-
-                  // Right atrium
-
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.10, cy - H * 0.10, W * 0.08, H * 0.06, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#3b82f6'; ctx.fill();
-
-                  ctx.fillStyle = '#ffffff'; ctx.fillText('RA', cx + W * 0.09, cy - H * 0.09);
-
-                  // Left ventricle (thicker wall)
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.08, cy + H * 0.08, W * 0.10, H * 0.10, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#b91c1c'; ctx.fill();
-
-                  ctx.fillStyle = '#ffffff'; ctx.fillText('LV', cx - W * 0.09, cy + H * 0.09);
-
-                  // Right ventricle (thinner wall)
-
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.08, cy + H * 0.08, W * 0.08, H * 0.08, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#2563eb'; ctx.fill();
-
-                  ctx.fillStyle = '#ffffff'; ctx.fillText('RV', cx + W * 0.07, cy + H * 0.09);
-
-                  // Valve lines
-
-                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.5;
-
-                  // Mitral valve
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.15, cy - H * 0.02); ctx.lineTo(cx - W * 0.04, cy - H * 0.02); ctx.stroke();
-
-                  ctx.font = '6px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
-
-                  // Animated valve movement
-
-                  var valveOpen = Math.sin(dissTick * 0.05);
-
-                  var vOff = Math.max(0, valveOpen) * 3;
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy - H * 0.02 - vOff); ctx.lineTo(cx - W * 0.10, cy - H * 0.02 + vOff);
-
-                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.stroke();
-
-                  ctx.fillText('Mitral' + (valveOpen > 0 ? ' ' + 'Open' : ' ' + 'Closed'), cx - W * 0.14, cy - H * 0.035);
-
-                  // Tricuspid valve
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.04, cy - H * 0.02); ctx.lineTo(cx + W * 0.15, cy - H * 0.02); ctx.stroke();
-
-                  ctx.fillText('Tricuspid', cx + W * 0.05, cy - H * 0.035);
-
-                  // Semilunar valves (above ventricles)
-
-                  ctx.beginPath(); ctx.arc(cx - W * 0.08, cy - H * 0.05, 3, 0, Math.PI); ctx.stroke();
-
-                  ctx.fillText('Aortic', cx - W * 0.10, cy - H * 0.07);
-
-                  ctx.beginPath(); ctx.arc(cx + W * 0.06, cy - H * 0.05, 3, 0, Math.PI); ctx.stroke();
-
-                  ctx.fillText('Pulmonary', cx + W * 0.04, cy - H * 0.07);
-
-                  // Papillary muscles (bumps on ventricle walls)
-
-                  ctx.globalAlpha = 0.4;
-
-                  ctx.beginPath(); ctx.ellipse(cx - W * 0.10, cy + H * 0.12, W * 0.008, H * 0.015, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#ef4444'; ctx.fill();
-
-                  ctx.beginPath(); ctx.ellipse(cx + W * 0.08, cy + H * 0.10, W * 0.006, H * 0.012, 0, 0, Math.PI * 2);
-
-                  ctx.fillStyle = '#ef4444'; ctx.fill();
-
-                  // Chordae tendinae (strings connecting papillary to valves)
-
-                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 0.4;
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy + H * 0.105);
-
-                  ctx.lineTo(cx - W * 0.08, cy - H * 0.02); ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy + H * 0.105);
-
-                  ctx.lineTo(cx - W * 0.06, cy - H * 0.02); ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.08, cy + H * 0.088);
-
-                  ctx.lineTo(cx + W * 0.06, cy - H * 0.02); ctx.stroke();
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.08, cy + H * 0.088);
-
-                  ctx.lineTo(cx + W * 0.10, cy - H * 0.02); ctx.stroke();
-
-                  ctx.globalAlpha = 0.35;
-
-                  ctx.font = '5px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
-
-                  ctx.fillText('Chordae', cx - W * 0.14, cy + H * 0.08);
-
-                  ctx.fillText('Papillary', cx - W * 0.14, cy + H * 0.14);
-
-                  ctx.globalAlpha = 0.5;
-
-                  ctx.globalAlpha = 1;
-
-                  // Animated blood flow through chambers
-
-                  ctx.setLineDash([3, 5]); ctx.lineDashOffset = -dissTick * 0.4;
-
-                  ctx.globalAlpha = 0.6;
-
-                  // Deoxygenated flow: RA â†’ RV â†’ lungs
-
-                  ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1.2;
-
-                  ctx.beginPath(); ctx.moveTo(cx + W * 0.10, cy - H * 0.16);
-
-                  ctx.lineTo(cx + W * 0.10, cy - H * 0.03);
-
-                  ctx.lineTo(cx + W * 0.08, cy + H * 0.05); ctx.stroke();
-
-                  // Oxygenated flow: LA â†’ LV â†’ body
-
-                  ctx.strokeStyle = '#ef4444';
-
-                  ctx.beginPath(); ctx.moveTo(cx - W * 0.10, cy - H * 0.16);
-
-                  ctx.lineTo(cx - W * 0.10, cy - H * 0.03);
-
-                  ctx.lineTo(cx - W * 0.08, cy + H * 0.05); ctx.stroke();
-
-                  ctx.setLineDash([]); ctx.lineDashOffset = 0;
-
-                  ctx.globalAlpha = 1;
-
+                // Internal cutaway: chamber geometry, wall thickness, valves, chordae, and trabeculae.
+                if (activeLayer === 'organs' || activeLayer === 'chambers' || activeLayer === 'interior') {
+                  ctx.save();
+                  var heartCutawayAccessible = (d.visualRealism || visualRealism) === 'accessible';
+                  var heartCutawayAlpha = heartCutawayAccessible ? 0.96 : 0.88;
+                  var valvePhase = dissMotionReduced ? 0 : Math.sin(dissTick * 0.05);
+                  var valveLift = Math.max(0, valvePhase) * 2.4;
+
+                  // The opened myocardial field retains the external silhouette around every chamber.
+                  traceSheepHeartBody();
+                  var cutawayBed = ctx.createRadialGradient(cx - W * 0.06, cy - H * 0.04, 4, cx, cy + H * 0.05, W * 0.27);
+                  cutawayBed.addColorStop(0, 'rgba(139,55,62,' + heartCutawayAlpha + ')');
+                  cutawayBed.addColorStop(0.62, 'rgba(91,34,45,' + heartCutawayAlpha + ')');
+                  cutawayBed.addColorStop(1, 'rgba(52,24,35,' + heartCutawayAlpha + ')');
+                  ctx.fillStyle = cutawayBed; ctx.fill(); ctx.strokeStyle = 'rgba(254,202,202,0.34)'; ctx.lineWidth = 0.8; ctx.stroke();
+
+                  // Atria sit above the atrioventricular plane with thinner, ridged walls.
+                  function traceHeartAtrium(side) {
+                    var atriumCx = cx + side * W * 0.085;
+                    ctx.beginPath();
+                    ctx.moveTo(atriumCx - W * 0.057, cy - H * 0.13);
+                    ctx.bezierCurveTo(atriumCx - W * 0.052, cy - H * 0.205, atriumCx + W * 0.035, cy - H * 0.215, atriumCx + W * 0.061, cy - H * 0.145);
+                    ctx.bezierCurveTo(atriumCx + W * 0.075, cy - H * 0.09, atriumCx + W * 0.045, cy - H * 0.035, atriumCx, cy - H * 0.038);
+                    ctx.bezierCurveTo(atriumCx - W * 0.04, cy - H * 0.04, atriumCx - W * 0.066, cy - H * 0.08, atriumCx - W * 0.057, cy - H * 0.13);
+                    ctx.closePath();
+                  }
+                  traceHeartAtrium(-1); ctx.fillStyle = 'rgba(104,24,32,0.94)'; ctx.fill(); ctx.strokeStyle = 'rgba(248,113,113,0.62)'; ctx.lineWidth = 1.05; ctx.stroke();
+                  traceHeartAtrium(1); ctx.fillStyle = 'rgba(24,54,105,0.94)'; ctx.fill(); ctx.strokeStyle = 'rgba(96,165,250,0.64)'; ctx.stroke();
+                  [-1,1].forEach(function (side) {
+                    var atriumCx = cx + side * W * 0.085;
+                    ctx.save(); ctx.globalAlpha = 0.34; ctx.strokeStyle = side < 0 ? '#fca5a5' : '#93c5fd'; ctx.lineWidth = 0.55;
+                    for (var atrialRidge = 0; atrialRidge < 4; atrialRidge++) {
+                      var ridgeY = cy - H * (0.17 - atrialRidge * 0.026);
+                      ctx.beginPath(); ctx.moveTo(atriumCx - W * 0.038, ridgeY); ctx.quadraticCurveTo(atriumCx, ridgeY + H * 0.014, atriumCx + W * 0.038, ridgeY - H * 0.004); ctx.stroke();
+                    }
+                    ctx.restore();
+                  });
+
+                  // Left ventricular myocardium is substantially thicker than the right ventricular wall.
+                  ctx.beginPath();
+                  ctx.moveTo(cx - W * 0.145, cy - H * 0.025);
+                  ctx.bezierCurveTo(cx - W * 0.19, cy + H * 0.055, cx - W * 0.155, cy + H * 0.205, cx - W * 0.06, cy + H * 0.272);
+                  ctx.bezierCurveTo(cx - W * 0.015, cy + H * 0.23, cx + W * 0.005, cy + H * 0.075, cx - W * 0.015, cy - H * 0.02);
+                  ctx.closePath(); ctx.fillStyle = '#8f333d'; ctx.fill(); ctx.strokeStyle = '#541f2a'; ctx.lineWidth = 1.2; ctx.stroke();
+                  ctx.beginPath();
+                  ctx.moveTo(cx - W * 0.112, cy + H * 0.005);
+                  ctx.bezierCurveTo(cx - W * 0.135, cy + H * 0.072, cx - W * 0.112, cy + H * 0.176, cx - W * 0.061, cy + H * 0.226);
+                  ctx.bezierCurveTo(cx - W * 0.03, cy + H * 0.18, cx - W * 0.023, cy + H * 0.075, cx - W * 0.035, cy + H * 0.002);
+                  ctx.closePath();
+                  var lvCavity = ctx.createLinearGradient(cx - W * 0.10, cy, cx - W * 0.04, cy + H * 0.22);
+                  lvCavity.addColorStop(0, 'rgba(127,29,29,0.98)'); lvCavity.addColorStop(1, 'rgba(69,10,10,0.98)');
+                  ctx.fillStyle = lvCavity; ctx.fill(); ctx.strokeStyle = 'rgba(254,202,202,0.44)'; ctx.lineWidth = 0.75; ctx.stroke();
+
+                  ctx.beginPath();
+                  ctx.moveTo(cx + W * 0.012, cy - H * 0.025);
+                  ctx.bezierCurveTo(cx + W * 0.075, cy - H * 0.02, cx + W * 0.17, cy + H * 0.035, cx + W * 0.148, cy + H * 0.14);
+                  ctx.bezierCurveTo(cx + W * 0.128, cy + H * 0.215, cx + W * 0.055, cy + H * 0.22, cx + W * 0.008, cy + H * 0.155);
+                  ctx.closePath(); ctx.fillStyle = '#753543'; ctx.fill(); ctx.strokeStyle = '#49202d'; ctx.lineWidth = 0.9; ctx.stroke();
+                  ctx.beginPath();
+                  ctx.moveTo(cx + W * 0.038, cy + H * 0.005);
+                  ctx.bezierCurveTo(cx + W * 0.092, cy + H * 0.005, cx + W * 0.138, cy + H * 0.058, cx + W * 0.12, cy + H * 0.127);
+                  ctx.bezierCurveTo(cx + W * 0.105, cy + H * 0.17, cx + W * 0.058, cy + H * 0.175, cx + W * 0.026, cy + H * 0.132);
+                  ctx.closePath();
+                  var rvCavity = ctx.createLinearGradient(cx + W * 0.04, cy, cx + W * 0.12, cy + H * 0.15);
+                  rvCavity.addColorStop(0, 'rgba(30,64,175,0.94)'); rvCavity.addColorStop(1, 'rgba(23,37,84,0.98)');
+                  ctx.fillStyle = rvCavity; ctx.fill(); ctx.strokeStyle = 'rgba(147,197,253,0.42)'; ctx.lineWidth = 0.7; ctx.stroke();
+
+                  // The interventricular septum is a muscular partition, not a single divider line.
+                  ctx.beginPath();
+                  ctx.moveTo(cx - W * 0.018, cy - H * 0.012);
+                  ctx.bezierCurveTo(cx + W * 0.012, cy + H * 0.075, cx + W * 0.012, cy + H * 0.18, cx - W * 0.055, cy + H * 0.248);
+                  ctx.bezierCurveTo(cx - W * 0.025, cy + H * 0.17, cx - W * 0.022, cy + H * 0.07, cx - W * 0.038, cy - H * 0.008);
+                  ctx.closePath(); ctx.fillStyle = '#9e4147'; ctx.fill(); ctx.strokeStyle = 'rgba(69,10,10,0.7)'; ctx.lineWidth = 0.65; ctx.stroke();
+
+                  // AV valve leaflets open toward their ventricles; mitral has two, tricuspid three.
+                  var mitralX = cx - W * 0.073; var mitralY = cy - H * 0.018;
+                  var tricuspidX = cx + W * 0.074; var tricuspidY = cy - H * 0.012;
+                  function drawHeartValveLeaflet(x, y, width, side, color) {
+                    ctx.beginPath(); ctx.moveTo(x - width, y);
+                    ctx.quadraticCurveTo(x, y + side * (H * 0.024 + valveLift), x + width, y);
+                    ctx.quadraticCurveTo(x, y + side * H * 0.012, x - width, y);
+                    ctx.closePath(); ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = 'rgba(120,53,15,0.7)'; ctx.lineWidth = 0.45; ctx.stroke();
+                  }
+                  drawHeartValveLeaflet(mitralX - W * 0.012, mitralY, W * 0.027, 1, '#fde68a');
+                  drawHeartValveLeaflet(mitralX + W * 0.022, mitralY, W * 0.022, 1, '#fef3c7');
+                  drawHeartValveLeaflet(tricuspidX - W * 0.025, tricuspidY, W * 0.020, 1, '#dbeafe');
+                  drawHeartValveLeaflet(tricuspidX, tricuspidY, W * 0.022, 1, '#bfdbfe');
+                  drawHeartValveLeaflet(tricuspidX + W * 0.025, tricuspidY, W * 0.019, 1, '#dbeafe');
+
+                  // Papillary muscles rise from the wall and anchor multiple branching chordae.
+                  var heartPapillary = [
+                    { x: cx - W * 0.103, y: cy + H * 0.145, valveX: mitralX - W * 0.014, valveY: mitralY + H * 0.008, color: '#b94a50' },
+                    { x: cx - W * 0.048, y: cy + H * 0.165, valveX: mitralX + W * 0.020, valveY: mitralY + H * 0.008, color: '#a63e48' },
+                    { x: cx + W * 0.072, y: cy + H * 0.115, valveX: tricuspidX - W * 0.016, valveY: tricuspidY + H * 0.008, color: '#75404d' },
+                    { x: cx + W * 0.112, y: cy + H * 0.105, valveX: tricuspidX + W * 0.022, valveY: tricuspidY + H * 0.008, color: '#6d3948' }
+                  ];
+                  heartPapillary.forEach(function (papillary) {
+                    ctx.beginPath(); ctx.moveTo(papillary.x - W * 0.009, papillary.y + H * 0.018);
+                    ctx.quadraticCurveTo(papillary.x, papillary.y - H * 0.018, papillary.x + W * 0.009, papillary.y + H * 0.018);
+                    ctx.closePath(); ctx.fillStyle = papillary.color; ctx.fill(); ctx.strokeStyle = 'rgba(69,10,10,0.55)'; ctx.lineWidth = 0.45; ctx.stroke();
+                    for (var chord = -1; chord <= 1; chord++) {
+                      ctx.beginPath(); ctx.moveTo(papillary.x, papillary.y - H * 0.011);
+                      ctx.quadraticCurveTo((papillary.x + papillary.valveX) / 2 + chord * 2, (papillary.y + papillary.valveY) / 2, papillary.valveX + chord * W * 0.009, papillary.valveY);
+                      ctx.strokeStyle = 'rgba(254,240,138,0.74)'; ctx.lineWidth = heartCutawayAccessible ? 0.75 : 0.48; ctx.stroke();
+                    }
+                  });
+
+                  // Trabeculae carneae follow each ventricular wall and add cavity texture.
+                  ctx.save(); ctx.globalAlpha = 0.36; ctx.lineWidth = 0.7;
+                  for (var trabecula = 0; trabecula < 7; trabecula++) {
+                    var trabeculaT = trabecula / 6;
+                    ctx.beginPath(); ctx.moveTo(cx - W * (0.108 - trabeculaT * 0.052), cy + H * (0.045 + trabeculaT * 0.15));
+                    ctx.quadraticCurveTo(cx - W * 0.075, cy + H * (0.07 + trabeculaT * 0.12), cx - W * (0.04 + trabeculaT * 0.012), cy + H * (0.055 + trabeculaT * 0.14));
+                    ctx.strokeStyle = '#fca5a5'; ctx.stroke();
+                    if (trabecula < 5) {
+                      ctx.beginPath(); ctx.moveTo(cx + W * (0.046 + trabeculaT * 0.04), cy + H * (0.035 + trabeculaT * 0.10));
+                      ctx.quadraticCurveTo(cx + W * 0.09, cy + H * (0.05 + trabeculaT * 0.10), cx + W * (0.118 - trabeculaT * 0.015), cy + H * (0.045 + trabeculaT * 0.09));
+                      ctx.strokeStyle = '#93c5fd'; ctx.stroke();
+                    }
+                  }
+                  ctx.restore();
+
+                  // Semilunar cusps occupy the ventricular outflow tracts.
+                  function drawSemilunarValve(x, y, color) {
+                    [-1,0,1].forEach(function (cusp) {
+                      ctx.beginPath(); ctx.arc(x + cusp * W * 0.009, y, W * 0.011, 0, Math.PI);
+                      ctx.strokeStyle = color; ctx.lineWidth = heartCutawayAccessible ? 1.15 : 0.75; ctx.stroke();
+                    });
+                  }
+                  drawSemilunarValve(cx - W * 0.022, cy - H * 0.095, '#fde68a');
+                  drawSemilunarValve(cx + W * 0.052, cy - H * 0.085, '#bfdbfe');
+
+                  // Compact labels remain inside the specimen instead of covering the tissue margins.
+                  ctx.font = 'bold 7px Inter, system-ui';
+                  ctx.fillStyle = 'rgba(254,226,226,0.82)'; ctx.fillText('LA', cx - W * 0.10, cy - H * 0.115); ctx.fillText('LV', cx - W * 0.085, cy + H * 0.105);
+                  ctx.fillStyle = 'rgba(219,234,254,0.88)'; ctx.fillText('RA', cx + W * 0.075, cy - H * 0.115); ctx.fillText('RV', cx + W * 0.075, cy + H * 0.085);
+                  ctx.font = '5px Inter, system-ui'; ctx.fillStyle = 'rgba(254,240,138,0.72)'; ctx.fillText('mitral', mitralX - W * 0.03, mitralY - 4);
+                  ctx.fillStyle = 'rgba(219,234,254,0.72)'; ctx.fillText('tricuspid', tricuspidX - W * 0.025, tricuspidY - 4);
+
+                  // Flow paths bend through the valves and pause when reduced motion is requested.
+                  ctx.save(); ctx.setLineDash([3,5]); ctx.lineDashOffset = dissMotionReduced ? 0 : -dissTick * 0.38; ctx.globalAlpha = 0.65;
+                  ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 1.25;
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.105, cy - H * 0.205); ctx.bezierCurveTo(cx + W * 0.10, cy - H * 0.10, tricuspidX, tricuspidY, cx + W * 0.075, cy + H * 0.12); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx + W * 0.075, cy + H * 0.12); ctx.bezierCurveTo(cx + W * 0.10, cy + H * 0.04, cx + W * 0.08, cy - H * 0.045, cx + W * 0.06, cy - H * 0.15); ctx.stroke();
+                  ctx.strokeStyle = '#f87171';
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.11, cy - H * 0.20); ctx.bezierCurveTo(cx - W * 0.105, cy - H * 0.10, mitralX, mitralY, cx - W * 0.075, cy + H * 0.17); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx - W * 0.075, cy + H * 0.17); ctx.bezierCurveTo(cx - W * 0.04, cy + H * 0.08, cx - W * 0.045, cy - H * 0.04, cx - W * 0.03, cy - H * 0.19); ctx.stroke();
+                  ctx.restore();
+                  ctx.restore();
                 }
 
               }
@@ -5409,6 +4817,60 @@ var d = labToolData.dissection || {};
 
               // ── Draw organ pins ──
 
+              // Specimen-shaped layer transition opens along the dominant body axis to reveal the new anatomy beneath.
+              var _layerTransition = d._layerTransition;
+              var layerTransitionProgress = 1;
+              if (_layerTransition && _layerTransition.active) {
+                var transitionElapsed = Math.max(0, Date.now() - (_layerTransition.startedAt || Date.now()));
+                var transitionDuration = Math.max(1, Number(_layerTransition.duration) || 1150);
+                var transitionLinear = Math.max(0, Math.min(1, transitionElapsed / transitionDuration));
+                layerTransitionProgress = _layerTransition.reducedMotion || dissMotionReduced ? 1 : 1 - Math.pow(1 - transitionLinear, 3);
+                var transitionProfile = SPECIMEN_MATERIAL_PROFILES[_layerTransition.specimenShape] || SPECIMEN_MATERIAL_PROFILES[spec.bodyShape] || SPECIMEN_MATERIAL_PROFILES.frog;
+                var transitionCX = transitionProfile.cx * W, transitionCY = transitionProfile.cy * H;
+                var transitionRX = transitionProfile.rx * W * 1.02, transitionRY = transitionProfile.ry * H * 1.02;
+                var transitionHorizontalBody = transitionRX > transitionRY * 1.18;
+                var transitionFromColor = String(_layerTransition.fromColor || '#8f5960');
+                var transitionToColor = String(_layerTransition.toColor || '#fbbf24');
+                if (transitionFromColor.indexOf('var(') === 0) transitionFromColor = '#94a3b8';
+                if (transitionToColor.indexOf('var(') === 0) transitionToColor = '#cbd5e1';
+                ctx.save();
+                ctx.beginPath(); ctx.ellipse(transitionCX, transitionCY, transitionRX, transitionRY, 0, 0, Math.PI * 2); ctx.clip();
+                var transitionSheet = ctx.createRadialGradient(transitionCX - transitionRX * 0.18, transitionCY - transitionRY * 0.22, 4, transitionCX, transitionCY, Math.max(transitionRX, transitionRY));
+                transitionSheet.addColorStop(0, transitionFromColor); transitionSheet.addColorStop(0.72, transitionFromColor); transitionSheet.addColorStop(1, 'rgba(30,20,24,0.96)');
+                ctx.fillStyle = transitionSheet; ctx.globalAlpha = 0.90;
+                if (transitionHorizontalBody) {
+                  var verticalOpening = transitionRY * layerTransitionProgress;
+                  ctx.fillRect(transitionCX - transitionRX, transitionCY - transitionRY, transitionRX * 2, Math.max(0, transitionRY - verticalOpening));
+                  ctx.fillRect(transitionCX - transitionRX, transitionCY + verticalOpening, transitionRX * 2, Math.max(0, transitionRY - verticalOpening));
+                  var edgeCurl = ctx.createLinearGradient(0, transitionCY - verticalOpening - 8, 0, transitionCY - verticalOpening + 8);
+                  edgeCurl.addColorStop(0, 'rgba(15,23,42,0)'); edgeCurl.addColorStop(0.5, transitionToColor); edgeCurl.addColorStop(1, 'rgba(255,255,255,0.34)');
+                  ctx.globalAlpha = Math.max(0, 0.72 * (1 - transitionLinear)); ctx.fillStyle = edgeCurl;
+                  ctx.fillRect(transitionCX - transitionRX, transitionCY - verticalOpening - 7, transitionRX * 2, 14);
+                  ctx.fillRect(transitionCX - transitionRX, transitionCY + verticalOpening - 7, transitionRX * 2, 14);
+                } else {
+                  var horizontalOpening = transitionRX * layerTransitionProgress;
+                  ctx.fillRect(transitionCX - transitionRX, transitionCY - transitionRY, Math.max(0, transitionRX - horizontalOpening), transitionRY * 2);
+                  ctx.fillRect(transitionCX + horizontalOpening, transitionCY - transitionRY, Math.max(0, transitionRX - horizontalOpening), transitionRY * 2);
+                  var sideCurl = ctx.createLinearGradient(transitionCX - horizontalOpening - 8, 0, transitionCX - horizontalOpening + 8, 0);
+                  sideCurl.addColorStop(0, 'rgba(15,23,42,0)'); sideCurl.addColorStop(0.5, transitionToColor); sideCurl.addColorStop(1, 'rgba(255,255,255,0.34)');
+                  ctx.globalAlpha = Math.max(0, 0.72 * (1 - transitionLinear)); ctx.fillStyle = sideCurl;
+                  ctx.fillRect(transitionCX - horizontalOpening - 7, transitionCY - transitionRY, 14, transitionRY * 2);
+                  ctx.fillRect(transitionCX + horizontalOpening - 7, transitionCY - transitionRY, 14, transitionRY * 2);
+                }
+                // Temporary connective strands bridge the opening and release as the flaps retract.
+                ctx.globalAlpha = Math.max(0, (1 - transitionLinear) * 0.48); ctx.strokeStyle = 'rgba(254,205,211,0.82)'; ctx.lineWidth = 0.8;
+                for (var transitionFiberIndex = 0; transitionFiberIndex < 8; transitionFiberIndex++) {
+                  var transitionFiberT = (transitionFiberIndex + 1) / 9;
+                  if (transitionHorizontalBody) {
+                    var transitionFiberX = transitionCX - transitionRX * 0.72 + transitionRX * 1.44 * transitionFiberT;
+                    ctx.beginPath(); ctx.moveTo(transitionFiberX - 3, transitionCY - transitionRY * layerTransitionProgress); ctx.lineTo(transitionFiberX + 3, transitionCY + transitionRY * layerTransitionProgress); ctx.stroke();
+                  } else {
+                    var transitionFiberY = transitionCY - transitionRY * 0.72 + transitionRY * 1.44 * transitionFiberT;
+                    ctx.beginPath(); ctx.moveTo(transitionCX - transitionRX * layerTransitionProgress, transitionFiberY - 3); ctx.lineTo(transitionCX + transitionRX * layerTransitionProgress, transitionFiberY + 3); ctx.stroke();
+                  }
+                }
+                ctx.restore();
+              }
               var focusRelatedIds = d.selectedOrgan ? anatomicalRelationships().map(function (relationship) { return relationship.organ.id; }) : [];
               var focusEntryProgress = 1;
               if (d.selectedOrgan) {
@@ -5469,111 +4931,98 @@ var d = labToolData.dissection || {};
                   });
                 }
               }
+              // Adaptive hotspot labels share collision-aware columns and remain clickable.
+              ctx.font = '10px Inter, system-ui, sans-serif';
+              var denseHotspotView = d.labelMode !== 'hidden' && organs.length >= 8 && zoom < 1.22;
+              var adaptiveHotspotLayout = organs.map(function (org, oi) {
+                var point = variedOrganPoint(org), visibility = viewOrganVisibility(org);
+                var selected = d.selectedOrgan === org.id, hovered = !selected && d.hoveredOrgan === org.id;
+                var related = focusRelatedIds.indexOf(org.id) >= 0;
+                var fullLabel = selected || (d.labelMode !== 'hidden' && (!denseHotspotView || hovered || related || (oi % 2 === 0 && visibility === 'visible')));
+                var baseLabel = visibility === 'occluded' ? org.name + ' \u00B7 occluded' : org.name;
+                var displayLabel = selected ? baseLabel + ' \u00B7 selected' : baseLabel;
+                var width = fullLabel ? ctx.measureText(displayLabel).width + 14 : 18, height = 18;
+                var pointX = point.x * W, pointY = point.y * H;
+                var side = pointX < W * 0.47 ? 'left' : (pointX > W * 0.53 ? 'right' : (oi % 2 ? 'left' : 'right'));
+                var rightReservedTop = d.crossSectionMode ? 72 + spec.layers.length * 18 : 150;
+                if (side === 'right' && pointY < rightReservedTop && pointX < W * 0.74) side = 'left';
+                var preferredX = side === 'right' ? pointX + 18 : pointX - width - 18;
+                return { id: org.id, index: oi, pointX: pointX, pointY: pointY,
+                  x: Math.max(26, Math.min(W - width - 26, preferredX)), preferredY: Math.max(82, Math.min(H - 64, pointY - height / 2)),
+                  y: pointY - height / 2, width: width, height: height, side: side, fullLabel: fullLabel,
+                  displayLabel: displayLabel, visibility: visibility, selected: selected, hovered: hovered, related: related };
+              });
+              function resolveAdaptiveLabelColumn(items, minY, maxY) {
+                var gap = 4, cursorY = minY;
+                items.sort(function (a, b) { return a.preferredY - b.preferredY || a.index - b.index; });
+                items.forEach(function (item) { item.y = Math.max(item.preferredY, cursorY); cursorY = item.y + item.height + gap; });
+                if (!items.length) return;
+                var overflow = items[items.length - 1].y + items[items.length - 1].height - maxY;
+                if (overflow > 0) items.forEach(function (item) { item.y -= overflow; });
+                for (var ri = items.length - 2; ri >= 0; ri--) items[ri].y = Math.min(items[ri].y, items[ri + 1].y - items[ri].height - gap);
+                if (items[0].y < minY) { var underflow = minY - items[0].y; items.forEach(function (item) { item.y += underflow; }); }
+              }
+              resolveAdaptiveLabelColumn(adaptiveHotspotLayout.filter(function (item) { return item.side === 'left'; }), 82, H - 45);
+              resolveAdaptiveLabelColumn(adaptiveHotspotLayout.filter(function (item) { return item.side === 'right'; }), d.crossSectionMode ? 80 + spec.layers.length * 18 : 150, H - 45);
+              var adaptiveHotspotById = {};
+              adaptiveHotspotLayout.forEach(function (item) { adaptiveHotspotById[item.id] = item; });
+              canvas._hotspotLabelBoxes = adaptiveHotspotLayout.map(function (item) {
+                return { id: item.id, x: item.x / W, y: item.y / H, width: item.width / W, height: item.height / H };
+              });
+
               organs.forEach(function (org, oi) {
-                var isFocusRelated = focusRelatedIds.indexOf(org.id) >= 0;
-                var focusMuted = focusMode && d.selectedOrgan && org.id !== d.selectedOrgan && !isFocusRelated;
+                var layout = adaptiveHotspotById[org.id], isSel = layout.selected, isHov = layout.hovered;
+                var isFocusRelated = layout.related;
+                var focusMuted = (focusMode || (denseHotspotView && d.selectedOrgan)) && d.selectedOrgan && !isSel && !isFocusRelated;
                 ctx.save(); ctx.globalAlpha = focusMuted ? ((d.visualRealism || visualRealism) === 'accessible' ? 0.46 : 0.24) : 1;
-
-                var organPoint = variedOrganPoint(org);
-                var organVisibility = viewOrganVisibility(org);
-                var viewLabel = organVisibility === 'occluded' ? org.name + ' \u00B7 occluded' : org.name;
-                var px = organPoint.x * W, py = organPoint.y * H;
-
-                var isSel = d.selectedOrgan === org.id;
-
-                var isHov = !isSel && d.hoveredOrgan === org.id;
-
+                var px = layout.pointX, py = layout.pointY;
                 var pulse = isSel ? 1 + (dissMotionReduced ? 0 : Math.sin(dissTick * 0.06) * 0.3) : 1;
-
-                // Outer glow
-
                 if (isSel) {
-
                   ctx.beginPath(); ctx.arc(px, py, 18 * pulse, 0, Math.PI * 2);
-
                   var glowGrad = ctx.createRadialGradient(px, py, 4, px, py, 18 * pulse);
-
-                  glowGrad.addColorStop(0, 'rgba(251,191,36,0.4)');
-
-                  glowGrad.addColorStop(1, 'rgba(251,191,36,0)');
-
-                  ctx.fillStyle = glowGrad; ctx.fill();
+                  glowGrad.addColorStop(0, 'rgba(251,191,36,0.4)'); glowGrad.addColorStop(1, 'rgba(251,191,36,0)'); ctx.fillStyle = glowGrad; ctx.fill();
                   var focusRadius = 12 + (1 - focusEntryProgress) * 24 + (dissMotionReduced ? 0 : (Math.sin(dissTick * 0.045) + 1) * 2);
                   ctx.save(); ctx.strokeStyle = (d.visualRealism || visualRealism) === 'accessible' ? '#facc15' : 'rgba(254,240,138,0.86)';
                   ctx.lineWidth = (d.visualRealism || visualRealism) === 'accessible' ? 2.8 : 1.5;
-                  for (var focusQuadrant = 0; focusQuadrant < 4; focusQuadrant++) {
-                    var focusStart = focusQuadrant * Math.PI / 2 + 0.14;
-                    ctx.beginPath(); ctx.arc(px, py, focusRadius + 8, focusStart, focusStart + 0.58); ctx.stroke();
-                  }
-                  ctx.restore();
-
+                  for (var fq = 0; fq < 4; fq++) { var fs = fq * Math.PI / 2 + 0.14; ctx.beginPath(); ctx.arc(px, py, focusRadius + 8, fs, fs + 0.58); ctx.stroke(); }
+                  // Reticle marks make selected state readable without color alone.
+                  ctx.beginPath(); ctx.moveTo(px-focusRadius-13,py); ctx.lineTo(px-focusRadius-6,py); ctx.moveTo(px+focusRadius+6,py); ctx.lineTo(px+focusRadius+13,py);
+                  ctx.moveTo(px,py-focusRadius-13); ctx.lineTo(px,py-focusRadius-6); ctx.moveTo(px,py+focusRadius+6); ctx.lineTo(px,py+focusRadius+13); ctx.stroke(); ctx.restore();
                 }
-
-                // Pin dot with system color
-
-                var sysCol = layerStroke || '#94a3b8';
-
-                ctx.beginPath(); ctx.arc(px, py, 5 * pulse, 0, Math.PI * 2);
-
-                var pinGrad = ctx.createRadialGradient(px - 1, py - 1, 1, px, py, 5 * pulse);
-
-                pinGrad.addColorStop(0, isSel ? '#fef08a' : isHov ? '#bfdbfe' : isFocusRelated ? '#cffafe' : '#ffffff');
-
-                pinGrad.addColorStop(1, isSel ? '#f59e0b' : isHov ? '#3b82f6' : isFocusRelated ? '#0891b2' : sysCol);
-
-                ctx.fillStyle = pinGrad; ctx.fill();
-
-                ctx.strokeStyle = isSel ? '#f59e0b' : 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Selection/hover ring
-
-                if (isSel) { ctx.beginPath(); ctx.arc(px, py, 12 * pulse, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(251,191,36,0.7)'; ctx.lineWidth = 2; ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([]); }
-
-                if (isHov) { ctx.beginPath(); ctx.arc(px, py, 10, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(59,130,246,0.5)'; ctx.lineWidth = 1.5; ctx.stroke(); }
-
-                ctx.font = '10px Inter, system-ui, sans-serif';
-
-                var tw = ctx.measureText(viewLabel).width + 10;
-
-                var lx = px + 12, ly = py - 8;
-
-                if (lx + tw > W - 10) lx = px - tw - 12;
-
-                ctx.beginPath(); ctx.moveTo(px + 6, py); ctx.lineTo(lx, ly + 6);
-
-                ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.setLineDash([2, 2]); ctx.lineWidth = 0.8; ctx.stroke(); ctx.setLineDash([]);
-
-                if (d.labelMode !== 'hidden' || isSel) {
-
-                  ctx.fillStyle = isSel ? 'rgba(251,191,36,0.9)' : 'rgba(30,41,59,0.85)';
-
-                  if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(lx, ly, tw, 16, 4); ctx.fill(); } else { ctx.fillRect(lx, ly, tw, 16); }
-
-                  ctx.strokeStyle = isSel ? '#f59e0b' : 'rgba(148,163,184,0.4)'; ctx.lineWidth = 0.6; ctx.stroke();
-
-                  ctx.fillStyle = organVisibility === 'occluded' ? '#94a3b8' : (isSel ? '#1e293b' : '#e2e8f0'); ctx.fillText(viewLabel, lx + 5, ly + 11.5);
-
+                var lx = layout.x, ly = layout.y, connectorX = layout.side === 'right' ? lx : lx + layout.width, connectorY = ly + layout.height / 2;
+                var leaderStartX = px + (layout.side === 'right' ? 6 : -6), leaderControlX = leaderStartX + (connectorX - leaderStartX) * 0.54;
+                ctx.beginPath(); ctx.moveTo(leaderStartX, py); ctx.quadraticCurveTo(leaderControlX, py, connectorX, connectorY);
+                ctx.strokeStyle = isSel ? 'rgba(251,191,36,0.92)' : (isHov ? 'rgba(96,165,250,0.86)' : (isFocusRelated ? 'rgba(45,212,191,0.72)' : 'rgba(203,213,225,0.34)'));
+                ctx.lineWidth = isSel ? 1.8 : (isHov ? 1.45 : 0.85); ctx.setLineDash(isSel || isHov ? [] : [2.5,3]); ctx.stroke(); ctx.setLineDash([]);
+                ctx.beginPath(); ctx.arc(connectorX, connectorY, isSel ? 2.2 : 1.5, 0, Math.PI * 2); ctx.fillStyle = ctx.strokeStyle; ctx.fill();
+                if (layout.fullLabel) {
+                  ctx.fillStyle = isSel ? 'rgba(251,191,36,0.94)' : (isHov ? 'rgba(30,64,175,0.94)' : (isFocusRelated ? 'rgba(15,118,110,0.90)' : 'rgba(15,23,42,0.88)'));
+                  ctx.strokeStyle = isSel ? '#f59e0b' : (isHov ? '#60a5fa' : (isFocusRelated ? '#2dd4bf' : 'rgba(148,163,184,0.48)')); ctx.lineWidth = isSel || isHov ? 1.1 : 0.65;
+                  if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(lx,ly,layout.width,layout.height,5); ctx.fill(); ctx.stroke(); } else { ctx.fillRect(lx,ly,layout.width,layout.height); ctx.strokeRect(lx,ly,layout.width,layout.height); }
+                  if (isSel || isHov) { ctx.fillStyle = isSel ? '#92400e' : '#93c5fd'; ctx.fillRect(lx+1,ly+3,3,layout.height-6); }
+                  ctx.font = (isSel ? 'bold ' : '') + '10px Inter, system-ui, sans-serif'; ctx.fillStyle = layout.visibility === 'occluded' ? '#94a3b8' : (isSel ? '#1e293b' : '#e2e8f0');
+                  ctx.fillText(layout.displayLabel,lx+7,ly+12.5);
                 } else {
-
-                  // Hidden mode: show numbered markers instead of names
-
-                  var markerNum = String(oi + 1);
-
-                  ctx.fillStyle = 'rgba(30,41,59,0.7)';
-
-                  ctx.beginPath(); ctx.arc(lx + 8, ly + 8, 8, 0, Math.PI * 2); ctx.fill();
-
-                  ctx.fillStyle = '#ffffff'; ctx.font = 'bold 8px Inter, system-ui';
-
-                  ctx.fillText(markerNum, lx + 8 - ctx.measureText(markerNum).width / 2, ly + 11);
-
-                  ctx.font = '10px Inter, system-ui, sans-serif';
-
+                  var markerNum = String(oi+1), compactCX = lx + layout.width/2, compactCY = ly + layout.height/2;
+                  ctx.beginPath(); ctx.arc(compactCX,compactCY,8,0,Math.PI*2); ctx.fillStyle = isFocusRelated ? 'rgba(15,118,110,0.94)' : 'rgba(30,41,59,0.90)'; ctx.fill();
+                  ctx.strokeStyle = isFocusRelated ? '#5eead4' : 'rgba(203,213,225,0.58)'; ctx.lineWidth=.8; ctx.stroke(); ctx.fillStyle='#fff'; ctx.font='bold 8px Inter, system-ui';
+                  ctx.fillText(markerNum,compactCX-ctx.measureText(markerNum).width/2,compactCY+3);
                 }
+                var sysCol = layerStroke || '#94a3b8'; ctx.beginPath(); ctx.arc(px,py,5*pulse,0,Math.PI*2);
+                var pinGrad = ctx.createRadialGradient(px-1,py-1,1,px,py,5*pulse); pinGrad.addColorStop(0,isSel?'#fef08a':isHov?'#bfdbfe':isFocusRelated?'#cffafe':'#fff');
+                pinGrad.addColorStop(1,isSel?'#f59e0b':isHov?'#3b82f6':isFocusRelated?'#0891b2':sysCol); ctx.fillStyle=pinGrad; ctx.fill(); ctx.strokeStyle=isSel?'#f59e0b':'rgba(255,255,255,.7)'; ctx.lineWidth=1.5; ctx.stroke();
+                if (isSel) { ctx.beginPath(); ctx.arc(px,py,12*pulse,0,Math.PI*2); ctx.strokeStyle='rgba(251,191,36,.78)'; ctx.lineWidth=2; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]); }
+                if (isHov) { ctx.beginPath(); ctx.arc(px,py,10,0,Math.PI*2); ctx.strokeStyle='rgba(96,165,250,.68)'; ctx.lineWidth=1.7; ctx.stroke(); }
                 ctx.restore();
-
               });
-
+              var compactHotspotCount = adaptiveHotspotLayout.filter(function (item) { return !item.fullLabel; }).length;
+              if (denseHotspotView && compactHotspotCount > 0) {
+                var declutterMessage = 'Adaptive labels \u00B7 ' + compactHotspotCount + ' compact \u00B7 hover to expand';
+                ctx.save(); ctx.font='bold 8px Inter, system-ui'; var dw=ctx.measureText(declutterMessage).width+18, dx=(W-dw)/2, dy=H-42;
+                ctx.fillStyle='rgba(15,23,42,.88)'; ctx.strokeStyle='rgba(45,212,191,.58)'; ctx.lineWidth=.8;
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(dx,dy,dw,20,7); ctx.fill(); ctx.stroke(); } else { ctx.fillRect(dx,dy,dw,20); ctx.strokeRect(dx,dy,dw,20); }
+                ctx.fillStyle='#99f6e4'; ctx.fillText(declutterMessage,dx+9,dy+13.5); ctx.restore();
+              }
               // Layer label
 
               var activeLayerDef = spec.layers[currentLayerIdx];
@@ -5590,13 +5039,13 @@ var d = labToolData.dissection || {};
 
                   if (ann.prevX !== undefined) {
 
-                    ctx.beginPath(); ctx.moveTo(ann.prevX, ann.prevY);
+                    ctx.beginPath(); ctx.moveTo(ann.prevX * W, ann.prevY * H);
 
-                    ctx.lineTo(ann.x, ann.y); ctx.stroke();
+                    ctx.lineTo(ann.x * W, ann.y * H); ctx.stroke();
 
                   }
 
-                  ctx.beginPath(); ctx.arc(ann.x, ann.y, 2, 0, Math.PI * 2);
+                  ctx.beginPath(); ctx.arc(ann.x * W, ann.y * H, 2, 0, Math.PI * 2);
 
                   ctx.fillStyle = '#ec4899'; ctx.fill();
 
@@ -5610,7 +5059,7 @@ var d = labToolData.dissection || {};
 
                 ctx.font = '8px Inter, system-ui'; ctx.fillStyle = 'rgba(236,72,153,0.6)';
 
-                ctx.fillText('Double-click to clear', 10, H - 5);
+                ctx.fillText('Use Clear annotations in Tools', 10, H - 5);
 
               }
 
@@ -5694,7 +5143,39 @@ var d = labToolData.dissection || {};
                   [offsetFlapPoint(start, inset), offsetFlapPoint(middle, inset), offsetFlapPoint(end, inset), offsetFlapPoint(end, spread), offsetFlapPoint(middle, spread * 1.08), offsetFlapPoint(start, spread)],
                   [offsetFlapPoint(start, -inset), offsetFlapPoint(start, -spread), offsetFlapPoint(middle, -spread * 1.08), offsetFlapPoint(end, -spread), offsetFlapPoint(end, -inset), offsetFlapPoint(middle, -inset)]
                 ];
-                flaps.forEach(function (flap, flapIdx) {
+                // Next-layer tissue bed becomes visible beneath the retracted flaps.
+                var nextTissueLayer = spec.layers[Math.min(spec.layers.length - 1, currentLayerIdx + 1)] || {};
+                var nextTissueId = nextTissueLayer.id || 'organs';
+                var nextTissueColor = nextTissueId === 'muscle' ? '#a94452'
+                  : (nextTissueId === 'skeleton' ? '#cbd5e1'
+                    : (nextTissueId === 'organs' || nextTissueId === 'chambers' || nextTissueId === 'interior' ? '#7c4a3f' : '#816066'));
+                var bedSpread = Math.max(0.026, spread * 0.62);
+                var bedPoints = [
+                  offsetFlapPoint(start, bedSpread), offsetFlapPoint(middle, bedSpread * 0.92), offsetFlapPoint(end, bedSpread),
+                  offsetFlapPoint(end, -bedSpread), offsetFlapPoint(middle, -bedSpread * 0.92), offsetFlapPoint(start, -bedSpread)
+                ];
+                ctx.save(); ctx.beginPath(); ctx.moveTo(bedPoints[0].x * W, bedPoints[0].y * H);
+                for (var bedPointIdx = 1; bedPointIdx < bedPoints.length; bedPointIdx++) ctx.lineTo(bedPoints[bedPointIdx].x * W, bedPoints[bedPointIdx].y * H);
+                ctx.closePath();
+                var tissueBedGradient = ctx.createLinearGradient(bedPoints[0].x * W, bedPoints[0].y * H, bedPoints[4].x * W, bedPoints[4].y * H);
+                tissueBedGradient.addColorStop(0, flapMode === 'accessible' ? '#fde68a' : nextTissueColor);
+                tissueBedGradient.addColorStop(0.46, flapMode === 'accessible' ? '#fef3c7' : '#5c3138');
+                tissueBedGradient.addColorStop(1, flapMode === 'accessible' ? '#fbbf24' : nextTissueColor);
+                ctx.fillStyle = tissueBedGradient; ctx.shadowColor = 'rgba(2,6,23,0.72)'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0;
+                ctx.strokeStyle = flapMode === 'accessible' ? '#422006' : 'rgba(254,202,202,0.42)'; ctx.lineWidth = flapMode === 'accessible' ? 1.8 : 0.8; ctx.stroke();
+                ctx.globalAlpha = flapMode === 'realistic' ? 0.34 : 0.22;
+                ctx.strokeStyle = nextTissueId === 'skeleton' ? '#f8fafc' : '#fecdd3'; ctx.lineWidth = 0.75;
+                for (var bedFiberIdx = 0; bedFiberIdx < 6; bedFiberIdx++) {
+                  var bedFiberT = (bedFiberIdx + 0.7) / 6.4;
+                  var bedFiberBaseX = start.x + (end.x - start.x) * bedFiberT;
+                  var bedFiberBaseY = start.y + (end.y - start.y) * bedFiberT;
+                  var bedFiberHalf = bedSpread * (0.46 + (bedFiberIdx % 2) * 0.16);
+                  ctx.beginPath();
+                  ctx.moveTo((bedFiberBaseX - normalX * bedFiberHalf) * W, (bedFiberBaseY - normalY * bedFiberHalf) * H);
+                  ctx.quadraticCurveTo(bedFiberBaseX * W, bedFiberBaseY * H, (bedFiberBaseX + normalX * bedFiberHalf) * W, (bedFiberBaseY + normalY * bedFiberHalf) * H);
+                  ctx.stroke();
+                }
+                ctx.restore();                flaps.forEach(function (flap, flapIdx) {
                   ctx.save(); ctx.beginPath(); ctx.moveTo(flap[0].x * W, flap[0].y * H);
                   for (var fi = 1; fi < flap.length; fi++) ctx.lineTo(flap[fi].x * W, flap[fi].y * H);
                   ctx.closePath(); ctx.shadowColor = 'rgba(2,6,23,0.68)'; ctx.shadowBlur = 14;
@@ -5811,7 +5292,37 @@ var d = labToolData.dissection || {};
                 ctx.beginPath(); ctx.arc(dropX, dropY, dropRadius, 0, Math.PI * 2); ctx.fillStyle = dropGrad; ctx.fill();
                 ctx.strokeStyle = 'rgba(125,211,252,0.72)'; ctx.lineWidth = 1.5; ctx.stroke();
               }
-              (canvasProcedure.pins || []).forEach(function (pin, pinIdx) {
+              // Probe confirmation remains anchored to the traced structure as persistent visual evidence.
+              if (canvasProcedure.probed && canvasProcedure.probedOrganId) {
+                var probedStructure = organs.find(function (organ) { return organ.id === canvasProcedure.probedOrganId; });
+                if (probedStructure) {
+                  var probedPoint = variedOrganPoint(probedStructure);
+                  var probedX = probedPoint.x * W, probedY = probedPoint.y * H;
+                  var probeConfirmPulse = dissMotionReduced ? 0 : (Math.sin(dissTick * 0.05) + 1) * 1.5;
+                  ctx.save();
+                  ctx.shadowColor = 'rgba(45,212,191,0.72)'; ctx.shadowBlur = 9;
+                  ctx.strokeStyle = (d.visualRealism || visualRealism) === 'accessible' ? '#facc15' : '#2dd4bf';
+                  ctx.lineWidth = (d.visualRealism || visualRealism) === 'accessible' ? 3 : 2;
+                  for (var probeArcIdx = 0; probeArcIdx < 4; probeArcIdx++) {
+                    var probeArcStart = probeArcIdx * Math.PI / 2 + 0.12;
+                    ctx.beginPath(); ctx.arc(probedX, probedY, 13 + probeConfirmPulse, probeArcStart, probeArcStart + 0.86); ctx.stroke();
+                  }
+                  ctx.shadowBlur = 0;
+                  ctx.beginPath(); ctx.moveTo(probedX - 5, probedY); ctx.lineTo(probedX - 1, probedY + 4); ctx.lineTo(probedX + 7, probedY - 6);
+                  ctx.strokeStyle = (d.visualRealism || visualRealism) === 'accessible' ? '#fef08a' : '#99f6e4'; ctx.lineWidth = 2.4; ctx.stroke();
+                  var probeLabel = 'Trace recorded';
+                  ctx.font = 'bold 9px Inter, system-ui';
+                  var probeLabelWidth = ctx.measureText(probeLabel).width + 12;
+                  var probeLabelX = Math.min(W - probeLabelWidth - 8, probedX + 17);
+                  var probeLabelY = Math.max(8, probedY - 25);
+                  ctx.fillStyle = 'rgba(15,23,42,0.90)';
+                  if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(probeLabelX, probeLabelY, probeLabelWidth, 19, 5); ctx.fill(); }
+                  else ctx.fillRect(probeLabelX, probeLabelY, probeLabelWidth, 19);
+                  ctx.strokeStyle = '#2dd4bf'; ctx.lineWidth = 0.8; ctx.stroke();
+                  ctx.fillStyle = '#ccfbf1'; ctx.fillText(probeLabel, probeLabelX + 6, probeLabelY + 13);
+                  ctx.restore();
+                }
+              }              (canvasProcedure.pins || []).forEach(function (pin, pinIdx) {
                 var pinX = pin.x * W, pinY = pin.y * H;
                 var openingCenter = activeOpeningPath[Math.floor((activeOpeningPath.length - 1) / 2)] || overlayGuide[1];
                 var tensionX = (pin.x - openingCenter.x) * 28, tensionY = (pin.y - openingCenter.y) * 28;
@@ -5844,15 +5355,15 @@ var d = labToolData.dissection || {};
 
                 ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.setLineDash([]);
 
-                ctx.beginPath(); ctx.moveTo(d.rulerStart.x, d.rulerStart.y);
+                ctx.beginPath(); ctx.moveTo(d.rulerStart.x * W, d.rulerStart.y * H);
 
-                ctx.lineTo(d.rulerEnd.x, d.rulerEnd.y); ctx.stroke();
+                ctx.lineTo(d.rulerEnd.x * W, d.rulerEnd.y * H); ctx.stroke();
 
                 // Endpoints
 
-                ctx.beginPath(); ctx.arc(d.rulerStart.x, d.rulerStart.y, 3, 0, Math.PI * 2); ctx.fillStyle = '#fbbf24'; ctx.fill();
+                ctx.beginPath(); ctx.arc(d.rulerStart.x * W, d.rulerStart.y * H, 3, 0, Math.PI * 2); ctx.fillStyle = '#fbbf24'; ctx.fill();
 
-                ctx.beginPath(); ctx.arc(d.rulerEnd.x, d.rulerEnd.y, 3, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(d.rulerEnd.x * W, d.rulerEnd.y * H, 3, 0, Math.PI * 2); ctx.fill();
 
                 // Distance
 
@@ -5862,11 +5373,11 @@ var d = labToolData.dissection || {};
 
                 var rDist = Math.sqrt(rdx * rdx + rdy * rdy);
 
-                var rCm = (rDist / W * (spec.bodyShape === 'worm' ? 15 : spec.bodyShape === 'pig' ? 25 : spec.bodyShape === 'fish' ? 20 : spec.bodyShape === 'crayfish' ? 12 : spec.bodyShape === 'frog' ? 8 : 3)).toFixed(1);
+                var rCm = (rDist * (spec.bodyShape === 'worm' ? 15 : spec.bodyShape === 'pig' ? 25 : spec.bodyShape === 'fish' ? 20 : spec.bodyShape === 'crayfish' ? 12 : spec.bodyShape === 'frog' ? 8 : 3)).toFixed(1);
 
                 ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
 
-                ctx.fillText(rCm + ' cm', (d.rulerStart.x + d.rulerEnd.x) / 2 + 5, (d.rulerStart.y + d.rulerEnd.y) / 2 - 5);
+                ctx.fillText(rCm + ' cm', (d.rulerStart.x + d.rulerEnd.x) / 2 * W + 5, (d.rulerStart.y + d.rulerEnd.y) / 2 * H - 5);
 
               }
 
@@ -7086,6 +6597,30 @@ var d = labToolData.dissection || {};
 
               ctx.restore(); // End zoom transform
 
+              // Screen-fixed confirmation stays readable even when the specimen is mirrored, zoomed, or panned.
+              if (_layerTransition && _layerTransition.active) {
+                var badgeElapsed = Math.max(0, Date.now() - (_layerTransition.startedAt || Date.now()));
+                var badgeDuration = Math.max(1, Number(_layerTransition.duration) || 1150);
+                var badgeLinear = Math.max(0, Math.min(1, badgeElapsed / badgeDuration));
+                var badgeAlpha = _layerTransition.reducedMotion || dissMotionReduced ? 1 : Math.min(1, badgeLinear / 0.14, (1 - badgeLinear) / 0.16);
+                if (badgeAlpha > 0) {
+                  ctx.save(); ctx.globalAlpha = badgeAlpha;
+                  var layerBadgeWidth = Math.min(278, W - 36), layerBadgeHeight = 46, layerBadgeX = (W - layerBadgeWidth) / 2, layerBadgeY = 22;
+                  ctx.shadowColor = 'rgba(2,6,23,0.62)'; ctx.shadowBlur = 12;
+                  var layerBadgeGradient = ctx.createLinearGradient(layerBadgeX, layerBadgeY, layerBadgeX + layerBadgeWidth, layerBadgeY + layerBadgeHeight);
+                  layerBadgeGradient.addColorStop(0, 'rgba(15,23,42,0.96)'); layerBadgeGradient.addColorStop(1, 'rgba(15,118,110,0.94)');
+                  ctx.fillStyle = layerBadgeGradient; ctx.strokeStyle = 'rgba(153,246,228,0.72)'; ctx.lineWidth = 1;
+                  if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(layerBadgeX, layerBadgeY, layerBadgeWidth, layerBadgeHeight, 10); ctx.fill(); ctx.stroke(); }
+                  else { ctx.fillRect(layerBadgeX, layerBadgeY, layerBadgeWidth, layerBadgeHeight); ctx.strokeRect(layerBadgeX, layerBadgeY, layerBadgeWidth, layerBadgeHeight); }
+                  ctx.shadowBlur = 0; ctx.font = 'bold 8px Inter, system-ui'; ctx.fillStyle = '#99f6e4'; ctx.fillText('LAYER REVEALED', layerBadgeX + 12, layerBadgeY + 14);
+                  ctx.font = 'bold 11px Inter, system-ui'; ctx.fillStyle = '#f8fafc';
+                  ctx.fillText((_layerTransition.fromIcon || '') + ' ' + _layerTransition.fromName + '  \u2192  ' + (_layerTransition.toIcon || '') + ' ' + _layerTransition.toName, layerBadgeX + 12, layerBadgeY + 31);
+                  ctx.fillStyle = 'rgba(153,246,228,0.22)'; ctx.fillRect(layerBadgeX + 12, layerBadgeY + 37, layerBadgeWidth - 24, 3);
+                  ctx.fillStyle = '#5eead4'; ctx.fillRect(layerBadgeX + 12, layerBadgeY + 37, (layerBadgeWidth - 24) * (_layerTransition.reducedMotion ? 1 : layerTransitionProgress), 3);
+                  ctx.restore();
+                }
+              }
+
               var screenPointer = canvas._toolPointer;
               if (screenPointer) {
                 var pointerScale = specimenScaleFactors();
@@ -7455,16 +6990,19 @@ var d = labToolData.dissection || {};
               if (activeInstrument === 'scalpel' || activeInstrument === 'scissors') return;
             }
 
-            var hit = null;
-
-            organs.forEach(function (org) { if (viewOrganVisibility(org) !== 'visible') return; var orgPoint = variedOrganPoint(org); var dx = mx - orgPoint.x, dy = my - orgPoint.y; if (Math.sqrt(dx * dx + dy * dy) < (visualRealism === 'accessible' ? 0.065 : 0.05)) hit = org; });
-
+            var clickHitRadius = Math.max(0.028, (visualRealism === 'accessible' ? 0.065 : 0.05) / Math.sqrt(Math.max(1, Number(d.canvasZoom) || 1)));
+            var hit = closestVisibleOrganAt(mx, my, clickHitRadius);
             if (hit && d.quizMode && d.quizAnswerMode === 'hotspot' && !d.quizFeedback) submitQuizAnswer(hit.id);
             upd('selectedOrgan', hit ? (hit.id === d.selectedOrgan ? null : hit.id) : null);
 
             if (hit) {
               playDissectSound('pin'); sfxDisPin();
               if (window._alloHaptic) window._alloHaptic('click');
+              if (!d.quizMode && !d.annotateMode && !d.rulerMode && activeInstrument === 'probe' && (currentProcedure.pins || []).length >= 2) {
+                performProcedureAction('probe', { organ: hit });
+              } else if (!d.quizMode && !d.annotateMode && !d.rulerMode && activeInstrument === 'probe') {
+                setProcedureFeedback('Selected ' + hit.name + '. ' + procedureInstrumentStatus('probe').instruction, 'working');
+              }
 
             }
 
@@ -7489,6 +7027,7 @@ var d = labToolData.dissection || {};
                 upd('annotations', annots.slice());
 
               }
+              setProcedureFeedback('Annotation point ' + annots.length + ' added. Select another point to continue the line.', 'working');
 
             }
 
@@ -7501,10 +7040,14 @@ var d = labToolData.dissection || {};
                 upd('rulerStart', { x: mx, y: my });
 
                 upd('rulerEnd', null);
+                setProcedureFeedback('Ruler start point set. Select a second point to complete the measurement.', 'working');
 
               } else {
 
                 upd('rulerEnd', { x: mx, y: my });
+                var measureDx = mx - d.rulerStart.x, measureDy = my - d.rulerStart.y;
+                var measureScale = spec.bodyShape === 'worm' ? 15 : spec.bodyShape === 'pig' ? 25 : spec.bodyShape === 'fish' ? 20 : spec.bodyShape === 'crayfish' ? 12 : spec.bodyShape === 'frog' ? 8 : 3;
+                setProcedureFeedback('Measurement complete: ' + (Math.sqrt(measureDx * measureDx + measureDy * measureDy) * measureScale).toFixed(1) + ' cm. Select again to start a new measurement.');
 
               }
 
@@ -7580,10 +7123,8 @@ var d = labToolData.dissection || {};
             canvas._toolPointer = { x: mx, y: my, at: Date.now() };
             canvas._toolPressure = Number(e.pressure) || (e.buttons ? 0.5 : 0.12);
 
-            var hit = null;
-
-            organs.forEach(function (org) { if (viewOrganVisibility(org) !== 'visible') return; var orgPoint = variedOrganPoint(org); var dx = mx - orgPoint.x, dy = my - orgPoint.y; if (Math.sqrt(dx * dx + dy * dy) < (visualRealism === 'accessible' ? 0.06 : 0.04)) hit = org; });
-
+            var hoverHitRadius = Math.max(0.024, (visualRealism === 'accessible' ? 0.06 : 0.04) / Math.sqrt(Math.max(1, Number(d.canvasZoom) || 1)));
+            var hit = closestVisibleOrganAt(mx, my, hoverHitRadius);
             upd('hoveredOrgan', hit ? hit.id : null);
 
             var toolCursor = (activeInstrument === 'scalpel' || activeInstrument === 'scissors') ? 'crosshair' : (activeInstrument === 'forceps' ? 'grab' : 'pointer');
@@ -7639,6 +7180,7 @@ var d = labToolData.dissection || {};
           var nextLayerDef = spec.layers[currentLayerIdx + 1] || null;
           var procedureStageIdx = procedureStepIndex(currentProcedure);
           var procedureNext = nextProcedureInfo();
+          var activeInstrumentState = procedureInstrumentStatus(activeInstrument);
           var techniqueScore = procedureTechniqueScore(currentProcedure);
           var recentTechniqueMetrics = currentProcedure.extensionMetrics || currentProcedure.incisionMetrics || null;
           var scenarioDefinition = currentScenarioDefinition();
@@ -7688,9 +7230,11 @@ var d = labToolData.dissection || {};
               };
               var nextEvidence = visualEvidence.concat([evidenceEntry]).slice(-6);
               updMany({ visualEvidence: nextEvidence, referenceEvidenceId: evidenceId, splitComparison: true });
+              setProcedureFeedback('Evidence frame captured. It is now the active reference in split comparison.');
               if (addToast) addToast('Evidence frame captured and opened for comparison.', 'success');
               if (typeof announceToSR === 'function') announceToSR('Captured evidence frame for ' + currentLayerDef.name + '. Split comparison is on.');
             } catch (error) {
+              setProcedureFeedback('Evidence capture is unavailable in this view.', 'caution');
               if (addToast) addToast('Evidence capture is unavailable in this view.', 'error');
             }
           }
@@ -7699,6 +7243,7 @@ var d = labToolData.dissection || {};
             var evidence = visualEvidence.find(function (entry) { return entry.id === evidenceId; });
             if (!evidence) return;
             updMany({ referenceEvidenceId: evidenceId, splitComparison: true });
+            setProcedureFeedback('Reference frame selected from ' + evidence.layerName + '. Split comparison is on.');
             if (typeof announceToSR === 'function') announceToSR('Reference frame selected from ' + evidence.layerName + '.');
           }
 
@@ -7708,8 +7253,10 @@ var d = labToolData.dissection || {};
               var link = document.createElement('a');
               link.download = specimen + '_' + (evidence.layer || 'evidence') + '_' + evidence.id + '.jpg';
               link.href = evidence.image; link.click();
+              setProcedureFeedback('Evidence frame downloaded as ' + link.download + '.');
               if (addToast) addToast('Evidence frame downloaded.', 'success');
             } catch (error) {
+              setProcedureFeedback('Evidence download failed in this view.', 'caution');
               if (addToast) addToast('Evidence download failed.', 'error');
             }
           }
@@ -7974,22 +7521,22 @@ var d = labToolData.dissection || {};
               React.createElement("button", { "aria-label": "Laboratory light direction: cycle overhead, left, right, and raking", onClick: function () { var directions = ['overhead', 'left', 'right', 'raking']; upd('lightDirection', directions[(directions.indexOf(lightDirection) + 1) % directions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2198 Light angle: ' + lightDirection),
               React.createElement("button", { "aria-label": "Generate another deterministic specimen variation", onClick: function () { upd('variationSeed', variationSeed + 1); setProcedureFeedback('Loaded specimen variation ' + (variationSeed + 1) + '. Landmark shifts are small and deterministic.'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB Variation ' + variationSeed),
               React.createElement("button", { "aria-label": "Toggle before and after technique view", "aria-pressed": !!d.beforeTechniqueView, onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (d.beforeTechniqueView ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.beforeTechniqueView ? '\u25C0 Before view' : '\u25B6 After view'),
-              React.createElement("button", { "aria-label": "Enter fullscreen canvas mode", onClick: function () { try { var c = document.querySelector('[data-diss-canvas]'); if (window.__alloStemFS) window.__alloStemFS(c); } catch (e) {} }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u26F6 Fullscreen'),
+              React.createElement("button", { "aria-label": "Enter fullscreen canvas mode", onClick: function () { try { var c = document.querySelector('[data-diss-canvas]'); if (!c || !window.__alloStemFS) throw new Error('Fullscreen unavailable'); window.__alloStemFS(c); setProcedureFeedback('Fullscreen canvas requested. Press Escape to return to the lab.'); } catch (e) { setProcedureFeedback('Fullscreen is unavailable in this view.', 'caution'); } }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u26F6 Fullscreen'),
               React.createElement("button", { "aria-label": "Animation speed: cycle normal, slow, and fast", onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u23E9 ' + (d.animSpeed === 'slow' ? 'Slow' : d.animSpeed === 'fast' ? 'Fast' : 'Normal')),
-              React.createElement("button", { "aria-label": "Print clean dissection report", onClick: function () { try { window.print(); } catch (e) { if (addToast) addToast('Print is unavailable in this view.', 'error'); } }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDDA8 Print')
+              React.createElement("button", { "aria-label": "Print clean dissection report", onClick: function () { try { setProcedureFeedback('Print view opened. Choose a printer or save the report as a PDF.'); window.print(); } catch (e) { if (addToast) addToast('Print is unavailable in this view.', 'error'); setProcedureFeedback('Print is unavailable in this view.', 'caution'); } }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDDA8 Print')
             ),
 
             // Tools group expanded
             d.toolbarToolsOpen && React.createElement("div", { id: "diss-lab-tools", className: "diss-tool-panel flex flex-wrap bg-emerald-50 rounded-xl border border-emerald-200 animate-[fadeIn_0.2s_ease-out]", role: "region", "aria-label": "Lab tools" },
 
               React.createElement("button", { "aria-label": "Ruler", "aria-pressed": !!d.rulerMode,
-                onClick: function () { upd('rulerMode', !d.rulerMode); if (!d.rulerMode) upd('annotateMode', false); },
+                onClick: function () { var enabled = !d.rulerMode; upd('rulerMode', enabled); if (enabled) upd('annotateMode', false); setProcedureFeedback(enabled ? 'Ruler active. Select two points on the specimen to measure their distance.' : 'Ruler off.'); },
                 title: 'Ruler' + ' — Measure distances on the specimen',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.rulerMode ? 'bg-emerald-700 text-white' : 'transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 active:scale-[0.97]')
               }, '\uD83D\uDCCF ' + 'Ruler'),
 
               React.createElement("button", { "aria-label": "Annotate", "aria-pressed": !!d.annotateMode,
-                onClick: function () { upd('annotateMode', !d.annotateMode); if (!d.annotateMode) upd('rulerMode', false); },
+                onClick: function () { var enabled = !d.annotateMode; upd('annotateMode', enabled); if (enabled) upd('rulerMode', false); setProcedureFeedback(enabled ? 'Annotation active. Select points on the specimen to draw a connected evidence line.' : 'Annotation off.'); },
                 title: 'Annotate' + ' — Draw annotations on the canvas',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.annotateMode ? 'bg-emerald-700 text-white' : 'transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 active:scale-[0.97]')
               }, '\u270F ' + 'Annotate'),
@@ -7998,12 +7545,18 @@ var d = labToolData.dissection || {};
                 onClick: function () {
                   try {
                     var c = document.querySelector('[data-diss-canvas]');
-                    if (c) { var link = document.createElement('a'); link.download = specimen + '_dissection.png'; link.href = c.toDataURL(); link.click(); if (addToast) addToast('\uD83D\uDCF8 Screenshot saved!', 'success'); }
-                  } catch (e) { if (addToast) addToast('Screenshot failed', 'error'); }
+                    if (c) { var link = document.createElement('a'); link.download = specimen + '_dissection.png'; link.href = c.toDataURL(); link.click(); if (addToast) addToast('\uD83D\uDCF8 Screenshot saved!', 'success'); setProcedureFeedback('Screenshot saved as ' + link.download + '.'); }
+                  } catch (e) { if (addToast) addToast('Screenshot failed', 'error'); setProcedureFeedback('Screenshot failed in this view.', 'caution'); }
                 },
                 title: 'Screenshot' + ' — Save the current canvas view',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all active:scale-[0.97]"
               }, '\uD83D\uDCF8 ' + 'Screenshot'),
+
+              React.createElement("button", { "aria-label": "Clear annotations", disabled: !(d.annotations || []).length,
+                onClick: function () { var count = (d.annotations || []).length; upd('annotations', []); setProcedureFeedback('Cleared ' + count + ' annotation point' + (count === 1 ? '' : 's') + '.'); },
+                title: 'Clear annotations \u2014 Remove annotation marks from the current specimen',
+                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              }, '\u232B Clear annotations'),
 
               React.createElement("button", { "aria-label": "Capture compressed visual evidence frame",
                 onClick: captureVisualEvidence,
@@ -8051,7 +7604,20 @@ var d = labToolData.dissection || {};
                       if ((d.organNotes || {})[noteKey]) report += '  Evidence note: ' + (d.organNotes || {})[noteKey] + '\n';
                     });
                   });
-                  try { var copied = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(report) : null; if (copied && copied.catch) copied.catch(function () { if (addToast) addToast('Could not copy the lab report.', 'error'); }); if (addToast) addToast('\uD83D\uDCCB Lab report copied!', 'success'); } catch (e) { if (addToast) addToast('Could not copy the lab report.', 'error'); }
+                  try {
+                    var copied = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(report) : null;
+                    if (!copied || !copied.then) throw new Error('Clipboard unavailable');
+                    copied.then(function () {
+                      if (addToast) addToast('\uD83D\uDCCB Lab report copied!', 'success');
+                      setProcedureFeedback('Lab report copied to the clipboard.');
+                    }).catch(function () {
+                      if (addToast) addToast('Could not copy the lab report.', 'error');
+                      setProcedureFeedback('The lab report could not be copied in this view.', 'caution');
+                    });
+                  } catch (e) {
+                    if (addToast) addToast('Could not copy the lab report.', 'error');
+                    setProcedureFeedback('The lab report could not be copied in this view.', 'caution');
+                  }
                 },
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200"
               }, '\uD83D\uDCCB Lab Report'),
@@ -8293,21 +7859,35 @@ var d = labToolData.dissection || {};
                         })
                       )
                     ),
+                    React.createElement("div", { className: "diss-active-tool", "data-readiness": activeInstrumentState.readiness, "aria-label": "Active instrument status" },
+                      React.createElement("span", { className: "diss-active-tool__icon", "aria-hidden": "true" }, (PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === activeInstrument; }) || {}).icon || '\u2022'),
+                      React.createElement("div", null,
+                        React.createElement("strong", null, 'Active tool: ' + ((PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === activeInstrument; }) || {}).label || activeInstrument)),
+                        React.createElement("span", { id: "diss-active-tool-help" }, activeInstrumentState.instruction)
+                      ),
+                      React.createElement("span", { className: "diss-active-tool__badge" }, activeInstrumentState.label)
+                    ),
                     React.createElement("div", { className: "diss-instruments", role: "radiogroup", "aria-label": "Dissection instruments" },
                       PROCEDURE_INSTRUMENTS.map(function (tool) {
+                        var toolState = procedureInstrumentStatus(tool.id);
                         return React.createElement("button", {
                           type: "button", role: "radio", key: tool.id,
                           className: "diss-instrument", "aria-checked": activeInstrument === tool.id,
-                          "aria-label": tool.label + '. ' + tool.help,
-                          title: tool.help,
-                          onClick: function () { updMany({ activeInstrument: tool.id, annotateMode: false, rulerMode: false }); setProcedureFeedback(tool.label + ' selected. ' + tool.help); }
-                        }, tool.icon + ' ' + tool.label);
+                          "data-readiness": toolState.readiness,
+                          "aria-label": tool.label + ', ' + toolState.label + '. ' + toolState.instruction,
+                          "aria-describedby": activeInstrument === tool.id ? "diss-active-tool-help" : undefined,
+                          title: toolState.label + ': ' + toolState.instruction,
+                          onClick: function () { updMany({ activeInstrument: tool.id, annotateMode: false, rulerMode: false }); setProcedureFeedback(tool.label + ' selected. ' + toolState.instruction, toolState.readiness === 'waiting' ? 'caution' : 'success'); }
+                        },
+                          React.createElement("span", null, tool.icon + ' ' + tool.label),
+                          React.createElement("span", { className: "diss-instrument__state" }, activeInstrument === tool.id ? 'Selected \u00B7 ' + toolState.label : toolState.label)
+                        );
                       })
                     ),
                     activeInstrument === 'scalpel' && React.createElement("div", { className: "diss-procedure__controls", role: "group", "aria-label": "Scalpel depth" },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, 'Depth:'),
                       ['shallow', 'deep'].map(function (depth) {
-                        return React.createElement("button", { type: "button", key: depth, "aria-pressed": (d.incisionDepth || 'shallow') === depth, onClick: function () { upd('incisionDepth', depth); } }, depth === 'shallow' ? 'Shallow' : 'Deep (practice warning)');
+                        return React.createElement("button", { type: "button", key: depth, "aria-pressed": (d.incisionDepth || 'shallow') === depth, onClick: function () { upd('incisionDepth', depth); setProcedureFeedback(depth === 'shallow' ? 'Shallow depth selected. The scalpel is ready when orientation is complete.' : 'Deep practice depth selected. It will be blocked to protect underlying structures.', depth === 'shallow' ? 'success' : 'caution'); } }, depth === 'shallow' ? 'Shallow' : 'Deep (practice warning)');
                       })
                     ),
                     React.createElement("div", { className: "diss-procedure__steps", "aria-label": procedureStageIdx + ' of 6 technique steps complete' },
@@ -8404,7 +7984,7 @@ var d = labToolData.dissection || {};
                         React.createElement("button", { type: "button", onClick: function () { upd('instructorRequiredStructures', instructorRequiredStructures >= 4 ? 1 : instructorRequiredStructures + 1); } }, 'Required structures: ' + instructorRequiredStructures)
                       )
                     ),
-                    React.createElement("p", { className: "diss-procedure__feedback", "data-tone": (d.procedureFeedback || {}).tone || 'success', role: "status", "aria-live": "polite" },
+                    React.createElement("p", { className: "diss-procedure__feedback", "data-diss-tool-status": true, "data-tone": (d.procedureFeedback || {}).tone || 'success', role: "status", "aria-live": "polite" },
                       (d.procedureFeedback || {}).message || 'Begin by inspecting the visible layer and planning an access path.'
                     ),
                     React.createElement("p", { className: "diss-procedure__notice" }, specimenTrayNote),
@@ -8864,7 +8444,7 @@ var d = labToolData.dissection || {};
 
                       },
 
-                      className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:from-violet-600 hover:to-purple-600"
+                      className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-600 hover:to-purple-600"
 
                     }, '\uD83E\uDD16 ' + 'AI Explain'),
 
@@ -9196,7 +8776,7 @@ var d = labToolData.dissection || {};
 
                       },
 
-                      className: "mt-1 px-2 py-1 rounded-lg text-[11px] font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                      className: "mt-1 px-2 py-1 rounded-lg text-[11px] font-bold bg-gradient-to-r from-green-700 to-emerald-700 text-white"
 
                     }, '\uD83C\uDF93 ' + 'Copy Summary')
 

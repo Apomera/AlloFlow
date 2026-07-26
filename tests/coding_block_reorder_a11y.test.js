@@ -18,6 +18,7 @@ describe('Coding Lab block reordering accessibility', () => {
     const html = renderTool('codingPlayground', {
       _codingPlayground: {
         tutorialDismissed: true,
+        codeMode: 'outline',
         blocks: [{ type: 'forward', distance: 10 }, { type: 'right', degrees: 90 }],
       },
     });
@@ -32,6 +33,7 @@ describe('Coding Lab block reordering accessibility', () => {
     const html = renderTool('codingPlayground', {
       _codingPlayground: {
         tutorialDismissed: true,
+        codeMode: 'outline',
         blocks: [{ type: 'forward', distance: 10 }, { type: 'right', degrees: 90 }],
       },
     });

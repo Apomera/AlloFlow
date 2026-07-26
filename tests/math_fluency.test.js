@@ -44,6 +44,9 @@ it('exposes the scoring internals via the test seam', () => {
   expect(typeof M.getSeason).toBe('function');
   expect(typeof M.normalizeGrade).toBe('function');
   expect(typeof M.generateProblems).toBe('function');
+  expect(typeof M.generatePracticeProblems).toBe('function');
+  expect(typeof M.buildFocusedProblems).toBe('function');
+  expect(typeof M.updateFactMastery).toBe('function');
   expect(typeof M.parseStudentAnswer).toBe('function');
   expect(typeof M.countCorrectDigits).toBe('function');
   expect(M.BENCHMARKS && M.BENCHMARKS['3']).toBeTruthy();
@@ -161,6 +164,95 @@ describe('problem-generator difficulty contracts', () => {
   });
 });
 
+describe('grade-aligned practice sets and personalized fact helpers', () => {
+  it('maps grade bands to developmentally narrower recommended sets', () => {
+    expect(M.getRecommendedPracticeSet('1st Grade', 'add')).toBe('within10');
+    expect(M.getRecommendedPracticeSet('2', 'sub')).toBe('within20');
+    expect(M.getRecommendedPracticeSet('3', 'add')).toBe('within100');
+    expect(M.getRecommendedPracticeSet('3', 'mul')).toBe('facts10');
+    expect(M.getRecommendedPracticeSet('4', 'div')).toBe('facts12');
+  });
+
+  it('keeps early-grade mixed recommendations within addition and subtraction', () => {
+    const items = M.generatePracticeProblems('mixed', 'recommended', '1st Grade', 80);
+    expect(items).toHaveLength(80);
+    expect(items.every((item) => ['add', 'sub'].includes(item.op))).toBe(true);
+    expect(items.every((item) => item.answer >= 0 && item.answer <= 10)).toBe(true);
+  });
+
+  it('honors operation-specific grade recommendations and explicit within-20 sets', () => {
+    const multiplication = M.generatePracticeProblems('mul', 'recommended', '3', 60);
+    expect(multiplication).toHaveLength(60);
+    expect(multiplication.every((item) => item.a >= 0 && item.a <= 10 && item.b >= 0 && item.b <= 10)).toBe(true);
+
+    const addition = M.generatePracticeProblems('add', 'within20', '5', 60);
+    const subtraction = M.generatePracticeProblems('sub', 'within20', '5', 60);
+    expect(addition.every((item) => item.a + item.b === item.answer && item.answer <= 20)).toBe(true);
+    expect(subtraction.every((item) => item.a - item.b === item.answer && item.a <= 20 && item.answer >= 0)).toBe(true);
+  });
+
+  it('accumulates canonical fact mastery and rebuilds a focused retry set', () => {
+    const attempts = [
+      { a: 5, b: 4, op: 'add', symbol: '+', answer: 9, studentAnswer: 8, correct: false, responseMs: 4200 },
+      { a: 4, b: 5, op: 'add', symbol: '+', answer: 9, studentAnswer: 9, correct: true, responseMs: 2800 },
+      { a: 6, b: 7, op: 'mul', symbol: '×', answer: 42, studentAnswer: 42, correct: true, responseMs: 7200 },
+      { a: 7, b: 6, op: 'mul', symbol: '×', answer: 42, studentAnswer: 42, correct: true, responseMs: 6800 },
+    ];
+    const mastery = M.updateFactMastery({}, attempts, '2026-07-25T12:00:00.000Z');
+    expect(mastery['add|4|5']).toMatchObject({ attempts: 2, correct: 1, timedAttempts: 2, responseMsTotal: 7000 });
+    expect(mastery['mul|6|7']).toMatchObject({ attempts: 2, correct: 2, timedAttempts: 2, responseMsTotal: 14000 });
+
+    const focusFacts = M.getMasteryFocusFacts(mastery, 10);
+    expect(focusFacts.map((fact) => M.getFactKey(fact))).toEqual(expect.arrayContaining(['add|4|5', 'mul|6|7']));
+    const focused = M.buildFocusedProblems(focusFacts, 12);
+    expect(focused).toHaveLength(12);
+    expect(focused.every((item) => item.studentAnswer === null && item.correct === null && item.responseMs === null)).toBe(true);
+    expect(new Set(focused.map((item) => M.getFactKey(item))).size).toBe(2);
+  });
+});
+describe('Strategy Coach and mastery dashboard helpers', () => {
+  it('provides graduated operation-specific strategies before revealing the answer', () => {
+    const addition = { a: 8, b: 7, op: 'add', symbol: '+', answer: 15 };
+    expect(M.getStrategyHint(addition, 1)).toMatchObject({ stage: 'strategy', title: 'Use a nearby double' });
+    expect(M.getStrategyHint(addition, 2)).toMatchObject({ stage: 'model', title: 'Build the addition' });
+    expect(M.getStrategyHint(addition, 3)).toMatchObject({ stage: 'reveal', reveal: true });
+    expect(M.getStrategyHint(addition, 3).message).toContain('15');
+
+    expect(M.getStrategyHint({ a: 13, b: 8, op: 'sub', symbol: '−', answer: 5 }, 1).title).toContain('related addition');
+    expect(M.getStrategyHint({ a: 6, b: 7, op: 'mul', symbol: '×', answer: 42 }, 1).message).toContain('6 × 5');
+    expect(M.getStrategyHint({ a: 42, b: 6, op: 'div', symbol: '÷', answer: 7 }, 1).message).toContain('6 × what number');
+  });
+
+  it('counts coached retries as individual mastery attempts', () => {
+    const summary = M.summarizeFactResults([{
+      a: 2, b: 3, op: 'add', symbol: '+', answer: 5,
+      attemptLog: [
+        { studentAnswer: 4, correct: false, responseMs: 3000 },
+        { studentAnswer: 6, correct: false, responseMs: 2500 },
+      ],
+      studentAnswer: 5, correct: true, responseMs: 1500,
+    }]);
+    expect(summary).toHaveLength(1);
+    expect(summary[0]).toMatchObject({ attempts: 3, correct: 1, accuracy: 33, timedAttempts: 3, responseMsTotal: 7000 });
+  });
+
+  it('classifies persistent facts conservatively across all four dashboard groups', () => {
+    const mastery = {
+      secure: { a: 2, b: 3, op: 'add', symbol: '+', answer: 5, attempts: 5, correct: 5, timedAttempts: 5, responseMsTotal: 15000 },
+      developing: { a: 9, b: 4, op: 'sub', symbol: '−', answer: 5, attempts: 2, correct: 2, timedAttempts: 2, responseMsTotal: 5000 },
+      slow: { a: 6, b: 7, op: 'mul', symbol: '×', answer: 42, attempts: 5, correct: 5, timedAttempts: 5, responseMsTotal: 35000 },
+      focus: { a: 42, b: 6, op: 'div', symbol: '÷', answer: 7, attempts: 5, correct: 2, timedAttempts: 5, responseMsTotal: 20000 },
+    };
+    const dashboard = M.buildFactMasteryDashboard(mastery);
+    expect(dashboard.totalFacts).toBe(4);
+    expect(dashboard.categories.secure.count).toBe(1);
+    expect(dashboard.categories.developing.count).toBe(1);
+    expect(dashboard.categories.slow.count).toBe(1);
+    expect(dashboard.categories.focus.count).toBe(1);
+    expect(dashboard.operations.add).toEqual({ total: 1, secure: 1 });
+    expect(dashboard.operations.div).toEqual({ total: 1, secure: 0 });
+  });
+});
 describe('analyzeErrors', () => {
   const P = (op, symbol, a, b, answer, studentAnswer, correct) => ({ op, symbol, a, b, answer, studentAnswer, correct });
   it('counts errors/skips, groups by operation, and surfaces specific facts (<=8)', () => {
@@ -217,6 +309,75 @@ describe('probe timing and comparison integrity contract', () => {
     expect(source).toContain('!isFixedRun && soundEnabled');
     expect(source).toContain("runConfigRef.current.mode === 'benchmark')) return");
     expect(source).toContain("config.mode !== 'benchmark'");
+  });
+});
+
+describe('Accuracy Focus and responsive probe contract', () => {
+  it('keeps untimed practice out of speed comparisons while preserving completion XP', () => {
+    const source = readFileSync(resolve(process.cwd(), 'math_fluency_module.js'), 'utf8');
+    expect(source).toContain("completionStatus === 'complete' && !isUntimed");
+    expect(source).toContain('if (!config.untimed)');
+    expect(source).toContain("untimed: timeLimit === 0");
+    expect(source).toContain("Math.max(1, Math.round(correct.length / 5))");
+    expect(source).toContain("tt('math_fluency.accuracy_focus_practice', 'Accuracy Focus Practice')");
+  });
+
+  it('provides scoped small-screen layouts for setup, active practice, and results', () => {
+    const source = readFileSync(resolve(process.cwd(), 'math_fluency_module.js'), 'utf8');
+    expect(source).toContain('@media (max-width: 640px), (max-height: 700px)');
+    expect(source).toContain("className: 'mf-active-probe fixed inset-0'");
+    expect(source).toContain("className: 'mf-problem-card'");
+    expect(source).toContain("className: 'mf-results-metrics'");
+    expect(source).toContain("className: 'mf-config-grid'");
+    expect(source).toContain('min-height: 100dvh');
+  });
+});
+describe('fluency maze integrity helpers', () => {
+  it('finds a shortest first step without crossing maze walls', () => {
+    const cell = (top, right, bottom, left) => ({ walls: { top, right, bottom, left } });
+    const maze = [
+      [cell(true, true, false, true), cell(true, true, false, true)],
+      [cell(false, false, true, true), cell(false, true, true, false)],
+    ];
+    expect(M.findMazePathStep(maze, { r: 0, c: 0 }, { r: 0, c: 1 })).toEqual({ direction: 'down', r: 1, c: 0 });
+    expect(M.findMazePathStep(maze, { r: 0, c: 0 }, { r: 0, c: 0 })).toBeNull();
+  });
+
+  it('segments personal bests by control and chase mode', () => {
+    expect(M.buildMazeBestKey('mul', 'medium', 'double', 'classic', false)).toBe('mul|medium|double|classic|standard');
+    expect(M.buildMazeBestKey('mul', 'medium', 'double', 'explorer', true)).toBe('mul|medium|double|explorer|chase');
+  });
+
+  it('makes extended multiplication and division materially harder', () => {
+    const multiplication = Array.from({ length: 60 }, () => M.generateMazeProblem('mul', 'double'));
+    expect(multiplication.every((item) => {
+      const parts = item.text.trim().split(/\s+/);
+      const factors = [Number(parts[0]), Number(parts[2])];
+      return parts.length === 3 && factors.every((value) => value >= 10 && value <= 20) && item.answer === factors[0] * factors[1];
+    })).toBe(true);
+
+    const division = Array.from({ length: 60 }, () => M.generateMazeProblem('div', 'double'));
+    expect(division.every((item) => {
+      const parts = item.text.trim().split(/\s+/);
+      const values = [Number(parts[0]), Number(parts[2])];
+      return parts.length === 3 && values[1] >= 10 && values[1] <= 15 && item.answer >= 10 && item.answer <= 20 && values[0] === values[1] * item.answer;
+    })).toBe(true);
+  });
+});
+
+describe('fluency maze UX contract', () => {
+  it('freezes hazards for overlays and gates, exposes visible input, and disposes WebGL resources', () => {
+    const source = readFileSync(resolve(process.cwd(), 'math_fluency_module.js'), 'utf8');
+    expect(source).toContain('monsterBlockedRef.current = timerBlockedRef.current || !!currentProblem');
+    expect(source).toContain("findMazePathStep(newMaze, mp, playerPosRef.current)");
+    expect(source).toContain("type: 'text', value: userInput");
+    expect(source).toContain("disabled: !mazeDirectionAvailable('up')");
+    expect(source).toContain('var has3D = !!window.THREE && !performance2D');
+    expect(source).toContain('math_fluency.maze_hint_announcement');
+    expect(source).toContain('hintDir === dir');
+    expect(source).toContain('math_fluency.objective_find_key');
+    expect(source).toContain("'aria-current': hintDir === 'up' ? 'step' : undefined");
+    expect(source).toContain('eng.renderer.dispose');
   });
 });
 

@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 const require = createRequire(import.meta.url);
 const { revisions, wave10WarningSnapshot, wave11WarningSnapshot } = require('../dev-tools/eppp_option_feedback_wave_11_data.cjs');
+const { CAMPAIGN_ID: distractorHalvingCampaignId } = require('../dev-tools/eppp_distractor_halving_campaign_manifest.cjs');
 
 const root = process.cwd();
 const sourcePath = path.join(root, 'test_prep', 'eppp_native_items.json');
@@ -51,12 +52,12 @@ const expectedAfter = {
   fullKeyEchoOptions: 1517,
 };
 const expectedCurrent = {
-  itemsWithWarnings: 1309,
-  incorrectOptionsWithWarnings: 3789,
-  insufficientDetailOptions: 1357,
-  genericTemplateOptions: 2354,
-  choiceRestatementOptions: 1665,
-  fullKeyEchoOptions: 1436,
+  itemsWithWarnings: 635,
+  incorrectOptionsWithWarnings: 1789,
+  insufficientDetailOptions: 665,
+  genericTemplateOptions: 1061,
+  choiceRestatementOptions: 434,
+  fullKeyEchoOptions: 270,
 };
 const genericFeedbackPattern = /\b(?:is not best because|does not meet the defining condition or distinction|the supported response is|makes an absolute or unconditional claim|does not represent the best available answer)\b/i;
 const normalize = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -66,10 +67,10 @@ describe('EPPP incorrect-option explanation repair wave 11', () => {
   it('replays after wave 10 and before the canonical diagnostics', () => {
     const builder = fs.readFileSync(expansionBuilderPath, 'utf8');
     const steps = [
-      "require('./repair_eppp_option_feedback_wave_10.cjs')",
-      "require('./repair_eppp_option_feedback_wave_11.cjs')",
-      "require('./audit_eppp_distractor_quality.cjs')",
-      "require('./audit_eppp_option_feedback.cjs')",
+      "runReplayScript('./repair_eppp_option_feedback_wave_10.cjs')",
+      "runReplayScript('./repair_eppp_option_feedback_wave_11.cjs')",
+      "runReplayScript('./audit_eppp_option_feedback.cjs')",
+      "runReplayScript('./audit_eppp_distractor_quality.cjs')",
     ];
     const positions = steps.map((step) => builder.indexOf(step));
     expect(positions.every((position) => position >= 0)).toBe(true);
@@ -94,7 +95,9 @@ describe('EPPP incorrect-option explanation repair wave 11', () => {
       expect(item.answerIndex).toBe(expectedKeys[itemIndex]);
       expect(item.optionFeedbackRefinementWave).toBe('eppp-option-feedback-wave-11');
       expect(item.optionFeedbackRefinedAt).toBe('2026-07-22');
-      expect(item.qaReviewedAt).toBe('2026-07-22');
+      const deepReview = (item.qualityReviewHistory || []).some((entry) => entry.campaignId === distractorHalvingCampaignId);
+      expect(item.qaReviewedAt).toBe(deepReview ? '2026-07-25' : '2026-07-22');
+      if (deepReview) expect(item.clueReviewStatus).toBe('editorial-pass-after-manual-option-review');
       expect(revision.sourceCheck.length).toBeGreaterThanOrEqual(100);
       expect(revision.feedbackDesign).toHaveLength(3);
       expect(new Set(revision.feedbackDesign).size).toBe(3);
@@ -105,7 +108,8 @@ describe('EPPP incorrect-option explanation repair wave 11', () => {
       incorrectIndexes.forEach((optionIndex) => {
         const feedback = item.choiceRationales[optionIndex];
         explanations.push(normalize(feedback));
-        expect(feedback).toBe(revision.incorrectFeedback[optionIndex]);
+        if (!deepReview) expect(feedback).toBe(revision.incorrectFeedback[optionIndex]);
+        else expect(item.qualityCampaignReview?.campaignId).toBe(distractorHalvingCampaignId);
         expect(feedback.length).toBeGreaterThanOrEqual(100);
         expect(wordCount(feedback)).toBeGreaterThanOrEqual(16);
         expect(feedback).not.toMatch(genericFeedbackPattern);

@@ -2259,7 +2259,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             // Snapshot
-            h('button',{"aria-label":"Snapshot",onClick:function(){setToolSnapshots(function(prev){return prev.concat([{id:'calc-'+Date.now(),tool:'calculus',label:'\u222B['+xMin+','+xMax2+'] n='+nRects,data:Object.assign({},d),timestamp:Date.now()}]);});addToast('\uD83D\uDCF8 Snapshot!','success');},className:'mt-3 ml-auto block px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full shadow-md transition-all'},'\uD83D\uDCF8 Snapshot')
+            h('button',{"aria-label":"Snapshot",onClick:function(){setToolSnapshots(function(prev){return prev.concat([{id:'calc-'+Date.now(),tool:'calculus',label:'\u222B['+xMin+','+xMax2+'] n='+nRects,data:Object.assign({},d),timestamp:Date.now()}]);});addToast('\uD83D\uDCF8 Snapshot!','success');},className:'mt-3 ml-auto block px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full shadow-md transition-all'},'\uD83D\uDCF8 Snapshot')
           ),
 
           // ══════════════════════════════════════════════════════════════

@@ -141,7 +141,7 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain("{ id: 'mission-1', interactive: true");
     expect(source).toContain('var MISSION_SCENARIOS = {');
     expect(source.match(/'mission-(?:[2-9]|1[0-3])': {/g) || []).toHaveLength(12);
-    expect(source).toContain("done ? 'Evidence saved' : (is3D ? '3D mission' : 'Decision scenario')");
+    expect(source).toContain("done ? 'Evidence saved' : (is3D ? '3D or guided 2D' : 'Decision scenario')");
     expect(source).toContain('Missions 2–13 are decision scenarios');
   });
 

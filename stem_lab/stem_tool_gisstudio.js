@@ -608,6 +608,109 @@
     });
   }
 
+  var GIS_PROJECT_FORMAT = 'alloflow-gis-studio-project';
+  var GIS_PROJECT_VERSION = 1;
+  var GIS_DRAFT_KEY = 'alloflow_gis_studio_draft_v1';
+
+  function normalizeProvenance(value) {
+    value = value || {};
+    return {
+      datasetTitle: String(value.datasetTitle || '').slice(0, 200),
+      source: String(value.source || '').slice(0, 500),
+      collected: String(value.collected || '').slice(0, 100),
+      units: String(value.units || '').slice(0, 100),
+      method: String(value.method || '').slice(0, 1000),
+      license: String(value.license || '').slice(0, 300),
+      limitations: String(value.limitations || '').slice(0, 1500)
+    };
+  }
+
+  function createGISProject(payload, savedAt) {
+    payload = payload || {};
+    return {
+      format: GIS_PROJECT_FORMAT,
+      version: GIS_PROJECT_VERSION,
+      savedAt: String(savedAt || new Date().toISOString()),
+      title: String(payload.title || 'Untitled GIS project').slice(0, 200),
+      provenance: normalizeProvenance(payload.provenance),
+      settings: payload.settings || {},
+      data: payload.data || {},
+      work: payload.work || {}
+    };
+  }
+
+  function validateGISProject(project) {
+    if (!project || typeof project !== 'object' || Array.isArray(project)) throw new Error('Project file must contain a JSON object.');
+    if (project.format !== GIS_PROJECT_FORMAT) throw new Error('This is not a GIS Studio project file.');
+    if (Number(project.version) !== GIS_PROJECT_VERSION) {
+      throw new Error(Number(project.version) > GIS_PROJECT_VERSION ? 'This project was created by a newer GIS Studio version.' : 'This project version is not supported.');
+    }
+    var data = project.data && typeof project.data === 'object' ? project.data : {};
+    var points = Array.isArray(data.importedRows) ? data.importedRows : [];
+    if (points.length > 250) throw new Error('Project contains more than 250 coordinate records.');
+    points.forEach(function (row) {
+      if (!row || !Number.isFinite(Number(row.lat)) || Number(row.lat) < -90 || Number(row.lat) > 90 ||
+        !Number.isFinite(Number(row.lon)) || Number(row.lon) < -180 || Number(row.lon) > 180 || !Number.isFinite(Number(row.value))) {
+        throw new Error('Project contains an invalid coordinate record.');
+      }
+    });
+    if (data.geoData) {
+      var parsedGeo = parseGeoJSON(JSON.stringify(data.geoData));
+      if (parsedGeo.data.features.length > 500) throw new Error('Project contains too many GeoJSON features.');
+    }
+    var timeRows = data.timeDataset && Array.isArray(data.timeDataset.rows) ? data.timeDataset.rows : [];
+    if (timeRows.length > 3000) throw new Error('Project contains more than 3,000 time-series records.');
+    timeRows.forEach(function (row) {
+      if (!row || !String(row.name || '').trim() || ![row.lat, row.lon, row.year, row.value].every(function (value) { return Number.isFinite(Number(value)); }) ||
+        Number(row.lat) < -90 || Number(row.lat) > 90 || Number(row.lon) < -180 || Number(row.lon) > 180) {
+        throw new Error('Project contains an invalid time-series record.');
+      }
+    });
+    if (timeRows.length) {
+      var years = timeRows.map(function (row) { return Number(row.year); }).filter(function (year, index, all) { return all.indexOf(year) === index; });
+      if (years.length < 2) throw new Error('Saved time-series data need at least two years.');
+    }
+    return project;
+  }
+
+  function coordinatePrecision(value) {
+    if (!Number.isFinite(Number(value))) return 0;
+    var text = String(Math.abs(Number(value))).toLowerCase();
+    if (text.indexOf('e-') >= 0) {
+      var parts = text.split('e-');
+      var exponent = Number(parts[1]) || 0;
+      var fraction = (parts[0].split('.')[1] || '').length;
+      return exponent + fraction;
+    }
+    return (text.split('.')[1] || '').length;
+  }
+
+  function assessCoordinatePrivacy(pointRows, timeRows) {
+    var combined = (pointRows || []).map(function (row) { return { name: row.name, lat: row.lat, lon: row.lon, dataset: 'coordinate' }; })
+      .concat((timeRows || []).map(function (row) { return { name: row.name, lat: row.lat, lon: row.lon, dataset: 'timeline' }; }));
+    var precise = combined.filter(function (row) { return Math.max(coordinatePrecision(row.lat), coordinatePrecision(row.lon)) >= 4; });
+    var identifierPattern = /(^|\b)(student|home|house|address|resident|child)(\b|$)|@/i;
+    var identifiers = combined.filter(function (row) { return identifierPattern.test(String(row.name || '')); });
+    return {
+      total: combined.length,
+      highPrecision: precise.length,
+      identifierWarnings: identifiers.length,
+      highPrecisionNames: precise.slice(0, 12).map(function (row) { return String(row.name || 'Unnamed point'); }),
+      identifierNames: identifiers.slice(0, 12).map(function (row) { return String(row.name || 'Unnamed point'); })
+    };
+  }
+
+  function roundPointCoordinates(rows, digits) {
+    var places = Math.max(0, Math.min(5, Number(digits) || 0));
+    var factor = Math.pow(10, places);
+    return (rows || []).map(function (row) {
+      return Object.assign({}, row, {
+        lat: Math.round(Number(row.lat) * factor) / factor,
+        lon: Math.round(Number(row.lon) * factor) / factor
+      });
+    });
+  }
+
   function buildEvidenceReport(model) {
     model = model || {};
     var left = model.left || { label: 'Left map', rows: [] };
@@ -745,10 +848,10 @@
   window.StemLab.registerTool('gisStudio', {
     icon: '\uD83D\uDDFA\uFE0F',
     label: 'GIS Studio',
-    desc: 'Build, compare, and animate thematic maps; complete Maine GIS missions; analyze change; and export accessible evidence reports.',
+    desc: 'Build, compare, animate, save, reopen, and privacy-review accessible GIS projects and evidence reports.',
     color: 'teal',
     category: 'geo',
-    aliases: ['GIS', 'mapping', 'spatial data', 'time series map', 'change over time', 'Maine inquiry', 'guided mission', 'spatial analysis', 'map comparison', 'evidence report', 'buffer', 'choropleth', 'coordinates', 'map projections'],
+    aliases: ['GIS', 'mapping', 'spatial data', 'GIS project file', 'autosave', 'data provenance', 'coordinate privacy', 'time series map', 'change over time', 'Maine inquiry', 'guided mission', 'spatial analysis', 'map comparison', 'evidence report', 'buffer', 'choropleth', 'coordinates', 'map projections'],
     testing: {
       parseCSV: parseCSV, parseGeoJSON: parseGeoJSON, parseTableCSV: parseTableCSV,
       joinTableToGeoJSON: joinTableToGeoJSON, calculateBreaks: calculateBreaks,
@@ -756,7 +859,9 @@
       pointInFeature: pointInFeature, selectPointsInFeature: selectPointsInFeature,
       selectWithinRadius: selectWithinRadius, nearestRecord: nearestRecord, featureMeasurements: featureMeasurements,
       buildEvidenceReport: buildEvidenceReport, missionCompletion: missionCompletion, missions: GIS_MISSIONS,
-      parseTimeCSV: parseTimeCSV, timelineSnapshot: timelineSnapshot, calculateTemporalChange: calculateTemporalChange
+      parseTimeCSV: parseTimeCSV, timelineSnapshot: timelineSnapshot, calculateTemporalChange: calculateTemporalChange,
+      createGISProject: createGISProject, validateGISProject: validateGISProject,
+      assessCoordinatePrivacy: assessCoordinatePrivacy, roundPointCoordinates: roundPointCoordinates
     },
     questHooks: [
       { id: 'import_data', label: 'Map your own coordinate data', icon: '\uD83D\uDCE5', check: function (d) { return !!d.gisImported; }, progress: function (d) { return d.gisImported ? 'Mapped' : 'Not yet'; } },
@@ -766,6 +871,7 @@
       { id: 'compare_export', label: 'Compare maps and export evidence', icon: '\uD83D\uDCCA', check: function (d) { return !!d.gisEvidenceExported; }, progress: function (d) { return d.gisEvidenceExported ? 'Exported' : d.gisCompared ? 'Compared' : 'Not yet'; } },
       { id: 'maine_mission', label: 'Complete a Maine GIS mission', icon: '\uD83E\uDDED', check: function (d) { return !!d.gisMissionCompleted; }, progress: function (d) { return d.gisMissionCompleted ? 'Completed' : d.gisMissionStarted ? 'In progress' : 'Not yet'; } },
       { id: 'time_change', label: 'Analyze change over time', icon: '\u23F3', check: function (d) { return !!d.gisTimelineAnalyzed; }, progress: function (d) { return d.gisTimelineExported ? 'Exported' : d.gisTimelineAnalyzed ? 'Analyzed' : 'Not yet'; } },
+      { id: 'project_portability', label: 'Save a privacy-reviewed GIS project', icon: '\uD83D\uDCBE', check: function (d) { return !!d.gisProjectSaved; }, progress: function (d) { return d.gisProjectSaved ? 'Saved' : d.gisProjectLoaded ? 'Opened' : 'Not yet'; } },
       { id: 'projection_lab', label: 'Compare map projections', icon: '\uD83C\uDF10', check: function (d) { return !!d.gisProjectionCompared; }, progress: function (d) { return d.gisProjectionCompared ? 'Compared' : 'Not yet'; } }
     ],
     render: function (ctx) {
@@ -831,6 +937,13 @@
         var s53 = React.useState(''), timeError = s53[0], setTimeError = s53[1];
         var s54 = React.useState(''), timeObservation = s54[0], setTimeObservation = s54[1];
         var s55 = React.useState('Loading before-and-after maps. The change table is ready now.'), timeStatus = s55[0], setTimeStatus = s55[1];
+        var s56 = React.useState('Untitled GIS project'), projectTitle = s56[0], setProjectTitle = s56[1];
+        var s57 = React.useState(normalizeProvenance({ source: 'Classroom learning data', limitations: 'Verify illustrative data with authoritative sources before making decisions.' })), provenance = s57[0], setProvenance = s57[1];
+        var s58 = React.useState(3), privacyDigits = s58[0], setPrivacyDigits = s58[1];
+        var s59 = React.useState('Autosave is preparing.'), autosaveStatus = s59[0], setAutosaveStatus = s59[1];
+        var s60 = React.useState(null), recoveryDraft = s60[0], setRecoveryDraft = s60[1];
+        var s61 = React.useState(''), projectError = s61[0], setProjectError = s61[1];
+        var s62 = React.useState(false), autosaveReady = s62[0], setAutosaveReady = s62[1];
         var mapNode = React.useRef(null);
         var mapViewState = React.useRef(null);
         var compareLeftNode = React.useRef(null);
@@ -899,6 +1012,14 @@
             temporalSorted[temporalSorted.length - 1].name + ' has the smallest change (' + temporalSorted[temporalSorted.length - 1].change.toFixed(1) +
             '). These are descriptive changes and do not establish causes.'
           : 'No complete location pairs are available for the selected years.';
+        var privacyAssessment = assessCoordinatePrivacy(importedRows, timeDataset.rows);
+        var projectTransformations = [
+          importedRows.length ? importedRows.length + ' imported coordinate records normalized' : 'Maine sample point layer active',
+          geoFeatures.length ? geoFeatures.length + ' GeoJSON features classified by ' + geoMetric : 'No GeoJSON layer loaded',
+          'Choropleth classification: ' + classification,
+          selectedRecords.length ? selectedRecords.length + ' point records selected by ' + analysisSelectionSource : 'No active point selection',
+          'Timeline comparison: ' + effectiveBaseline + ' to ' + effectiveFocusYear
+        ];
 
         function formatDistance(km) {
           return analysisUnit === 'imperial' ? (km * 0.621371).toFixed(2) + ' mi' : km.toFixed(2) + ' km';
@@ -961,6 +1082,36 @@
             }, { debounce: 800 });
           }
         }, []);
+
+        React.useEffect(function () {
+          try {
+            var raw = window.localStorage && window.localStorage.getItem(GIS_DRAFT_KEY);
+            if (raw) {
+              var draft = validateGISProject(JSON.parse(raw));
+              setRecoveryDraft(draft);
+              setAutosaveStatus('A recoverable local draft is available from ' + (draft.savedAt || 'an earlier session') + '.');
+              return;
+            }
+          } catch (draftError) {
+            try { if (window.localStorage) window.localStorage.removeItem(GIS_DRAFT_KEY); } catch (ignoreDraftRemoval) {}
+          }
+          setAutosaveReady(true);
+          setAutosaveStatus('Device-local autosave is ready.');
+        }, []);
+
+        React.useEffect(function () {
+          if (!autosaveReady) return undefined;
+          var timer = window.setTimeout(function () {
+            try {
+              var draft = projectSnapshot();
+              window.localStorage.setItem(GIS_DRAFT_KEY, JSON.stringify(draft));
+              setAutosaveStatus('Autosaved locally at ' + new Date().toLocaleTimeString() + '.');
+            } catch (saveError) {
+              setAutosaveStatus('Local autosave is unavailable or the project is too large. Download a project file instead.');
+            }
+          }, 900);
+          return function () { window.clearTimeout(timer); };
+        }, [autosaveReady, tab, source, importedRows, metric, layers, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, compareLeft, compareRight, compareLeftBasemap, compareRightBasemap, comparisonObservation, missionProgress, missionResponses, activeMissionId, timeDataset, timeBaseline, timeFocusYear, timeObservation, projectTitle, provenance, projection, latitude]);
 
         React.useEffect(function () {
           if (tab !== 'map' || !mapNode.current) return undefined;
@@ -1726,6 +1877,170 @@
               h('strong', null, 'Data ethics: '), 'Do not map student home addresses or sensitive locations. Aggregate, blur, or suppress identifiable points.'));
         }
 
+        function projectSnapshot() {
+          return createGISProject({
+            title: projectTitle,
+            provenance: provenance,
+            settings: {
+              tab: tab, source: source, metric: metric, layers: layers, basemap: basemap,
+              geoMetric: geoMetric, classification: classification, classCount: classCount, customBreaks: customBreaks,
+              analysisMode: analysisMode, analysisPoints: analysisPoints, bufferRadiusKm: bufferRadiusKm,
+              analysisUnit: analysisUnit, selectedFeatureIndex: selectedFeatureIndex,
+              analysisSelection: analysisSelection, analysisSelectionSource: analysisSelectionSource,
+              compareLeft: compareLeft, compareRight: compareRight,
+              compareLeftBasemap: compareLeftBasemap, compareRightBasemap: compareRightBasemap,
+              projection: projection, latitude: latitude, timeBaseline: effectiveBaseline, timeFocusYear: effectiveFocusYear
+            },
+            data: {
+              importedRows: importedRows,
+              geoData: geoData,
+              geoKeys: geoKeys,
+              geoNameKey: geoNameKey,
+              timeDataset: timeDataset
+            },
+            work: {
+              comparisonObservation: comparisonObservation, imageryNote: imageryNote,
+              activeMissionId: activeMissionId, missionProgress: missionProgress, missionResponses: missionResponses,
+              timeObservation: timeObservation, transformations: projectTransformations
+            }
+          }, new Date().toISOString());
+        }
+
+        function applyProjectDocument(project, sourceLabel) {
+          project = validateGISProject(project);
+          var settings = project.settings || {}, data = project.data || {}, work = project.work || {};
+          var restoredPoints = Array.isArray(data.importedRows) ? data.importedRows.slice(0, 250) : [];
+          setProjectTitle(String(project.title || 'Untitled GIS project'));
+          setProvenance(normalizeProvenance(project.provenance));
+          setImportedRows(restoredPoints);
+          setSource(settings.source === 'import' && restoredPoints.length ? 'import' : 'sample');
+          setMetric(settings.metric === 'access' ? 'access' : 'density');
+          setLayers(Object.assign({ points: true, coast: true, grid: false, polygons: true }, settings.layers || {}));
+          setBasemap(settings.basemap === 'satellite' ? 'satellite' : 'street');
+          setGeoData(data.geoData || null);
+          var restoredGeoKeys = Array.isArray(data.geoKeys) ? data.geoKeys.map(String).slice(0, 100) : [];
+          setGeoKeys(restoredGeoKeys);
+          setGeoMetric(String(settings.geoMetric || restoredGeoKeys[0] || ''));
+          setGeoNameKey(data.geoNameKey == null ? null : String(data.geoNameKey));
+          setClassification(['quantile', 'equal', 'jenks', 'custom'].indexOf(settings.classification) >= 0 ? settings.classification : 'quantile');
+          setClassCount(Math.max(3, Math.min(7, Number(settings.classCount) || 5)));
+          setCustomBreaks(String(settings.customBreaks || '25, 50, 75'));
+          setAnalysisMode(['distance', 'buffer', 'nearest'].indexOf(settings.analysisMode) >= 0 ? settings.analysisMode : 'distance');
+          setAnalysisPoints(Array.isArray(settings.analysisPoints) ? settings.analysisPoints.slice(0, 20) : []);
+          setBufferRadiusKm(Math.max(1, Math.min(500, Number(settings.bufferRadiusKm) || 25)));
+          setAnalysisUnit(settings.analysisUnit === 'imperial' ? 'imperial' : 'metric');
+          setSelectedFeatureIndex(Math.max(0, Number(settings.selectedFeatureIndex) || 0));
+          setAnalysisSelection(Array.isArray(settings.analysisSelection) ? settings.analysisSelection : []);
+          setAnalysisSelectionSource(String(settings.analysisSelectionSource || 'none'));
+          setCompareLeft(String(settings.compareLeft || 'point:density'));
+          setCompareRight(String(settings.compareRight || 'point:access'));
+          setCompareLeftBasemap(settings.compareLeftBasemap === 'satellite' ? 'satellite' : 'street');
+          setCompareRightBasemap(settings.compareRightBasemap === 'street' ? 'street' : 'satellite');
+          setProjection(['mercator', 'equirectangular', 'equalarea'].indexOf(settings.projection) >= 0 ? settings.projection : 'mercator');
+          setLatitude(Math.max(0, Math.min(80, Number(settings.latitude) || 60)));
+          var savedTimeRows = data.timeDataset && Array.isArray(data.timeDataset.rows) ? data.timeDataset.rows.slice(0, 3000) : [];
+          var restoredTime = EXAMPLE_TIME_DATA;
+          if (savedTimeRows.length) {
+            var restoredYears = savedTimeRows.map(function (row) { return Number(row.year); })
+              .filter(function (year, index, all) { return all.indexOf(year) === index; }).sort(function (a, b) { return a - b; });
+            restoredTime = {
+              rows: savedTimeRows,
+              years: restoredYears,
+              duplicates: Array.isArray(data.timeDataset.duplicates) ? data.timeDataset.duplicates.slice(0, 100) : [],
+              units: savedTimeRows.map(function (row) { return String(row.unit || ''); }).filter(function (value, index, all) { return value && all.indexOf(value) === index; }),
+              sources: savedTimeRows.map(function (row) { return String(row.source || ''); }).filter(function (value, index, all) { return value && all.indexOf(value) === index; })
+            };
+          }
+          setTimeDataset(restoredTime);
+          setTimeBaseline(restoredTime.years.indexOf(Number(settings.timeBaseline)) >= 0 ? Number(settings.timeBaseline) : restoredTime.years[0]);
+          setTimeFocusYear(restoredTime.years.indexOf(Number(settings.timeFocusYear)) >= 0 ? Number(settings.timeFocusYear) : restoredTime.years[restoredTime.years.length - 1]);
+          setComparisonObservation(String(work.comparisonObservation || ''));
+          setImageryNote(String(work.imageryNote || ''));
+          setActiveMissionId(GIS_MISSIONS.some(function (mission) { return mission.id === work.activeMissionId; }) ? work.activeMissionId : GIS_MISSIONS[0].id);
+          setMissionProgress(work.missionProgress && typeof work.missionProgress === 'object' ? work.missionProgress : {});
+          setMissionResponses(work.missionResponses && typeof work.missionResponses === 'object' ? work.missionResponses : {});
+          setTimeObservation(String(work.timeObservation || ''));
+          var allowedTabs = ['project', 'missions', 'timeline', 'map', 'compare', 'import', 'projection'];
+          setTab(allowedTabs.indexOf(settings.tab) >= 0 ? settings.tab : 'project');
+          setTimePlaying(false);
+          setProjectError('');
+          persist('gisProjectLoaded', true);
+          announce('GIS project opened from ' + sourceLabel + '.');
+        }
+
+        function downloadProjectFile() {
+          try {
+            var project = projectSnapshot();
+            var blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            var safeName = String(projectTitle || 'gis-project').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'gis-project';
+            link.href = url;
+            link.download = safeName + '.gisstudio.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+            persist('gisProjectSaved', true);
+            announce('GIS Studio project downloaded.');
+          } catch (saveError) {
+            setProjectError('The project could not be saved. ' + saveError.message);
+          }
+        }
+
+        function readProjectFile(event) {
+          var file = event.target.files && event.target.files[0];
+          if (!file) return;
+          if (file.size > 10 * 1024 * 1024) { setProjectError('Choose a GIS Studio project smaller than 10 MB.'); return; }
+          var reader = new FileReader();
+          reader.onload = function () {
+            try {
+              applyProjectDocument(JSON.parse(String(reader.result || '')), file.name);
+              setRecoveryDraft(null);
+              setAutosaveReady(true);
+            } catch (openError) {
+              setProjectError(openError.message);
+              announce('Project file error. ' + openError.message);
+            }
+          };
+          reader.onerror = function () { setProjectError('That project file could not be read.'); };
+          reader.readAsText(file);
+        }
+
+        function restoreLocalDraft() {
+          if (!recoveryDraft) return;
+          try {
+            applyProjectDocument(recoveryDraft, 'device-local autosave');
+            setRecoveryDraft(null);
+            setAutosaveReady(true);
+            setAutosaveStatus('Recovered draft restored; autosave resumed.');
+          } catch (restoreError) { setProjectError(restoreError.message); }
+        }
+
+        function discardLocalDraft() {
+          try { window.localStorage.removeItem(GIS_DRAFT_KEY); } catch (ignoreRemoval) {}
+          setRecoveryDraft(null);
+          setAutosaveReady(true);
+          setAutosaveStatus('Previous local draft discarded; autosave resumed.');
+          announce('Previous local draft discarded.');
+        }
+
+        function updateProvenance(key, value) {
+          var next = Object.assign({}, provenance);
+          next[key] = value;
+          setProvenance(normalizeProvenance(next));
+        }
+
+        function roundPrivateCoordinates() {
+          setImportedRows(roundPointCoordinates(importedRows, privacyDigits));
+          setTimeDataset(function (previous) {
+            var rows = roundPointCoordinates(previous.rows || [], privacyDigits);
+            return Object.assign({}, previous, { rows: rows });
+          });
+          setProjectError('');
+          announce('Imported and timeline point coordinates rounded to ' + privacyDigits + ' decimal places. GeoJSON boundaries were not changed.');
+        }
+
         function loadTimeSeries() {
           try {
             var parsed = parseTimeCSV(timeText);
@@ -2008,6 +2323,84 @@
               comparisonTable(leftSeries, 'left'), comparisonTable(rightSeries, 'right')));
         }
 
+        function projectView() {
+          var inventory = [
+            importedRows.length + ' imported point records',
+            geoFeatures.length + ' GeoJSON features',
+            timeDataset.rows.length + ' time-series records across ' + timeDataset.years.length + ' years',
+            Object.keys(missionProgress).length + ' missions with saved progress'
+          ];
+          var provenanceFields = [
+            ['datasetTitle', 'Dataset title', 'Example: Maine broadband access study'],
+            ['source', 'Source or organization', 'Agency, class survey, or URL'],
+            ['collected', 'Collection date or period', 'Example: 2020-2025'],
+            ['units', 'Units', 'Example: percent, people per square mile'],
+            ['method', 'Collection or processing method', 'How were values measured or transformed?'],
+            ['license', 'License or reuse terms', 'Example: public domain or CC BY 4.0'],
+            ['limitations', 'Known limitations', 'Missing data, scale, uncertainty, definitions...']
+          ];
+          return h('div', { style: { display: 'grid', gap: 14 } },
+            recoveryDraft && h('section', { 'aria-labelledby': 'gis-recovery-heading', style: { padding: 14, borderRadius: 12, border: '2px solid #f59e0b', background: '#2b2617' } },
+              h('h2', { id: 'gis-recovery-heading', style: { margin: '0 0 5px', color: '#fde68a', fontSize: 16 } }, 'Recover a local draft?'),
+              h('p', { style: { margin: '0 0 10px', color: '#fef3c7', fontSize: 12 } }, 'A device-local draft named "' + recoveryDraft.title + '" was saved ' + recoveryDraft.savedAt + '. Autosave is paused until you choose.'),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', { type: 'button', onClick: restoreLocalDraft, style: primary }, 'Restore draft'),
+                h('button', { type: 'button', onClick: discardLocalDraft, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Discard draft'))),
+            h('section', { 'aria-labelledby': 'gis-project-heading', style: panel },
+              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'PORTABLE CLASSROOM WORK'),
+              h('h2', { id: 'gis-project-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, 'Save, reopen, and recover projects'),
+              h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, 'Project files preserve normalized datasets, layers, analysis settings, timelines, mission work, and provenance. Raw pasted CSV text is intentionally excluded.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(230px,1fr))', gap: 10, marginTop: 13 } },
+                h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } }, 'Project name',
+                  h('input', { type: 'text', value: projectTitle, maxLength: 200, onChange: function (event) { setProjectTitle(event.target.value); }, style: control })),
+                h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } }, 'Open GIS Studio project',
+                  h('input', { type: 'file', accept: '.json,.gisstudio.json,application/json', onChange: readProjectFile }))),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 } },
+                h('button', { type: 'button', onClick: downloadProjectFile, style: primary }, 'Download project file'),
+                h('button', { type: 'button', onClick: function () { setTab('map'); persist('gisTab', 'map'); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Return to map')),
+              h('p', { role: 'status', style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 11 } }, autosaveStatus),
+              projectError && h('p', { role: 'alert', style: { margin: '10px 0 0', padding: 9, borderRadius: 8, background: '#7f1d1d', color: '#fecaca' } }, projectError)),
+            h('section', { 'aria-labelledby': 'gis-provenance-heading', style: panel },
+              h('h2', { id: 'gis-provenance-heading', style: { margin: '0 0 5px', color: '#f0fdfa', fontSize: 16 } }, 'Data provenance manifest'),
+              h('p', { style: { margin: '0 0 11px', color: '#a7c7d8', fontSize: 11 } }, 'These fields travel with the project and help another reader judge whether the data and comparisons are appropriate.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 10 } },
+                provenanceFields.map(function (field) {
+                  var multiline = field[0] === 'method' || field[0] === 'limitations';
+                  return h('label', { key: field[0], style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } },
+                    field[1],
+                    multiline
+                      ? h('textarea', { value: provenance[field[0]], rows: 3, placeholder: field[2], onChange: function (event) { updateProvenance(field[0], event.target.value); }, style: Object.assign({}, control, { resize: 'vertical' }) })
+                      : h('input', { type: 'text', value: provenance[field[0]], placeholder: field[2], onChange: function (event) { updateProvenance(field[0], event.target.value); }, style: control }));
+                }))),
+            h('section', { 'aria-labelledby': 'gis-project-inventory-heading', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 12 } },
+              h('div', { style: panel },
+                h('h2', { id: 'gis-project-inventory-heading', style: { margin: '0 0 8px', color: '#f0fdfa', fontSize: 16 } }, 'Project inventory'),
+                h('ul', { style: { margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 11, lineHeight: 1.7 } },
+                  inventory.map(function (item) { return h('li', { key: item }, item); })),
+                h('h3', { style: { margin: '13px 0 6px', color: '#67e8f9', fontSize: 12 } }, 'Recorded transformations'),
+                h('ul', { style: { margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 11, lineHeight: 1.7 } },
+                  projectTransformations.map(function (item) { return h('li', { key: item }, item); }))),
+              h('div', { style: panel },
+                h('h2', { style: { margin: '0 0 8px', color: '#f0fdfa', fontSize: 16 } }, 'Coordinate privacy review'),
+                h('p', { role: 'status', style: { margin: '0 0 8px', color: privacyAssessment.highPrecision || privacyAssessment.identifierWarnings ? '#fde68a' : '#86efac', fontSize: 12, lineHeight: 1.5 } },
+                  privacyAssessment.total + ' imported or timeline point rows checked. ' +
+                  privacyAssessment.highPrecision + ' use 4 or more decimal places; ' +
+                  privacyAssessment.identifierWarnings + ' have identifier-like labels.'),
+                (privacyAssessment.highPrecision > 0 || privacyAssessment.identifierWarnings > 0) && h('details', { style: { color: '#cfe8f3', fontSize: 11, marginBottom: 10 } },
+                  h('summary', { style: { cursor: 'pointer', fontWeight: 800 } }, 'Review flagged point labels'),
+                  privacyAssessment.highPrecisionNames.length > 0 && h('p', null, 'High precision: ' + privacyAssessment.highPrecisionNames.join(', ')),
+                  privacyAssessment.identifierNames.length > 0 && h('p', null, 'Identifier-like labels: ' + privacyAssessment.identifierNames.join(', '))),
+                h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } }, 'Round point coordinates to',
+                  h('select', { value: privacyDigits, onChange: function (event) { setPrivacyDigits(Number(event.target.value)); }, style: control },
+                    h('option', { value: 2 }, '2 decimal places (about 1 km)'),
+                    h('option', { value: 3 }, '3 decimal places (about 100 m)'),
+                    h('option', { value: 4 }, '4 decimal places (about 10 m)'))),
+                h('button', { type: 'button', onClick: roundPrivateCoordinates, disabled: !importedRows.length && !timeDataset.rows.length, style: Object.assign({}, primary, { marginTop: 10, opacity: importedRows.length || timeDataset.rows.length ? 1 : 0.55 }) }, 'Round imported + timeline points'),
+                h('p', { style: { margin: '10px 0 0', color: '#fcd34d', fontSize: 10, lineHeight: 1.45 } }, 'Rounding is applied to the current in-memory point datasets and will be reflected in future autosaves and downloads. GeoJSON boundaries are not changed. Review names and attributes separately.'))),
+            h('aside', { style: { padding: 12, borderLeft: '4px solid #f59e0b', background: '#2b2617', color: '#fde68a', borderRadius: 8, fontSize: 11, lineHeight: 1.5 } },
+              h('strong', null, 'Before sharing: '), 'Project files may contain precise locations, names, notes, and joined attributes. Confirm consent, remove identifiers, aggregate where possible, and open the saved file once to verify its contents.'));
+        }
+
         function timelineView() {
           var baselineIndex = Math.max(0, timeYears.indexOf(effectiveBaseline));
           var focusIndex = Math.max(0, timeYears.indexOf(effectiveFocusYear));
@@ -2173,7 +2566,7 @@
               'Mercator for local direction, equirectangular for simple coordinate grids, and equal-area for choropleth comparisons.'));
         }
 
-        var tabs = [['missions', 'Maine missions'], ['timeline', 'Change over time'], ['map', 'Map + layers'], ['compare', 'Compare + export'], ['import', 'Import data'], ['projection', 'Projection lab']];
+        var tabs = [['project', 'Project'], ['missions', 'Maine missions'], ['timeline', 'Change over time'], ['map', 'Map + layers'], ['compare', 'Compare + export'], ['import', 'Import data'], ['projection', 'Projection lab']];
         return h('div', { 'data-gis-studio': 'true', style: { minHeight: '100%', background: 'linear-gradient(155deg,#06131f,#0b2531 52%,#102332)', color: '#e2e8f0', padding: 16, boxSizing: 'border-box', fontFamily: 'Inter,system-ui,sans-serif' } },
           h('header', { style: { maxWidth: 1180, margin: '0 auto 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' } },
             h('div', null,
@@ -2185,7 +2578,7 @@
                 var active = tab === item[0];
                 return h('button', { key: item[0], type: 'button', onClick: function () { go(item[0]); }, 'aria-current': active ? 'page' : undefined, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (active ? '#5eead4' : '#36586b'), background: active ? '#0f766e' : '#102536', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, item[1]);
               }))),
-          h('main', { style: { maxWidth: 1180, margin: '0 auto' } }, tab === 'missions' ? missionView() : tab === 'timeline' ? timelineView() : tab === 'map' ? mapView() : tab === 'compare' ? comparisonView() : tab === 'import' ? importView() : projectionView()),
+          h('main', { style: { maxWidth: 1180, margin: '0 auto' } }, tab === 'project' ? projectView() : tab === 'missions' ? missionView() : tab === 'timeline' ? timelineView() : tab === 'map' ? mapView() : tab === 'compare' ? comparisonView() : tab === 'import' ? importView() : projectionView()),
           h('footer', { style: { maxWidth: 1180, margin: '14px auto 0', color: '#8ba7b7', fontSize: 10, lineHeight: 1.5 } },
             'Learning data: density values are rounded approximations; the access index, practice polygons, and coastal guide are illustrative. Basemaps \u00A9 OpenStreetMap, Esri, and contributors. Official ecoregions \u00A9 Maine Natural Areas Program. Verify claims with authoritative data before making decisions.'));
       }

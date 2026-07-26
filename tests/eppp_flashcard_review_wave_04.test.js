@@ -71,11 +71,11 @@ describe('EPPP flashcard review wave 04', () => {
     expect(library.summary).toMatchObject({
       flashcards: 415,
       sourceReviewedFlashcards: 415,
-      retainedReviewedFlashcards: 336,
-      retiredRedundantFlashcards: 79,
+      retainedReviewedFlashcards: 335,
+      retiredRedundantFlashcards: 80,
     });
     expect(library.flashcards.filter((card) => card.reviewStatus === 'review-required')).toHaveLength(0);
-    expect(library.flashcards.filter((card) => card.contentDisposition === 'retire-redundant')).toHaveLength(79);
+    expect(library.flashcards.filter((card) => card.contentDisposition === 'retire-redundant')).toHaveLength(80);
     expect(library.flashcards.filter((card) => card.contentDisposition === 'retire-redundant').every((card) => card.learnerVisible === false)).toBe(true);
     for (const item of wave.items) {
       expect(cards.get(item.id)).toMatchObject({

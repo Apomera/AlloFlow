@@ -142,7 +142,17 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     await click('Build practice set');
     await expectNoAxeViolations('vocabulary');
 
-    await click('Practice speaking');
+    await click('Practice sets');
+    await expectNoAxeViolations('practice-set library');
+
+    await click('Edit');
+    await expectNoAxeViolations('practice-set editor');
+    await click('Cancel');
+
+    await click('Listening');
+    await expectNoAxeViolations('listening');
+
+    await click('Speak');
     await expectNoAxeViolations('speaking');
 
     await click('Conversation');
@@ -155,12 +165,16 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     await click('Progress');
     await expectNoAxeViolations('progress');
 
+    await click('Customize plan');
+    await expectNoAxeViolations('learning-plan editor');
+    await click('Cancel');
+
     await click('Review');
     await expectNoAxeViolations('empty review');
 
     await click('Saved words');
     await expectNoAxeViolations('empty saved words');
-  }, 20000); // 9 sequential axe sweeps — heavy under parallel CPU load
+  }, 30000); // 13 sequential axe sweeps — heavy under parallel CPU load
 
   it('has no axe violations in the revealed spaced-review state', async () => {
     localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({

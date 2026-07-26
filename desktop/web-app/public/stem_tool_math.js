@@ -1885,7 +1885,7 @@ window.StemLab = window.StemLab || {
 
                         if (isRight && typeof awardStemXP === 'function') awardStemXP('moneyMath', 10, 'coin counting challenge');
 
-                      }, disabled: d.coinGuess == null, className: "px-4 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-all text-xs disabled:opacity-40" }, '\u2714 Check')
+                      }, disabled: d.coinGuess == null, className: "px-4 py-2 bg-amber-700 text-white font-bold rounded-lg hover:bg-amber-800 transition-all text-xs disabled:opacity-40" }, '\u2714 Check')
 
                     ),
 
@@ -1997,7 +1997,7 @@ window.StemLab = window.StemLab || {
 
                           },
 
-                          className: "px-5 py-2 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all text-sm"
+                          className: "px-5 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all text-sm"
 
                         }, "\u2714 Check")
 
@@ -2295,7 +2295,7 @@ window.StemLab = window.StemLab || {
 
                       React.createElement("button", { onClick: submitCashierAnswer, disabled: !crAnswer,
 
-                        className: "px-6 bg-emerald-500 text-white font-black rounded-xl hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md text-lg active:scale-95"
+                        className: "px-6 bg-emerald-700 text-white font-black rounded-xl hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md text-lg active:scale-95"
 
                       }, "ENTER")
 
@@ -2583,7 +2583,7 @@ window.StemLab = window.StemLab || {
 
                               if (typeof addToast === 'function') addToast('Added ' + w + ' ' + item.pricePer + ' ' + item.name + '!', 'success');
 
-                            }, className: "w-full px-3 py-1.5 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-all" }, "\uD83D\uDED2 Add to Cart")
+                            }, className: "w-full px-3 py-1.5 bg-orange-700 text-white text-xs font-bold rounded-lg hover:bg-orange-800 transition-all" }, "\uD83D\uDED2 Add to Cart")
 
                           )
 
@@ -2719,7 +2719,7 @@ window.StemLab = window.StemLab || {
 
                         }
 
-                      }, disabled: d.cartGuessTotal == null, className: "w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm shadow-md disabled:opacity-40" }, '\uD83E\uDDE0 Check My Math'),
+                      }, disabled: d.cartGuessTotal == null, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-sm shadow-md disabled:opacity-40" }, '\uD83E\uDDE0 Check My Math'),
 
                       d.cartCheckoutFb && React.createElement("p", { className: "text-xs font-bold " + (d.cartCheckoutFb.ok ? 'text-green-600' : 'text-red-500') }, d.cartCheckoutFb.msg),
 
@@ -2823,7 +2823,7 @@ window.StemLab = window.StemLab || {
 
                         }, d.wpShowHint ? '\uD83D\uDCA1 Hide Hint' : '\uD83D\uDCA1 Show Hint'),
 
-                        d.wpShowHint && React.createElement("p", { className: "text-xs text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200" }, d.wpProblem.hint),
+                        d.wpShowHint && React.createElement("p", { className: "text-xs text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200" }, d.wpProblem.hint),
 
                         React.createElement("div", { className: "flex items-center gap-3" },
 
@@ -2851,7 +2851,7 @@ window.StemLab = window.StemLab || {
 
                             },
 
-                            className: "px-5 py-2 bg-violet-500 text-white font-bold rounded-xl hover:bg-violet-600 transition-all text-sm"
+                            className: "px-5 py-2 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 transition-all text-sm"
 
                           }, "\u2714 Check")
 
@@ -2991,7 +2991,7 @@ window.StemLab = window.StemLab || {
 
                           },
 
-                          className: "px-5 py-2 bg-sky-500 text-white font-bold rounded-xl hover:bg-sky-600 transition-all text-sm"
+                          className: "px-5 py-2 bg-sky-700 text-white font-bold rounded-xl hover:bg-sky-800 transition-all text-sm"
 
                         }, "\u2714 Check")
 
@@ -3087,7 +3087,7 @@ window.StemLab = window.StemLab || {
 
                               if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Tip calculation');
 
-                            }, className: "px-5 py-2 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm"
+                            }, className: "px-5 py-2 bg-pink-600 text-white font-bold rounded-xl hover:bg-pink-700 transition-all text-sm"
 
                           }, "\u2714 Check")
 
@@ -3125,9 +3125,9 @@ window.StemLab = window.StemLab || {
 
                             React.createElement("div", { className: "flex items-center justify-center gap-2 mt-2" },
 
-                              React.createElement("span", { className: "px-3 py-1 bg-red-100 text-red-600 text-sm font-black rounded-full" }, d.discPercent + '% OFF'),
+                              React.createElement("span", { className: "px-3 py-1 bg-red-100 text-red-700 text-sm font-black rounded-full" }, d.discPercent + '% OFF'),
 
-                              d.discCoupon > 0 && React.createElement("span", { className: "px-3 py-1 bg-amber-100 text-amber-600 text-sm font-black rounded-full" }, '+ ' + fmt(d.discCoupon) + ' coupon')
+                              d.discCoupon > 0 && React.createElement("span", { className: "px-3 py-1 bg-amber-100 text-amber-700 text-sm font-black rounded-full" }, '+ ' + fmt(d.discCoupon) + ' coupon')
 
                             ),
 
@@ -3167,7 +3167,7 @@ window.StemLab = window.StemLab || {
 
                               if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Discount calculation');
 
-                            }, className: "px-5 py-2 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm"
+                            }, className: "px-5 py-2 bg-pink-600 text-white font-bold rounded-xl hover:bg-pink-700 transition-all text-sm"
 
                           }, "\u2714 Check")
 
@@ -3313,7 +3313,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\uD83E\uDE99 Fewest Coins & Bills Challenge"),
 
-                    React.createElement("button", { onClick: genFewestCoinsChallenge, className: "px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-all" }, !d.fcTarget ? '\u2728 Start' : '\u21BB New')
+                    React.createElement("button", { onClick: genFewestCoinsChallenge, className: "px-3 py-1.5 bg-amber-700 text-white text-xs font-bold rounded-lg hover:bg-amber-800 transition-all" }, !d.fcTarget ? '\u2728 Start' : '\u21BB New')
 
                   ),
 
@@ -3399,9 +3399,9 @@ window.StemLab = window.StemLab || {
 
                           }
 
-                        }, className: "flex-1 px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-xs" }, "\u2714 Check"),
+                        }, className: "flex-1 px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-xs" }, "\u2714 Check"),
 
-                        React.createElement("button", { onClick: function () { upd('fcPlaced', []); }, className: "px-4 py-2 bg-slate-100 text-slate-500 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, "\u21BA Reset")
+                        React.createElement("button", { onClick: function () { upd('fcPlaced', []); }, className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, "\u21BA Reset")
 
                       ),
 
@@ -3423,7 +3423,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h4", { className: "text-sm font-bold text-teal-800" }, "\uD83D\uDED2 Best Deal: Unit Pricing"),
 
-                    React.createElement("button", { onClick: genUnitPriceProblem, className: "px-3 py-1.5 bg-teal-500 text-white text-xs font-bold rounded-lg hover:bg-teal-600 transition-all" }, !d.upItem ? '\u2728 Start' : '\u21BB New')
+                    React.createElement("button", { onClick: genUnitPriceProblem, className: "px-3 py-1.5 bg-teal-700 text-white text-xs font-bold rounded-lg hover:bg-teal-800 transition-all" }, !d.upItem ? '\u2728 Start' : '\u21BB New')
 
                   ),
 
@@ -3487,7 +3487,7 @@ window.StemLab = window.StemLab || {
 
                       if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Unit pricing');
 
-                    }, className: "w-full px-4 py-2 bg-teal-500 text-white font-bold rounded-xl hover:bg-teal-600 transition-all text-sm" }, "\u2714 Check My Answer"),
+                    }, className: "w-full px-4 py-2 bg-teal-700 text-white font-bold rounded-xl hover:bg-teal-800 transition-all text-sm" }, "\u2714 Check My Answer"),
 
                     d.upFeedback && React.createElement("p", { className: "text-xs font-bold " + (d.upFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.upFeedback.msg)
 
@@ -3505,7 +3505,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h4", { className: "text-sm font-bold text-indigo-800" }, "\uD83E\uDDFE Estimate the Total"),
 
-                    React.createElement("button", { onClick: genEstimateTotal, className: "px-3 py-1.5 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 transition-all" }, !d.estItems ? '\u2728 Start' : '\u21BB New')
+                    React.createElement("button", { onClick: genEstimateTotal, className: "px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-all" }, !d.estItems ? '\u2728 Start' : '\u21BB New')
 
                   ),
 
@@ -3555,7 +3555,7 @@ window.StemLab = window.StemLab || {
 
                         }
 
-                      }, className: "px-4 py-2 bg-indigo-500 text-white font-bold rounded-lg hover:bg-indigo-600 transition-all text-sm" }, "\u2714")
+                      }, className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-all text-sm" }, "\u2714")
 
                     ),
 
@@ -3575,7 +3575,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h4", { className: "text-sm font-bold text-rose-800" }, "\uD83E\uDDD0 Check the Change"),
 
-                    React.createElement("button", { onClick: genChangeCheck, className: "px-3 py-1.5 bg-rose-500 text-white text-xs font-bold rounded-lg hover:bg-rose-600 transition-all" }, d.ccPrice == null ? '\u2728 Start' : '\u21BB New')
+                    React.createElement("button", { onClick: genChangeCheck, className: "px-3 py-1.5 bg-rose-600 text-white text-xs font-bold rounded-lg hover:bg-rose-700 transition-all" }, d.ccPrice == null ? '\u2728 Start' : '\u21BB New')
 
                   ),
 
@@ -3633,7 +3633,7 @@ window.StemLab = window.StemLab || {
 
                       }
 
-                    }, className: "w-full px-4 py-2 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-all text-sm" }, "\u2714 Submit"),
+                    }, className: "w-full px-4 py-2 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 transition-all text-sm" }, "\u2714 Submit"),
 
                     d.ccFb && React.createElement("p", { className: "text-xs font-bold " + (d.ccFb.ok ? 'text-green-600' : 'text-red-500') }, d.ccFb.msg)
 
@@ -3723,7 +3723,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "\uD83D\uDCDD Word Problems"),
 
-                    React.createElement("button", { onClick: genStructuredProblem, className: "px-3 py-1.5 bg-cyan-500 text-white text-xs font-bold rounded-lg hover:bg-cyan-600 transition-all" }, !d.spText ? '\u2728 Start' : '\u21BB New')
+                    React.createElement("button", { onClick: genStructuredProblem, className: "px-3 py-1.5 bg-cyan-700 text-white text-xs font-bold rounded-lg hover:bg-cyan-800 transition-all" }, !d.spText ? '\u2728 Start' : '\u21BB New')
 
                   ),
 
@@ -3789,7 +3789,7 @@ window.StemLab = window.StemLab || {
 
                       }
 
-                    }, className: "w-full px-4 py-2 bg-cyan-500 text-white font-bold rounded-xl hover:bg-cyan-600 transition-all text-sm" }, "\u2714 Check My Answers"),
+                    }, className: "w-full px-4 py-2 bg-cyan-700 text-white font-bold rounded-xl hover:bg-cyan-800 transition-all text-sm" }, "\u2714 Check My Answers"),
 
                     d.spFb && React.createElement("p", { className: "text-xs font-bold " + (d.spFb.ok ? 'text-green-600' : 'text-red-500') }, d.spFb.msg)
 
@@ -3811,7 +3811,7 @@ window.StemLab = window.StemLab || {
 
                       cdStreak > 0 && React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 rounded-full text-[10px] font-black text-amber-700" }, '\uD83D\uDD25 ' + cdStreak + ' streak'),
 
-                      React.createElement("button", { onClick: genCoinDrop, className: "px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-all shadow-sm" }, cdTarget === 0 ? '\u2728 Start' : '\u21BB New')
+                      React.createElement("button", { onClick: genCoinDrop, className: "px-3 py-1.5 bg-amber-700 text-white text-xs font-bold rounded-lg hover:bg-amber-800 transition-all shadow-sm" }, cdTarget === 0 ? '\u2728 Start' : '\u21BB New')
 
                     )
 
@@ -3969,7 +3969,7 @@ window.StemLab = window.StemLab || {
 
                       React.createElement("p", { className: "text-xs font-bold text-center " + (cdFb.ok ? 'text-green-600' : 'text-red-500') }, cdFb.msg),
 
-                      React.createElement("button", { onClick: genCoinDrop, className: "w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm shadow-md" }, '\u27A1 Next Round')
+                      React.createElement("button", { onClick: genCoinDrop, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-sm shadow-md" }, '\u27A1 Next Round')
 
                     )
 
@@ -4607,7 +4607,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h3", { className: "text-base font-bold text-amber-800" }, "\uD83E\uDDE0 Financial Literacy Quiz"),
 
-                    React.createElement("button", { onClick: genFinQuiz, className: "px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-all" }, d.fqIdx == null ? '\u2728 Start Quiz' : '\u21BB Next Question')
+                    React.createElement("button", { onClick: genFinQuiz, className: "px-3 py-1.5 bg-amber-700 text-white text-xs font-bold rounded-lg hover:bg-amber-800 transition-all" }, d.fqIdx == null ? '\u2728 Start Quiz' : '\u21BB Next Question')
 
                   ),
 
@@ -4663,11 +4663,11 @@ window.StemLab = window.StemLab || {
 
                         }
 
-                      }, className: "w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm" }, "\u2714 Submit Answer"),
+                      }, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-sm" }, "\u2714 Submit Answer"),
 
                       d.fqFb && React.createElement("div", { className: "rounded-lg p-3 text-xs font-medium leading-relaxed " + (d.fqFb.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, d.fqFb.msg),
 
-                      d.fqFb && React.createElement("button", { onClick: genFinQuiz, className: "w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all text-sm" }, "\u27A1\uFE0F Next Question")
+                      d.fqFb && React.createElement("button", { onClick: genFinQuiz, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-sm" }, "\u27A1\uFE0F Next Question")
 
                     );
 
@@ -5032,7 +5032,7 @@ const gridW = 400,
 
               },
 
-              className: "text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all"
+              className: "text-[10px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all"
 
             }, "\uD83D\uDCF8 Snapshot"))), /*#__PURE__*/React.createElement("div", {
 
@@ -5282,7 +5282,7 @@ const gridW = 400,
 
                   (gridFeedback && gridFeedback.hinted) && React.createElement("span", { className: "text-[10px] text-amber-500 italic" }, "\uD83D\uDCA1 Hint used \u2014 rise & run filled in"),
 
-                  React.createElement("button", { onClick: checkGrid, className: "ml-auto px-4 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-sm hover:bg-amber-600" }, "\u2714 Check")
+                  React.createElement("button", { onClick: checkGrid, className: "ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800" }, "\u2714 Check")
 
                 ),
 
@@ -5300,7 +5300,7 @@ const gridW = 400,
 
                   React.createElement("span", { className: "text-xs text-cyan-600" }, "Points: ", React.createElement("span", { className: "font-bold" }, gridPoints.length)),
 
-                  React.createElement("button", { onClick: checkGrid, className: "ml-auto px-4 py-1.5 bg-cyan-500 text-white font-bold rounded-lg text-sm hover:bg-cyan-600" }, "\u2714 Check")
+                  React.createElement("button", { onClick: checkGrid, className: "ml-auto px-4 py-1.5 bg-cyan-700 text-white font-bold rounded-lg text-sm hover:bg-cyan-800" }, "\u2714 Check")
 
                 ),
 
@@ -5578,7 +5578,7 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
               },
 
-              className: "text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all"
+              className: "text-[10px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all"
 
             }, "\uD83D\uDCF8 Snapshot"))), /*#__PURE__*/React.createElement("div", {
 
@@ -6722,7 +6722,7 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
                     },
 
-                    className: "text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all"
+                    className: "text-[10px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all"
 
                   }, "\uD83D\uDCF8 Snapshot")
 
@@ -6748,7 +6748,7 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
                 React.createElement("span", {
 
-                  className: "text-[10px] font-bold text-violet-500 bg-violet-100 px-2 py-0.5 rounded-full"
+                  className: "text-[10px] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full"
 
                 }, gpMode.charAt(0).toUpperCase() + gpMode.slice(1) + ' mode')
 
@@ -7124,7 +7124,7 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
                   disabled: gpPoints.length < 1,
 
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-all disabled:opacity-40"
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 transition-all disabled:opacity-40"
 
                 }, "\u232B Undo Point"),
 
@@ -7264,7 +7264,7 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
                     onClick: checkChallenge,
 
-                    className: "px-4 py-2 bg-violet-500 text-white font-bold rounded-lg text-sm hover:bg-violet-600 transition-all"
+                    className: "px-4 py-2 bg-violet-600 text-white font-bold rounded-lg text-sm hover:bg-violet-700 transition-all"
 
                   }, "\u2714 Check")
 
@@ -7410,7 +7410,7 @@ const classifyAngle = a => a === 0 ? 'Zero' : a < 90 ? 'Acute' : a === 90 ? t('s
 
                           isLocked
 
-                            ? React.createElement("div", { className: "text-[10px] font-bold text-emerald-600 bg-emerald-100 rounded px-2 py-1" }, step.reason)
+                            ? React.createElement("div", { className: "text-[10px] font-bold text-emerald-700 bg-emerald-100 rounded px-2 py-1" }, step.reason)
 
                             : canAnswer
 
@@ -7700,7 +7700,7 @@ const maxNum = 12;
 
                 ),
 
-                React.createElement("button", { onClick: function () { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); addToast('⏱️ Speed Run ended! ' + _mt.score + '/' + _mt.total + ' correct', 'info'); }, className: "px-3 py-1.5 bg-red-500 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all" }, "Stop")
+                React.createElement("button", { onClick: function () { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); addToast('⏱️ Speed Run ended! ' + _mt.score + '/' + _mt.total + ' correct', 'info'); }, className: "px-3 py-1.5 bg-red-600 text-white font-bold rounded-lg text-xs hover:bg-red-700 transition-all" }, "Stop")
 
               ),
 
@@ -7714,7 +7714,7 @@ const maxNum = 12;
 
                 React.createElement("p", { className: "text-xs text-emerald-500 mt-1" }, _mt.total > 0 ? Math.round((_mt.score / _mt.total) * 100) + "% accuracy" : ""),
 
-                React.createElement("button", { onClick: function () { _mtUpd({ score: 0, total: 0, timeLeft: 120 }); }, className: "mt-2 px-4 py-1.5 bg-emerald-500 text-white font-bold rounded-lg text-xs hover:bg-emerald-600 transition-all" }, "🔄 Try Again")
+                React.createElement("button", { onClick: function () { _mtUpd({ score: 0, total: 0, timeLeft: 120 }); }, className: "mt-2 px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-800 transition-all" }, "🔄 Try Again")
 
               ),
 
@@ -7920,7 +7920,7 @@ const maxNum = 12;
 
                   disabled: !multTableAnswer,
 
-                  className: "px-4 py-2 bg-pink-500 text-white font-bold rounded-lg hover:bg-pink-600 transition-all disabled:opacity-40"
+                  className: "px-4 py-2 bg-pink-600 text-white font-bold rounded-lg hover:bg-pink-700 transition-all disabled:opacity-40"
 
                 }, "\u2714 Check")), multTableFeedback && /*#__PURE__*/React.createElement("p", {
 
@@ -8724,7 +8724,7 @@ const d = labToolData.calculus;
 
                   React.createElement("h4", { className: "text-sm font-black text-red-800" }, "Calculus Challenges"),
 
-                  cScore > 0 && React.createElement("span", { className: "ml-auto text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200" }, '\u2B50 ' + cScore + ' | \uD83D\uDD25 ' + cStreak)
+                  cScore > 0 && React.createElement("span", { className: "ml-auto text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200" }, '\u2B50 ' + cScore + ' | \uD83D\uDD25 ' + cStreak)
 
                 ),
 
@@ -8822,7 +8822,7 @@ const d = labToolData.calculus;
 
                       placeholder: "Type your answer\u2026",
 
-                      className: "flex-1 px-3 py-2 rounded-lg border-2 border-emerald-300 text-sm font-bold text-emerald-800 bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none",
+                      className: "flex-1 px-3 py-2 rounded-lg border-2 border-emerald-300 text-sm font-bold text-emerald-800 bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-600 outline-none",
 
                       'aria-label': 'Type your answer for the exact integral'
 
@@ -8832,7 +8832,7 @@ const d = labToolData.calculus;
 
                       onClick: function () { if (d._calcExactInput) checkCalcAnswer(d._calcExactInput); },
 
-                      className: "px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all shadow-md",
+                      className: "px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800 transition-all shadow-md",
 
                       'aria-label': 'Submit answer'
 
@@ -9188,7 +9188,7 @@ const d = labToolData.unitConvert;
 
               React.createElement("div", { className: "flex justify-center gap-2 mt-3" },
 
-                React.createElement("button", { onClick: function () { setLabToolData(function (prev) { return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { fromUnit: d.toUnit, toUnit: d.fromUnit }) }); }); }, className: "px-4 py-1 bg-cyan-50 text-cyan-600 rounded-full text-xs font-bold hover:bg-cyan-100 transition-all" }, "\u21C4 Swap"),
+                React.createElement("button", { onClick: function () { setLabToolData(function (prev) { return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { fromUnit: d.toUnit, toUnit: d.fromUnit }) }); }); }, className: "px-4 py-1 bg-cyan-50 text-cyan-700 rounded-full text-xs font-bold hover:bg-cyan-100 transition-all" }, "\u21C4 Swap"),
 
                 React.createElement("button", {
 
@@ -10094,11 +10094,11 @@ const d = labToolData.probability;
 
                       React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-200 text-sm font-bold flex-shrink-0" }),
 
-                      React.createElement("button", { onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-red-100 text-red-600 font-bold text-sm hover:bg-red-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "\u2212"),
+                      React.createElement("button", { onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-red-100 text-red-700 font-bold text-sm hover:bg-red-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "\u2212"),
 
                       React.createElement("span", { className: "w-8 text-center text-sm font-black text-slate-700" }, count),
 
-                      React.createElement("button", { onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 font-bold text-sm hover:bg-emerald-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "+"),
+                      React.createElement("button", { onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm hover:bg-emerald-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "+"),
 
                       React.createElement("span", { className: "ml-1 text-[10px] font-mono text-amber-600" }, count + '/' + customOutcomes.reduce(function (s, c) { return s + (c.count || 1); }, 0) + ' = ' + (o.prob * 100).toFixed(1) + '%'),
 
@@ -10232,7 +10232,7 @@ const d = labToolData.probability;
 
               [1, 10, 50, 100, 500].map(n => React.createElement("button", { key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm" }, "+" + n)),
 
-              React.createElement("button", { onClick: () => { upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); }, className: "px-4 py-2 bg-red-50 text-red-500 font-bold rounded-lg hover:bg-red-100 text-sm" }, "\uD83D\uDD04 Reset")
+              React.createElement("button", { onClick: () => { upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); }, className: "px-4 py-2 bg-red-50 text-red-700 font-bold rounded-lg hover:bg-red-100 text-sm" }, "\uD83D\uDD04 Reset")
 
             ),
 
@@ -11398,7 +11398,7 @@ const d = labToolData.probability;
 
                     onClick: function() { upd({ expression: expr.length > 0 ? expr.slice(0, -1) : '' }); },
 
-                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-lg transition-all text-sm"
+                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-lg transition-all text-sm"
 
                   }, "\u232B"),
 
@@ -11744,7 +11744,7 @@ const d = labToolData.probability;
 
                         React.createElement("code", { className: "font-mono font-bold text-violet-800 flex-1" }, step.result),
 
-                        React.createElement("span", { className: "text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded" }, step.rule),
+                        React.createElement("span", { className: "text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded" }, step.rule),
 
                         step.result === activeCh.conclusion && React.createElement("span", { className: "text-emerald-500 font-black text-sm" }, "\uD83C\uDF89")
 
@@ -11764,7 +11764,7 @@ const d = labToolData.probability;
 
                         },
 
-                        className: "px-3 py-1.5 text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-all",
+                        className: "px-3 py-1.5 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-all",
 
                         disabled: proofSteps.length === 0
 
@@ -11928,7 +11928,7 @@ const d = labToolData.probability;
 
                   placeholder: "Your interests (basketball, cooking, video games...)",
 
-                  className: "flex-1 px-3 py-1.5 rounded-lg border border-violet-200 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none"
+                  className: "flex-1 px-3 py-1.5 rounded-lg border border-violet-200 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-violet-500 focus:border-violet-400 outline-none"
 
                 }),
 
@@ -12222,7 +12222,7 @@ const d = labToolData.probability;
 
                                     onClick: function() { var a = Object.assign({}, userAnswers); a[ri] = false; upd({ qfAnswers: a }); },
 
-                                    className: "px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded text-xs"
+                                    className: "px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded text-xs"
 
                                   }, "F")
 

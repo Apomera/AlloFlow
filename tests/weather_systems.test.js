@@ -282,6 +282,95 @@ describe('Weather Systems science kernel', () => {
     expect(kernel.immersiveFocusProfile('unknown').id).toBe('system');
   });
 
+
+  it('provides grade-responsive immersive feature definitions and truthful scene narration', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const secondary = kernel.immersiveFeatureGlossary('conceptual', '9-12');
+    const elementary = kernel.immersiveFeatureGlossary('conceptual', '3-5');
+    const geographic = kernel.immersiveFeatureGlossary('geographic', '6-8');
+    expect(secondary.map((item) => item.id)).toEqual(expect.arrayContaining(['airMasses', 'frontBoundary', 'cloudLayer', 'windVectors', 'stationMarkers']));
+    expect(geographic.map((item) => item.id)).toEqual(expect.arrayContaining(['observationSite', 'terrainTransect', 'regionalField', 'mapLabels']));
+    expect(elementary.find((item) => item.id === 'frontBoundary').definition).toContain('meeting place');
+    expect(secondary.find((item) => item.id === 'frontBoundary').definition).toContain('transition zone');
+    secondary[0].label = 'Changed';
+    expect(kernel.immersiveFeatureGlossary('conceptual', '9-12')[0].label).not.toBe('Changed');
+    const conceptualDescription = kernel.immersiveSceneDescription({
+      mode: 'conceptual', focusLabel: 'front dynamics', weather: { condition: 'Rain', temperature: 18 },
+      selectedFeature: kernel.immersiveFeatureById('conceptual', 'frontBoundary', '9-12')
+    });
+    expect(conceptualDescription).toContain('conceptual 3D teaching model');
+    expect(conceptualDescription).toContain('explanatory encodings rather than literal atmospheric scale');
+    const geographicDescription = kernel.immersiveSceneDescription({ mode: 'geographic', location: 'Portland, Maine', regionalLayer: 'Temperature', validAt: '2026-07-25T14:00' });
+    expect(geographicDescription).toContain('interactive geographic 3D map centered on Portland, Maine');
+    expect(geographicDescription).toContain('Basemap features, model values, and teaching overlays have separate sources');
+  });
+
+  it('maps immersive features to immutable, scientifically described connections', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const frontLinks = kernel.immersiveFeatureConnections('conceptual', 'frontBoundary', '9-12');
+    expect(frontLinks.map((item) => item.id)).toEqual(['airMasses', 'cloudLayer', 'windVectors']);
+    expect(frontLinks.find((item) => item.id === 'cloudLayer').relation).toContain('cool moist air toward cloud formation');
+    const geographicLinks = kernel.immersiveFeatureConnections('geographic', 'terrainTransect', '6-8');
+    expect(geographicLinks.map((item) => item.id)).toEqual(['terrainSurface', 'downwindVector', 'observationSite']);
+    frontLinks[0].label = 'Changed';
+    expect(kernel.immersiveFeatureConnections('conceptual', 'frontBoundary', '9-12')[0].label).toBe('Air masses');
+    expect(kernel.immersiveFeatureConnections('conceptual', 'unknown', '9-12')).toEqual([]);
+  });
+
+  it('separates contextual evidence, visual encoding, and scientific limitations', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const cloud = kernel.immersiveFeatureEvidence('cloudLayer', {
+      mode: 'conceptual', band: '3-5', sourceKind: 'model', sourceLabel: 'Teaching model | T+6 hours',
+      weather: { temperature: 20, humidity: 85, cloudCover: 78 }
+    });
+    expect(cloud.sourceBadge).toBe('Teaching model');
+    expect(cloud.metrics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ label: 'Relative humidity', value: '85%', kind: 'model' }),
+      expect.objectContaining({ label: 'Cloud cover', value: '78%', kind: 'model' })
+    ]));
+    expect(cloud.metrics.find((metric) => metric.label === 'Temperature–dew point spread').value).toMatch(/°C$/);
+    expect(cloud.interpretation).toContain('Moist air that cools enough can make clouds');
+    expect(cloud.encoding).toContain('simplified sphere clusters');
+    expect(cloud.limitation).toContain('not satellite imagery');
+
+    const studyArea = kernel.immersiveFeatureEvidence('studyArea', {
+      mode: 'geographic', band: '6-8', sourceKind: 'observation', location: 'Portland, Maine', studyRadius: 12,
+      weather: { temperature: 21, humidity: 70 }
+    });
+    expect(studyArea).toEqual(expect.objectContaining({
+      sourceKind: 'overlay', sourceBadge: 'Teaching overlay',
+      sourceLabel: 'Teaching overlay centered on Portland, Maine'
+    }));
+    expect(studyArea.metrics).toContainEqual(expect.objectContaining({ label: 'Study radius', value: '12 km' }));
+    expect(studyArea.limitation).toContain('not a warning polygon');
+
+    const terrain = kernel.immersiveFeatureEvidence('terrainSurface', {
+      mode: 'geographic', band: '9-12', sourceKind: 'forecast', location: 'Portland, Maine',
+      elevation: 19, terrainExaggeration: 1.5, weather: {}
+    });
+    expect(terrain.sourceKind).toBe('map');
+    expect(terrain.sourceBadge).toBe('Published map context');
+
+    const stations = kernel.immersiveFeatureEvidence('stationMarkers', {
+      mode: 'conceptual', band: '9-12', sourceKind: 'observation', sourceLabel: 'Current observation',
+      stationLabel: 'Central School', weather: { temperature: 24, windDir: 180, windSpeed: 12 }
+    });
+    expect(stations.sourceKind).toBe('mixed');
+    expect(stations.sourceBadge).toBe('Mixed evidence');
+    expect(stations.metrics).toContainEqual(expect.objectContaining({ label: 'Station layer', value: 'Conceptual markers', kind: 'encoding' }));
+  });
+
+  it('resolves selectable 3D feature metadata through nested scene objects', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const featureRoot = { userData: { weatherFeatureId: 'cloudLayer' }, parent: null };
+    const cluster = { userData: {}, parent: featureRoot };
+    const cloudMesh = { parent: cluster };
+    expect(kernel.immersivePickableFeatureId(cloudMesh)).toBe('cloudLayer');
+    expect(kernel.immersivePickableFeatureId(featureRoot)).toBe('cloudLayer');
+    expect(kernel.immersivePickableFeatureId({ userData: {}, parent: null })).toBe('');
+    expect(kernel.immersivePickableFeatureId(null)).toBe('');
+  });
+
   it('coordinates geographic camera and evidence layers through immutable analysis views', () => {
     const kernel = window.WeatherSystemsKernel;
     const context = kernel.geographicAnalysisLens('context');
@@ -465,6 +554,10 @@ describe('Weather Systems grade-banded views', () => {
     expect(html).toContain('high-fidelity atmospheric digital twin');
     expect(html).toContain('data-weather-immersive-lab');
     expect(html).toContain('data-weather-immersive-canvas');
+    expect(html).toContain('Click or tap a scene object to explain it');
+    expect(html).toContain('aria-describedby="weather-conceptual-3d-instructions"');
+    expect(html).toContain('data-weather-object-picking-hint');
+    expect(html).toContain('Click or tap an object to explain');
     expect(html).toContain('data-weather-conceptual-vignette');
     expect(html).toContain('data-weather-camera-controls');
     expect(html).toContain('data-weather-conceptual-command-bar');
@@ -609,6 +702,63 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('aria-label="Immersive weather layer guide"');
   });
 
+
+  it('explains conceptual 3D features with an interactive glossary, encoding key, and narration', () => {
+    const html = renderTool('weatherSystems', {
+      _threeLoaded: true,
+      weatherSystems: {
+        tab: 'immersive', immersiveSceneMode: 'conceptual', immersiveGuideOpen: true,
+        immersiveExplainerFeature: 'frontBoundary', immersiveFocus: 'front', immersiveCameraPreset: 'front',
+        immersiveHoverFeature: 'cloudLayer', immersiveHoverInput: 'keyboard'
+      }
+    }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('data-weather-immersive-explainer');
+    expect(html).toContain('What am I seeing?');
+    expect(html).toContain('aria-expanded="true"');
+    expect(html).toContain('data-weather-scene-narration');
+    expect(html).toContain('conceptual 3D teaching model focused on front dynamics');
+    expect(html).toContain('data-weather-object-selection-help');
+    expect(html).toContain('Inspect the scene directly');
+    expect(html).toContain('data-weather-object-selection-status');
+    expect(html).toContain('data-weather-object-explorer');
+    expect(html).toContain('Conceptual 3D feature glossary and scene object explorer');
+    expect(html).toContain('Pointer or touch: select an object in the 3D view');
+    expect(html).toContain('Keyboard: use the scene object explorer buttons below');
+    expect(html).toContain('data-weather-visual-encoding-guide');
+    expect(html).toContain('How to read this visualization');
+    expect(html).toContain('Particle density');
+    expect(html).toContain('id="weather-immersive-glossary-search"');
+    expect(html).toContain('Conceptual 3D feature glossary');
+    expect(html).toContain('data-weather-feature-definition="frontBoundary"');
+    expect(html).toContain('The three-dimensional transition zone where two air masses meet');
+    expect(html).toContain('Look for');
+    expect(html).toContain('Why it matters');
+    expect(html).toContain('Evidence question');
+    expect(html).toContain('data-weather-hover-inspector="cloudLayer"');
+    expect(html).toContain('Keyboard preview');
+    expect(html).toContain('Press Enter to explain and focus.');
+    expect(html).toContain('data-weather-feature-callout="frontBoundary"');
+    expect(html).toContain('data-weather-feature-connections="frontBoundary"');
+    expect(html).toContain('Connected processes');
+    expect(html).toContain('Follow a relationship to inspect how weather-system parts work together.');
+    expect(html).toContain('Frontal lift can cool moist air toward cloud formation.');
+    expect(html).toContain('data-weather-feature-evidence="frontBoundary"');
+    expect(html).toContain('data-weather-feature-evidence-source="model"');
+    expect(html).toContain('data-weather-evidence-kind="model"');
+    expect(html).toContain('aria-label="Model value"');
+    expect(html).toContain('Evidence snapshot');
+    expect(html).toContain('What supports this view right now?');
+    expect(html).toContain('Teaching model | T+0 hours');
+    expect(html).toContain('Front type');
+    expect(html).toContain('cold front');
+    expect(html).toContain('What the evidence supports');
+    expect(html).toContain('How the 3D view encodes it');
+    expect(html).toContain('What this cannot prove');
+    expect(html).toContain('not a professionally analyzed surface front');
+    expect(html).toContain('Focus 3D camera and layers');
+    expect(html).toContain('They do not turn teaching graphics or model output into direct observations.');
+  });
+
   it('renders accessible observed-to-forecast playback controls and selected-hour conditions', () => {
     const html = renderTool('weatherSystems', {
       _threeLoaded: true,
@@ -657,7 +807,7 @@ it('renders the immersive guided investigation tour and evidence note', () => {
       _threeLoaded: true,
       weatherSystems: {
         tab: 'immersive', immersiveSceneMode: 'geographic', immersiveDataSource: 'live', geographicMapReady: true,
-        geographicWeatherLayer: 'temperature', geographicWeatherLayerOpacity: 0.6, geographicWeatherField: field,
+        geographicWeatherLayer: 'temperature', geographicWeatherLayerOpacity: 0.6, geographicWeatherField: field, immersiveGuideOpen: true, immersiveExplainerFeature: 'regionalField',
         liveGeography: { label: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568, elevation: 19 },
         liveWeather: { label: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568, observedAt: '2026-07-25T12:00', timezone: 'EDT', temperature: 20, humidity: 70, precipitation: 0, weatherCode: 2, condition: 'Partly cloudy', cloudCover: 50, pressure: 1012, windSpeed: 10, windDir: 180, visibility: 10000 },
         liveWeatherTimelineIndex: 1,
@@ -680,6 +830,11 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('Valid 2026-07-25T14:00 EDT');
     expect(html).toContain('model-grid samples, not live radar or official warning boundaries');
     expect(html).toContain('data-weather-save-forecast-checkpoint');
+    expect(html).toContain('data-weather-feature-definition="regionalField"');
+    expect(html).toContain('A 25-point sampling of nearby Open-Meteo model values');
+    expect(html).toContain('Map position');
+    expect(html).toContain('Cell color');
+    expect(html).toContain('Focus map and evidence layers');
   });
 
   it('renders signed forecast-versus-observation errors in the verification studio', () => {
@@ -1808,6 +1963,49 @@ describe('Weather Systems geographic map loader resilience', () => {
     expect(source).toContain('liveForecastCheckpoints: checkpoints');
     expect(source).toContain('forecastCheckpointStatus(checkpoint, timeline, d.liveWeather)');
     expect(source).toContain('Forecast error = forecast minus observation');
+  });
+
+
+  it('coordinates glossary terms with conceptual and geographic 3D focus actions', () => {
+    const source = readFileSync(resolve(process.cwd(), PATHS[0]), 'utf8');
+    expect(source).toContain('var IMMERSIVE_FEATURE_GLOSSARY = {');
+    expect(source).toContain('function explainImmersiveFeature(featureId)');
+    expect(source).toContain('applyImmersiveFocus(feature.focus)');
+    expect(source).toContain('applyGeographicAnalysisLens(feature.lens, patch');
+    expect(source).toContain('function describeImmersiveSceneToLearner()');
+    expect(source).toContain('data-weather-visual-encoding-guide');
+    expect(source).toContain('data-weather-feature-callout');
+    expect(source).toContain('function immersivePickableFeatureId(object)');
+    expect(source).toContain("weatherFeatureId = 'airMasses'");
+    expect(source).toContain("weatherFeatureId = 'frontBoundary'");
+    expect(source).toContain("weatherFeatureId = 'cloudLayer'");
+    expect(source).toContain("weatherFeatureId = 'precipitation'");
+    expect(source).toContain("weatherFeatureId = 'windVectors'");
+    expect(source).toContain("weatherFeatureId = 'stationMarkers'");
+    expect(source).toContain("weatherFeatureId = 'terrainBase'");
+    expect(source).toContain('var raycaster = new THREE.Raycaster()');
+    expect(source).toContain("canvas.addEventListener('pointerup', handleScenePointerUp)");
+    expect(source).toContain("canvas.removeEventListener('pointerup', handleScenePointerUp)");
+    expect(source).toContain('distance <= 7 && elapsed <= 700');
+    expect(source).toContain('new THREE.BoxHelper(root, 0xfef08a)');
+    expect(source).toContain('new THREE.BoxHelper(root, 0x67e8f9)');
+    expect(source).toContain('function setFeatureHoverVisual(featureId)');
+    expect(source).toContain('function publishFeatureHover(featureId)');
+    expect(source).toContain('clearFeatureHoverVisual()');
+    expect(source).toContain('if (hoverHelper) hoverHelper.update()');
+    expect(source).toContain('immersiveRuntimeRef.current.setFeatureHoverVisual = setFeatureHoverVisual');
+    expect(source).toContain('function immersiveFeatureConnections(mode, featureId, band)');
+    expect(source).toContain('function immersiveFeatureEvidence(featureId, options)');
+    expect(source).toContain('data-weather-feature-evidence');
+    expect(source).toContain('data-weather-feature-evidence-source');
+    expect(source).toContain('var evidenceKindLabels = {');
+    expect(source).toContain("'aria-label': (evidenceKindLabels[metric.kind] || 'Model') + ' value'");
+    expect(source).toContain('data-weather-evidence-interpretation');
+    expect(source).toContain('data-weather-evidence-encoding');
+    expect(source).toContain('data-weather-evidence-limitation');
+    expect(source).toContain('data-weather-hover-inspector');
+    expect(source).toContain('data-weather-feature-connections');
+    expect(source).toContain('data-weather-object-explorer');
   });
 
   it('tries multiple CDNs with a timeout instead of a single point of failure', () => {

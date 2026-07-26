@@ -547,7 +547,8 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
     expect(src).toContain('if(!ride.active || ride.idx !== answerIdx) return;');
     expect(src).toContain('.clab-root #clab-rideQ{max-height:calc(100% - 156px);overflow-y:auto');
     expect(src).toContain('@media (max-width:760px),(max-height:620px)');
-    expect(src).toContain("function reducedMotion(){ return !!(REDUCED_MOTION_QUERY && REDUCED_MOTION_QUERY.matches); }");
+    expect(src).toContain("function reducedMotion(){ return motionComfort || !!(REDUCED_MOTION_QUERY && REDUCED_MOTION_QUERY.matches); }");
+    expect(src).toContain("localStorage.getItem('coaster_lab_motion') === 'steady'");
   });
 
   it.each(TOOL_PATHS)('%s: the question card renders the viz only for math topics', (p) => {
@@ -586,6 +587,15 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
     for (const g of ['auto', 'k2', 'g35', 'g68', 'g912']) {
       expect(src).toContain(`value=\\"${g}\\"`);
     }
+  });
+
+  it.each(TOOL_PATHS)('%s: initializes Ride & Solve state before wiring its controls', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const initCall = src.indexOf('\ninitRideControls();');
+    expect(initCall).toBeGreaterThan(src.indexOf("let rideTopic = "));
+    expect(initCall).toBeGreaterThan(src.indexOf("let rideGradeSel = "));
+    expect(initCall).toBeGreaterThan(src.indexOf("let rideAiSubject = "));
+    expect(initCall).toBeGreaterThan(src.indexOf("const aiQ = "));
   });
 });
 
@@ -893,6 +903,112 @@ describe('coaster lab — build-your-own discovery and visual feedback', () => {
     expect(src).toContain("rq.box.classList.add(ok ? 'is-correct' : 'is-wrong')");
     expect(src).toContain("p.className = 'clab-spark ' +");
     expect(src).toContain('transform:scaleX(.06) scale(.72)');
+  });
+
+  it.each(TOOL_PATHS)('%s offers four persisted, theme-aware coaster environments', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'const VISUAL_THEMES = {', 'dusk: {', 'daylight: {', 'neon: {', 'blueprint: {',
+      "localStorage.getItem('coaster_lab_theme')", 'id="clab-visualTheme"', 'function applyVisualTheme(name',
+      'zenColor:', 'horizonColor:', 'starStrength:', 'const terrainGrid = new THREE.GridHelper',
+      "rootEl.dataset.visualTheme = name", "terrainGrid.visible = !fxLite && visualTheme === 'blueprint'",
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s adds an accessible track minimap and optional live physics vectors', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'id="clab-minimap"', 'role="img" aria-label="Top-down map of the track and train position"',
+      'function rebuildMiniMap(){', 'function drawMiniMap(){', 'rebuildMiniMap();', 'drawMiniMap();',
+      'id="clab-btnVectors" aria-pressed="false"', 'id="clab-vectorLegend" hidden',
+      'const vectorVelocity = new THREE.ArrowHelper', 'const vectorSeat = new THREE.ArrowHelper',
+      'const vectorGravity = new THREE.ArrowHelper', 'function updatePhysicsVectors(){',
+      "vectorButton.setAttribute('aria-pressed', String(vectorsOn))", 'updatePhysicsVectors();',
+      'reducedMotion() ? 1.45',
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s gives the track and station a more convincing engineered structure', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'footing: new THREE.MeshStandardMaterial', 'cap:     new THREE.MeshStandardMaterial',
+      'columns, concrete footings, and cross caps', 'const foot = new THREE.InstancedMesh',
+      'const cap = new THREE.InstancedMesh', 'for(const mesh of [sup, foot, cap])',
+      'const stationEdgeMat = new THREE.MeshBasicMaterial', 'illuminated platform edges and a compact entrance arch',
+      'const stationSignalMats = {', 'three-aspect dispatch signal at the station exit',
+      'function updateStationVisuals(now){', "phase < 1.3 ? 'amber' : 'green'", 'updateStationVisuals(now);',
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s adds theme-aware park depth and safe speed-responsive motion', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'const atmosphereGroup = new THREE.Group()', 'const ridgeGeo = new THREE.ConeGeometry',
+      'const ferrisWheel = new THREE.Group()', 'const ferrisRotor = new THREE.Group()',
+      'ferrisRotor.rotation.z +=', 'atmosphereGroup.position.set(orbit.target.x, 0, orbit.target.z)',
+      'const SPEED_STREAK_COUNT = 42', 'const speedStreaks = new THREE.LineSegments',
+      'function updateSpeedStreaks(){', "camMode === 'onboard' || camMode === 'chase'",
+      '!fxLite && !xrOn && !reducedMotion()', 'speedStreakGeo.attributes.position.needsUpdate = true',
+      'updateSpeedStreaks();', 'updateParkAtmosphere(dt);', 'atmosphereGroup.visible = !fxLite',
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s provides multi-metric track analysis and richer ride reports', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'id="clab-trackViz"', 'Speed heatmap', 'Vertical g heatmap', 'Lateral g heatmap', 'Curvature heatmap',
+      'const HEAT_CONFIG = {', 'function idealGLat(i){', 'function heatColor(i, out){',
+      'function applyTrackViz(mode, announce = true){', 'function buildRideInsights(tele, sc){',
+      'Engineer next steps', 'id="chL"', "drawChart(cvL, tele.trace, 'gl'",
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s improves editing with visible history, previews, and guided challenges', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'id="clab-btnUndo"', 'id="clab-btnRedo"', 'function syncHistoryButtons(){',
+      'const previewGroup = new THREE.Group()', 'function showElementPreview(kind){', "b.addEventListener('focus'",
+      'id="clab-designChallenge"', 'Build a smooth 20 m hill', 'Create 3 seconds of airtime',
+      'Finish below 4.0 vertical g', 'function updateDesignChallenge(tele = lastTele){', 'sim.tele.designKey = JSON.stringify(design.points)',
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s adds an accessible dispatch presentation and livelier park motion', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'id="clab-dispatch" role="status" aria-live="polite"', 'function updateDispatchOverlay(){',
+      'const trainWheels = [], restraintBars = []', 'function updateTrainPresentation(){',
+      'const cloudGroup = new THREE.Group()', 'const birdFlock = new THREE.LineSegments', 'stationFlags.forEach',
+      'id="clab-btnComfort" aria-pressed="false"', "localStorage.getItem('coaster_lab_motion')", '!reducedMotion()',
+      'id="clab-telemetryAnnouncer"', 'function announceRideTelemetry', 'id="clab-hudState"',
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s explains the predicted physics at each selected node', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'id="clab-nodeLens"', 'id="clab-nodeSection"', 'id="clab-nodeSpeed"',
+      'id="clab-nodeGV"', 'id="clab-nodeBank"', 'function nodePhysics(idx){', 'function syncNodeLens(idx){',
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s adds readable track landmarks and animated station gates', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'const stationGates = []', 'platform gates open with dispatch', 'const sectionGroup = new THREE.Group()',
+      'function makeSectionSprite(label){', 'function renderSectionLabels(){', "['First drop'", "['Brake run'",
+      'gate.pivot.rotation.y +=', "sectionGroup.visible = !fxLite && !sim.running && camMode === 'orbit'",
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s provides accessible, synchronized telemetry replay', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'id="clab-replayScrub" type="range"', 'id="clab-btnReplay"', 'id="clab-replayReadout"',
+      'function bindTelemetryReplay(tele){', 'function applyTelemetryFrame(index){', 'function updateTelemetryReplay(now){',
+      'role="img" aria-label="Speed over the full coaster circuit', 'Number.isFinite(opts.cursorS)',
+      'Autoplay is off in Steady Motion mode',
+    ]) expect(src).toContain(marker);
   });
 });
 describe('coaster lab — AI "any topic" Ride & Solve questions', () => {

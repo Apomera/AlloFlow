@@ -1,0 +1,4701 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "eppp-feedback-halving-campaign",
+  "generatedAt": "2026-07-25",
+  "status": "automated-gates-pass-editorial-review-required",
+  "reviewStatus": "No independent human or licensed-psychologist review is claimed.",
+  "scope": "A feedback-only lane sequenced after the frozen deep-distractor campaign; deep-campaign ids are excluded.",
+  "baselineReference": {
+    "itemsWithWarnings": 1309,
+    "incorrectOptionsWithWarnings": 3789,
+    "insufficientDetailOptions": 1357,
+    "genericTemplateOptions": 2354,
+    "choiceRestatementOptions": 1665,
+    "fullKeyEchoOptions": 1436
+  },
+  "postDeepExpectedBaseline": {
+    "itemsWithWarnings": 1061,
+    "incorrectOptionsWithWarnings": 3063,
+    "insufficientDetailOptions": 1078,
+    "genericTemplateOptions": 1922,
+    "choiceRestatementOptions": 1295,
+    "fullKeyEchoOptions": 1128
+  },
+  "combinedProjectedSnapshot": {
+    "itemsWithWarnings": 641,
+    "incorrectOptionsWithWarnings": 1803,
+    "insufficientDetailOptions": 676,
+    "genericTemplateOptions": 1064,
+    "choiceRestatementOptions": 437,
+    "fullKeyEchoOptions": 270
+  },
+  "targetCeilings": {
+    "itemsWithWarnings": 654,
+    "incorrectOptionsWithWarnings": 1894,
+    "insufficientDetailOptions": 678,
+    "genericTemplateOptions": 1177,
+    "choiceRestatementOptions": 832,
+    "fullKeyEchoOptions": 718
+  },
+  "liveBefore": {
+    "itemsWithWarnings": 635,
+    "incorrectOptionsWithWarnings": 1789,
+    "insufficientDetailOptions": 665,
+    "genericTemplateOptions": 1061,
+    "choiceRestatementOptions": 434,
+    "fullKeyEchoOptions": 270
+  },
+  "liveAfter": {
+    "itemsWithWarnings": 635,
+    "incorrectOptionsWithWarnings": 1789,
+    "insufficientDetailOptions": 665,
+    "genericTemplateOptions": 1061,
+    "choiceRestatementOptions": 434,
+    "fullKeyEchoOptions": 270
+  },
+  "deepPrerequisiteSatisfied": true,
+  "halvingTargetsSatisfied": true,
+  "selectedWarningsAfter": 0,
+  "fingerprints": {
+    "selection": "796d90d0c26e71169497e3867bf8f9eb5575d33106aa156a8f5a41bb35e768e7",
+    "composition": "86336c1c190009dfd3972a1da6411f805cdff04d9dae028e968adf052408da0a",
+    "protectedContent": "ceec818bf610aa66b5257fb39f759a74cf910b6438941834ba7cb2115ac4bbaa"
+  },
+  "summary": {
+    "selectedItems": 420,
+    "explanationsReplaced": 0,
+    "legacyReasonsExpanded": 0,
+    "generatedContrastDrafts": 0,
+    "preclearedExplanationsPreserved": 1260,
+    "feedbackWhitespaceNormalized": 144,
+    "keyedExplanationsNormalized": 0
+  },
+  "items": [
+    {
+      "id": "eppp-b005-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "b61886e79d9fde63fe6b7f15d13ca64710c5337f1607bb30399421b4fdd8db21",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b006-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "a6b52d9eed50e2a59cfb861f005d6afae13163a0f767fc7665c7c9f88ee34725",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b006-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "65dfa3c54445462b0f1f46a026e49a8165bb16a3269bc2328f5f12aacf433dc8",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b006-professional-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "7544dc446c29da0bb4d0cf700f9f4283311559f9fa1095cb10a6c40340f6a44a",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b007-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "169f39becf4eb510558bfa2f6d40ae44108ece9096c0b0d9fac06b380b47361a",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b007-biological-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "8558cf37344f01714a9c6695233051e2a8b61353c78606d8cda8149a8ad5d7b3",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b007-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "15c4e59912897a66286c15ba9486e3792abb5addc650f2058ad3a69502067c67",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b007-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "d5047892846cfc6fd9c74b8392e525c0cb14c984553a2ef432223705100dc319",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b007-intervention-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "386af98bb590fc9be9d3dd49b86789a614f2a8a5c6407ebf869184d2e9a04b5b",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b007-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "45b641887da86620e393eb73ad6188b002687b755df15884d3db75ded76e59a2",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b007-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "8573a702164b627b3f3dae5a4e6cb3709d50016515c42f286cbb25f1b5cb4944",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b008-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "199d86e799bd0eac4f690f1f46741c50177205f77c837b628e72b7d30c05c48a",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b008-intervention-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "d3c622f8dab728777638a969d73087a2eeb5b57ccf2c70db6de5239d9f15e47f",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b008-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "434d2a50206070b3677c2a298077c0f25d7ec6bfab4c305ecfefd805761ec221",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b008-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "340e0e60ad1ba105a54729a86c0b6f31815baa8e3c780640484dfa38cd970fd3",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b009-assessment-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "b43e2c7bfe68c6a9e4f85e7d131fba59e84142e5e3f1f1b224f326a40fe007b7",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b009-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "f5b115be71c3173c882363203c490ac5f3deb1ade0099bddfd48d9d58dc432f9",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b009-biological-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "bb878552e782790b25e18a9ef9888ce33798983e319862122b2623408ad3fd57",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b009-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "f835b62fc77713ac9367fde48bb4e8c5a50f81cf261d654bee104007d83239ee",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b009-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "c8392f7acec6c5414e354877d83437a935638be894ef54a2d2d93ad96fbbb3b8",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b009-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "a21a7567af3201007dc17999720b12191916d5c7c3db354efa051c7544bad13e",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b009-social-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "9b79a6f384eacfefd3e90a60947c61f5c5e80ffa58d2ff3a35884823976de2c4",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b010-assessment-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "0f52bac2158a604a52c6c4acbbd0b7c97899caf2b0b9b523ea99b28d1019f41c",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b010-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "ba671cd2b8dc8f9b6c8bc12e13ff0a45ec8b5da7e258ea535daf0beecc2cf30a",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b010-biological-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "c60b8d211743a7dc176734ad66b8fe897f2351a84f444701c235cc9059ed410f",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b010-cognitive-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "d1dbba60976e6a7a749ff1a460f8e446d8d8fe9e1258b43086613411b598ac3a",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b010-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "d46478caa3f35622f92b8b781812a20c62bbafad4755571c73fa815bd82cb5d8",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b010-research-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "22671e89b2fb3f9cf4eca5d300500d4f4f08812551858535b26d46db8fadcdbb",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b010-social-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "88fae05cce1c1fe8c0b26b70cb02476647b8692549124b20bf1e9b7b23862a84",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b011-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "c641a1584a2da1f07d68506eb3c78c8d68589bd3983dc8bb4f133d63697eb41d",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b011-biological-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "3c7f83511c537755995bf1058709d22d5c453d9e4b1e0499be0b8b7f8380da46",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b011-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "44a097755a07d9e21042be2065736616a8a6174a5a757e07dbbe1aa00d101d79",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b011-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "7f3a37ade77ac637b71447800677d230665ba7bee1b31d4be7dd201e9895eb5f",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b011-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "153277f2fe1739961ae86fbf97d35753b26c6301b7aa2cab5b2f94d2150a8bfe",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b011-research-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "ff18cf1b9838516310ce8de155786d744479423b35abefe99f09e31d7beda887",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b011-research-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "0fd598d1850a3a9d0e79e672f257fcc920c06d00fb471748fed3e947fcdefc5c",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b011-social-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "6ae3c1de04d122f32540d35ada31a7bb57f389c9ef08d3d13445759cf6f6c3d9",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b012-assessment-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "da8d7525df7e2bb31c2fd2a533283efbc03d10daec6435f3f319374361a6a822",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b012-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "5861b6734146d107fe1af64d81f97151c959cbd5583dcd992206ec134c335659",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b012-biological-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "4457e24da3d0698df2bbab6ae974da45145681e2ac7ce75f8e4536e6cb0362f3",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b012-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "339ba2c06b6874c40269abd28cab4935396fcf5b5b856f5c115804dc72c27be8",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b012-intervention-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "098139ff8779da0c85224547f72100c61cc5066ed72d067ac0b9cec8f56ddedf",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b012-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "dfd6c407c202ae25dd505fb1c81c4fa14d56325e066cf12a4b10dba6e713ee43",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b012-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "52d59f0bcbd508bcce9acb49c193495264207ea0328d6386657b4bb53ae26de7",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b012-research-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "d307bacbb9a581ea9db651f2920a9344f9c63dc147a5ebe8f9847a77f814d5aa",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b012-social-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "bbef6c844d6034aed15e9c7cbfb3ee39eadfb38a2b99137b034075c5bd1552e3",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b013-assessment-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "b593b9d95c0ad3dbce1b75853cb964d5954f1f74f27283fa86b821684b83a146",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b013-cognitive-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "524e69d654b24cfc1273cec20668e1b0bd628825d817ad386ce15b601ad1b2f0",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b013-intervention-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "9afc030b2ca8d2178cb448cd472accbcb0ad9f45328348b8bad766bd613004a5",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b013-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "8ffafa72d5beddced6db9b5a44acedace1b29e21c2a314a815cb8fc2c3ffddc0",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b013-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "b1a84498f5fe52407382e37cd0b45d151c0dc66b8cf06cdf950cf7646bff362c",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b013-social-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "c8ada0f084573dd7497f629d487105e69a8f82469bf0150d1e6c44abdecbb2d5",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b013-social-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "2adb06c31c4795185cf465644e38e2aca82762c8c028f717bd954dddfb32f185",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b014-assessment-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "537724f61c17cb0d3aa58414648bbdb76cb1eceba78c3d243a94aa997bc0ebf8",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b014-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "98f47005f1982449f3721c05352a7ef02bb519ae334c201edbd9ee668e8d74ef",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b014-biological-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "ef41479895043f218ebdb7d1635053e3e7d1441fc139fecd0315a02bdd239db3",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b014-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "4e17bf800d27e3e098b12758e61c027138b1f1c489c40fabc454b68533f1a55e",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b014-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "d3c4050688cd31524047656e1a39cd1a9984816f24c24b213b013ad121dff6c9",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b014-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "fe914e91ce9ea47aba790c92d25c6ee2f1c876d0c948b6e260408b0c4b5762c1",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b014-research-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "d87040ca4fa7b462e80467df2764d1bd7baae07171c64594ba034a3bb6a7f2d7",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b014-research-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "a6240495d9eefdebf0cb1955b485f232727fb642972ed1bd8f108ea2dce60113",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b014-social-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "4eb20fe70c74b86c829f04a1404d32947d5cd4b4e3823dfd07094f312ccc5472",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b014-social-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "141030beb696e19e08df3f878f5a13ea255270ff73560c61505323b2bc3e288e",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b015-assessment-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "73745e3e9ac0becd7d947704868afb8abbbaa664fe3d282b157d9d55ab73217a",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b015-assessment-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "e82d6c7be8ed6822ba79ff7abd706b5a0fe5b919de5b025a87177cd107c96817",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b015-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "b1c27ba6202e4a35b30b30a5a679e31a9d9afbbb9c14ebbd02bc42a5e3f5a44c",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b015-cognitive-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "75369eb212ef389b2f3b7b2bbb6b9eba8e99e2df7ec23643228be99ae7018374",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b015-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "f7f9777bd4d8f9379c85f87492a116ae1533c52b3d0a312b52045c723d422788",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b015-intervention-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "11aa1523e411e8dd9985922d8281703a95fafb3cff82b0f39ef900e25f481ebf",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b015-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "cfaa9c7b5fc860fa6dfa86848a445186a09d84420614cd51c07b5d003beb9537",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b015-research-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "23278f7c164c59b5625406335b7e3674080bc114d82c37699f7a7ac9d21bc1a5",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b015-research-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "fdee417a73fcafd16823f70852d083df72d0c9d34d203bab1446637007ef8b3b",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b015-social-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "429d851cf9fdcf6e7ec9de6191e3f816071bf23d63b090e9065366b1e4d08f00",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b015-social-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "2a96a5880057530ddd67abef3b35f48e6ad3bcf2601dcfec45ff2af70c948ef8",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b016-assessment-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "463e26a69c9d1748f7354f816385e301d2a42a2bd6c85dd5c4c4aee8da7fffe9",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b016-assessment-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "11865658c047ff5d1ff3d2c4171c97c0b10506012dcb75e49fc629f1fec08ffa",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b016-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "cd014c37164309190f7c1e81184e6fe311b6a8f621f9dfd7d1f2acd989a6112d",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b016-biological-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "197c4bcec0b69ead6b6516b8b8e5105d3cce329d326c9695cb9641281104afb3",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b016-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "80e1940089cef152ce2ae46bae82533b1dac052f97c0b04ecc4e8ed763646bc1",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b016-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "7213ced8aab25b0d805248658236bc912b9ef13ff6a77850e928f12f9e4d67c5",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b016-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "f80b05ebee8d40a326c57fbbd7efafe14ebb21ca30c1f716d0df246707404edf",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b016-research-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "74dda3e410d70689fb00f8627be3cce932a798943c86b81c97d865a82e73034e",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b016-social-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "33104764ef24072a0573af07f43a2f2240a4990f83c55fc2c22d84feac4fa616",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b017-assessment-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "70efb3e2ce29eec3cf288bfb553dc55908fbde04bff142ab554bda3af414189e",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b017-assessment-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "7eea803652bf9583325e5117c2010a1a78f20414b2e6ce81d14ce4bfc36494fe",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b017-assessment-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "4e7401ff157b63f7087cc18c7feeba919a035ba888fb6697daf5387b1c1169b1",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b017-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "220206543b261aef05329a93679972fc654ff857284fbfffc5a0a0ca1c5abb5d",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b017-intervention-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "445c62417788dc6ad17224fc775ccc715e0a636fcbc99832781a4af08591c3a0",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b017-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "17cef5654966693cf516786143f60b204e0c8374dbc897a32c4aadd059cbf147",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b017-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "f6a8a29ceffc411466a50691d781051707d4f38001c34f30f81956662d1ee811",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b017-professional-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "b32221bd16ec9447af4d51e74839f7d4742991207bea5b3024b3983c419fc181",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b018-assessment-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "7d74f4aa3ac20baa8655726ff2297eb133ae83e98bb0f38524d9e3f311e25b35",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b018-assessment-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "43316c125fd5814ddf26d50fbe42dfa8aa11f097014d84f7900a7f7f6939f989",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b018-assessment-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "ef966ee35f8de319a7bf80fd3e13c9a391fa855b19678befab8099b57f6266dd",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b018-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "47e6e557a810e0b17f8582e688403abc4e3a14958dcf2c6a11aa0d4517f90575",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b018-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "9b7616d349cc0287908c17c927d81fb0c79b67e8dfa43232f45e11dacfbba380",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b018-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "f7d4ecbcbde38c7e5a30464832985722c5bd90b19741c05544d5abdd19a2cf30",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b018-professional-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "d877a1c39ae7d575a8ef6e2a49f1a9da6d6a5b9d285d67225527eeb90c793ab8",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b018-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "d87b59192586e38b6f2ed553c160d66a3aedec4c8df5b67e131509921bcff3f2",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b019-assessment-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "b54d2b71d00ad4d37aad2234d455792aa30b5c9849aa73684f1238c3a89c0080",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b019-assessment-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "ec66eced7ed74c5804a6ae398934c754962e91906070b1cc9b0d5e395c79a49e",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b019-cognitive-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "0f6123cde821bb1152658c7523f43d46f8f0d09143cc721776c52ae7e85220a9",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b019-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "c3617aea7a1e931bdc1ca84688402637daae9e678408fcd17d03d56f1586d2f3",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b019-intervention-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "be116c7abc943fd899466b1fedadeb90bdeab617b0454a08d2626905576c00a7",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b019-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "f98676ac55b0d771c0b616a63bcf2a9e469dd2e7fb093a7b0254ee20909088ac",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b019-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "61a089a9e519069bab68c15f818b2dee40cfa295254e77ef567ea764108731c8",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b019-social-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "20d3eb826265dd5b2edcc0d9ab0d5e583c08c92d01c3dfd77db1cac5f898bd26",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b020-assessment-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "1ad596308dde3b232485b02e44065c406b9dd40aca16b0056bcc8ae12eadd01a",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b020-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "f326a074ce6332e8d5881dfdbba94e697b01329b6b7ea6c0581a94173b7eb33a",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b020-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "89aad2e5d8ded87ff53397e47dfaedf64dcab6670249eb6ffe754e5674923b80",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b020-cognitive-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "c21c926b5d687cd243ca266c0fdf2d48e4385b2765c2f5e530c19a6bc07791ce",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b020-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "e0ca44fb6d20d145446607da3fb03675b40f57ff4182bdbaf600d8a7349980d0",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b020-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "73d9b344f56f9221f530fbce4687a5cd54c277d7110c079b668b836a91ad3a5e",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b020-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "5494889f827edc9c6d662dc301404e8a30743c825990447387eec1371650701e",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-assessment-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "fa1a8d623cd33d6aebe17733e5472937460937bc9f49a441006354d1479536dd",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-assessment-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "1d67551d2ba2e98b2c073f084c24338fc23f80cfd27ca556aeedf0b909c96e71",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-assessment-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "79bcbc62904263a733f0ed487c0c1d5c6661dadec1759c6f483e3f37d7416e00",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-assessment-4",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "2eef1b5779ff38fec18339a20ba9b8df6dad000d650e0fa3b1d3b6ff26093529",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "a7adcb233a3bfbff49b8ff11af4b5d312353783fe2ed543fc7b5996a2361819a",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "67320c8c506c88085f2e232ee98e0c5d10c51b64a510977f1a081e63642a68cc",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-cognitive-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "6dccf6fe8c0e0e42306066326fa96af43862e98ba5def03903d43ffb611153f9",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "6d62468713d496c758ca4572eb32761c8e036054f935a60851746b0afc3c70c8",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-intervention-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "4728f57269f275b1c6a9fde8cbc9cdcb5f9dc5f71602d1ab40d9f42bb9ecb381",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-intervention-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "eb7f93d45b1c47582e7a6952628ffda0a60bacc8614caffb5e769a3d90ad24fb",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-intervention-4",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "8807c65c0f0b8789c400638026c4325a6ed48314bba375bb10be9ff712d1c533",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "4866089ea1649b07f5cce6c4d834a80af0886b4a125ed9ab87e52a9acf2bcfe0",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "fc7333ccab0c83625ce8ac22c57671796fa1fc618a298a54c6d0f8079b2f7104",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "98b1f72ce834aff62a0b9dd8743347eea73be7c4e5907439a3b3781883930695",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b021-social-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "ef56b02e46894d4b4c552cfd40832d99b967ec5f5120be75d96edee85eb80627",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-assessment-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "55c7a666a7bcb1c5871ffed21a5444abb90ae40b78c1fdd6f5b81cca7e72c605",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-assessment-4",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "1776579ee5a44f8eb86a4853cf12658859ca098c4bbcba1ce79628dfb6ecf335",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-cognitive-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "ff1312846e9a0864a2a83977ea95d9ff16ba69df5eba2535167d57296484b90f",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-cognitive-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "47f7c5964080cb65e5f884789f6f350e17e9c881343eaad0a06b3732210f94fc",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "6cd3cee365f339b5de8f6f8163a07c8d30c68fd2007427a2e9d6acbd4e678be5",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-intervention-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "22346534b55164d6c75b0acb6ec4624d1d9200b7ebd2a952e2110506e2d52b10",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-intervention-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "20428ead2c8ff6a5b03d89901445731e6fbf969482229bfb30491ca2041a0260",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-intervention-4",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "f4d3bc89bb786c2dca048308374a3ced2db40b198410e62f1b8cac882fe46e8e",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "fe07fa3259e871c1727c4b5696acc67471fc382b97fc2820562d419da242efe4",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "febd6fbdc7d249580189d6cc36e0439036879f002414970166a7e4a31720249d",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-professional-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "4252cf4b52fdda40345c0a9e85f96ae0be4b379a950c6173601604be905f7551",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "4d0e2d4fd5d6dfe2064d5accbe879f864ff27123f0c7cd18e8a3c917928b6285",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-professional-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "8a1cff6bb6a102eedd70af4e7bed2e5ed89551064716b877be0fb671cd6766b9",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-professional-4",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "92e3693fcf0ddc3a61a5a6311e0eb91507c61f89218ea84a7b6b342eaa15ac5d",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-social-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "6237c95c26ee9066e1ecac82987be5a2044dfc1e91c295c05fe9302b21245ff4",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b022-social-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "3d46c5b1ac80b549dc2dbedf855d9c4735b626f5ab9d433d2e3d72e799cbc963",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b023-assessment-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "ccb3b9feab3e8570a180f4a5be856b27c5c7f6c7a4494eca3e420df3d6e0c393",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b023-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "d5dd67bba3fad9d1d94e2f28c485d481fd54224a426af0c1671cfb6454d07ead",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b023-biological-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "7ee1687fffec4f76bd59807ab63c5f30df59f0e9e29757ff7282976ce91ba8c2",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b023-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "38699575cdfb4c628546fe9a622139d9a14094bb01ae5e94085f328209c31901",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b023-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "775522dbc8ff3c4066f5405f938dc7975893ef6c458c5d08db0536ffa2c3ebf5",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b023-intervention-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "7cb7bca689b3bda46a211349c14de24fe50e8461092715697ef7fe431a2a5953",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b023-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "00bbfe737d8eb8c51c40ce8e7ce1eee504191ff1ac7693dfbaee05a7628fe7ed",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b023-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "3f21c8a14cdeb90b7415d937ec79397daee7217685db6eff78876e605e104199",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b023-professional-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "cc32fc63dfc975d62e38ac626f6ea19a2da5002286608228e40281cd8659c349",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b023-social-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "c9abebeade9fa6f5ee77a4e3b2b36164989e524a9b060704d7986242dbf02d48",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b024-assessment-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "60d699cb612f253040ac608a5cb6726032eec555dd3c71f5fcb18248df42354c",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b024-assessment-4",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "f507687ca1db23f2fd82eedbe70a52948c0e763e846a68e2179ed61632cd3c20",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b024-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "1e5d9a6cd0c243320034352671fbc2bd3c26abe28b84fc659eabc44bc63b138a",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b024-biological-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "e4e51b44f02de3852c45cafd2f53d876a7341b194e11b4d50a28104ed99f21c0",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b024-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "697b2d8dd49f0dccedcbf2787f5c268ba008642b7c2b0805a2d8cafaab334029",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b024-cognitive-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "8e4f7d163d43d21635e6b11fa9412a62b98108c5926f4a001c07e8cb85bd35d3",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b024-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "cc93d622d8bd83804b257d21a69a4146519119081f6b8b4158d3537916a2c8cb",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b024-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "edaea32ffc79d16f0ae0eb71195c157f330cd3afd01d0a3b21eefca9918c48ac",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b024-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "38c95523179991dbd900a4de1e6c83afe46b55085cbff4d87632068a2d27749f",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b024-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "b7001d200a3d820161849b16012db65c9c24c529e31b19cb3c316afe1dda5b68",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b024-social-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "8beab9c347d54eb1ad178658e046bde7085f855d1fdf23ca5a257a5dc628d7eb",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b025-assessment-4",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "1f7d6d6e656aae8582fec9e275d4cbd01361e07b0ea6f747358a31701ed5999b",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b025-assessment-5",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "8d9c633043fc3536c3adc58848430db9086c3e20e58cc3b767e89b93dcc01b80",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b025-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "608d7205e8b1d0af6bed516fbdbf601bbec95858c4800e8bbf14471a43b1a519",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b025-cognitive-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "4727cccd70a3a6c11e5c396cb22bc4da9061bad94e18dfbb197df788452635be",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b025-intervention-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "0bb724ec0807516f3d8964a8809128c5928acd137e7fa6ef35c47019a1000fba",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b025-intervention-4",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "41b15a1bb585940eed03724fa8b73a5f3c0b27dc19c0fd1bdb19daecea8ab023",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b025-professional-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "f3d536964e7ea1787d0f1c9f4db047f2dd4f6a1cf4f60bcf9a3ee31b147a8929",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b025-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "0deb66d9f670e68cd5c6254c41ae54fb98d74bbebeca171dd028f91d52c51796",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b025-professional-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "b003e68c993235454f7f460a70d391f9f43a2b3a816e1f0399549e2e2828a37b",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b025-social-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "c65a516350b7a584d5d124b9be233923f1f647d1b003ad81b4e2176df5b1bc1c",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-assessment-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "13d563a7fe67a84f168210cf276ea2cb3f0a5d944906cc8f7a1471a6b458eb07",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-assessment-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "b73cbc72583c2ac6a5f301c61566eac9512d41de2c28fa6e6b15ec8996ca0b4b",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-assessment-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "00ecaf5ff723bdb577cbc953f8cfa4e427ae9bd141bea86eabac00f53ad3e09c",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-assessment-4",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "30a15ba0f63ab10639d9004632fb0363c839cd5f797a219920ed751ab54ce598",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-assessment-5",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "7ce82fb2194c80d71ff6c6a04d13c31aaef3ed1d29ec5db73b6e47ddcf1c82cc",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "cc590b58317db1dd7960a0f4bec076e4122a3071ed205bda83114c37b8cdd06f",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "1169fe303553db9c05c497b83fa6a7c7efae5c58135476e8bd767e183b62bfea",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-cognitive-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "17645ce02087ea364791edacd396d5a539ea308f8a73d02a85d3f2eef9ba512d",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-cognitive-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "7b2fd17c1b0179c3d655fc46298588ba1f5f03e81e7b7ede9b2fc1e19da7e31a",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "ef002195bc2bd24ff2cd4c4c2a12b53f1bec532ae38410325019328297e44b30",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-intervention-4",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "a92aa483d5128d11859d3d9883469be6bfc07dcb708261e8d3f89bc55316a257",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "55f1667d0b37222588393bbdbcaa0588aab246dedda42d35c5c2cd69aca3fa9e",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "d29183f4b40fbfdeb6dc0af44372fc916c663fcfaccdd6fc44fe0474bd597d46",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-professional-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "78025375855c83934ca10d708fc47c52b287c388ed410a75004b0d922c138aa6",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-professional-5",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "02dd5112eabd25853f9613ef098d39bc37d5482d8b474f489e70b91807e1aacd",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b026-social-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "9f09c85059b966b14cd423025680290aff7d2cc1eff72e9d4ef639ed9eb4a936",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-assessment-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "1b35753ffbf8e0af6291a4611e1a61ccfc6cc9839f51ef8da4caa4539701a36f",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-assessment-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "4918fb51c996dfff9616a975fb400168aa9b4f786cbf89d9e20e37703dff383c",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-assessment-4",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "5b1e273f516234ed2a81731f0a6fc1e2c3aac6599a0332975076cadc11c329d8",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "8eae3b2661d352d8c31dd6ef7d49a61619e18903f8d0d40bd72a074479e517c8",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-cognitive-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "3a1862005a876956993f40ba6a2ced6ed350a3d65f0d5e97b6c54bbbdf95e7c6",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "13c35b84e227623d09082574cdc2d9aecfa95b04a955702031b9d22d2724db55",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-intervention-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "cfcd66c435d3027f98438ead89cf1e1ea70cc6d6a8d6f84244f082f1b42773b5",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-intervention-4",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "e062c65e562519913b09a8424664f9359b81006a0343032e82c979db8a29f8b4",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "1dce584e7278d186cf1056470caff1bdb6f9858c9586818f7d8a6cb5ee24dce1",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-lifespan-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "16ee0dd788965f23193817bf8406347fb8a8a1b1e5a7078db63dc4d8be7520bf",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "8e4115105235f8aa0e8a730391b82364d0bafe7f30216de56613326e48e8df75",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-professional-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "357726042696b72bda658d2a835f7fa0de8ee8f16be5d052190616297fe8642d",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-social-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "88131558e700602501b06e34737cdc129ac91224e2a59798a4c9454a3f08745a",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b027-social-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "db2f6dd088ff7e3062911461cc34a7239b623bba562fc700f464f4222942d671",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-assessment-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "7970ef13f96e7372bf68706290d5f63502d04a3c26d243cb3e7796e49c80dd83",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-assessment-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "5b5a27cc923774c4b9490fa5322b7b05ea27a1635033ee4765257c65ca3ef183",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-assessment-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "609879efef9af5c84f4e323c0f277c6440ceb87f93cbb55f7238b123bd8ba2ef",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-biological-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "bacd920d9b8045e5b9559db840726587ee1acadff888d51bc3bc2f0a2d7474da",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-biological-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "c11976fd5052b9d6e34a78f8d4f3b88f6a943d32639be639c46526ec754e6078",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-cognitive-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "b136c13859e8714957a6392412ec4bbfdd9cfdb406de019f8cb8b7142753ccdc",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-cognitive-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "4737cca80624f2b50c093a21ddefa612ee149abea86746d87ce7db1d48fec106",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-intervention-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "e43ed5fca0fb0590158de9c0066ab7e1db35526775f46650fbbf5f4383cf269f",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-intervention-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "300753e7b6e9d519dbd362f3258cd9bb9a267d3cf268744954dc02c436f60d59",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "ed0683b927fcd30a52f02297c93561746e302bd61fa24721bd2f67fd35069f5a",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-lifespan-3",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "4bd92f0109d6357c279753c83b61dae51d1ba5986399ae839a77bccfc884b991",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-professional-2",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "9905ec405bdc4046fe848329f36c1c84a2da8d6dcf978d54f9f6257d506cc317",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-professional-4",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "04e60af1c442f573c97aebe2fe287fbcd93e19827125a09e69a1aa19e1dd3581",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-b028-social-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "197477bff523bef73c10f01342abe9f0a746d0b41291f38a7e429c41f066dd7d",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-migrated-lifespan-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "73ae65cd6310b1a819ec6f055f1d04ecbae0553e8a3e8e577fa31573ed2ba921",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-migrated-professional-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "6aed403910dc6a2939c6e2760983e50dcd61d856f789d189059eeabc47509362",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-migrated-research-1",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "0c46f640f11c8d3e645f62091fb95b494338d84df4a4dd541b6a99897685ca5f",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-006",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "c735240ba5484bee5b14085cdd6c85521f855f21c8d1f9b306d41fbfd82e8121",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-007",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "20d89dec7273c209801f1ae2027c29fac95ef20999b5da66b1a5caf3476f2c84",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-011",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "af8906940e2abc7dee832836914471f98d4fcf0b7196f0e4b85d7cd914366c2e",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-013",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "ee6509128a387c0e65836508c8fe73da4e932cf996e187607321e07f67e45b5e",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-016",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "a9a466cd1a5ad0d6c3e2e79465c61ba2d2bd5bb0db89893b34b98dbdc98bb13f",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-017",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "5f2928ef43d4a0a46b7dccee30f916f2014a2e1de52735fe71218a6eacd5b64c",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-019",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "51a259b961bf8a5e11369d01dba01d91446bad05a2b8d7a706c2f0dd0fd64b5e",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-020",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "f8e9610cd215194677a21f1580ba72d7ce42d658101b93dcdc8f328306d17e50",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-022",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "fe2f52863b8d0b74802f79775dd6fea5e7d912aa1e5fc4a813c6e18a0a42200c",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-024",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "40f1d18f52173fb03fa6622a8402887b97a277937fdaf5932f51d7a94c1cbaf3",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-025",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "73acf8be3865ae86c8c5f241283a1b70cba5c5aaedf07c926c4796088dce5552",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-029",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "d3d2a181c07514c0369565f4182cfa4947185470ed0df05fb22dfce21ad1bbed",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-031",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "e0f84d8ac7af5c1fdf8cbf1501ad76ba8c3480272e69a25b6103be6ed93fa047",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-033",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "0ed459f6e6b750c24904b0d6cd9d45573dee1c54b2b0eb7c6a323151a293d9ea",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-034",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "8cbd9001ea2a729d713002054b27f7a81ea117be42ed75851e106a844bd1fef6",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-040",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "54a1a697c3f9978eeb38ba33c1bd733458dc81d366b849a224485eaec96344b5",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-045",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "90e60ef4127e43d5cd2ec99a2e2b3e89a21c1f80fb1db1b85c6504f11af32c28",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-048",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "c419b186affee0b318b3bd9a1dba675208677a9e9d2658511986d5be8e4d4dda",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-050",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "caecd62f70b6e39a89b12813d011e9b77c0b2745478b5fdd08c28e690d9c936e",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-assessment-051",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "4456e4f69d30352728c18d24db6e4eb6d71c05b5e4448934cae87c5743b6e1e8",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-001",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "b38a338b795c5404047d074b3b6294f5ce0cf3d22a9c9401a2a1cc07ca3aa86a",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-003",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "3391ee296de6522733445c6ecc487ba5a2846201cb30fc0e74ee8eb6e060b1dc",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-004",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "525d1c78e4f046ff043b12a42e7503b8d12331732bc0d1f3885a23a41289611d",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-005",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "0e8721d49c8b8fa49908360847a0994b6404d6c5c4bd2dd2ff41aa0754d89e86",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-006",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "eac1b787d5843ca5680dd91676067be26c64dc4fe1a6a96fb11a2b0aec4318bc",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-007",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "fa0e54cc90f6cd328c38d53dd0f4d61666feec1cc2d1f520eb6e6892e9a27999",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-018",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "5b5627d17f4ea6d40ec0554369c40defd4a8217615e18d9cc39967bb822997db",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-028",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "60d8a6f70ee7b38d14f3884630b6f6f79f45deb7abb1f825d0575efd56cf7b44",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-030",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "8ae0d4be13afed9b7ea9a08613832e1d20dd91d712f07a2874713742d7a71f89",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-034",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "eabe736b362842c4af2ebde2277f92f9feeacf03359f6b3dd18dc67505b5c302",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-035",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "500ee6fddb0de5d4b39f58ca07f6c5c242a8cd142223f4f7c95ebec2d67877f4",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-036",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "3aa5ff405fd3df073bcf6f6d9ffba0ee319dd9c1e461f20b075e2c2e3bbc1386",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-042",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "6d79f772604a107084c5274b545e3bc93ff20061b624ab7e7d4bb88c5cc8aa3c",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-biological-046",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "2a9143979a8bac70bcfbff97b3deec4a125119c7c4fad4f35427793c64a1923d",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-003",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "534816f22f833e234a3c6dff1b6d8b4fc20a2927578d23e1760476fc34289570",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-004",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "442493dbe0b4cac0a7bad24e4aecf2f58a0f99215ffb4841d432b6ddea8b4544",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-005",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "58c96258effad4fa09ec3fcb210eb8e352ee852bb452a5099033de9db92cfb9d",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-010",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "cedfade8140b9161e8db59972e1180e0878e0c85384b7dbe890861f0e4c85bcc",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-012",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "e3f09a754429425f0e24af85a3c104ae3f7d6e0bb6cc1c463c63caef1d1e8aa3",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-013",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "ea9c78aa413c8ddf698d5550417930486d2d7d89e0b00f1a7297b63d23a69131",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-016",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "dacc00aba8a67d8451fb573149cbfe20d3bbc899060a1765b2840f20ffb81f52",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-019",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "a4a99558fcf65362c55c9371a137210c383120158886c7ad3bb37fbcdd13ddda",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-022",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "473ba9990209e51adf0e41cf6b6d3ba44668e4150c60ca83b0df18d5ef726b72",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-023",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "ae499268f54b84bba5f3cd900cf77cb9889e75c49e96bbcc7ba3c6f977790a9e",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-026",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "f833d630edb7aac746872a5dd2a421be7d0765102c1668772a44388742be5be6",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-032",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "4dc9291c2029514c0d958d5bf4e561079176099a2bf7211f5c83cb2dce5c1ae2",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-034",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "0df72c8251dd784ffa1234f48ebfc744200cfc3d1e3408810a76aabbf485cecf",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-044",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "3420a78741e45bf4bdcc77e656d51998a959fa8b197bfeeb109390660e7de602",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-048",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "d5ed10cef9dd60decc49d27829b29d84b023862cb624b2fe7db9bdb9c69f1b2a",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-049",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "b8f89774ddcfcfb39334d8059e34d6da9464ec7ad8a5a52c1383e732fd6b3fe6",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-051",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "029da84e47b3ff1fd0a18f119e7fc926d10e8b3a7868a2b70fea6342cfa3b0cc",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-058",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "ae3bb11b6a9c361997f2e0d6237125c34219cc4fa9b1d8a174bc32d7cd827c2a",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-007",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "c05c9512429deeb74d3979c7fc748afdd12d63dd178f42788eeb1b55e2183085",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-009",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "654c6e45e31db403dd14b10ac1d9430f0a11b8a328fca484fffbddf406a6a51f",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-010",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "c41b403d54954b0f671a17e256c3095e36893c52cb9d5fbb855f381173fbbab3",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-011",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "c233e9658135e854a3824f4fe2c031b2163b0cda15dea8a762f84b09c46ed886",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-014",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "dcacd33e9840c3c9a020c108e9524e878637e275f9ba7cb25451819ebaff820d",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-015",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "03af648deefc5aa75d74b4963d533e1badf56fa237e5ebb82cee2d0f5f475bc1",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-016",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "604e5197a489b9e666a37828ea939dbbab7580013a40dccd383115c55ebf4d3c",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-017",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "9c882ea549a44746bf1aa8584ccbceb321b7bd9e9d6dc7f277b8a671c2885f21",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-023",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "348a26e99e5223b76f8d2ebe24a29982ad534b53e589cd53af76e4e343ee55fd",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-024",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "e7b210d30a09f0a2e81ceec6eb9b922e42442f9845685490ff9ddc019fa77919",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-036",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "af935e8feac6c6e4fb1d8c22da4b95ebdba2c7edbcbeb1fc439bd542caa5a043",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-037",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "fb42a326d95ed6ae728e620fbae44c401661e9815814459d5019bcb80591f719",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-038",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "16743504d838ea5ff64a4c3f38aa7b03fc44d6bfc4593c7cecb8f7f2251409df",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-039",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "34fbd75cf3c605fc45d3723cc981632b3c39d0700c1ebdae3690b1ec967877ee",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-041",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "4c8e9a39944da409ecc41e2e6e2734b5531f9489d40c58bc8cd29dff6314d4a4",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-042",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "58a88374f399d437b5d2125306be7c198e8850f61f7f0547d40bd0da5244378d",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-043",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "f6466df5fc6751147ee90692f9ee4f99da560f95038b1f97a11cceca7b8e8c15",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-045",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "e9897a9ba7e347d3e98d1ecd4afacf0b5b6808c0553249472eac8dd3d7e48437",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-056",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "0aa3cf33e65b11e44c11b2c2d24275f076f6ac2d1f6f986e507bde65cdb370da",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-057",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "adf660d72716f1ad43f619c2daad44254ac0fec9079e00bf118673c89a077834",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-060",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "4119d4361f445e3a92237b59a19bf8012874a59b61743877ade8d9eb443e7cbb",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-intervention-064",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "a39de614f18cacbebebfd48a8100e37abb9c7abb7fdd32b05b381cc78fdef89e",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-006",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "1220eaeaa7cb1ef7207acd75a4aba4c316750e2761caff01f01210f7c6e685fd",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-008",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "4677f8932b6cf8758ac2519cc420a3f583da3579bb9c1f79f8169bed6bee41f8",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-010",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "04a67ec8c060544fbf1d353a61031e9bd5d5eb084e8b891e8c140ffca8541b17",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-011",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "7b226e3a440034be1b71de336d328bc639a4ceb6f6e54241cd74957b6648131e",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-012",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "eb40ca87e56402135d0e1c16e89505493d82efd2eaaa4f1d85555656d8c99abd",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-014",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "9484d80ec5492a4776d1e6dd1aaae56ab20e1bc1bbe116a063742935cb4cf0ae",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-016",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "4b43accbe874a2810905cca4ecc63cadef1db321b60c6c5c2b5a2dac5fcb0279",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-017",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "18a147cd93c82c12d742b165232cae374c9aecd4c6f2bba1f483a172e7400eef",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-018",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "be20659438d246336688b351ca0b2950a505ebf7db6f177b30cad273d6dc9092",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-019",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "1d851fd02ee565455ae67388e76d2d5bed901d62294963a88ba3f504a8761bd3",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-021",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "f44ee71353b5067048252fb9aa3b21661fcb3c1da8fb760f90b413f7af79c351",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-022",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "f6b6bf1153e5c1ce1212eb7399344a221febc199c4d03960a610aa071b8bf50b",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-023",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "79e4d4a9f7d8121605b0a0ade07c896e81df14bfab634af0af580d7e9eae98a1",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-024",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "9a2b113e0464dedd20ff8ad4265df88e0e9e7c86f4362acdc93bb9c71a51d195",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-025",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "b6dcf1aaf873465e05df24472eadfe0f23e1ed3ed15160472d551ad08e3a7e60",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-037",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "2833a5548bb1f0736f6c3858a5b738e5627aa6d65f66b95ada1770a6cbbdbd11",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-042",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "8a3a8390cb76a0151b07ab9a960996009fc6053834682a5ccc3f3396fa152939",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-045",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "5dc87e4f3d11ccaa1412994d0135441c42a6db8350c9aad6857f05952ceb47c5",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-lifespan-052",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "1d365d7302f40e93905fd61af74a98a99b21dbd5864129a383c9224d956cdacc",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-007",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "26bb27726ec035d98a0ffba0f837cb62d482a32e8c777c95b97d5b381677f3e0",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-008",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "d227a9efd7ebc02b34fac72c65a245712096201c849efbed2222e1dbbcb7386b",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-015",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "5d19ce6b5184e344f28e36a47c9b429e572fc93a6dfc06d81dee3645613ab8f2",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-018",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "9439de06ac8d0bd45c4e0ec2663a236bfd48cdd954d6bfc14f753e968158ea12",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-023",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "8bb3cce3521401818963202c22d5c354522dc23fece6aa7df476caad7f461d32",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-027",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "b8469682460757cf93655550810b98a1241718690ec87103ded66ee29bcf8b87",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-029",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "eb7ffc82c07e71eae29b315988ebbfa8574f4565874e949537e5ce2d5e612a38",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-031",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "b93e912c6eb5eb1bfcf60b6ab865c412919cbf6c9f57762883b9ee12583d6a2c",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-034",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "20878bed7ce5774e2627d1313fc8e9c13d9fde7f588aba7ef096b61a979e7e92",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-042",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "dc57b1b938d0cf1ca2ec3e0eb08f33ecbc9d91247d3f9f42f5603f6d9df17e6e",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-048",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "2f80a17df791080db6d68146ba3daf03e00eac900cf3052b21fcd2305a5abecf",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-052",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "b8e89ed89c7ec512f7b1341446c1ac8ee4e774bb9063b27b975dded45c927dac",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-059",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "0a29fd715a814956b845f8b0fe9d0dfe9e864edeaa32020c5a784b99ab8d9a25",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-060",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "df33de73d618bcb6a0b21d189bfa03dbbfc972c0a3bb270ac8b1db7624bb3c99",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-061",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "f7c2dead029974ac77328222a3602a7c33c18ee9221c9b390ddbaa9cbedf0465",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-065",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "d94fa1cca6891a1b5b7a32946a977477a53cff0460c70e245bef8fbe5d324d5a",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-072",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "6375a808fb413d7bf09f3652c24757310eeeb5dd4333c8583542bae9d361fdb2",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-074",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "d577798195460eacd164035888541c550f5cda6d030fb180aae61394c1a51448",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-076",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "08efa77c1b0fc4f67194f293f1225976d397f45440623e332c03acc066338da3",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-professional-078",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "b695eb53e2192cbdf25b82619a0f67b802cfcd39b2de1771f82ddb600fe7f71e",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-research-004",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "239480d3d3ed33bd2c6890a77d7692de504d37c2276ac5eead35b8cb3aada58b",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-research-008",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "097ada4da5609670f31b2a98533aec6fb58ff4b14c04851fd04df5682a8a8d80",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-research-012",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "c5351ad29abb75929c3b7a7ee10914eb5e277584aa57af8bad5ae84a164f168c",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-research-016",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "452c1bf305c16bd9fd20f3ef9cc7885a207d768c6f71aec16738ac3cd013d3de",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-research-017",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "05aae73ad38a7729d7521738dff64707f2a0c61d52870ac5b12b4dc109d67e40",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-research-022",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "1ecd2b64605896031470c361f5e5d1cf031fd46bd132f8e8ae27312b3d0be00c",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-research-026",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "e6a4b888bee82f1899da9e15f83595a54e86b3456903f419ac6d6624a95ee28f",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-004",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "95952a0f3441cbc7a7ee18d64424ff095074d552866159f324472bb150738454",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-005",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "92b6c7ad937b9a44dbf2fdbee58b488ecdede8c8358293a6a994352a684f611b",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-011",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "005262f65299210914ba00861d0019694a229a6934f6d2fb66f7f56b73cc7afe",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-015",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "d983048f4d2f4614e522c720ef9ffd50f9eb8647c703ae4ab881e07e75a588b3",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-016",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "6ae5c060475f0034b33cdf968077e37378914e82ed56ec82e21aba2bc9387175",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-017",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "2dfb5f9ec60748b2b33f31160bc091aa8580748c117d5a4f1f91735a1786aa58",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-019",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "52276987b4d8085b21d62977b4b8667554c4bc391ab7ac4a84e09fd307cfb099",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-020",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "0fc61f1c95822833ed7cb7c2b82d1e80b87b29f37b2c13722d2c9f894d987a3d",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-022",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "bb3bac2975e750ce819e1ccafbe83dc3105d39fd71221584b9d78d6920fabe3f",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-028",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "da29088a9725b59df062259073785972028935408d12f9ee58b8a4786e536941",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-029",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "89c9e0ecf8942d096c80b3c304b9a6c6552aba1fed54cae543ec32d4f0c72234",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-033",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "ad63d0ce3e30bca66aed749e9219cece257c2a43ecf455e7a9fe22461c388de4",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-034",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "9c2becf755a7425742b05de8f1a5c4ab25030c509227f849fcc0db3176bed00f",
+      "modes": {
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded",
+        "3": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v2-social-cultural-037",
+      "family": "triple-insufficient",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "4c3fb5138f9844f2ce770f4d3d959010aa29984c0cce99d628f03966ef7b138b",
+      "modes": {
+        "0": "source-reviewed-legacy-reason-expanded",
+        "1": "source-reviewed-legacy-reason-expanded",
+        "2": "source-reviewed-legacy-reason-expanded"
+      }
+    },
+    {
+      "id": "eppp-v3-assessment-003",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "8ca126d79e0293947295bfde43c814725962014f30a030552f9196f76da46ae9",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-assessment-004",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "e4902c11dea576917aa38482ca03807c888d94f0226995e0d9af46007bbf1574",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-assessment-017",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "e266f77ad0a28ef16efa983878bfe61cac40129aba8bef4302e9d8d9a028f653",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-assessment-031",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "8c0f4fcbd674893e63f0baa590df820b12078d93923b80747494c5a216759db6",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-assessment-034",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "73915493df62cf78e0199a696783c4774dfa97c7b60110002dccdbb6a86599d7",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-assessment-047",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "fb7285e2ede9c754d9cd4a53d7468d2048bcb35ec6b00e32db599995e38ccdac",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-assessment-050",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "7374f1d9f90c534510696475eeacb1461f05abbd6751ac875a708a14ad1f2fdb",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-assessment-059",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "51932d012ee4b10bafb221a7b2207a6fc100846669d031a9af6da80b36116811",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-assessment-070",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "9fd2173ea3adcaac45de7a579f9d9d8b960101db121d97f3e82ec20e85dbd8a4",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-biological-039",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "81d1a8bc574a4394c9422dd3a8b2bc2c85c7d651648975841f741ac3fc7919d0",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-biological-045",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "66ead209a6c63d394a02ba3cb5b877c6ec83d6aed93d41b070b6ce1ef53a6296",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-005",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "d00127afc48f927535e3fd1ca5d3511ce8ac4f6db37af82ba86e267095258114",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-007",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "04b2ae0a1b5f98856ea46271d1651c21e7b33904bcc3bff41419517b74cb0e64",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-009",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "b57197480edc8aa38bea3a0d11b9007382f9d4bacbade39a96d2e23efa77c0ca",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-011",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "efea8cc0a18075e5d25f09df2f426fbe1c0c756bf434a3ce88420a93d7553113",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-016",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "8cf1f0af2b96977e26699474884c54df9d82e718fe604a678d659ab927f365d5",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-027",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "4f1808ded640d19c82e28c11677fc2d1be831516738caa7b62addab85154206f",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-028",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "34d9d48ba039a287566302df8fd05de742677f4187d1f607c8c8af740098d3f1",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-030",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "9508c38b9d269719399c8e65e63cf384a81939d3964e21dfa0bfc0ebf5aae5d4",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-035",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "3c2ac14033692e1662cda7b4ca575cc82e12d38ad5e8117401281fcf5af93214",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-041",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "52cc1d090cd4f5e49549d3f90ca11ff4b8e8211cb3d8df06d610165b5be144eb",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-042",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "5467325ca928052b94ba028affe9e9d6ccc5d48a8c5b8eab1473f0f9c54fc9c8",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-045",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "61414e8958a7008668fedf22b9889a262fecdb9c4a14e11c679aae6881663657",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-intervention-011",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "458181a82fdef8b6e117a1d55e9f82624ea2910fcfb4b9035858c8041417ecfd",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-intervention-015",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "2e1152c91b848ed280bea5a7946b8645dec373409bc041b57d8cddc2c2e68d6a",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-intervention-021",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "2df1f5c0e3f27c3fe9529597a7802ca61b261ce39f5e68bc8586b779b84900fa",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-intervention-023",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "fad266f5fe60c5355d77dcdea4d6ae1703f6f29b70e5b1c348ba17a0f466fc95",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-intervention-032",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "4f0c9765ccc6b9466f96451f6ac89a0f14eb34d6a534e473c9b6b87a0a3d5c39",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-intervention-041",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "1a5a538c6cbd7a76796d62d2011f9cb11fe261c86873eeda704c6d8c8a0a48b7",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-intervention-049",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "a89d1daae867d6c675ad3769feaa2442670e7b4c904a0c95e74214bc90ebaea1",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-lifespan-003",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "04420b3668a8b0f113b02e51e4a373fd06a891649fa52135e060aa41ebf575ce",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-lifespan-004",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "9b8ea59285617ce13be04ed06ee65f887d50f4f507a36ddb66745c083f185226",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-lifespan-011",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "80d06cdb0278d1e6519342046c9e80a23b7e4fd197f213a619a0365971eeca0a",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-lifespan-014",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "8f8e1775ab6d142b5bb0481c774790ed622378e70bf964c3c0ee216b7691daad",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-lifespan-016",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "e400d2f833e3e73ae598a2ab334e85ee0734f5b55d79dd99ce4918a2df61cfd1",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-lifespan-034",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "9b1225c1608337cad50826f6377aa97cb9356dd4f07c6779e02323393829aca9",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-professional-011",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "dd62c279e04159931c93b7bce900affe29644d9dc99508c8a82407ad8c84944f",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-professional-012",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "4cfd4b68ebd617919fd13fc0fa39e02493cc79634d0708aad89ef22db3b038eb",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-professional-024",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "e5f839a995206e6164f446456ffe94d0e3b3173df34a11f7ae1b5856451a4a3f",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-professional-036",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "ce8570be7afb24f6745dcf82a76ecd5ab57faa99db52b180e2887f2bbbd8fdc8",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-professional-042",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "58eb403455d5793d4f2d83fb918de6e3e0933d5cacdcada3a145a25fbdb11442",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-professional-044",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "a0db4197e06eb8d3742ba246c48eb6743c750ca8b618ae7557f63be20e17bbf6",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-professional-047",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "bac3ee9934dfb51b0621bac8ac6eaa29ce7c2dbb2659759d7e29843169b9b3b9",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-professional-056",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "21d479960bcef1437628cb9d036e933995c10d36b42185d774441ce2dd1c5ccc",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-research-003",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "ff32ac4e16b0194f94af1d95cdd0f6a4ffd5e94641f9cb0fd24b24419c86376c",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-research-009",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "8605b3f98c329bf2615b6023ebdb9218688fceefc749f1629c25b24c73c36cd2",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-research-011",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "69383d063bbc857056d11582c0f0c9ffffbead36bd44f234b0b9db127234ee0b",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-research-014",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "25c756aa105b41f10e947cdc570b07f4c628d6c4ffe668c99d7d06c15c54cd58",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-research-018",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "3433e25ac79735604564af78f7a7b1cfadd0f93c44318cf71f35e61b037d7564",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-research-021",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "81dbb089c64ea9cac18be8bafbd3000444bb9ac4fd0a1e4bc27f7452fc5c2455",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-research-024",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "5922eb18d2f1eaeeadba1655205845e28f68e8e759fe33e2d5a52cdfcda280f7",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-research-029",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "f2c6e47064b6fead2b5b9ac88f81031428d320015590f162f01c3fa3bd647332",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-social-cultural-003",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "2f8aba91416545969b888686653c2369de5c16fa020ec9f8d5b899db291858c1",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-social-cultural-011",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "80c6e2a3cc5f2d8b73456eb7ed1472bec0ed58cbe677981acba9342f11feb641",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-social-cultural-022",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "7ba0fb0c7a368cabe30714b39a7c80e4a7e1aa00b6a569c6f682470bbc8b2ce6",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-social-cultural-023",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "9b5803fe3ccfc04803ce1e112b851cbaff6f33cb3a5ae8b50abce48a345595be",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-social-cultural-030",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "96a798bb9bd1c2902216b5b187a4ab32bea4a5aae9077232ab49450ca7b34ebc",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-social-cultural-032",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 0,
+      "protectedFingerprint": "6d48cc362ee6224a23eb1704c3065667a86470bcc4a75d5be61b879fe8d76a96",
+      "modes": {
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-social-cultural-036",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "a66912e707ea935aafcf1ad007c5e299e748aa7e5428a579a29235d663efe16f",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-social-cultural-037",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "cd96ba47df97847965bfbe2ef82a095348ac8cd7608b54989039bbb6d4e556e3",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-social-cultural-038",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 3,
+      "protectedFingerprint": "d6b908c7397367dcd12a045e8e5ecf834dc34cb67c8c722f8a542df4e212a94a",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-social-cultural-041",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 2,
+      "protectedFingerprint": "8f436e244cfdc54da3ab5c872d4c6ce84a2ac9bc0a371cb375adda61fc12405c",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "1": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    },
+    {
+      "id": "eppp-v3-social-cultural-044",
+      "family": "triple-ceg",
+      "expectedAnswerIndex": 1,
+      "protectedFingerprint": "28f8aa78d9e06e56e9ffcaf79ec3d8b9371bf235e52a69d99cb011a20e91e371",
+      "modes": {
+        "0": "rationale-grounded-option-contrast-draft",
+        "2": "rationale-grounded-option-contrast-draft",
+        "3": "rationale-grounded-option-contrast-draft"
+      }
+    }
+  ],
+  "limitations": [
+    "The generated contrast explanations are deterministic editorial drafts grounded in existing rationales, not independent expert validation.",
+    "Passing length and phrase heuristics cannot establish factual accuracy, psychometric quality, or instructional usefulness.",
+    "A qualified reviewer should confirm each distractor mapping, especially for ethics, legal, diagnostic, assessment, and quantitative content.",
+    "Source metadata is preserved rather than independently re-verified by this runner."
+  ]
+}

@@ -660,8 +660,8 @@ window.StemLab = window.StemLab || {
 
           // Action buttons
           h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 flex-wrap' },
-            h('button', { 'aria-label': 'Build Number', onClick: genBlockChallenge, className: 'flex-1 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-lg text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md' }, '\uD83C\uDFB2 Build Number'),
-            h('button', { 'aria-label': 'Addition', onClick: genAdditionProblem, className: 'flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md' }, '\u2795 Addition'),
+            h('button', { 'aria-label': 'Build Number', onClick: genBlockChallenge, className: 'flex-1 py-2 bg-gradient-to-r from-orange-700 to-amber-700 text-white font-bold rounded-lg text-sm hover:from-orange-700 hover:to-amber-700 transition-all shadow-md' }, '\uD83C\uDFB2 Build Number'),
+            h('button', { 'aria-label': 'Addition', onClick: genAdditionProblem, className: 'flex-1 py-2 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-lg text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-md' }, '\u2795 Addition'),
             h('button', { 'aria-label': 'Reset', onClick: function() { upd({ b10: { ones: 0, tens: 0, hundreds: 0, thousands: 0 }, b10Challenge: null, b10Feedback: null, b10AddMode: false, b10Addends: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
           ),
 
@@ -775,11 +775,11 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': 'Challenge', onClick: function() {
               var target = 1 + Math.floor(Math.random() * 99999);
               upd({ abacusChallenge: { target: target }, abacusFeedback: null, abacus: { rods: [0, 0, 0, 0, 0] }, speedChallenge: null });
-            }, className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md' }, '\uD83C\uDFB2 Challenge'),
+            }, className: 'flex-1 py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-lg text-sm hover:from-amber-700 hover:to-orange-700 transition-all shadow-md' }, '\uD83C\uDFB2 Challenge'),
             h('button', { 'aria-label': 'Speed', onClick: function() {
               var target = 1 + Math.floor(Math.random() * 99999);
               upd({ speedChallenge: { target: target, startTime: Date.now() }, abacusChallenge: null, abacusFeedback: null, abacus: { rods: [0, 0, 0, 0, 0] } });
-            }, className: 'flex-1 py-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold rounded-lg text-sm hover:from-rose-600 hover:to-pink-600 transition-all shadow-md' }, '\u23F1\uFE0F Speed'),
+            }, className: 'flex-1 py-2 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold rounded-lg text-sm hover:from-rose-600 hover:to-pink-600 transition-all shadow-md' }, '\u23F1\uFE0F Speed'),
             h('button', { 'aria-label': 'Reset', onClick: function() { upd({ abacus: { rods: [0, 0, 0, 0, 0] }, abacusChallenge: null, abacusFeedback: null, speedChallenge: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
           ),
 
@@ -892,7 +892,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': 'Practice Problem', onClick: function() {
               var p = srProblems[Math.floor(Math.random() * srProblems.length)];
               upd({ srProblem: p, srFeedback: null, slideRule: { cOffset: 0, cursorPos: 0.301 } });
-            }, className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md' }, '\uD83C\uDFAF Practice Problem'),
+            }, className: 'flex-1 py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-lg text-sm hover:from-amber-700 hover:to-orange-700 transition-all shadow-md' }, '\uD83C\uDFAF Practice Problem'),
             h('button', { 'aria-label': 'Reset', onClick: function() { upd({ slideRule: { cOffset: 0, cursorPos: 0.301 }, srProblem: null, srFeedback: null }); }, className: 'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all' }, '\u21BA Reset')
           ),
 
@@ -933,7 +933,7 @@ window.StemLab = window.StemLab || {
           ),
 
           h('button', { 'aria-label': 'Generate new place value quiz', onClick: function() { upd({ pvQuiz: generatePVQuiz(), pvFeedback: null }); },
-            className: 'w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md'
+            className: 'w-full py-3 bg-gradient-to-r from-orange-700 to-amber-700 text-white font-bold rounded-xl text-sm hover:from-orange-700 hover:to-amber-700 transition-all shadow-md'
           }, pvQuiz ? '\uD83D\uDD04 Next Question' : '\uD83C\uDFAF Start Quiz'),
 
           pvQuiz && h('div', { className: 'bg-white rounded-xl p-5 border-2 border-orange-200 shadow-sm' },

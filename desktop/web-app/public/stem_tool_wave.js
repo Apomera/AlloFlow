@@ -1981,7 +1981,7 @@ const d = labToolData.wave;
                   if (c && c._drag) { c._drag.wallX = null; }
                   if (typeof addToast === 'function') addToast('Wall reset to 75% across', 'info');
                 },
-                className: "px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700",
+                className: "px-3 py-1 rounded-md text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800",
                 'aria-label': 'Reset wall position'
               }, '↻ Reset wall'),
               React.createElement("span", { className: "text-[10px] text-amber-800 italic ml-auto" }, '💡 Drag the gold wall on the canvas')
@@ -2220,7 +2220,7 @@ const d = labToolData.wave;
 
             ),
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
 
             // ── AI Wave Tutor (reading-level aware) ──
             (function () {
@@ -2803,9 +2803,9 @@ const d = labToolData.wave;
               h('input', { id: 'discTen', type: 'range', min: 10, max: 200, step: 5, value: lab.tension, onChange: function(e) { setLab({ tension: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-label': 'Tension in newtons' }),
               h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, '(string mass density μ fixed at 0.01 kg/m)'),
               h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
-                h('button', { onClick: logObservation, className: 'px-2 py-1 rounded text-[11px] font-bold bg-cyan-600 text-white hover:bg-cyan-700 focus:ring-2 focus:ring-cyan-400 focus:outline-none' }, '📝 Log observation'),
-                h('button', { onClick: reveal, disabled: lab.discovered, className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none' }, lab.discovered ? '✓ Revealed' : '💡 I see it'),
-                h('button', { onClick: reset, className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-400 focus:outline-none' }, '↻ Reset')
+                h('button', { onClick: logObservation, className: 'px-2 py-1 rounded text-[11px] font-bold bg-cyan-700 text-white hover:bg-cyan-800 focus:ring-2 focus:ring-cyan-300 focus:outline-none' }, '📝 Log observation'),
+                h('button', { onClick: reveal, disabled: lab.discovered, className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none' }, lab.discovered ? '✓ Revealed' : '💡 I see it'),
+                h('button', { onClick: reset, className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-500 focus:outline-none' }, '↻ Reset')
               ),
               (lab.observationsLogged || []).length > 0 && h('div', { className: 'mt-2' },
                 h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, 'Your observations'),
@@ -3017,7 +3017,7 @@ const d = labToolData.wave;
               value: lab.explanation || '',
               onChange: function(e) { setLab({ explanation: e.target.value }); },
               placeholder: 'Explain in your own words: what determines when a standing wave forms? What role does tension play? What role does frequency play? What is "n"?',
-              className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug bg-white',
+              className: 'w-full text-[12px] border border-emerald-600 rounded p-2 font-mono leading-snug bg-white',
               rows: 4
             }),
             lab.understood && (lab.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },

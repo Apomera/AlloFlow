@@ -816,8 +816,8 @@
                     h('div', { style: { fontSize: '11px', color: gcAccent, fontWeight: 'bold', marginBottom: '3px' } }, ch.topic),
                     h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: gcText, marginBottom: '4px' } }, ch.prompt),
                     isActive ? h('div', null,
-                      h('div', { style: { fontSize: '10px', color: '#92400e', background: 'rgba(251,191,36,0.16)', padding: '6px 8px', borderRadius: '6px', marginTop: '4px', border: '1px solid rgba(251,191,36,0.35)' } }, '\uD83D\uDCA1 ' + ch.hint),
-                      h('button', { 'aria-label': __alloT('stem.graphcalc.complete', 'Complete'), onClick: function(e) { e.stopPropagation(); SOUNDS.quizCorrect(); updMulti({ _challengesCompleted: (d._challengesCompleted || 0) + 1, activeChallenge: -1 }); if (addToast) addToast('\u2705 Challenge done! +5 XP'); if (awardStemXP) awardStemXP('graphCalc', 5, 'Graphing challenge'); }, style: { marginTop: '6px', padding: '4px 12px', borderRadius: '6px', background: '#22c55e', color: '#fff', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.complete_2', '\u2705 Complete'))
+                      h('div', { style: { fontSize: '10px', color: '#78350f', background: '#fef3c7', padding: '6px 8px', borderRadius: '6px', marginTop: '4px', border: '1px solid rgba(251,191,36,0.35)' } }, '\uD83D\uDCA1 ' + ch.hint),
+                      h('button', { 'aria-label': __alloT('stem.graphcalc.complete', 'Complete'), onClick: function(e) { e.stopPropagation(); SOUNDS.quizCorrect(); updMulti({ _challengesCompleted: (d._challengesCompleted || 0) + 1, activeChallenge: -1 }); if (addToast) addToast('\u2705 Challenge done! +5 XP'); if (awardStemXP) awardStemXP('graphCalc', 5, 'Graphing challenge'); }, style: { marginTop: '6px', padding: '4px 12px', borderRadius: '6px', background: '#22c55e', color: '#052e16', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.complete_2', '\u2705 Complete'))
                     ) : null
                   );
                 })
@@ -837,7 +837,7 @@
                 ),
                 h('div', { style: { display: 'flex', gap: '4px' } },
                   h('input', { type: 'text', value: aiInput, onChange: function(e) { upd('aiInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) handleAiQuestion(aiInput.trim()); }, placeholder: __alloT('stem.graphcalc.ask_about_math', 'Ask about math...'), 'aria-label': __alloT('stem.graphcalc.ask_the_math_tutor', 'Ask the math tutor'), className: 'focus:ring-2 focus:ring-indigo-500', style: { flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid ' + gcBorder, background: gcPanel, color: gcText, fontSize: '11px' } }),
-                  h('button', { onClick: function() { if (aiInput.trim()) handleAiQuestion(aiInput.trim()); }, 'aria-label': __alloT('stem.graphcalc.send_question_to_ai_math_tutor', 'Send question to AI math tutor'), style: { padding: '6px 10px', borderRadius: '6px', background: '#6366f1', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2191')
+                  h('button', { onClick: function() { if (aiInput.trim()) handleAiQuestion(aiInput.trim()); }, 'aria-label': __alloT('stem.graphcalc.send_question_to_ai_math_tutor', 'Send question to AI math tutor'), style: { padding: '6px 10px', borderRadius: '6px', background: '#4f46e5', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2191')
                 )
               ) : null,
               // Badges
@@ -859,9 +859,9 @@
                 function setIQ(patch) { upd('quadHunt', Object.assign({}, iq, patch)); }
                 var state = Math.abs(iq.a) < 0.1 ? 'degenerate' : (iq.a > 0 ? 'up' : 'down');
                 var stateMeta = {
-                  up:         { label: __alloT('stem.graphcalc.opens_up_min_at_vertex', '🙂 Opens UP (min at vertex)'),   color: '#059669', bg: 'rgba(16,185,129,0.10)', border: '#10b981' },
-                  down:       { label: __alloT('stem.graphcalc.opens_down_max_at_vertex', '🙁 Opens DOWN (max at vertex)'), color: '#dc2626', bg: 'rgba(220,38,38,0.10)', border: '#ef4444' },
-                  degenerate: { label: __alloT('stem.graphcalc.nearly_a_line', '➖ Nearly a line'),               color: '#64748b', bg: 'rgba(100,116,139,0.10)', border: '#94a3b8' }
+                  up:         { label: __alloT('stem.graphcalc.opens_up_min_at_vertex', '🙂 Opens UP (min at vertex)'),   color: gcText, bg: gcCard, border: '#10b981' },
+                  down:       { label: __alloT('stem.graphcalc.opens_down_max_at_vertex', '🙁 Opens DOWN (max at vertex)'), color: gcText, bg: gcCard, border: '#ef4444' },
+                  degenerate: { label: __alloT('stem.graphcalc.nearly_a_line', '➖ Nearly a line'),               color: gcText, bg: gcCard, border: '#94a3b8' }
                 }[state];
                 function logObs() {
                   setIQ({ log: (iq.log || []).concat([{ a: iq.a, h: iq.hVertex, k: iq.kVertex, st: state }]).slice(-8) });
@@ -912,7 +912,7 @@
                   ),
                   h('div', { style: { marginBottom: '8px' } },
                     !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
-                      style: { padding: '3px 8px', fontSize: '10px', fontWeight: 'bold', background: 'rgba(251,191,36,0.16)', color: '#92400e', border: '1px solid rgba(251,191,36,0.45)', borderRadius: '4px', cursor: 'pointer' } },
+                      style: { padding: '3px 8px', fontSize: '10px', fontWeight: 'bold', background: '#fef3c7', color: '#78350f', border: '1px solid rgba(251,191,36,0.45)', borderRadius: '4px', cursor: 'pointer' } },
                       __alloT('stem.graphcalc.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                     iq.stuckRevealed && h('div', { style: { padding: '6px', fontSize: '10px', color: gcText, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.35)', borderRadius: '4px' } },
                       h('ul', { style: { margin: 0, paddingLeft: '14px' } },

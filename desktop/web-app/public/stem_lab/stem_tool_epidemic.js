@@ -1551,7 +1551,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-4', 'data-epidemic-tool': 'true' },
 
         // ── Badge toast ──
-        d.badgeToast && h('div', { className: 'fixed top-4 right-4 z-50 bg-gradient-to-r from-amber-400 to-yellow-500 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-bold animate-bounce' },
+        d.badgeToast && h('div', { className: 'fixed top-4 right-4 z-50 bg-gradient-to-r from-amber-700 to-yellow-700 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-bold animate-bounce' },
           '\uD83C\uDFC6 Badge: ' + d.badgeToast
         ),
 

@@ -3,6 +3,14 @@ import fs from 'node:fs';
 
 const SOURCE = fs.readFileSync('stem_lab/stem_tool_geometryworld.js', 'utf8');
 
+describe('Geometry World animation runtime', () => {
+  it('captures Three.js before conditional frame branches can shadow it', () => {
+    expect(SOURCE).toMatch(
+      /function animate\(\) \{[\s\S]*?if \(!window\.THREE \|\| !engine \|\| !engine\.scene \|\| !engine\.camera\) return;\s*\/\/ Capture Three\.js[\s\S]*?var THREE = window\.THREE;\s*var dt =/
+    );
+  });
+});
+
 function loadMeasurementMath() {
   const start = SOURCE.indexOf('  function formatVolume(vol)');
   const end = SOURCE.indexOf('  var ACHIEVEMENTS = [', start);

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-17T17:08:08.170Z",
+  "generatedAt": "2026-07-26T06:45:01.840Z",
   "summary": {
     "legacyQuestions": 2933,
     "nativeQaQuestions": 1500,
@@ -27,9 +27,9 @@
     "aiReflectiveCodas": 49,
     "sourceReviewedChapters": 49,
     "sourceReviewedFlashcards": 415,
-    "sourceReviewedMemoryAids": 40,
-    "retainedReviewedFlashcards": 336,
-    "retiredRedundantFlashcards": 79,
+    "sourceReviewedMemoryAids": 56,
+    "retainedReviewedFlashcards": 335,
+    "retiredRedundantFlashcards": 80,
     "editorialReviewedSourcePendingMemoryAids": 2,
     "learnerModes": 14
   },
@@ -3151,7 +3151,7 @@
         "sectionIndex": 1,
         "sectionHeading": "The Normal Distribution & Standard Scores",
         "title": "",
-        "description": "The Normal Distribution: Mean (Î¼) and Standard Deviations (Ïƒ)",
+        "description": "The Normal Distribution: Mean (μ) and Standard Deviations (σ)",
         "hasSvg": true,
         "reviewStatus": "review-required",
         "reviewNote": "",
@@ -3275,15 +3275,15 @@
       "count": 415,
       "status": "first-pass-complete-expert-pending",
       "reviewedCount": 415,
-      "retainedCount": 336,
-      "retiredRedundantCount": 79,
+      "retainedCount": 335,
+      "retiredRedundantCount": 80,
       "nextGate": "independent qualified expert validation and release decisions for retained cards; retired duplicate cards remain excluded"
     },
     {
       "contentType": "memory aids",
       "count": 255,
       "status": "review-in-progress",
-      "reviewedCount": 40,
+      "reviewedCount": 56,
       "editorialSourcePendingCount": 2,
       "nextGate": "remaining aids need oversimplification, outdated-guidance, bias, and source review"
     },

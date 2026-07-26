@@ -33,6 +33,23 @@ describe('CodingInterp pure helpers', () => {
     expect(CI.resolveVal('$missing', {})).toBe(0);
   });
 
+  it('evaluates arithmetic with precedence, variables, and turtle state', () => {
+    const turtle = { x: 300, y: 100, angle: 45, penDown: true };
+    expect(CI.resolveVal('$size + 4 * 5', { size: 10 }, turtle)).toBe(30);
+    expect(CI.resolveVal('(x - y) / 2', {}, turtle)).toBe(100);
+    expect(CI.resolveVal('10 / 0', {}, turtle)).toBe(0);
+    expect(CI.evaluateExpression('not false and 2 + 2 == 4', turtle, {}))
+      .toEqual({ ok: true, value: true });
+  });
+
+  it('rejects invalid or executable-looking expressions without evaluating code', () => {
+    globalThis.__codingExpressionProbe = 0;
+    expect(CI.resolveVal('globalThis.__codingExpressionProbe = 1', {}, {})).toBe(0);
+    expect(CI.evalCondition('constructor.constructor("return 1")()', {}, {})).toBe(false);
+    expect(globalThis.__codingExpressionProbe).toBe(0);
+    delete globalThis.__codingExpressionProbe;
+  });
+
   it('evalCondition truth table', () => {
     const t = { x: 300, y: 100, angle: 0, penDown: true };
     expect(CI.evalCondition('x > 250', t, {})).toBe(true);
@@ -42,6 +59,9 @@ describe('CodingInterp pure helpers', () => {
     expect(CI.evalCondition('$n == 5', t, { n: 5 })).toBe(true);
     expect(CI.evalCondition('$n != 5', t, { n: 5 })).toBe(false);
     expect(CI.evalCondition('penDown == true', t, {})).toBe(true);
+    expect(CI.evalCondition('x > 250 and y == 100', t, {})).toBe(true);
+    expect(CI.evalCondition('x < 250 or not penDown', t, {})).toBe(false);
+    expect(CI.evalCondition('($n + 5) >= 10', t, { n: 5 })).toBe(true);
     expect(CI.evalCondition('garbage', t, {})).toBe(false);
   });
 
@@ -74,6 +94,18 @@ describe('CodingInterp serialize/parse round-trip', () => {
     expect(reparsed[0].type).toBe('repeat');
     expect(reparsed[0].times).toBe(4);
     expect(reparsed[0].children.map((b) => b.type)).toEqual(['forward', 'right']);
+  });
+
+  it('round-trips structured expression source through text mode', () => {
+    const blocks = [
+      { type: 'setVar', varName: 'size', varValue: '20 + 5' },
+      { type: 'changeVar', varName: 'size', varDelta: '$size / 5' },
+      { type: 'forward', distance: '$size * 2' },
+      { type: 'goto', x: 'x + 10', y: '250 - 25' }
+    ];
+    const text = CI.blocksToText(blocks);
+    expect(CI.textToBlocks(text)).toEqual(blocks);
+    expect(CI.parseWithErrors(text).errors).toEqual([]);
   });
 
   it('serializes 3D ops and is total (A3 guard, single-sourced)', () => {
@@ -119,6 +151,23 @@ describe('CodingInterp.simulate geometry', () => {
     const sim = CI.simulate([{ type: 'ifelse', condition: 'x > 200', children: [{ type: 'forward', distance: 50 }], elseChildren: [{ type: 'backward', distance: 50 }] }], START);
     expect(sim.finalLines.length).toBe(1);
     expect(Math.round(sim.finalTurtle.y)).toBe(200); // moved up 50 (forward), not down
+  });
+
+  it('executes variable math and compound Boolean conditions', () => {
+    const sim = CI.simulate([
+      { type: 'setVar', varName: 'size', varValue: '20 + 5' },
+      { type: 'changeVar', varName: 'size', varDelta: '$size / 5' },
+      {
+        type: 'ifelse',
+        condition: '$size == 30 and x == 250',
+        children: [{ type: 'forward', distance: '$size * 2' }],
+        elseChildren: [{ type: 'backward', distance: 10 }]
+      }
+    ], START);
+
+    expect(sim.vars.size).toBe(30);
+    expect(sim.finalLines).toHaveLength(1);
+    expect(Math.round(sim.finalTurtle.y)).toBe(190);
   });
 
   it('a function definition + call executes the body', () => {

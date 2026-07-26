@@ -9237,7 +9237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                   nlH('strong', { style: { fontSize: 13, color: aged ? '#78350f' : '#075985' } }, '🧊 ' + i.name + ' · ' + i.portions + ' portion' + (i.portions === 1 ? '' : 's') + (aged ? ' ⚠' : '')),
                   nlH('div', null,
-                    nlH('button', { onClick: function() { takeOne(i.id); }, style: { background: '#fff', border: '1px solid #0ea5e9', borderRadius: 4, padding: '2px 6px', fontSize: 10, color: '#0ea5e9', cursor: 'pointer', marginRight: 4 } }, 'Take 1'),
+                    nlH('button', { onClick: function() { takeOne(i.id); }, style: { background: '#fff', border: '1px solid #0ea5e9', borderRadius: 4, padding: '2px 6px', fontSize: 10, color: '#075985', cursor: 'pointer', marginRight: 4 } }, 'Take 1'),
                     nlH('button', { onClick: function() { remove(i.id); }, style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, cursor: 'pointer' } }, '✕')
                   )
                 ),
@@ -15404,7 +15404,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       return matchSearch && matchCat;
     });
     return nlH('div', { style: { padding: 14 } },
-      nlH('div', { style: { padding: '20px', borderRadius: 14, marginBottom: 16, background: 'linear-gradient(135deg, #059669, #0d9488)', color: '#fff', boxShadow: '0 4px 14px rgba(13,148,136,0.25)' } },
+      nlH('div', { style: { padding: '20px', borderRadius: 14, marginBottom: 16, background: 'linear-gradient(135deg, #047857, #0f766e)', color: '#fff', boxShadow: '0 4px 14px rgba(13,148,136,0.25)' } },
         nlH('div', { style: { fontSize: 11, color: '#a7f3d0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 4 } }, '🥗 My Nutrition Kit'),
         nlH('div', { style: { fontSize: 22, fontWeight: 900, marginBottom: 6 } }, 'Personal evidence-based nutrition tools'),
         nlH('div', { style: { fontSize: 13, lineHeight: 1.55, opacity: 0.95 } },
@@ -15784,7 +15784,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       // ─────────────────────────────────────────────────────
 
       function BackBar(props) {
-        return h('div', { className: 'flex items-center gap-3 bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4 shadow' },
+        return h('div', { className: 'flex items-center gap-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white p-4 shadow' },
           h('button', {
             onClick: function() { setView('menu'); upd('view', 'menu'); },
             'aria-label': __alloT('stem.nutritionlab.back_to_nutritionlab_menu', 'Back to NutritionLab menu'),
@@ -16019,7 +16019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           },
             visited && h('span', {
               'aria-hidden': true,
-              className: 'absolute top-2 right-2 z-10 bg-emerald-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md nutritionlab-pulse-ring'
+              className: 'absolute top-2 right-2 z-10 bg-emerald-700 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md nutritionlab-pulse-ring'
             }, '✓'),
             notReady && h('span', {
               'aria-hidden': true,
@@ -18057,7 +18057,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               }, __alloT('stem.nutritionlab.previous', '← Previous')),
               picked != null && idx + 1 < MYTHS.length && h('button', {
                 onClick: nextMyth,
-                className: 'px-5 py-2 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-700 transition focus:outline-none focus:ring-4 ring-emerald-500/40'
+                className: 'px-5 py-2 rounded-xl font-bold text-sm bg-emerald-700 text-white hover:bg-emerald-800 transition focus:outline-none focus:ring-4 ring-emerald-500/40'
               }, __alloT('stem.nutritionlab.next_myth', 'Next myth →')),
               picked != null && idx + 1 >= MYTHS.length && h('div', { className: 'px-3 py-2 rounded bg-emerald-100 text-emerald-900 font-bold text-sm' },
                 '🎉 You\'ve seen all ' + MYTHS.length + ' myths!')
@@ -18345,7 +18345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('div', { className: 'flex flex-col sm:flex-row gap-3 pt-2' },
                   h('button', {
                     onClick: function() { setConsented(true); announce('Continuing to Eating Disorder Awareness module'); },
-                    className: 'flex-1 px-5 py-3 rounded-xl bg-emerald-600 text-white font-black hover:bg-emerald-700 transition focus:outline-none focus:ring-4 ring-emerald-500/40'
+                    className: 'flex-1 px-5 py-3 rounded-xl bg-emerald-700 text-white font-black hover:bg-emerald-800 transition focus:outline-none focus:ring-4 ring-emerald-500/40'
                   }, __alloT('stem.nutritionlab.i_understand_continue', '✓ I understand — continue')),
                   h('button', {
                     onClick: function() { setView('menu'); upd('view', 'menu'); },
@@ -19036,7 +19036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.nutritionlab.rdn_credential_ladder_2024_requirement', 'RDN credential ladder — 2024 requirements')),
               CAREER_LADDER.map(function(c) {
                 return h('div', { key: c.tier, className: 'bg-white rounded-2xl shadow border border-slate-300 p-4 flex items-start gap-4' },
-                  h('div', { className: 'flex-shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-700 text-white flex items-center justify-center text-2xl font-black shadow' },
+                  h('div', { className: 'flex-shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center text-2xl font-black shadow' },
                     'T' + c.tier),
                   h('div', { className: 'flex-1' },
                     h('div', { className: 'flex items-center justify-between flex-wrap gap-2 mb-1' },
@@ -19285,7 +19285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               ),
               h('button', {
                 onClick: reset,
-                className: 'w-full px-5 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 focus:outline-none focus:ring-2 ring-emerald-400'
+                className: 'w-full px-5 py-3 rounded-xl bg-emerald-700 text-white font-bold hover:bg-emerald-800 focus:outline-none focus:ring-2 ring-emerald-400'
               }, __alloT('stem.nutritionlab.build_another_day', '🔄 Build another day'))
             )
           );

@@ -277,6 +277,55 @@
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
 
+      // MathLive is an accessible input adapter only. AlgebraCAS remains the
+      // authoritative solver and grader through window.__alloCASPure.
+      var openAccessibleMathInput = function(currentValue, onValue, title) {
+        var ensureInput = window.AlloMathInput
+          ? Promise.resolve(window.AlloMathInput)
+          : (typeof window.__alloLoadPlugin === 'function'
+            ? window.__alloLoadPlugin('mathlive_loader.js').then(function() { return window.AlloMathInput; })
+            : Promise.reject(new Error('Math input loader is unavailable')));
+        ensureInput.then(function(mathInput) {
+          if (!mathInput || typeof mathInput.promptEquation !== 'function') throw new Error('Accessible math input did not initialize');
+          return mathInput.promptEquation({
+            title: title || 'Enter an equation',
+            initialLatex: currentValue || '',
+            insertLabel: 'Use equation',
+onSpeak: function(formats) {
+              var spoken = (formats && (formats.spoken || formats.plainText || formats.latex)) || currentValue || '';
+              if (!spoken) return;
+              if (callTTS) {
+                try {
+                  Promise.resolve(callTTS(spoken)).then(function(url) {
+                    if (url) { var audio = new Audio(url); audio.play().catch(function() {}); }
+                  }).catch(function() { speakText(spoken, null); });
+                  return;
+                } catch (_ttsErr) {}
+              }
+              speakText(spoken, null);
+            }
+          });
+        }).then(function(result) {
+          if (!result) return;
+          var value = result.engineText || (window.AlloMathInput && window.AlloMathInput.toEngineText
+            ? window.AlloMathInput.toEngineText(result)
+            : '') || result.asciiMath || result.plainText || result.latex || '';
+          if (value) onValue(value);
+        }).catch(function(err) {
+          if (typeof addToast === 'function') addToast('Accessible math input is unavailable: ' + (err && err.message ? err.message : 'unknown error'), 'error');
+        });
+      };
+      var mathInputButton = function(currentValue, onValue, title) {
+        return h('button', {
+          type: 'button',
+          'data-math-input-launch': 'algebraCAS',
+          'aria-label': 'Open accessible math keyboard',
+          title: 'Open accessible math keyboard',
+          onClick: function() { openAccessibleMathInput(currentValue, onValue, title); },
+          style: { padding: '8px 11px', borderRadius: '10px', background: 'transparent', border: '1px solid currentColor', color: '#a78bfa', fontWeight: '700', fontSize: '11px', cursor: 'pointer', whiteSpace: 'nowrap' }
+        }, '\u2328 Math keyboard');
+      };
+
       return (function() {
         labToolData = labToolData || {};
         var d = labToolData.algebraCAS || {};
@@ -609,6 +658,7 @@
                 'aria-label': t('stem.algebraCAS.algebra_expression_input', 'Algebra expression input'),
                 style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
+              mathInputButton(expression, function(value) { upd('expression', value); }, 'Enter an algebra expression'),
               h('button', { 'aria-label': 'TRY:', onClick: handleSolve, disabled: isLoading || !expression.trim(),
                 style: { padding: '8px 16px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', opacity: (isLoading || !expression.trim()) ? 0.5 : 1, border: 'none' }
               }, isLoading ? '\u23F3 ...' : '\u25B6 ' + (mode.charAt(0).toUpperCase() + mode.slice(1)))
@@ -680,6 +730,7 @@
                   'aria-label': t('stem.algebraCAS.practice_answer_input', 'Practice answer input'),
                   style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
+                mathInputButton(practiceAnswer, function(value) { upd('practiceAnswer', value); }, 'Enter your practice answer'),
                 h('button', { onClick: handlePracticeCheck, disabled: isLoading || !practiceAnswer.trim(),
                   style: { padding: '8px 16px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', cursor: 'pointer', opacity: (isLoading || !practiceAnswer.trim()) ? 0.5 : 1, border: 'none' }
                 }, isLoading ? '\u23F3' : '\u2705 Check')
@@ -840,6 +891,7 @@
                   'aria-label': t('stem.algebraCAS.balance_scale_equation_input', 'Balance scale equation input'),
                   style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: 'none', fontFamily: 'monospace', fontSize: '13px' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #7c3aed'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; } }),
+                mathInputButton(scaleEq, function(value) { upd('scaleEq', value); }, 'Enter a balance-scale equation'),
                 h('button', { 'aria-label': t('stem.algebraCAS.load', 'Load'), onClick: function() { updMulti({ scaleSteps: [], scaleSolved: false }); },
                   style: { padding: '8px 14px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', border: 'none' } }, t('stem.algebraCAS.load_2', 'Load'))
               )

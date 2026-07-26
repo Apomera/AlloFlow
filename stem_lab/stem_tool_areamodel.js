@@ -681,7 +681,7 @@ window.StemLab = window.StemLab || {
                 value: wordCtxIdx,
                 onChange: function(e) { sfxClick(); upd({ wordCtxIdx: parseInt(e.target.value, 10) }); },
                 'aria-label': t('stem.areamodel.word_problem_context', 'Word problem context'),
-                className: 'flex-1 px-2 py-1 text-xs border border-emerald-300 rounded bg-white'
+                className: 'flex-1 px-2 py-1 text-xs border border-emerald-600 rounded bg-white'
               },
                 WORD_CONTEXTS.map(function(t, i) {
                   return h('option', { key: 'wpc-' + i, value: i }, t.replace(/\{a\}/g, 'A').replace(/\{b\}/g, 'B').slice(0, 60) + (t.length > 60 ? '…' : ''));
@@ -690,7 +690,7 @@ window.StemLab = window.StemLab || {
               h('button', {
                 onClick: function() { sfxClick(); upd({ wordCtxIdx: (wordCtxIdx + 1) % WORD_CONTEXTS.length }); },
                 'aria-label': t('stem.areamodel.next_story_context', 'Next story context'),
-                className: 'px-2 py-1 text-[11px] font-bold bg-emerald-600 text-white rounded hover:bg-emerald-700'
+                className: 'px-2 py-1 text-[11px] font-bold bg-emerald-700 text-white rounded hover:bg-emerald-800'
               }, t('stem.areamodel.next', '🔀 Next'))
             ),
             h('div', { className: 'grid grid-cols-2 gap-2' },
@@ -813,7 +813,7 @@ window.StemLab = window.StemLab || {
               className: 'flex-1 px-3 py-2 border border-sky-600 rounded-lg text-sm'
             }),
             h('button', { onClick: askAITutor, disabled: aiLoading || !aiQuestion.trim(),
-              className: 'px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-sm hover:bg-sky-700 disabled:opacity-50'
+              className: 'px-4 py-2 bg-sky-700 text-white font-bold rounded-lg text-sm hover:bg-sky-800 disabled:opacity-50'
             }, aiLoading ? '\u23F3' : 'Ask')
           ),
           h('div', { className: 'flex flex-wrap gap-1.5' },
@@ -1051,15 +1051,15 @@ window.StemLab = window.StemLab || {
             ? h('div', { className: 'flex gap-2 flex-wrap' },
                 h('button', { 'aria-label': t('stem.areamodel.grid_challenge', 'Grid Challenge'),
                   onClick: function() { genChallenge('basic'); },
-                  className: 'flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md min-w-[140px]'
+                  className: 'flex-1 py-2.5 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-xl text-sm hover:from-amber-700 hover:to-orange-700 transition-all shadow-md min-w-[140px]'
                 }, t('stem.areamodel.grid_challenge_2', '\uD83D\uDFE7 Grid Challenge')),
                 h('button', { 'aria-label': t('stem.areamodel.distributive_2', 'Distributive'),
                   onClick: function() { genChallenge('distributive'); },
-                  className: 'flex-1 py-2.5 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-xl text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md min-w-[140px]'
+                  className: 'flex-1 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-xl text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md min-w-[140px]'
                 }, t('stem.areamodel.distributive_3', '\u2702\uFE0F Distributive')),
                 h('button', { 'aria-label': t('stem.areamodel.partial', 'Partial'),
                   onClick: function() { genChallenge('multidigit'); },
-                  className: 'flex-1 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold rounded-xl text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md min-w-[140px]'
+                  className: 'flex-1 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md min-w-[140px]'
                 }, t('stem.areamodel.partial_2', '\uD83D\uDCCA Partial')),
                 h('button', { 'aria-label': t('stem.areamodel.word_problem', 'Word Problem'),
                   onClick: function() {
@@ -1076,7 +1076,7 @@ window.StemLab = window.StemLab || {
                       answer: '', feedback: null, challengeTypesUsed: newTypes
                     });
                   },
-                  className: 'flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold rounded-xl text-sm hover:from-emerald-600 hover:to-green-600 transition-all shadow-md min-w-[140px]'
+                  className: 'flex-1 py-2.5 bg-gradient-to-r from-emerald-700 to-green-700 text-white font-bold rounded-xl text-sm hover:from-emerald-700 hover:to-green-700 transition-all shadow-md min-w-[140px]'
                 }, t('stem.areamodel.word_problem_2', '\uD83D\uDCDD Word Problem'))
               )
             : h('div', { className: 'space-y-2' },

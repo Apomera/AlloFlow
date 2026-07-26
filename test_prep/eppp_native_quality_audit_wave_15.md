@@ -9,4 +9,5 @@ Reviewed: 2026-07-25
 - Converted every selected item to application or analysis and removed stacked absolute distractors.
 - Cleared all four warning families for the selected tranche.
 
+
 > Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation.

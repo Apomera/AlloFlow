@@ -7362,7 +7362,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   key: v,
                   onClick: function() { setRosterView(v); },
                   className: 'px-3 py-1 rounded text-xs font-bold transition-all ' + (active
-                    ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
+                    ? 'bg-gradient-to-r from-amber-700 to-orange-700 text-white'
                     : 'transition-colors text-slate-300 hover:text-amber-200'),
                   'aria-label': v === 'cards' ? 'Show as cards' : v === 'table' ? 'Show as comparison table' : '2-species side-by-side duel',
                   'aria-pressed': active
@@ -7406,7 +7406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     h('div', { className: 'text-[10px] uppercase tracking-wider text-amber-300 mb-2 text-center' }, 'A'),
                     h('select', {
                       value: duelA, onChange: function(e) { setDuel('A', e.target.value); },
-                      className: 'w-full px-2 py-1.5 rounded bg-slate-800 text-amber-100 border border-slate-700 text-sm',
+                      className: 'w-full px-2 py-1.5 rounded bg-slate-800 text-amber-100 border border-slate-500 text-sm',
                       'aria-label': __alloT('stem.raptorhunt.species_a', 'Species A')
                     },
                       SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name); })
@@ -7421,7 +7421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     h('div', { className: 'text-[10px] uppercase tracking-wider text-orange-300 mb-2 text-center' }, 'B'),
                     h('select', {
                       value: duelB, onChange: function(e) { setDuel('B', e.target.value); },
-                      className: 'w-full px-2 py-1.5 rounded bg-slate-800 text-orange-100 border border-slate-700 text-sm',
+                      className: 'w-full px-2 py-1.5 rounded bg-slate-800 text-orange-100 border border-slate-500 text-sm',
                       'aria-label': __alloT('stem.raptorhunt.species_b', 'Species B')
                     },
                       SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name); })
@@ -7659,7 +7659,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex gap-2 pt-2' },
               h('button', {
                 onClick: function() { setRH({ activeSection: 'hunt' }); },
-                className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-700 hover:to-orange-700 transition-all',
+                className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-red-600 to-orange-700 text-white hover:from-red-700 hover:to-orange-700 transition-all',
                 'aria-label': 'Hunt as ' + sp.name
               }, '🎯 Hunt as ' + sp.name + ' →')
             )
@@ -7991,7 +7991,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   function() { setRH({ _threeLoadError: true }); rhAnnounce('3D engine failed to load'); }
                 );
               },
-              className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700',
+              className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-blue-600 to-cyan-700 text-white hover:from-blue-700 hover:to-cyan-700',
               'aria-label': __alloT('stem.raptorhunt.load_three_js_engine', 'Load Three.js engine')
             }, __alloT('stem.raptorhunt.load_3d_engine', '🚀 Load 3D Engine')),
             rh._threeLoadError && h('div', { className: 'text-xs text-red-300 mt-2' }, __alloT('stem.raptorhunt.failed_to_load_three_js_from_cdn_check', '⚠ Failed to load Three.js from CDN. Check your internet connection or try again.'))
@@ -10330,7 +10330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('select', {
                     value: tvp.predatorId,
                     onChange: function(e) { setTVP({ predatorId: e.target.value }); },
-                    className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-700 text-sm',
+                    className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-500 text-sm',
                     'aria-label': __alloT('stem.raptorhunt.choose_predator', 'Choose predator')
                   },
                     SPECIES.map(function(s) {
@@ -10343,7 +10343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('select', {
                     value: tvp.preyId,
                     onChange: function(e) { setTVP({ preyId: e.target.value }); },
-                    className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-700 text-sm',
+                    className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-500 text-sm',
                     'aria-label': __alloT('stem.raptorhunt.choose_prey', 'Choose prey')
                   },
                     Object.keys(PREY_TOUGHNESS).map(function(k) {
@@ -10620,7 +10620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('select', {
                     value: gr.speciesId,
                     onChange: function(e) { setGR({ speciesId: e.target.value }); },
-                    className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-700 text-sm',
+                    className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-500 text-sm',
                     'aria-label': __alloT('stem.raptorhunt.species_2', 'Species')
                   },
                     SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name + ' (AR ' + s.aspectRatio + ')'); })
@@ -11475,7 +11475,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('select', {
                   value: ti.species,
                   onChange: function(e) { setTI({ species: e.target.value }); },
-                  className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-700 text-sm',
+                  className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-100 border border-slate-500 text-sm',
                   'aria-label': __alloT('stem.raptorhunt.species_4', 'Species')
                 },
                   Object.keys(SPECIES_DEMO).map(function(k) {
@@ -12299,7 +12299,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             // Start button
             h('button', {
               onClick: function() { setQuiz({ started: true, missedReviewMode: false, ix: 0, score: 0, selected: -1, answered: false }); rhAnnounce('Quiz started · ' + total + ' questions'); },
-              className: 'w-full px-5 py-4 rounded-xl text-base font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg hover:from-amber-700 hover:to-orange-700 transition-all',
+              className: 'w-full px-5 py-4 rounded-xl text-base font-bold bg-gradient-to-r from-amber-700 to-orange-700 text-white shadow-lg hover:from-amber-700 hover:to-orange-700 transition-all',
               'aria-label': 'Start quiz with ' + total + ' questions'
             }, '▶ Start ' + total + '-question quiz')
           );
@@ -12345,7 +12345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   var newRuns = quizState.completedRuns + 1;
                   setQuiz({ started: true, missedReviewMode: false, ix: 0, score: 0, selected: -1, answered: false, bestScore: newBest, completedRuns: newRuns });
                 },
-                className: 'px-4 py-3 rounded-lg text-sm font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700 transition-all',
+                className: 'px-4 py-3 rounded-lg text-sm font-bold bg-gradient-to-r from-amber-700 to-orange-700 text-white hover:from-amber-700 hover:to-orange-700 transition-all',
                 'aria-label': __alloT('stem.raptorhunt.try_again', 'Try again')
               }, __alloT('stem.raptorhunt.try_again_2', '🔁 Try Again'))
             )
@@ -12434,7 +12434,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             disabled: quizState.selected < 0,
             className: 'w-full px-4 py-3 rounded-lg text-sm font-bold transition-all ' + (quizState.selected < 0
               ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-              : 'bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700'),
+              : 'bg-gradient-to-r from-amber-700 to-orange-700 text-white hover:from-amber-700 hover:to-orange-700'),
             'aria-label': __alloT('stem.raptorhunt.submit_answer', 'Submit answer')
           }, __alloT('stem.raptorhunt.submit_answer_2', '✔ Submit Answer')),
           quizState.answered && h('div', { className: 'space-y-3' },
@@ -12449,7 +12449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               onClick: function() {
                 setQuiz({ ix: quizState.ix + 1, selected: -1, answered: false });
               },
-              className: 'w-full px-4 py-3 rounded-lg text-sm font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700 transition-all',
+              className: 'w-full px-4 py-3 rounded-lg text-sm font-bold bg-gradient-to-r from-amber-700 to-orange-700 text-white hover:from-amber-700 hover:to-orange-700 transition-all',
               'aria-label': quizState.ix + 1 >= total ? 'See final results' : 'Next question'
             }, quizState.ix + 1 >= total ? '🏁 See Results →' : '➡ Next Question')
           )
@@ -12820,7 +12820,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               !pd.started ? h('div', { className: 'text-center py-4' },
                 h('button', {
                   onClick: startDx,
-                  className: 'px-5 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700 transition-all',
+                  className: 'px-5 py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-orange-700 to-red-600 text-white hover:from-orange-700 hover:to-red-700 transition-all',
                   'aria-label': __alloT('stem.raptorhunt.generate_virtual_pellet', 'Generate virtual pellet')
                 }, __alloT('stem.raptorhunt.generate_virtual_pellet_2', '🦉 Generate Virtual Pellet'))
               ) : h('div', { className: 'space-y-3' },
@@ -13185,7 +13185,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     key: m,
                     onClick: function() { setAnatomyMode(m); },
                     className: 'px-3 py-1 rounded text-xs font-bold transition-all ' + (active
-                      ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
+                      ? 'bg-gradient-to-r from-amber-700 to-orange-700 text-white'
                       : 'transition-colors text-amber-200 hover:text-amber-100'),
                     'aria-label': m === 'explore' ? 'Explore mode' : 'Quiz mode',
                     'aria-pressed': active
@@ -13222,7 +13222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ),
               h('button', {
                 onClick: nextQuiz,
-                className: 'w-full px-4 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700',
+                className: 'w-full px-4 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-700 to-orange-700 text-white hover:from-amber-700 hover:to-orange-700',
                 'aria-label': __alloT('stem.raptorhunt.next_anatomy_question', 'Next anatomy question')
               }, __alloT('stem.raptorhunt.next_anchor', '➡ Next Anchor'))
             )
@@ -13497,7 +13497,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     key: c.id,
                     onClick: function() { setCompareKey(c.id); },
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active
-                      ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
+                      ? 'bg-gradient-to-r from-amber-700 to-orange-700 text-white'
                       : 'transition-colors bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700 active:scale-[0.97]'),
                     'aria-label': c.label + ': ' + c.desc,
                     'aria-pressed': active
@@ -13881,7 +13881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex gap-2 justify-center' },
               h('button', {
                 onClick: function() { setSV({ playhead: 0, paused: false }); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700',
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-700 to-orange-700 text-white hover:from-amber-700 hover:to-orange-700',
                 'aria-label': __alloT('stem.raptorhunt.replay_stoop', 'Replay stoop')
               }, __alloT('stem.raptorhunt.replay', '▶ Replay')),
               h('button', {
@@ -14247,7 +14247,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   key: p.id,
                   onClick: function() { setAV({ zoom: p.zoom }); rhAnnounce('Zoom set to ' + p.label + ': ' + p.zoom + 'x'); },
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active
-                    ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md ring-2 ring-amber-400/50'
+                    ? 'bg-gradient-to-r from-amber-700 to-orange-700 text-white shadow-md ring-2 ring-amber-400/50'
                     : 'transition-colors bg-slate-800/50 text-amber-200 hover:bg-slate-700/50 hover:text-amber-100 active:scale-[0.97]'),
                   'aria-label': p.label + ' acuity ' + p.zoom + 'x',
                   'aria-pressed': active
@@ -14631,7 +14631,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     key: m.id,
                     onClick: function() { setPredictorMode(m.id); },
                     className: 'px-3 py-1 rounded text-xs font-bold transition-all ' + (active
-                      ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
+                      ? 'bg-gradient-to-r from-amber-700 to-orange-700 text-white'
                       : 'transition-colors text-cyan-200 hover:text-cyan-100'),
                     'aria-label': m.id === 'design' ? 'Design from sliders' : 'Frankenraptor: blend 2 species',
                     'aria-pressed': active
@@ -14655,7 +14655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('label', { className: 'text-xs text-purple-300 font-bold block mb-1' }, __alloT('stem.raptorhunt.wings_from', '🪶 Wings from')),
                 h('select', {
                   value: fr.wingsFrom, onChange: function(e) { setFR({ wingsFrom: e.target.value }); },
-                  className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-purple-100 border border-purple-700 text-sm',
+                  className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-purple-100 border border-purple-500 text-sm',
                   'aria-label': __alloT('stem.raptorhunt.wings_species', 'Wings species')
                 },
                   SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name + ' wings (span ' + s.wingspanM + ' m, AR ' + s.aspectRatio + ')'); })
@@ -14665,7 +14665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('label', { className: 'text-xs text-purple-300 font-bold block mb-1' }, __alloT('stem.raptorhunt.body_mass_from', '🦴 Body / mass from')),
                 h('select', {
                   value: fr.bodyFrom, onChange: function(e) { setFR({ bodyFrom: e.target.value }); },
-                  className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-purple-100 border border-purple-700 text-sm',
+                  className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-purple-100 border border-purple-500 text-sm',
                   'aria-label': __alloT('stem.raptorhunt.body_species', 'Body species')
                 },
                   SPECIES.map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name + ' body (' + s.massKg + ' kg)'); })
@@ -19307,7 +19307,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     key: m.id,
                     onClick: function() { setGlossMode(m.id); },
                     className: 'px-3 py-1 rounded text-xs font-bold transition-all ' + (active
-                      ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white'
+                      ? 'bg-gradient-to-r from-amber-700 to-orange-700 text-white'
                       : 'transition-colors text-amber-200 hover:text-amber-100'),
                     'aria-label': m.id === 'list' ? 'List view' : 'Flashcards view',
                     'aria-pressed': active
@@ -19423,7 +19423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               placeholder: __alloT('stem.raptorhunt.search_terms_or_definitions', '🔍 Search terms or definitions...'),
               value: glossSearch,
               onInput: function(e) { setSearch(e.target.value); },
-              className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-200 border border-slate-700 focus:border-amber-500 focus:outline-none text-sm',
+              className: 'w-full px-3 py-2 rounded-lg bg-slate-800 text-amber-200 border border-slate-500 focus:border-amber-500 focus:outline-none text-sm',
               'aria-label': __alloT('stem.raptorhunt.search_glossary', 'Search glossary')
             })
           ),
@@ -19437,7 +19437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 key: c.id,
                 onClick: function() { setCat(c.id); },
                 className: 'px-3 py-1 rounded-full text-xs font-bold transition-all ' + (active
-                  ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-amber-700 to-orange-700 text-white shadow-md'
                   : 'transition-colors bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700 active:scale-[0.97]'),
                 'aria-label': c.label + ' filter (' + count + ' terms)',
                 'aria-pressed': active
@@ -19565,7 +19565,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   key: r.id,
                   onClick: function() { setRegion(r.id); },
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active
-                    ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md'
+                    ? 'bg-gradient-to-r from-amber-700 to-orange-700 text-white shadow-md'
                     : 'transition-colors bg-slate-800 text-amber-200 hover:bg-slate-700 border border-slate-700 active:scale-[0.97]'),
                   'aria-label': r.label + ': ' + r.desc,
                   'aria-pressed': active
@@ -19868,7 +19868,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-2' }, p.problem),
                     h('button', {
                       onClick: function() { toggleProblem(p.id); },
-                      className: 'px-3 py-1 rounded text-xs font-bold ' + (shown ? 'bg-slate-700 text-slate-300' : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white'),
+                      className: 'px-3 py-1 rounded text-xs font-bold ' + (shown ? 'bg-slate-700 text-slate-300' : 'bg-gradient-to-r from-emerald-700 to-teal-700 text-white'),
                       'aria-label': shown ? 'Hide solution' : 'Show solution'
                     }, shown ? '✕ Hide solution' : '✓ Show solution'),
                     shown && h('div', { className: 'mt-2 bg-emerald-900/30 border border-emerald-700/40 rounded p-2 text-xs text-emerald-100/90 leading-relaxed' },
@@ -20255,7 +20255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       rhAnnounce('BibTeX bibliography downloaded as .bib file');
                     }
                   },
-                  className: 'flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700',
+                  className: 'flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-700 to-orange-700 text-white hover:from-amber-700 hover:to-orange-700',
                   'aria-label': __alloT('stem.raptorhunt.copy_bibtex_bibliography_to_clipboard', 'Copy BibTeX bibliography to clipboard')
                 }, __alloT('stem.raptorhunt.copy_as_bibtex', '📋 Copy as BibTeX'))
               ),
@@ -20403,7 +20403,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 value: rh.sectionSearch || '',
                 onChange: function(e) { setRH(function(cur) { return Object.assign({}, cur, { sectionSearch: e.target.value, activeCategory: null }); }); },
                 'aria-label': __alloT('stem.raptorhunt.search_sections', 'Search sections'),
-                className: 'px-2 py-1.5 text-xs bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder-slate-500 w-48'
+                className: 'px-2 py-1.5 text-xs bg-slate-800 border border-slate-500 rounded text-slate-100 placeholder-slate-400 w-48'
               }),
               searchTerm && h('span', { className: 'text-xs text-slate-400 font-mono' }, searchResults.length + ' match')
             )

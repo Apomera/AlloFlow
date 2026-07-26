@@ -2033,7 +2033,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             ),
 
             h('button', { onClick: function() { startGame('simple'); },
-              style: { width: '100%', marginTop: '16px', padding: '12px', borderRadius: '10px', border: 'none', background: '#16a34a', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
+              style: { width: '100%', marginTop: '16px', padding: '12px', borderRadius: '10px', border: 'none', background: '#15803d', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
             }, t('stem.atctower.practice_start_controlling', '🗼 Practice — Start Controlling'))
           )
         );

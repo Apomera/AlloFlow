@@ -1,6 +1,6 @@
 {
   "schemaVersion": 5,
-  "generatedAt": "2026-07-25T22:31:03.939Z",
+  "generatedAt": "2026-07-26T06:54:35.782Z",
   "packId": "eppp-part-one",
   "packVersion": "3.1.0",
   "standard": {
@@ -10840,7 +10840,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.ncbi.nlm.nih.gov/books/NBK305518/"
+        "https://ies.ed.gov/ncee/wwc/Handbooks"
       ]
     },
     {
@@ -11957,7 +11957,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.apa.org/ethics/code/manual-updates.html"
+        "https://www.apa.org/ethics/code"
       ]
     },
     {
@@ -13880,7 +13880,8 @@
       ],
       "findings": [],
       "references": [
-        "https://www.apa.org/ethics/code"
+        "https://www.apa.org/ethics/code",
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
       ]
     },
     {
@@ -18534,7 +18535,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.gace.ets.org/s/pdf/study_companions/gace_sc_curriculum_and_instruction.pdf"
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
       ]
     },
     {
@@ -22068,7 +22069,8 @@
       ],
       "findings": [],
       "references": [
-        "https://digital.apa.org/accreditation-files/policies_procedures/section-d-soa-a881a2c1.pdf"
+        "https://www.apa.org/ethics/code/committee-2016.html",
+        "https://asppb.net/consumers/complaints-discipline/disciplinary-statistics/"
       ]
     },
     {
@@ -27959,7 +27961,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/7-5-measures-of-intelligence"
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
       ]
     },
     {
@@ -33106,7 +33108,8 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/3-4-the-brain-and-spinal-cord"
+        "https://openstax.org/books/psychology-2e/pages/3-4-the-brain-and-spinal-cord",
+        "https://www.asha.org/practice-portal/clinical-topics/aphasia/"
       ]
     },
     {
@@ -48486,7 +48489,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/15-introduction"
+        "https://www.pearsonassessments.com/store/usassessments/en/p/wechsler-memory-scale-fifth-edition/P100096000"
       ]
     },
     {
@@ -64052,7 +64055,8 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/3-4-the-brain-and-spinal-cord"
+        "https://openstax.org/books/psychology-2e/pages/3-4-the-brain-and-spinal-cord",
+        "https://www.nature.com/articles/s41583-024-00802-4"
       ]
     },
     {
@@ -65292,7 +65296,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1016/0010-0285(73"
+        "https://doi.org/10.1016/0010-0285(73)90033-9"
       ]
     },
     {
@@ -85200,7 +85204,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1016/0005-7967(91"
+        "https://doi.org/10.1037/0003-066X.61.4.271"
       ]
     },
     {
@@ -90782,7 +90786,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.apa.org/ethics/code"
+        "https://doi.org/10.1037/0003-066X.61.4.271"
       ]
     },
     {

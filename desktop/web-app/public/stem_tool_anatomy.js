@@ -4274,7 +4274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('span', { className: 'text-sm font-bold text-amber-700' }, (d.researchPoints || 0) + ' RP')
               ),
               h('span', {
-                className: 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-600'
+                className: 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700'
               }, (d.completedChallenges || []).length + '/' + ANAT_CHALLENGES.length + ' challenges')
             ),
             h('div', { className: 'w-full rounded-full h-2.5 bg-orange-100/50', style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
@@ -4940,7 +4940,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('div', { className: 'bg-white rounded-xl border-2 border-rose-200 p-4 space-y-3' },
                   h('div', { className: 'flex items-center justify-between mb-2' },
                     h('h4', { className: 'font-bold text-rose-800 text-sm' }, '\uD83D\uDEE4 Physiological Pathways'),
-                    h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600' }, Object.keys(pathwaysCompleted).length + '/' + PATHWAYS.length + ' completed')
+                    h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700' }, Object.keys(pathwaysCompleted).length + '/' + PATHWAYS.length + ' completed')
                   ),
                   h('p', { className: 'text-xs text-slate-600 mb-3' }, 'Trace step-by-step how blood flows, air moves, food digests, or nerve signals travel through the body.'),
                   !activePathwayId ? h('div', { className: 'grid grid-cols-2 gap-2' },
@@ -5021,7 +5021,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('div', { className: 'bg-white rounded-xl border-2 border-sky-200 p-4 space-y-3' },
                   h('div', { className: 'flex items-center justify-between mb-2' },
                     h('h4', { className: 'font-bold text-sky-800 text-sm' }, '\uD83D\uDD17 How Body Systems Connect'),
-                    h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-600' }, Object.keys(connectionsViewed).length + '/' + CONNECTIONS.length + ' explored')
+                    h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700' }, Object.keys(connectionsViewed).length + '/' + CONNECTIONS.length + ' explored')
                   ),
                   h('div', { className: 'space-y-2 max-h-[500px] overflow-y-auto' },
                     CONNECTIONS.map(function(conn) {
@@ -5113,7 +5113,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-[11px] font-bold text-rose-600 uppercase tracking-wider' }, '\uD83E\uDE7A Clinical Cases (' + (d._clinicalSolved || 0) + ' solved)'),
               h('button', { onClick: function() { upd('_showClinical', !d._showClinical); },
-                className: 'text-[11px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-600 hover:bg-rose-200 transition-all'
+                className: 'text-[11px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-700 hover:bg-rose-200 transition-all'
               }, d._showClinical ? 'Hide' : 'Show Cases')
             ),
             d._showClinical ? h('div', { className: 'space-y-2' },

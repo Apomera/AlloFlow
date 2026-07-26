@@ -36,25 +36,44 @@ describe('EPPP native learning-library catalog', () => {
     expect(catalog.flashcards.every((card) => card.front && card.back && ['review-required', 'source-reviewed-editorial-pass'].includes(card.reviewStatus))).toBe(true);
     expect(catalog.flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(415);
     expect(catalog.flashcards.filter((card) => card.reviewStatus === 'review-required')).toHaveLength(0);
-    expect(catalog.flashcards.filter((card) => card.contentDisposition === 'retain-after-rewrite')).toHaveLength(336);
-    expect(catalog.flashcards.filter((card) => card.contentDisposition === 'retire-redundant')).toHaveLength(79);
+    expect(catalog.flashcards.filter((card) => card.contentDisposition === 'retain-after-rewrite')).toHaveLength(335);
+    expect(catalog.flashcards.filter((card) => card.contentDisposition === 'retire-redundant')).toHaveLength(80);
+    expect(catalog.flashcards.find((card) => card.id === 'flashcard-64a47430077d02d6')).toMatchObject({
+      contentDisposition: 'retire-redundant',
+      learnerVisible: false,
+    });
+    expect(catalog.flashcards.find((card) => card.id === 'flashcard-10736b0e2a20017d')).toMatchObject({
+      contentDisposition: 'retain-after-rewrite',
+    });
+    const manualReviewCards = catalog.flashcards.filter((card) => card.reviewArtifact === 'eppp_learning_review_overrides.json');
+    expect(manualReviewCards).toHaveLength(9);
+    expect(manualReviewCards.every((card) => card.reviewDate === '2026-07-26'
+      && card.reviewWave === 'eppp-learning-review-overrides'
+      && card.sourceDetails.length > 0
+      && card.sourceDetails.every((source) => source.title && source.organization && source.url && source.credibility)
+      && card.checks.accuracyAndCurrency === 'assisted-review-pass-expert-pending'
+      && card.checks.biasAndContext === 'assisted-review-pass-expert-pending')).toBe(true);
     expect(catalog.memoryAids.every((aid) => aid.title && aid.content && ['review-required', 'source-reviewed-editorial-pass', 'editorial-reviewed-source-pending'].includes(aid.reviewStatus))).toBe(true);
     expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(56);
     expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'editorial-reviewed-source-pending')).toHaveLength(2);
     expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'review-required')).toHaveLength(197);
     expect(catalog.summary).toMatchObject({
-      releasedFlashcards: 336,
+      releasedFlashcards: 335,
       releasedMemoryAids: 56,
       qaPassedKnowledgeChecks: 0,
-      sourceReviewedKnowledgeChecks: 32,
-      releasedKnowledgeChecks: 32,
-      reviewRequiredKnowledgeChecks: 77,
+      sourceReviewedKnowledgeChecks: 48,
+      releasedKnowledgeChecks: 48,
+      reviewRequiredKnowledgeChecks: 61,
     });
-    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(32);
-    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'review-required')).toHaveLength(77);
-    expect(catalog.chapters.flatMap((chapter) => chapter.knowledgeChecks)).toHaveLength(32);
+    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(48);
+    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'review-required')).toHaveLength(61);
+    expect(catalog.chapters.flatMap((chapter) => chapter.knowledgeChecks)).toHaveLength(48);
     expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').every((aid) => aid.sourceDetails.length > 0 && aid.sourceDetails.every((source) => source.title && source.url && source.whyReputable))).toBe(true);
     expect(catalog.diagrams.every((diagram) => diagram.hasSvg && diagram.description)).toBe(true);
+    expect(catalog.diagramPlacements.find((placement) => placement.id === 'diagram-placement-ch-48-section-01')).toMatchObject({
+      description: 'The Normal Distribution: Mean (μ) and Standard Deviations (σ)',
+    });
+    expect(readText('test_prep/eppp_legacy/js/textbook_ch48.js')).not.toMatch(/Î¼|Ïƒ/);
     expect(qa.status).toBe('review-in-progress');
     expect(qa.summary).toMatchObject({ qaPassedChapters: 0, sourceReviewedChapters: 49, qaPassedFlashcards: 0, qaPassedMemoryAids: 0 });
   });

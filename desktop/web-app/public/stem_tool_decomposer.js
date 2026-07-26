@@ -1377,7 +1377,7 @@
                 h('span', { className: 'text-sm font-bold text-sky-700' }, (d.researchPoints || 0) + ' RP')
               ),
               h('span', {
-                className: 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-600'
+                className: 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-700'
               }, (d.completedChallenges || []).length + '/' + DECOMPOSER_CHALLENGES.length + ' challenges')
             ),
             h('div', { className: 'w-full rounded-full h-2.5 bg-sky-100/50', style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
@@ -1502,7 +1502,7 @@
                 className: 'w-full py-2.5 rounded-xl text-sm font-bold transition-all '
                   + (decomposed
                     ? 'bg-amber-700 text-white shadow-lg'
-                    : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-md')
+                    : 'bg-gradient-to-r from-amber-700 to-orange-700 text-white hover:from-amber-700 hover:to-orange-700 shadow-md')
               }, decomposed ? '\uD83D\uDD04 Reassemble' : '\u2697\uFE0F Decompose into Elements'),
 
               /* Animated decomposition visual */
@@ -2346,7 +2346,7 @@
                     ),
                     h('div', { className: 'flex gap-2 mt-3' },
                       h('button', { 'aria-label': 'Explore', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-600 transition-all' }, '\u2697\uFE0F Explore'),
-                      h('button', { 'aria-label': 'Visualize', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); }, className: 'flex-1 py-2 bg-indigo-500 text-white font-bold text-xs rounded-lg hover:bg-indigo-600 transition-all' }, '\uD83C\uDFA8 Visualize'),
+                      h('button', { 'aria-label': 'Visualize', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); }, className: 'flex-1 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg hover:bg-indigo-700 transition-all' }, '\uD83C\uDFA8 Visualize'),
                       h('button', { 'aria-label': 'Speak Text', onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all' }, '\uD83D\uDD0A')
                     )
                   )
@@ -2448,7 +2448,7 @@
                       upd('activeReaction', { name: 'No Known Reaction', emoji: '\uD83E\uDD37', desc: 'These two materials don\u2019t have a notable reaction in our database. Try a different combination!', equation: reactantA + ' + ' + reactantB + ' \u2192 ?', type: 'Unknown', observable: 'No visible change' });
                     }
                   },
-                  className: 'w-full py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 shadow-md transition-all mb-3'
+                  className: 'w-full py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-orange-700 to-red-600 text-white hover:from-orange-700 hover:to-red-600 shadow-md transition-all mb-3'
                 }, '\uD83E\uDDEA Mix ' + reactantA + ' + ' + reactantB + '!') : null,
 
                 // Reaction result card
@@ -2753,7 +2753,7 @@
                 className: 'flex-1 py-2.5 rounded-xl text-sm font-bold transition-all '
                   + (decomposed
                     ? 'bg-red-700 text-white shadow-lg hover:bg-red-600'
-                    : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 shadow-md')
+                    : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-600 shadow-md')
               }, decomposed ? '\uD83D\uDD04 Reassemble' : '\u26A1 Decompose'),
               h('button', { 'aria-label': 'Describe',
                 onClick: function() { speakText(sel.name + ' has the formula ' + sel.formula + '. ' + sel.desc); },
@@ -2837,7 +2837,7 @@
                 onClick: function() {
                   updMulti({ quizMode: true, quizQ: makeQuiz() });
                 },
-                className: 'px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-sm rounded-xl hover:from-emerald-600 hover:to-teal-600 shadow-md'
+                className: 'px-6 py-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold text-sm rounded-xl hover:from-emerald-700 hover:to-teal-700 shadow-md'
               }, '\uD83D\uDE80 Start Quiz')
             ),
 
@@ -3150,7 +3150,7 @@
               });
               addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
             },
-            className: 'mt-1 ml-auto block px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all'
+            className: 'mt-1 ml-auto block px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all'
           }, '\uD83D\uDCF8 Snapshot')
 
         );

@@ -3127,7 +3127,7 @@
           className: "flex-1"
         }), /*#__PURE__*/React.createElement("button", { "aria-label": "Open assessment builder",
           onClick: () => setShowAssessmentBuilder(true),
-          className: "px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-lg shadow-purple-200 hover:from-violet-600 hover:to-purple-600 transition-all flex items-center gap-2"
+          className: "px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-purple-200 hover:from-violet-600 hover:to-purple-600 transition-all flex items-center gap-2"
         }, "\uD83D\uDCCB Build Assessment")), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4"
         }, /*#__PURE__*/React.createElement("span", {
@@ -3151,7 +3151,7 @@
           value: mathInput,
           onChange: e => setMathInput(e.target.value),
           placeholder: stemLabCreateMode === 'solve' ? 'Enter a math problem to solve step-by-step...' : stemLabCreateMode === 'content' ? 'Paste or describe content to generate math problems from...' : 'Enter topic, standard, or description (e.g. "3rd grade multiplication word problems")...',
-          className: "w-full h-28 px-4 py-3 text-sm border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none resize-none bg-white",
+          className: "w-full h-28 px-4 py-3 text-sm border border-slate-500 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none resize-none bg-white",
           "aria-label": "Math problem input"
         }), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4 mt-3"
@@ -3435,7 +3435,7 @@
             setHistory(prev => [...prev, stemAssessment]);
             addToast(t('stem.fluency.stem_assessment_saved_to_resources') + assessmentBlocks.length + ' blocks)', 'success');
           },
-          className: "py-3 px-5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
+          className: "py-3 px-5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-xl text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
         }, "\uD83D\uDCBE Save to Resources"),
           toolSnapshots.length > 0 && /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
             className: "mt-4 pt-4 border-t border-slate-200"
@@ -4429,7 +4429,7 @@
                 if (d._categoryFilter) upd('_categoryFilter', '');
               },
               placeholder: "Search " + _totalToolCount + " tools...",
-              className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-400 rounded-xl bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all",
+              className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-500 rounded-xl bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all",
               'aria-label': 'Search STEM Lab tools'
             }),
             /*#__PURE__*/React.createElement("span", { className: "absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" }, "\uD83D\uDD0D"),
@@ -4633,7 +4633,7 @@
                   if (addToast) addToast('\uD83C\uDFAF Station loaded: ' + (st ? st.name : ''), 'success');
                 }
               },
-              className: "px-2 py-1.5 text-xs border border-slate-400 rounded-lg bg-white text-slate-700 font-bold"
+              className: "px-2 py-1.5 text-xs border border-slate-500 rounded-lg bg-white text-slate-700 font-bold"
             },
               React.createElement("option", { value: "" }, "\uD83D\uDCCB Load Station..."),
               _savedStations.map(function(st) {
@@ -4800,7 +4800,7 @@
               React.createElement("input", {
                 type: "text", value: _stationName, placeholder: "e.g. Water Cycle Exploration",
                 onChange: function(e) { _setStationName(e.target.value); },
-                className: "w-full px-3 py-2 text-sm border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 outline-none"
+                className: "w-full px-3 py-2 text-sm border border-indigo-500 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 outline-none"
               })
             ),
 
@@ -4811,7 +4811,7 @@
                 React.createElement("select", {
                   value: _stationGrade,
                   onChange: function(e) { _setStationGrade(e.target.value); },
-                  className: "w-full px-3 py-2 text-sm border border-indigo-200 rounded-lg bg-white"
+                  className: "w-full px-3 py-2 text-sm border border-indigo-500 rounded-lg bg-white"
                 },
                   React.createElement("option", { value: "" }, "Auto-detect"),
                   ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"].map(function(g) {
@@ -4824,7 +4824,7 @@
                 React.createElement("select", {
                   value: _stationTimeEst,
                   onChange: function(e) { _setStationTimeEst(e.target.value); },
-                  className: "w-full px-3 py-2 text-sm border border-indigo-200 rounded-lg bg-white"
+                  className: "w-full px-3 py-2 text-sm border border-indigo-500 rounded-lg bg-white"
                 },
                   ["10", "15", "20", "30", "45", "60"].map(function(m) {
                     return React.createElement("option", { key: m, value: m }, m + " minutes");
@@ -4839,7 +4839,7 @@
               React.createElement("textarea", {
                 value: _stationNote, placeholder: "e.g. Start with the Water Cycle tool, then complete the Quiz.",
                 onChange: function(e) { _setStationNote(e.target.value); },
-                rows: 2, className: "w-full px-3 py-2 text-sm border border-indigo-200 rounded-lg bg-white resize-none focus:ring-2 focus:ring-indigo-400 outline-none"
+                rows: 2, className: "w-full px-3 py-2 text-sm border border-indigo-500 rounded-lg bg-white resize-none focus:ring-2 focus:ring-indigo-400 outline-none"
               })
             ),
 
@@ -4885,7 +4885,7 @@
                         _setStationQuests(autoQuests);
                         if (addToast) addToast('\uD83E\uDD16 Smart quests generated! ' + autoQuests.length + ' quests based on your tools.', 'success');
                       },
-                      className: "w-full mb-1.5 py-2 rounded-lg text-[10px] font-bold text-white bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 transition-all shadow-sm"
+                      className: "w-full mb-1.5 py-2 rounded-lg text-[10px] font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-600 hover:to-indigo-600 transition-all shadow-sm"
                     }, "\uD83E\uDD16 Auto-Generate Smart Quests (" + totalHooksAvailable + " available)");
                   })(),
                   React.createElement("div", { className: "grid grid-cols-3 gap-1.5" },
@@ -5014,7 +5014,7 @@
                       value: d._questBuilderTool || '',
                       onChange: function(e) { upd('_questBuilderTool', e.target.value); },
                       'aria-label': 'Select tool for quest',
-                      className: "w-full px-2 py-1.5 text-xs border border-amber-200 rounded-lg bg-white"
+                      className: "w-full px-2 py-1.5 text-xs border border-amber-600 rounded-lg bg-white"
                     },
                       React.createElement("option", { value: "" }, "-- Select a tool --"),
                       Object.keys(_stationTools).filter(function(k) { return _stationTools[k]; }).map(function(toolId) {

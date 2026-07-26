@@ -1,0 +1,430 @@
+'use strict';
+
+// Generated from the post-Wave 16 EPPP bank and distractor diagnostics on
+// 2026-07-25. This manifest is intentionally static: repair tooling must reject
+// an item when its answer position or content fingerprint no longer matches.
+
+const CAMPAIGN_ID = 'eppp-distractor-halving-campaign-v1';
+const BASELINE_REVIEWED_AT = '2026-07-25';
+const FINGERPRINT_SPEC = 'sha256(JSON.stringify({prompt,choices,rationale,references}))';
+
+const BASELINE_METRICS = Object.freeze({
+  uniqueKeyStemLexicalLeakageCandidates: 141,
+  asymmetricExtremeDistractorCandidates: 295,
+  advancedDirectRecallCandidates: 18,
+  semanticConceptDuplicatePairs: 240,
+  semanticConceptDuplicateClusters: 120,
+});
+
+const HALVING_CEILINGS = Object.freeze({
+  uniqueKeyStemLexicalLeakageCandidates: 70,
+  asymmetricExtremeDistractorCandidates: 147,
+  advancedDirectRecallCandidates: 9,
+  semanticConceptDuplicatePairs: 120,
+  semanticConceptDuplicateClusters: 60,
+});
+
+const BUFFERED_TARGETS = Object.freeze({
+  uniqueKeyStemLexicalLeakageCandidates: 65,
+  asymmetricExtremeDistractorCandidates: 140,
+  advancedDirectRecallCandidates: 7,
+  semanticConceptDuplicatePairs: 110,
+  semanticConceptDuplicateClusters: 55,
+});
+
+const EXPECTED_SELECTION_COUNTS = Object.freeze({
+  'lexical-only': 34,
+  'lexical+duplicate': 30,
+  'lexical+extreme': 11,
+  'lexical+recall': 1,
+  'extreme-only': 104,
+  'extreme+duplicate': 40,
+  'recall-only': 6,
+  'recall+duplicate': 4,
+  'duplicate-only': 33,
+  total: 263,
+});
+
+const EXPECTED_WARNING_FAMILY_COUNTS = Object.freeze({
+  'unique-key/stem-lexical-leakage': 76,
+  'asymmetric-extreme-distractors': 155,
+  'advanced-direct-recall': 11,
+  'semantic-concept-duplicate-candidate': 107,
+});
+
+const EXPECTED_DOMAIN_COUNTS = Object.freeze({
+  "cognitive-affective": 31,
+  "intervention": 45,
+  "professional": 68,
+  "assessment": 49,
+  "social-cultural": 29,
+  "research": 14,
+  "biological": 16,
+  "lifespan": 11
+});
+
+const WARNING_FAMILIES_BY_SELECTION = Object.freeze({
+  'lexical-only': Object.freeze(['unique-key/stem-lexical-leakage']),
+  'lexical+duplicate': Object.freeze(['unique-key/stem-lexical-leakage', 'semantic-concept-duplicate-candidate']),
+  'lexical+extreme': Object.freeze(['unique-key/stem-lexical-leakage', 'asymmetric-extreme-distractors']),
+  'lexical+recall': Object.freeze(['unique-key/stem-lexical-leakage', 'advanced-direct-recall']),
+  'extreme-only': Object.freeze(['asymmetric-extreme-distractors']),
+  'extreme+duplicate': Object.freeze(['asymmetric-extreme-distractors', 'semantic-concept-duplicate-candidate']),
+  'recall-only': Object.freeze(['advanced-direct-recall']),
+  'recall+duplicate': Object.freeze(['advanced-direct-recall', 'semantic-concept-duplicate-candidate']),
+  'duplicate-only': Object.freeze(['semantic-concept-duplicate-candidate']),
+});
+
+const SELECTION_POLICY = Object.freeze({
+  invariantCohorts: 'Include every current LD, LE, LR, ED, and RD overlap candidate plus the 33 graph-optimized duplicate-only companions.',
+  lexicalOnly: 'Select 34 current L-only candidates by descending distractor-audit priority score, then ascending stable item ID.',
+  extremeOnly: 'Select 104 current E-only candidates by descending distractor-audit priority score, then ascending stable item ID.',
+  recallOnly: 'Select 6 current R-only candidates by descending distractor-audit priority score, then ascending stable item ID.',
+  priorityScore: 'Uses the warning-score terms in audit_eppp_distractor_quality.cjs without the editorial-anchor bonus.',
+  duplicateModel: 'The selected 33 D-only companions are the buffered component solution calculated against the frozen post-Wave 16 duplicate graph.',
+});
+
+// Tuple fields: [id, domainId, expectedAnswerIndex, contentSha256,
+// selectionFamily, rankWithinSelectionFamily, baselinePriorityScore]
+const CAMPAIGN_ITEM_TUPLES = Object.freeze([
+  ["eppp-v3-cognitive-affective-050","cognitive-affective",0,"434f3e0d90a5823874bd951c8e74d74136f2179ad429726823e4cb214d992c43","lexical-only",1,9],
+  ["eppp-v2-intervention-018","intervention",3,"9cdc593daf2547340ec2f117c3e04d9cba0cc953e0df766e24b72dd806fa1abb","lexical-only",2,7],
+  ["eppp-v3-professional-075","professional",2,"546b8490cc7131d0642ee81a75036a22c2262c1a293f70b06bbb46149a3fdb0b","lexical-only",3,7],
+  ["eppp-migrated-assessment-1","assessment",0,"4cda7d122d4621ff4a639a57c03ef58472c9dad89fa3e3d66c04e9c883c0cda3","lexical-only",4,6],
+  ["eppp-v2-assessment-009","assessment",1,"5f32bcabe138a8308bb6c0b5f4df8c5bed9c4ee55b21864ff28f651c5c68e3ee","lexical-only",5,6],
+  ["eppp-v2-cognitive-affective-064","cognitive-affective",1,"7f48cd8e6409220b0590e63924b3c12a80f631174a4a1d13257dbf0e8f5a2925","lexical-only",6,6],
+  ["eppp-v3-cognitive-affective-021","cognitive-affective",1,"0f440f0b1af2bd728c88349994ff000d79dfc148d935c2052cf9807d15f665dc","lexical-only",7,6],
+  ["eppp-v3-social-cultural-053","social-cultural",3,"63c6223f3bd321f02f2f87c564fde3c0a489a2697d05fee9cdd5ecd90b15ece5","lexical-only",8,6],
+  ["eppp-b001-cognitive-2","cognitive-affective",3,"6d544159de1bb1c9c9998d89ed13e442608df2ed020c12549da2fe64136be0be","lexical-only",9,5],
+  ["eppp-b001-research-2","research",2,"c021a07268d7b92ec69fc0d022ecf68420e980f70c47d8dacf17607d2e07e5c1","lexical-only",10,5],
+  ["eppp-b002-biological-2","biological",2,"65ef1a7eea665f0d998523085ae0e60180e6a9c391fd115fd58346a4632c4b89","lexical-only",11,5],
+  ["eppp-b003-social-1","social-cultural",0,"bfcda9a60eae4ea297259c32369eedf83ca1de98b5b73932ae7d09ebfe2e3dc8","lexical-only",12,5],
+  ["eppp-b004-research-1","research",0,"b381686890ab9e4a99086ab27e86dbb1805de313aae6e96adc53507527562471","lexical-only",13,5],
+  ["eppp-b005-professional-1","professional",1,"fc361035e3e522c629c76aa66c55ce59d76825bae7b39b88a631dcd02b8103d9","lexical-only",14,5],
+  ["eppp-b008-lifespan-1","lifespan",1,"9dd673e9419fab690d2822fbf5fa077a3fbd0db3bfff1598aca1bfcbd6ef21f2","lexical-only",15,5],
+  ["eppp-b009-assessment-1","assessment",0,"0f3e9f223e990bfd2fd3b0a393159727d90862709ab46dc61e1c9e837a7b5312","lexical-only",16,5],
+  ["eppp-b010-lifespan-1","lifespan",1,"78c2f32e70a4c49b93c91398212bd1d010efe3ed1c68f432549e8c2716481a14","lexical-only",17,5],
+  ["eppp-b011-assessment-1","assessment",0,"ab8539f3ae01991284b89d53afa77c0667245f1509aeb40dfae57ae3e5735643","lexical-only",18,5],
+  ["eppp-b011-professional-2","professional",3,"ce9e66f1b35c1ad718b132377e39b0b71fccee42ad69a16e08757e1c9a7fda0f","lexical-only",19,5],
+  ["eppp-b016-research-1","research",0,"6f202bba7a7e7aaf93404bf39e33be3d510dbb5c0ecb39fd2bd7ba0dea784206","lexical-only",20,5],
+  ["eppp-b017-professional-2","professional",2,"6308f580053a735880944b4e8cb756fb224edda0b1b819c784410b6ecd79dba1","lexical-only",21,5],
+  ["eppp-b019-assessment-3","assessment",2,"ecb74f37a5995f8a1072384d78c757e1c8ac70518a4f0ffd0cadd716791ea951","lexical-only",22,5],
+  ["eppp-b019-cognitive-1","cognitive-affective",0,"83277111a6ccbe568317819ffb25c8ea3b06232346f579b343cd2e35353e24e5","lexical-only",23,5],
+  ["eppp-b020-intervention-3","intervention",3,"6a806e65e9731305f718135994a4fba49b6a5f6a5de640968cb557967b4532ce","lexical-only",24,5],
+  ["eppp-b021-cognitive-3","cognitive-affective",2,"2f6d9e2b24e8c3338c37c391cc893f5d3f83b990ed544da7c607788fe4d92550","lexical-only",25,5],
+  ["eppp-b021-professional-4","professional",3,"24b1fef2f4385b935fde5d77ed1782510639dc0f0cd56530fcd978f86e3a1bce","lexical-only",26,5],
+  ["eppp-b022-assessment-3","assessment",2,"54bc30b8b5511c1146c34bbcd698f9609093f8c4f699d59cdafff2d8cbacb102","lexical-only",27,5],
+  ["eppp-b024-intervention-2","intervention",1,"f38d350a786dde626948dc3aae5d3c70112b4f24489c8a1230d6002c1433c51f","lexical-only",28,5],
+  ["eppp-b025-intervention-1","intervention",1,"6fa7d6a941a4768bd33bc549ffaf47c55050369cd125a86c9b0930a9eec36cdc","lexical-only",29,5],
+  ["eppp-b027-assessment-2","assessment",1,"770c66c4333c6083f94aa803f62b2da55f2571b58e04c761dc6437ad45ec9c1c","lexical-only",30,5],
+  ["eppp-migrated-intervention-1","intervention",3,"cdd2a2fb4a5f4d36132b051a6a10d2c7a5d7b1591b3473ad9daf9a79679e1ea6","lexical-only",31,5],
+  ["eppp-v2-assessment-015","assessment",3,"aa2e2366930a90eff102db62f85ef2b129337e2916ac4217c2fcf2004ffbc44c","lexical-only",32,5],
+  ["eppp-v2-assessment-032","assessment",0,"4cc47f2f6d1b385db442a22d44c8045f77b4fc2b8c0b08973034c2601869c1fa","lexical-only",33,5],
+  ["eppp-v2-assessment-056","assessment",0,"698ba60affc782853a273e04679b6699ca1673ab1b9c1abe2f5334d73f59f47a","lexical-only",34,5],
+  ["eppp-v2-assessment-062","assessment",2,"b0eb9a632b7ae8ccfcc122037858d3806a11f29a61d790f025e3d28734fb0482","lexical+duplicate",1,9.72],
+  ["eppp-v3-assessment-056","assessment",1,"b8d89d92662b3cd86dddfcfbecb014b468b685ae0d6a4d698689e1cad5799b32","lexical+duplicate",2,9.72],
+  ["eppp-v3-professional-001","professional",0,"5bc187ca8fa1271f4c8c172c6305e6d8b4ad210daa2a2d904faf973c4b556ad5","lexical+duplicate",3,9.71],
+  ["eppp-v2-assessment-018","assessment",2,"391ba388e94b69640ef54c283be1d742bf7da304bab5a0d46f8f1b0b155cddd7","lexical+duplicate",4,9.26],
+  ["eppp-v2-professional-024","professional",1,"91ee32bce967399ec31a1c04ce820806de98fa696a574c5cb921872c38f05afa","lexical+duplicate",5,9.25],
+  ["eppp-v3-professional-003","professional",2,"8c6a331f90a497e38e61b6936870e9099309b62d6d010f6cbde0201e8ee716fa","lexical+duplicate",6,9.25],
+  ["eppp-v3-professional-065","professional",0,"64758071a2ee12bc4e771d2e6a691315665ed5125e9bda7137d5341ba2b938c0","lexical+duplicate",7,9.19],
+  ["eppp-v3-assessment-046","assessment",3,"c2203b09cd802abe19234135894f6f529500f6c472bcc2d36ccb5386050ce75e","lexical+duplicate",8,9.1],
+  ["eppp-v3-assessment-060","assessment",1,"cb4fe618a5d46d5b78952802e8991e27b0ed5b432033cd4e9e07f0b6f7fed227","lexical+duplicate",9,9.1],
+  ["eppp-v3-biological-038","biological",3,"014520ac6f58d9d489804db6c929d5ee07fd99206c80b3bf5b81136cbee4fec6","lexical+duplicate",10,9.08],
+  ["eppp-v3-assessment-026","assessment",3,"7f714ac2456a40fdb6a74d95ffce2c05224c2a34693950fb0a2aba2cb8035dbc","lexical+duplicate",11,9.03],
+  ["eppp-v3-intervention-071","intervention",0,"697ceb7174e301cb94ef0c27456c4be302e7db2a6cad013dd444ce564de2552e","lexical+duplicate",12,8.75],
+  ["eppp-v2-professional-010","professional",3,"9b90c3d52531552af4034784f2de11f12658281bbd178bf15e3c2ccd11724a6f","lexical+duplicate",13,8.5],
+  ["eppp-v3-intervention-020","intervention",2,"a41efe1aefb8ff233ef5a41906399930b623f7b2f0255e891ae6431f46cb6b78","lexical+duplicate",14,8.31],
+  ["eppp-b028-social-2","social-cultural",1,"73262a1723789c8777cc6ea36d50fb037419c4c9381f536e472ebb17da379519","lexical+duplicate",15,8.23],
+  ["eppp-v2-social-cultural-023","social-cultural",1,"d5f0725b0cb23edd7445b0cd60001b271be49a43b8136dbf659d290572f3b571","lexical+duplicate",16,8.03],
+  ["eppp-v2-intervention-048","intervention",1,"22e1cf3f09a5e6d8c201d102db7d037dea2312161210b858fd5338e448311c1b","lexical+duplicate",17,8.01],
+  ["eppp-b024-intervention-3","intervention",2,"448bd551396a2abdc664ab07e7228854609bce92e87dcc0a5c24e333d540107c","lexical+duplicate",18,7.75],
+  ["eppp-v3-assessment-063","assessment",0,"59150cca1eb51eabd562c6e134c16f2c9ec8c21c78e66be73e97b2c5ca701b83","lexical+duplicate",19,7.56],
+  ["eppp-b019-professional-2","professional",3,"48925c9523905236434f1d61b239bf964d44b79460f24e4b390a4da0cf83bb07","lexical+duplicate",20,7.36],
+  ["eppp-v3-assessment-029","assessment",2,"ca023d694e509ab1028c39482c8b140f5494d9da1cfbfcffd940365d21c8e459","lexical+duplicate",21,7.34],
+  ["eppp-v2-biological-044","biological",3,"275d4e160eeface7fd3bdb1c0727ab7f3d78b976851ba22041aa0ea5644dd1da","lexical+duplicate",22,7.05],
+  ["eppp-v3-intervention-065","intervention",2,"c172b655ff65d68b2131c25f434e4e757238805c94a3f959d793971316adbc8a","lexical+duplicate",23,7.01],
+  ["eppp-v3-intervention-067","intervention",0,"b507fea7ef1da3246063cde9b8d5a412efcff6bd6e28bfa04d4f9850569dc487","lexical+duplicate",24,7.01],
+  ["eppp-v2-assessment-027","assessment",3,"17bd900cb175ea79701d522fe375e2bf06a1456490b404d0c69e420b508d6c6c","lexical+duplicate",25,6.9],
+  ["eppp-v2-assessment-074","assessment",0,"af67f85ce86f27eea7e7718642b84807484d2451a498d1f810a0f34379e517be","lexical+duplicate",26,6.78],
+  ["eppp-v3-intervention-036","intervention",3,"f22dd11dd4abdd7efe429c0ad42154ed55c469c606992f27fec1ac332b1bb08c","lexical+duplicate",27,6.68],
+  ["eppp-v2-research-002","research",2,"61e6809ae3515bd8304e3e7c4bc85d7cd6baa64d28e89955c75bf389e1a4a903","lexical+duplicate",28,5.87],
+  ["eppp-b026-social-2","social-cultural",1,"b8d0df11c861e6dae35092d489d651e96840ab68d7f718c4dc9fd4c443957784","lexical+duplicate",29,5.69],
+  ["eppp-v2-intervention-003","intervention",0,"10e3131581be58c1ffd7e6d402a74e014f84c6312e7b165b7e018e4f52eb0bec","lexical+duplicate",30,5.46],
+  ["eppp-b024-professional-4","professional",3,"e9297eae4648433d0f6a5044dc199fa259ead31cccd183c337cd3f83025e9d18","lexical+extreme",1,10],
+  ["eppp-b025-assessment-2","assessment",1,"e543565b45dfa4ee341220c65a679e720ce946f6b838689979157493f23990e4","lexical+extreme",2,10],
+  ["eppp-v2-assessment-023","assessment",3,"aaf2bd810a6a93394e12a69b9cc40858b3a99c21f1e9be35ee7097bad75b2c71","lexical+extreme",3,10],
+  ["eppp-v2-cognitive-affective-014","cognitive-affective",3,"a1b414eaa460789333111ec51b246ba491b968f46a0689faa1399b59e249d936","lexical+extreme",4,10],
+  ["eppp-v2-cognitive-affective-036","cognitive-affective",1,"680b9c71a8e14692c3d8d70fa1e114cd2402fb410f9294892d680313d9c7925d","lexical+extreme",5,10],
+  ["eppp-v2-professional-054","professional",3,"0c08726ef837ad691d61a30a091a89483c908adb354108e78f6c7e757051bb17","lexical+extreme",6,10],
+  ["eppp-v2-professional-062","professional",3,"ff6945e13dee812bbd52f4ac68150630ed1eb9a372a7decdbd4b93c409d1b95a","lexical+extreme",7,10],
+  ["eppp-v2-social-cultural-048","social-cultural",2,"afdb1e3a0743e8f61cd74ab05a0851286eca0456c0524e2bd817f457b1130d1d","lexical+extreme",8,10],
+  ["eppp-v3-assessment-079","assessment",0,"b7b8c455aabb8c657edd3a9837ec1c8dd8a025b41536d0f7473ff31a11b5d33f","lexical+extreme",9,10],
+  ["eppp-v3-professional-060","professional",3,"73c23bb4e75b9d671488a50ef17d9007561620c286cfb281e19c0452db9804ba","lexical+extreme",10,10],
+  ["eppp-v3-professional-070","professional",1,"64039d9ff5656f5e8fef89ea22c971fa64769b8629e78166a46b47029a61bdee","lexical+extreme",11,10],
+  ["eppp-v2-intervention-054","intervention",3,"0cc477c03791a715dd59224deb7ecaa5f28c15e664fdf98e12e62c7355ecaa71","lexical+recall",1,9],
+  ["eppp-b005-research-1","research",0,"0ac7feeef2f637d2822460be9ac3298565bd452d191bedcbbf89337d3211ccc7","extreme-only",1,8],
+  ["eppp-b007-professional-1","professional",1,"efaf448e4c750d1d6ea49d02373425e00d48b7c812649a6e22dd60d917d0b7c0","extreme-only",2,8],
+  ["eppp-b008-cognitive-2","cognitive-affective",3,"53168380f098f2b1faa48b31988f0cc1e5948bc05dec22fe9a2972621191771a","extreme-only",3,8],
+  ["eppp-b009-cognitive-2","cognitive-affective",3,"026e145b3a9333ba13633c3ea8d83b28f78348fe4d5d3062bc5a414108b1a1c9","extreme-only",4,8],
+  ["eppp-b009-professional-2","professional",3,"d41cb48c8d3ee67b95d32f3f5edefcecf59f8a3b4f389690a064788641ef856b","extreme-only",5,8],
+  ["eppp-b010-social-2","social-cultural",2,"7f42415373fd2725234ed6dc7a1a8459bf8e5197a60c38e1461a70114496cfd5","extreme-only",6,8],
+  ["eppp-b011-professional-1","professional",1,"21dd516625c92bf3eb7c976242339939119334cd5b8f56f3e035a21dc77ab1bf","extreme-only",7,8],
+  ["eppp-b013-cognitive-1","cognitive-affective",1,"2b4f75a696a17ba138aec88f4a0adc19267639976222dc463c0da9c12e47ca50","extreme-only",8,8],
+  ["eppp-b013-research-2","research",2,"d6268ae5e886d7cc4528ffb669bd6ad6ca8609dbdd091f212326b2c639b2316a","extreme-only",9,8],
+  ["eppp-b014-cognitive-2","cognitive-affective",3,"9aea8ce7eb7a47bed2e61c0ca7d4d3b78de54b4ce4c27595fe0f52c8a7699986","extreme-only",10,8],
+  ["eppp-b014-intervention-2","intervention",3,"ea5778b0858a3ce16629bc5115deb7267d3593d383a008d73df60604d48258a7","extreme-only",11,8],
+  ["eppp-b015-biological-2","biological",2,"538ebd533f77044d355366e4d743d7c85085346a0441d7d487d798c39dfbba58","extreme-only",12,8],
+  ["eppp-b015-lifespan-1","lifespan",1,"dd05638c2dd7e384496267e5f6793d3b7de22c54d83f6ebd8c86f0f8740f09aa","extreme-only",13,8],
+  ["eppp-b016-cognitive-2","cognitive-affective",3,"3fa52ae42ad29ce674c4f7c9c8d45f219bf031caabf6284cad3488fce505fd4e","extreme-only",14,8],
+  ["eppp-b016-intervention-2","intervention",3,"bb00b0c43ca9ca80d1e234382665358d611ba641c732f5b27a1c7e4618f23eed","extreme-only",15,8],
+  ["eppp-b017-cognitive-2","cognitive-affective",2,"452a0ddab1ea87f38e6fb3ca8968f5b0baba265cbec7ce87b940a8941d8ba4db","extreme-only",16,8],
+  ["eppp-b017-intervention-1","intervention",1,"faf4449b2fd0a42d00679b361b0950499fe47c95e3503a3d362862eadcadb32f","extreme-only",17,8],
+  ["eppp-b017-intervention-2","intervention",2,"c9ea6bfbf51587c0a2e61b9c9b6e7b30d74eeab5a0e187d3deaf2aff3685f02f","extreme-only",18,8],
+  ["eppp-b018-assessment-4","assessment",3,"9c93daea7dc687a2b493ad6766272facebb237bb436e43300a4043a5ef94e99e","extreme-only",19,8],
+  ["eppp-b018-biological-1","biological",0,"829a6136cbbe3e1f79034c91cb7274980810ce1d117e8a949801cd8b480156e8","extreme-only",20,8],
+  ["eppp-b018-intervention-3","intervention",3,"da8a06b1fd998414845ae7e068e7b49ebe67cc910f4cd259015fa9faf42d2b10","extreme-only",21,8],
+  ["eppp-b018-social-1","social-cultural",2,"ecf6b93455409215183d47d863077a5518983915ba7280be5980ff9e35e686b0","extreme-only",22,8],
+  ["eppp-b019-professional-3","professional",3,"fe67d5d8013384ac6501a588568dae6965628427ed4a8d5434b57a528b8c9c4e","extreme-only",23,8],
+  ["eppp-b020-lifespan-2","lifespan",3,"692be38f8b7823db4d151a7a28a91b4dce650096463eda5cfee1357b8ebea3a8","extreme-only",24,8],
+  ["eppp-b020-professional-1","professional",0,"9ec2d19b3c52879d4ac91c3f6d70c8b65d4330751c3b60bdedb2fc65a14ede54","extreme-only",25,8],
+  ["eppp-b020-professional-3","professional",3,"6b5755b8222b07900521a2505c1e15e21c8707a998e550c24b9d843f8f903be8","extreme-only",26,8],
+  ["eppp-b021-professional-1","professional",0,"a143c305fa9d8fa7e394fee7e439ee1257e771f1902c877c32099d9fd58d99b0","extreme-only",27,8],
+  ["eppp-b021-professional-3","professional",3,"44f9bacc4afe27766b1b0889ee6bb6eddbbeeb0f4e24598653cdefb9befd8219","extreme-only",28,8],
+  ["eppp-b021-social-1","social-cultural",1,"d144a05cf8bc95df303fd7113a70ad1a0462f8438684711da7a7d24d4d67dfe0","extreme-only",29,8],
+  ["eppp-b022-cognitive-1","cognitive-affective",0,"07b99fa120397e1f8178c4bbb954280cb7c023d9577e8465365d5df14834aa8a","extreme-only",30,8],
+  ["eppp-b023-professional-4","professional",3,"8aba2de43437c0f7185fe40b4d3227f04517135774d5b2618caf1d84c8673e00","extreme-only",31,8],
+  ["eppp-b023-social-1","social-cultural",1,"14cd42bd9ada3ca77df09b66f6bfcc5e74ee629d0bb5c8b8eebebae4c0a56c83","extreme-only",32,8],
+  ["eppp-b024-professional-3","professional",2,"357a0a85459ac58b6872634cc09d39e1d98f8f0812721c0e60be403f8f23b0a7","extreme-only",33,8],
+  ["eppp-b025-intervention-3","intervention",3,"fa3584ca88556b05e6d60507b3e3cc83beb2e63860f784a85ca6585ecb15b1fb","extreme-only",34,8],
+  ["eppp-b025-lifespan-2","lifespan",1,"4e023c2148e3c45a1ede21fa33bea25caa85c070ccfe706a74ad99856eb62b82","extreme-only",35,8],
+  ["eppp-b025-professional-4","professional",3,"af16fdd8d73cff2647c3d13f0e01db20da4740bd300e3a7e9e7c1c2b30d511d7","extreme-only",36,8],
+  ["eppp-b026-professional-2","professional",2,"8e9095069f0d430542698c8c76d360c3c612c3049fbb6685d2b31b72b5f18b80","extreme-only",37,8],
+  ["eppp-b027-cognitive-3","cognitive-affective",2,"dd2d1d2ac9e8e685a6af36281b2acdcdad3250978e41266aa3367bd54d67cfe5","extreme-only",38,8],
+  ["eppp-b027-professional-1","professional",2,"e15302cafa299a0a0d5134ae1051358e35e09b1f333148e40640f9ac335ad5b2","extreme-only",39,8],
+  ["eppp-b028-professional-3","professional",3,"5003bca33e157c320325d5335ac962c7429e2a11cb7f1648f0aec2255b47d8b5","extreme-only",40,8],
+  ["eppp-v2-assessment-078","assessment",0,"457c1adcbd5871a706e276960e7fda577185df8dcd2bd9b90e29718169aad637","extreme-only",41,8],
+  ["eppp-v2-cognitive-affective-028","cognitive-affective",1,"51666c25c84fcaecb13327d80a6b470e568487bb0dea4edd8698c254fde9af00","extreme-only",42,8],
+  ["eppp-v2-intervention-013","intervention",2,"8be948dd3727c22f9cabd7dad7b5d403ec86f01b794b1a458e15bdf439a86536","extreme-only",43,8],
+  ["eppp-v2-intervention-019","intervention",0,"456a4375facfb8b4eeb352b6ea104ea35d50aea2904cd35554e41adffb2ab64b","extreme-only",44,8],
+  ["eppp-v2-intervention-046","intervention",3,"e229e7867d690b519d12b6b98ce6a202a600dca1bf673d94a50b825f858c90a0","extreme-only",45,8],
+  ["eppp-v2-intervention-059","intervention",0,"2b9c4254a2e96e1b80205af77e35030f428345b7f0a361cde2ad78a4f7c766e8","extreme-only",46,8],
+  ["eppp-v2-intervention-062","intervention",3,"093ffc3b10c8fe8d244e9c4f9b1e5e5dada9026c99d3c76bdf3ea681b16abe65","extreme-only",47,8],
+  ["eppp-v2-lifespan-009","lifespan",1,"7c6d1a67c9c194e4d3c14fd8a3239d1990ff47fecd9cec2ac3307b3a0f9596b3","extreme-only",48,8],
+  ["eppp-v2-lifespan-036","lifespan",0,"fe0c4c1dd2d92a6fa51bb326d4c95d526e525b95da4ffbea84bae909aa7b24da","extreme-only",49,8],
+  ["eppp-v2-professional-003","professional",0,"4868f5e666df97e452e254419ac21814542c476c7bfc8c48ac33e3408095a883","extreme-only",50,8],
+  ["eppp-v2-professional-005","professional",2,"7b235d4e388303e9edcebfb2b92c8e3afac4a9ad934dbc028810496ed5202d4c","extreme-only",51,8],
+  ["eppp-v2-professional-009","professional",2,"f3b3ba78491a349d9105773581ee210f05e751ffafed1e3423fb19943c9209b9","extreme-only",52,8],
+  ["eppp-v2-professional-013","professional",2,"548b326c6b0fbfeb4e100e08b3917b7ca3e45827fcc67153f4e5a654a2f8e0f2","extreme-only",53,8],
+  ["eppp-v2-professional-016","professional",1,"005a50732687a6e26926448169084257b8a500d6d482e1b569b799724bbd7e64","extreme-only",54,8],
+  ["eppp-v2-professional-017","professional",2,"21a2e291807e22e76c2d29b6b5c4fc6477ec2242dc991e66064eb099cab511e1","extreme-only",55,8],
+  ["eppp-v2-professional-021","professional",2,"4e3aa3853622d7002e3527d1b6bab984b5514cb944784d1dca54ccbd0e5b6e55","extreme-only",56,8],
+  ["eppp-v2-professional-026","professional",3,"8053c81f5d36eb0d0f1b0086a847886e26d43bb94f33562a510fe2edf5d239d3","extreme-only",57,8],
+  ["eppp-v2-professional-037","professional",2,"437a1f84a1f7e76c538be13bb38ff8a3bbb1356f0f0c4b9cf1f61b692ba66980","extreme-only",58,8],
+  ["eppp-v2-professional-043","professional",0,"359a038e2209a03e87c763f9a44639a1f0b5d69854f24c0613d7923a4268d555","extreme-only",59,8],
+  ["eppp-v2-professional-055","professional",0,"1f026608403375a291945da55c4d17dc1fa5b26b795b56c91a548478221f55ab","extreme-only",60,8],
+  ["eppp-v2-professional-066","professional",3,"13406f783b99078d01e938400675fd3e63ed0176bed503bd1566e92afc8d07d1","extreme-only",61,8],
+  ["eppp-v2-research-010","research",2,"9a9aeb9875af0baf0e55533449c8e2488baba773b39333d7c38131e29e02b28d","extreme-only",62,8],
+  ["eppp-v2-research-018","research",2,"dea052ea06a0091c4f095ff67dd4d56ef0e40bd2e581c8b02122200916a62459","extreme-only",63,8],
+  ["eppp-v2-social-cultural-007","social-cultural",1,"6253689410d9309c637845ab8d64f3686b3bb26dafbdfb35f63ab23b62e88404","extreme-only",64,8],
+  ["eppp-v2-social-cultural-008","social-cultural",2,"29acfd196eefcaa11f5976247de31688404337b98dd678a69fba7402bbb8bd0c","extreme-only",65,8],
+  ["eppp-v2-social-cultural-010","social-cultural",0,"4f10e8528524bf72dd0fc7ad877b5a0d50de90433dcd46261aaf1d790ca4ced0","extreme-only",66,8],
+  ["eppp-v2-social-cultural-014","social-cultural",0,"04561a1e8dcce566de2789f458f3deb1492be8b22f500130f6ab09f64c3f5023","extreme-only",67,8],
+  ["eppp-v2-social-cultural-024","social-cultural",2,"ed46ba27baf4b59ceea9c52cc75ce370c3f6060557b27e9a94d1180482b58626","extreme-only",68,8],
+  ["eppp-v2-social-cultural-031","social-cultural",1,"17e949fc29f15bb547a70a823889f54603b617b074c42f7bfa51515a69a4c9ec","extreme-only",69,8],
+  ["eppp-v2-social-cultural-032","social-cultural",2,"37c4053505a6acf18f4925452362d6dc82cafb386c946c1b51912a44374b4312","extreme-only",70,8],
+  ["eppp-v3-assessment-019","assessment",0,"b5088d604f03fe2e391da525c541b75c4a62785e907339315040ce770f1a5be3","extreme-only",71,8],
+  ["eppp-v3-assessment-028","assessment",1,"24706985cb8daee636ba680a68dfbd5aedf6b660372b7cdf44cc5f120f8c6336","extreme-only",72,8],
+  ["eppp-v3-assessment-039","assessment",0,"70d257113183bcb32e6be0e9dba3e589462cb379dc9fbc2e6ee27b84b1270489","extreme-only",73,8],
+  ["eppp-v3-assessment-080","assessment",1,"20274d00d5b0849952c65aeb091496c50a5930fef34353919665cb6b83a56e8b","extreme-only",74,8],
+  ["eppp-v3-cognitive-affective-002","cognitive-affective",3,"64e6df25c30133494ccf1dc7657174dd463b51788f05266a585bc6bb7f1dde5b","extreme-only",75,8],
+  ["eppp-v3-cognitive-affective-003","cognitive-affective",0,"4b2f9d8579de8cf3abe05b8997ea6091ec463eb8f30a6855fc1cc4949d3cbbbf","extreme-only",76,8],
+  ["eppp-v3-cognitive-affective-034","cognitive-affective",1,"de2f3ae51745106d51b5b462f8aa30e78656e1ec32c984b72520ecadab8a37ea","extreme-only",77,8],
+  ["eppp-v3-intervention-014","intervention",3,"6e05ef8839eaef3b65e707bbc203f18626a1e017a61567d0f68e26205ff42540","extreme-only",78,8],
+  ["eppp-v3-intervention-038","intervention",1,"55bc62ab50748a598757512cd2f5737d1aeab417fb868ccdc19ff9ea54128525","extreme-only",79,8],
+  ["eppp-v3-intervention-047","intervention",3,"88d9c945fbbecd7bcd4edad469e2a10eea8b82d9549a4e6c83bcf0d39804b477","extreme-only",80,8],
+  ["eppp-v3-intervention-054","intervention",2,"3dad6ed6d70a36fdfabafe9e08c93fd467ae3be2b2fd99620d6d7d5506503df1","extreme-only",81,8],
+  ["eppp-v3-intervention-057","intervention",1,"9b7162595dded2e5ff336383fe2abe4294b0d2c11ab023692a4e871fcfb0464a","extreme-only",82,8],
+  ["eppp-v3-intervention-063","intervention",0,"b7f683e3c45b499d8ebe8ff151275e8177383a548efd59e9ee308fb5c8c0b2b7","extreme-only",83,8],
+  ["eppp-v3-intervention-068","intervention",1,"aa03bcbf4addbf675d1f2ffcad75ba904ee14382c1d63e6e9b8e85840223d546","extreme-only",84,8],
+  ["eppp-v3-lifespan-033","lifespan",2,"6674c37e9f1320ec50199ca6091083a05a37f9e3e767f1b766a36a4cbdfa8082","extreme-only",85,8],
+  ["eppp-v3-professional-025","professional",0,"b96e53e66c6a41db56a35f4e75116a8976d6c96750a832ba3a8489448e00baf4","extreme-only",86,8],
+  ["eppp-v3-professional-029","professional",0,"96668233c3db13f67b90c0799fd95c3fed5a44c04b64b2d7742475a39eb1f7c3","extreme-only",87,8],
+  ["eppp-v3-professional-043","professional",2,"d2f76efd27196b4d6c98c6cf92d33e4771a65d8d0f3b036780868393976d4104","extreme-only",88,8],
+  ["eppp-v3-professional-050","professional",1,"be819f055c9707760dfc8ef9ae339a65461e13b888c5ed628a57886e71f88ae8","extreme-only",89,8],
+  ["eppp-v3-professional-052","professional",3,"4ca76ac4e7b5ee53d1c99cc37f23e229cbe6e7a8f70d4dd758b6d001b57a0c2d","extreme-only",90,8],
+  ["eppp-v3-professional-061","professional",0,"a8d12357604b5bdcef19c1c03cbf00d2d699be46d2daccde1a9dac1c818c2ad1","extreme-only",91,8],
+  ["eppp-v3-professional-071","professional",2,"6a10c96d20f77752fae44d4969e8401e1f7bab9ea8bedeb88af6470a3a9f0de4","extreme-only",92,8],
+  ["eppp-v3-social-cultural-001","social-cultural",3,"006d93db5a904d0a0c81027c9a545e378558990dba2bb08396abb185cd3c3be8","extreme-only",93,8],
+  ["eppp-v3-social-cultural-026","social-cultural",2,"da01af0f7da0244b7979b318f571fc98c275e63d7d3ff1ae90ad6ecb0cbab7a0","extreme-only",94,8],
+  ["eppp-v3-social-cultural-039","social-cultural",0,"7b54e5f6a69f1cae63b924f031d50c17101d68fefbe06a5ea5789802f0131da5","extreme-only",95,8],
+  ["eppp-v3-social-cultural-040","social-cultural",1,"621e2c2a0c7b896d572b44b4a76d098e72d4deb21e3332ec677e95caf7be6655","extreme-only",96,8],
+  ["eppp-b001-intervention-2","intervention",3,"22fad1cb53b546589cbaedcddbef15b08bde4d1ba70f0660b959ad1fcc14127f","extreme-only",97,6],
+  ["eppp-b003-assessment-2","assessment",2,"e17b4625551d4b956fb54b4a0b2595243b60b346961704b51a991ba152ecab57","extreme-only",98,6],
+  ["eppp-b004-intervention-2","intervention",3,"cdc4ad6ec4e2b1f775200bd6ccf8f575d9c85f6639a7cc36020f6369b874b1b1","extreme-only",99,6],
+  ["eppp-b006-professional-2","professional",2,"92070e2fcc2723810ea3e9c51ac344794e1eb8cd6cfec7e3c68ab626a236b19f","extreme-only",100,6],
+  ["eppp-b007-lifespan-2","lifespan",3,"17ac803208a5c05cefc4e5c4715fa0b0b805552114f64029845db2fa666a9f5b","extreme-only",101,6],
+  ["eppp-b008-biological-2","biological",2,"af79a15755619692b74ae94d2ae826876ebc5ec9dc83e5e5fd65ce232a2dad44","extreme-only",102,6],
+  ["eppp-b008-intervention-1","intervention",1,"1ec428c9bd7927d05c4eacb86b7a9a84916e4b8b1ce0d76093fcaf42b6d7c1cc","extreme-only",103,6],
+  ["eppp-b008-social-1","social-cultural",0,"763553785a267c12e8f8f9980b8cdda038897f00dd6cc0315f53b4950ee6a934","extreme-only",104,6],
+  ["eppp-b012-professional-1","professional",1,"487e8c2f64887683a3ce983d50f27ab1a51abffd5e6da5ad65772c06b9e628d7","extreme+duplicate",1,10.21],
+  ["eppp-v3-assessment-032","assessment",1,"0ba48342839679644bda806570f48ee43ec7d710cec3dfdd57ee0dcbac3d79cd","extreme+duplicate",2,10.13],
+  ["eppp-pilot-assessment-1","assessment",1,"b6e37a170d84f94e07f566db0fc5ad96accc0d98b64e91335c186714b1c66c0c","extreme+duplicate",3,10],
+  ["eppp-v2-assessment-058","assessment",2,"69d43d8023f3a2d73df2f41e43c1d7b737eca665c120a7ef3c3f77e908ad3dd6","extreme+duplicate",4,9.86],
+  ["eppp-b026-professional-4","professional",3,"3800226b9569207cf5e19c139f066b6a6e677afe38779e2da368b55518935173","extreme+duplicate",5,9.8],
+  ["eppp-v2-professional-032","professional",1,"ab57c7221c64b32539bd3261abbb166e4fdb848fc6af156898e58a07d8b99c23","extreme+duplicate",6,9.69],
+  ["eppp-b007-cognitive-2","cognitive-affective",3,"b2e2f4c045de179e7babba27ca800aed289921989a5aeae65aba6ad077222b18","extreme+duplicate",7,9.62],
+  ["eppp-b024-cognitive-2","cognitive-affective",1,"9ca2f0dbe02d68ca8423b44d601653e2f812e63150c174a85ffae361dcd295e5","extreme+duplicate",8,9.62],
+  ["eppp-v2-intervention-055","intervention",0,"6c8fddc509f731ed5b8c112cba335cd0ddeb6bbfeaa19f24ce2b821ccf87fdba","extreme+duplicate",9,9.57],
+  ["eppp-b026-intervention-2","intervention",1,"cac2b3cbfeb858b4ecb91cf869563492566c98f66d7c444cb447b5d8d839a79c","extreme+duplicate",10,9.54],
+  ["eppp-v2-cognitive-affective-050","cognitive-affective",3,"9682790865e4f64c690d02fb9afafa9fd94eed8709dab3a2ea25448ccb8b81af","extreme+duplicate",11,9.47],
+  ["eppp-b023-cognitive-2","cognitive-affective",1,"a6088482bd116390451476bb3afeb725474adee897621b663686def22561ec0c","extreme+duplicate",12,9.34],
+  ["eppp-b019-professional-1","professional",0,"2dc077a18e1c6b7d7694804f99dcacbb270638627ca79539fb725dd0b3e68a09","extreme+duplicate",13,9.23],
+  ["eppp-v2-professional-051","professional",0,"860b9a499e0da44454fe711fb77c834b14db7957d2a635e6ab99d6ce83d10fba","extreme+duplicate",14,9.23],
+  ["eppp-v2-cognitive-affective-053","cognitive-affective",2,"3634973e1af51a4a1111f4bc6d791914870b943dd27b35dffba7c35161af9566","extreme+duplicate",15,9.17],
+  ["eppp-v3-assessment-071","assessment",0,"0ae0b21c51751ce13cfa4ad55b515e3a7dc7802380cfe340bbdb78ea0a33fc95","extreme+duplicate",16,9.14],
+  ["eppp-v2-research-020","research",0,"ce90a4d118653c38110f2134cf9249b0cea7ba4052d3002ccb5bed97923dd948","extreme+duplicate",17,8.92],
+  ["eppp-v2-biological-047","biological",2,"2022611ab6223ea1d82b7f0b81b11ecf4e4d476a56136e6e86e8b716c419e976","extreme+duplicate",18,8.65],
+  ["eppp-v3-professional-058","professional",1,"2a76d424be623a3f53df9d089afe100b453f428c5ddfcbabe9e9bf52cc309346","extreme+duplicate",19,8.58],
+  ["eppp-v2-lifespan-015","lifespan",3,"f7c237f9fb06f0a68809e2f0349e405935def288420ae6eef81af828d0711d3b","extreme+duplicate",20,8.57],
+  ["eppp-v2-cognitive-affective-065","cognitive-affective",2,"23f143655afdd659965a8ec9451c7c0f3c2b0f10964f44ce163f31a051d9cf1d","extreme+duplicate",21,8.52],
+  ["eppp-v3-cognitive-affective-065","cognitive-affective",2,"df0d4ad2155b94c92d91320e00cbb227a75a2e9fc9d4719cedf0f0d8d6126d99","extreme+duplicate",22,8.52],
+  ["eppp-b018-professional-3","professional",3,"3af458e18b04157de291658c17a054bd9d53ecdefed5116ced0bbbb215bedc7c","extreme+duplicate",23,8.44],
+  ["eppp-v2-professional-069","professional",2,"64e35f3f49cd5755c378c91df28e82e346487fd840810dce9918f2a45ee064e5","extreme+duplicate",24,8.36],
+  ["eppp-b018-intervention-2","intervention",3,"82e4994551852b5ef92f530dc26dce6adbc2e813a8d50923b80fc9f851a3cf7d","extreme+duplicate",25,8.34],
+  ["eppp-b027-biological-1","biological",0,"ca876a02bd32dd1db6a013c31434a2c1ab3115646042b8ddfbed37ca3d51d92f","extreme+duplicate",26,8.34],
+  ["eppp-b020-professional-4","professional",3,"262a1d696e71211b62ff9d637486febe52c37bc27be69755b055c281975f325e","extreme+duplicate",27,8.3],
+  ["eppp-b026-intervention-3","intervention",2,"000a62e294f58ce16b5917c1aac370f9d6e34bd8648b2f77d1f190ab2d2779aa","extreme+duplicate",28,8.16],
+  ["eppp-v2-biological-037","biological",0,"3ac8573eb50612b7459fec422144dc6e7b925fc2a9c774bb055c0bea8894c9f3","extreme+duplicate",29,8.15],
+  ["eppp-v2-professional-041","professional",2,"7c83a8ffd7039e9c1ac17b8e7862c9bff3f022bbc6c3e279195dbf5213ae9146","extreme+duplicate",30,8.07],
+  ["eppp-b023-assessment-4","assessment",3,"3cd2de5bc21b17f679d0263f6eb5d66afabfb81bd8c62e4ab87cd0f620a1be01","extreme+duplicate",31,7.91],
+  ["eppp-v2-professional-025","professional",2,"706b2c23ea9aecc6849bfb0e2a55792f5b434882c673fac65cdfb3101480d1d8","extreme+duplicate",32,7.86],
+  ["eppp-v3-assessment-078","assessment",3,"b74148ce4e8fdf346b3221c98d4dea1b96881fd4c3ce9edc0db77b23dda6a8c4","extreme+duplicate",33,7.81],
+  ["eppp-b028-professional-1","professional",2,"104204bc077143c55b81240653e673cc4a3cc6cb9d399eb1e6853671d6908dcc","extreme+duplicate",34,7.8],
+  ["eppp-b024-social-1","social-cultural",0,"0780b799cd7fb6e9c42b0ce23d1c3097e2de50097cec06043661db90148fa0d6","extreme+duplicate",35,7.74],
+  ["eppp-v3-social-cultural-034","social-cultural",3,"11bcdcf9fbb41b00e7284a10ad496efc0b406d7f19be53fafc8628500bbf8ef0","extreme+duplicate",36,7.74],
+  ["eppp-b012-social-1","social-cultural",0,"c1c99fe58cbaa0d6c233fb9e570748fbfba11bc5af199eec630889d111d12f42","extreme+duplicate",37,7.68],
+  ["eppp-v2-biological-010","biological",1,"25a8c9aa2c5c9b7dcd6485b69420132331092d5c6c7d8366a1b8e5a6c1d65e43","extreme+duplicate",38,7.62],
+  ["eppp-v3-social-cultural-049","social-cultural",3,"decac07e373f7790b4f2b91c12e96fd00e5aed59688d23b338590b89b953d105","extreme+duplicate",39,7.59],
+  ["eppp-b025-social-1","social-cultural",0,"db6c4027fc657cea00f1443256368e3fc34b6c6a5d9bfb1cac8f93b8d495f0e3","extreme+duplicate",40,7.54],
+  ["eppp-v2-assessment-001","assessment",1,"25474419873d9ef9835f0315b36063105838179608ee3fe799b53d200f8e7405","recall-only",1,5],
+  ["eppp-v2-assessment-043","assessment",3,"c9401e97ae39354c501188bdda00df570d0d66fbf7321b35f70c4f39ef0e5c7f","recall-only",2,5],
+  ["eppp-v2-assessment-066","assessment",2,"ab055e34c437d2bc0ad71373a27e72663e5efdc869d364c5290485cd93823033","recall-only",3,5],
+  ["eppp-v2-assessment-067","assessment",3,"d3d56264f1131b128475645482f3856c68f98d7eefde3b58582451278e4fa812","recall-only",4,5],
+  ["eppp-v2-biological-021","biological",0,"94b436c236b6691983d3801fc79ec1de930b3d79e0a98afa43e7bc6187492d2e","recall-only",5,5],
+  ["eppp-v2-biological-029","biological",0,"8c18b44fd23afdc838c2ff0a1c86d471f58ad18adfbddc06456fe217d52d3192","recall-only",6,5],
+  ["eppp-v2-assessment-047","assessment",3,"fbbdd4964e2bd94d1416070bf20184e7b3c97642715ebf0b026f4c6558a2ca1e","recall+duplicate",1,9.3],
+  ["eppp-v2-assessment-052","assessment",0,"a28e57106d7d8e4c54c5dffb460174849f7b7a7b99b4f0683eb5b5bbdf493d58","recall+duplicate",2,9.03],
+  ["eppp-v2-lifespan-054","lifespan",2,"13e2bb425da7182ea3ec70c25460c7b8eb5f0856d703c42be40312091e867e39","recall+duplicate",3,8.28],
+  ["eppp-v2-assessment-060","assessment",0,"724f2c85cb35ce840c98575d4f34f8a94c335d8cc1633fe156059409cc1c6724","recall+duplicate",4,7.34],
+  ["eppp-b002-social-2","social-cultural",2,"15eb29b744663cff444e684ff20d68fc18ae65b30f57e54bd74279a18f81aadd","duplicate-only",1,3.22],
+  ["eppp-b003-biological-1","biological",0,"6ecd6d4ebec69934465aa300f11b706df2cee79c3154e321fb931134bd8a1cf8","duplicate-only",2,3.94],
+  ["eppp-b003-professional-1","professional",1,"6b3c2406071f529e94a7c19ca50295e19113bd1bd22e283205ef5179b9c56bc7","duplicate-only",3,2.27],
+  ["eppp-b005-professional-2","professional",3,"3e92e1d12017a8cc248d8329a973f15e8d71efad30ba3371c765208865cd6ca8","duplicate-only",4,4.21],
+  ["eppp-b006-cognitive-1","cognitive-affective",1,"8f32966530f894e568df695aeb55c94c6f6765353fa2620ecdcd68bf613c9046","duplicate-only",5,1.94],
+  ["eppp-b010-assessment-2","assessment",2,"f3b3decee3ad23f782e44d3f090ff4759b9d177a7c4a932830230608a2c2e4c8","duplicate-only",6,2.04],
+  ["eppp-b010-professional-1","professional",1,"1b9e45f39012a525d70928a411dd10956ad308727f3f2ee81f219845c8809c12","duplicate-only",7,1.95],
+  ["eppp-b011-intervention-2","intervention",3,"902dd912ca618a396879db05c4231e733cee0115d0b8e51f31e3291aeeb38f06","duplicate-only",8,4.64],
+  ["eppp-b012-research-2","research",2,"e485008755d32dc0e4d1d45ce1a4a3006e18fc393572673c0db115f5c729ca0f","duplicate-only",9,4.39],
+  ["eppp-b017-professional-1","professional",1,"39dc0c509a07579166928abd4f6f534f256c6f6e7205657c857da1bf5560fc2f","duplicate-only",10,4.71],
+  ["eppp-b017-social-1","social-cultural",3,"f4d0f1648615e9a784899535ad20d73af5b58ebe9718a7ca1881c1171584ef07","duplicate-only",11,2.12],
+  ["eppp-b025-assessment-1","assessment",0,"7d8d350455870b24f89323d2312525e8da6f514eabf5d8b5b9754511b65d68c0","duplicate-only",12,2.77],
+  ["eppp-b025-assessment-3","assessment",2,"430fb9dee70e67e05a19d6530d385fbb2ab4bd9bdbb65283905feb9283d30bf5","duplicate-only",13,3.46],
+  ["eppp-pilot-research-1","research",1,"4f468ee393366f112c5d53246a4aba47e10f1d7d042ae4fedbdd063e542f4cc4","duplicate-only",14,6.45],
+  ["eppp-v2-assessment-068","assessment",0,"b806c81694761ea3bf386a636cf44f574dfae5fcc5a13dffe998aa83006a4396","duplicate-only",15,2.48],
+  ["eppp-v2-assessment-073","assessment",1,"73d43546e88872449fa5b8e85bfe7198880406c19778bffbab207e60698a42f2","duplicate-only",16,1.89],
+  ["eppp-v2-biological-038","biological",1,"bee98b026820507b2434c788b6bcf71b5bff823986885a538ffba5ad678bb156","duplicate-only",17,2.93],
+  ["eppp-v2-cognitive-affective-031","cognitive-affective",0,"e25ea91bd29ba627d46ae54f2c81a4c17edd52e6f6d1507f1a662a9ffb9d1b44","duplicate-only",18,1.98],
+  ["eppp-v2-intervention-008","intervention",1,"4cbad965541fdf0070746a376ae9ba2d3d95d87f365dfbcba00f0fe3465ebb05","duplicate-only",19,6.24],
+  ["eppp-v2-intervention-027","intervention",0,"7037e5434e6e2f15f9a77a0418c7aa50714d8f0c1aa5c55628026ee4b37fa006","duplicate-only",20,2.99],
+  ["eppp-v2-intervention-029","intervention",2,"2c334823fc7784449be9a87d3d089787612f1cef5ee6f433bb26762712260a27","duplicate-only",21,4.71],
+  ["eppp-v2-professional-047","professional",0,"8148fa880e08e0092fa5de07900747f1cfe0130306da3ac5617ad9b30a79a6e3","duplicate-only",22,2.45],
+  ["eppp-v2-research-001","research",1,"2275af09b465093b920018fcefbc158a150f5aec65154b3d9ca6a8acfe0c0178","duplicate-only",23,2.8],
+  ["eppp-v2-research-023","research",3,"24f9d9b9001f969a2b945296957ef03b275d48e09bd573fbd17c2786b2c52db6","duplicate-only",24,2.35],
+  ["eppp-v2-research-029","research",1,"5852e5247feaae792d708aa57ea621f4ed759669c70049eed3c50acfac14dbab","duplicate-only",25,4.39],
+  ["eppp-v3-assessment-016","assessment",1,"c552ec32a730e80f536b4b47de5a3ad74adcb3d5b03d239f940d133a6e672bc4","duplicate-only",26,2.59],
+  ["eppp-v3-biological-020","biological",1,"52afb66a69ea81a259652bf5b910e77a7b3c2e4a102cd7692c66b9bc11ed18a8","duplicate-only",27,3.88],
+  ["eppp-v3-biological-023","biological",2,"80ab5d8444dee0f480cca8bab19f2f09149cb9860132b66e9eb8af0ea387751c","duplicate-only",28,5.72],
+  ["eppp-v3-cognitive-affective-024","cognitive-affective",0,"24e19d5c4f226847fb412c78b75e854db17b2d445cd20c17ec3ab31597c986f7","duplicate-only",29,2.18],
+  ["eppp-v3-cognitive-affective-036","cognitive-affective",3,"2f6ef618ff3de47afd1e8fad38f658e536d2c90e35a86da02efbf58a469ac7e7","duplicate-only",30,2.78],
+  ["eppp-v3-intervention-005","intervention",2,"cebbe364ce2dfe91e53706d39929aab5543036fe1e9ad14a6a5bb947e38fe957","duplicate-only",31,4.8],
+  ["eppp-v3-intervention-033","intervention",0,"f15a9ff179e0911bb49c5513743dc3acc81fcfe0da6c9ede729828d00cb49721","duplicate-only",32,2.99],
+  ["eppp-v3-professional-020","professional",3,"78333578e1fb2f5fafc62de278785152fe1a3e3cd1a999c7be6f7011c991344d","duplicate-only",33,1.85],
+]);
+
+const CAMPAIGN_ITEMS = Object.freeze(CAMPAIGN_ITEM_TUPLES.map((tuple) => {
+  const [id, domainId, expectedAnswerIndex, contentSha256, selectionFamily, rankWithinSelectionFamily, baselinePriorityScore] = tuple;
+  return Object.freeze({
+    id,
+    domainId,
+    expectedAnswerIndex,
+    contentSha256,
+    fingerprintSpec: FINGERPRINT_SPEC,
+    expectedWarningFamilies: WARNING_FAMILIES_BY_SELECTION[selectionFamily],
+    selectionFamily,
+    rankWithinSelectionFamily,
+    baselinePriorityScore,
+  });
+}));
+
+const DOMAIN_SHARDS = Object.freeze(Object.fromEntries(
+  Object.keys(EXPECTED_DOMAIN_COUNTS).sort().map((domainId) => [
+    domainId,
+    Object.freeze(CAMPAIGN_ITEMS.filter((item) => item.domainId === domainId)),
+  ]),
+));
+
+const DOMAIN_ID_SHARDS = Object.freeze(Object.fromEntries(
+  Object.entries(DOMAIN_SHARDS).map(([domainId, items]) => [
+    domainId,
+    Object.freeze(items.map((item) => item.id)),
+  ]),
+));
+
+function invariant(condition, message) {
+  if (!condition) throw new Error(CAMPAIGN_ID + ': ' + message);
+}
+
+invariant(CAMPAIGN_ITEMS.length === EXPECTED_SELECTION_COUNTS.total, 'expected exactly 263 campaign items');
+invariant(new Set(CAMPAIGN_ITEMS.map((item) => item.id)).size === CAMPAIGN_ITEMS.length, 'campaign item IDs must be unique');
+invariant(CAMPAIGN_ITEMS.every((item) => Number.isInteger(item.expectedAnswerIndex) && item.expectedAnswerIndex >= 0 && item.expectedAnswerIndex <= 3), 'expected answer indexes must be integers from 0 through 3');
+invariant(CAMPAIGN_ITEMS.every((item) => /^[a-f0-9]{64}$/.test(item.contentSha256)), 'every content fingerprint must be a lowercase SHA-256 digest');
+
+for (const [selectionFamily, expectedCount] of Object.entries(EXPECTED_SELECTION_COUNTS)) {
+  if (selectionFamily === 'total') continue;
+  const familyItems = CAMPAIGN_ITEMS.filter((item) => item.selectionFamily === selectionFamily);
+  invariant(familyItems.length === expectedCount, selectionFamily + ' selection count drifted');
+  invariant(familyItems.every((item, index) => item.rankWithinSelectionFamily === index + 1), selectionFamily + ' ranks must be contiguous');
+}
+
+for (const [warningFamily, expectedCount] of Object.entries(EXPECTED_WARNING_FAMILY_COUNTS)) {
+  const actualCount = CAMPAIGN_ITEMS.filter((item) => item.expectedWarningFamilies.includes(warningFamily)).length;
+  invariant(actualCount === expectedCount, warningFamily + ' incidence count drifted');
+}
+
+for (const [domainId, expectedCount] of Object.entries(EXPECTED_DOMAIN_COUNTS)) {
+  invariant(DOMAIN_SHARDS[domainId].length === expectedCount, domainId + ' shard count drifted');
+}
+invariant(Object.values(DOMAIN_SHARDS).flat().length === CAMPAIGN_ITEMS.length, 'domain shards must cover the campaign exactly once');
+
+for (const metricName of Object.keys(BASELINE_METRICS)) {
+  invariant(BUFFERED_TARGETS[metricName] <= HALVING_CEILINGS[metricName], metricName + ' buffered target exceeds its halving ceiling');
+}
+
+module.exports = Object.freeze({
+  CAMPAIGN_ID,
+  BASELINE_REVIEWED_AT,
+  FINGERPRINT_SPEC,
+  BASELINE_METRICS,
+  HALVING_CEILINGS,
+  BUFFERED_TARGETS,
+  EXPECTED_SELECTION_COUNTS,
+  EXPECTED_WARNING_FAMILY_COUNTS,
+  EXPECTED_DOMAIN_COUNTS,
+  WARNING_FAMILIES_BY_SELECTION,
+  SELECTION_POLICY,
+  CAMPAIGN_ITEMS,
+  CAMPAIGN_ITEM_IDS: Object.freeze(CAMPAIGN_ITEMS.map((item) => item.id)),
+  DOMAIN_SHARDS,
+  DOMAIN_ID_SHARDS,
+});

@@ -807,7 +807,7 @@
             h('select', {
               id: 'lumen-study-label-filter', value: project.retrievalLabel || '',
               onChange: function (event) { changeRetrievalLabel(event.target.value); },
-              className: 'mt-1 w-full rounded-lg border border-violet-300 bg-white p-2 text-xs'
+              className: 'mt-1 w-full rounded-lg border border-violet-500 bg-white p-2 text-xs'
             }, h('option', { value: '' }, 'All active sources'), allSourceLabels.map(function (label) { return h('option', { key: label, value: label }, label); })),
             h('p', { className: 'mt-1 mb-0 text-[10px] text-violet-800' }, 'This filter affects both the source list and retrieval. Individual source switches still apply.')) : null,
 
@@ -878,7 +878,7 @@
             h('label', { htmlFor: 'lumen-study-question', className: 'block font-extrabold text-sm text-slate-800' }, 'What do you want to understand?'),
             h('div', { className: 'mt-2 flex flex-col sm:flex-row gap-2 items-stretch' },
               h('textarea', { id: 'lumen-study-question', value: question, onChange: function (e) { setQuestion(e.target.value); }, disabled: busy, rows: 2, maxLength: 2000, className: 'flex-1 rounded-xl border border-slate-300 p-3 text-sm', placeholder: 'For example: What evidence explains why the policy changed?' }),
-              h('button', { type: 'submit', disabled: busy || !eligibleEvidenceCount, className: 'px-4 rounded-xl bg-gradient-to-br from-amber-600 to-orange-600 text-white text-sm font-extrabold disabled:opacity-50' }, busy ? 'Checking…' : 'Find grounded answer')),
+              h('button', { type: 'submit', disabled: busy || !eligibleEvidenceCount, className: 'px-4 rounded-xl bg-gradient-to-br from-amber-700 to-orange-700 text-white text-sm font-extrabold disabled:opacity-50' }, busy ? 'Checking…' : 'Find grounded answer')),
             h('p', { className: 'text-[11px] text-slate-500 mt-2 mb-0' }, eligibleIds.length + ' of ' + project.sources.length + (project.sources.length === 1 ? ' source is' : ' sources are') + ' in the current study scope. Lumen retrieves passages locally, sends only those selected passages to your configured AI, and requires an exact verified support excerpt for every claim.'),
             h('p', { className: 'text-[11px] text-slate-500 mt-1 mb-0' }, callCount + '/' + SESSION_CALL_LIMIT + ' AI study calls used this session. A short cooldown prevents accidental repeat requests.')),
           answerView ? h('div', { className: 'mt-4' }, answerView) : null,

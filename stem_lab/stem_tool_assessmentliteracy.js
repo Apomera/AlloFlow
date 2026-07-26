@@ -9166,7 +9166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             ),
             h('button', {
               onClick: nextRound,
-              className: 'transition-colors w-full py-3 rounded-xl bg-cyan-600 text-white font-bold text-sm hover:bg-cyan-500 focus:outline-none focus:ring-2 ring-cyan-300'
+              className: 'transition-colors w-full py-3 rounded-xl bg-cyan-700 text-white font-bold text-sm hover:bg-cyan-800 focus:outline-none focus:ring-2 ring-cyan-300'
             }, __alloT('stem.assessmentliteracy.start_vignette_1_of_12', '\uD83D\uDD75\uFE0F Start \u2014 vignette 1 of 12'))
           );
         }
@@ -9244,12 +9244,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                   ),
                   h('button', {
                     onClick: function() { upd({ alBiasIdx: -1, alBiasShown: [], alBiasScore: 0, alBiasRounds: 0, alBiasStreak: 0 }); },
-                    className: 'transition-colors mt-2 px-4 py-1.5 rounded-lg bg-cyan-600 text-white font-bold text-xs hover:bg-cyan-500'
+                    className: 'transition-colors mt-2 px-4 py-1.5 rounded-lg bg-cyan-700 text-white font-bold text-xs hover:bg-cyan-800'
                   }, __alloT('stem.assessmentliteracy.restart', '\uD83D\uDD04 Restart'))
                 )
               : h('button', {
                   onClick: nextRound,
-                  className: 'transition-colors mt-1 px-4 py-2 rounded-lg bg-cyan-600 text-white font-bold text-sm hover:bg-cyan-500 focus:outline-none focus:ring-2 ring-cyan-300'
+                  className: 'transition-colors mt-1 px-4 py-2 rounded-lg bg-cyan-700 text-white font-bold text-sm hover:bg-cyan-800 focus:outline-none focus:ring-2 ring-cyan-300'
                 }, __alloT('stem.assessmentliteracy.next_vignette', '\u27A1\uFE0F Next vignette'))
           )
         );
@@ -10523,7 +10523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('div', { className: 'flex justify-end pt-2' },
           h('button', {
             onClick: submit,
-            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-500'
+            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-emerald-700 text-white hover:bg-emerald-800'
           }, 'Get my Holland code')
         )
       );
@@ -10711,7 +10711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
           h('button', { onClick: function() { upd({ sub: 'inventory', riasecAnswers: {}, riasecResult: null, occupationResult: '' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, 'Retake'),
-          h('button', { onClick: function() { upd({ sub: 'critique' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500' }, 'Compare with clickbait →'),
+          h('button', { onClick: function() { upd({ sub: 'critique' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-800' }, 'Compare with clickbait →'),
           h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-800 border border-emerald-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print / PDF')
         )
       );
@@ -10824,7 +10824,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('div', { className: 'flex justify-end pt-2' },
           h('button', {
             onClick: sSubmit,
-            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-500'
+            className: 'transition-colors px-5 py-2 rounded-xl font-bold text-sm bg-emerald-700 text-white hover:bg-emerald-800'
           }, 'See my values profile')
         )
       );
@@ -10869,7 +10869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         h('div', { className: 'flex flex-wrap gap-2 no-print' },
           h('button', { onClick: function() { upd({ sub: 'values', schwartzAnswers: {}, schwartzResult: null }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, 'Retake'),
-          s.riasecResult && h('button', { onClick: function() { upd({ sub: 'result' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500' }, 'Compare with my Holland code →'),
+          s.riasecResult && h('button', { onClick: function() { upd({ sub: 'result' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-800' }, 'Compare with my Holland code →'),
           h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-800 border border-emerald-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print / PDF')
         )
       );
@@ -11066,7 +11066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             }).join(', ')
           ),
           h('div', { className: 'flex gap-2' },
-            h('button', { onClick: function() { upd({ sub: 'compare' }); }, className: 'transition-colors px-2 py-1 rounded bg-amber-600 text-white text-xs font-bold hover:bg-amber-500' }, 'View comparison \u2192'),
+            h('button', { onClick: function() { upd({ sub: 'compare' }); }, className: 'transition-colors px-2 py-1 rounded bg-amber-700 text-white text-xs font-bold hover:bg-amber-800' }, 'View comparison \u2192'),
             h('button', { onClick: function() { upd({ compareIds: [] }); }, className: 'transition-colors px-2 py-1 rounded bg-slate-700 text-slate-200 text-xs hover:bg-slate-600' }, 'Clear')
           )
         ),
@@ -11334,7 +11334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             },
             className: 'flex-1 py-2 rounded-lg text-xs font-bold ' + (dInCompare ? 'transition-colors bg-amber-600 text-white hover:bg-amber-500' : 'transition-colors bg-slate-700 text-white hover:bg-slate-600')
           }, dInCompare ? '\u2713 In compare' : '\u2696 Add to compare'),
-          (s.compareIds && s.compareIds.length > 1) && h('button', { onClick: function() { upd({ sub: 'compare' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-amber-600 text-white text-xs font-bold hover:bg-amber-500' }, 'View comparison (' + s.compareIds.length + ') \u2192'),
+          (s.compareIds && s.compareIds.length > 1) && h('button', { onClick: function() { upd({ sub: 'compare' }); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-amber-700 text-white text-xs font-bold hover:bg-amber-800' }, 'View comparison (' + s.compareIds.length + ') \u2192'),
           h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-800 border border-emerald-500/40 text-white text-xs font-bold hover:bg-slate-700' }, '\uD83D\uDDA8 Print profile')
         )
       );
@@ -11557,7 +11557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('h2', { className: 'text-2xl font-black text-emerald-200' }, '\u2696\uFE0F Side-by-Side Comparison'),
           h('div', { className: 'p-6 rounded-lg bg-slate-800/60 border border-emerald-500/30 text-sm text-slate-200 leading-relaxed' },
             h('p', { className: 'mb-3' }, 'No careers selected yet. Use the ', h('strong', { className: 'text-emerald-300' }, '\u2696 Add to compare'), ' button on any career card or detail page to build a comparison set (up to 3 at a time).'),
-            h('button', { onClick: function() { upd({ sub: 'explorer' }); }, className: 'transition-colors px-4 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500' }, '\uD83D\uDDFA Open Career Explorer \u2192')
+            h('button', { onClick: function() { upd({ sub: 'explorer' }); }, className: 'transition-colors px-4 py-2 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-800' }, '\uD83D\uDDFA Open Career Explorer \u2192')
           )
         );
       }
@@ -17828,7 +17828,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           ),
           h('button', {
             onClick: nextRound,
-            className: 'transition-colors w-full py-3 rounded-xl bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
+            className: 'transition-colors w-full py-3 rounded-xl bg-sky-700 text-white font-bold text-sm hover:bg-sky-800 focus:outline-none focus:ring-2 ring-sky-300'
           }, '\uD83C\uDFAF Start \u2014 vignette 1 of 12')
         );
       }
@@ -17901,12 +17901,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 ),
                 h('button', {
                   onClick: function() { upd({ elgIdx: -1, elgShown: [], elgScore: 0, elgRounds: 0, elgStreak: 0 }); },
-                  className: 'transition-colors mt-2 px-4 py-1.5 rounded-lg bg-sky-600 text-white font-bold text-xs hover:bg-sky-500'
+                  className: 'transition-colors mt-2 px-4 py-1.5 rounded-lg bg-sky-700 text-white font-bold text-xs hover:bg-sky-800'
                 }, '\uD83D\uDD04 Restart')
               )
             : h('button', {
                 onClick: nextRound,
-                className: 'transition-colors mt-1 px-4 py-2 rounded-lg bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
+                className: 'transition-colors mt-1 px-4 py-2 rounded-lg bg-sky-700 text-white font-bold text-sm hover:bg-sky-800 focus:outline-none focus:ring-2 ring-sky-300'
               }, '\u27A1\uFE0F Next vignette')
         )
       );
@@ -18032,7 +18032,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('ol', { className: 'space-y-2' },
             FIVE04_VS_IEP.decisionTree.map(function(step, i) {
               return h('li', { key: i, className: 'p-2 rounded bg-slate-900/60 text-xs text-slate-200' },
-                h('span', { className: 'inline-block w-6 h-6 rounded-full bg-sky-600 text-white text-center font-bold mr-2' }, i + 1),
+                h('span', { className: 'inline-block w-6 h-6 rounded-full bg-sky-700 text-white text-center font-bold mr-2' }, i + 1),
                 step
               );
             })
@@ -18601,7 +18601,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('div', { className: 'text-xs text-slate-300 italic' }, 'Review the draft carefully. Personalize for the specific family. Check for accuracy against your full eval report. Adjust tone as needed.'),
             h('div', { className: 'flex gap-2' },
               h('button', { onClick: genHandout, className: 'transition-colors flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-bold hover:bg-slate-600' }, '\uD83D\uDD04 Regenerate'),
-              h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-sky-600 text-white text-xs font-bold hover:bg-sky-500' }, '\uD83D\uDDA8 Print / Save as PDF')
+              h('button', { onClick: function() { window.print && window.print(); }, className: 'transition-colors flex-1 py-2 rounded-lg bg-sky-700 text-white text-xs font-bold hover:bg-sky-800' }, '\uD83D\uDDA8 Print / Save as PDF')
             )
           )
         )
@@ -19827,7 +19827,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         ),
         h('button', {
           onClick: startRs,
-          className: 'transition-colors w-full py-3 rounded-xl bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
+          className: 'transition-colors w-full py-3 rounded-xl bg-sky-700 text-white font-bold text-sm hover:bg-sky-800 focus:outline-none focus:ring-2 ring-sky-300'
         }, '\uD83D\uDD75\uFE0F Start \u2014 vignette 1 of 10')
       );
     }
@@ -19907,12 +19907,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               ),
               h('button', {
                 onClick: function() { upd({ rsIdx: -1, rsShown: [], rsScore: 0, rsRounds: 0, rsStreak: 0 }); },
-                className: 'transition-colors mt-2 px-4 py-1.5 rounded-lg bg-sky-600 text-white font-bold text-xs hover:bg-sky-500'
+                className: 'transition-colors mt-2 px-4 py-1.5 rounded-lg bg-sky-700 text-white font-bold text-xs hover:bg-sky-800'
               }, '\uD83D\uDD04 Restart')
             )
           : h('button', {
               onClick: startRs,
-              className: 'transition-colors mt-1 px-4 py-2 rounded-lg bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
+              className: 'transition-colors mt-1 px-4 py-2 rounded-lg bg-sky-700 text-white font-bold text-sm hover:bg-sky-800 focus:outline-none focus:ring-2 ring-sky-300'
             }, '\u27A1\uFE0F Next vignette')
       )
     );

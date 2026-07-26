@@ -7051,7 +7051,7 @@ var d = labToolData.dissection || {};
 
                       },
 
-                      className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:from-violet-600 hover:to-purple-600"
+                      className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-600 hover:to-purple-600"
 
                     }, '\uD83E\uDD16 ' + 'AI Explain'),
 
@@ -7391,7 +7391,7 @@ var d = labToolData.dissection || {};
 
                       },
 
-                      className: "mt-1 px-2 py-1 rounded-lg text-[11px] font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                      className: "mt-1 px-2 py-1 rounded-lg text-[11px] font-bold bg-gradient-to-r from-green-700 to-emerald-700 text-white"
 
                     }, '\uD83C\uDF93 ' + 'Copy Summary')
 

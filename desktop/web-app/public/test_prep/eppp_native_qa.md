@@ -1,6 +1,6 @@
 # EPPP native pack editorial QA report
 
-Generated: 2026-07-25T22:31:03.939Z
+Generated: 2026-07-26T06:54:35.782Z
 
 Pack: EPPP Part 1 — Source-Reviewed Practice Bank v3.1.0
 
@@ -248,7 +248,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-b013-intervention-2 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-b013-research-1 | research | legacy-seeded-re-authored | pass | 1 |
 | eppp-b013-research-2 | research | legacy-seeded-re-authored | pass | 1 |
-| eppp-b013-professional-1 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b013-professional-1 | professional | legacy-seeded-re-authored | pass | 2 |
 | eppp-b013-professional-2 | professional | legacy-seeded-re-authored | pass | 1 |
 | eppp-b014-biological-1 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-b014-biological-2 | biological | legacy-seeded-re-authored | pass | 1 |
@@ -380,7 +380,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-b021-intervention-4 | intervention | legacy-seeded-re-authored | pass | 1 |
 | eppp-b021-professional-1 | professional | legacy-seeded-re-authored | pass | 1 |
 | eppp-b021-professional-2 | professional | legacy-seeded-re-authored | pass | 1 |
-| eppp-b021-professional-3 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b021-professional-3 | professional | legacy-seeded-re-authored | pass | 2 |
 | eppp-b021-professional-4 | professional | legacy-seeded-re-authored | pass | 1 |
 | eppp-b022-biological-1 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-b022-cognitive-1 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
@@ -558,7 +558,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-v2-biological-030 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-biological-031 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-biological-032 | biological | legacy-seeded-re-authored | pass | 1 |
-| eppp-v2-biological-033 | biological | legacy-seeded-re-authored | pass | 1 |
+| eppp-v2-biological-033 | biological | legacy-seeded-re-authored | pass | 2 |
 | eppp-v2-biological-034 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-biological-035 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-biological-036 | biological | legacy-seeded-re-authored | pass | 1 |
@@ -1057,7 +1057,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-v3-biological-029 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-biological-030 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-biological-031 | biological | legacy-seeded-re-authored | pass | 1 |
-| eppp-v3-biological-032 | biological | legacy-seeded-re-authored | pass | 1 |
+| eppp-v3-biological-032 | biological | legacy-seeded-re-authored | pass | 2 |
 | eppp-v3-biological-033 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-biological-034 | biological | legacy-seeded-re-authored | pass | 1 |
 | eppp-v3-biological-035 | biological | legacy-seeded-re-authored | pass | 1 |

@@ -22,7 +22,7 @@ describe('galaxy explorer mode/state smoke', () => {
   });
 
   it('galaxy mode renders the rotation-curve / dark-matter panel', () => {
-    const html = renderTool('galaxy', { galaxy: {} });
+    const html = renderTool('galaxy', { galaxy: { galaxyControlPanel: 'motion' } });
     expect(html).toContain('How does a galaxy spin?');
     expect(html).toContain('dark matter');
     // all three model buttons present
@@ -37,7 +37,7 @@ describe('galaxy explorer mode/state smoke', () => {
       ['keplerian', 'outer stars should crawl'],
       ['rigid', 'painted DVD'],
     ]) {
-      const html = renderTool('galaxy', { galaxy: { rotMode: mode } });
+      const html = renderTool('galaxy', { galaxy: { rotMode: mode, galaxyControlPanel: 'motion' } });
       expect(html, 'rotMode=' + mode).toContain(signal);
     }
   });

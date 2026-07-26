@@ -872,7 +872,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("span", { className: "text-lg font-black text-slate-700" }, "\u00D7" + count),
 
-                      React.createElement("button", { "aria-label": "Remove Element", onClick: () => removeElement(sym), className: "ml-1 w-5 h-5 rounded-full bg-red-100 text-red-500 text-xs font-bold hover:bg-red-200 flex items-center justify-center" }, "\u2212")
+                      React.createElement("button", { "aria-label": "Remove Element", onClick: () => removeElement(sym), className: "ml-1 w-5 h-5 rounded-full bg-red-100 text-red-700 text-xs font-bold hover:bg-red-200 flex items-center justify-center" }, "\u2212")
 
                     );
 
@@ -884,7 +884,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
               React.createElement("div", { className: "flex gap-2 mb-4" },
 
-                React.createElement("button", { "aria-label": "Combine!", onClick: tryCraft, disabled: Object.keys(selectedEls).length === 0, className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed" }, "\u2697\uFE0F Combine!"),
+                React.createElement("button", { "aria-label": "Combine!", onClick: tryCraft, disabled: Object.keys(selectedEls).length === 0, className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed" }, "\u2697\uFE0F Combine!"),
 
                 React.createElement("button", { "aria-label": "Clear", onClick: clearElements, className: "px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors" }, "\uD83D\uDD04 Clear")
 
@@ -1260,7 +1260,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   onClick: () => { upd('buildAtoms', []); upd('buildBonds', []); upd('buildBondFrom', null); upd('buildCheckResult', null); },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all ml-auto"
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-all ml-auto"
 
                 }, "\uD83D\uDDD1\uFE0F Clear All")
 
@@ -1358,7 +1358,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   },
 
-                  className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all"
+                  className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all"
 
                 }, "\u{1F50D} Check Molecule"),
 
@@ -1378,7 +1378,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   },
 
-                  className: "px-4 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold rounded-xl hover:from-amber-500 hover:to-orange-600 shadow-md transition-all"
+                  className: "px-4 py-2.5 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-xl hover:from-amber-700 hover:to-orange-700 shadow-md transition-all"
 
                 }, "\u{1F3AF} Random Challenge")
 
@@ -1488,7 +1488,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       detail && React.createElement("button", { "aria-label": "Speak Text",
                         onClick: () => speakText(d.selectedElement.name + '. ' + detail.desc),
-                        className: "ml-1 px-1.5 py-0.5 rounded text-[11px] bg-slate-100 text-slate-500 hover:bg-slate-200 inline-flex items-center"
+                        className: "ml-1 px-1.5 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600 hover:bg-slate-200 inline-flex items-center"
                       }, "🔊"),
 
                     ),
@@ -2076,7 +2076,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                     React.createElement("button", { "aria-label": "Check Balance",
                       onClick: submitReaction,
                       disabled: reactionResult === 'correct',
-                      className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all disabled:opacity-40"
+                      className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all disabled:opacity-40"
                     }, "⚖️ Check Balance"),
                     React.createElement("button", { "aria-label": "Next",
                       onClick: () => { const next = (currentReactionIdx + 1) % REACTIONS.length; initReaction(next); },
@@ -2147,7 +2147,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                     React.createElement("button", { "aria-label": "Ask Chem Tutor",
                       onClick: () => askChemTutor(aiQuestion),
                       disabled: aiLoading || !aiQuestion,
-                      className: "px-3 py-2 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 disabled:opacity-40 transition-all"
+                      className: "px-3 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 disabled:opacity-40 transition-all"
                     }, aiLoading ? "⏳" : "🔬 Ask")
                   ),
                   React.createElement("div", { className: "flex gap-1 mb-2 flex-wrap" },
@@ -2155,7 +2155,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                       React.createElement("button", { "aria-label": "Ask: " + q,
                         key: q,
                         onClick: () => { upd('aiQuestion', q); askChemTutor(q); },
-                        className: "px-2 py-1 rounded text-[10px] font-medium bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+                        className: "px-2 py-1 rounded text-[10px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
                       }, q)
                     )
                   ),
@@ -2182,7 +2182,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4 relative" },
                 React.createElement("button", { "aria-label": "Dismiss Tutorial",
                   onClick: dismissTutorial,
-                  className: "absolute top-3 right-3 w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 text-sm font-bold"
+                  className: "absolute top-3 right-3 w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 text-sm font-bold"
                 }, "✕"),
 
                 React.createElement("p", { className: "text-2xl mb-1" }, ["🔬", "⚗️", "🧱", "🗂️", "🔥"][tutorialStep]),
@@ -2213,7 +2213,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                     tutorialStep < 4
                       ? React.createElement("button", { "aria-label": "Next",
                           onClick: advanceTutorial,
-                          className: "px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-500 text-white hover:bg-indigo-600"
+                          className: "px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700"
                         }, "Next →")
                       : React.createElement("button", { "aria-label": "Start Exploring!",
                           onClick: dismissTutorial,

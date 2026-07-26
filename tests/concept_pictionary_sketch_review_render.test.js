@@ -51,9 +51,13 @@ describe('Sketch Review render smoke', () => {
       feedbackByUid: {},
       feedbackDraftsByUid: {},
       feedbackBusyByUid: {},
+      feedbackBusyKindByUid: {},
+      visionNoticeByUid: {},
       criterion: 'Accurate relationships',
       canStartShowcase: true,
       canPolishFeedback: true,
+      canAnalyzeSketch: true,
+      visionProviderLabel: 'AlloFlow Local',
       resources: [{ id: 'resource-1', title: 'Modeling guide' }],
       groups: { g1: { name: 'Table One' } },
     });
@@ -62,6 +66,8 @@ describe('Sketch Review render smoke', () => {
     expect(serialized).toContain('Sketch Response');
     expect(serialized).toContain('Success criterion');
     expect(serialized).toContain('Start anonymous sketch vote');
+    expect(serialized).toContain('Analyze sketch with AI');
+    expect(serialized).toContain('identity-free PNG');
     expect(serialized).toContain('Choose a follow-up resource');
     expect(serialized).not.toContain('ReferenceError');
   });

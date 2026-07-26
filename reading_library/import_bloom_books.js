@@ -353,6 +353,7 @@ function makeBook(record, meta, lang, parsed) {
     orientation: 'portrait',
     sourceId: 'bloom',
     contentType: 'story',
+    workKey: 'bloom-instance-' + String(record.instanceId || record.id).slice(0, 8).toLowerCase(),
     subjects: topicSubjects(record),
     authors: author ? [author] : [holder || 'Bloom Library community'],
     illustrators: [],

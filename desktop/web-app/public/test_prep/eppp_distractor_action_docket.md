@@ -5,26 +5,29 @@ Generated: 2026-07-22
 ## Result
 
 - Preserved all 20 entries in the raw warning-only diagnostic.
-- Applied 5 fingerprint-current editorial adjudications.
-- Advanced 15 unreviewed items into the bounded action queue.
-- Found 0 stale adjudications.
+- Applied 2 fingerprint-current editorial adjudications.
+- Advanced 18 unreviewed items into the bounded action queue.
+- Found 3 stale adjudications.
 
 > Docket priority is editorial triage, not psychometric severity, item-response analysis, or independent expert validation.
 
 | Action rank | Raw rank | Item | Domain | Diagnostics | Editorial reason |
 | ---: | ---: | --- | --- | --- | --- |
-| 1 | 6 | eppp-b012-professional-1 | professional | asymmetric-extreme-distractors, semantic-concept-duplicate-candidate | Combined warning score places this item in the next bounded editorial-review docket. |
-| 2 | 7 | eppp-v3-assessment-032 | assessment | asymmetric-extreme-distractors, semantic-concept-duplicate-candidate | Combined warning score places this item in the next bounded editorial-review docket. |
-| 3 | 8 | eppp-b024-professional-4 | professional | unique-key/stem-lexical-leakage, asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 4 | 9 | eppp-b025-assessment-2 | assessment | unique-key/stem-lexical-leakage, asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 5 | 10 | eppp-pilot-assessment-1 | assessment | asymmetric-extreme-distractors, semantic-concept-duplicate-candidate | Combined warning score places this item in the next bounded editorial-review docket. |
-| 6 | 11 | eppp-v2-assessment-023 | assessment | unique-key/stem-lexical-leakage, asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 7 | 12 | eppp-v2-cognitive-affective-014 | cognitive-affective | unique-key/stem-lexical-leakage, asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 8 | 13 | eppp-v2-cognitive-affective-036 | cognitive-affective | unique-key/stem-lexical-leakage, asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 9 | 14 | eppp-v2-professional-054 | professional | unique-key/stem-lexical-leakage, asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 10 | 15 | eppp-v2-professional-062 | professional | unique-key/stem-lexical-leakage, asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 11 | 16 | eppp-v2-social-cultural-048 | social-cultural | unique-key/stem-lexical-leakage, asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 12 | 17 | eppp-v3-assessment-079 | assessment | unique-key/stem-lexical-leakage, asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 13 | 18 | eppp-v3-professional-060 | professional | unique-key/stem-lexical-leakage, asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 14 | 19 | eppp-v3-professional-070 | professional | unique-key/stem-lexical-leakage, asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
-| 15 | 20 | eppp-v2-assessment-058 | assessment | asymmetric-extreme-distractors, semantic-concept-duplicate-candidate | Combined warning score places this item in the next bounded editorial-review docket. |
+| 1 | 3 | eppp-b009-biological-1 | biological | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 2 | 4 | eppp-b009-social-2 | social-cultural | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 3 | 5 | eppp-b010-social-1 | social-cultural | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 4 | 6 | eppp-b012-biological-1 | biological | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 5 | 7 | eppp-b012-biological-2 | biological | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 6 | 8 | eppp-b012-cognitive-1 | cognitive-affective | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 7 | 9 | eppp-b012-intervention-1 | intervention | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 8 | 10 | eppp-b014-intervention-1 | intervention | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 9 | 11 | eppp-b016-lifespan-1 | lifespan | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 10 | 12 | eppp-b017-lifespan-1 | lifespan | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 11 | 13 | eppp-b017-lifespan-2 | lifespan | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 12 | 14 | eppp-b019-intervention-1 | intervention | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 13 | 15 | eppp-b019-intervention-3 | intervention | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 14 | 16 | eppp-b019-lifespan-2 | lifespan | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 15 | 17 | eppp-b020-cognitive-1 | cognitive-affective | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 16 | 18 | eppp-b021-assessment-3 | assessment | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 17 | 19 | eppp-b021-assessment-4 | assessment | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |
+| 18 | 20 | eppp-b021-cognitive-1 | cognitive-affective | asymmetric-extreme-distractors | Combined warning score places this item in the next bounded editorial-review docket. |

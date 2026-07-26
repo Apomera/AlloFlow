@@ -351,7 +351,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83D\uDCCF Unit Converter'),
             h('span', { className: 'px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
             (d.score || 0) > 0 && h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' }, '\u2B50 ' + d.score + ' XP'),
-            (d.streak || 0) >= 2 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[11px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.streak),
+            (d.streak || 0) >= 2 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-700 text-[11px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.streak),
             earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); },
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-600 text-amber-700 hover:bg-amber-100 transition-all',
               title: 'View badges (B)'
@@ -732,7 +732,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 });
                 addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
               },
-              className: 'mt-3 ml-auto block px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all'
+              className: 'mt-3 ml-auto block px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all'
             }, '\uD83D\uDCF8 Snapshot')
 
           ),
@@ -968,7 +968,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       addToast('Could not generate. Try again.', 'error');
                     });
                   },
-                  className: 'px-4 py-2 bg-cyan-50 text-cyan-600 rounded-lg text-xs font-bold hover:bg-cyan-100 transition-all'
+                  className: 'px-4 py-2 bg-cyan-50 text-cyan-700 rounded-lg text-xs font-bold hover:bg-cyan-100 transition-all'
                 }, '\uD83D\uDD04 New Problem'),
                 h('button', { 'aria-label': 'Save',
                   onClick: function() {

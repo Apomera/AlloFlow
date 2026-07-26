@@ -81,21 +81,38 @@
   function CodingBlocklyWorkspace(props) {
     var React = props.React;
     var hostRef = React.useRef(null);
+    var helpButtonRef = React.useRef(null);
+    var helpPanelRef = React.useRef(null);
     var workspaceRef = React.useRef(null);
     var runtimeRef = React.useRef(null);
     var programRef = React.useRef(props.program || []);
+    var workspaceStateRef = React.useRef(props.workspaceState || null);
+    var messagesRef = React.useRef(props.messages || {});
     var onProgramChangeRef = React.useRef(props.onProgramChange);
     var lastSignatureRef = React.useRef(codingProgramSignature(props.program));
+    var lastWorkspaceStateSignatureRef = React.useRef(codingProgramSignature(props.workspaceState || null));
     var changeTimerRef = React.useRef(null);
+    var messagesSignature = codingProgramSignature(props.messages || {});
     var _statusState = React.useState('loading');
     var status = _statusState[0];
     var setStatus = _statusState[1];
     var _retryState = React.useState(0);
     var retry = _retryState[0];
     var setRetry = _retryState[1];
+    var _helpState = React.useState(false);
+    var showKeyboardHelp = _helpState[0];
+    var setShowKeyboardHelp = _helpState[1];
 
     programRef.current = props.program || [];
+    workspaceStateRef.current = props.workspaceState || null;
+    messagesRef.current = props.messages || {};
     onProgramChangeRef.current = props.onProgramChange;
+
+    React.useEffect(function() {
+      if (showKeyboardHelp && helpPanelRef.current) {
+        helpPanelRef.current.focus();
+      }
+    }, [showKeyboardHelp]);
 
     React.useEffect(function() {
       var cancelled = false;
@@ -107,10 +124,13 @@
         runtimeRef.current = runtime;
         workspace = runtime.mount(hostRef.current, {
           domain: props.domain,
-          program: programRef.current
+          program: programRef.current,
+          workspaceState: workspaceStateRef.current,
+          messages: messagesRef.current
         });
         workspaceRef.current = workspace;
         lastSignatureRef.current = codingProgramSignature(programRef.current);
+        lastWorkspaceStateSignatureRef.current = codingProgramSignature(workspaceStateRef.current);
         workspace.addChangeListener(function(event) {
           if (!runtime.isProgramChange(event)) return;
           if (changeTimerRef.current) clearTimeout(changeTimerRef.current);
@@ -118,11 +138,24 @@
             if (cancelled || !workspaceRef.current) return;
             var next = runtime.readProgram(workspaceRef.current, props.domain);
             var nextSignature = codingProgramSignature(next);
-            if (nextSignature === lastSignatureRef.current) return;
+            var nextWorkspaceState = runtime.saveWorkspaceState(workspaceRef.current, props.domain, next);
+            var nextWorkspaceStateSignature = codingProgramSignature(nextWorkspaceState);
+            if (nextSignature === lastSignatureRef.current &&
+                nextWorkspaceStateSignature === lastWorkspaceStateSignatureRef.current) return;
             lastSignatureRef.current = nextSignature;
-            onProgramChangeRef.current(next);
+            lastWorkspaceStateSignatureRef.current = nextWorkspaceStateSignature;
+            if (typeof onProgramChangeRef.current === 'function') {
+              onProgramChangeRef.current(next, nextWorkspaceState);
+            }
           }, 120);
         });
+        var normalizedWorkspaceState = runtime.saveWorkspaceState(workspace, props.domain, programRef.current);
+        var normalizedWorkspaceStateSignature = codingProgramSignature(normalizedWorkspaceState);
+        if (normalizedWorkspaceStateSignature !== codingProgramSignature(workspaceStateRef.current) &&
+            typeof onProgramChangeRef.current === 'function') {
+          lastWorkspaceStateSignatureRef.current = normalizedWorkspaceStateSignature;
+          onProgramChangeRef.current(programRef.current, normalizedWorkspaceState);
+        }
         if (typeof ResizeObserver !== 'undefined') {
           resizeObserver = new ResizeObserver(function() { runtime.resize(workspace); });
           resizeObserver.observe(hostRef.current);
@@ -139,21 +172,82 @@
         workspaceRef.current = null;
         runtimeRef.current = null;
       };
-    }, [props.domain, retry]);
+    }, [props.domain, retry, messagesSignature]);
 
     React.useEffect(function() {
       var signature = codingProgramSignature(props.program);
       if (!workspaceRef.current || !runtimeRef.current || signature === lastSignatureRef.current) return;
       lastSignatureRef.current = signature;
       runtimeRef.current.loadProgram(workspaceRef.current, props.domain, props.program || []);
+      var normalizedWorkspaceState = runtimeRef.current.saveWorkspaceState(
+        workspaceRef.current,
+        props.domain,
+        props.program || []
+      );
+      lastWorkspaceStateSignatureRef.current = codingProgramSignature(normalizedWorkspaceState);
+      if (typeof onProgramChangeRef.current === 'function') {
+        onProgramChangeRef.current(props.program || [], normalizedWorkspaceState);
+      }
     }, [props.program, props.domain]);
 
+    var uiText = props.uiText || {};
+    var helpId = 'coding-blockly-keyboard-help-' + (props.domain === 'robot' ? 'robot' : 'turtle');
+    function closeKeyboardHelp() {
+      setShowKeyboardHelp(false);
+      setTimeout(function() {
+        if (helpButtonRef.current) helpButtonRef.current.focus();
+      }, 0);
+    }
     return React.createElement("section", {
       className: "relative min-h-[470px] overflow-hidden rounded-xl border border-indigo-400/40 bg-slate-900",
-      "aria-label": props.domain === 'robot' ? 'Robot visual block editor' : 'Turtle visual block editor'
+      "aria-describedby": helpId + '-summary',
+      "aria-label": props.domain === 'robot'
+        ? (uiText.robotEditorLabel || 'Robot visual block editor')
+        : (uiText.turtleEditorLabel || 'Turtle visual block editor')
     },
-      React.createElement("p", { className: "sr-only" },
-        "Visual block editor. Use Tab to enter the workspace and Blockly keyboard commands to select, connect, move, and edit blocks. Choose Accessible Outline for a linear editor."
+      React.createElement("p", { id: helpId + '-summary', className: "sr-only" },
+        uiText.keyboardHelp || "Visual block editor. Use Tab to enter the workspace and Blockly keyboard commands to select, connect, move, and edit blocks. Choose Accessible Outline for a linear editor."
+      ),
+      React.createElement("button", {
+        ref: helpButtonRef,
+        type: "button",
+        "aria-controls": helpId,
+        "aria-expanded": showKeyboardHelp ? "true" : "false",
+        onClick: function() { setShowKeyboardHelp(function(value) { return !value; }); },
+        className: "absolute right-2 top-2 z-20 min-h-11 rounded-lg border border-indigo-300/50 bg-slate-800/95 px-3 py-2 text-xs font-bold text-indigo-100 shadow-lg hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-300"
+      }, uiText.keyboardHelpButton || "Keyboard help"),
+      showKeyboardHelp && React.createElement("div", {
+        id: helpId,
+        ref: helpPanelRef,
+        role: "region",
+        tabIndex: -1,
+        "aria-label": uiText.keyboardHelpTitle || "Visual Blocks keyboard help",
+        onKeyDown: function(event) {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            closeKeyboardHelp();
+          }
+        },
+        className: "absolute right-2 top-14 z-20 max-w-sm rounded-xl border border-indigo-300/50 bg-slate-900/98 p-4 text-xs text-slate-100 shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-yellow-300"
+      },
+        React.createElement("div", { className: "mb-2 flex items-start justify-between gap-3" },
+          React.createElement("h3", { className: "text-sm font-bold text-indigo-200" },
+            uiText.keyboardHelpTitle || "Visual Blocks keyboard help"
+          ),
+          React.createElement("button", {
+            type: "button",
+            onClick: closeKeyboardHelp,
+            className: "min-h-8 min-w-8 rounded text-lg leading-none text-slate-200 hover:bg-slate-700",
+            "aria-label": uiText.closeKeyboardHelp || "Close keyboard help"
+          }, "\u00d7")
+        ),
+        React.createElement("ul", { className: "list-disc space-y-1 pl-4" },
+          React.createElement("li", null, uiText.keyboardTab || "Press Tab to move into the Blockly workspace and between controls."),
+          React.createElement("li", null, uiText.keyboardArrows || "Use arrow keys to move through blocks and workspace controls."),
+          React.createElement("li", null, uiText.keyboardEnter || "Press Enter or Space to select, open, or edit the focused item."),
+          React.createElement("li", null, uiText.keyboardEscape || "Press Escape to leave a menu or close this help."),
+          React.createElement("li", null, uiText.keyboardOutline || "Choose Accessible Outline for a fully linear editor with explicit move buttons.")
+        )
       ),
       React.createElement("div", {
         ref: hostRef,
@@ -163,17 +257,17 @@
       status === 'loading' && React.createElement("div", {
         role: "status",
         className: "absolute inset-0 flex items-center justify-center bg-slate-900 text-sm font-semibold text-indigo-200"
-      }, "Loading Visual Blocks\u2026"),
+      }, uiText.loading || "Loading Visual Blocks\u2026"),
       status === 'error' && React.createElement("div", {
         role: "alert",
         className: "absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-900 p-6 text-center text-sm text-slate-200"
       },
-        React.createElement("p", null, "Visual Blocks could not load. Your program is safe; use Accessible Outline or try again."),
+        React.createElement("p", null, uiText.loadError || "Visual Blocks could not load. Your program is safe; use Accessible Outline or try again."),
         React.createElement("button", {
           type: "button",
           onClick: function() { setRetry(function(value) { return value + 1; }); },
           className: "min-h-11 rounded-lg bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-500"
-        }, "Try again")
+        }, uiText.retry || "Try again")
       )
     );
   }
@@ -342,38 +436,189 @@
   // copy-paste defect class that produced the A3 3D-serializer bug cannot recur
   // silently. Exercised by tests/coding_interp.test.js.
   var CodingInterp = (function () {
-    function resolveVal(val, vars) {
-      if (typeof val === 'string' && val.charAt(0) === '$') {
-        var vName = val.substring(1);
-        return vars[vName] != null ? vars[vName] : 0;
+    function expressionTokens(source) {
+      var text = String(source == null ? '' : source);
+      var tokens = [];
+      var index = 0;
+      while (index < text.length) {
+        var rest = text.substring(index);
+        var match = rest.match(/^\s+/);
+        if (match) { index += match[0].length; continue; }
+        match = rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)/);
+        if (match) {
+          tokens.push({ type: 'number', value: Number(match[0]) });
+          index += match[0].length;
+          continue;
+        }
+        match = rest.match(/^\$[A-Za-z_][A-Za-z0-9_]*/);
+        if (match) {
+          tokens.push({ type: 'variable', value: match[0].substring(1) });
+          index += match[0].length;
+          continue;
+        }
+        match = rest.match(/^[A-Za-z_][A-Za-z0-9_]*/);
+        if (match) {
+          var word = match[0];
+          tokens.push({ type: word === 'and' || word === 'or' || word === 'not' ? 'operator' : 'identifier', value: word });
+          index += word.length;
+          continue;
+        }
+        var pair = rest.substring(0, 2);
+        if (pair === '>=' || pair === '<=' || pair === '==' || pair === '!=') {
+          tokens.push({ type: 'operator', value: pair });
+          index += 2;
+          continue;
+        }
+        var character = rest.charAt(0);
+        if ('+-*/><()'.indexOf(character) >= 0) {
+          tokens.push({ type: character === '(' || character === ')' ? 'paren' : 'operator', value: character });
+          index++;
+          continue;
+        }
+        return null;
       }
-      return typeof val === 'number' ? val : (parseFloat(val) || 0);
+      tokens.push({ type: 'eof', value: '' });
+      return tokens;
+    }
+    function evaluateExpression(source, turtle, vars) {
+      if (typeof source === 'number' || typeof source === 'boolean') return { ok: true, value: source };
+      var tokens = expressionTokens(source);
+      if (!tokens) return { ok: false, value: 0 };
+      turtle = turtle || {};
+      vars = vars || {};
+      var index = 0;
+      function current() { return tokens[index]; }
+      function take() { return tokens[index++]; }
+      function numberValue(value) {
+        var number = Number(value);
+        return isFinite(number) ? number : 0;
+      }
+      function primary() {
+        var token = current();
+        if (token.type === 'number') { take(); return { ok: true, value: token.value }; }
+        if (token.type === 'variable') {
+          take();
+          return { ok: true, value: vars[token.value] != null ? vars[token.value] : 0 };
+        }
+        if (token.type === 'identifier') {
+          take();
+          if (token.value === 'true') return { ok: true, value: true };
+          if (token.value === 'false') return { ok: true, value: false };
+          if (token.value === 'x' || token.value === 'y' || token.value === 'angle' || token.value === 'penDown') {
+            return { ok: true, value: turtle[token.value] != null ? turtle[token.value] : 0 };
+          }
+          return { ok: false, value: 0 };
+        }
+        if (token.type === 'paren' && token.value === '(') {
+          take();
+          var nested = logicalOr();
+          if (!nested.ok || current().type !== 'paren' || current().value !== ')') return { ok: false, value: 0 };
+          take();
+          return nested;
+        }
+        return { ok: false, value: 0 };
+      }
+      function unary() {
+        if (current().type === 'operator' && (current().value === '-' || current().value === 'not')) {
+          var operator = take().value;
+          var operand = unary();
+          if (!operand.ok) return operand;
+          return { ok: true, value: operator === 'not' ? !Boolean(operand.value) : -numberValue(operand.value) };
+        }
+        return primary();
+      }
+      function multiplicative() {
+        var left = unary();
+        while (left.ok && current().type === 'operator' && (current().value === '*' || current().value === '/')) {
+          var operator = take().value;
+          var right = unary();
+          if (!right.ok) return right;
+          var rightNumber = numberValue(right.value);
+          left.value = operator === '*'
+            ? numberValue(left.value) * rightNumber
+            : (rightNumber === 0 ? 0 : numberValue(left.value) / rightNumber);
+        }
+        return left;
+      }
+      function additive() {
+        var left = multiplicative();
+        while (left.ok && current().type === 'operator' && (current().value === '+' || current().value === '-')) {
+          var operator = take().value;
+          var right = multiplicative();
+          if (!right.ok) return right;
+          left.value = operator === '+'
+            ? numberValue(left.value) + numberValue(right.value)
+            : numberValue(left.value) - numberValue(right.value);
+        }
+        return left;
+      }
+      function comparison() {
+        var left = additive();
+        if (!left.ok) return left;
+        if (current().type === 'operator' && (' > < >= <= == != '.indexOf(' ' + current().value + ' ') >= 0)) {
+          var operator = take().value;
+          var right = additive();
+          if (!right.ok) return right;
+          if (operator === '>') left.value = left.value > right.value;
+          else if (operator === '<') left.value = left.value < right.value;
+          else if (operator === '>=') left.value = left.value >= right.value;
+          else if (operator === '<=') left.value = left.value <= right.value;
+          else if (operator === '==') left.value = left.value === right.value;
+          else left.value = left.value !== right.value;
+        }
+        return left;
+      }
+      function logicalAnd() {
+        var left = comparison();
+        while (left.ok && current().type === 'operator' && current().value === 'and') {
+          take();
+          var right = comparison();
+          if (!right.ok) return right;
+          left.value = Boolean(left.value) && Boolean(right.value);
+        }
+        return left;
+      }
+      function logicalOr() {
+        var left = logicalAnd();
+        while (left.ok && current().type === 'operator' && current().value === 'or') {
+          take();
+          var right = logicalAnd();
+          if (!right.ok) return right;
+          left.value = Boolean(left.value) || Boolean(right.value);
+        }
+        return left;
+      }
+      var result = logicalOr();
+      if (!result.ok || current().type !== 'eof') return { ok: false, value: 0 };
+      return result;
+    }
+    function resolveVal(val, vars, turtle) {
+      var result = evaluateExpression(val, turtle, vars);
+      if (!result.ok) return 0;
+      var number = Number(result.value);
+      return isFinite(number) ? number : 0;
     }
     function evalCondition(cond, turtle, vars) {
       if (!cond) return false;
-      var m;
-      if ((m = cond.match(/^(\$?[\w.]+)\s*(>|<|>=|<=|==|!=)\s*(.+)$/))) {
-        var lhsRaw = m[1].trim(), op = m[2], rhsRaw = m[3].trim();
-        var lhs, rhs;
-        if (lhsRaw === 'x') lhs = turtle.x;
-        else if (lhsRaw === 'y') lhs = turtle.y;
-        else if (lhsRaw === 'angle') lhs = turtle.angle;
-        else if (lhsRaw === 'penDown') lhs = turtle.penDown;
-        else if (lhsRaw.charAt(0) === '$') lhs = vars[lhsRaw.substring(1)] || 0;
-        else lhs = parseFloat(lhsRaw) || 0;
-        if (rhsRaw === 'true') rhs = true;
-        else if (rhsRaw === 'false') rhs = false;
-        else if (rhsRaw.charAt(0) === '$') rhs = vars[rhsRaw.substring(1)] || 0;
-        else rhs = parseFloat(rhsRaw);
-        if (isNaN(rhs) && typeof rhs !== 'boolean') rhs = 0;
-        if (op === '>') return lhs > rhs;
-        if (op === '<') return lhs < rhs;
-        if (op === '>=') return lhs >= rhs;
-        if (op === '<=') return lhs <= rhs;
-        if (op === '==') return lhs == rhs;
-        if (op === '!=') return lhs != rhs;
+      var result = evaluateExpression(cond, turtle, vars);
+      return result.ok ? Boolean(result.value) : false;
+    }
+    function parseScalarExpression(source) {
+      var value = String(source == null ? '' : source).trim();
+      if (/^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(value)) return Number(value);
+      return value;
+    }
+    function splitArguments(source) {
+      var depth = 0;
+      for (var index = 0; index < source.length; index++) {
+        var character = source.charAt(index);
+        if (character === '(') depth++;
+        else if (character === ')') depth--;
+        else if (character === ',' && depth === 0) {
+          return [source.substring(0, index).trim(), source.substring(index + 1).trim()];
+        }
       }
-      return false;
+      return null;
     }
     function getEndpoints(lines) {
       if (lines.length === 0) return { closed: false, turns: 0, segments: 0 };
@@ -458,20 +703,22 @@
         while (i < lineArr.length) {
           var line = lineArr[i];
           if (line.match(/^}\)?;?$/) || line.match(/^\} else \{$/)) { i++; return blks; }
-          var m;
-          if ((m = line.match(/^forward\(([\$\w]+)\)/))) { blks.push({ type: 'forward', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-          else if ((m = line.match(/^backward\(([\$\w]+)\)/))) { blks.push({ type: 'backward', distance: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-          else if ((m = line.match(/^right\(([\$\w]+)\)/))) { blks.push({ type: 'right', degrees: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-          else if ((m = line.match(/^left\(([\$\w]+)\)/))) { blks.push({ type: 'left', degrees: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
+          var m, args;
+          if ((m = line.match(/^forward\((.+)\)\s*;?$/))) { blks.push({ type: 'forward', distance: parseScalarExpression(m[1]) }); }
+          else if ((m = line.match(/^backward\((.+)\)\s*;?$/))) { blks.push({ type: 'backward', distance: parseScalarExpression(m[1]) }); }
+          else if ((m = line.match(/^right\((.+)\)\s*;?$/))) { blks.push({ type: 'right', degrees: parseScalarExpression(m[1]) }); }
+          else if ((m = line.match(/^left\((.+)\)\s*;?$/))) { blks.push({ type: 'left', degrees: parseScalarExpression(m[1]) }); }
           else if (line.match(/^penUp\(\)/)) { blks.push({ type: 'penup' }); }
           else if (line.match(/^penDown\(\)/)) { blks.push({ type: 'pendown' }); }
           else if ((m = line.match(/^setColor\("([^"]+)"\)/))) { blks.push({ type: 'color', color: m[1] }); }
-          else if ((m = line.match(/^setWidth\(([\$\w]+)\)/))) { blks.push({ type: 'width', width: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-          else if ((m = line.match(/^circle\(([\$\w]+)\)/))) { blks.push({ type: 'circle', radius: isNaN(m[1]) ? m[1] : parseInt(m[1]) }); }
-          else if ((m = line.match(/^goto\((\d+),\s*(\d+)\)/))) { blks.push({ type: 'goto', x: parseInt(m[1]), y: parseInt(m[2]) }); }
+          else if ((m = line.match(/^setWidth\((.+)\)\s*;?$/))) { blks.push({ type: 'width', width: parseScalarExpression(m[1]) }); }
+          else if ((m = line.match(/^circle\((.+)\)\s*;?$/))) { blks.push({ type: 'circle', radius: parseScalarExpression(m[1]) }); }
+          else if ((m = line.match(/^goto\((.+)\)\s*;?$/)) && (args = splitArguments(m[1]))) {
+            blks.push({ type: 'goto', x: parseScalarExpression(args[0]), y: parseScalarExpression(args[1]) });
+          }
           else if (line.match(/^home\(\)/)) { blks.push({ type: 'home' }); }
-          else if ((m = line.match(/^setVar\("([^"]+)",\s*(-?[\d.]+)\)/))) { blks.push({ type: 'setVar', varName: m[1], varValue: parseFloat(m[2]) }); }
-          else if ((m = line.match(/^changeVar\("([^"]+)",\s*(-?[\d.]+)\)/))) { blks.push({ type: 'changeVar', varName: m[1], varDelta: parseFloat(m[2]) }); }
+          else if ((m = line.match(/^setVar\("([^"]+)",\s*(.+)\)\s*;?$/))) { blks.push({ type: 'setVar', varName: m[1], varValue: parseScalarExpression(m[2]) }); }
+          else if ((m = line.match(/^changeVar\("([^"]+)",\s*(.+)\)\s*;?$/))) { blks.push({ type: 'changeVar', varName: m[1], varDelta: parseScalarExpression(m[2]) }); }
           else if ((m = line.match(/^if\s*\((.+)\)\s*\{/))) {
             i++;
             var ifChildren = parse();
@@ -554,33 +801,33 @@
         var b = flat[idx];
         var preLen = allLines.length, pre3DLen = lines3D.length, audio = null;
         if (b.type === 'setVar') {
-          vars[b.varName || 'size'] = b.varValue != null ? b.varValue : 50;
+          vars[b.varName || 'size'] = resolveVal(b.varValue != null ? b.varValue : 50, vars, t);
         } else if (b.type === 'changeVar') {
           var vn = b.varName || 'size';
-          vars[vn] = (vars[vn] || 0) + (b.varDelta != null ? b.varDelta : 10);
+          vars[vn] = (vars[vn] || 0) + resolveVal(b.varDelta != null ? b.varDelta : 10, vars, t);
         } else if (b.type === 'ifelse') {
           var condResult = evalCondition(b.condition || 'x > 250', t, vars);
           var branch = condResult ? (b.children || []) : (b.elseChildren || []);
           var branchFlat = flattenBlocks(branch);
           flat = flat.slice(0, idx + 1).concat(branchFlat).concat(flat.slice(idx + 1));
         } else if (b.type === 'forward') {
-          var dist = resolveVal(b.distance != null ? b.distance : 50, vars);
+          var dist = resolveVal(b.distance != null ? b.distance : 50, vars, t);
           var rad = t.angle * Math.PI / 180;
           var nx = t.x + Math.cos(rad) * dist;
           var ny = t.y + Math.sin(rad) * dist;
           if (t.penDown) { allLines.push({ x1: t.x, y1: t.y, x2: nx, y2: ny, color: t.color, width: t.width }); }
           t.x = nx; t.y = ny;
         } else if (b.type === 'backward') {
-          var dist2 = resolveVal(b.distance != null ? b.distance : 50, vars);
+          var dist2 = resolveVal(b.distance != null ? b.distance : 50, vars, t);
           var rad2 = t.angle * Math.PI / 180;
           var nx2 = t.x - Math.cos(rad2) * dist2;
           var ny2 = t.y - Math.sin(rad2) * dist2;
           if (t.penDown) { allLines.push({ x1: t.x, y1: t.y, x2: nx2, y2: ny2, color: t.color, width: t.width }); }
           t.x = nx2; t.y = ny2;
         } else if (b.type === 'right') {
-          t.angle = (t.angle + resolveVal(b.degrees != null ? b.degrees : 90, vars)) % 360;
+          t.angle = (t.angle + resolveVal(b.degrees != null ? b.degrees : 90, vars, t)) % 360;
         } else if (b.type === 'left') {
-          t.angle = (t.angle - resolveVal(b.degrees != null ? b.degrees : 90, vars) + 360) % 360;
+          t.angle = (t.angle - resolveVal(b.degrees != null ? b.degrees : 90, vars, t) + 360) % 360;
         } else if (b.type === 'penup') {
           t.penDown = false;
         } else if (b.type === 'pendown') {
@@ -588,9 +835,9 @@
         } else if (b.type === 'color') {
           t.color = b.color || '#6366f1';
         } else if (b.type === 'width') {
-          t.width = resolveVal(b.width != null ? b.width : 2, vars);
+          t.width = resolveVal(b.width != null ? b.width : 2, vars, t);
         } else if (b.type === 'circle') {
-          var cRadius = resolveVal(b.radius != null ? b.radius : 30, vars);
+          var cRadius = resolveVal(b.radius != null ? b.radius : 30, vars, t);
           if (t.penDown) {
             var segs = 36;
             for (var si = 0; si < segs; si++) {
@@ -606,8 +853,8 @@
             }
           }
         } else if (b.type === 'goto') {
-          var gx = b.x != null ? b.x : 250;
-          var gy = b.y != null ? b.y : 250;
+          var gx = resolveVal(b.x != null ? b.x : 250, vars, t);
+          var gy = resolveVal(b.y != null ? b.y : 250, vars, t);
           if (t.penDown) { allLines.push({ x1: t.x, y1: t.y, x2: gx, y2: gy, color: t.color, width: t.width }); }
           t.x = gx; t.y = gy;
         } else if (b.type === 'home') {
@@ -631,8 +878,8 @@
             flat = flat.slice(0, idx + 1).concat(callBody).concat(flat.slice(idx + 1));
           } else if (diag.unknownCalls.indexOf(_fn) < 0) { diag.unknownCalls.push(_fn); }
         } else if (b.type === 'random') {
-          var rMin = b.randomMin != null ? b.randomMin : 0;
-          var rMax = b.randomMax != null ? b.randomMax : 100;
+          var rMin = resolveVal(b.randomMin != null ? b.randomMin : 0, vars, t);
+          var rMax = resolveVal(b.randomMax != null ? b.randomMax : 100, vars, t);
           vars[b.varName || 'r'] = Math.floor(Math.random() * (rMax - rMin + 1)) + rMin;
         } else if (b.type === 'stamp') {
           if (allLines.length > 0) {
@@ -728,7 +975,7 @@
       }
       return { frames: frames, finalTurtle: t, finalLines: allLines, finalLines3D: lines3D, finalExtraTurtles: extraTurtles, vars: vars, diagnostics: diag };
     }
-    return { resolveVal: resolveVal, evalCondition: evalCondition, getEndpoints: getEndpoints, blocksToText: blocksToText, textToBlocks: textToBlocks, parseWithErrors: parseWithErrors, simulate: simulate };
+    return { resolveVal: resolveVal, evaluateExpression: evaluateExpression, evalCondition: evalCondition, getEndpoints: getEndpoints, blocksToText: blocksToText, textToBlocks: textToBlocks, parseWithErrors: parseWithErrors, simulate: simulate };
   })();
   /* __CODING_INTERP_END__ */
 
@@ -809,6 +1056,7 @@
 
           // ── Defaults ──
           var blocks = d.blocks || [];
+          var blocklyState = d.blocklyState || null;
           var turtleState = d.turtle || { x: 250, y: 250, angle: -90, penDown: true, color: '#6366f1', width: 2 };
           var drawnLines = d.lines || [];
           var running = d.running || false;
@@ -1017,6 +1265,7 @@
           var robotGrid = d.robotGrid || null;
           var robotPos = d.robotPos || { x: 0, y: 0, dir: 0 }; // dir: 0=up,1=right,2=down,3=left
           var robotBlocks = d.robotBlocks || [];
+          var robotBlocklyState = d.robotBlocklyState || null;
           var robotRunning = d.robotRunning || false;
           var robotChallengeIdx = d.robotChallengeIdx != null ? d.robotChallengeIdx : -1;
           var robotCompleted = d.robotCompleted || [];
@@ -1089,7 +1338,44 @@
             { type: 'whileNotGoal', label: t('stem.coding.while_not_at_goal', '🏁 While Not At Goal'), color: '#d946ef', desc: t('stem.coding.repeat_until_reaching_the_goal', 'Repeat until reaching the goal') }
           ];
 
-          // Grid generator — creates level maps
+          // Blockly localization
+          // Reuse the tool's established translations inside Blockly. Category
+          // names retain Blockly's concise defaults until dedicated keys exist.
+          var blocklyMessages = {
+            'statement.else': t('stem.coding.else', 'Else'),
+            'category.values': t('stem.coding.values', 'Values'),
+            'category.logic': t('stem.coding.logic', 'Logic'),
+            'input.distance': t('stem.coding.distance', 'distance'),
+            'input.degrees': t('stem.coding.degrees', 'degrees'),
+            'input.width': t('stem.coding.width', 'width'),
+            'input.radius': t('stem.coding.radius', 'radius'),
+            'input.condition': t('stem.coding.condition', 'condition'),
+            'value.variable.label': t('stem.coding.variable', 'variable'),
+            'value.state.label': t('stem.coding.turtle_state', 'turtle'),
+            'value.logic.and': t('stem.coding.and', 'and'),
+            'value.logic.or': t('stem.coding.or', 'or'),
+            'value.not.label': t('stem.coding.not', 'not')
+          };
+          BLOCK_TYPES.forEach(function(definition) {
+            blocklyMessages['block.turtle.' + definition.type] = definition.label;
+          });
+          ROBOT_BLOCKS.forEach(function(definition) {
+            blocklyMessages['block.robot.' + definition.type] = definition.label;
+          });
+          var blocklyUiText = {
+            robotEditorLabel: t('stem.coding.robot_visual_block_editor', 'Robot visual block editor'),
+            turtleEditorLabel: t('stem.coding.turtle_visual_block_editor', 'Turtle visual block editor'),
+            keyboardHelpButton: t('stem.coding.keyboard_help', 'Keyboard help'),
+            keyboardHelpTitle: t('stem.coding.visual_blocks_keyboard_help', 'Visual Blocks keyboard help'),
+            closeKeyboardHelp: t('stem.coding.close_keyboard_help', 'Close keyboard help'),
+            keyboardHelp: t('stem.coding.visual_blocks_keyboard_summary', 'Visual block editor. Use Tab to enter the workspace and Blockly keyboard commands to select, connect, move, and edit blocks. Choose Accessible Outline for a linear editor.'),
+            keyboardTab: t('stem.coding.keyboard_tab_help', 'Press Tab to move into the Blockly workspace and between controls.'),
+            keyboardArrows: t('stem.coding.keyboard_arrow_help', 'Use arrow keys to move through blocks and workspace controls.'),
+            keyboardEnter: t('stem.coding.keyboard_enter_help', 'Press Enter or Space to select, open, or edit the focused item.'),
+            keyboardEscape: t('stem.coding.keyboard_escape_help', 'Press Escape to leave a menu or close this help.'),
+            keyboardOutline: t('stem.coding.keyboard_outline_help', 'Choose Accessible Outline for a fully linear editor with explicit move buttons.')
+          };
+          // Grid generator - creates level maps
           function generateGrid(size, walls, gems, goalPos, startPos) {
             var grid = [];
             for (var gy = 0; gy < size; gy++) {
@@ -2226,7 +2512,7 @@
                 ),
                 React.createElement("button", { "aria-label": t('stem.coding.got_it', "Got it!"),
                   onClick: function () { upd('tutorialDismissed', true); },
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-500 text-white hover:bg-indigo-400 transition-all shrink-0"
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shrink-0"
                 }, t('stem.coding.got_it_2', "Got it! ✕"))
               )
             ),
@@ -2590,7 +2876,12 @@
                 React: React,
                 domain: 'robot',
                 program: robotBlocks,
-                onProgramChange: function(nextProgram) { upd('robotBlocks', nextProgram); }
+                workspaceState: robotBlocklyState,
+                messages: blocklyMessages,
+                uiText: blocklyUiText,
+                onProgramChange: function(nextProgram, nextWorkspaceState) {
+                  updMulti({ robotBlocks: nextProgram, robotBlocklyState: nextWorkspaceState });
+                }
               }) : React.createElement("div", { className: "coding-toolbox bg-slate-800/80 backdrop-blur-sm rounded-xl p-3 border border-slate-700/60 shadow-lg", style: { maxHeight: '500px', overflowY: 'auto' } },
                 React.createElement("h3", { className: "text-xs font-bold text-slate-300 uppercase tracking-wider mb-2" }, t('stem.coding.robot_commands', "\uD83E\uDD16 Robot Commands")),
                 React.createElement("div", { className: "space-y-1" },
@@ -2785,8 +3076,11 @@
                 React: React,
                 domain: 'turtle',
                 program: blocks,
-                onProgramChange: function(nextProgram) {
-                  updMulti({ blocks: nextProgram, textCode: blocksToText(nextProgram) });
+                workspaceState: blocklyState,
+                messages: blocklyMessages,
+                uiText: blocklyUiText,
+                onProgramChange: function(nextProgram, nextWorkspaceState) {
+                  updMulti({ blocks: nextProgram, blocklyState: nextWorkspaceState, textCode: blocksToText(nextProgram) });
                 }
               }),
               // Accessible linear toolbox
@@ -3290,14 +3584,14 @@
               // Name your creation (only when a program exists)
               blocks.length > 0 && React.createElement("input", { "aria-label": t('stem.coding.name_your_creation', "Name your creation"), type: "text", value: projectName, placeholder: t('stem.coding.name_your_creation_2', "Name your creation"), maxLength: 40,
                 onChange: function (e) { upd('projectName', e.target.value); },
-                className: "px-3 py-1.5 text-xs rounded-full border border-slate-300 bg-white text-slate-700 placeholder-slate-400 w-44" }),
+                className: "px-3 py-1.5 text-xs rounded-full border border-slate-500 bg-white text-slate-700 placeholder-slate-500 w-44" }),
               // Snapshot button
               React.createElement("button", { "aria-label": t('stem.coding.snapshot', "Snapshot"),
                 onClick: function () {
                   setToolSnapshots(function (prev) { return prev.concat([{ id: 'code-' + Date.now(), tool: 'codingPlayground', label: projectName || 'Coding Playground', data: Object.assign({}, d), timestamp: Date.now() }]); });
                   if (addToast) addToast('📸 Code snapshot saved!', 'success');
                 },
-                className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
+                className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
               }, t('stem.coding.snapshot_2', "📸 Snapshot"))
             )
           );

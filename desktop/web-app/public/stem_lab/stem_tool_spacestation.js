@@ -153,7 +153,7 @@
     { h: '16:00', icon: '🏃', label: 'Exercise 2 of 2', what: 'Second session — the exercise prescription is split across the day.', why: 'Spreading the load protects bone and heart better than one marathon session.' },
     { h: '18:00', icon: '📞', label: 'Family & ham radio', what: 'IP phone calls home, emails, and sometimes surprise chats with students via amateur radio (ARISS).', why: 'Psychological health is a life-support system too — isolation is one of spaceflight’s hardest challenges.' },
     { h: '19:30', icon: '🍽️', label: 'Dinner together', what: 'Crews from several countries strap food pouches to one table and share meals.', why: 'Shared meals are deliberately protected time — cohesion keeps a 6-month expedition healthy.' },
-    { h: '21:30', icon: '🌍', label: 'Cupola time', what: 'Off-duty favorite: photographing auroras, lightning storms, and home towns from the seven-window dome.', why: 'Many astronauts describe an "overview effect" — seeing Earth as one thin-skinned planet changes them.' },
+    { h: '21:00', icon: '🌍', label: 'Cupola time', what: 'Off-duty favorite: photographing auroras, lightning storms, and home towns from the seven-window dome.', why: 'Many astronauts describe an "overview effect" — seeing Earth as one thin-skinned planet changes them.' },
     { h: '21:30', icon: '😴', label: 'Sleep (8.5 h scheduled)', what: 'Earplugs and eye masks; some crew report drifting arms floating in front of them.', why: 'Fans and pumps hum constantly (~60-70 dB) — silence would actually mean the life support stopped.' }
   ];
 
@@ -193,8 +193,13 @@
   var TIMELINE = [
     { y: '1998', e: 'Zarya then Unity launch; the first two modules are joined in orbit.' },
     { y: '2000', e: 'Zvezda arrives; Expedition 1 moves in Nov 2 — humans have lived off Earth continuously ever since.' },
-    { y: '2001-2011', e: 'Assembly era: labs, truss segments, solar wings, Canadarm2 (2001), nodes, Kibo, Columbus, Cupola — 30+ shuttle and Proton/Soyuz flights.' },
-    { y: '2011', e: 'Space Shuttle retires with assembly essentially complete; Soyuz becomes the only crew ride for 9 years.' },
+    { y: '2001', e: 'Destiny, Quest, and Canadarm2 arrive, turning the outpost into a working laboratory and EVA base.' },
+    { y: '2002-2006', e: 'The integrated truss, early solar-array wings, and thermal-control hardware build the station’s backbone.' },
+    { y: '2007', e: 'Harmony joins as the forward connecting node for laboratories and visiting crew vehicles.' },
+    { y: '2008', e: 'Columbus and the first Kibo elements expand the station into a genuinely international laboratory.' },
+    { y: '2009', e: 'Kibo and the main truss assembly reach their completed forms after years of staged shuttle construction.' },
+    { y: '2010', e: 'Tranquility and the seven-window Cupola add life-support capacity and the iconic Earth-facing observatory.' },
+    { y: '2011', e: 'Leonardo becomes a permanent storage module; the Space Shuttle retires with assembly essentially complete.' },
     { y: '2020', e: 'SpaceX Crew Dragon restores U.S. crew launches — the first commercial crew vehicle.' },
     { y: '2021-2023', e: 'Nauka + Prichal join; roll-out iROSA arrays boost the aging power system.' },
     { y: '2026 (now)', e: 'More than 280 people from over 20 countries have visited. The station is in its final operational decade.' },
@@ -231,6 +236,7 @@
       { id: 'iss_module', label: 'Inspect 3 station modules in the 3-D map', icon: '🛰️', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.seenModules || {}).length >= 3; } },
       { id: 'iss_day', label: 'Walk through an astronaut’s whole day', icon: '👩‍🚀', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.seenHours || {}).length >= 6; } },
       { id: 'iss_inside', label: 'Complete 3 jobs inside the station', icon: '🧑‍🔬', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.interiorDone || {}).filter(function (k) { return !!s.interiorDone[k]; }).length >= 3; } },
+      { id: 'iss_ops', label: 'Simulate a full station orbit', icon: '📡', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.opsRuns || 0) >= 1; } },
       { id: 'iss_orbit', label: 'Change the orbit in the Orbit Lab', icon: '🧮', check: function (d) { var s = (d && d.spaceStation) || {}; return !!s.orbitTouched; } },
       { id: 'iss_quiz', label: 'Score 7+ on the station quiz', icon: '🧠', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.quizBest || 0) >= 7; } },
       { id: 'iss_dock', label: 'Achieve a soft-capture docking', icon: '🚀', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.dockWins || 0) >= 1; } },
@@ -259,8 +265,9 @@
             interiorInspected: {}, interiorAttempts: {}, interiorDiscovery: null, interiorLog: [],
             interiorGuided: true, lowGImpulse: 10, lowGResult: null,
             researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {}, cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '',
+            opsMode: 'integrated', opsScenario: 'nominal', opsOrbitMinute: 0, opsFocus: 'all', opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 28, opsMissionDays: 180, opsExercise: 2.5, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsEmergency: 'leak', opsEmergencyResult: '', opsRuns: 0, opsLog: [], assemblyIdx: 11,
             orbitAlt: 420, quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false,
-            seenModules: {}, seenHours: {}, orbitTouched: false, quizBest: 0,
+            seenModules: {}, seenHours: {}, orbitTouched: false, quizBest: 0, mapView: 'overview', mapCutaway: false,
             askInput: '', askAnswer: '', askLoading: false
           } });
         });
@@ -287,8 +294,8 @@
       var SOFT = 'var(--allo-stem-text-soft, #94a3b8)';
 
       function card(title, children, accent) {
-        return h('div', { role: 'region', 'aria-label': typeof title === 'string' ? title : undefined, style: { padding: 14, borderRadius: 12, background: PANEL, border: '1px solid #334155', borderLeft: '3px solid ' + (accent || '#38bdf8'), marginBottom: 12 } },
-          title ? h('h3', { style: { fontSize: 14, fontWeight: 800, color: TEXT, margin: '0 0 8px' } }, title) : null,
+        return h('div', { className: 'iss-card', role: 'region', 'aria-label': typeof title === 'string' ? title : undefined, style: { '--iss-card-accent': accent || '#38bdf8', padding: 14, borderRadius: 12, background: PANEL, border: '1px solid #334155', borderLeft: '3px solid ' + (accent || '#38bdf8'), marginBottom: 12 } },
+          title ? h('h3', { className: 'iss-card-title', style: { fontSize: 14, fontWeight: 800, color: TEXT, margin: '0 0 8px' } }, title) : null,
           children);
       }
 
@@ -297,12 +304,23 @@
       // and an sr-only utility. Scoped under .iss-root so nothing leaks.
       function wcagStyles() {
         return h('style', { dangerouslySetInnerHTML: { __html:
-          '.iss-root button:focus-visible,.iss-root input:focus-visible,.iss-root textarea:focus-visible,.iss-root canvas:focus-visible,.iss-root [tabindex]:focus-visible{outline:3px solid #fbbf24;outline-offset:2px;border-radius:8px}' +
-          '.iss-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
-          '.iss-interior-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:12px}' +
-          '.iss-float{animation:iss-drift 4s ease-in-out infinite alternate}@keyframes iss-drift{from{transform:translate(0,-3px) rotate(-1deg)}to{transform:translate(7px,4px) rotate(2deg)}}' +
-          '@media (max-width:700px){.iss-interior-layout{grid-template-columns:1fr}}' +
-          '@media (prefers-reduced-motion: reduce){.iss-root *{animation:none!important;transition:none!important}}'
+          '.iss-root{--iss-line:rgba(148,163,184,.22);--allo-stem-panel:#172235;--allo-stem-text:#e7eef8;--allo-stem-text-soft:#a9b8cb;position:relative;isolation:isolate;box-sizing:border-box;width:100%;padding:clamp(14px,2.4vw,26px);overflow:hidden;border:1px solid rgba(125,211,252,.24);border-radius:24px;background:radial-gradient(circle at 9% 2%,rgba(14,165,233,.2),transparent 27%),radial-gradient(circle at 92% 8%,rgba(99,102,241,.2),transparent 28%),linear-gradient(155deg,#060b18 0%,#081221 52%,#07101d 100%);box-shadow:0 28px 70px rgba(2,6,23,.38),inset 0 1px 0 rgba(255,255,255,.05);color-scheme:dark}' +
+          '.iss-root:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.52;background-image:radial-gradient(circle at 14% 19%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 78% 13%,#bae6fd 0 1px,transparent 1.5px),radial-gradient(circle at 43% 8%,#fff 0 1px,transparent 1.4px),radial-gradient(circle at 93% 31%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 61% 28%,#c4b5fd 0 1px,transparent 1.5px);background-size:177px 151px,223px 197px,139px 181px,251px 169px,193px 227px}.iss-root *{box-sizing:border-box}.iss-root button,.iss-root input,.iss-root textarea{font:inherit}.iss-root button{transition:transform .18s ease,border-color .18s ease,background-color .18s ease,box-shadow .18s ease,filter .18s ease}.iss-root button:not(:disabled):hover{transform:translateY(-1px);filter:brightness(1.12);box-shadow:0 8px 22px rgba(2,6,23,.24)}.iss-root button:not(:disabled):active{transform:translateY(0) scale(.985)}' +
+          '.iss-root button:focus-visible,.iss-root input:focus-visible,.iss-root textarea:focus-visible,.iss-root canvas:focus-visible,.iss-root [tabindex]:focus-visible{outline:3px solid #fbbf24;outline-offset:3px;border-radius:8px}.iss-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
+          '.iss-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;margin-bottom:18px}.iss-eyebrow{display:flex;align-items:center;gap:8px;margin-bottom:7px;color:#7dd3fc;font-size:10px;font-weight:900;letter-spacing:1.7px;text-transform:uppercase}.iss-live-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 4px rgba(74,222,128,.12),0 0 16px #4ade80}.iss-title{font-size:clamp(21px,3vw,31px)!important;line-height:1.08;letter-spacing:-.035em;text-shadow:0 2px 22px rgba(56,189,248,.16)}.iss-subtitle{max-width:710px;font-size:clamp(11.5px,1.5vw,13px)!important;line-height:1.6!important}' +
+          '.iss-orbit-mark{position:relative;width:92px;height:92px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.22),rgba(14,165,233,.04) 56%,transparent 58%);border:1px solid rgba(125,211,252,.18);box-shadow:inset 0 0 25px rgba(14,165,233,.14),0 0 32px rgba(14,165,233,.08)}.iss-orbit-mark:before{content:"";position:absolute;width:78px;height:31px;border:1px solid #38bdf8;border-radius:50%;transform:rotate(-18deg);box-shadow:0 0 13px rgba(56,189,248,.3)}.iss-orbit-mark:after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:#fbbf24;box-shadow:0 0 15px #fbbf24;transform:translate(34px,-13px)}.iss-orbit-core{font-size:34px;filter:drop-shadow(0 4px 12px rgba(2,6,23,.55))}' +
+          '.iss-status-strip{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.iss-status-item{padding:8px 10px;border:1px solid var(--iss-line);border-radius:10px;background:rgba(2,6,23,.38);box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}.iss-status-label{display:block;color:#7f91a8;font-size:8px;font-weight:850;letter-spacing:1.05px;text-transform:uppercase}.iss-status-value{display:block;margin-top:2px;color:#e0f2fe;font:800 11.5px ui-monospace,SFMono-Regular,Consolas,monospace}' +
+          '.iss-tablist{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px!important;padding:7px;margin:0 0 14px!important;border:1px solid var(--iss-line);border-radius:15px;background:rgba(2,6,23,.48);backdrop-filter:blur(12px)}.iss-tab{position:relative;min-height:43px;padding:8px 9px!important;border-radius:10px!important;line-height:1.2}.iss-tab[aria-selected="true"]{background:linear-gradient(135deg,#38bdf8,#0ea5e9)!important;box-shadow:0 7px 20px rgba(14,165,233,.23),inset 0 1px 0 rgba(255,255,255,.38)}.iss-tab-icon{display:inline-block;margin-right:3px;font-size:14px;filter:drop-shadow(0 2px 4px rgba(2,6,23,.4))}' +
+          '.iss-panel{min-height:280px;padding:clamp(12px,2vw,18px);border:1px solid var(--iss-line);border-radius:18px;background:linear-gradient(160deg,rgba(15,23,42,.8),rgba(8,17,31,.74));box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 18px 40px rgba(2,6,23,.18);backdrop-filter:blur(12px)}.iss-card{position:relative;overflow:hidden;border:1px solid var(--iss-line)!important;border-left:3px solid var(--iss-card-accent)!important;border-radius:14px!important;background:linear-gradient(145deg,rgba(30,41,59,.86),rgba(15,23,42,.82))!important;box-shadow:0 12px 28px rgba(2,6,23,.16),inset 0 1px 0 rgba(255,255,255,.04)}.iss-card:after{content:"";position:absolute;right:-55px;top:-75px;width:145px;height:145px;border-radius:50%;pointer-events:none;background:var(--iss-card-accent);opacity:.045}.iss-card-title{display:flex;align-items:center;gap:7px;padding-bottom:8px;border-bottom:1px solid rgba(148,163,184,.12);letter-spacing:.01em}' +
+          '.iss-interior-hero{position:relative;overflow:hidden!important;border-radius:16px!important;background:radial-gradient(circle at 83% 18%,rgba(125,211,252,.16),transparent 31%),linear-gradient(125deg,rgba(14,165,233,.22),rgba(79,70,229,.14) 58%,rgba(15,23,42,.52))!important;box-shadow:0 14px 32px rgba(2,6,23,.2),inset 0 1px 0 rgba(255,255,255,.07)}.iss-interior-hero:after{content:"";position:absolute;right:-30px;bottom:-56px;width:180px;height:100px;border:1px solid rgba(125,211,252,.18);border-radius:50%;transform:rotate(-12deg)}.iss-route{padding:8px;border:1px solid var(--iss-line);border-radius:14px;background:rgba(2,6,23,.34)}.iss-route-button{position:relative;overflow:hidden}.iss-route-button[aria-pressed="true"]:after{content:"";position:absolute;inset:auto 9px 0;height:2px;border-radius:2px;background:currentColor;box-shadow:0 0 10px currentColor}' +
+          '.iss-interior-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:14px}.iss-scene-frame{box-shadow:0 18px 38px rgba(2,6,23,.3),inset 0 0 0 1px rgba(255,255,255,.04)}.iss-scene-frame:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(125,211,252,.1),transparent 10%,transparent 90%,rgba(125,211,252,.08)),repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.012) 3px 4px)}.iss-scene-frame>button{z-index:2}' +
+          '.iss-station-stage{position:relative;border-radius:18px!important;border-color:rgba(125,211,252,.35)!important;box-shadow:0 18px 45px rgba(2,6,23,.42),inset 0 0 45px rgba(14,165,233,.08)}.iss-stage-hud{position:absolute;inset:12px 12px auto;display:flex;justify-content:space-between;gap:8px;pointer-events:none}.iss-hud-chip{padding:6px 9px;border:1px solid rgba(125,211,252,.25);border-radius:8px;background:rgba(2,6,23,.62);backdrop-filter:blur(8px);color:#bae6fd;font:800 9px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.7px}.iss-stage-help{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 10px;border:1px solid rgba(148,163,184,.22);border-radius:20px;background:rgba(2,6,23,.64);backdrop-filter:blur(8px);color:#cbd5e1;font-size:9.5px;font-weight:700;pointer-events:none;white-space:nowrap}.iss-module-picker{padding:8px;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.34)}.iss-module-marker{position:absolute;z-index:3;display:flex;align-items:center;gap:5px;transform:translate(-50%,-135%);pointer-events:none;transition:left .08s linear,top .08s linear,opacity .16s ease}.iss-module-marker i{display:block;width:18px;height:18px;border-left:1px solid #fbbf24;border-top:1px solid #fbbf24;transform:translate(9px,9px) rotate(-45deg)}.iss-module-marker span{padding:4px 7px;border:1px solid rgba(251,191,36,.5);border-radius:6px;background:rgba(2,6,23,.76);color:#fef3c7;font:850 8px ui-monospace,monospace;letter-spacing:.7px;box-shadow:0 0 16px rgba(251,191,36,.16)}.iss-hud-chip[data-phase="sunlight"]{color:#fde68a;border-color:rgba(251,191,36,.38)}.iss-hud-chip[data-phase="eclipse"]{color:#c7d2fe;border-color:rgba(129,140,248,.42)}' +
+          '.iss-learning-visual{position:relative;overflow:hidden;margin:0 0 12px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:radial-gradient(circle at 50% 100%,rgba(14,165,233,.12),transparent 56%),rgba(2,6,23,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 25px rgba(2,6,23,.2)}.iss-learning-visual svg{display:block;width:100%;height:auto}.iss-visual-caption{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:9.5px;letter-spacing:.35px}.iss-flow-path{stroke-dasharray:7 7;animation:iss-flow 7s linear infinite}.iss-orbit-station{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-system-tabs{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.34)}.iss-system-tab[aria-pressed="true"]{box-shadow:inset 0 -2px 0 currentColor,0 7px 18px rgba(2,6,23,.2)}.iss-dock-canvas{box-shadow:0 16px 36px rgba(2,6,23,.34),inset 0 0 35px rgba(14,165,233,.08)}.iss-timeline{position:relative;padding-left:19px}.iss-timeline:before{content:"";position:absolute;left:5px;top:5px;bottom:5px;width:2px;background:linear-gradient(#38bdf8,#818cf8,#22c55e);box-shadow:0 0 12px rgba(56,189,248,.35)}.iss-timeline-item{position:relative}.iss-timeline-item-button{width:100%;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-timeline-item-button:hover{background:linear-gradient(90deg,rgba(56,189,248,.08),transparent)}.iss-timeline-item:before{content:"";position:absolute;left:-18px;top:12px;width:9px;height:9px;border:2px solid #7dd3fc;border-radius:50%;background:#07101d;box-shadow:0 0 10px rgba(56,189,248,.55)}.iss-day-strip{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.32)}.iss-day-chip[aria-pressed="true"]{box-shadow:inset 0 -2px 0 #e879f9,0 7px 18px rgba(232,121,249,.12)}' +
+          '@keyframes iss-flow{to{stroke-dashoffset:-70}}@keyframes iss-orbit-breathe{50%{filter:drop-shadow(0 0 8px #7dd3fc)}}' +          '.iss-orbit-environment{margin:-4px 0 12px;background:rgba(2,6,23,.28)}.iss-orbit-environment svg{display:block;width:100%;height:auto}.iss-orbit-environment .iss-visual-caption{border-top:1px solid rgba(148,163,184,.14)}.iss-blueprint{margin:0 0 11px}.iss-blueprint-grid{opacity:.2}.iss-eva-visual{margin:0 0 10px}.iss-eva-astronaut{animation:iss-eva-hover 2.8s ease-in-out infinite}.iss-eva-tether-a{stroke:#38bdf8}.iss-eva-tether-b{stroke:#fbbf24}.iss-day-orbit{margin:0 0 10px}.iss-crew-day-timeline{border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.28)}.iss-crew-day-timeline svg{display:block;width:100%;height:auto}.iss-day-timeline-marker{filter:drop-shadow(0 0 5px rgba(251,191,36,.42))}.iss-day-marker{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-quiz-console{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:12px;padding:10px 12px;border:1px solid var(--iss-line);border-radius:13px;background:linear-gradient(135deg,rgba(14,165,233,.11),rgba(99,102,241,.08))}.iss-quiz-number{display:grid;place-items:center;width:45px;height:45px;border:1px solid #38bdf8;border-radius:50%;background:rgba(14,165,233,.12);color:#bae6fd;font:900 13px ui-monospace,monospace;box-shadow:inset 0 0 18px rgba(56,189,248,.12)}.iss-quiz-track{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.iss-quiz-segment{height:7px;border-radius:5px;background:#263449;border:1px solid rgba(148,163,184,.18)}.iss-quiz-segment.is-complete{background:#38bdf8;border-color:#7dd3fc;box-shadow:0 0 9px rgba(56,189,248,.35)}.iss-quiz-score{text-align:right;color:#94a3b8;font-size:9px;text-transform:uppercase;letter-spacing:.8px}.iss-quiz-score strong{display:block;color:#e0f2fe;font-size:15px;letter-spacing:0}.iss-fact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:7px}.iss-fact-item{position:relative;overflow:hidden;min-height:64px;padding:10px!important;background:linear-gradient(145deg,rgba(2,6,23,.52),rgba(30,41,59,.48))!important;transition:transform .18s ease,border-color .18s ease}.iss-fact-item:after{content:"";position:absolute;right:-18px;bottom:-24px;width:54px;height:54px;border-radius:50%;background:#818cf8;opacity:.06}.iss-fact-item:hover{transform:translateY(-2px);border-color:#64748b!important}@keyframes iss-eva-hover{50%{transform:translateY(-3px)}}' +
+          '@media (max-width:520px){.iss-quiz-console{grid-template-columns:auto 1fr}.iss-quiz-score{grid-column:1/-1;text-align:left;display:flex;gap:6px;align-items:baseline}.iss-quiz-score strong{display:inline}.iss-visual-caption{flex-direction:column;gap:2px}}' +          '.iss-ops-hero{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:14px;margin-bottom:12px;border:1px solid rgba(74,222,128,.25);border-radius:15px;background:radial-gradient(circle at 88% 18%,rgba(74,222,128,.12),transparent 30%),linear-gradient(135deg,rgba(14,165,233,.12),rgba(15,23,42,.66));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.iss-ops-health{display:grid;place-items:center;width:76px;height:76px;border-radius:50%;border:5px solid currentColor;background:rgba(2,6,23,.52);font:900 17px ui-monospace,monospace;box-shadow:inset 0 0 22px rgba(2,6,23,.5),0 0 22px currentColor}.iss-ops-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:12px}.iss-ops-metric{min-width:0;overflow:hidden;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.42)}.iss-ops-metric button{display:block;width:100%;padding:9px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-ops-metric button:hover{background:rgba(56,189,248,.07)}.iss-ops-metric button:focus-visible{outline:2px solid #7dd3fc;outline-offset:-3px}.iss-ops-metric-label{display:block;overflow:hidden;color:#94a3b8;font-size:8px;font-weight:850;letter-spacing:.7px;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.iss-ops-metric-value{display:block;margin-top:3px;color:#e0f2fe;font:850 13px ui-monospace,monospace}.iss-ops-metric small{display:block;margin-top:4px;color:#64748b;font:750 7.5px ui-monospace,monospace;letter-spacing:.3px}.iss-rule-heading{display:flex;align-items:center;justify-content:space-between;gap:6px}.iss-rule-light{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:#fbbf24;box-shadow:0 0 9px #fbbf24}.iss-rule-light.is-go{background:#4ade80;box-shadow:0 0 9px #4ade80}.iss-rule-light.is-hold{background:#f87171;box-shadow:0 0 9px #f87171}.iss-ops-presets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:10px}.iss-ops-presets button{min-width:0;display:flex;align-items:center;gap:7px;padding:8px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38);color:#cbd5e1;text-align:left;cursor:pointer}.iss-ops-presets button[aria-pressed="true"]{border-color:#7dd3fc;background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(99,102,241,.15));box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-presets strong,.iss-ops-presets small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.iss-ops-presets strong{font-size:9.5px}.iss-ops-presets small{margin-top:2px;color:#7f91a8;font-size:7.5px}.iss-preset-icon{display:grid;place-items:center;width:24px;height:24px;flex:0 0 auto;border:1px solid #475569;border-radius:50%;color:#7dd3fc;font:900 9px ui-monospace,monospace}.iss-custom-badge{grid-column:1/-1;padding:3px 7px;color:#fbbf24;font:800 8px ui-monospace,monospace;letter-spacing:.6px}.iss-ops-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:6px;padding:7px;margin-bottom:12px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.36)}.iss-ops-mode{min-height:39px;padding:7px!important}.iss-ops-mode[aria-pressed="true"]{background:linear-gradient(135deg,rgba(14,165,233,.3),rgba(99,102,241,.22))!important;border-color:#38bdf8!important;color:#e0f2fe!important;box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.iss-ops-control{padding:10px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38)}.iss-ops-control label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:10.5px;font-weight:800}.iss-ops-control input[type="range"]{width:100%;margin:9px 0 4px}.iss-meter{height:8px;overflow:hidden;margin-top:7px;border:1px solid #475569;border-radius:6px;background:#101827}.iss-meter>span{display:block;height:100%;border-radius:5px;transition:width .25s ease}.iss-spark{margin-top:7px;border-top:1px solid rgba(148,163,184,.12)}.iss-spark svg{display:block;width:100%;height:42px}.iss-forecast-legend{display:flex;flex-wrap:wrap;gap:7px 14px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:9px}.iss-forecast-legend span{display:flex;align-items:center;gap:5px}.iss-forecast-legend i{width:13px;height:3px;border-radius:3px}.iss-orbit-scrubber{padding:9px 10px 10px;border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.24)}.iss-orbit-scrubber label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:9.5px;font-weight:800}.iss-orbit-scrubber input{width:100%;margin:8px 0 7px}.iss-orbit-readout{display:flex;flex-wrap:wrap;gap:5px 13px;color:#94a3b8;font:750 8.5px ui-monospace,monospace}.iss-forecast-cursor{filter:drop-shadow(0 0 4px currentColor)}.iss-rule-status{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;margin:-2px 0 12px;padding:9px 10px;border:1px solid rgba(74,222,128,.28);border-radius:11px;background:rgba(34,197,94,.07)}.iss-rule-status.is-check{border-color:rgba(248,113,113,.38);background:rgba(239,68,68,.08)}.iss-rule-status-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#14532d;color:#bbf7d0;font-weight:900}.iss-rule-status.is-check .iss-rule-status-icon{background:#7f1d1d;color:#fecaca}.iss-rule-status strong{display:block;color:#bbf7d0;font:850 9px ui-monospace,monospace;letter-spacing:.7px}.iss-rule-status.is-check strong{color:#fecaca}.iss-rule-status p{margin:2px 0 0;color:#94a3b8;font-size:9.5px;line-height:1.35}.iss-rule-status button{padding:6px 9px;border:1px solid #64748b;border-radius:8px;background:rgba(2,6,23,.36);color:#e2e8f0;font-size:9px;font-weight:800;cursor:pointer}.iss-ops-schematic{margin-bottom:10px}.iss-ops-debrief{margin-top:12px;padding:12px;border:1px solid rgba(125,211,252,.22);border-radius:13px;background:rgba(2,6,23,.4)}.iss-ops-log{display:grid;gap:4px;margin-top:8px;color:#94a3b8;font:700 9.5px ui-monospace,monospace}.iss-emergency-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.iss-emergency-choice{text-align:left;padding:10px!important}.iss-assembly-stage{position:relative;overflow:hidden;margin-bottom:10px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:#050b18}.iss-assembly-stage svg{display:block;width:100%;height:auto}.iss-location-strip{display:flex;align-items:center;gap:4px;margin:0 0 10px;padding:7px 9px;overflow-x:auto;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.35)}.iss-location-node{flex:0 0 auto;display:flex;align-items:center;gap:4px;color:#64748b;font-size:9px;font-weight:800}.iss-location-node.is-current{color:#7dd3fc}.iss-location-dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 9px currentColor}.iss-location-link{width:18px;height:1px;background:#334155}.iss-network-focus{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;border-top:1px solid rgba(148,163,184,.14)}.iss-network-focus button{min-height:32px;padding:5px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.34);color:#cbd5e1;font-size:10px;font-weight:800;cursor:pointer}.iss-network-focus button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.18);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-network-detail{padding:0 10px 9px;color:#a9b8cb;font-size:10.5px;line-height:1.45}.iss-reference-key i{height:0!important;background:transparent!important;border-top:2px dashed #94a3b8}.iss-mission-replay{margin-top:10px;padding:10px;border:1px solid rgba(129,140,248,.24);border-radius:12px;background:rgba(30,27,75,.18)}.iss-replay-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;margin-bottom:9px}.iss-replay-heading strong{color:#c7d2fe;font:850 10px ui-monospace,monospace;letter-spacing:.7px}.iss-replay-heading span{color:#94a3b8;font-size:10px}.iss-replay-lane{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.iss-replay-lane:before{content:"";position:absolute;left:8%;right:8%;top:13px;height:2px;background:linear-gradient(90deg,#fbbf24,#fde68a,#818cf8,#38bdf8)}.iss-replay-lane button{position:relative;z-index:1;display:grid;justify-items:center;gap:2px;padding:3px 4px 6px;border:0;background:transparent;color:#cbd5e1;cursor:pointer}.iss-replay-lane button i{width:10px;height:10px;border:2px solid #818cf8;border-radius:50%;background:#0b1026;box-shadow:0 0 8px rgba(129,140,248,.5)}.iss-replay-lane button[aria-pressed="true"] i{background:#7dd3fc;border-color:#e0f2fe;box-shadow:0 0 11px #38bdf8}.iss-replay-lane strong{font:850 9.5px ui-monospace,monospace}.iss-replay-lane span{font-size:9.5px;font-weight:800;text-align:center}.iss-replay-lane small{color:#7f91a8;font-size:9px;text-align:center}.iss-map-controls{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.iss-map-controls button{min-height:36px;padding:6px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.42);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-map-controls button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.16);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-hud-selection{color:#fef3c7;border-color:rgba(251,191,36,.35)}.iss-orientation-cue{flex:0 0 auto;padding:2px 4px;color:#fbbf24;font:850 8px ui-monospace,monospace;letter-spacing:.6px}.iss-hatch-enter{animation:iss-hatch-enter .34s ease-out}.iss-assembly-new{animation:iss-install-pulse 1.8s ease-in-out infinite}.iss-assembly-controls{padding:0 12px 12px}.iss-assembly-controls label{display:flex;justify-content:space-between;color:#cbd5e1;font-size:11px;font-weight:800}.iss-assembly-controls label strong{color:#7dd3fc}.iss-assembly-controls input{width:100%;margin:8px 0;accent-color:#38bdf8}.iss-assembly-stepper{display:grid;grid-template-columns:1fr auto 1fr;gap:7px;align-items:center}.iss-assembly-stepper button{min-height:34px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.36);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-assembly-stepper button:disabled{opacity:.42;cursor:not-allowed}.iss-assembly-stepper span{color:#94a3b8;font:800 10px ui-monospace,monospace}.iss-timeline-item.is-active{margin-left:-8px;padding-left:8px!important;border-left:3px solid #38bdf8;background:linear-gradient(90deg,rgba(14,165,233,.12),transparent)}.iss-ops-presets small,.iss-ops-metric small,.iss-ops-metric-label,.iss-orbit-readout{font-size:9.5px}@keyframes iss-hatch-enter{from{opacity:.25;transform:scale(.94);filter:brightness(.55)}to{opacity:1;transform:scale(1);filter:brightness(1)}}@keyframes iss-install-pulse{50%{filter:drop-shadow(0 0 7px #7dd3fc)}}' +
+          '@media (max-width:760px){.iss-ops-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-modes{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-grid{grid-template-columns:1fr}.iss-ops-hero{grid-template-columns:1fr}.iss-ops-health{display:none}}@media (max-width:520px){.iss-rule-status{grid-template-columns:auto 1fr}.iss-rule-status button{grid-column:1/-1;width:100%}.iss-replay-lane{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-replay-lane:before{display:none}.iss-hud-selection{display:none}}@media (max-width:420px){.iss-emergency-grid{grid-template-columns:1fr}.iss-orbit-readout{gap:4px 8px}}' +          '.iss-float{animation:iss-drift 4s ease-in-out infinite alternate}@keyframes iss-drift{from{transform:translate(0,-3px) rotate(-1deg)}to{transform:translate(7px,4px) rotate(2deg)}}@keyframes iss-pulse{50%{opacity:.48;box-shadow:0 0 0 7px rgba(74,222,128,0),0 0 22px #4ade80}}.iss-live-dot{animation:iss-pulse 2.4s ease-in-out infinite}' +
+          '@media (max-width:760px){.iss-root{padding:12px;border-radius:18px}.iss-hero{grid-template-columns:1fr}.iss-orbit-mark{display:none}.iss-status-strip{grid-template-columns:1fr 1fr}.iss-tablist{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-interior-layout{grid-template-columns:1fr}.iss-panel{padding:11px}.iss-hud-chip:nth-child(2){display:none}}@media (max-width:420px){.iss-status-value{font-size:10.5px}.iss-tab{font-size:10.5px!important;min-height:40px}.iss-stage-help{white-space:normal;width:calc(100% - 24px);text-align:center}.iss-route{grid-template-columns:1fr 1fr!important}}' +
+          '@media (forced-colors: active){.iss-root,.iss-panel,.iss-card,.iss-tablist,.iss-route{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}.iss-root:before,.iss-card:after{display:none}.iss-root button{forced-color-adjust:auto}}@media (prefers-contrast: more){.iss-root{--iss-line:rgba(226,232,240,.58)}.iss-panel,.iss-card,.iss-tablist{backdrop-filter:none}.iss-status-label{color:#cbd5e1}}@media (prefers-reduced-motion: reduce){.iss-root *{animation:none!important;transition:none!important}}'
         } });
       }
 
@@ -318,45 +336,60 @@
           catch (err) { cv._issInit = false; return; }
           renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
           renderer.setSize(Wc, Hc, false);
+          if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+          if (THREE.ACESFilmicToneMapping) renderer.toneMapping = THREE.ACESFilmicToneMapping;
+          renderer.toneMappingExposure = 1.08;
+          renderer.shadowMap.enabled = true;
+          renderer.shadowMap.type = THREE.PCFSoftShadowMap;
           var scene = new THREE.Scene();
-          scene.background = new THREE.Color(0x050a18);
-          var camera = new THREE.PerspectiveCamera(50, Wc / Hc, 0.1, 200);
-          camera.position.set(7.5, 4.5, 9);
+          scene.background = new THREE.Color(0x030712);
+          scene.fog = new THREE.FogExp2(0x030712, 0.0055);
+          var camera = new THREE.PerspectiveCamera(46, Wc / Hc, 0.1, 220);
+          camera.position.set(8.2, 4.8, 10.4);
           camera.lookAt(0, 0, 1);
-          scene.add(new THREE.AmbientLight(0x8899bb, 0.55));
-          var sun = new THREE.DirectionalLight(0xfff4e0, 1.25);
-          sun.position.set(10, 6, 4);
+          scene.add(new THREE.HemisphereLight(0x9bdcff, 0x081225, 0.65));
+          scene.add(new THREE.AmbientLight(0x7288aa, 0.32));
+          var sun = new THREE.DirectionalLight(0xfff3da, 1.65);
+          sun.position.set(10, 7, 5); sun.castShadow = true;
+          sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
+          sun.shadow.camera.left = -13; sun.shadow.camera.right = 13; sun.shadow.camera.top = 13; sun.shadow.camera.bottom = -13;
           scene.add(sun);
+          var rim = new THREE.DirectionalLight(0x38bdf8, 0.8);
+          rim.position.set(-8, -2, -9); scene.add(rim);
           // Earth below (big soft sphere, out of frame mostly)
-          var earth = new THREE.Mesh(new THREE.SphereGeometry(30, 48, 32), new THREE.MeshStandardMaterial({ color: 0x2f6fab, roughness: 1 }));
-          earth.position.set(0, -34.5, 0);
+          var earth = new THREE.Mesh(new THREE.SphereGeometry(30, 64, 40), new THREE.MeshPhongMaterial({ color: 0x185a92, emissive: 0x061a38, specular: 0x7dd3fc, shininess: 16 }));
+          earth.position.set(0, -34.5, 0); earth.receiveShadow = true;
           scene.add(earth);
-          var atmo = new THREE.Mesh(new THREE.SphereGeometry(30.6, 48, 32), new THREE.MeshBasicMaterial({ color: 0x7fc4ff, transparent: true, opacity: 0.12, side: THREE.BackSide }));
+          var cloudShell = new THREE.Mesh(new THREE.SphereGeometry(30.18, 64, 40), new THREE.MeshPhongMaterial({ color: 0xdff4ff, transparent: true, opacity: 0.055, depthWrite: false, shininess: 4 }));
+          cloudShell.position.copy(earth.position); scene.add(cloudShell);
+          var atmo = new THREE.Mesh(new THREE.SphereGeometry(30.65, 64, 40), new THREE.MeshBasicMaterial({ color: 0x67c8ff, transparent: true, opacity: 0.16, side: THREE.BackSide, depthWrite: false }));
           atmo.position.copy(earth.position);
           scene.add(atmo);
           // Stars
           var starGeo = new THREE.BufferGeometry();
-          var starPos = new Float32Array(360 * 3);
-          for (var si = 0; si < 360; si++) {
+          var starPos = new Float32Array(620 * 3);
+          for (var si = 0; si < 620; si++) {
             var sv = new THREE.Vector3((Math.random() - 0.5), (Math.random() - 0.2), (Math.random() - 0.5)).normalize().multiplyScalar(90);
             starPos[si * 3] = sv.x; starPos[si * 3 + 1] = sv.y; starPos[si * 3 + 2] = sv.z;
           }
           starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-          scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.35, transparent: true, opacity: 0.8, depthWrite: false })));
+          scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xdbeafe, size: 0.3, transparent: true, opacity: 0.88, depthWrite: false, sizeAttenuation: true })));
 
           var station = new THREE.Group();
+          station.rotation.z = -0.055;
           scene.add(station);
           var clickable = [];
+          var moduleDetails = [];
           MODULES.forEach(function (m) {
             var len = m.size[1], rad = m.size[0];
             var geo, mesh;
-            var mat = new THREE.MeshStandardMaterial({ color: m.color, roughness: 0.55, metalness: 0.35 });
+            var mat = new THREE.MeshStandardMaterial({ color: m.color, roughness: 0.38, metalness: 0.54, transparent: true, emissive: 0x000000 });
             if (m.id === 'truss') {
               geo = new THREE.BoxGeometry(len, m.size[0], m.size[0]);
               mesh = new THREE.Mesh(geo, mat);
             } else if (m.id === 'cupola') {
               geo = new THREE.SphereGeometry(rad, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2);
-              mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: m.color, roughness: 0.35, metalness: 0.5 }));
+              mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: m.color, roughness: 0.3, metalness: 0.56, transparent: true, emissive: 0x000000 }));
               mesh.rotation.x = Math.PI; // dome faces Earth (nadir)
             } else {
               geo = new THREE.CylinderGeometry(rad, rad, len, 20);
@@ -365,16 +398,33 @@
               else if (m.axis === 'x') mesh.rotation.z = Math.PI / 2;
             }
             mesh.position.set(m.pos[0], m.pos[1], m.pos[2]);
+            mesh.castShadow = true; mesh.receiveShadow = true;
             mesh._issId = m.id;
             station.add(mesh);
             clickable.push(mesh);
-            // subtle end-caps ring for pressurized modules
+            // Docking collars and a small illuminated viewport give each
+            // pressurized module readable scale and silhouette.
             if (m.id !== 'truss' && m.id !== 'cupola') {
-              var ring = new THREE.Mesh(new THREE.TorusGeometry(rad * 0.98, 0.03, 8, 24), new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.6 }));
-              ring.position.copy(mesh.position);
-              ring.rotation.copy(mesh.rotation);
-              ring.rotation.x += m.axis === 'z' ? 0 : Math.PI / 2;
-              station.add(ring);
+              var collarMat = new THREE.MeshStandardMaterial({ color: 0xaab7c6, roughness: 0.32, metalness: 0.68 });
+              [-1, 1].forEach(function (capSide) {
+                var ring = new THREE.Mesh(new THREE.TorusGeometry(rad * 1.01, 0.035, 8, 28), collarMat);
+                ring.position.copy(mesh.position);
+                if (m.axis === 'z') { ring.position.z += capSide * len * 0.49; }
+                else if (m.axis === 'x') { ring.position.x += capSide * len * 0.49; ring.rotation.y = Math.PI / 2; }
+                else { ring.position.y += capSide * len * 0.49; ring.rotation.x = Math.PI / 2; }
+                ring.castShadow = true; ring._issParentId = m.id; station.add(ring); moduleDetails.push(ring);
+              });
+              [-0.26, 0, 0.26].forEach(function (seamOffset) {
+                var seam = new THREE.Mesh(new THREE.TorusGeometry(rad * 1.008, 0.012, 6, 24), collarMat);
+                seam.position.copy(mesh.position);
+                if (m.axis === 'z') { seam.position.z += seamOffset * len; }
+                else if (m.axis === 'x') { seam.position.x += seamOffset * len; seam.rotation.y = Math.PI / 2; }
+                else { seam.position.y += seamOffset * len; seam.rotation.x = Math.PI / 2; }
+                seam._issParentId = m.id; station.add(seam); moduleDetails.push(seam);
+              });
+              var viewport = new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 8), new THREE.MeshBasicMaterial({ color: 0x8ee7ff }));
+              viewport.position.set(m.pos[0], m.pos[1] + rad * 0.78, m.pos[2]);
+              viewport._issParentId = m.id; station.add(viewport); moduleDetails.push(viewport);
             }
           });
           // Solar array wings: 4 pairs along truss (gold panels) — these rotate to track the Sun
@@ -383,10 +433,19 @@
             var wingGroup = new THREE.Group();
             wingGroup.position.set(tx, 0.35, -1.6);
             [1, -1].forEach(function (side) {
-              var panel = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.02, 3.4), new THREE.MeshStandardMaterial({ color: 0xc9962e, roughness: 0.4, metalness: 0.6, emissive: 0x3a2a08 }));
-              panel.position.set(0, 0, side * 2.0);
+              var panel = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.026, 3.4), new THREE.MeshStandardMaterial({ color: 0xb77918, roughness: 0.32, metalness: 0.68, emissive: 0x2f2005 }));
+              panel.position.set(0, 0, side * 2.0); panel.castShadow = true;
               wingGroup.add(panel);
-              var boom = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 3.6, 6), new THREE.MeshStandardMaterial({ color: 0x94a3b8 }));
+              var cellMat = new THREE.MeshBasicMaterial({ color: 0xf8c85d, transparent: true, opacity: 0.68 });
+              for (var gridRow = -2; gridRow <= 2; gridRow++) {
+                var rowLine = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.032, 0.018), cellMat);
+                rowLine.position.set(0, 0.018, side * 2.0 + gridRow * 0.56); wingGroup.add(rowLine);
+              }
+              [-0.3, 0.3].forEach(function (gridX) {
+                var columnLine = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.032, 3.42), cellMat);
+                columnLine.position.set(gridX, 0.018, side * 2.0); wingGroup.add(columnLine);
+              });
+              var boom = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 3.6, 6), new THREE.MeshStandardMaterial({ color: 0xb6c2cf, metalness: 0.7, roughness: 0.35 }));
               boom.rotation.x = Math.PI / 2;
               boom.position.set(0, 0, side * 1.9);
               wingGroup.add(boom);
@@ -400,7 +459,20 @@
             var radp = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.5, 2.2), new THREE.MeshStandardMaterial({ color: 0xe7edf4, roughness: 0.85 }));
             radp.position.set(tx, -0.55, -1.6);
             station.add(radp);
+            for (var louver = -3; louver <= 3; louver++) {
+              var louverLine = new THREE.Mesh(new THREE.BoxGeometry(0.058, 0.018, 2.12), new THREE.MeshBasicMaterial({ color: 0x9aa9b8 }));
+              louverLine.position.set(tx, -0.55 + louver * .18, -1.6); station.add(louverLine);
+            }
           });
+          // A lightweight truss lattice makes the station's 109-meter
+          // backbone read as structure instead of a single solid bar.
+          var trussBraceMat = new THREE.MeshStandardMaterial({ color: 0x8391a3, metalness: .72, roughness: .38 });
+          for (var braceX = -5; braceX < 5; braceX += .5) {
+            var brace = new THREE.Mesh(new THREE.CylinderGeometry(.016, .016, .72, 5), trussBraceMat);
+            brace.position.set(braceX + .25, .35, -1.6);
+            brace.rotation.z = Math.PI / 4 * (Math.round((braceX + 5) * 2) % 2 ? 1 : -1);
+            station.add(brace);
+          }
           // Canadarm2 — simple two-segment arm on the truss
           var armMat = new THREE.MeshStandardMaterial({ color: 0xd9d2c0, roughness: 0.5 });
           var arm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.4, 8), armMat);
@@ -436,8 +508,8 @@
           cv.style.cursor = 'pointer';
 
           // Simple orbit-drag controls (pointer drag rotates the whole station group)
-          var dragging = false, px0 = 0, py0 = 0;
-          function onDown(e) { dragging = true; px0 = e.clientX; py0 = e.clientY; }
+          var dragging = false, px0 = 0, py0 = 0, cameraTween = null, cameraFocusId = null;
+          function onDown(e) { dragging = true; cameraTween = null; cameraFocusId = null; px0 = e.clientX; py0 = e.clientY; }
           function onMove(e) {
             if (!dragging) return;
             station.rotation.y += (e.clientX - px0) * 0.005;
@@ -445,17 +517,84 @@
             px0 = e.clientX; py0 = e.clientY;
           }
           function onUp() { dragging = false; }
+          function onKey(e) {
+            var handled = true;
+            if (e.key === 'ArrowLeft') station.rotation.y -= .12;
+            else if (e.key === 'ArrowRight') station.rotation.y += .12;
+            else if (e.key === 'ArrowUp') station.rotation.x = Math.max(-.7, station.rotation.x - .09);
+            else if (e.key === 'ArrowDown') station.rotation.x = Math.min(.7, station.rotation.x + .09);
+            else if ((e.key === '+' || e.key === '=') && camera.position.length() > 6) camera.position.multiplyScalar(.9);
+            else if ((e.key === '-' || e.key === '_') && camera.position.length() < 28) camera.position.multiplyScalar(1.1);
+            else if (e.key === 'Home') cv._issSetView('overview');
+            else handled = false;
+            if (handled) { e.preventDefault(); if (e.key !== 'Home') { cameraTween = null; cameraFocusId = null; } }
+          }
           cv.addEventListener('pointerdown', onDown);
+          cv.addEventListener('keydown', onKey);
           window.addEventListener('pointermove', onMove);
           window.addEventListener('pointerup', onUp);
+          cv._issSetView = function (name) {
+            cameraFocusId = null;
+            var views = {
+              overview: { camera: [8.2, 4.8, 10.4], target: [0, 0, 1], rotation: [-0.08, 0.15, -0.055] },
+              truss: { camera: [0, 6.8, 10.8], target: [0, 0, -1.6], rotation: [0, 0, 0] },
+              labs: { camera: [6.8, 2.4, -7.8], target: [0, 0, -2.8], rotation: [0, 0.25, -0.04] },
+              russian: { camera: [5.8, 2.2, 11.8], target: [0, 0, 4.1], rotation: [0, -0.2, -0.04] },
+              nadir: { camera: [0, -11.5, 2.5], target: [0, 0, .5], rotation: [0, 0, 0] }
+            };
+            var view = views[name] || views.overview;
+            if (_prefersReducedMotion) {
+              camera.position.set(view.camera[0], view.camera[1], view.camera[2]); camera.lookAt(view.target[0], view.target[1], view.target[2]);
+              station.rotation.set(view.rotation[0], view.rotation[1], view.rotation[2]);
+            } else {
+              cameraTween = { progress: 0, fromCamera: camera.position.clone(), toCamera: new THREE.Vector3(view.camera[0], view.camera[1], view.camera[2]), fromRotation: [station.rotation.x, station.rotation.y, station.rotation.z], toRotation: view.rotation.slice(), target: new THREE.Vector3(view.target[0], view.target[1], view.target[2]) };
+            }
+            announceToSR(name + ' camera view selected.');
+          };
+          cv._issFocusModule = function (id) {
+            var focused = null;
+            for (var focusIndex = 0; focusIndex < clickable.length; focusIndex++) { if (clickable[focusIndex]._issId === id) { focused = clickable[focusIndex]; break; } }
+            if (!focused) return;
+            station.updateMatrixWorld(true);
+            var focusTarget = new THREE.Vector3(); focused.getWorldPosition(focusTarget);
+            var focusDirection = camera.position.clone().sub(focusTarget);
+            if (focusDirection.lengthSq() < .01) focusDirection.set(1, .5, 1);
+            var focusDistance = Math.max(4.8, Math.min(7.2, (focused.geometry.boundingSphere ? focused.geometry.boundingSphere.radius * 3.2 : 5.4)));
+            var focusCamera = focusTarget.clone().add(focusDirection.normalize().multiplyScalar(focusDistance));
+            cameraFocusId = id;
+            if (_prefersReducedMotion) { camera.position.copy(focusCamera); camera.lookAt(focusTarget); }
+            else { cameraTween = { progress: 0, fromCamera: camera.position.clone(), toCamera: focusCamera, fromRotation: [station.rotation.x, station.rotation.y, station.rotation.z], toRotation: [station.rotation.x, station.rotation.y, station.rotation.z], target: focusTarget }; }
+            announceToSR('Camera centered on ' + id + '.');
+          };
+          var resizeObserver = null;
+          function resizeScene() {
+            if (!cv.isConnected) return;
+            var nextW = cv.clientWidth || (cv.parentElement && cv.parentElement.clientWidth) || Wc;
+            var nextH = cv.clientHeight || Hc;
+            if (nextW === Wc && nextH === Hc) return;
+            Wc = nextW; Hc = nextH;
+            camera.aspect = Wc / Math.max(1, Hc); camera.updateProjectionMatrix();
+            renderer.setSize(Wc, Hc, false);
+          }
+          if (window.ResizeObserver) { resizeObserver = new window.ResizeObserver(resizeScene); resizeObserver.observe(cv); }
+          else { window.addEventListener('resize', resizeScene); }
 
           var tick = 0, rafId = 0;
           function animate() {
             if (!cv.isConnected) { cleanup(); return; }
             tick++;
+            if (cameraTween) {
+              cameraTween.progress = Math.min(1, cameraTween.progress + .035);
+              var tweenEase = 1 - Math.pow(1 - cameraTween.progress, 3);
+              camera.position.lerpVectors(cameraTween.fromCamera, cameraTween.toCamera, tweenEase);
+              station.rotation.set(cameraTween.fromRotation[0] + (cameraTween.toRotation[0] - cameraTween.fromRotation[0]) * tweenEase, cameraTween.fromRotation[1] + (cameraTween.toRotation[1] - cameraTween.fromRotation[1]) * tweenEase, cameraTween.fromRotation[2] + (cameraTween.toRotation[2] - cameraTween.fromRotation[2]) * tweenEase);
+              camera.lookAt(cameraTween.target);
+              if (cameraTween.progress >= 1) cameraTween = null;
+            }
             if (!_prefersReducedMotion) {
-              if (!dragging) station.rotation.y += 0.0016;
+              if (!dragging && !cameraTween) station.rotation.y += 0.0016;
               wings.forEach(function (w, i) { w.rotation.z += 0.0012 + i * 0.0001; }); // sun-tracking alpha joints
+              cloudShell.rotation.y += 0.00015;
               var sa = tick * 0.002;
               sun.position.set(Math.cos(sa) * 10, 6, Math.sin(sa) * 10); // day/night lighting sweep
               sun.intensity = 0.55 + 0.7 * Math.max(0, Math.cos(sa));    // orbital "night" dims the station
@@ -463,14 +602,43 @@
             // keep the highlight on the selected module
             var curSel = null;
             var wantId = (setLabToolData && cv._issWantSel) || null;
-            for (var ci = 0; ci < clickable.length; ci++) { if (clickable[ci]._issId === wantId) { curSel = clickable[ci]; break; } }
+            var cutaway = !!cv._issCutaway;
+            for (var ci = 0; ci < clickable.length; ci++) {
+              var candidate = clickable[ci], isSelected = candidate._issId === wantId;
+              if (isSelected) curSel = candidate;
+              if (candidate.material) {
+                candidate.material.opacity = cutaway && !isSelected ? .18 : 1;
+                if (candidate.material.emissive && candidate.material.emissive.setHex) candidate.material.emissive.setHex(isSelected ? 0x073b55 : 0x000000);
+              }
+            }
+            for (var di = 0; di < moduleDetails.length; di++) {
+              var detail = moduleDetails[di], detailSelected = detail._issParentId === wantId;
+              if (detail.material) {
+                detail.material.transparent = true;
+                detail.material.opacity = cutaway && !detailSelected ? .1 : 1;
+              }
+            }
             if (curSel) {
               selRing.visible = true;
               curSel.getWorldPosition(selRing.position);
               selRing.lookAt(camera.position);
               var sc = 0.55 + (curSel.geometry.boundingSphere ? curSel.geometry.boundingSphere.radius * 0.45 : 0.5);
               selRing.scale.setScalar(_prefersReducedMotion ? sc : sc * (1 + 0.05 * Math.sin(tick * 0.08)));
+              if (cameraFocusId === wantId && !cameraTween) camera.lookAt(selRing.position);
+              var marker = cv.parentElement && cv.parentElement.querySelector('[data-iss-module-marker]');
+              if (marker) {
+                var projected = selRing.position.clone().project(camera);
+                marker.style.left = ((projected.x * .5 + .5) * 100).toFixed(2) + '%';
+                marker.style.top = ((-.5 * projected.y + .5) * 100).toFixed(2) + '%';
+                marker.style.opacity = projected.z > -1 && projected.z < 1 ? '1' : '0';
+              }
             } else { selRing.visible = false; }
+            var phaseChip = cv.parentElement && cv.parentElement.querySelector('[data-iss-light-phase]');
+            if (phaseChip && tick % 12 === 0) {
+              var daylight = sun.intensity >= .78;
+              phaseChip.textContent = daylight ? '☀ SUNLIGHT' : '◐ ECLIPSE';
+              phaseChip.setAttribute('data-phase', daylight ? 'sunlight' : 'eclipse');
+            }
             renderer.render(scene, camera);
             rafId = requestAnimationFrame(animate);
           }
@@ -478,8 +646,10 @@
             cancelAnimationFrame(rafId);
             cv.removeEventListener('click', pick);
             cv.removeEventListener('pointerdown', onDown);
+            cv.removeEventListener('keydown', onKey);
             window.removeEventListener('pointermove', onMove);
             window.removeEventListener('pointerup', onUp);
+            if (resizeObserver) resizeObserver.disconnect(); else window.removeEventListener('resize', resizeScene);
             try { renderer.dispose(); } catch (e) {}
             cv._issInit = false;
           }
@@ -530,7 +700,7 @@
         var Wc = cv.width = 640, Hc = cv.height = 360;
         var realMode = cv._dockRealMode !== false;
         // Game state (meters; station docking port at origin, approach along +Y = right)
-        var st = { x: 26, y: -190, vx: 0, vy: 1.0, fuel: 100, t: 0, over: false, msg: '', thrust: { up: false, down: false, fwd: false, back: false } };
+        var st = { x: 26, y: -190, vx: 0, vy: 1.0, fuel: 100, t: 0, over: false, msg: '', trail: [], lastTrail: 0, thrust: { up: false, down: false, fwd: false, back: false } };
         cv._dockState = st;
         var N_ORBIT = 0.02;   // orbital rate, exaggerated ~18x so coupling is feelable in a minute
         var ACCEL = 0.35, DT = 0.35;
@@ -561,6 +731,7 @@
           }
           st.vx += ax * DT; st.vy += ay * DT;
           st.x += st.vx * DT; st.y += st.vy * DT;
+          if (st.t - st.lastTrail >= 1.4) { st.trail.push({ x: st.x, y: st.y }); st.trail = st.trail.slice(-70); st.lastTrail = st.t; }
           var range = Math.sqrt(st.x * st.x + st.y * st.y);
           var speed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
           if (range < 5) {
@@ -571,45 +742,98 @@
           }
         }
         function draw() {
-          ctx2.fillStyle = '#050a18'; ctx2.fillRect(0, 0, Wc, Hc);
-          // Earth limb at bottom
-          ctx2.fillStyle = '#2f6fab';
-          ctx2.beginPath(); ctx2.arc(Wc / 2, Hc + 520, 560, 0, Math.PI * 2); ctx2.fill();
-          var sc = 1.35; // px per meter
-          var ox = Wc - 90, oy = Hc / 2; // station port on the right
-          // approach corridor
-          ctx2.strokeStyle = 'rgba(56,189,248,0.35)'; ctx2.setLineDash([6, 6]);
-          ctx2.beginPath(); ctx2.moveTo(ox, oy); ctx2.lineTo(ox - 480, oy - (0.15 * 480 / 1.0) * sc - 4); ctx2.stroke();
-          ctx2.beginPath(); ctx2.moveTo(ox, oy); ctx2.lineTo(ox - 480, oy + (0.15 * 480 / 1.0) * sc + 4); ctx2.stroke();
-          ctx2.setLineDash([]);
-          // station (simplified: node + truss)
-          ctx2.fillStyle = '#cbd5e1'; ctx2.fillRect(ox - 4, oy - 12, 30, 24);
-          ctx2.fillStyle = '#8a93a6'; ctx2.fillRect(ox + 8, oy - 90, 10, 180);
-          ctx2.fillStyle = '#c9962e'; ctx2.fillRect(ox + 2, oy - 132, 22, 40); ctx2.fillRect(ox + 2, oy + 92, 22, 40);
-          ctx2.fillStyle = '#38bdf8'; ctx2.fillRect(ox - 7, oy - 4, 4, 8); // port
-          // capsule
-          var px = ox + st.y * sc, py = oy - st.x * sc; // y along-track → screen x (approach from the left), x radial → screen up
-          ctx2.save(); ctx2.translate(px, py);
-          ctx2.fillStyle = '#e2e8f0';
-          ctx2.beginPath(); ctx2.moveTo(9, 0); ctx2.lineTo(-7, -6); ctx2.lineTo(-7, 6); ctx2.closePath(); ctx2.fill();
-          // thruster puffs
-          ctx2.fillStyle = 'rgba(253,224,71,0.9)';
-          if (st.thrust.fwd && st.fuel > 0) { ctx2.beginPath(); ctx2.arc(-10, 0, 3, 0, Math.PI * 2); ctx2.fill(); }
-          if (st.thrust.back && st.fuel > 0) { ctx2.beginPath(); ctx2.arc(12, 0, 3, 0, Math.PI * 2); ctx2.fill(); }
-          if (st.thrust.up && st.fuel > 0) { ctx2.beginPath(); ctx2.arc(0, 9, 3, 0, Math.PI * 2); ctx2.fill(); }
-          if (st.thrust.down && st.fuel > 0) { ctx2.beginPath(); ctx2.arc(0, -9, 3, 0, Math.PI * 2); ctx2.fill(); }
+          var spaceGradient = ctx2.createLinearGradient(0, 0, 0, Hc);
+          spaceGradient.addColorStop(0, '#020611'); spaceGradient.addColorStop(0.62, '#061225'); spaceGradient.addColorStop(1, '#0a2037');
+          ctx2.fillStyle = spaceGradient; ctx2.fillRect(0, 0, Wc, Hc);
+          // A deterministic layered star field keeps the display alive without flicker.
+          for (var starI = 0; starI < 52; starI++) {
+            var starX = (starI * 97 + 31) % Wc, starY = (starI * 47 + 19) % Math.floor(Hc * 0.76);
+            var starR = starI % 11 === 0 ? 1.25 : starI % 4 === 0 ? 0.8 : 0.45;
+            ctx2.globalAlpha = starI % 5 === 0 ? 0.85 : 0.48; ctx2.fillStyle = starI % 7 === 0 ? '#bae6fd' : '#f8fafc';
+            ctx2.beginPath(); ctx2.arc(starX, starY, starR, 0, Math.PI * 2); ctx2.fill();
+          }
+          ctx2.globalAlpha = 1;
+          // Earth limb with a brighter atmospheric rim.
+          var earthGlow = ctx2.createRadialGradient(Wc / 2, Hc + 450, 420, Wc / 2, Hc + 500, 590);
+          earthGlow.addColorStop(0, '#2578b8'); earthGlow.addColorStop(.62, '#124b82'); earthGlow.addColorStop(1, '#061a3b');
+          ctx2.fillStyle = earthGlow; ctx2.beginPath(); ctx2.arc(Wc / 2, Hc + 520, 560, 0, Math.PI * 2); ctx2.fill();
+          ctx2.strokeStyle = 'rgba(125,211,252,.55)'; ctx2.lineWidth = 3; ctx2.beginPath(); ctx2.arc(Wc / 2, Hc + 520, 562, Math.PI * 1.12, Math.PI * 1.88); ctx2.stroke();
+          var sc = 1.35;
+          var ox = Wc - 90, oy = Hc / 2;
+          // Approach corridor, centerline, and 50 m range gates.
+          ctx2.fillStyle = 'rgba(14,165,233,.055)'; ctx2.beginPath(); ctx2.moveTo(ox, oy); ctx2.lineTo(ox - 520, oy - 109); ctx2.lineTo(ox - 520, oy + 109); ctx2.closePath(); ctx2.fill();
+          ctx2.lineWidth = 1.2; ctx2.strokeStyle = 'rgba(56,189,248,.48)'; ctx2.setLineDash([7, 7]);
+          ctx2.beginPath(); ctx2.moveTo(ox, oy); ctx2.lineTo(ox - 520, oy - 109); ctx2.stroke();
+          ctx2.beginPath(); ctx2.moveTo(ox, oy); ctx2.lineTo(ox - 520, oy + 109); ctx2.stroke();
+          ctx2.strokeStyle = 'rgba(125,211,252,.25)'; ctx2.beginPath(); ctx2.moveTo(ox, oy); ctx2.lineTo(22, oy); ctx2.stroke(); ctx2.setLineDash([]);
+          ctx2.font = '700 8px ui-monospace, monospace'; ctx2.textAlign = 'center';
+          [50, 100, 150].forEach(function (meters) {
+            var gateX = ox - meters * sc; var halfGate = 4 + meters * .11;
+            ctx2.strokeStyle = 'rgba(125,211,252,.2)'; ctx2.beginPath(); ctx2.moveTo(gateX, oy - halfGate); ctx2.lineTo(gateX, oy + halfGate); ctx2.stroke();
+            ctx2.fillStyle = 'rgba(186,230,253,.62)'; ctx2.fillText(meters + ' m', gateX, oy + halfGate + 12);
+          });
+          ctx2.textAlign = 'left';
+          // Station silhouette with shaded node, truss, arrays, and active port.
+          ctx2.shadowColor = 'rgba(226,232,240,.28)'; ctx2.shadowBlur = 12;
+          var nodeGradient = ctx2.createLinearGradient(ox - 7, oy - 12, ox + 26, oy + 12); nodeGradient.addColorStop(0, '#f8fafc'); nodeGradient.addColorStop(.5, '#94a3b8'); nodeGradient.addColorStop(1, '#475569');
+          ctx2.fillStyle = nodeGradient; ctx2.fillRect(ox - 4, oy - 13, 32, 26); ctx2.shadowBlur = 0;
+          ctx2.fillStyle = '#64748b'; ctx2.fillRect(ox + 9, oy - 92, 9, 184);
+          [[oy - 137, '#c28a21'], [oy + 96, '#b77918']].forEach(function (panelInfo) {
+            ctx2.fillStyle = panelInfo[1]; ctx2.fillRect(ox + 1, panelInfo[0], 24, 41);
+            ctx2.strokeStyle = 'rgba(254,215,112,.7)'; ctx2.lineWidth = .7;
+            for (var cell = 1; cell < 4; cell++) { ctx2.beginPath(); ctx2.moveTo(ox + 1, panelInfo[0] + cell * 10); ctx2.lineTo(ox + 25, panelInfo[0] + cell * 10); ctx2.stroke(); }
+            ctx2.beginPath(); ctx2.moveTo(ox + 13, panelInfo[0]); ctx2.lineTo(ox + 13, panelInfo[0] + 41); ctx2.stroke();
+          });
+          ctx2.shadowColor = '#38bdf8'; ctx2.shadowBlur = 14; ctx2.fillStyle = '#67e8f9'; ctx2.fillRect(ox - 8, oy - 5, 5, 10); ctx2.shadowBlur = 0;
+          ctx2.fillStyle = '#7dd3fc'; ctx2.font = '800 8px ui-monospace, monospace'; ctx2.fillText('IDSS PORT', ox - 50, oy - 13);
+          // Capsule with glass nose, service body, and RCS plumes.
+          var px = ox + st.y * sc, py = oy - st.x * sc;
+          // Breadcrumb trail, unpowered relative-motion prediction, braking point, and abort vector.
+          if (st.trail && st.trail.length > 1) {
+            ctx2.strokeStyle = 'rgba(125,211,252,.34)'; ctx2.lineWidth = 1.4; ctx2.setLineDash([2, 5]); ctx2.beginPath();
+            st.trail.forEach(function (point, trailIndex) { var trailX = ox + point.y * sc, trailY = oy - point.x * sc; if (trailIndex) ctx2.lineTo(trailX, trailY); else ctx2.moveTo(trailX, trailY); }); ctx2.stroke(); ctx2.setLineDash([]);
+          }
+          var predictX = st.x, predictY = st.y, predictVx = st.vx, predictVy = st.vy;
+          ctx2.strokeStyle = 'rgba(232,121,249,.72)'; ctx2.lineWidth = 1.6; ctx2.setLineDash([6, 5]); ctx2.beginPath(); ctx2.moveTo(px, py);
+          for (var predictStep = 0; predictStep < 30; predictStep++) {
+            var predictAx = realMode ? 3 * N_ORBIT * N_ORBIT * predictX + 2 * N_ORBIT * predictVy : 0;
+            var predictAy = realMode ? -2 * N_ORBIT * predictVx : 0;
+            predictVx += predictAx * 1.2; predictVy += predictAy * 1.2; predictX += predictVx * 1.2; predictY += predictVy * 1.2;
+            ctx2.lineTo(ox + predictY * sc, oy - predictX * sc);
+          }
+          ctx2.stroke(); ctx2.setLineDash([]);
+          var navSpeed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
+          var stopDistance = navSpeed * navSpeed / (2 * ACCEL);
+          if (navSpeed > .02) {
+            var stopX = px + st.vy / navSpeed * stopDistance * sc, stopY = py - st.vx / navSpeed * stopDistance * sc;
+            ctx2.strokeStyle = '#fbbf24'; ctx2.lineWidth = 1.3; ctx2.beginPath(); ctx2.moveTo(stopX - 5, stopY); ctx2.lineTo(stopX + 5, stopY); ctx2.moveTo(stopX, stopY - 5); ctx2.lineTo(stopX, stopY + 5); ctx2.stroke();
+          }
+          ctx2.strokeStyle = 'rgba(248,113,113,.6)'; ctx2.lineWidth = 1.2; ctx2.setLineDash([4, 4]); ctx2.beginPath(); ctx2.moveTo(px, py); ctx2.lineTo(px - 68, py); ctx2.stroke(); ctx2.setLineDash([]); ctx2.fillStyle = '#fca5a5'; ctx2.font = '800 7px ui-monospace, monospace'; ctx2.fillText('ABORT', px - 67, py - 5);
+          ctx2.save(); ctx2.translate(px, py); ctx2.shadowColor = 'rgba(125,211,252,.46)'; ctx2.shadowBlur = 11;
+          var capsuleGradient = ctx2.createLinearGradient(-10, -8, 11, 8); capsuleGradient.addColorStop(0, '#64748b'); capsuleGradient.addColorStop(.45, '#f8fafc'); capsuleGradient.addColorStop(1, '#94a3b8');
+          ctx2.fillStyle = capsuleGradient; ctx2.beginPath(); ctx2.moveTo(11, 0); ctx2.lineTo(-7, -7); ctx2.lineTo(-10, -5); ctx2.lineTo(-10, 5); ctx2.lineTo(-7, 7); ctx2.closePath(); ctx2.fill(); ctx2.shadowBlur = 0;
+          ctx2.fillStyle = '#0ea5e9'; ctx2.beginPath(); ctx2.arc(4, 0, 2.4, 0, Math.PI * 2); ctx2.fill();
+          ctx2.strokeStyle = 'rgba(253,224,71,.95)'; ctx2.lineWidth = 2.4;
+          if (st.thrust.fwd && st.fuel > 0) { ctx2.beginPath(); ctx2.moveTo(-11, -2); ctx2.lineTo(-18, 0); ctx2.lineTo(-11, 2); ctx2.stroke(); }
+          if (st.thrust.back && st.fuel > 0) { ctx2.beginPath(); ctx2.moveTo(12, -2); ctx2.lineTo(18, 0); ctx2.lineTo(12, 2); ctx2.stroke(); }
+          if (st.thrust.up && st.fuel > 0) { ctx2.beginPath(); ctx2.moveTo(-2, 8); ctx2.lineTo(0, 15); ctx2.lineTo(2, 8); ctx2.stroke(); }
+          if (st.thrust.down && st.fuel > 0) { ctx2.beginPath(); ctx2.moveTo(-2, -8); ctx2.lineTo(0, -15); ctx2.lineTo(2, -8); ctx2.stroke(); }
           ctx2.restore();
-          // velocity vector
-          ctx2.strokeStyle = '#4ade80'; ctx2.beginPath(); ctx2.moveTo(px, py); ctx2.lineTo(px + st.vy * sc * 9, py - st.vx * sc * 9); ctx2.stroke();
-          // HUD
+          // Velocity vector and arrival reticle.
+          var vectorX = px + st.vy * sc * 13, vectorY = py - st.vx * sc * 13;
+          ctx2.strokeStyle = '#4ade80'; ctx2.lineWidth = 2; ctx2.beginPath(); ctx2.moveTo(px, py); ctx2.lineTo(vectorX, vectorY); ctx2.stroke();
+          ctx2.fillStyle = '#4ade80'; ctx2.beginPath(); ctx2.arc(vectorX, vectorY, 2.5, 0, Math.PI * 2); ctx2.fill();
+          ctx2.strokeStyle = 'rgba(74,222,128,.35)'; ctx2.lineWidth = 1; ctx2.beginPath(); ctx2.arc(ox - 6, oy, 14, 0, Math.PI * 2); ctx2.stroke(); ctx2.beginPath(); ctx2.arc(ox - 6, oy, 21, 0, Math.PI * 2); ctx2.stroke();
+          // Compact flight-display telemetry.
           var range = Math.sqrt(st.x * st.x + st.y * st.y), speed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
-          ctx2.fillStyle = '#94a3b8'; ctx2.font = 'bold 11px ui-monospace, monospace';
-          ctx2.fillText('RANGE ' + range.toFixed(0) + ' m', 12, 20);
-          ctx2.fillText('SPEED ' + speed.toFixed(2) + ' m/s ' + (speed > 0.6 && range < 40 ? '⚠' : ''), 12, 36);
-          ctx2.fillText('FUEL  ' + st.fuel.toFixed(0) + '%', 12, 52);
-          ctx2.fillText(realMode ? 'ORBITAL PHYSICS: ON' : 'ORBITAL PHYSICS: OFF (video-game mode)', 12, Hc - 14);
+          ctx2.fillStyle = 'rgba(2,6,23,.72)'; ctx2.fillRect(10, 10, 152, 61); ctx2.strokeStyle = 'rgba(125,211,252,.24)'; ctx2.strokeRect(10.5, 10.5, 151, 60);
+          ctx2.font = '700 8px ui-monospace, monospace'; ctx2.fillStyle = '#94a3b8'; ctx2.fillText('RELATIVE NAVIGATION', 20, 24);
+          ctx2.font = '850 12px ui-monospace, monospace'; ctx2.fillStyle = '#dbeafe'; ctx2.fillText(range.toFixed(0) + ' m', 20, 43); ctx2.fillText(speed.toFixed(2) + ' m/s', 83, 43);
+          ctx2.fillStyle = st.fuel > 25 ? '#4ade80' : '#fbbf24'; ctx2.fillRect(20, 53, Math.max(0, st.fuel) * 1.22, 5); ctx2.strokeStyle = '#475569'; ctx2.strokeRect(20, 53, 122, 5);
+          ctx2.fillStyle = speed > 0.6 && range < 40 ? '#fbbf24' : '#86efac'; ctx2.font = '800 9px ui-monospace, monospace'; ctx2.textAlign = 'right'; ctx2.fillText(speed > 0.6 && range < 40 ? 'HIGH CLOSING RATE' : 'SOFT CAPTURE ≤ 0.60 M/S', Wc - 12, 20); ctx2.fillStyle = '#fde68a'; ctx2.fillText('BRAKING DISTANCE ' + stopDistance.toFixed(1) + ' M', Wc - 12, 34); ctx2.textAlign = 'left';
+          ctx2.fillStyle = 'rgba(2,6,23,.66)'; ctx2.fillRect(10, Hc - 31, realMode ? 147 : 220, 21); ctx2.fillStyle = realMode ? '#7dd3fc' : '#fde68a'; ctx2.font = '800 9px ui-monospace, monospace'; ctx2.fillText(realMode ? 'ORBITAL PHYSICS // ON' : 'VIDEO-GAME PHYSICS // ON', 18, Hc - 17);
           if (st.over) {
-            ctx2.fillStyle = 'rgba(2,6,23,0.78)'; ctx2.fillRect(0, 0, Wc, Hc);
+            ctx2.fillStyle = 'rgba(2,6,23,0.84)'; ctx2.fillRect(0, 0, Wc, Hc);
             ctx2.fillStyle = st.msg.indexOf('capture') >= 0 || st.msg.indexOf('Soft') >= 0 ? '#4ade80' : '#fbbf24';
             ctx2.font = 'bold 15px system-ui'; ctx2.textAlign = 'center';
             var words = st.msg.split(' '); var line = ''; var ly = Hc / 2 - 12;
@@ -617,11 +841,9 @@
               if ((line + words[wi]).length > 60) { ctx2.fillText(line, Wc / 2, ly); ly += 20; line = ''; }
               line += words[wi] + ' ';
             }
-            ctx2.fillText(line, Wc / 2, ly);
-            ctx2.textAlign = 'left';
+            ctx2.fillText(line, Wc / 2, ly); ctx2.textAlign = 'left';
           }
-        }
-        var rafId = 0, frame = 0;
+        }        var rafId = 0, frame = 0;
         var milestones = { m100: false, m40: false };
         function updateHudMirror() {
           // Text mirror of the canvas HUD (WCAG 1.1.1) — imperative textContent
@@ -651,7 +873,7 @@
         cv._dockSetThrust = setThrust;
         cv._dockReset = function (mode) {
           realMode = mode !== false; cv._dockRealMode = realMode;
-          st.x = 26; st.y = -190; st.vx = 0; st.vy = 1.0; st.fuel = 100; st.t = 0; st.over = false; st.msg = '';
+          st.x = 26; st.y = -190; st.vx = 0; st.vy = 1.0; st.fuel = 100; st.t = 0; st.over = false; st.msg = ''; st.trail = []; st.lastTrail = 0;
           st.thrust = { up: false, down: false, fwd: false, back: false };
           if (cv._dockResetMilestones) cv._dockResetMilestones();
           announceToSR(__alloT('stem.spacestation.dock_start_sr', 'New approach started: 190 meters from the docking port, closing at 1 meter per second.'));
@@ -716,6 +938,52 @@
       }
       function evaReset() { upd({ eva: { pos: 0, tetherA: 0, tetherB: 0, freeTether: 'B', o2: 100, bolts: 0, done: false, failMsg: '', started: true, log: ['📻 Airlock egress complete. Two tethers, both clipped at Quest. Daylight window open.'] } }); }
 
+      function renderEvaRouteVisual() {
+        var routeX = [54, 142, 230, 318, 406, 494, 582];
+        var routeY = [105, 92, 105, 88, 105, 92, 105];
+        var labels = ['QUEST', 'NODE', 'LAB', 'TRUSS', 'S1', 'S2', 'PUMP'];
+        var position = Math.max(0, Math.min(routeX.length - 1, Number(evaS.pos || 0)));
+        var astroX = routeX[position], astroY = routeY[position] - 27;
+        var tetherAX = routeX[Math.max(0, Math.min(routeX.length - 1, Number(evaS.tetherA || 0)))];
+        var tetherAY = routeY[Math.max(0, Math.min(routeY.length - 1, Number(evaS.tetherA || 0)))];
+        var tetherBX = routeX[Math.max(0, Math.min(routeX.length - 1, Number(evaS.tetherB || 0)))];
+        var tetherBY = routeY[Math.max(0, Math.min(routeY.length - 1, Number(evaS.tetherB || 0)))];
+        var oxygen = Math.max(0, Math.min(100, Number(evaS.o2 == null ? 100 : evaS.o2)));
+        var nextPosition = Math.min(routeX.length - 1, position + 1);
+        var moveSecured = position >= routeX.length - 1 || Number(evaS.tetherA || 0) === nextPosition || Number(evaS.tetherB || 0) === nextPosition;
+        var remainingMoves = Math.max(0, routeX.length - 1 - position);
+        var remainingBolts = Math.max(0, 4 - Number(evaS.bolts || 0));
+        var projectedOxygen = Math.max(0, oxygen - remainingMoves * 6 - remainingBolts * 5);
+        var tetherSpan = Math.max(Math.abs(position - Number(evaS.tetherA || 0)), Math.abs(position - Number(evaS.tetherB || 0)));
+        var tetherStatus = tetherSpan > 1 ? 'LOAD HIGH' : moveSecured ? 'NEXT MOVE SECURED' : 'CLIP AHEAD FIRST';
+        return h('div', { className: 'iss-learning-visual iss-eva-visual' },
+          h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Spacewalk route. Astronaut at ' + EVA_RAILS[position] + '. Tether A at ' + EVA_RAILS[evaS.tetherA || 0] + '. Tether B at ' + EVA_RAILS[evaS.tetherB || 0] + '. Suit consumables ' + oxygen + ' percent. Projected at worksite ' + projectedOxygen + ' percent. ' + tetherStatus + '.' },
+            h('defs', null, h('linearGradient', { id: 'iss-eva-bg', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#020611' }), h('stop', { offset: '100%', stopColor: '#09213a' }))),
+            h('rect', { width: 640, height: 190, fill: 'url(#iss-eva-bg)' }),
+            [[27,27],[91,46],[165,21],[274,39],[368,19],[458,44],[537,25],[609,55]].map(function (s, i) { return h('circle', { key: 'e' + i, cx: s[0], cy: s[1], r: i % 3 ? .8 : 1.3, fill: i % 2 ? '#94a3b8' : '#e0f2fe' }); }),
+            h('circle', { cx: 320, cy: 360, r: 212, fill: '#17629c', stroke: '#7dd3fc', strokeWidth: 3, opacity: .8 }),
+            h('path', { d: 'M30 110 L610 110', stroke: '#94a3b8', strokeWidth: 8, opacity: .75 }),
+            h('path', { d: 'M30 110 L610 110', stroke: '#e2e8f0', strokeWidth: 1, strokeDasharray: '11 9', opacity: .65 }),
+            [170, 470].map(function (x, i) { return h('g', { key: 'panel' + i }, h('rect', { x: x - 28, y: 118, width: 56, height: 28, rx: 3, fill: '#a86e16', stroke: '#fbbf24' }), [1,2,3].map(function (line) { return h('line', { key: line, x1: x - 28, y1: 118 + line * 7, x2: x + 28, y2: 118 + line * 7, stroke: '#fde68a', strokeWidth: .6 }); })); }),
+            h('rect', { x: 28, y: 86, width: 55, height: 48, rx: 20, fill: '#cbd5e1', stroke: '#f8fafc', strokeWidth: 2 }),
+            h('rect', { x: 563, y: 82, width: 49, height: 55, rx: 7, fill: (evaS.bolts || 0) >= 4 ? '#14532d' : '#4a2d18', stroke: (evaS.bolts || 0) >= 4 ? '#4ade80' : '#f97316', strokeWidth: 2 }),
+            h('text', { x: 587, y: 104, textAnchor: 'middle', fill: '#f8fafc', fontSize: 8, fontWeight: 850 }, 'PUMP'),
+            h('text', { x: 587, y: 119, textAnchor: 'middle', fill: '#fbbf24', fontSize: 9, fontWeight: 900 }, (evaS.bolts || 0) + '/4'),
+            h('path', { className: 'iss-eva-tether-a', d: 'M' + astroX + ' ' + astroY + ' Q' + ((astroX + tetherAX) / 2) + ' ' + (Math.min(astroY, tetherAY) - 17) + ' ' + tetherAX + ' ' + tetherAY, fill: 'none', strokeWidth: 2 }),
+            h('path', { className: 'iss-eva-tether-b', d: 'M' + astroX + ' ' + astroY + ' Q' + ((astroX + tetherBX) / 2) + ' ' + (Math.min(astroY, tetherBY) - 10) + ' ' + tetherBX + ' ' + tetherBY, fill: 'none', strokeWidth: 2 }),
+            position < routeX.length - 1 ? h('line', { x1: routeX[position], y1: routeY[position], x2: routeX[nextPosition], y2: routeY[nextPosition], stroke: moveSecured ? '#4ade80' : '#fbbf24', strokeWidth: 5, strokeDasharray: moveSecured ? 'none' : '6 5', opacity: .65 }) : null,
+            routeX.map(function (x, i) { var reached = i <= position; return h('g', { key: labels[i] }, h('circle', { cx: x, cy: routeY[i], r: 7, fill: reached ? '#0ea5e9' : '#172033', stroke: reached ? '#7dd3fc' : '#64748b', strokeWidth: 2 }), h('text', { x: x, y: 163, textAnchor: 'middle', fill: i === position ? '#7dd3fc' : '#94a3b8', fontSize: 8, fontWeight: i === position ? 900 : 700 }, labels[i])); }),
+            h('g', { className: 'iss-eva-astronaut', transform: 'translate(' + astroX + ',' + astroY + ')' }, h('circle', { cx: 0, cy: -6, r: 9, fill: '#f8fafc', stroke: '#7dd3fc', strokeWidth: 2 }), h('rect', { x: -10, y: 4, width: 20, height: 24, rx: 8, fill: '#e2e8f0', stroke: '#94a3b8' }), h('rect', { x: -15, y: 7, width: 6, height: 17, rx: 3, fill: '#cbd5e1' }), h('line', { x1: -9, y1: 12, x2: -20, y2: 23, stroke: '#e2e8f0', strokeWidth: 4, strokeLinecap: 'round' }), h('line', { x1: 9, y1: 12, x2: 20, y2: 21, stroke: '#e2e8f0', strokeWidth: 4, strokeLinecap: 'round' })),
+            h('rect', { x: 274, y: 16, width: 170, height: 25, rx: 8, fill: 'rgba(2,6,23,.72)', stroke: moveSecured ? 'rgba(74,222,128,.45)' : 'rgba(251,191,36,.45)' }),
+            h('text', { x: 286, y: 27, fill: moveSecured ? '#86efac' : '#fde68a', fontSize: 7.5, fontWeight: 850 }, tetherStatus),
+            h('text', { x: 286, y: 37, fill: '#cbd5e1', fontSize: 7.5 }, 'PROJECTED AT WORKSITE ' + projectedOxygen.toFixed(0) + '%'),
+            h('rect', { x: 455, y: 16, width: 151, height: 25, rx: 8, fill: 'rgba(2,6,23,.72)', stroke: 'rgba(148,163,184,.3)' }),
+            h('rect', { x: 465, y: 27, width: 122, height: 5, rx: 3, fill: '#263449' }),
+            h('rect', { x: 465, y: 27, width: 1.22 * oxygen, height: 5, rx: 3, fill: oxygen > 40 ? '#4ade80' : oxygen > 15 ? '#fbbf24' : '#f87171' }),
+            h('text', { x: 465, y: 24, fill: '#cbd5e1', fontSize: 8, fontWeight: 800 }, 'SUIT CONSUMABLES ' + oxygen.toFixed(0) + '%'),
+            h('text', { x: 22, y: 25, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'EVA ROUTE // TWO-TETHER PROTOCOL')),
+          h('div', { className: 'iss-visual-caption' }, h('span', null, 'Blue = tether A  /  Gold = tether B'), h('span', null, evaS.started ? tetherStatus + ' · PROJECTED ' + projectedOxygen.toFixed(0) + '%' : 'AIRLOCK READY')));
+      }
       // ── Interior views (SVG "peek inside" for Cupola + sleep cabin) ──
       function renderCupolaInterior() {
         var scene = d.cupolaScene || 'day';
@@ -742,7 +1010,7 @@
               windowPane(88, 118, 70, 44, 'w5'), windowPane(202, 118, 70, 44, 'w6'),
               h('circle', { cx: 180, cy: 96, r: 34, fill: shut ? '#39424f' : sc.fill, stroke: '#94a3b8', strokeWidth: 3 }),
               !shut ? h('ellipse', { cx: 180, cy: 112, rx: 26, ry: 8, fill: scene === 'day' ? '#e8f4ff' : scene === 'aurora' ? '#4ade80' : '#fde68a', opacity: 0.45 }) : null,
-              h('text', { x: 180, y: 14, textAnchor: 'middle', fill: '#64748b', fontSize: 9 }, '80 cm center window — the largest ever flown in space')
+              h('text', { x: 180, y: 14, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, '80 cm center window — the largest ever flown in space')
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
               Object.keys(SCENES).map(function (k) {
@@ -796,6 +1064,7 @@
               h('p', { style: { fontSize: 12, color: SOFT, lineHeight: 1.55, margin: '0 0 8px' } },
                 __alloT('stem.spacestation.dock_help', 'Fly the capsule (left side) onto the glowing port. Arrow keys / WASD or the buttons: → thrusts forward, ← brakes, ↑/↓ steer radially. Dock slower than 0.6 m/s, inside the corridor. With ORBITAL PHYSICS ON, watch the counter-intuitive part: thrusting forward also pushes you upward off the approach line — orbits are not roads.')),
               h('canvas', {
+                className: 'iss-dock-canvas',
                 ref: function (cv) { if (cv) { cv._dockRealMode = dockRealMode; dockingCanvasRef(cv); } },
                 'data-dock-canvas': 'true',
                 tabIndex: 0, role: 'application',
@@ -808,7 +1077,7 @@
                   return h('button', { key: b[0], type: 'button', 'aria-label': 'Thrust ' + b[2], onPointerDown: press(true), onPointerUp: press(false), onPointerLeave: press(false), style: { padding: '10px 16px', borderRadius: 10, fontSize: 14, fontWeight: 900, cursor: 'pointer', background: PANEL, color: TEXT, border: '1px solid #475569', touchAction: 'none' } }, b[1] + ' ', h('span', { style: { fontSize: 10, fontWeight: 600, color: SOFT } }, b[2]));
                 })),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8 } },
-                h('button', { type: 'button', onClick: function (e) { var cv = e.currentTarget.parentElement.parentElement.querySelector('canvas'); if (cv && cv._dockReset) cv._dockReset(dockRealMode); upd({ dockResult: null, dockMsg: '' }); }, style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: '#0ea5e9', color: '#fff', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, '🔁 ' + __alloT('stem.spacestation.dock_retry', 'New approach')),
+                h('button', { type: 'button', onClick: function (e) { var cv = e.currentTarget.parentElement.parentElement.querySelector('canvas'); if (cv && cv._dockReset) cv._dockReset(dockRealMode); upd({ dockResult: null, dockMsg: '' }); }, style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: '#0ea5e9', color: '#082f49', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, '🔁 ' + __alloT('stem.spacestation.dock_retry', 'New approach')),
                 h('button', { type: 'button', 'aria-pressed': dockRealMode, onClick: function (e) { var next = !dockRealMode; var cv = e.currentTarget.parentElement.parentElement.querySelector('canvas'); upd({ dockRealMode: next, dockResult: null, dockMsg: '' }); if (cv && cv._dockReset) cv._dockReset(next); }, style: { padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', background: dockRealMode ? 'rgba(34,197,94,0.15)' : 'rgba(251,191,36,0.12)', color: dockRealMode ? '#4ade80' : '#fbbf24', border: '1px solid ' + (dockRealMode ? '#22c55e' : '#fbbf24') } }, dockRealMode ? '🧲 ' + __alloT('stem.spacestation.dock_real_on', 'Orbital physics ON') : '🎮 ' + __alloT('stem.spacestation.dock_real_off', 'Video-game mode (physics OFF)'))),
               d.dockMsg ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 8, padding: 8, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + (d.dockResult === 'docked' ? '#22c55e' : '#fbbf24'), fontSize: 12, color: TEXT, lineHeight: 1.55 } },
                 h('strong', { style: { color: d.dockResult === 'docked' ? '#4ade80' : '#fbbf24' } }, __alloT('stem.spacestation.mission_report', 'Mission report: ')), d.dockMsg,
@@ -821,7 +1090,8 @@
             h('div', null,
               h('p', { style: { fontSize: 12, color: SOFT, lineHeight: 1.55, margin: '0 0 8px' } },
                 __alloT('stem.spacestation.eva_help', 'An ammonia pump on the truss has failed. Translate hand-over-hand from the Quest airlock to the worksite and torque 4 bolts — while respecting the real rule that keeps astronauts alive: at least one tether clipped AT ALL TIMES. Clip the free tether ahead, then move. Every action costs suit consumables.')),
-              !evaS.started ? h('button', { type: 'button', onClick: evaReset, style: { padding: '8px 16px', borderRadius: 10, border: 'none', background: '#0ea5e9', color: '#fff', fontWeight: 900, fontSize: 13, cursor: 'pointer' } }, '🚪 ' + __alloT('stem.spacestation.eva_start', 'Open the hatch')) :
+              renderEvaRouteVisual(),
+              !evaS.started ? h('button', { type: 'button', onClick: evaReset, style: { padding: '8px 16px', borderRadius: 10, border: 'none', background: '#0ea5e9', color: '#082f49', fontWeight: 900, fontSize: 13, cursor: 'pointer' } }, '🚪 ' + __alloT('stem.spacestation.eva_start', 'Open the hatch')) :
               h('div', null,
                 h('div', { role: 'list', 'aria-label': 'Handrail route', style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 } },
                   EVA_RAILS.map(function (r, i) {
@@ -911,12 +1181,21 @@
             room.id === 'unity' ? h('g', { className: 'iss-float' }, h('rect', { x: 330, y: 93, width: 70, height: 58, rx: 8, fill: '#8b5e3c', stroke: '#fde68a', strokeWidth: 3 }), h('path', { d: 'M340 93 Q365 70 390 93', fill: 'none', stroke: '#fde68a', strokeWidth: 4 }), h('text', { x: 365, y: 128, textAnchor: 'middle', fill: '#fff7ed', fontSize: 13 }, 'CARGO')) :
             h('g', null, h('circle', { cx: 362, cy: 124, r: 75, fill: '#2563a8', stroke: '#cbd5e1', strokeWidth: 8 }), h('path', { d: 'M300 132 Q350 82 424 112 Q398 180 320 181 Z', fill: '#e7f5ff', opacity: 0.72 }), h('path', { d: 'M314 145 Q358 105 414 122', fill: 'none', stroke: '#4ade80', strokeWidth: 9, opacity: 0.65 }));
           return h('svg', { viewBox: '0 0 724 260', role: 'img', 'aria-label': 'Interior view of ' + room.name + '. ' + room.scene, style: { width: '100%', display: 'block', background: '#060b18' } },
-            h('defs', null, h('linearGradient', { id: 'iss-tunnel', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#e2e8f0' }), h('stop', { offset: '48%', stopColor: '#64748b' }), h('stop', { offset: '100%', stopColor: '#1e293b' }))),
-            h('rect', { x: 0, y: 0, width: 724, height: 260, fill: '#050a18' }),
-            h('polygon', { points: '0,18 724,18 610,88 114,88', fill: '#d7dee8', stroke: room.color, strokeWidth: 3 }),
-            h('polygon', { points: '0,242 724,242 610,172 114,172', fill: '#344154', stroke: room.color, strokeWidth: 3 }),
-            h('polygon', { points: '0,18 114,88 114,172 0,242', fill: '#8b98aa' }),
-            h('polygon', { points: '724,18 610,88 610,172 724,242', fill: '#69778b' }),
+            h('defs', null,
+              h('linearGradient', { id: 'iss-tunnel-ceiling', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#f8fafc' }), h('stop', { offset: '65%', stopColor: '#9aa8ba' }), h('stop', { offset: '100%', stopColor: '#536173' })),
+              h('linearGradient', { id: 'iss-tunnel-floor', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#536173' }), h('stop', { offset: '100%', stopColor: '#172033' })),
+              h('linearGradient', { id: 'iss-tunnel-side', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0%', stopColor: '#425066' }), h('stop', { offset: '50%', stopColor: '#9aa7b8' }), h('stop', { offset: '100%', stopColor: '#3e4a5d' })),
+              h('radialGradient', { id: 'iss-cabin-depth', cx: '50%', cy: '48%' }, h('stop', { offset: '0%', stopColor: '#1a3658' }), h('stop', { offset: '55%', stopColor: '#0b1729' }), h('stop', { offset: '100%', stopColor: '#030712' })),
+              h('filter', { id: 'iss-light-glow', x: '-30%', y: '-100%', width: '160%', height: '300%' }, h('feGaussianBlur', { stdDeviation: 5, result: 'glow' }), h('feMerge', null, h('feMergeNode', { in: 'glow' }), h('feMergeNode', { in: 'SourceGraphic' })))),
+            h('rect', { x: 0, y: 0, width: 724, height: 260, fill: 'url(#iss-cabin-depth)' }),
+            h('polygon', { points: '0,18 724,18 610,88 114,88', fill: 'url(#iss-tunnel-ceiling)', stroke: room.color, strokeWidth: 2 }),
+            h('polygon', { points: '0,242 724,242 610,172 114,172', fill: 'url(#iss-tunnel-floor)', stroke: room.color, strokeWidth: 2 }),
+            h('polygon', { points: '0,18 114,88 114,172 0,242', fill: 'url(#iss-tunnel-side)' }),
+            h('polygon', { points: '724,18 610,88 610,172 724,242', fill: 'url(#iss-tunnel-side)' }),
+            h('rect', { x: 114, y: 88, width: 496, height: 84, rx: 34, fill: 'none', stroke: '#cbd5e1', strokeWidth: 4, opacity: .55 }),
+            h('rect', { x: 128, y: 98, width: 468, height: 64, rx: 27, fill: 'none', stroke: room.color, strokeWidth: 1.3, opacity: .52, strokeDasharray: '5 5' }),
+            [226, 330, 434].map(function (x, i) { return h('g', { key: 'light' + i, filter: 'url(#iss-light-glow)' }, h('rect', { x: x, y: 48, width: 64, height: 6, rx: 3, fill: '#e0f2fe', opacity: .88 })); }),
+            [154, 570].map(function (x, i) { return h('path', { key: 'rail' + i, d: 'M' + x + ' 72 L' + (i ? 625 : 99) + ' 195', fill: 'none', stroke: i ? '#fbbf24' : '#2563eb', strokeWidth: 5, strokeLinecap: 'round', opacity: .9 }); }),
             [42, 118, 194, 530, 606, 682].map(function (x, i) { return h('rect', { key: i, x: x, y: i < 3 ? 42 : 190, width: 48, height: 18, rx: 4, fill: '#172033', stroke: '#cbd5e1' }); }),
             h('rect', { x: 140, y: 34, width: 444, height: 10, rx: 5, fill: '#2563eb' }), h('rect', { x: 140, y: 216, width: 444, height: 10, rx: 5, fill: '#fbbf24' }),
             object,
@@ -1078,8 +1357,8 @@
             d.cupolaObservation ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 7, padding: 7, borderRadius: 7, background: target.color + '10', borderLeft: '3px solid ' + target.color, color: TEXT, fontSize: 10.5, lineHeight: 1.45 } }, h('strong', { style: { color: target.color } }, 'Observation: '), d.cupolaObservation) : null
           );
         }
-        return h('div', { 'data-iss-interior': room.id },
-          h('div', { style: { padding: 14, borderRadius: 14, marginBottom: 12, background: 'linear-gradient(135deg, rgba(14,165,233,0.16), rgba(99,102,241,0.12))', border: '1px solid #0ea5e9' } },
+        return h('div', { className: 'iss-interior', 'data-iss-interior': room.id },
+          h('div', { className: 'iss-interior-hero', style: { padding: 14, borderRadius: 14, marginBottom: 12, background: 'linear-gradient(135deg, rgba(14,165,233,0.16), rgba(99,102,241,0.12))', border: '1px solid #0ea5e9' } },
             h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 10, alignItems: 'center' } },
               h('div', null, h('div', { style: { color: '#7dd3fc', fontSize: 11, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase' } }, __alloT('stem.spacestation.interior_kicker', 'Your crew shift')), h('h3', { style: { margin: '3px 0 2px', color: TEXT, fontSize: 18 } }, __alloT('stem.spacestation.interior_title', 'Float inside. Work like an astronaut.')), h('p', { style: { margin: 0, color: SOFT, fontSize: 12.5 } }, __alloT('stem.spacestation.interior_intro', 'Move through five real station spaces. Inspect what is around you, make a crew decision, and learn the science from the result.'))),
               h('div', { style: { minWidth: 150, textAlign: 'right' } }, h('strong', { style: { color: completed === INTERIOR_ROOMS.length ? '#4ade80' : '#7dd3fc', fontSize: 15 } }, completed + ' / ' + INTERIOR_ROOMS.length + ' jobs'), h('div', { style: { height: 7, marginTop: 5, borderRadius: 9, overflow: 'hidden', background: '#0f172a', border: '1px solid #334155' } }, h('div', { style: { width: (completed / INTERIOR_ROOMS.length * 100) + '%', height: '100%', background: completed === INTERIOR_ROOMS.length ? '#22c55e' : '#0ea5e9', transition: 'width .25s ease' } }))))),
@@ -1088,11 +1367,16 @@
               [['🚪', visitedCount + '/5', 'rooms visited'], ['🔎', inspectedCount + '/10', 'details inspected'], ['✓', completed + '/5', 'jobs complete']].map(function (item, i) { return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 5, padding: '5px 8px', borderRadius: 20, background: 'rgba(2,6,23,.42)', border: '1px solid #334155', color: TEXT, fontSize: 10.5 } }, h('span', { 'aria-hidden': 'true' }, item[0]), h('strong', { style: { color: '#7dd3fc' } }, item[1]), h('span', { style: { color: SOFT } }, item[2])); })),
             h('div', { role: 'group', 'aria-label': 'Learning guidance level', style: { display: 'flex', gap: 4, padding: 3, borderRadius: 9, background: '#0f172a', border: '1px solid #334155' } },
               [['guided', '🧭 Guided'], ['independent', '🎯 Independent']].map(function (mode) { var active = guided ? mode[0] === 'guided' : mode[0] === 'independent'; return h('button', { key: mode[0], type: 'button', 'aria-pressed': active, onClick: function () { upd({ interiorGuided: mode[0] === 'guided' }); }, style: { padding: '5px 8px', borderRadius: 6, border: 'none', background: active ? '#0ea5e9' : 'transparent', color: active ? '#04121f' : SOFT, fontSize: 10.5, fontWeight: 800, cursor: 'pointer' } }, mode[1]); }))
-          ),          h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.interior_route', 'Interior station route'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(125px, 1fr))', gap: 7, marginBottom: 12 } },
-            INTERIOR_ROOMS.map(function (r, i) { var on = r.id === room.id; var finished = !!done[r.id]; var wasVisited = !!visited[r.id]; var roomInspected = [0, 1].filter(function (n) { return !!inspected[r.id + ':' + n]; }).length; return h('button', { key: r.id, type: 'button', 'aria-pressed': on, onClick: function () { visitRoom(i); }, style: { minHeight: 64, textAlign: 'left', padding: '8px 9px', borderRadius: 10, cursor: 'pointer', background: on ? r.color + '22' : PANEL, color: TEXT, border: '1px solid ' + (on ? r.color : finished ? '#22c55e' : '#334155') } }, h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, finished ? '✅' : r.icon), h('span', { style: { display: 'block', fontSize: 11.5, fontWeight: 800, marginTop: 3 } }, r.name), h('span', { style: { display: 'block', fontSize: 9.5, color: finished ? '#4ade80' : SOFT, marginTop: 2 } }, finished ? 'Job complete' : roomInspected ? roomInspected + '/2 details inspected' : wasVisited ? 'Visited • ' + r.zone : r.zone)); })),
+          ),
+          h('div', { className: 'iss-location-strip', role: 'status', 'aria-label': 'Current station location: ' + room.name + '. Aft to forward route.' },
+            h('span', { className: 'iss-orientation-cue', 'aria-hidden': 'true' }, 'AFT'),
+            INTERIOR_ROOMS.map(function (loc, i) { var current = loc.id === room.id; return h(React.Fragment, { key: loc.id }, i ? h('span', { className: 'iss-location-link', 'aria-hidden': 'true' }) : null, h('span', { className: 'iss-location-node' + (current ? ' is-current' : '') }, h('span', { className: 'iss-location-dot', 'aria-hidden': 'true' }), current ? 'YOU: ' + loc.module : loc.module)); }),
+            h('span', { className: 'iss-orientation-cue', 'aria-hidden': 'true' }, 'FORWARD')),
+          h('div', { className: 'iss-route', role: 'group', 'aria-label': __alloT('stem.spacestation.interior_route', 'Interior station route'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(125px, 1fr))', gap: 7, marginBottom: 12 } },
+            INTERIOR_ROOMS.map(function (r, i) { var on = r.id === room.id; var finished = !!done[r.id]; var wasVisited = !!visited[r.id]; var roomInspected = [0, 1].filter(function (n) { return !!inspected[r.id + ':' + n]; }).length; return h('button', { className: 'iss-route-button', key: r.id, type: 'button', 'aria-pressed': on, onClick: function () { visitRoom(i); }, style: { minHeight: 64, textAlign: 'left', padding: '8px 9px', borderRadius: 10, cursor: 'pointer', background: on ? r.color + '22' : PANEL, color: TEXT, border: '1px solid ' + (on ? r.color : finished ? '#22c55e' : '#334155') } }, h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, finished ? '✅' : r.icon), h('span', { style: { display: 'block', fontSize: 11.5, fontWeight: 800, marginTop: 3 } }, r.name), h('span', { style: { display: 'block', fontSize: 9.5, color: finished ? '#4ade80' : SOFT, marginTop: 2 } }, finished ? 'Job complete' : roomInspected ? roomInspected + '/2 details inspected' : wasVisited ? 'Visited • ' + r.zone : r.zone)); })),
           h('div', { className: 'iss-interior-layout' },
             h('div', null,
-              h('div', { style: { position: 'relative', overflow: 'hidden', borderRadius: 14, border: '1px solid ' + room.color, background: '#050a18' } }, sceneArt(),
+              h('div', { key: room.id, className: 'iss-scene-frame iss-hatch-enter', 'data-iss-room-transition': room.id, style: { position: 'relative', overflow: 'hidden', borderRadius: 14, border: '1px solid ' + room.color, background: 'radial-gradient(circle at 50% 12%,' + room.color + '20,#050a18 72%)' } }, sceneArt(),
                 room.discoveries.map(function (spot, i) { var on = selectedDiscovery === i; return h('button', { key: i, type: 'button', 'aria-pressed': on, onClick: function () { inspectInteriorSpot(i); }, style: { position: 'absolute', left: i ? '65%' : '6%', top: i ? '16%' : '57%', maxWidth: '29%', padding: '5px 8px', borderRadius: 8, fontSize: 10, fontWeight: 800, cursor: 'pointer', background: on ? room.color : 'rgba(2,6,23,0.88)', color: on ? '#04121f' : '#f8fafc', border: '1px solid ' + room.color } }, (inspected[room.id + ':' + i] ? '✓ ' : '') + spot[0]); })),
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 8 } }, h('button', { type: 'button', disabled: roomIdx === 0, onClick: function () { visitRoom(roomIdx - 1); }, style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #475569', background: PANEL, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: roomIdx ? 'pointer' : 'not-allowed', opacity: roomIdx ? 1 : 0.45 } }, '← Float aft'), h('button', { type: 'button', disabled: roomIdx === INTERIOR_ROOMS.length - 1, onClick: function () { visitRoom(roomIdx + 1); }, style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #475569', background: PANEL, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: roomIdx < INTERIOR_ROOMS.length - 1 ? 'pointer' : 'not-allowed', opacity: roomIdx < INTERIOR_ROOMS.length - 1 ? 1 : 0.45 } }, 'Float forward →')),
               h('p', { style: { color: TEXT, fontSize: 12.5, lineHeight: 1.6, margin: '10px 0 4px' } }, room.scene),
@@ -1118,9 +1402,279 @@
               completed === INTERIOR_ROOMS.length ? h('div', null, h('p', { style: { color: '#4ade80', fontSize: 12.5, lineHeight: 1.6, margin: '9px 0' } }, 'You completed a full slice of station life: personal routines, research, maintenance, low-g movement, and closeout. The station stays livable because science and careful habits happen all day.'), h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(82px,1fr))', gap: 6, margin: '8px 0 10px' } }, [['First try', firstTryCount + '/5'], ['Details', inspectedCount + '/10'], ['Notes', notesCount + '/5'], ['Attempts', totalAttempts + '']].map(function (metric, i) { return h('div', { key: i, style: { padding: 7, borderRadius: 8, textAlign: 'center', background: 'rgba(2,6,23,.42)', border: '1px solid #334155' } }, h('strong', { style: { display: 'block', color: '#4ade80', fontSize: 13 } }, metric[1]), h('span', { style: { color: SOFT, fontSize: 9 } }, metric[0])); })), h('button', { type: 'button', onClick: function () { upd({ interiorRoom: 'harmony', interiorDone: {}, interiorSeen: { harmony: true }, interiorChoices: {}, interiorInspected: {}, interiorAttempts: {}, interiorDiscovery: null, interiorLog: [], interiorShiftComplete: false, lowGImpulse: 10, lowGResult: null, researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {}, cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '' }); }, style: { padding: '7px 12px', borderRadius: 8, border: '1px solid #22c55e', background: 'rgba(34,197,94,0.12)', color: '#4ade80', fontWeight: 800, fontSize: 11.5, cursor: 'pointer' } }, '↻ Start another shift')) : null
             ), completed === INTERIOR_ROOMS.length ? '#22c55e' : '#38bdf8') : null);
       }
+      // ── Mission Operations: connected station-systems sandbox ──
+      function opsClamp(value, min, max) { return Math.max(min, Math.min(max, Number(value))); }
+      function opsControl(id, label, value, min, max, step, unit, color, field) {
+        return h('div', { className: 'iss-ops-control' },
+          h('label', { htmlFor: id }, h('span', null, label), h('strong', { style: { color: color } }, Number(value).toFixed(step < 1 ? 1 : 0) + unit)),
+          h('input', { id: id, type: 'range', min: min, max: max, step: step, value: value, onChange: function (e) { var patch = { opsScenario: 'custom' }; patch[field] = Number(e.target.value); upd(patch); }, style: { accentColor: color } }));
+      }
+      function opsMeter(label, value, color, note) {
+        var safe = opsClamp(value, 0, 100);
+        return h('div', { style: { marginTop: 8 } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: SOFT, fontSize: 9.5 } }, h('span', null, label), h('strong', { style: { color: color } }, safe.toFixed(0) + '%')),
+          h('div', { className: 'iss-meter', role: 'meter', 'aria-label': label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': safe }, h('span', { style: { width: safe + '%', background: color, boxShadow: '0 0 10px ' + color } })),
+          note ? h('div', { style: { marginTop: 4, color: '#64748b', fontSize: 8.5 } }, note) : null);
+      }
+      function opsSpark(label, value, color, variance) {
+        var pts = [];
+        for (var i = 0; i < 12; i++) { var v = opsClamp(value + Math.sin(i * 1.37) * variance + Math.cos(i * .63) * variance * .35, 0, 100); pts.push((i * 20) + ',' + (38 - v * .3)); }
+        return h('div', { className: 'iss-spark' }, h('svg', { viewBox: '0 0 220 42', role: 'img', 'aria-label': label + ' trend, current normalized value ' + value.toFixed(0) + ' percent' }, h('path', { d: 'M0 38H220', stroke: '#263449', strokeWidth: 1 }), h('polyline', { points: pts.join(' '), fill: 'none', stroke: color, strokeWidth: 2, vectorEffect: 'non-scaling-stroke' }), h('circle', { cx: 220, cy: 38 - opsClamp(value, 0, 100) * .3, r: 3, fill: color })), h('span', { className: 'iss-sr-only' }, label));
+      }
+      function renderOpsForecast(samples, eclipseStart, cursorMinute, cursorSample, referenceSamples) {
+        var left = 46, right = 618, top = 28, bottom = 158;
+        function x(minute) { return left + minute / 92 * (right - left); }
+        function y(value) { return bottom - opsClamp(value, 0, 100) / 100 * (bottom - top); }
+        function pathFor(field) { return samples.map(function (sample, i) { return (i ? 'L' : 'M') + x(sample.minute).toFixed(1) + ' ' + y(sample[field]).toFixed(1); }).join(' '); }
+        var last = samples[samples.length - 1];
+        var eclipseX = x(eclipseStart);
+        var cursorX = x(cursorMinute);
+        var phase = cursorMinute < eclipseStart ? 'SUNLIGHT' : 'ECLIPSE';
+        var phaseColor = phase === 'SUNLIGHT' ? '#fbbf24' : '#818cf8';
+        var summary = 'Predicted orbit margins. At T plus ' + cursorMinute.toFixed(0) + ' minutes in ' + phase.toLowerCase() + ', battery is ' + cursorSample.battery.toFixed(0) + ' percent, thermal margin ' + cursorSample.thermal.toFixed(0) + ' percent, attitude margin ' + cursorSample.attitude.toFixed(0) + ' percent.';
+        return h('div', { className: 'iss-learning-visual iss-orbit-forecast', 'data-iss-orbit-forecast': 'true' },
+          h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': summary },
+            h('defs', null,
+              h('linearGradient', { id: 'iss-forecast-day', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0%', stopColor: '#38240c' }), h('stop', { offset: '100%', stopColor: '#171b2a' })),
+              h('linearGradient', { id: 'iss-forecast-eclipse', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0%', stopColor: '#111936' }), h('stop', { offset: '100%', stopColor: '#040713' }))),
+            h('rect', { width: 640, height: 190, fill: '#050b18' }),
+            h('rect', { x: left, y: top, width: eclipseX - left, height: bottom - top, fill: 'url(#iss-forecast-day)', opacity: .78 }),
+            h('rect', { x: eclipseX, y: top, width: right - eclipseX, height: bottom - top, fill: 'url(#iss-forecast-eclipse)', opacity: .92 }),
+            [25, 50, 75].map(function (tick) { return h('g', { key: tick }, h('line', { x1: left, y1: y(tick), x2: right, y2: y(tick), stroke: '#334155', strokeWidth: 1 }), h('text', { x: left - 8, y: y(tick) + 3, textAnchor: 'end', fill: '#94a3b8', fontSize: 8 }, tick + '%')); }),
+            h('line', { x1: eclipseX, y1: top, x2: eclipseX, y2: bottom, stroke: '#818cf8', strokeWidth: 1.5, strokeDasharray: '4 4' }),
+            h('text', { x: left + 8, y: top + 13, fill: '#fde68a', fontSize: 8.5, fontWeight: 850 }, 'SUNLIGHT'),
+            h('text', { x: eclipseX + 8, y: top + 13, fill: '#c7d2fe', fontSize: 8.5, fontWeight: 850 }, 'ECLIPSE'),
+            referenceSamples ? [['battery','#4ade80'],['thermal','#fb923c'],['attitude','#a78bfa']].map(function (series) { return h('path', { key: 'reference-' + series[0], d: referenceSamples.map(function (sample, i) { return (i ? 'L' : 'M') + x(sample.minute).toFixed(1) + ' ' + y(sample[series[0]]).toFixed(1); }).join(' '), fill: 'none', stroke: series[1], strokeWidth: 1.5, strokeDasharray: '5 5', opacity: .38, vectorEffect: 'non-scaling-stroke' }); }) : null,
+            h('path', { d: pathFor('battery'), fill: 'none', stroke: '#4ade80', strokeWidth: 2.5, vectorEffect: 'non-scaling-stroke' }),
+            h('path', { d: pathFor('thermal'), fill: 'none', stroke: '#fb923c', strokeWidth: 2.2, vectorEffect: 'non-scaling-stroke' }),
+            h('path', { d: pathFor('attitude'), fill: 'none', stroke: '#a78bfa', strokeWidth: 2.2, vectorEffect: 'non-scaling-stroke' }),
+            h('line', { className: 'iss-forecast-cursor', x1: cursorX, y1: top, x2: cursorX, y2: bottom, stroke: phaseColor, strokeWidth: 1.5 }),
+            h('path', { d: 'M' + (cursorX - 5) + ' ' + top + 'L' + (cursorX + 5) + ' ' + top + 'L' + cursorX + ' ' + (top + 7) + 'Z', fill: phaseColor }),
+            [['battery','#4ade80'],['thermal','#fb923c'],['attitude','#a78bfa']].map(function (series) { return h('circle', { key: series[0], cx: cursorX, cy: y(cursorSample[series[0]]), r: 4, fill: series[1], stroke: '#050b18', strokeWidth: 2 }); }),
+            [0, 46, 92].map(function (minute) { return h('text', { key: minute, x: x(minute), y: 176, textAnchor: minute === 0 ? 'start' : minute === 92 ? 'end' : 'middle', fill: '#94a3b8', fontSize: 8.5 }, minute + ' min'); }),
+            h('text', { x: 20, y: 18, fill: '#7dd3fc', fontSize: 9.5, fontWeight: 850, letterSpacing: 1.2 }, 'NEXT-ORBIT MARGIN FORECAST')),
+          h('div', { className: 'iss-forecast-legend', 'aria-hidden': 'true' },
+            [['Battery reserve',cursorSample.battery,'#4ade80'],['Thermal margin',cursorSample.thermal,'#fb923c'],['Attitude margin',cursorSample.attitude,'#a78bfa']].map(function (item) { return h('span', { key: item[0] }, h('i', { style: { background: item[2] } }), item[0] + ' ' + item[1].toFixed(0) + '%'); }),
+            referenceSamples ? h('span', { className: 'iss-reference-key' }, h('i', null), 'Dashed = nominal orbit') : null),
+          h('div', { className: 'iss-orbit-scrubber' },
+            h('label', { htmlFor: 'iss-orbit-cursor' }, h('span', null, 'Scrub predicted orbit'), h('strong', null, 'T+' + cursorMinute.toFixed(0) + ' MIN')),
+            h('input', { id: 'iss-orbit-cursor', type: 'range', min: 0, max: 92, step: 1, value: cursorMinute, 'aria-valuetext': 'T plus ' + cursorMinute.toFixed(0) + ' minutes, ' + phase.toLowerCase(), onChange: function (event) { upd({ opsOrbitMinute: Number(event.target.value) }); }, style: { accentColor: phaseColor } }),
+            h('div', { className: 'iss-orbit-readout', role: 'status', 'aria-live': 'polite' }, h('strong', { style: { color: phaseColor } }, phase), h('span', null, 'Battery ' + cursorSample.battery.toFixed(0) + '%'), h('span', null, 'Thermal ' + cursorSample.thermal.toFixed(0) + '%'), h('span', null, 'Attitude ' + cursorSample.attitude.toFixed(0) + '%'))));
+      }
+      function opsLogEntry(message, patch) {
+        var nextLog = (d.opsLog || []).concat(['ORBIT ' + ((d.opsRuns || 0) + 1) + ' // ' + message]).slice(-5);
+        upd(Object.assign({ opsLog: nextLog, opsScenario: 'custom' }, patch || {}));
+      }
+      function renderOpsNetwork(metrics, focus) {
+        var nodes = [
+          { id: 'power', x: 92, y: 56, label: 'POWER', value: metrics.power.toFixed(0) + '%', color: metrics.power > 25 ? '#fbbf24' : '#f87171' },
+          { id: 'air', x: 548, y: 56, label: 'AIR', value: metrics.co2.toFixed(0) + ' ppm', color: metrics.co2 < 1000 ? '#34d399' : '#f87171' },
+          { id: 'water', x: 86, y: 154, label: 'WATER', value: metrics.recovery.toFixed(0) + '%', color: metrics.recovery > 90 ? '#38bdf8' : '#fbbf24' },
+          { id: 'thermal', x: 554, y: 154, label: 'THERMAL', value: metrics.temp.toFixed(1) + '°C', color: metrics.temp > 18 && metrics.temp < 27 ? '#fb923c' : '#f87171' },
+          { id: 'attitude', x: 320, y: 180, label: 'ATTITUDE', value: metrics.cmg.toFixed(0) + '%', color: metrics.cmg < 80 ? '#a78bfa' : '#f87171' }
+        ];
+        var selectedFocus = focus || 'all';
+        var details = { all: 'Crew safety is the combined result of power, air, water, heat rejection, and attitude control.', power: 'Power feeds every rack, pump, fan, heater, computer, and control actuator aboard.', air: 'Cabin airflow carries carbon dioxide and humidity to life-support equipment for removal.', water: 'Recovered humidity and wastewater reduce resupply mass while supporting oxygen generation.', thermal: 'Electrical work becomes heat, which coolant loops carry to radiators for rejection to space.', attitude: 'CMGs hold orientation without routine propellant, keeping arrays, radiators, and visiting vehicles aligned.' };
+        function active(node) { return selectedFocus === 'all' || selectedFocus === node.id; }
+        return h('div', { className: 'iss-learning-visual iss-ops-schematic', 'data-iss-network-focus': selectedFocus },
+          h('svg', { viewBox: '0 0 640 220', role: 'img', 'aria-label': 'Connected station systems overview focused on ' + selectedFocus + '. ' + nodes.map(function (n) { return n.label + ' ' + n.value; }).join(', ') },
+            h('defs', null, h('radialGradient', { id: 'iss-ops-earth', cx: '40%', cy: '30%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '100%', stopColor: '#0b3567' }))),
+            h('rect', { width: 640, height: 220, fill: '#040a16' }), h('circle', { cx: 320, cy: 310, r: 156, fill: 'url(#iss-ops-earth)', opacity: .72 }),
+            nodes.map(function (n, i) { var on = active(n); return h('path', { key: 'p' + i, className: on ? 'iss-flow-path' : '', d: 'M320 111 Q' + ((320 + n.x) / 2) + ' ' + ((100 + n.y) / 2 - 13) + ' ' + n.x + ' ' + n.y, fill: 'none', stroke: on ? n.color : '#334155', strokeWidth: on ? 2.2 : 1, opacity: on ? .76 : .3 }); }),
+            h('g', { transform: 'translate(320,108)' }, h('rect', { x: -98, y: -5, width: 196, height: 10, rx: 4, fill: '#94a3b8' }), h('rect', { x: -45, y: -22, width: 90, height: 44, rx: 18, fill: '#dbe3ec', stroke: '#f8fafc' }), h('rect', { x: -151, y: -21, width: 45, height: 42, fill: '#aa751a', stroke: '#fbbf24' }), h('rect', { x: 106, y: -21, width: 45, height: 42, fill: '#aa751a', stroke: '#fbbf24' }), h('circle', { r: 7, fill: '#38bdf8' })),
+            nodes.map(function (n) { var on = active(n); return h('g', { key: n.label, transform: 'translate(' + n.x + ',' + n.y + ')', opacity: on ? 1 : .36 }, h('circle', { r: 28, fill: '#111d30', stroke: on ? n.color : '#475569', strokeWidth: on ? 2.8 : 1.2 }), h('circle', { r: 22, fill: n.color, opacity: on ? .12 : .03 }), h('text', { y: -3, textAnchor: 'middle', fill: on ? n.color : '#64748b', fontSize: 8, fontWeight: 900, letterSpacing: .8 }, n.label), h('text', { y: 12, textAnchor: 'middle', fill: on ? '#f8fafc' : '#94a3b8', fontSize: 10, fontWeight: 850 }, n.value)); }),
+            h('text', { x: 20, y: 24, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'MISSION OPERATIONS // COUPLED SYSTEMS')),
+          h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': 'Highlight a station system flow' }, [{ id: 'all', label: 'All systems' }].concat(nodes.map(function (node) { return { id: node.id, label: node.label }; })).map(function (item) { var on = selectedFocus === item.id; return h('button', { key: item.id, type: 'button', 'data-iss-system-focus': item.id, 'aria-pressed': on, onClick: function () { upd({ opsFocus: item.id }); } }, item.label); })),
+          h('div', { className: 'iss-network-detail', role: 'status', 'aria-live': 'polite' }, details[selectedFocus] || details.all));
+      }      function renderOperations() {
+        var crew = opsClamp(d.opsCrew == null ? 7 : d.opsCrew, 3, 11);
+        var research = opsClamp(d.opsResearch == null ? 60 : d.opsResearch, 0, 100);
+        var arrayAngle = opsClamp(d.opsArrayAngle == null ? 86 : d.opsArrayAngle, 0, 90);
+        var eclipse = opsClamp(d.opsEclipse == null ? 35 : d.opsEclipse, 20, 45);
+        var battery = opsClamp(d.opsBattery == null ? 76 : d.opsBattery, 0, 100);
+        var recovery = opsClamp(d.opsRecovery == null ? 98 : d.opsRecovery, 70, 99);
+        var scrub = opsClamp(d.opsScrub == null ? 88 : d.opsScrub, 40, 100);
+        var radiator = opsClamp(d.opsRadiator == null ? 82 : d.opsRadiator, 30, 100);
+        var cooling = opsClamp(d.opsCooling == null ? 86 : d.opsCooling, 40, 100);
+        var cmg = opsClamp(d.opsCmg == null ? 28 : d.opsCmg, 0, 100);
+        var missionDays = opsClamp(d.opsMissionDays == null ? 180 : d.opsMissionDays, 30, 900);
+        var exercise = opsClamp(d.opsExercise == null ? 2.5 : d.opsExercise, 0, 3);
+        var debrisSize = opsClamp(d.opsDebrisSize == null ? 1 : d.opsDebrisSize, .2, 12);
+        var shieldGap = opsClamp(d.opsShieldGap == null ? 10 : d.opsShieldGap, 2, 20);
+        var debrisSpeed = opsClamp(d.opsDebrisSpeed == null ? 12 : d.opsDebrisSpeed, 7, 15);
+        var load = 68 + crew * 1.6 + research * .22;
+        var generation = 132 * Math.sin(arrayAngle * Math.PI / 180);
+        var energyIn = generation * (92 - eclipse) / 60;
+        var energyOut = load * 92 / 60;
+        var orbitDelta = (energyIn - energyOut) / 2.1;
+        var projectedBattery = opsClamp(battery + orbitDelta, 0, 100);
+        var waterNeed = crew * 3.8;
+        var waterReturn = waterNeed * recovery / 100;
+        var resupplyWater = waterNeed - waterReturn;
+        var oxygenNeed = crew * .84;
+        var co2 = opsClamp(350 + crew * 55 + (100 - scrub) * 18, 350, 2500);
+        var wasteHeat = load * .72;
+        var rejectedHeat = radiator * .75 * cooling / 100;
+        var cabinTemp = opsClamp(22 + (wasteHeat - rejectedHeat) / 12, 10, 40);
+        var attitudeDemand = 10 + (90 - arrayAngle) * .25 + research * .08;
+        var nextCmg = opsClamp(cmg + attitudeDemand * .55, 0, 100);
+        var boneLoss = 1.25 * (missionDays / 30) * (1 - Math.min(exercise, 2.5) / 2.5 * .68);
+        var debrisRadius = debrisSize / 2000;
+        var debrisMass = 2700 * (4 / 3) * Math.PI * Math.pow(debrisRadius, 3);
+        var impactKj = .5 * debrisMass * Math.pow(debrisSpeed * 1000, 2) / 1000;
+        var shieldCapacity = 5 * Math.pow(shieldGap / 10, 1.4);
+        var powerScore = projectedBattery;
+        var airScore = opsClamp(100 - Math.max(0, co2 - 650) / 12, 0, 100);
+        var thermalScore = opsClamp(100 - Math.abs(cabinTemp - 22) * 13, 0, 100);
+        var attitudeScore = opsClamp(100 - nextCmg * .65, 0, 100);
+        var health = Math.round((powerScore + airScore + recovery + thermalScore + attitudeScore) / 5);
+        var healthColor = health >= 75 ? '#4ade80' : health >= 50 ? '#fbbf24' : '#f87171';
+        var metrics = { power: projectedBattery, co2: co2, recovery: recovery, temp: cabinTemp, cmg: nextCmg };
+        var sunlightMinutes = 92 - eclipse;
+        var orbitForecast = [];
+        for (var forecastStep = 0; forecastStep <= 24; forecastStep++) {
+          var minute = forecastStep / 24 * 92;
+          var sunMinutes = Math.min(minute, sunlightMinutes);
+          var darkMinutes = Math.max(0, minute - sunlightMinutes);
+          var batteryAtMinute = opsClamp(battery + ((generation - load) * sunMinutes - load * darkMinutes) / 60 / 2.1, 0, 100);
+          var thermalAtMinute = opsClamp(thermalScore + Math.sin(minute / 92 * Math.PI * 2) * 2 - (minute > sunlightMinutes ? 2 : 0), 0, 100);
+          var cmgAtMinute = cmg + attitudeDemand * .55 * minute / 92;
+          orbitForecast.push({ minute: minute, battery: batteryAtMinute, thermal: thermalAtMinute, attitude: opsClamp(100 - cmgAtMinute * .65, 0, 100) });
+        }
+        var nominalForecast = [];
+        var nominalLoad = 68 + 7 * 1.6 + 60 * .22;
+        var nominalGeneration = 132 * Math.sin(86 * Math.PI / 180);
+        var nominalSunlight = 57;
+        var nominalWasteHeat = nominalLoad * .72;
+        var nominalRejectedHeat = 82 * .75 * 86 / 100;
+        var nominalCabinTemp = opsClamp(22 + (nominalWasteHeat - nominalRejectedHeat) / 12, 10, 40);
+        var nominalThermalScore = opsClamp(100 - Math.abs(nominalCabinTemp - 22) * 13, 0, 100);
+        var nominalAttitudeDemand = 10 + (90 - 86) * .25 + 60 * .08;
+        for (var nominalStep = 0; nominalStep <= 24; nominalStep++) {
+          var nominalMinute = nominalStep / 24 * 92;
+          var nominalSunMinutes = Math.min(nominalMinute, nominalSunlight);
+          var nominalDarkMinutes = Math.max(0, nominalMinute - nominalSunlight);
+          var nominalCmg = 28 + nominalAttitudeDemand * .55 * nominalMinute / 92;
+          nominalForecast.push({ minute: nominalMinute, battery: opsClamp(76 + ((nominalGeneration - nominalLoad) * nominalSunMinutes - nominalLoad * nominalDarkMinutes) / 60 / 2.1, 0, 100), thermal: opsClamp(nominalThermalScore + Math.sin(nominalMinute / 92 * Math.PI * 2) * 2 - (nominalMinute > nominalSunlight ? 2 : 0), 0, 100), attitude: opsClamp(100 - nominalCmg * .65, 0, 100) });
+        }        var orbitMinute = opsClamp(d.opsOrbitMinute == null ? 0 : d.opsOrbitMinute, 0, 92);
+        var cursorSunMinutes = Math.min(orbitMinute, sunlightMinutes);
+        var cursorDarkMinutes = Math.max(0, orbitMinute - sunlightMinutes);
+        var cursorCmg = cmg + attitudeDemand * .55 * orbitMinute / 92;
+        var orbitCursor = {
+          battery: opsClamp(battery + ((generation - load) * cursorSunMinutes - load * cursorDarkMinutes) / 60 / 2.1, 0, 100),
+          thermal: opsClamp(thermalScore + Math.sin(orbitMinute / 92 * Math.PI * 2) * 2 - (orbitMinute > sunlightMinutes ? 2 : 0), 0, 100),
+          attitude: opsClamp(100 - cursorCmg * .65, 0, 100)
+        };        var modes = [['integrated','🛰️','Integrated'],['power','☀️','Power'],['eclss','♻️','Air + water'],['thermal','🌡️','Thermal'],['attitude','🧭','Attitude'],['debris','🛡️','Debris'],['human','🦴','Human'],['emergency','🚨','Emergency'],['rendezvous','🚀','Rendezvous']];
+        var scenarioPresets = [
+          { id: 'nominal', icon: '✓', label: 'Nominal orbit', note: 'Balanced science day', patch: { opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 28 } },
+          { id: 'science', icon: '⚗', label: 'Science surge', note: 'Maximum lab demand', patch: { opsCrew: 7, opsResearch: 95, opsArrayAngle: 88, opsEclipse: 35, opsBattery: 78, opsRecovery: 98, opsScrub: 92, opsRadiator: 95, opsCooling: 94, opsCmg: 35 } },
+          { id: 'eclipse', icon: '◐', label: 'Long eclipse', note: 'Protect battery reserve', patch: { opsCrew: 7, opsResearch: 25, opsArrayAngle: 84, opsEclipse: 45, opsBattery: 55, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 45 } },
+          { id: 'crew', icon: '●●', label: 'Crew surge', note: 'Eleven people aboard', patch: { opsCrew: 11, opsResearch: 70, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 82, opsRecovery: 98.5, opsScrub: 98, opsRadiator: 94, opsCooling: 94, opsCmg: 35 } },
+          { id: 'fault', icon: '!', label: 'Cascading fault', note: 'Recover the station', patch: { opsCrew: 7, opsResearch: 90, opsArrayAngle: 55, opsEclipse: 42, opsBattery: 38, opsRecovery: 84, opsScrub: 55, opsRadiator: 42, opsCooling: 48, opsCmg: 78 } }
+        ];
+        var mode = d.opsMode || 'integrated';
+        var opsScenario = d.opsScenario || 'custom';
+        var flightRules = [
+          { mode: 'power', label: 'Battery reserve', value: projectedBattery.toFixed(0) + '%', rule: '≥ 25%', pass: projectedBattery >= 25, color: projectedBattery >= 25 ? '#4ade80' : '#f87171' },
+          { mode: 'eclss', label: 'Cabin CO₂', value: co2.toFixed(0) + ' ppm', rule: '< 1000 ppm', pass: co2 < 1000, color: co2 < 1000 ? '#34d399' : '#f87171' },
+          { mode: 'eclss', label: 'Water loop', value: recovery.toFixed(1) + '%', rule: '≥ 90%', pass: recovery >= 90, color: recovery >= 90 ? '#38bdf8' : '#fbbf24' },
+          { mode: 'thermal', label: 'Cabin temp', value: cabinTemp.toFixed(1) + ' °C', rule: '18–27 °C', pass: cabinTemp > 18 && cabinTemp < 27, color: cabinTemp > 18 && cabinTemp < 27 ? '#fb923c' : '#f87171' },
+          { mode: 'attitude', label: 'CMG load', value: nextCmg.toFixed(0) + '%', rule: '< 80%', pass: nextCmg < 80, color: nextCmg < 80 ? '#a78bfa' : '#f87171' }
+        ];
+        var violatedRules = flightRules.filter(function (rule) { return !rule.pass; });
+        var primaryRule = violatedRules.length ? violatedRules[0] : null;
+        var concernCopy = !primaryRule ? 'All five flight rules are green. Scrub the orbit or load a stress scenario to explore the operating boundary.' :
+          primaryRule.mode === 'power' ? 'Generation and load leave too little battery reserve after eclipse.' :
+          primaryRule.label === 'Cabin CO₂' ? 'Scrubber throughput cannot match the crew carbon-dioxide load.' :
+          primaryRule.label === 'Water loop' ? 'Open-loop water loss is compounding faster than the recovery system can replace it.' :
+          primaryRule.mode === 'thermal' ? 'Waste heat is outrunning radiator and cooling-loop rejection.' :
+          'Control-moment gyroscopes are approaching saturation under the current disturbance load.';
+        function setMode(id) { upd({ opsMode: id, opsEmergencyResult: '' }); }
+        function renderRuleStatus() {
+          return h('div', { className: 'iss-rule-status' + (primaryRule ? ' is-check' : ' is-go'), role: 'status', 'aria-live': 'polite' },
+            h('span', { className: 'iss-rule-status-icon', 'aria-hidden': 'true' }, primaryRule ? '!' : '✓'),
+            h('div', null, h('strong', null, primaryRule ? violatedRules.length + ' FLIGHT RULE' + (violatedRules.length === 1 ? '' : 'S') + ' TO CHECK' : '5 / 5 FLIGHT RULES GO'), h('p', null, concernCopy)),
+            primaryRule ? h('button', { type: 'button', onClick: function () { setMode(primaryRule.mode); } }, 'Inspect ' + primaryRule.label + ' →') : null);
+        }
+        function applyScenario(scenario) {
+          upd(Object.assign({ opsScenario: scenario.id, opsMode: 'integrated', opsOrbitMinute: 0, opsEmergencyResult: '' }, scenario.patch));
+          if (announceToSR) announceToSR(scenario.label + ' mission scenario loaded.');
+        }
+        function renderScenarioPresets() {
+          return h('div', { className: 'iss-ops-presets', role: 'group', 'aria-label': 'Mission scenario presets' },
+            scenarioPresets.map(function (scenario) { var on = opsScenario === scenario.id; return h('button', { key: scenario.id, type: 'button', 'data-iss-scenario': scenario.id, 'aria-pressed': on, onClick: function () { applyScenario(scenario); } }, h('span', { className: 'iss-preset-icon', 'aria-hidden': 'true' }, scenario.icon), h('span', null, h('strong', null, scenario.label), h('small', null, scenario.note))); }),
+            opsScenario === 'custom' ? h('span', { className: 'iss-custom-badge', role: 'status' }, 'CUSTOM CONFIGURATION') : null);
+        }
+        function renderMissionReplay() {
+          if (!(d.opsRuns || 0)) return null;
+          var replayEvents = [
+            { minute: 0, label: 'Orbit start', note: 'Sunlit power-up' },
+            { minute: Math.round(sunlightMinutes / 2), label: 'Peak daylight', note: 'Maximum collection' },
+            { minute: sunlightMinutes, label: 'Eclipse entry', note: 'Battery takes load' },
+            { minute: 92, label: 'Orbit complete', note: 'Review margins' }
+          ];
+          return h('div', { className: 'iss-mission-replay', 'data-iss-mission-replay': 'true' },
+            h('div', { className: 'iss-replay-heading' }, h('strong', null, 'MISSION REPLAY // ORBIT ' + (d.opsRuns || 0)), h('span', null, 'Select an event to inspect synchronized telemetry.')),
+            h('div', { className: 'iss-replay-lane', role: 'group', 'aria-label': 'Mission replay events' }, replayEvents.map(function (event) { var on = Math.round(orbitMinute) === Math.round(event.minute); return h('button', { key: event.label, type: 'button', 'data-iss-replay-event': event.minute, 'aria-pressed': on, onClick: function () { upd({ opsOrbitMinute: event.minute }); } }, h('i', { 'aria-hidden': 'true' }), h('strong', null, 'T+' + event.minute), h('span', null, event.label), h('small', null, event.note)); })));
+        }        function statusBox(title, value, note, color) { return h('div', { className: 'iss-ops-control' }, h('div', { style: { color: SOFT, fontSize: 8.5, fontWeight: 850, letterSpacing: .8, textTransform: 'uppercase' } }, title), h('strong', { style: { display: 'block', marginTop: 4, color: color, fontSize: 18 } }, value), h('div', { style: { marginTop: 4, color: SOFT, fontSize: 9.5, lineHeight: 1.45 } }, note)); }
+        function renderIntegrated() {
+          return h('div', null, renderOpsNetwork(metrics, d.opsFocus || 'all'), renderOpsForecast(orbitForecast, sunlightMinutes, orbitMinute, orbitCursor, opsScenario === 'nominal' ? null : nominalForecast), h('div', { className: 'iss-ops-grid' },
+            opsControl('iss-ops-crew','Crew aboard',crew,3,11,1,'','#7dd3fc','opsCrew'), opsControl('iss-ops-research','Research load',research,0,100,5,'%','#a78bfa','opsResearch'),
+            opsControl('iss-ops-angle','Solar-array alignment',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'), opsControl('iss-ops-battery','Battery state',battery,0,100,1,'%','#4ade80','opsBattery')),
+            h('button', { type: 'button', onClick: function () { var run = (d.opsRuns || 0) + 1; var log = (d.opsLog || []).concat(['ORBIT ' + run + ' // battery ' + projectedBattery.toFixed(0) + '%, cabin ' + cabinTemp.toFixed(1) + '°C, CMG ' + nextCmg.toFixed(0) + '%']).slice(-5); upd({ opsBattery: projectedBattery, opsCmg: nextCmg, opsRuns: run, opsLog: log, opsLastDebrief: health, opsScenario: 'custom', opsOrbitMinute: 92 }); if (announceToSR) announceToSR('Orbit simulation complete. Station health ' + health + ' percent.'); }, style: { width: '100%', marginTop: 10, padding: '10px 14px', border: '1px solid #4ade80', borderRadius: 10, background: 'rgba(34,197,94,.14)', color: '#86efac', fontWeight: 900, cursor: 'pointer' } }, '▶ Simulate the next 92-minute orbit'), renderMissionReplay());
+        }
+        function renderPower() {
+          return h('div', null,
+            h('div', { className: 'iss-learning-visual', style: { padding: 12 } }, h('div', { style: { display: 'grid', gridTemplateColumns: (92 - eclipse) + 'fr ' + eclipse + 'fr', height: 44, overflow: 'hidden', borderRadius: 10 } }, h('div', { style: { display: 'grid', placeItems: 'center', background: 'linear-gradient(90deg,#78350f,#92400e)', color: '#fff7ed', fontSize: 10, fontWeight: 900 } }, 'SUNLIGHT ' + (92 - eclipse).toFixed(0) + ' MIN'), h('div', { style: { display: 'grid', placeItems: 'center', background: 'linear-gradient(90deg,#172554,#020617)', color: '#bfdbfe', fontSize: 10, fontWeight: 900 } }, 'ECLIPSE ' + eclipse.toFixed(0) + ' MIN'))),
+            h('div', { className: 'iss-ops-grid' }, opsControl('iss-power-angle','Array face-on angle',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'), opsControl('iss-power-eclipse','Eclipse duration',eclipse,20,45,1,' min','#818cf8','opsEclipse'), opsControl('iss-power-load','Research utilization',research,0,100,5,'%','#a78bfa','opsResearch'), opsControl('iss-power-battery','Starting battery',battery,0,100,1,'%','#4ade80','opsBattery'), statusBox('Solar generation',generation.toFixed(1) + ' kW','Face-on arrays maximize incident sunlight.','#fbbf24'), statusBox('Station demand',load.toFixed(1) + ' kW','Life support is the non-negotiable base load.','#7dd3fc')),
+            opsMeter('Battery after one orbit',projectedBattery,projectedBattery > 25 ? '#4ade80' : '#f87171',orbitDelta >= 0 ? 'Net charge +' + orbitDelta.toFixed(1) + '%' : 'Net discharge ' + orbitDelta.toFixed(1) + '%'), opsSpark('Battery state',projectedBattery,projectedBattery > 25 ? '#4ade80' : '#f87171',Math.abs(orbitDelta) + 3));
+        }
+        function renderEclss() {
+          return h('div', null, renderSystemSchematic(SYSTEMS[0]), h('div', { className: 'iss-ops-grid' }, opsControl('iss-eclss-crew','Crew demand',crew,3,11,1,' people','#7dd3fc','opsCrew'), opsControl('iss-eclss-recovery','Water recovery',recovery,70,99,.5,'%','#38bdf8','opsRecovery'), opsControl('iss-eclss-scrub','CO₂ scrubber output',scrub,40,100,1,'%','#34d399','opsScrub'), statusBox('Water recovered',waterReturn.toFixed(1) + ' L/day','Daily potable-water model for the selected crew.','#38bdf8'), statusBox('Water resupply gap',resupplyWater.toFixed(2) + ' L/day','Even a small open-loop loss compounds on Mars.','#fbbf24'), statusBox('Oxygen demand',oxygenNeed.toFixed(2) + ' kg/day','Electrolysis must replace crew consumption.','#34d399')),
+            opsMeter('Loop closure',recovery,'#38bdf8','Target ≥ 98% for exploration-class missions'), opsMeter('Cabin-air quality',airScore,co2 < 1000 ? '#34d399' : '#f87171','Modeled CO₂ ' + co2.toFixed(0) + ' ppm'), opsSpark('CO2 trend',airScore,co2 < 1000 ? '#34d399' : '#f87171',8));
+        }
+        function renderThermal() {
+          return h('div', null, renderSystemSchematic(SYSTEMS[3]), h('div', { className: 'iss-ops-grid' }, opsControl('iss-thermal-rad','Radiator deployment',radiator,30,100,1,'%','#fb923c','opsRadiator'), opsControl('iss-thermal-flow','Cooling-loop flow',cooling,40,100,1,'%','#38bdf8','opsCooling'), opsControl('iss-thermal-research','Heat-producing research',research,0,100,5,'%','#a78bfa','opsResearch'), statusBox('Waste heat',wasteHeat.toFixed(1) + ' kW','Electronics and crew work become heat.','#f97316'), statusBox('Rejected heat',rejectedHeat.toFixed(1) + ' kW','Radiators emit infrared energy to space.','#38bdf8'), statusBox('Modeled cabin',cabinTemp.toFixed(1) + ' °C','Comfort band: 18–27 °C. ',cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171')), opsMeter('Thermal margin',thermalScore,cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171','Balance heat collected with heat rejected'), opsSpark('Cabin temperature stability',thermalScore,'#fb923c',6));
+        }
+        function renderAttitude() {
+          var wheelColor = nextCmg < 80 ? '#a78bfa' : '#f87171';
+          return h('div', null,
+            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Control Moment Gyroscope cluster, projected saturation ' + nextCmg.toFixed(0) + ' percent.' }, h('rect', { width: 640, height: 190, fill: '#050b18' }), [220,290,360,430].map(function (x,i) { return h('g', { key:i, transform:'translate('+x+',96) rotate('+(i%2?18:-18)+')' }, h('circle',{r:42,fill:'#111827',stroke:wheelColor,strokeWidth:3}),h('circle',{r:26,fill:'none',stroke:'#64748b',strokeWidth:8}),h('path',{d:'M-18 0A18 18 0 0 1 18 0',fill:'none',stroke:wheelColor,strokeWidth:4}),h('text',{y:4,textAnchor:'middle',fill:'#e9d5ff',fontSize:10,fontWeight:900},'CMG '+(i+1))); }), h('text',{x:20,y:24,fill:'#c4b5fd',fontSize:10,fontWeight:850,letterSpacing:1.4},'ATTITUDE CONTROL // MOMENTUM STORAGE'))),
+            h('div', { className: 'iss-ops-grid' }, opsControl('iss-cmg-load','Current CMG saturation',cmg,0,100,1,'%','#a78bfa','opsCmg'), opsControl('iss-cmg-research','Disturbance / operations load',research,0,100,5,'%','#38bdf8','opsResearch'), opsControl('iss-cmg-angle','Array tracking demand',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'), statusBox('Next-orbit saturation',nextCmg.toFixed(0) + '%','Above 80%: plan a propulsive desaturation.',wheelColor)),
+            opsMeter('Momentum storage',nextCmg,wheelColor,'CMGs save fuel until their stored momentum must be dumped'),
+            h('button',{type:'button',onClick:function(){opsLogEntry('CMG desaturation burn completed; momentum reset to 8%.',{opsCmg:8,opsRuns:(d.opsRuns||0)+1});},style:{marginTop:9,padding:'8px 12px',borderRadius:9,border:'1px solid #a78bfa',background:'rgba(167,139,250,.14)',color:'#ddd6fe',fontWeight:850,cursor:'pointer'}},'🔥 Perform thruster desaturation'));
+        }
+        function renderDebris() {
+          var survives = impactKj <= shieldCapacity;
+          return h('div', null,
+            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Debris impact test. Particle ' + debrisSize.toFixed(1) + ' millimeters at ' + debrisSpeed.toFixed(1) + ' kilometers per second. ' + (survives ? 'Shield disperses impact.' : 'Pressure wall at risk.') }, h('rect',{width:640,height:190,fill:'#050b18'}),h('line',{x1:110,y1:95,x2:268,y2:95,stroke:'#f87171',strokeWidth:3,strokeDasharray:'8 6'}),h('circle',{cx:96,cy:95,r:Math.max(3,debrisSize),fill:'#f87171'}),h('rect',{x:286,y:34,width:8,height:122,fill:'#cbd5e1'}),h('text',{x:290,y:172,textAnchor:'middle',fill:'#94a3b8',fontSize:8},'BUMPER'),h('path',{d:'M294 95 L390 50 M294 95 L390 72 M294 95 L390 95 M294 95 L390 118 M294 95 L390 140',stroke:survives?'#fbbf24':'#f87171',strokeWidth:2,opacity:.7}),h('rect',{x:410,y:26,width:20,height:138,rx:5,fill:survives?'#475569':'#7f1d1d',stroke:survives?'#94a3b8':'#f87171',strokeWidth:3}),h('line',{x1:294,y1:25,x2:410,y2:25,stroke:'#38bdf8',strokeWidth:1.5}),h('text',{x:352,y:18,textAnchor:'middle',fill:'#7dd3fc',fontSize:9,fontWeight:850},shieldGap.toFixed(0)+' cm STANDOFF'),h('text',{x:20,y:24,fill:'#fca5a5',fontSize:10,fontWeight:850,letterSpacing:1.4},'HYPERVELOCITY TEST // WHIPPLE SHIELD'),h('text',{x:520,y:95,textAnchor:'middle',fill:survives?'#4ade80':'#f87171',fontSize:13,fontWeight:900},survives?'DISPERSED':'WALL AT RISK'))),
+            h('div', { className: 'iss-ops-grid' }, opsControl('iss-debris-size','Particle diameter',debrisSize,.2,12,.2,' mm','#f87171','opsDebrisSize'), opsControl('iss-debris-speed','Relative speed',debrisSpeed,7,15,.5,' km/s','#fbbf24','opsDebrisSpeed'), opsControl('iss-shield-gap','Shield standoff',shieldGap,2,20,1,' cm','#38bdf8','opsShieldGap'), statusBox('Impact energy',impactKj < 1 ? impactKj.toFixed(3)+' kJ' : impactKj.toFixed(1)+' kJ','Energy rises with the square of velocity.','#f87171'), statusBox('Shield capacity model',shieldCapacity.toFixed(1)+' kJ','Spacing lets the debris cloud spread.','#38bdf8'), statusBox('Engineering decision',survives?'BUMPER WORKS':debrisSize>=10?'TRACK + MANEUVER':'REDESIGN SHIELD','Large objects are avoided; small ones are armored against.',survives?'#4ade80':'#fbbf24')));
+        }
+        function renderHuman() {
+          var exerciseProtection = opsClamp(exercise / 2.5 * 100,0,100);
+          return h('div', null, renderSystemSchematic(SYSTEMS[6]), h('div',{className:'iss-ops-grid'},opsControl('iss-human-days','Mission duration',missionDays,30,900,30,' days','#e879f9','opsMissionDays'),opsControl('iss-human-exercise','Daily exercise',exercise,0,3,.25,' h','#4ade80','opsExercise'),statusBox('Modeled bone loss',boneLoss.toFixed(1)+'%','Simplified from ~1–1.5% per month without countermeasures.',boneLoss<5?'#4ade80':'#fbbf24'),statusBox('Radiation exposure',(missionDays*.7).toFixed(0)+' mSv','Uses a midrange 0.7 mSv/day estimate.','#f97316')),opsMeter('Exercise protection',exerciseProtection,'#4ade80','ARED, treadmill, and cycle loading'),opsSpark('Musculoskeletal resilience',opsClamp(100-boneLoss*5,0,100),'#e879f9',7));
+        }
+        function renderEmergency() {
+          var scenarios={leak:{name:'Cabin pressure leak',telemetry:'Pressure falling 0.7 kPa/min · acoustic sensor bearing 064°',choices:[['Add oxygen','Oxygen masks the symptom and wastes supply.'],['Close the suspected module hatch','Correct: isolate volume, count crew, then locate the leak.'],['Open a window shutter','Shutters do not seal cabin leaks.']],correct:1},fire:{name:'Rack smoke alarm',telemetry:'Particulate alarm · rack current spike · cabin fan running',choices:[['Cut rack power and use the port fire extinguisher','Correct: remove ignition energy, suppress, then sample air.'],['Increase ventilation','That can spread smoke through the station.'],['Move into the rack','Electrical fire risk makes this unsafe.']],correct:0},cooling:{name:'Ammonia cooling fault',telemetry:'Loop pressure low · radiator outlet warming · lab loads high',choices:[['Raise all experiment power','That adds heat when rejection is failing.'],['Isolate the loop and shed noncritical loads','Correct: reduce heat while controllers isolate the leak.'],['Turn off cabin fans','Internal airflow is still required.']],correct:1},co2:{name:'CO₂ pocket warning',telemetry:'Crew headache · local airflow low · scrubber current normal',choices:[['Add oxygen','Oxygen does not remove CO₂.'],['Restore airflow and clear the inlet','Correct: the scrubber works only if cabin air reaches it.'],['Reduce water recovery','The water loop is not the cause.']],correct:1}};
+          var sid=d.opsEmergency||'leak',scenario=scenarios[sid]||scenarios.leak;
+          return h('div',null,h('div',{className:'iss-emergency-grid',role:'group','aria-label':'Emergency scenario'},Object.keys(scenarios).map(function(id){var on=id===sid;return h('button',{key:id,type:'button','aria-pressed':on,onClick:function(){upd({opsEmergency:id,opsEmergencyResult:''});},style:{padding:9,borderRadius:9,border:'1px solid '+(on?'#f87171':'#475569'),background:on?'rgba(239,68,68,.14)':'rgba(2,6,23,.35)',color:on?'#fecaca':TEXT,fontWeight:800,cursor:'pointer'}},scenarios[id].name);})),card('🚨 '+scenario.name,h('div',null,h('div',{style:{padding:9,marginBottom:9,borderRadius:9,background:'rgba(239,68,68,.08)',borderLeft:'3px solid #ef4444',color:'#fecaca',font:'750 11px ui-monospace,monospace'}},scenario.telemetry),h('div',{role:'group','aria-label':'Emergency actions',style:{display:'grid',gap:6}},scenario.choices.map(function(choice,i){return h('button',{className:'iss-emergency-choice',key:i,type:'button',onClick:function(){var correct=i===scenario.correct;upd({opsEmergencyResult:(correct?'PROCEDURE CORRECT // ':'PROCEDURE HOLD // ')+choice[1],opsEmergencyCorrect:correct});announceToSR(choice[1]);},style:{borderRadius:9,border:'1px solid #475569',background:'rgba(2,6,23,.38)',color:TEXT,fontWeight:750,cursor:'pointer'}},choice[0]);})),d.opsEmergencyResult?h('div',{role:'status','aria-live':'polite',style:{marginTop:8,padding:8,borderRadius:8,borderLeft:'3px solid '+(d.opsEmergencyCorrect?'#22c55e':'#fbbf24'),background:d.opsEmergencyCorrect?'rgba(34,197,94,.1)':'rgba(251,191,36,.1)',color:TEXT,fontSize:11.5}},d.opsEmergencyResult):null),'#ef4444'));
+        }
+        function renderRendezvous() {
+          return h('div',null,h('div',{className:'iss-learning-visual'},h('svg',{viewBox:'0 0 640 180',role:'img','aria-label':'Rendezvous approach profile with hold points at 250, 100, 30, and 10 meters.'},h('rect',{width:640,height:180,fill:'#050b18'}),h('path',{d:'M40 122 C180 122 230 78 340 88 S500 92 586 90',fill:'none',stroke:'#38bdf8',strokeWidth:2.5,strokeDasharray:'7 6'}),[[100,'250 m'],[245,'100 m'],[410,'30 m'],[520,'10 m']].map(function(p,i){return h('g',{key:i},h('circle',{cx:p[0],cy:i===0?119:i===1?91:90,r:8,fill:'#111d30',stroke:i<2?'#fbbf24':'#4ade80',strokeWidth:2}),h('text',{x:p[0],y:148,textAnchor:'middle',fill:'#cbd5e1',fontSize:9,fontWeight:800},p[1]+' HOLD'));}),h('g',{transform:'translate(592,90)'},h('rect',{x:-16,y:-10,width:32,height:20,rx:8,fill:'#e2e8f0'}),h('rect',{x:-3,y:-52,width:6,height:104,fill:'#94a3b8'})),h('text',{x:20,y:25,fill:'#7dd3fc',fontSize:10,fontWeight:850,letterSpacing:1.4},'RENDEZVOUS PROFILE // GO / NO-GO HOLDS'))),card('Approach discipline',h('div',null,h('p',{style:{color:TEXT,fontSize:12.5,lineHeight:1.6}},'Real vehicles pause at planned hold points so controllers can verify navigation, alignment, closing rate, and vehicle health before proceeding.'),h('div',{className:'iss-ops-grid'},statusBox('Soft-capture limit','≤ 0.60 m/s','Arrive centered and slow.','#4ade80'),statusBox('Abort corridor','Always open','A safe retreat path is part of every approach.','#fbbf24')),h('button',{type:'button',onClick:function(){upd({tab:'missions'});},style:{marginTop:9,padding:'8px 13px',borderRadius:9,border:'1px solid #38bdf8',background:'rgba(56,189,248,.14)',color:'#bae6fd',fontWeight:900,cursor:'pointer'}},'🚀 Open the docking simulator')),'#38bdf8'));
+        }
+        var content=mode==='power'?renderPower():mode==='eclss'?renderEclss():mode==='thermal'?renderThermal():mode==='attitude'?renderAttitude():mode==='debris'?renderDebris():mode==='human'?renderHuman():mode==='emergency'?renderEmergency():mode==='rendezvous'?renderRendezvous():renderIntegrated();
+        return h('div',{'data-iss-operations':mode},
+          h('div',{className:'iss-ops-hero'},h('div',null,h('div',{className:'iss-eyebrow'},h('span',{className:'iss-live-dot','aria-hidden':'true'}),'Mission operations sandbox'),h('h3',{style:{margin:'0 0 5px',color:TEXT,fontSize:20}},'Keep a city-sized spacecraft alive.'),h('p',{style:{margin:0,maxWidth:690,color:SOFT,fontSize:12,lineHeight:1.55}},'Change crew demand, orbital lighting, recovery efficiency, cooling, and risk controls. Every subsystem shares power, heat, mass, and operating margin.')),h('div',{className:'iss-ops-health',style:{color:healthColor},'aria-label':'Station health '+health+' percent'},health+'%')),
+          renderScenarioPresets(),
+          h('div',{className:'iss-ops-metrics',role:'list','aria-label':'Station flight rules'},flightRules.map(function(rule){return h('div',{key:rule.label,className:'iss-ops-metric',role:'listitem'},h('button',{type:'button','data-flight-rule':rule.mode,onClick:function(){setMode(rule.mode);},'aria-label':rule.label+' '+rule.value+'. Flight rule '+rule.rule+'. '+(rule.pass?'Go':'Attention')},h('span',{className:'iss-rule-heading'},h('span',{className:'iss-ops-metric-label'},rule.label),h('i',{className:'iss-rule-light'+(rule.pass?' is-go':' is-hold'),'aria-hidden':'true'})),h('strong',{className:'iss-ops-metric-value',style:{color:rule.color}},rule.value),h('small',null,'RULE '+rule.rule+' · '+(rule.pass?'GO':'CHECK'))));})),
+          renderRuleStatus(),
+          h('div',{className:'iss-ops-modes',role:'group','aria-label':'Operations simulation'},modes.map(function(m){var on=mode===m[0];return h('button',{className:'iss-ops-mode',key:m[0],type:'button','aria-pressed':on,onClick:function(){setMode(m[0]);},style:{borderRadius:9,border:'1px solid '+(on?'#38bdf8':'#334155'),background:on?'rgba(14,165,233,.18)':PANEL,color:on?'#bae6fd':TEXT,fontSize:10.5,fontWeight:850,cursor:'pointer'}},m[1]+' '+m[2]);})),content,
+          h('div',{className:'iss-ops-debrief'},h('strong',{style:{color:'#7dd3fc',fontSize:11}},'FLIGHT DIRECTOR DEBRIEF'),h('p',{style:{margin:'5px 0 0',color:TEXT,fontSize:11.5,lineHeight:1.55}},health>=75?'All modeled systems retain useful margin. Now increase research load or crew size and find the boundary.':health>=50?'The station is operating with thin margin. Inspect the red or amber subsystem before the next orbit.':'Mission rule violation: one or more life-critical systems require immediate correction.'),(d.opsLog||[]).length?h('div',{className:'iss-ops-log',role:'log'},(d.opsLog||[]).map(function(entry,i){return h('div',{key:i},entry);})):null));
+      }
       // ── Tabs ──
       var TABS = [
         { id: 'interior', icon: '🧑‍🚀', label: __alloT('stem.spacestation.tab_interior', 'Inside: Crew Shift') },
+        { id: 'operations', icon: '📡', label: __alloT('stem.spacestation.tab_operations', 'Mission Operations') },
         { id: 'map', icon: '🛰️', label: __alloT('stem.spacestation.tab_map', '3-D Station') },
         { id: 'day', icon: '👩‍🚀', label: __alloT('stem.spacestation.tab_day', 'A Day Aboard') },
         { id: 'systems', icon: '⚙️', label: __alloT('stem.spacestation.tab_systems', 'Systems & Challenges') },
@@ -1131,20 +1685,54 @@
       ];
       var tab = d.tab || 'interior';
 
+      function renderModuleBlueprint(module) {
+        var moduleColor = '#' + Number(module.color || 0x38bdf8).toString(16).padStart(6, '0');
+        var isTruss = module.id === 'truss';
+        var isCupola = module.id === 'cupola';
+        return h('div', { className: 'iss-learning-visual iss-blueprint' },
+          h('svg', { viewBox: '0 0 640 164', role: 'img', 'aria-label': 'Engineering silhouette of ' + module.name + '. Scene axis ' + module.axis + '. Relative envelope ' + module.size[1] + ' by ' + module.size[0] + ' scene units. Not to scale.' },
+            h('defs', null, h('pattern', { id: 'iss-blueprint-grid', width: 20, height: 20, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M20 0H0V20', fill: 'none', stroke: '#38bdf8', strokeWidth: .5, opacity: .22 })), h('linearGradient', { id: 'iss-module-metal', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#f8fafc' }), h('stop', { offset: '52%', stopColor: moduleColor }), h('stop', { offset: '100%', stopColor: '#475569' }))),
+            h('rect', { width: 640, height: 164, fill: '#06101e' }), h('rect', { width: 640, height: 164, fill: 'url(#iss-blueprint-grid)' }),
+            h('text', { x: 20, y: 23, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.5 }, 'MODULE BLUEPRINT // ' + module.id.toUpperCase()),
+            isTruss ? h('g', null,
+              h('rect', { x: 105, y: 72, width: 430, height: 9, rx: 4, fill: '#94a3b8' }),
+              [135,205,275,345,415,485].map(function (x, i) { return h('g', { key: i }, h('line', { x1: x, y1: 55, x2: x + 40, y2: 98, stroke: '#cbd5e1', strokeWidth: 2 }), h('line', { x1: x + 40, y1: 55, x2: x, y2: 98, stroke: '#64748b', strokeWidth: 2 })); }),
+              [135,225,415,505].map(function (x, i) { return h('rect', { key: 'a' + i, x: x - 24, y: i % 2 ? 103 : 35, width: 48, height: 22, rx: 2, fill: '#a86e16', stroke: '#fbbf24' }); })) :
+            isCupola ? h('g', null,
+              h('path', { d: 'M255 106 Q265 42 320 38 Q375 42 385 106 Z', fill: 'url(#iss-module-metal)', stroke: '#bae6fd', strokeWidth: 2 }),
+              [-42,-21,0,21,42].map(function (dx, i) { return h('circle', { key: i, cx: 320 + dx, cy: 78 - Math.abs(dx) * .25, r: i === 2 ? 11 : 7, fill: '#12324c', stroke: '#7dd3fc' }); }),
+              h('rect', { x: 252, y: 106, width: 136, height: 13, rx: 5, fill: '#94a3b8' })) :
+            h('g', null,
+              h('rect', { x: 176, y: 57, width: 288, height: 58, rx: 28, fill: 'url(#iss-module-metal)', stroke: '#e2e8f0', strokeWidth: 2 }),
+              h('line', { x1: 205, y1: 58, x2: 205, y2: 114, stroke: '#64748b', strokeWidth: 5 }), h('line', { x1: 435, y1: 58, x2: 435, y2: 114, stroke: '#64748b', strokeWidth: 5 }),
+              [250,285,320,355,390].map(function (x, i) { return h('circle', { key: i, cx: x, cy: 78, r: 4, fill: '#7dd3fc', stroke: '#e0f2fe', strokeWidth: 1 }); }),
+              h('circle', { cx: 176, cy: 86, r: 16, fill: '#263449', stroke: '#cbd5e1', strokeWidth: 3 }), h('circle', { cx: 464, cy: 86, r: 16, fill: '#263449', stroke: '#cbd5e1', strokeWidth: 3 })),
+            h('line', { x1: 100, y1: 132, x2: 540, y2: 132, stroke: moduleColor, strokeWidth: 1.3 }), h('line', { x1: 100, y1: 127, x2: 100, y2: 137, stroke: moduleColor }), h('line', { x1: 540, y1: 127, x2: 540, y2: 137, stroke: moduleColor }),
+            h('text', { x: 320, y: 148, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8.5, fontWeight: 750, letterSpacing: .8 }, 'RELATIVE ENVELOPE ' + module.size[1] + ' × ' + module.size[0] + '  /  AXIS ' + module.axis.toUpperCase()),
+            h('text', { x: 620, y: 23, textAnchor: 'end', fill: '#94a3b8', fontSize: 8.5 }, 'SCHEMATIC · NOT TO SCALE')),
+          h('div', { className: 'iss-visual-caption' }, h('span', null, module.agency), h('span', null, module.launched)));
+      }
       function renderMap() {
         return h('div', null,
           h('p', { style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '0 0 10px' } },
             __alloT('stem.spacestation.map_intro', 'A schematic (not to scale) 3-D map of the real station. Drag to spin it, click any module to inspect it. The lighting sweeps through a full orbit: the station crosses from daylight into Earth’s shadow 16 times a day.')),
           h('button', { type: 'button', onClick: function () { upd({ tab: 'interior', interiorRoom: d.interiorRoom || 'harmony' }); }, style: { margin: '0 0 10px', padding: '7px 12px', borderRadius: 9, border: '1px solid #38bdf8', background: 'rgba(56,189,248,0.12)', color: '#7dd3fc', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, '🚪 Open the hatch — explore inside'),
-          h('div', { style: { position: 'relative', borderRadius: 12, overflow: 'hidden', border: '1px solid #334155', background: '#050a18' } },
+          h('div', { className: 'iss-station-stage', style: { position: 'relative', borderRadius: 12, overflow: 'hidden', border: '1px solid #334155', background: '#050a18' } },
             h('canvas', {
-              ref: function (cv) { if (cv) { cv._issWantSel = d.selModule; stationCanvasRef(cv); } },
+              ref: function (cv) { if (cv) { cv._issWantSel = d.selModule; cv._issCutaway = !!d.mapCutaway; stationCanvasRef(cv); } },
               role: 'application', tabIndex: 0,
-              'aria-label': __alloT('stem.spacestation.canvas_aria', 'Interactive 3-D model of the International Space Station. Drag to rotate. Use the module buttons below the canvas to inspect each module.'),
-              style: { width: '100%', height: '420px', display: 'block' }
-            })
+              'aria-label': __alloT('stem.spacestation.canvas_aria', 'Interactive 3-D model of the International Space Station. Drag or use arrow keys to rotate. Use plus and minus to zoom, Home for overview, and the module buttons below to inspect each module.'),
+              style: { width: '100%', height: 'clamp(320px, 52vw, 500px)', display: 'block' }
+            }),
+            h('div', { className: 'iss-stage-hud', 'aria-hidden': 'true' }, h('span', { className: 'iss-hud-chip' }, 'ISS // ORBITAL VIEW'), h('span', { className: 'iss-hud-chip iss-hud-selection' }, 'SELECTED // ' + selModule.name.split(' (')[0].toUpperCase()), h('span', { className: 'iss-hud-chip', 'data-iss-light-phase': 'true', 'data-phase': 'sunlight' }, '☀ SUNLIGHT'), h('span', { className: 'iss-hud-chip' }, 'ALT ' + orbitAlt + ' KM  /  V ' + orbitV.toFixed(2) + ' KM/S')),
+            h('div', { className: 'iss-module-marker', 'data-iss-module-marker': 'true', 'aria-hidden': 'true' }, h('i', null), h('span', null, selModule.name.split(' (')[0].toUpperCase())),
+            h('div', { className: 'iss-stage-help', 'aria-hidden': 'true' }, 'Drag or arrow keys to orbit  /  + − to zoom')
           ),
-          h('div', { role: 'group', 'aria-label': 'Station modules', style: { display: 'flex', flexWrap: 'wrap', gap: 6, margin: '10px 0' } },
+          h('div', { className: 'iss-map-controls', role: 'group', 'aria-label': '3D station view controls' },
+            [['overview','◉ Overview'],['truss','↔ Truss'],['labs','⚗ Labs'],['russian','★ Russian segment'],['nadir','🌍 Earth-facing']].map(function (view) { var on = (d.mapView || 'overview') === view[0]; return h('button', { key: view[0], type: 'button', 'data-iss-camera-view': view[0], 'aria-pressed': on, onClick: function () { upd({ mapView: view[0] }); var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSetView) cv._issSetView(view[0]); } }, view[1]); }),
+            h('button', { type: 'button', 'data-iss-focus-module': d.selModule, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issFocusModule) cv._issFocusModule(d.selModule); } }, '◎ Center ' + selModule.name.split(' (')[0]),
+            h('button', { type: 'button', 'data-iss-cutaway': 'true', 'aria-pressed': !!d.mapCutaway, onClick: function () { upd({ mapCutaway: !d.mapCutaway }); } }, d.mapCutaway ? '◫ Cutaway ON' : '▣ Isolate selected module')),
+          h('div', { className: 'iss-module-picker', role: 'group', 'aria-label': 'Station modules', style: { display: 'flex', flexWrap: 'wrap', gap: 6, margin: '10px 0' } },
             MODULES.map(function (m) {
               var on = m.id === d.selModule;
               return h('button', {
@@ -1157,6 +1745,7 @@
             h('div', null,
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, fontSize: 11, color: SOFT, marginBottom: 8 } },
                 h('span', null, selModule.agency), h('span', null, '🚀 ' + selModule.launched)),
+              renderModuleBlueprint(selModule),
               h('p', { style: { fontSize: 13, color: TEXT, lineHeight: 1.65, margin: '0 0 8px' } }, selModule.role),
               h('div', { style: { padding: 8, borderRadius: 8, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', fontSize: 12, color: TEXT, lineHeight: 1.55, marginBottom: 6 } },
                 h('strong', { style: { color: '#7dd3fc' } }, __alloT('stem.spacestation.fact', 'Worth knowing: ')), selModule.fact),
@@ -1166,26 +1755,66 @@
           selModule.id === 'cupola' ? renderCupolaInterior() : null,
           selModule.id === 'harmony' ? renderSleepInterior() : null,
           card(__alloT('stem.spacestation.fast_facts', '📊 Fast facts'),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
+            h('div', { className: 'iss-fact-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 6 } },
               FAST_FACTS.map(function (f, i) {
-                return h('div', { key: i, style: { padding: 8, borderRadius: 8, background: 'rgba(2,6,23,0.4)', border: '1px solid #334155' } },
+                return h('div', { className: 'iss-fact-item', key: i, style: { padding: 8, borderRadius: 8, background: 'rgba(2,6,23,0.4)', border: '1px solid #334155' } },
                   h('div', { style: { fontSize: 10, color: SOFT, textTransform: 'uppercase', letterSpacing: 0.4 } }, f[0]),
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: TEXT, marginTop: 2 } }, f[1]));
               })), '#818cf8')
         );
       }
 
+      function renderCrewDayTimeline(slot, index) {
+        function minuteOf(time) { var parts = String(time).split(':'); return Number(parts[0]) * 60 + Number(parts[1] || 0); }
+        var selectedMinute = minuteOf(slot.h);
+        var selectedX = 40 + selectedMinute / 1440 * 560;
+        var labelX = Math.max(112, Math.min(528, selectedX));
+        var phases = [
+          { start: 0, end: 360, label: 'SLEEP', color: '#4338ca' },
+          { start: 360, end: 450, label: 'PREP', color: '#0ea5e9' },
+          { start: 450, end: 1080, label: 'WORK + EXERCISE', color: '#059669' },
+          { start: 1080, end: 1290, label: 'MEALS + CREW TIME', color: '#c026d3' },
+          { start: 1290, end: 1440, label: 'SLEEP', color: '#4338ca' }
+        ];
+        return h('div', { className: 'iss-crew-day-timeline', 'data-iss-crew-day-timeline': slot.h },
+          h('svg', { viewBox: '0 0 640 108', role: 'img', 'aria-label': 'Twenty-four hour GMT crew timeline. Selected event ' + slot.label + ' at ' + slot.h + '. Work, exercise, meals, personal time, and scheduled sleep are shown on one time axis.' },
+            h('text', { x: 20, y: 16, fill: '#94a3b8', fontSize: 8.5, fontWeight: 850, letterSpacing: 1.2 }, '24-HOUR CREW TIMELINE // GMT'),
+            phases.map(function (phase, phaseIndex) { var x = 40 + phase.start / 1440 * 560, width = (phase.end - phase.start) / 1440 * 560; return h('g', { key: phaseIndex }, h('rect', { x: x, y: 31, width: width, height: 24, fill: phase.color, opacity: .64 }), width > 58 ? h('text', { x: x + width / 2, y: 46, textAnchor: 'middle', fill: '#f8fafc', fontSize: 7.5, fontWeight: 850 }, phase.label) : null); }),
+            DAY_SCHEDULE.map(function (event, eventIndex) { var eventX = 40 + minuteOf(event.h) / 1440 * 560; var selected = eventIndex === index; return h('g', { key: eventIndex, opacity: selected ? 1 : .68 }, h('line', { x1: eventX, y1: 55, x2: eventX, y2: selected ? 72 : 64, stroke: selected ? '#fbbf24' : '#cbd5e1', strokeWidth: selected ? 2 : 1 }), h('circle', { cx: eventX, cy: 55, r: selected ? 4.5 : 2.5, fill: selected ? '#fbbf24' : '#e2e8f0', stroke: '#07101d', strokeWidth: 1 })); }),
+            [0,360,720,1080,1440].map(function (minute, tickIndex) { var x = 40 + minute / 1440 * 560; return h('g', { key: tickIndex }, h('line', { x1: x, y1: 73, x2: x, y2: 78, stroke: '#64748b' }), h('text', { x: x, y: 91, textAnchor: tickIndex === 0 ? 'start' : tickIndex === 4 ? 'end' : 'middle', fill: '#94a3b8', fontSize: 8 }, tickIndex === 4 ? '24:00' : String(Math.floor(minute / 60)).padStart(2, '0') + ':00')); }),
+            h('g', { className: 'iss-day-timeline-marker' }, h('line', { x1: selectedX, y1: 21, x2: selectedX, y2: 73, stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '3 3' }), h('rect', { x: labelX - 72, y: 2, width: 144, height: 18, rx: 8, fill: '#2b1d0d', stroke: '#fbbf24' }), h('text', { x: labelX, y: 14, textAnchor: 'middle', fill: '#fef3c7', fontSize: 8.5, fontWeight: 850 }, slot.h + '  ' + slot.label.toUpperCase()))));
+      }
+      function renderDayOrbitVisual(slot, index) {
+        var phase = -Math.PI * 0.78 + (index / Math.max(1, DAY_SCHEDULE.length - 1)) * Math.PI * 1.56;
+        var sx = 320 + Math.cos(phase) * 226, sy = 94 + Math.sin(phase) * 56;
+        return h('div', { className: 'iss-learning-visual iss-day-orbit' },
+          h('svg', { viewBox: '0 0 640 150', role: 'img', 'aria-label': 'Orbital day-cycle display for ' + slot.h + ', ' + slot.label + '. The station experiences about sixteen sunrises each Earth day.' },
+            h('defs', null, h('linearGradient', { id: 'iss-day-bg', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0%', stopColor: '#030712' }), h('stop', { offset: '49%', stopColor: '#091a31' }), h('stop', { offset: '100%', stopColor: '#2b1d0d' })), h('radialGradient', { id: 'iss-day-earth', cx: '38%', cy: '28%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '100%', stopColor: '#0b3567' }))),
+            h('rect', { width: 640, height: 150, fill: 'url(#iss-day-bg)' }),
+            h('circle', { cx: 602, cy: 34, r: 18, fill: '#fbbf24', opacity: .95 }), h('circle', { cx: 602, cy: 34, r: 28, fill: '#fbbf24', opacity: .1 }),
+            h('ellipse', { cx: 320, cy: 94, rx: 226, ry: 56, fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.7, strokeDasharray: '6 6', opacity: .65 }),
+            h('circle', { cx: 320, cy: 131, r: 63, fill: 'url(#iss-day-earth)', stroke: '#7dd3fc', strokeWidth: 1.4 }),
+            h('path', { d: 'M320 68 A63 63 0 0 0 320 194 Z', fill: '#020617', opacity: .66 }),
+            Array.from({ length: 16 }).map(function (_, i) { var x = 32 + i * 37; return h('line', { key: i, x1: x, y1: 18, x2: x, y2: i === Math.round(index / Math.max(1, DAY_SCHEDULE.length - 1) * 15) ? 32 : 25, stroke: i === Math.round(index / Math.max(1, DAY_SCHEDULE.length - 1) * 15) ? '#fbbf24' : '#334155', strokeWidth: i === Math.round(index / Math.max(1, DAY_SCHEDULE.length - 1) * 15) ? 2 : 1 }); }),
+            h('g', { className: 'iss-day-marker', transform: 'translate(' + sx.toFixed(1) + ',' + sy.toFixed(1) + ')' }, h('rect', { x: -18, y: -4, width: 36, height: 8, rx: 4, fill: '#e2e8f0' }), h('rect', { x: -31, y: -7, width: 11, height: 14, fill: '#c58a20', stroke: '#fbbf24' }), h('rect', { x: 20, y: -7, width: 11, height: 14, fill: '#c58a20', stroke: '#fbbf24' }), h('circle', { r: 3, fill: '#38bdf8' })),
+            h('text', { x: 20, y: 47, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'CREW DAY // GMT ' + slot.h),
+            h('text', { x: 20, y: 64, fill: '#f8fafc', fontSize: 12, fontWeight: 900 }, slot.label.toUpperCase()),
+            h('text', { x: 620, y: 137, textAnchor: 'end', fill: '#94a3b8', fontSize: 8.5 }, '16 LIGHT / SHADOW CYCLES PER DAY')),
+          renderCrewDayTimeline(slot, index),
+          h('div', { className: 'iss-visual-caption' }, h('span', null, 'The clock, not sunlight, organizes crew life.'), h('span', null, slot.h + ' GMT')));
+      }
       function renderDay() {
         var idx = Math.max(0, Math.min(DAY_SCHEDULE.length - 1, d.dayIdx || 0));
         var slot = DAY_SCHEDULE[idx];
         return h('div', null,
           h('p', { style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '0 0 10px' } },
             __alloT('stem.spacestation.day_intro', 'The station runs on GMT — a compromise between Houston and Moscow. Step through a typical workday. Every line has a WHY: nothing aboard is done a certain way by accident.')),
-          h('div', { role: 'group', 'aria-label': 'Daily schedule', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+          renderDayOrbitVisual(slot, idx),
+          h('div', { className: 'iss-day-strip', role: 'group', 'aria-label': 'Daily schedule', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
             DAY_SCHEDULE.map(function (s2, i) {
               var on = i === idx;
               return h('button', {
-                key: i, type: 'button', 'aria-pressed': on,
+                className: 'iss-day-chip', key: i, type: 'button', 'aria-pressed': on,
                 onClick: function () { upd({ dayIdx: i }); markSeen('seenHours', String(i)); },
                 style: { padding: '6px 9px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', background: on ? 'rgba(232,121,249,0.18)' : PANEL, color: on ? '#f0abfc' : TEXT, border: '1px solid ' + (on ? '#e879f9' : '#334155') }
               }, s2.icon + ' ' + s2.h);
@@ -1209,21 +1838,118 @@
         );
       }
 
+      function renderSystemSchematic(sys) {
+        var flows = {
+          water: { nodes: [['CREW', 'humidity + waste'], ['COLLECT', 'condense + distill'], ['PROCESS', 'filter + test'], ['RETURN', 'clean water']], loop: true, caption: 'Mass circles back through the cabin instead of launching again.' },
+          air: { nodes: [['WATER', 'recycled supply'], ['SPLIT', 'electrolysis'], ['CREW', 'O₂ in / CO₂ out'], ['RECOVER', 'scrub + Sabatier']], loop: true, caption: 'Electricity closes part of the oxygen-water loop.' },
+          power: { nodes: [['SUN', 'radiant energy'], ['ARRAYS', 'direct current'], ['BATTERIES', 'store for eclipse'], ['LOADS', 'labs + life support']], loop: false, caption: 'Generation and storage must survive sixteen daily eclipses.' },
+          thermal: { nodes: [['CABIN', 'collect heat'], ['WATER', 'internal loop'], ['AMMONIA', 'external loop'], ['RADIATORS', 'infrared to space']], loop: false, caption: 'In vacuum, the final heat-transfer step must be radiation.' },
+          attitude: { nodes: [['SENSORS', 'measure pose'], ['COMPUTER', 'calculate torque'], ['CMGs', 'exchange momentum'], ['STATION', 'hold orientation']], loop: true, caption: 'A feedback loop continually senses, corrects, and verifies.' },
+          debris: { nodes: [['TRACK', 'ground radar'], ['ASSESS', 'predict miss distance'], ['MANEUVER', 'burn if needed'], ['SHIELD', 'stop small debris']], loop: false, caption: 'Risk is managed differently depending on particle size.' },
+          body: { nodes: [['MICRO-G', 'remove loading'], ['CHANGE', 'bone + muscle loss'], ['COUNTER', 'exercise + diet'], ['MEASURE', 'adapt the plan']], loop: true, caption: 'Each astronaut is both crew member and longitudinal study.' }
+        };
+        var flow = flows[sys.id] || flows.water;
+        var markerId = 'iss-flow-arrow-' + sys.id;
+        var glowId = 'iss-flow-glow-' + sys.id;
+        return h('div', { className: 'iss-learning-visual iss-system-visual' },
+          h('svg', { viewBox: '0 0 640 178', role: 'img', 'aria-label': sys.name + ' process diagram. ' + flow.nodes.map(function (node) { return node[0] + ': ' + node[1]; }).join('. ') },
+            h('defs', null,
+              h('marker', { id: markerId, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: sys.color })),
+              h('filter', { id: glowId, x: '-30%', y: '-30%', width: '160%', height: '160%' }, h('feGaussianBlur', { stdDeviation: 3, result: 'blur' }), h('feMerge', null, h('feMergeNode', { in: 'blur' }), h('feMergeNode', { in: 'SourceGraphic' })))),
+            h('rect', { width: 640, height: 178, fill: '#050b18' }),
+            [44, 118, 201, 292, 387, 492, 573].map(function (x, i) { return h('circle', { key: 'star' + i, cx: x, cy: 22 + (i % 3) * 9, r: i % 2 ? 1 : 1.4, fill: i % 3 ? '#64748b' : '#bae6fd', opacity: .7 }); }),
+            h('text', { x: 24, y: 25, fill: sys.color, fontSize: 10, fontWeight: 800, letterSpacing: 1.4 }, 'SYSTEM FLOW // ' + sys.id.toUpperCase()),
+            h('path', { className: 'iss-flow-path', d: 'M 88 84 H 552', fill: 'none', stroke: sys.color, strokeWidth: 2.5, opacity: .8, markerEnd: 'url(#' + markerId + ')' }),
+            flow.loop ? h('path', { className: 'iss-flow-path', d: 'M 552 111 C 552 156, 88 156, 88 111', fill: 'none', stroke: sys.color, strokeWidth: 1.5, opacity: .42, markerEnd: 'url(#' + markerId + ')' }) : null,
+            flow.nodes.map(function (node, i) {
+              var x = 28 + i * 155;
+              return h('g', { key: node[0], transform: 'translate(' + x + ',52)' },
+                h('rect', { x: 0, y: 0, width: 118, height: 63, rx: 11, fill: '#111d30', stroke: sys.color, strokeWidth: i === 0 || i === 3 ? 1.8 : 1, opacity: .98 }),
+                h('circle', { cx: 14, cy: 14, r: 7, fill: sys.color, filter: 'url(#' + glowId + ')' }),
+                h('text', { x: 14, y: 17, textAnchor: 'middle', fill: '#04121f', fontSize: 8, fontWeight: 900 }, String(i + 1)),
+                h('text', { x: 12, y: 38, fill: '#f8fafc', fontSize: 10.5, fontWeight: 850, letterSpacing: .5 }, node[0]),
+                h('text', { x: 12, y: 53, fill: '#94a3b8', fontSize: 8.5 }, node[1]));
+            }),
+            flow.loop ? h('text', { x: 320, y: 166, textAnchor: 'middle', fill: sys.color, fontSize: 8.5, fontWeight: 800, letterSpacing: 1.2 }, 'FEEDBACK / RECOVERY LOOP') : h('text', { x: 320, y: 154, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8.5, fontWeight: 700, letterSpacing: 1.1 }, 'ENERGY AND MASS MOVE ONE WAY THROUGH THIS VIEW')),
+          h('div', { className: 'iss-visual-caption' }, h('span', null, flow.caption), h('span', null, 'SELECTED: ' + sys.name.toUpperCase())));
+      }
+
+      function renderOrbitVisual() {
+        var altitudeScale = (orbitAlt - 200) / 1800;
+        var orbitRx = 194 + altitudeScale * 46;
+        var orbitRy = 73 + altitudeScale * 24;
+        var theta = -0.58;
+        var stationX = 320 + Math.cos(theta) * orbitRx;
+        var stationY = 140 + Math.sin(theta) * orbitRy;
+        return h('div', { className: 'iss-learning-visual iss-orbit-visual' },
+          h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': 'Orbit diagram at ' + orbitAlt + ' kilometers altitude, moving ' + orbitV.toFixed(2) + ' kilometers per second with a period of ' + orbitT.toFixed(1) + ' minutes.' },
+            h('defs', null,
+              h('radialGradient', { id: 'iss-orbit-earth', cx: '35%', cy: '28%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '52%', stopColor: '#1863a0' }), h('stop', { offset: '100%', stopColor: '#071c3b' })),
+              h('linearGradient', { id: 'iss-orbit-bg', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#050914' }), h('stop', { offset: '100%', stopColor: '#08182c' })),
+              h('marker', { id: 'iss-velocity-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: '#4ade80' }))),
+            h('rect', { width: 640, height: 245, fill: 'url(#iss-orbit-bg)' }),
+            [[42,33,1],[113,61,1.4],[184,26,.8],[264,48,1.2],[381,28,1],[463,57,.7],[544,25,1.4],[601,71,.9]].map(function (s, i) { return h('circle', { key: i, cx: s[0], cy: s[1], r: s[2], fill: i % 3 ? '#94a3b8' : '#e0f2fe' }); }),
+            h('ellipse', { cx: 320, cy: 140, rx: orbitRx, ry: orbitRy, fill: 'none', stroke: '#38bdf8', strokeWidth: 2.2, opacity: .78, strokeDasharray: '7 6' }),
+            h('ellipse', { cx: 320, cy: 140, rx: orbitRx + 7, ry: orbitRy + 3, fill: 'none', stroke: '#38bdf8', strokeWidth: .7, opacity: .2 }),
+            h('circle', { cx: 320, cy: 158, r: 74, fill: '#38bdf8', opacity: .13 }),
+            h('circle', { cx: 320, cy: 158, r: 68, fill: 'url(#iss-orbit-earth)', stroke: '#7dd3fc', strokeWidth: 1.4 }),
+            h('path', { d: 'M279 138 Q296 113 322 123 T365 130 Q351 145 332 143 T294 161 Z', fill: '#56a071', opacity: .74 }),
+            h('path', { d: 'M342 170 Q365 154 382 169 Q369 191 346 198 Q336 185 342 170 Z', fill: '#4d8f68', opacity: .65 }),
+            h('path', { d: 'M274 168 Q303 183 330 179', fill: 'none', stroke: '#dff6ff', strokeWidth: 6, opacity: .34 }),
+            h('g', { className: 'iss-orbit-station', transform: 'translate(' + stationX.toFixed(1) + ',' + stationY.toFixed(1) + ') rotate(-18)' },
+              h('rect', { x: -29, y: -2, width: 58, height: 4, rx: 2, fill: '#cbd5e1' }),
+              h('rect', { x: -18, y: -8, width: 36, height: 16, rx: 7, fill: '#e2e8f0', stroke: '#fff' }),
+              h('rect', { x: -45, y: -10, width: 14, height: 20, rx: 2, fill: '#c58a20', stroke: '#fbbf24' }),
+              h('rect', { x: 31, y: -10, width: 14, height: 20, rx: 2, fill: '#c58a20', stroke: '#fbbf24' }),
+              h('circle', { cx: 0, cy: 0, r: 3, fill: '#38bdf8' })),
+            h('line', { x1: stationX + 6, y1: stationY - 10, x2: stationX + 77, y2: stationY - 29, stroke: '#4ade80', strokeWidth: 2.5, markerEnd: 'url(#iss-velocity-arrow)' }),
+            h('text', { x: stationX + 44, y: stationY - 35, textAnchor: 'middle', fill: '#86efac', fontSize: 9, fontWeight: 850 }, orbitV.toFixed(2) + ' km/s'),
+            h('line', { x1: 320, y1: 84, x2: 320, y2: 37, stroke: '#fbbf24', strokeWidth: 1.4, strokeDasharray: '3 3' }),
+            h('text', { x: 330, y: 48, fill: '#fde68a', fontSize: 10, fontWeight: 800 }, orbitAlt + ' km'),
+            h('text', { x: 22, y: 28, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.5 }, 'ORBITAL PROFILE // LIVE MODEL'),
+            h('text', { x: 618, y: 224, textAnchor: 'end', fill: '#94a3b8', fontSize: 8.5 }, 'Diagram exaggerates altitude for learning')),
+          h('div', { className: 'iss-visual-caption' }, h('span', null, 'Continuous freefall: Earth curves away as the station falls.'), h('span', null, orbitT.toFixed(1) + ' MIN / ORBIT')));
+      }
+      function renderOrbitEnvironmentBand() {
+        var markerX = 44 + ((orbitAlt - 200) / 1800) * 552;
+        var regime = orbitAlt < 300 ? 'SEVERE DRAG'
+          : orbitAlt <= 500 ? 'CREWED LEO / ISS BAND'
+          : orbitAlt <= 1000 ? 'LOWER DRAG'
+          : 'RADIATION EXPOSURE RISES';
+        return h('div', { className: 'iss-orbit-environment', 'data-iss-orbit-environment': regime },
+          h('svg', { viewBox: '0 0 640 142', role: 'img', 'aria-label': 'Altitude environment scale from 200 to 2000 kilometers. Current altitude ' + orbitAlt + ' kilometers is in the ' + regime.toLowerCase() + ' region.' },
+            h('defs', null,
+              h('linearGradient', { id: 'iss-altitude-band', x1: '0', y1: '0', x2: '1', y2: '0' },
+                h('stop', { offset: '0%', stopColor: '#ef4444' }), h('stop', { offset: '7%', stopColor: '#f59e0b' }), h('stop', { offset: '18%', stopColor: '#22c55e' }), h('stop', { offset: '48%', stopColor: '#38bdf8' }), h('stop', { offset: '100%', stopColor: '#818cf8' })),
+              h('filter', { id: 'iss-altitude-glow', x: '-40%', y: '-40%', width: '180%', height: '180%' }, h('feGaussianBlur', { stdDeviation: 4, result: 'b' }), h('feMerge', null, h('feMergeNode', { in: 'b' }), h('feMergeNode', { in: 'SourceGraphic' })))),
+            h('text', { x: 44, y: 20, fill: '#7dd3fc', fontSize: 9.5, fontWeight: 850, letterSpacing: 1.3 }, 'ALTITUDE ENVIRONMENT // ENGINEERING TRADE SPACE'),
+            h('rect', { x: 44, y: 55, width: 552, height: 24, rx: 12, fill: 'url(#iss-altitude-band)', opacity: .72 }),
+            [[44,'200'],[75,'300'],[136,'500'],[289,'1000'],[596,'2000 km']].map(function (tickInfo, i) { return h('g', { key: i }, h('line', { x1: tickInfo[0], y1: 80, x2: tickInfo[0], y2: 89, stroke: '#cbd5e1', strokeWidth: 1 }), h('text', { x: tickInfo[0], y: 102, textAnchor: i === 0 ? 'start' : i === 4 ? 'end' : 'middle', fill: '#94a3b8', fontSize: 8.5 }, tickInfo[1])); }),
+            h('text', { x: 58, y: 49, fill: '#fecaca', fontSize: 8, fontWeight: 850 }, 'DRAG'),
+            h('text', { x: 105, y: 49, textAnchor: 'middle', fill: '#fde68a', fontSize: 8, fontWeight: 850 }, 'ISS'),
+            h('text', { x: 211, y: 49, textAnchor: 'middle', fill: '#bae6fd', fontSize: 8, fontWeight: 850 }, 'LOW DRAG'),
+            h('text', { x: 444, y: 49, textAnchor: 'middle', fill: '#ddd6fe', fontSize: 8, fontWeight: 850 }, 'RADIATION RISES'),
+            h('line', { x1: markerX, y1: 34, x2: markerX, y2: 83, stroke: '#f8fafc', strokeWidth: 2.2, filter: 'url(#iss-altitude-glow)' }),
+            h('path', { d: 'M ' + (markerX - 6).toFixed(1) + ' 34 L ' + (markerX + 6).toFixed(1) + ' 34 L ' + markerX.toFixed(1) + ' 44 Z', fill: '#f8fafc' }),
+            h('text', { x: markerX, y: 121, textAnchor: markerX > 525 ? 'end' : markerX < 115 ? 'start' : 'middle', fill: '#e0f2fe', fontSize: 10, fontWeight: 900 }, orbitAlt + ' KM // ' + regime)),
+          h('div', { className: 'iss-visual-caption' }, h('span', null, 'Altitude trades launch capacity and drag against radiation exposure.'), h('span', null, 'CURRENT BAND: ' + regime)));
+      }
       function renderSystems() {
         var idx = Math.max(0, Math.min(SYSTEMS.length - 1, d.sysIdx || 0));
         var sys = SYSTEMS[idx];
         return h('div', null,
           h('p', { style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '0 0 10px' } },
             __alloT('stem.spacestation.sys_intro', 'The station is a closed-loop machine that must make its own air, recycle its own water, shed its own heat, and hold its own orientation — forever, with no hardware store. Each system below is an engineering-design case study (NGSS MS-ETS1).')),
-          h('div', { role: 'group', 'aria-label': 'Station systems', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+          h('div', { className: 'iss-system-tabs', role: 'group', 'aria-label': 'Station systems', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
             SYSTEMS.map(function (s2, i) {
               var on = i === idx;
               return h('button', {
-                key: s2.id, type: 'button', 'aria-pressed': on,
+                className: 'iss-system-tab', key: s2.id, type: 'button', 'aria-pressed': on,
                 onClick: function () { upd({ sysIdx: i }); },
                 style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', background: on ? s2.color + '22' : PANEL, color: on ? s2.color : TEXT, border: '1px solid ' + (on ? s2.color : '#334155') }
               }, s2.icon + ' ' + s2.name);
             })),
+          renderSystemSchematic(sys),
           card(sys.icon + ' ' + sys.name,
             h('div', null,
               h('p', { style: { fontSize: 13, color: TEXT, lineHeight: 1.65, margin: '0 0 8px' } }, sys.how),
@@ -1257,6 +1983,8 @@
             __alloT('stem.spacestation.orbit_intro', 'Being in orbit is not about being high — it is about being FAST. The station falls around Earth continuously; the crew floats because station and astronaut fall together. Slide the altitude and watch real physics (v = √(GM/r)) respond.')),
           card(__alloT('stem.spacestation.orbit_lab', '🧮 Orbit designer'),
             h('div', null,
+              renderOrbitVisual(),
+              renderOrbitEnvironmentBand(),
               h('label', { htmlFor: 'iss-orbit-alt', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: SOFT, marginBottom: 4 } },
                 h('span', null, __alloT('stem.spacestation.altitude', 'Orbital altitude')),
                 h('span', { style: { color: '#7dd3fc', fontWeight: 800 }, 'aria-live': 'polite' }, orbitAlt + ' km')),
@@ -1271,7 +1999,7 @@
                  ['Orbit period', orbitT.toFixed(1) + ' min'],
                  ['Orbits per day', orbitsPerDay.toFixed(1)],
                  ['Sunrises per day', Math.round(orbitsPerDay) + '']].map(function (p, i) {
-                  return h('div', { key: i, style: { padding: 8, borderRadius: 8, background: 'rgba(2,6,23,0.4)', border: '1px solid #334155' } },
+                  return h('div', { className: 'iss-fact-item', key: i, style: { padding: 8, borderRadius: 8, background: 'rgba(2,6,23,0.4)', border: '1px solid #334155' } },
                     h('div', { style: { fontSize: 10, color: SOFT, textTransform: 'uppercase' } }, p[0]),
                     h('div', { style: { fontSize: 14, fontWeight: 800, color: '#7dd3fc', marginTop: 2 } }, p[1]));
                 })),
@@ -1289,11 +2017,35 @@
         );
       }
 
+      function renderAssemblyVisual() {
+        var step = Math.max(0, Math.min(TIMELINE.length - 1, Number(d.assemblyIdx == null ? 11 : d.assemblyIdx)));
+        var thresholds = { zarya: 0, unity: 0, zvezda: 1, destiny: 2, quest: 2, truss: 3, harmony: 4, columbus: 5, kibo: 6, tranquility: 7, cupola: 7, leonardo: 8, nauka: 10 };
+        var visible = MODULES.filter(function (m) { return (thresholds[m.id] == null ? 6 : thresholds[m.id]) <= step; });
+        var powerByMilestone = [18, 30, 46, 75, 82, 92, 105, 110, 110, 110, 120, 120, 120];
+        var powerStage = powerByMilestone[step] || 120;
+        var volumeStage = Math.round(visible.filter(function (m) { return m.id !== 'truss'; }).length / 12 * 916);
+        return h('div', { className: 'iss-assembly-stage' },
+          h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': 'Station assembly visualization at ' + TIMELINE[step].y + '. ' + visible.length + ' major elements shown.' },
+            h('defs', null, h('pattern', { id: 'iss-assembly-grid', width: 24, height: 24, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M24 0H0V24', fill: 'none', stroke: '#38bdf8', strokeWidth: .45, opacity: .15 })), h('marker', { id: 'iss-deorbit-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: '#fb7185' }))),
+            h('rect', { width: 640, height: 245, fill: '#040a16' }), h('rect', { width: 640, height: 245, fill: 'url(#iss-assembly-grid)' }),
+            h('circle', { cx: 320, cy: 360, r: 170, fill: '#155b91', opacity: .65, stroke: '#7dd3fc', strokeWidth: 2 }),
+            step === TIMELINE.length - 1 ? h('g', null, h('path', { className: 'iss-deorbit-path', d: 'M550 54 Q490 116 386 177', fill: 'none', stroke: '#fb7185', strokeWidth: 2.4, strokeDasharray: '7 6', markerEnd: 'url(#iss-deorbit-arrow)' }), h('text', { x: 548, y: 42, textAnchor: 'end', fill: '#fecdd3', fontSize: 9, fontWeight: 850, letterSpacing: 1 }, 'CONTROLLED REENTRY')) : null,
+            step >= 3 ? h('g', { opacity: step === TIMELINE.length - 1 ? .42 : 1 }, h('rect', { x: 110, y: 100, width: 420, height: 8, rx: 4, fill: '#94a3b8' }), [150,220,420,490].map(function (x, i) { return h('g', { key: i }, h('rect', { x: x - 24, y: i % 2 ? 116 : 58, width: 48, height: 34, rx: 2, fill: '#a86e16', stroke: '#fbbf24' }), [1,2,3].map(function (line) { return h('line', { key: line, x1: x - 24, y1: (i % 2 ? 116 : 58) + line * 8.5, x2: x + 24, y2: (i % 2 ? 116 : 58) + line * 8.5, stroke: '#fde68a', strokeWidth: .5 }); })); })) : null,
+            visible.filter(function (m) { return m.id !== 'truss'; }).map(function (m) { var x = 320 + m.pos[0] * 34, y = 106 + m.pos[2] * 12; var color = '#' + Number(m.color).toString(16).padStart(6, '0'); var isNew = (thresholds[m.id] == null ? 6 : thresholds[m.id]) === step; return h('g', { key: m.id, className: isNew ? 'iss-assembly-new' : '', opacity: step === TIMELINE.length - 1 ? .42 : 1, transform: 'translate(' + x + ',' + y + ')' }, h('rect', { x: m.axis === 'x' ? -26 : -10, y: m.axis === 'z' ? -21 : -10, width: m.axis === 'x' ? 52 : 20, height: m.axis === 'z' ? 42 : 20, rx: 9, fill: color, stroke: '#e2e8f0', strokeWidth: 1.3 }), h('circle', { r: 3, fill: '#38bdf8' })); }),
+            h('text', { x: 20, y: 25, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'ORBITAL ASSEMBLY // ' + TIMELINE[step].y),
+            h('text', { x: 20, y: 43, fill: '#cbd5e1', fontSize: 9 }, TIMELINE[step].e.length > 86 ? TIMELINE[step].e.slice(0, 86) + '…' : TIMELINE[step].e),
+            h('g', { transform: 'translate(20,185)' }, [['MAJOR ELEMENTS', visible.length], ['PRESSURIZED VOLUME', volumeStage + ' m³'], ['AVAILABLE POWER', powerStage + ' kW']].map(function (metric, i) { return h('g', { key: i, transform: 'translate(' + (i * 200) + ',0)' }, h('text', { fill: '#94a3b8', fontSize: 8, fontWeight: 800, letterSpacing: .8 }, metric[0]), h('text', { y: 22, fill: i === 0 ? '#7dd3fc' : i === 1 ? '#34d399' : '#fbbf24', fontSize: 15, fontWeight: 900 }, String(metric[1]))); }))),
+          h('div', { className: 'iss-assembly-controls' },
+            h('label', { htmlFor: 'iss-assembly-step' }, h('span', null, 'Assembly milestone'), h('strong', null, TIMELINE[step].y)),
+            h('input', { id: 'iss-assembly-step', type: 'range', min: 0, max: TIMELINE.length - 1, step: 1, value: step, onChange: function (e) { upd({ assemblyIdx: Number(e.target.value) }); } }),
+            h('div', { className: 'iss-assembly-stepper' }, h('button', { type: 'button', disabled: step === 0, onClick: function () { upd({ assemblyIdx: Math.max(0, step - 1) }); } }, '← Previous'), h('span', { role: 'status' }, (step + 1) + ' / ' + TIMELINE.length), h('button', { type: 'button', disabled: step === TIMELINE.length - 1, onClick: function () { upd({ assemblyIdx: Math.min(TIMELINE.length - 1, step + 1) }); } }, 'Next →'))));
+      }
       function renderHistory() {
         return h('div', null,
+          renderAssemblyVisual(),
           card(__alloT('stem.spacestation.timeline', '📜 Assembly to retirement'),
-            h('div', null, TIMELINE.map(function (t2, i) {
-              return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '86px 1fr', gap: 10, padding: '7px 0', borderBottom: i < TIMELINE.length - 1 ? '1px solid rgba(51,65,85,0.5)' : 'none' } },
+            h('div', { className: 'iss-timeline' }, TIMELINE.map(function (t2, i) {
+              return h('button', { type: 'button', className: 'iss-timeline-item iss-timeline-item-button' + (i === Math.max(0, Math.min(TIMELINE.length - 1, Number(d.assemblyIdx == null ? 11 : d.assemblyIdx))) ? ' is-active' : ''), key: i, 'data-iss-assembly-milestone': i, 'aria-label': 'Show station assembly at ' + t2.y, 'aria-current': i === Math.max(0, Math.min(TIMELINE.length - 1, Number(d.assemblyIdx == null ? 11 : d.assemblyIdx))) ? 'step' : undefined, onClick: function () { upd({ assemblyIdx: i }); }, style: { display: 'grid', gridTemplateColumns: '86px 1fr', gap: 10, padding: '7px 0', borderBottom: i < TIMELINE.length - 1 ? '1px solid rgba(51,65,85,0.5)' : 'none' } },
                 h('div', { style: { fontSize: 12, fontWeight: 800, color: '#7dd3fc', fontFamily: 'ui-monospace, monospace' } }, t2.y),
                 h('div', { style: { fontSize: 12.5, color: TEXT, lineHeight: 1.55 } }, t2.e));
             })), '#38bdf8'),
@@ -1305,17 +2057,25 @@
         );
       }
 
+      function renderQuizConsole(questionIndex) {
+        var answered = d.quizDone ? QUIZ.length : Math.min(QUIZ.length, questionIndex + (d.quizPicked != null ? 1 : 0));
+        return h('div', { className: 'iss-quiz-console', role: 'group', 'aria-label': 'Quiz progress: ' + answered + ' of ' + QUIZ.length + ' answered, current score ' + (d.quizScore || 0) },
+          h('div', { className: 'iss-quiz-number', 'aria-hidden': 'true' }, d.quizDone ? '✓' : (questionIndex + 1) + '/' + QUIZ.length),
+          h('div', { className: 'iss-quiz-track', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': QUIZ.length, 'aria-valuenow': answered, 'aria-label': 'Questions answered' }, QUIZ.map(function (_, i) { return h('span', { key: i, className: 'iss-quiz-segment' + (i < answered ? ' is-complete' : '') }); })),
+          h('div', { className: 'iss-quiz-score' }, 'Current score', h('strong', null, (d.quizScore || 0) + ' / ' + QUIZ.length)));
+      }
       function renderQuiz() {
         var qi = Math.max(0, Math.min(QUIZ.length - 1, d.quizIdx || 0));
         var q = QUIZ[qi];
         var picked = d.quizPicked;
         return h('div', null,
+          renderQuizConsole(qi),
           d.quizDone ?
             card(__alloT('stem.spacestation.quiz_done', '🏁 Debrief'),
               h('div', null,
                 h('p', { style: { fontSize: 16, fontWeight: 800, color: TEXT, margin: '0 0 6px' } }, d.quizScore + ' / ' + QUIZ.length),
                 h('p', { style: { fontSize: 12.5, color: SOFT, margin: '0 0 10px' } }, d.quizScore >= 7 ? __alloT('stem.spacestation.quiz_great', 'Flight-controller material. Quest objective complete!') : __alloT('stem.spacestation.quiz_retry', 'Every controller trains on repetitions — revisit the tabs and fly it again.')),
-                h('button', { type: 'button', onClick: function () { upd({ quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false }); }, style: { padding: '7px 14px', borderRadius: 8, border: 'none', background: '#0ea5e9', color: '#fff', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, __alloT('stem.spacestation.quiz_again', '🔁 Run it again'))
+                h('button', { type: 'button', onClick: function () { upd({ quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false }); }, style: { padding: '7px 14px', borderRadius: 8, border: 'none', background: '#0ea5e9', color: '#082f49', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, __alloT('stem.spacestation.quiz_again', '🔁 Run it again'))
               ), '#22c55e')
           : card((qi + 1) + ' / ' + QUIZ.length + ' — ' + q.q,
               h('div', null,
@@ -1345,7 +2105,7 @@
                       if (finalScore >= 7 && addToast) addToast('🛰️ ' + __alloT('stem.spacestation.quiz_toast', 'Station quiz aced: ') + finalScore + '/' + QUIZ.length, 'success');
                     } else { upd({ quizIdx: qi + 1, quizPicked: null }); }
                   },
-                  style: { marginTop: 10, padding: '7px 14px', borderRadius: 8, border: 'none', background: '#0ea5e9', color: '#fff', fontWeight: 800, fontSize: 12, cursor: 'pointer' }
+                  style: { marginTop: 10, padding: '7px 14px', borderRadius: 8, border: 'none', background: '#0ea5e9', color: '#082f49', fontWeight: 800, fontSize: 12, cursor: 'pointer' }
                 }, qi + 1 >= QUIZ.length ? __alloT('stem.spacestation.quiz_finish', 'Finish →') : __alloT('stem.spacestation.quiz_next', 'Next →')) : null
               ), '#38bdf8')
         );
@@ -1375,22 +2135,29 @@
 
       return h('div', { className: 'iss-root', style: { maxWidth: 980 } },
         wcagStyles(),
-        h('h2', { style: { fontSize: 18, fontWeight: 900, color: TEXT, margin: '0 0 2px' } }, '🛰️ ' + __alloT('stem.spacestation.title', 'Space Station — a permanent home off Earth')),
-        h('p', { style: { fontSize: 12, color: SOFT, margin: '0 0 12px' } }, __alloT('stem.spacestation.subtitle', 'The International Space Station: 420 tonnes of engineering falling around the planet at 7.66 km/s, continuously inhabited for over 25 years.')),
-        h('div', { role: 'tablist', 'aria-label': __alloT('stem.spacestation.sections', 'Space Station sections'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+        h('header', { className: 'iss-hero' },
+          h('div', { className: 'iss-hero-copy' },
+            h('div', { className: 'iss-eyebrow' }, h('span', { className: 'iss-live-dot', 'aria-hidden': 'true' }), __alloT('stem.spacestation.hero_kicker', 'Expedition learning console / live simulation')),
+            h('h2', { className: 'iss-title', style: { fontSize: 18, fontWeight: 900, color: TEXT, margin: '0 0 5px' } }, '🛰️ ' + __alloT('stem.spacestation.title', 'Space Station — a permanent home off Earth')),
+            h('p', { className: 'iss-subtitle', style: { fontSize: 12, color: SOFT, margin: 0 } }, __alloT('stem.spacestation.subtitle', 'The International Space Station: 420 tonnes of engineering falling around the planet at 7.66 km/s, continuously inhabited for over 25 years.'))),
+          h('div', { className: 'iss-orbit-mark', 'aria-hidden': 'true' }, h('span', { className: 'iss-orbit-core' }, '\uD83C\uDF0D')),
+          h('div', { className: 'iss-status-strip', role: 'list', 'aria-label': __alloT('stem.spacestation.orbit_status', 'Current station reference data') },
+            [['Orbit altitude', '~' + orbitAlt + ' km'], ['Velocity', orbitV.toFixed(2) + ' km/s'], ['Orbit period', orbitT.toFixed(0) + ' minutes'], ['Crew shift', Object.keys(d.interiorDone || {}).filter(function (key) { return !!d.interiorDone[key]; }).length + ' / 5 jobs']].map(function (metric, i) { return h('div', { key: i, className: 'iss-status-item', role: 'listitem' }, h('span', { className: 'iss-status-label' }, metric[0]), h('strong', { className: 'iss-status-value' }, metric[1])); }))),
+        h('div', { className: 'iss-tablist', role: 'tablist', 'aria-label': __alloT('stem.spacestation.sections', 'Space Station sections'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
           TABS.map(function (t2, ti) {
             var on = tab === t2.id;
             return h('button', {
-              key: t2.id, id: 'iss-tab-' + t2.id, type: 'button', role: 'tab',
+              className: 'iss-tab', key: t2.id, id: 'iss-tab-' + t2.id, type: 'button', role: 'tab',
               'aria-selected': on ? 'true' : 'false', 'aria-controls': 'iss-panel',
               tabIndex: on ? 0 : -1,
               onClick: function () { selectTab(ti, false); },
               onKeyDown: function (e) { onTabKeyDown(e, ti); },
               style: { padding: '7px 12px', borderRadius: 9, fontSize: 12, fontWeight: 800, cursor: 'pointer', background: on ? '#0ea5e9' : PANEL, color: on ? '#04121f' : TEXT, border: on ? '2px solid #7dd3fc' : '1px solid #334155' }
-            }, h('span', { 'aria-hidden': 'true' }, t2.icon + ' '), t2.label);
+            }, h('span', { className: 'iss-tab-icon', 'aria-hidden': 'true' }, t2.icon), t2.label);
           })),
-        h('div', { id: 'iss-panel', role: 'tabpanel', 'aria-labelledby': 'iss-tab-' + tab, tabIndex: 0 },
+        h('div', { className: 'iss-panel', id: 'iss-panel', role: 'tabpanel', 'aria-labelledby': 'iss-tab-' + tab, tabIndex: 0 },
           tab === 'interior' ? renderInterior() :
+          tab === 'operations' ? renderOperations() :
           tab === 'map' ? renderMap() :
           tab === 'day' ? renderDay() :
           tab === 'systems' ? renderSystems() :

@@ -4052,6 +4052,10 @@
           engine._rafId = requestAnimationFrame(animate);
           // Guard: if Three.js isn't on window (CDN failure, teardown), skip frame entirely
           if (!window.THREE || !engine || !engine.scene || !engine.camera) return;
+          // Capture Three.js before any frame work. Later `var THREE` assignments in
+          // conditional branches are function-scoped and otherwise leave this local
+          // undefined on frames where those branches do not run.
+          var THREE = window.THREE;
           var dt = Math.min(engine.clock.getDelta(), 0.1);
 
           // ── Smooth environment transitions ──
@@ -6293,7 +6297,7 @@
             onClick: closeAllModals,
             'aria-label': __alloT('stem.geometryworld.close_all_open_overlays_and_return_to_', 'Close all open overlays and return to the game view'),
             title: __alloT('stem.geometryworld.close_all_overlays_return_to_the_3d_ga', 'Close all overlays & return to the 3D game (or press Shift+Esc)'),
-            style: { pointerEvents: 'auto', padding: '10px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', border: 'none', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 20px rgba(124,58,237,0.45), 0 0 0 2px rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'transform 0.15s' },
+            style: { pointerEvents: 'auto', padding: '10px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', border: 'none', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 20px rgba(124,58,237,0.45), 0 0 0 2px rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'transform 0.15s' },
             onMouseEnter: function(ev) { ev.currentTarget.style.transform = 'scale(1.03)'; },
             onMouseLeave: function(ev) { ev.currentTarget.style.transform = 'scale(1)'; }
           },
@@ -7168,7 +7172,7 @@
             // Start button
             el('button', {
               onClick: function() { loadLessonByKey(activeLesson); },
-              style: { background: 'linear-gradient(135deg, #7c3aed, #6366f1)', color: '#fff', border: 'none', borderRadius: '12px',
+              style: { background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: '#fff', border: 'none', borderRadius: '12px',
                 padding: '14px 40px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 20px rgba(124,58,237,0.4)', letterSpacing: '0.5px' }
             }, '\u25B6\uFE0F Start Lesson'),
             // Skip intro for returning students
@@ -7237,7 +7241,7 @@
                   upd({ activeLesson: nextKey, measureHistory: [] });
                   var eng = window[engineKey]; if (eng) eng.loadLesson(nextLesson);
                 },
-                style: { background: 'linear-gradient(135deg, #7c3aed, #6366f1)', color: '#fff', border: 'none', borderRadius: '10px',
+                style: { background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: '#fff', border: 'none', borderRadius: '10px',
                   padding: '10px 24px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(124,58,237,0.3)' }
               }, '\u27A1\uFE0F Next: ' + (nextLesson.title || '').split(' \u2014')[0]),
               el('button', {

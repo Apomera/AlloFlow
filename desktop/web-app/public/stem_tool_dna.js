@@ -2480,7 +2480,7 @@ window.StemLab = window.StemLab || {
                 upd('aiExplain', typeof resp === 'string' ? resp : 'Could not generate explanation.');
                 upd('aiExplainLoading', false);
               }).catch(function() { upd('aiExplain', 'AI explanation unavailable.'); upd('aiExplainLoading', false); });
-            }, disabled: d.aiExplainLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiExplainLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white hover:from-purple-600 hover:to-fuchsia-600 shadow-md') }, d.aiExplainLoading ? '\u23F3 Analyzing...' : '\u2728 AI: Explain This DNA'),
+            }, disabled: d.aiExplainLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiExplainLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white hover:from-purple-600 hover:to-fuchsia-600 shadow-md') }, d.aiExplainLoading ? '\u23F3 Analyzing...' : '\u2728 AI: Explain This DNA'),
             d.aiExplain && h("div", { className: "mt-2 p-3 bg-purple-50 rounded-xl border border-purple-200 text-xs text-purple-900 leading-relaxed" },
               h("span", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-wider block mb-1" }, t('stem.dna.ai_analysis', "\uD83E\uDDE0 AI Analysis")),
               d.aiExplain
@@ -2701,7 +2701,7 @@ window.StemLab = window.StemLab || {
                   var seq = fullProtein.filter(function(p) { return p.aa !== 'Stop'; }).map(function(p) { return p.aa; }).join('-');
                   var prompt = 'You are a biochemistry teacher. Grade: ' + gradeCtx + '. Protein sequence: ' + seq + '. Amino acid count: ' + fullProtein.length + '. Analyze this protein in 3-4 sentences: predict likely function, cellular location, and any notable patterns. Be educational and engaging.';
                   callGemini(prompt, true, false, 0.7).then(function(r) { updMulti({ aiProtein: typeof r === 'string' ? r : 'Analysis unavailable.', aiProteinLoading: false }); checkBadge('proteinSci'); }).catch(function() { updMulti({ aiProtein: 'AI unavailable.', aiProteinLoading: false }); });
-                }, disabled: d.aiProteinLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiProteinLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 shadow-md') }, d.aiProteinLoading ? '\u23F3 Analyzing...' : '\u2728 AI: Analyze Protein'),
+                }, disabled: d.aiProteinLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiProteinLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-600 shadow-md') }, d.aiProteinLoading ? '\u23F3 Analyzing...' : '\u2728 AI: Analyze Protein'),
                 d.aiProtein && h("div", { className: "mt-2 p-3 bg-indigo-50 rounded-xl border border-indigo-200 text-xs text-indigo-900 leading-relaxed" },
                   h("span", { className: "text-[11px] font-bold text-indigo-600 uppercase tracking-wider block mb-1" }, t('stem.dna.protein_analysis', '\uD83E\uDDE0 Protein Analysis')),
                   d.aiProtein
@@ -2716,7 +2716,7 @@ window.StemLab = window.StemLab || {
                 return h("div", { key: dis.name, className: "p-2 bg-slate-50 rounded-lg" },
                   h("div", { className: "flex items-center gap-2" },
                     h("span", { className: "text-xs font-bold text-slate-700" }, dis.name),
-                    h("span", { className: "px-1.5 py-0.5 bg-rose-100 text-rose-600 text-[11px] font-bold rounded-full" }, dis.type)
+                    h("span", { className: "px-1.5 py-0.5 bg-rose-100 text-rose-700 text-[11px] font-bold rounded-full" }, dis.type)
                   ),
                   h("p", { className: "text-[11px] text-slate-600 mt-0.5" }, 'Gene: ' + dis.gene + ' | Mutation: ' + dis.mutation),
                   h("p", { className: "text-[11px] text-slate-600 mt-0.5" }, dis.effect)
@@ -3026,7 +3026,7 @@ window.StemLab = window.StemLab || {
                     var matchSample = caseData.samples[caseData.match];
                     var prompt = 'You are a forensic genetics teacher. Grade: ' + gradeCtx + '. Case: "' + caseData.name + '" - ' + caseData.desc + ' The restriction enzyme ' + caseData.enzyme + ' was used. The ' + caseData.samples[0].label + ' matched ' + matchSample.label + ' because they share identical fragment sizes: ' + matchSample.fragments.join(', ') + ' bp. Explain in 3-4 sentences why the bands match, what restriction enzymes do, and how gel electrophoresis separates DNA. Be educational and engaging.';
                     callGemini(prompt, true, false, 0.7).then(function(r) { updMulti({ forensicAI: typeof r === 'string' ? r : 'Analysis unavailable.', forensicAILoading: false }); }).catch(function() { updMulti({ forensicAI: 'AI unavailable.', forensicAILoading: false }); });
-                  }, disabled: d.forensicAILoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.forensicAILoading ? 'bg-cyan-300 text-white cursor-wait' : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-md') }, d.forensicAILoading ? '\u23F3 Analyzing...' : '\u2728 AI: Explain the Evidence'),
+                  }, disabled: d.forensicAILoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.forensicAILoading ? 'bg-cyan-300 text-white cursor-wait' : 'bg-gradient-to-r from-cyan-700 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-600 shadow-md') }, d.forensicAILoading ? '\u23F3 Analyzing...' : '\u2728 AI: Explain the Evidence'),
                   d.forensicAI && h("div", { className: "mt-2 p-3 bg-cyan-50 rounded-xl border border-cyan-200 text-xs text-cyan-900 leading-relaxed" },
                     h("span", { className: "text-[11px] font-bold text-cyan-600 uppercase tracking-wider block mb-1" }, t('stem.dna.forensic_analysis', '\uD83E\uDDE0 Forensic Analysis')),
                     d.forensicAI
@@ -3046,7 +3046,7 @@ window.StemLab = window.StemLab || {
               h("h4", { className: "text-sm font-bold text-slate-700" }, t('stem.dna.dna_challenge', "\uD83C\uDFAF DNA Challenge")),
               h("div", { className: "flex items-center gap-2" },
                 h("span", { className: "text-xs font-bold text-amber-800 bg-amber-50 px-2 py-1 rounded-full" }, "\u2B50 " + score + " pts"),
-                (d.challengeStreak || 0) >= 2 && h("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.challengeStreak + " streak!")
+                (d.challengeStreak || 0) >= 2 && h("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-700 to-red-600 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.challengeStreak + " streak!")
               )
             ),
 
@@ -3082,7 +3082,7 @@ window.StemLab = window.StemLab || {
                       generateChallenge();
                     }
                   }).catch(function() { addToast('\u26A0\uFE0F AI unavailable', 'error'); upd('aiChallengeLoading', false); generateChallenge(); });
-                }, disabled: d.aiChallengeLoading, className: "px-5 py-2.5 text-sm font-bold transition-all rounded-xl shadow-lg " + (d.aiChallengeLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:shadow-xl') }, d.aiChallengeLoading ? '\u23F3 Generating...' : '\u2728 AI Challenge')
+                }, disabled: d.aiChallengeLoading, className: "px-5 py-2.5 text-sm font-bold transition-all rounded-xl shadow-lg " + (d.aiChallengeLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-xl') }, d.aiChallengeLoading ? '\u23F3 Generating...' : '\u2728 AI Challenge')
               )
             ) : h("div", { className: "space-y-3" },
               challengeQ.isAI && h("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full" }, t('stem.dna.ai_generated', "\uD83E\uDDE0 AI-GENERATED")),
@@ -3090,7 +3090,7 @@ window.StemLab = window.StemLab || {
               h("input", { type: "text", value: challengeAnswer, onChange: function(e) { upd('challengeAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') checkChallenge(); }, placeholder: t('stem.dna.type_your_answer', "Type your answer..."), className: "w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-violet-400", 'aria-label': t('stem.dna.answer', 'Answer') }),
               h("div", { className: "flex gap-2 flex-wrap" },
                 h("button", { onClick: checkChallenge, className: "px-4 py-2 text-sm font-bold bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-all active:scale-[0.97]" }, t('stem.dna.check', "\u2713 Check")),
-                h("button", { onClick: function() { updMulti({ challengeFeedback: '\uD83D\uDCA1 ' + (challengeQ.hint || 'No hint available') }); }, className: "px-4 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl" }, t('stem.dna.hint', "\uD83D\uDCA1 Hint")),
+                h("button", { onClick: function() { updMulti({ challengeFeedback: '\uD83D\uDCA1 ' + (challengeQ.hint || 'No hint available') }); }, className: "px-4 py-2 text-sm font-bold bg-amber-50 text-amber-700 rounded-xl" }, t('stem.dna.hint', "\uD83D\uDCA1 Hint")),
                 h("button", { onClick: generateChallenge, className: "px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl" }, t('stem.dna.next', "\u21BB Next")),
                 callGemini && h("button", { onClick: function() {
                   upd('aiChallengeLoading', true);
@@ -3152,8 +3152,8 @@ window.StemLab = window.StemLab || {
             battleOrder.length === 0 ? h("div", { className: "text-center py-6 space-y-3" },
               h("div", { className: "text-4xl mb-2" }, "\u2694\uFE0F"),
               h("div", { className: "flex gap-2 justify-center flex-wrap" },
-                h("button", { onClick: function() { startBattle(false); }, className: "px-6 py-3 text-sm font-bold bg-gradient-to-r from-red-600 to-orange-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all" }, t('stem.dna.start_battle', "\u2694\uFE0F Start Battle")),
-                callGemini && h("button", { onClick: function() { startBattle(true); }, className: "px-6 py-3 text-sm font-bold bg-gradient-to-r from-purple-600 to-indigo-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all" }, t('stem.dna.ai_battle', "\u2728 AI Battle"))
+                h("button", { onClick: function() { startBattle(false); }, className: "px-6 py-3 text-sm font-bold bg-gradient-to-r from-red-600 to-orange-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all" }, t('stem.dna.start_battle', "\u2694\uFE0F Start Battle")),
+                callGemini && h("button", { onClick: function() { startBattle(true); }, className: "px-6 py-3 text-sm font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all" }, t('stem.dna.ai_battle', "\u2728 AI Battle"))
               )
             ) : battleDone ? h("div", { className: "text-center py-6 space-y-3" },
               h("div", { className: "text-4xl" }, battleWon ? '\uD83C\uDFC6' : '\uD83D\uDC80'),
@@ -3181,7 +3181,7 @@ window.StemLab = window.StemLab || {
                   h("input", { type: "text", value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: t('stem.dna.type_your_answer_2', "Type your answer..."), className: "w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-red-400", 'aria-label': t('stem.dna.battle_answer', 'Battle answer') }),
                   h("div", { className: "flex gap-2" },
                     h("button", { onClick: battleAttack, className: "px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all active:scale-[0.97]" }, t('stem.dna.attack', "\u2694\uFE0F Attack!")),
-                    h("button", { onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: "px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl" }, t('stem.dna.hint_2', "\uD83D\uDCA1 Hint"))
+                    h("button", { onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: "px-3 py-2 text-sm font-bold bg-amber-50 text-amber-700 rounded-xl" }, t('stem.dna.hint_2', "\uD83D\uDCA1 Hint"))
                   ),
                   battleFeedback && h("p", { className: "text-sm font-bold p-2 rounded-lg " + (battleFeedback[0] === '\u2705' ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700") }, battleFeedback)
                 );
@@ -3849,12 +3849,12 @@ window.StemLab = window.StemLab || {
                     !st.revealed && rIdx > 0 && h('button', {
                       'aria-label': t('stem.dna.move_up', 'Move up'),
                       onClick: function() { reorderExplanations(puzzle.id, rIdx, rIdx - 1); },
-                      className: 'transition-colors px-2 py-0.5 rounded text-[11px] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-400 focus:outline-none active:scale-[0.97]'
+                      className: 'transition-colors px-2 py-0.5 rounded text-[11px] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-500 focus:outline-none active:scale-[0.97]'
                     }, '▲'),
                     !st.revealed && rIdx < (st.ranking || []).length - 1 && h('button', {
                       'aria-label': t('stem.dna.move_down', 'Move down'),
                       onClick: function() { reorderExplanations(puzzle.id, rIdx, rIdx + 1); },
-                      className: 'transition-colors px-2 py-0.5 rounded text-[11px] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-400 focus:outline-none active:scale-[0.97]'
+                      className: 'transition-colors px-2 py-0.5 rounded text-[11px] bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-500 focus:outline-none active:scale-[0.97]'
                     }, '▼'),
                     st.revealed && h('span', { className: 'text-[10px] font-bold ' + (positionMatch ? 'text-green-700' : 'text-amber-700') },
                       positionMatch ? '✓ exact' : 'expert pos #' + (expertPos + 1))
@@ -3870,7 +3870,7 @@ window.StemLab = window.StemLab || {
                     var bonus = st.pick === puzzle.correctPattern ? 1 : 0;
                     setTT({ puzzles: newP, score: (state.score || 0) + bonus });
                   },
-                  className: 'transition-colors px-3 py-1 rounded text-[11px] font-bold bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-400 focus:outline-none active:scale-[0.97]'
+                  className: 'transition-colors px-3 py-1 rounded text-[11px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-300 focus:outline-none active:scale-[0.97]'
                 }, st.revealed ? '✓ Revealed' : 'Reveal verdict'),
                 !canReveal && !st.revealed && h('span', { className: 'text-[10px] text-slate-500 italic' },
                   st.pick == null ? 'Pick a pattern first' : 'Order all 4 explanations'),

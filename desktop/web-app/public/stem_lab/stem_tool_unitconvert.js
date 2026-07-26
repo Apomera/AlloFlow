@@ -1054,7 +1054,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     value: significantFigures,
                     onChange: function(event) { upd('significantFigures', event.target.value); },
                     'aria-label': t('stem.unitconvert.significant_figures', 'Significant figures'),
-                    className: 'rounded border border-slate-300 bg-white px-2 py-1 text-[11px] font-bold text-slate-700'
+                    className: 'rounded border border-slate-500 bg-white px-2 py-1 text-[11px] font-bold text-slate-700'
                   },
                     h('option', { value: 'auto' }, t('stem.unitconvert.precision_auto', 'Auto')),
                     [2, 3, 4, 5, 6].map(function(figureCount) {
@@ -1301,7 +1301,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 });
                 addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
               },
-              className: 'mt-3 ml-auto block px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all'
+              className: 'mt-3 ml-auto block px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all'
             }, t('stem.unitconvert.snapshot_2', '\uD83D\uDCF8 Snapshot'))
 
           ),

@@ -1460,7 +1460,7 @@
         // Export buttons
         el('button', { onClick: exportBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(34,211,238,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22d3ee' : '1px solid transparent', color: blocks.length ? '#67e8f9' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCD0 Top SVG'),
         el('button', { onClick: exportSideBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(168,85,247,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #a855f7' : '1px solid transparent', color: blocks.length ? '#c084fc' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83C\uDFD7\uFE0F Side SVG'),
-        el('button', { onClick: exportSTL, disabled: !blocks.length, style: { background: blocks.length ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCE5 STL')
+        el('button', { onClick: exportSTL, disabled: !blocks.length, style: { background: blocks.length ? 'linear-gradient(135deg,#b45309,#92400e)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCE5 STL')
       ),
 
       // ── Main content: sidebar + viewport ──
@@ -1635,7 +1635,7 @@
             ),
             justCompleted && challengeProgress && el('button', { onClick: completeChallenge, style: {
               marginTop: 6, width: '100%', padding: '7px 10px', borderRadius: 10, border: 'none',
-              background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff',
+              background: 'linear-gradient(135deg,#b45309,#92400e)', color: '#fff',
               fontWeight: 700, fontSize: 11, cursor: 'pointer', animation: 'pulse 1.5s ease-in-out infinite'
             } }, '\uD83C\uDFC6 Claim +' + challengeProgress.challenge.xp + ' XP!')
           ),
@@ -1688,7 +1688,7 @@
             ),
             el('button', { onClick: runEarthquake, disabled: !blocks.length, style: {
               width: '100%', padding: '6px 10px', borderRadius: 8, border: 'none',
-              background: blocks.length ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'rgba(71,85,105,.3)',
+              background: blocks.length ? 'linear-gradient(135deg,#b91c1c,#991b1b)' : 'rgba(71,85,105,.3)',
               color: blocks.length ? '#fff' : '#475569', fontWeight: 700, fontSize: 10, cursor: blocks.length ? 'pointer' : 'default'
             } }, '\uD83C\uDF0B Shake! (Intensity ' + quakeIntensity + ')'),
             quakeResult && el('div', { style: { marginTop: 4, padding: '5px 8px', background: quakeResult.pct >= 70 ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)', border: '1px solid ' + (quakeResult.pct >= 70 ? 'rgba(34,197,94,.3)' : 'rgba(239,68,68,.3)'), borderRadius: 8, fontSize: 11, color: quakeResult.pct >= 70 ? '#4ade80' : '#fca5a5', lineHeight: 1.4 } },
@@ -1842,7 +1842,7 @@
               }),
               el('button', { onClick: function () { importShareCode(d.importCode); }, style: {
                 padding: '5px 10px', borderRadius: 6, border: 'none',
-                background: 'linear-gradient(135deg,#22c55e,#16a34a)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
+                background: 'linear-gradient(135deg,#15803d,#166534)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
               } }, '\u21E9')
             )
           ),
@@ -1892,7 +1892,7 @@
               el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'monospace' } }, customColor),
               el('button', { onClick: function () { upd({ activeColor: customColor, mode: 'paint' }); }, style: {
                 marginLeft: 'auto', padding: '3px 8px', borderRadius: 6, border: 'none',
-                background: 'linear-gradient(135deg,#ec4899,#f472b6)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
+                background: 'linear-gradient(135deg,#be185d,#9d174d)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
               } }, '\uD83C\uDFA8 Paint')
             )
           ),
@@ -2004,7 +2004,7 @@
             ),
             filterActive && el('button', { onClick: deleteFiltered, style: {
               width: '100%', marginTop: 4, padding: '5px 10px', borderRadius: 6, border: 'none',
-              background: 'linear-gradient(135deg,#ef4444,#dc2626)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
+              background: 'linear-gradient(135deg,#b91c1c,#991b1b)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
             } }, '\uD83D\uDDD1\uFE0F Remove ' + filterCount + ' Matching Blocks')
           ),
 

@@ -3202,6 +3202,10 @@
           engine._rafId = requestAnimationFrame(animate);
           // Guard: if Three.js isn't on window (CDN failure, teardown), skip frame entirely
           if (!window.THREE || !engine || !engine.scene || !engine.camera) return;
+          // Capture Three.js before any frame work. Later `var THREE` assignments in
+          // conditional branches are function-scoped and otherwise leave this local
+          // undefined on frames where those branches do not run.
+          var THREE = window.THREE;
           var dt = Math.min(engine.clock.getDelta(), 0.1);
 
           // ── Smooth environment transitions ──

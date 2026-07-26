@@ -1198,7 +1198,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-4' },
 
         // ── Badge toast ──
-        d.badgeToast && h('div', { className: 'fixed top-4 right-4 z-50 bg-gradient-to-r from-amber-400 to-yellow-500 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-bold animate-bounce' },
+        d.badgeToast && h('div', { className: 'fixed top-4 right-4 z-50 bg-gradient-to-r from-amber-700 to-yellow-700 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-bold animate-bounce' },
           '\uD83C\uDFC6 Badge: ' + d.badgeToast
         ),
 
@@ -1665,7 +1665,7 @@ window.StemLab = window.StemLab || {
                 }, '+ Add Zone'),
                 mapQuarantineZones.length > 0 && h('button', { 'aria-label': 'Clear',
                   onClick: function() { upd('mapQuarantineZones', []); },
-                  className: 'px-2 py-1 text-[10px] font-bold bg-slate-100 text-slate-500 rounded-lg'
+                  className: 'px-2 py-1 text-[10px] font-bold bg-slate-100 text-slate-600 rounded-lg'
                 }, 'Clear')
               )
             ),
@@ -2054,7 +2054,7 @@ window.StemLab = window.StemLab || {
               }),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
                 h('button', { 'aria-label': 'Check', onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, 'Check'),
-                h('button', { 'aria-label': 'Hint', onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (activeChalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint'),
+                h('button', { 'aria-label': 'Hint', onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (activeChalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-700 rounded-xl' }, '\uD83D\uDCA1 Hint'),
                 h('button', { 'aria-label': 'Skip', onClick: chalNext, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, 'Skip \u27A1'),
                 callGemini && h('button', { 'aria-label': 'AI Next', onClick: chalAINext, className: 'px-3 py-2 text-sm font-bold bg-purple-100 text-purple-600 rounded-xl' }, '\u2728 AI Next')
               ),
@@ -2127,7 +2127,7 @@ window.StemLab = window.StemLab || {
                   h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-red-400 outline-none', 'aria-label': 'Battle answer' }),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
                     h('button', { 'aria-label': 'Attack!', onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, '\u2694\uFE0F Attack!'),
-                    h('button', { 'aria-label': 'Hint', onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint')
+                    h('button', { 'aria-label': 'Hint', onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-700 rounded-xl' }, '\uD83D\uDCA1 Hint')
                   ),
                   battleFeedback && h('p', { className: 'text-sm font-bold p-2 rounded-lg ' + (battleFeedback[0] === '\u2705' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700') }, battleFeedback)
                 );

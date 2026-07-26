@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { assertNativeQualityWaveReplayPreimage } = require('./run_eppp_native_quality_wave.cjs');
 const { reviewedAt, reviewWave, revisions } = require('./eppp_native_quality_wave_07_data.cjs');
 
 const root = path.resolve(__dirname, '..');
@@ -19,6 +20,7 @@ const outputRoots = [
 ];
 const diagnosticsScript = path.join(root, 'dev-tools', 'audit_eppp_distractor_quality.cjs');
 const outputBasename = 'eppp_native_quality_audit_wave_07';
+const existingAuditPath = path.join(outputRoots[0], outputBasename + '.json');
 const extremeCuePattern = /\b(?:always|never|only|every|entirely|exclusively|without|regardless|automatically|guarantee(?:d|s)?|completely|identical|none|all|immediately|universally|solely|definitively|perfectly|strictly|absolutely|permanently|categorically)\b/i;
 const genericFeedbackPattern = /\b(?:is not best because|does not meet the defining condition or distinction|the supported response is|makes an absolute or unconditional claim)\b/i;
 
@@ -47,14 +49,15 @@ if (!Array.isArray(actionDocket.actionItems)) throw new Error('Missing the EPPP 
 
 const bankById = new Map(bank.map((item) => [item.id, item]));
 const actionById = new Map(actionDocket.actionItems.map((item) => [item.id, item]));
+const existingAudit = fs.existsSync(existingAuditPath) ? JSON.parse(fs.readFileSync(existingAuditPath, 'utf8')) : null;
+const existingAuditById = new Map((existingAudit?.items || []).map((item) => [item.id, item]));
 const auditItems = [];
 for (const revision of revisions) {
   const item = bankById.get(revision.id);
   const action = actionById.get(revision.id);
   if (!item) throw new Error('Missing selected item: ' + revision.id);
-  if (!action || action.actionRank !== revision.expectedActionRank) throw new Error(revision.id + ' action-docket rank drifted.');
+  assertNativeQualityWaveReplayPreimage({ item, action, revision, reviewWave });
   if (item.answerIndex !== revision.expectedAnswerIndex) throw new Error(revision.id + ' answer position drifted.');
-  if (item.prompt !== revision.expectedPrompt && item.wordingReviewWave !== reviewWave) throw new Error(revision.id + ' source prompt drifted.');
   if (!Array.isArray(revision.choices) || revision.choices.length !== 4 || new Set(revision.choices.map((choice) => choice.toLowerCase())).size !== 4) {
     throw new Error(revision.id + ' needs four distinct choices.');
   }
@@ -106,7 +109,7 @@ for (const revision of revisions) {
     cognitiveProcess: item.cognitiveProcess,
     learningObjectiveId: item.learningObjectiveId,
     sourceCheck: revision.sourceCheck,
-    diagnosticsBefore: [...action.diagnostics],
+    diagnosticsBefore: [...(action?.diagnostics || existingAuditById.get(item.id)?.diagnosticsBefore || [])],
   });
 }
 

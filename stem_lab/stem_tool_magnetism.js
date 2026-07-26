@@ -48,8 +48,12 @@
   var _field3DCanvas = null;
   var _induction3DCanvas = null;
   var _electro3DCanvas = null;
+  var _motor3DCanvas = null;
+  var _charge3DCanvas = null;
   var _induction3DRAF = null;
   var _induction3DRunToken = 0;
+  var _charge3DRAF = null;
+  var _charge3DRunToken = 0;
   var _benchTimer = null;
 
   // ── Pure physics helpers (exported for tests) ──────────────────────────
@@ -330,6 +334,28 @@
     return sign * Math.abs(current * fieldStrength) * Math.abs(Math.sin(angleDeg * Math.PI / 180));
   }
 
+  function motorSpatialState(angleDeg, current, fieldStrength, currentDir, fieldDir) {
+    var angle = ((Number(angleDeg) || 0) % 360 + 360) % 360;
+    var supplyDirection = currentDir < 0 ? -1 : 1;
+    var fieldDirection = fieldDir < 0 ? -1 : 1;
+    var commutatorPhase = Math.floor((angle + 1e-7) / 180) % 2 === 0 ? 1 : -1;
+    var segmentDirection = supplyDirection * commutatorPhase;
+    var torque = motorTorqueFactor(current, fieldStrength, angle, supplyDirection, fieldDirection);
+    var normalizedTorque = Math.min(1, Math.abs(torque) / 48);
+    return {
+      angle: angle,
+      halfTurn: angle < 180 ? 1 : 2,
+      commutatorPhase: commutatorPhase,
+      segmentDirection: segmentDirection,
+      fieldDirection: fieldDirection,
+      torque: torque,
+      torqueDirection: torque >= 0 ? 1 : -1,
+      torquePercent: normalizedTorque * 100,
+      force: wireForce(Math.abs(Number(fieldStrength) || 0) / 10, Math.abs(Number(current) || 0), 0.05),
+      deadSpot: Math.abs(Math.sin(angle * Math.PI / 180)) < 0.08 || !(Number(current) && Number(fieldStrength))
+    };
+  }
+
   // Steady-state energy model for a motor mechanically coupled to a generator.
   // The motor torque falls linearly with speed, while the generator load creates
   // an opposing torque proportional to k²ω/R. This makes heavier electrical
@@ -521,6 +547,64 @@
     return pts;
   }
 
+  function chargedParticleHelix(chargeSign, fieldSign, speed, fieldStrength, tiltDeg, steps, massRatio) {
+    var q = chargeSign < 0 ? -1 : 1;
+    var bDirection = fieldSign < 0 ? -1 : 1;
+    var v = Math.max(0.1, Math.abs(Number(speed) || 0));
+    var b = Math.max(0.1, Math.abs(Number(fieldStrength) || 0));
+    var mass = Math.max(0.25, Math.abs(Number(massRatio) || 1));
+    var tilt = Math.max(0, Math.min(90, Number(tiltDeg) || 0));
+    var radians = tilt * Math.PI / 180;
+    var perpendicularSpeed = v * Math.sin(radians);
+    var parallelSpeed = v * Math.cos(radians);
+    var radius = mass * perpendicularSpeed / b;
+    var gyroPeriod = 2 * Math.PI * mass / b;
+    var pitch = gyroPeriod * parallelSpeed;
+    var handedness = q * bDirection;
+    var count = Math.max(12, Math.round(steps || 121));
+    var cycles = 2;
+    var sceneRadius = Math.min(2.8, radius * 0.42);
+    var sceneSpan = Math.min(6.4, pitch * cycles * 0.08);
+    var points = [];
+    for (var i = 0; i < count; i++) {
+      var fraction = i / (count - 1);
+      var phase = fraction * cycles * Math.PI * 2;
+      points.push({
+        x: sceneRadius * Math.sin(phase),
+        y: -sceneSpan / 2 + sceneSpan * fraction,
+        z: -handedness * sceneRadius * Math.cos(phase)
+      });
+    }
+    var motionType = perpendicularSpeed < 0.05 ? 'straight' : (parallelSpeed < 0.05 ? 'circular' : 'helical');
+    return {
+      points: points, radius: radius, pitch: pitch, gyroPeriod: gyroPeriod, mass: mass,
+      perpendicularSpeed: perpendicularSpeed, parallelSpeed: parallelSpeed,
+      force: b * perpendicularSpeed, handedness: handedness,
+      motionType: motionType, tilt: tilt, cycles: cycles
+    };
+  }
+
+  function chargedParticleComparison(current, reference) {
+    if (!current || !reference) return null;
+    var keys = ['chargeSign', 'fieldSign', 'speed', 'field', 'tilt', 'mass'];
+    var changed = keys.filter(function (key) { return Math.abs(Number(current[key]) - Number(reference[key])) > 1e-9; });
+    function ratio(value, baseline) { return Math.abs(baseline) < 1e-9 ? null : value / baseline; }
+    function direction(value, baseline) {
+      if (Math.abs(value - baseline) < 1e-9) return 'unchanged';
+      return value > baseline ? 'larger' : 'smaller';
+    }
+    return {
+      keys: changed,
+      count: changed.length,
+      fair: changed.length === 1,
+      radiusRatio: ratio(current.radius, reference.radius),
+      pitchRatio: ratio(current.pitch, reference.pitch),
+      radiusDirection: direction(current.radius, reference.radius),
+      pitchDirection: direction(current.pitch, reference.pitch),
+      handednessChanged: current.handedness !== reference.handedness,
+      motionChanged: current.motionType !== reference.motionType
+    };
+  }
   // Rotating-coil phase model at fixed area and angular speed. These are
   // proportional values: Φ = NBA cosθ and ε = NBAω sinθ.
   function rotatingFlux(angleDeg, turns, fieldStrength) {
@@ -867,12 +951,14 @@
         // Motor
         motorCurrent: 3, motorField: 4, motorCurrentDir: 1, motorFieldDir: 1,
         motorRunning: false, motorAngle: 90, motorRan: false, motorDirectionSeen: false, motorMode: 'forces',
+        motorView: '2d', motor3dStatus: 'loading', motor3dAttempt: 0, motor3dUsed: false, motor3dForces: true, motor3dCurrent: true,
         benchLoadOhms: 40, benchFriction: 3, benchTurns: 80, benchField: 4, benchUsed: false,
         benchView: 'steady', benchRunning: false, benchTime: 0, benchOmega: 0, benchTemperature: 22,
         benchTrace: [], benchTrials: [], benchTrialCount: 0, benchMissionStatus: 'ready', benchCompareTrialId: null,
         // Force bench + charged-particle beam
         pairDistance: 70, pairStrength1: 1, pairStrength2: 1, pairAttract: true,
-        chargeSign: 1, chargeField: 1, chargeSpeed: 5, chargeB: 4,
+        chargeSign: 1, chargeField: 1, chargeSpeed: 5, chargeB: 4, chargeView: '2d',
+        chargeTilt: 45, chargeMass: 1, charge3dStatus: 'loading', charge3dAttempt: 0, charge3dUsed: false, charge3dProgress: 0, charge3dRunning: false, charge3dTrail: true, charge3dReference: null,
         // Rotating-coil generator
         induceMode: 'hand', genAngle: 0, genTurns: 60, genField: 4, genRPM: 60,
         genSpeedSeen: false, genPhaseSeen: false,
@@ -977,8 +1063,8 @@
           '.mag-root .mag-strength-meter i.is-on{border-color:#fb7185;background:#fb7185;box-shadow:0 0 7px rgba(251,113,133,.28)}' +
           '.mag-root .mag-observe{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;padding:9px 10px;border-radius:10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.24);margin:9px 0;color:' + SOFT + ';font-size:12px;line-height:1.45}' +
           '.mag-root .mag-observe b{color:' + TEXT + '}' +
-          '.mag-root .mag-field3d,.mag-root .mag-induction3d,.mag-root .mag-electro3d{height:410px}' +
-          '@media(max-width:480px){.mag-root .mag-sim-grid{grid-template-columns:1fr!important}.mag-root .mag-field3d,.mag-root .mag-induction3d,.mag-root .mag-electro3d{height:320px}.mag-root .mag-scene-hud{left:7px;top:7px;right:40px;gap:4px}.mag-root .mag-hud-chip{padding:5px 6px}.mag-root .mag-scene-axis{right:7px;bottom:7px}}' +
+          '.mag-root .mag-field3d,.mag-root .mag-induction3d,.mag-root .mag-electro3d,.mag-root .mag-motor3d,.mag-root .mag-charge3d{height:410px}' +
+          '@media(max-width:480px){.mag-root .mag-sim-grid{grid-template-columns:1fr!important}.mag-root .mag-field3d,.mag-root .mag-induction3d,.mag-root .mag-electro3d,.mag-root .mag-motor3d,.mag-root .mag-charge3d{height:320px}.mag-root .mag-scene-hud{left:7px;top:7px;right:40px;gap:4px}.mag-root .mag-hud-chip{padding:5px 6px}.mag-root .mag-scene-axis{right:7px;bottom:7px}}' +
           '@media(max-width:640px){.mag-root .mag-station{grid-template-columns:1fr 1fr}.mag-root .mag-station-main{grid-column:1/-1}.mag-root .mag-cycle{border-left:0;border-top:2px solid ' + BORDER + '}.mag-root .mag-cycle:last-child{grid-column:1/-1}.mag-root .mag-hero{padding:14px}.mag-root .mag-tabs button{flex:1 1 145px}}' +
           '@media(max-width:390px){.mag-root .mag-station{grid-template-columns:1fr}.mag-root .mag-cycle:last-child{grid-column:auto}}' +
           '@media(prefers-reduced-motion:reduce){.mag-root *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}' +
@@ -2299,6 +2385,11 @@
             if (d.benchRunning) patch.benchMissionStatus = 'paused';
           }
           if (mode === 'forces' && nextMode !== 'forces') patch.motorRunning = false;
+          if (mode === 'particle' && nextMode !== 'particle') {
+            _charge3DRunToken++;
+            if (_charge3DRAF && typeof window !== 'undefined') window.cancelAnimationFrame(_charge3DRAF);
+            _charge3DRAF = null; patch.charge3dRunning = false;
+          }
           upd(patch);
           announceToSR((nextMode === 'forces' ? 'Motor forces' : nextMode === 'energy' ? 'Energy systems' : 'Particle beam') + ' investigation selected.');
         }
@@ -2310,7 +2401,10 @@
           modeSwitch,
           mode === 'forces' ? card('How a motor spins', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'Current in the loop sits inside a magnet’s field. Each side feels a force ', h('b', null, 'F = B·I·L'), ' — one side pushed up, the other down. That twist is torque. A ', h('b', null, 'commutator'), ' flips the current every half turn so the push never reverses.'),
-            h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 6 } }, motorSVG()),
+            h('div', { role: 'group', 'aria-label': 'Motor force model view', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
+              h('button', { 'aria-pressed': d.motorView !== '3d' ? 'true' : 'false', onClick: function () { upd({ motorView: '2d' }); announceToSR('Two-dimensional motor force model selected.'); }, style: btn(d.motorView !== '3d') }, '2D force diagram'),
+              h('button', { 'aria-pressed': d.motorView === '3d' ? 'true' : 'false', onClick: function () { upd({ motorView: '3d', motor3dStatus: 'loading', motor3dUsed: true }); announceToSR('Three-dimensional motor torque lab selected.'); }, style: btn(d.motorView === '3d') }, '3D torque lab')),
+            d.motorView === '3d' ? motor3DPanel() : h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 6 } }, motorSVG()),
             motorTorqueGraph(),
             slider('Current (I)', d.motorCurrent, 0, 6, 1, function (v) { upd({ motorCurrent: v }); }),
             slider('Magnet strength (B)', d.motorField, 1, 8, 1, function (v) { upd({ motorField: v }); }),
@@ -2337,7 +2431,7 @@
               h('div', { style: { color: TEXT, fontSize: 13, fontWeight: 700 } }, 'Force on each active wire side ≈ ' + F.toFixed(3) + ' N · torque ≈ ' + torqueRel.toFixed(2) + '× baseline · ' + motorDirection),
               h('div', { style: { color: SOFT, fontSize: 12, marginTop: 4 } }, 'Torque grows with current, field, and sin θ. ' + (d.motorCurrent === 0 ? 'No current → no force → it will not turn.' : 'Reverse current OR field to reverse rotation; reverse both and the original direction returns.')))
           ), '#38bdf8') : mode === 'energy' ? motorGeneratorBenchCard() : chargedParticleCard(),
-          disclosure('The spin here is a teaching animation, not a timed simulation — angle advances at a steady rate so you can watch the commutator flip. The force law F = B·I·L and the "torque grows with B and I" relationship are real. The particle beam uses a uniform-field trajectory model with distance shown schematically.')
+          disclosure('The 2D and 3D motor views share the same force and torque state. Rotation speed is a teaching animation rather than a timed mechanical model; the 3D geometry, commutator phase, F = B·I·L force pair, and torque dependence on I, B, and angle are physically linked. Both particle views use a uniform magnetic field: the 2D distance is schematic, while the 3D path preserves r ∝ m·v⊥/B, constant speed, mass-dependent gyro period and pitch from v∥, and handedness reversal with q or B. Pinning a reference path supports a fair one-variable comparison.')
         );
       }
 
@@ -2711,8 +2805,221 @@
               h('b', { style: { color: TEXT } }, 'Engineering challenge: '),
               'Compare 10 Ω with 160 Ω without changing the motor controls. Then open the transient mission to test startup, back EMF, heat, and a constrained design.'))),
         '#34d399');
-      }      function chargedParticleCard() {
+      }
+
+      function currentCharge3DState() {
+        var current = Object.assign(chargedParticleHelix(d.chargeSign, d.chargeField, d.chargeSpeed, d.chargeB, d.chargeTilt, 121, d.chargeMass), {
+          chargeSign: d.chargeSign < 0 ? -1 : 1,
+          fieldSign: d.chargeField < 0 ? -1 : 1,
+          speed: Math.max(0.1, Number(d.chargeSpeed) || 0),
+          field: Math.max(0.1, Number(d.chargeB) || 0),
+          mass: Math.max(0.25, Number(d.chargeMass) || 1),
+          progress: Math.max(0, Math.min(100, Number(d.charge3dProgress) || 0)),
+          trail: d.charge3dTrail !== false,
+          reference: null,
+          comparison: null
+        });
+        var saved = d.charge3dReference;
+        if (saved) {
+          current.reference = Object.assign(chargedParticleHelix(saved.chargeSign, saved.fieldSign, saved.speed, saved.field, saved.tilt, 121, saved.mass), {
+            chargeSign: saved.chargeSign < 0 ? -1 : 1,
+            fieldSign: saved.fieldSign < 0 ? -1 : 1,
+            speed: Math.max(0.1, Number(saved.speed) || 0),
+            field: Math.max(0.1, Number(saved.field) || 0),
+            tilt: Math.max(0, Math.min(90, Number(saved.tilt) || 0)),
+            mass: Math.max(0.25, Number(saved.mass) || 1)
+          });
+          current.comparison = chargedParticleComparison(current, current.reference);
+        }
+        return current;
+      }
+      function stopCharge3D(message) {
+        _charge3DRunToken++;
+        if (_charge3DRAF && typeof window !== 'undefined') window.cancelAnimationFrame(_charge3DRAF);
+        _charge3DRAF = null;
+        upd({ charge3dRunning: false });
+        if (message) announceToSR(message);
+      }
+
+      function runCharge3D() {
+        if (_prefersReducedMotion || typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
+          upd({ charge3dProgress: 100, charge3dRunning: false, charge3dUsed: true, lorentzUsed: true });
+          announceToSR('Particle moved to the end of the trajectory without animation.'); return;
+        }
+        if (_charge3DRAF) return;
+        var initialProgress = d.charge3dProgress >= 100 ? 0 : (Number(d.charge3dProgress) || 0);
+        var token = ++_charge3DRunToken, started = null;
+        upd({ charge3dProgress: initialProgress, charge3dRunning: true, charge3dUsed: true, lorentzUsed: true });
+        function frame(timestamp) {
+          if (token !== _charge3DRunToken) return;
+          var current = (ctx.toolData && ctx.toolData.magnetism) || {};
+          if (!current.charge3dRunning || current.tab !== 'motor' || current.motorMode !== 'particle' || current.chargeView !== '3d') { _charge3DRAF = null; return; }
+          if (started == null) started = timestamp;
+          var progress = Math.min(100, initialProgress + (timestamp - started) / 40);
+          upd({ charge3dProgress: progress, charge3dRunning: progress < 100, charge3dUsed: true, lorentzUsed: true });
+          if (progress < 100) _charge3DRAF = window.requestAnimationFrame(frame);
+          else { _charge3DRAF = null; announceToSR('Particle completed the three-dimensional trajectory.'); }
+        }
+        _charge3DRAF = window.requestAnimationFrame(frame);
+      }
+
+      function initCharge3DCanvas(cv) {
+        if (!cv || cv._charge3dInit) return;
+        if (!window.StemLab || typeof window.StemLab.ensureThree !== 'function') return;
+        cv._charge3dInit = true;
+        window.StemLab.ensureThree({ orbit: true, orbitRequired: true, failMessage: 'The 3D particle engine could not load. The complete 2D Lorentz-force diagram remains available.' })
+          .then(function (THREE) {
+            if (!cv.isConnected) { cv._charge3dInit = false; return; }
+            var renderer;
+            try { renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: false, powerPreference: 'high-performance' }); }
+            catch (error) { cv._charge3dInit = false; upd({ charge3dStatus: 'error' }); return; }
+            var scene = new THREE.Scene(), backgroundColor = new THREE.Color(0x07111f);
+            try { var themeBackground = window.getComputedStyle(cv).getPropertyValue('--allo-stem-instrument').trim(); if (themeBackground) backgroundColor.setStyle(themeBackground); } catch (themeError) {}
+            scene.background = backgroundColor; scene.fog = new THREE.FogExp2(backgroundColor.getHex(), 0.028);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6)); if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+            var camera = new THREE.PerspectiveCamera(44, 1, 0.1, 70); camera.position.set(7.8, 5.8, 8.5);
+            var controls = new THREE.OrbitControls(camera, cv); controls.enableDamping = false; controls.minDistance = 5; controls.maxDistance = 20; controls.target.set(0, 0, 0);
+            scene.add(new THREE.HemisphereLight(0xdbeafe, 0x172554, 1.25));
+            var keyLight = new THREE.DirectionalLight(0xffffff, 1.15); keyLight.position.set(5, 8, 6); scene.add(keyLight);
+            var particleLight = new THREE.PointLight(0xf43f5e, 1.0, 12); scene.add(particleLight);
+            var dynamicGroup = new THREE.Group(); scene.add(dynamicGroup);
+            var liveState = cv._charge3dState || currentCharge3DState();
+            var resizeObserver = null, disposed = false, liveSignature = '';
+            var particleGroup = null, velocityArrow = null, forceArrow = null, trailLine = null, trailGeometry = null, referenceLine = null, particleLightRef = particleLight;
+            function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
+            function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } particleGroup = null; velocityArrow = null; forceArrow = null; trailLine = null; trailGeometry = null; referenceLine = null; }
+            function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); }
+            function renderScene() { if (!disposed) { resize(); renderer.render(scene, camera); } }
+            function addArrow(parent, origin, direction, color, length, opacity) {
+              var arrow = new THREE.ArrowHelper(direction.clone().normalize(), origin, length, color, Math.min(0.25, length * 0.27), Math.min(0.14, length * 0.16));
+              arrow.line.material.transparent = true; arrow.line.material.opacity = opacity; arrow.cone.material.transparent = true; arrow.cone.material.opacity = opacity; parent.add(arrow); return arrow;
+            }
+            function buildScene(state) {
+              clearDynamic();
+              var chamberEdges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(6.4, 6.8, 6.4)), new THREE.LineBasicMaterial({ color: 0x64748b, transparent: true, opacity: 0.22 })); dynamicGroup.add(chamberEdges);
+              var fieldStart = state.fieldSign > 0 ? -3.05 : 3.05;
+              [-1.7, 0, 1.7].forEach(function (xx) { [-1.7, 0, 1.7].forEach(function (zz) {
+                addArrow(dynamicGroup, new THREE.Vector3(xx, fieldStart, zz), new THREE.Vector3(0, state.fieldSign, 0), 0x38bdf8, 6.1, 0.20 + state.field / 16);
+              }); });
+              var vectors = state.points.map(function (point) { return new THREE.Vector3(point.x, point.y, point.z); });
+              var fullGeometry = new THREE.BufferGeometry().setFromPoints(vectors);
+              dynamicGroup.add(new THREE.Line(fullGeometry, new THREE.LineBasicMaterial({ color: 0xf43f5e, transparent: true, opacity: 0.25 })));
+              if (state.reference) {
+                var referenceVectors = state.reference.points.map(function (point) { return new THREE.Vector3(point.x, point.y, point.z); });
+                var referenceGeometry = new THREE.BufferGeometry().setFromPoints(referenceVectors);
+                referenceLine = new THREE.Line(referenceGeometry, new THREE.LineDashedMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.72, dashSize: 0.18, gapSize: 0.11 }));
+                referenceLine.computeLineDistances(); dynamicGroup.add(referenceLine);
+              }
+              trailGeometry = new THREE.BufferGeometry().setFromPoints(vectors); trailGeometry.setDrawRange(0, 1);
+              trailLine = new THREE.Line(trailGeometry, new THREE.LineBasicMaterial({ color: 0xfb7185, transparent: true, opacity: state.trail ? 0.95 : 0 })); dynamicGroup.add(trailLine);
+              particleGroup = new THREE.Group(); dynamicGroup.add(particleGroup);
+              var sphere = new THREE.Mesh(new THREE.SphereGeometry(0.18, 22, 16), new THREE.MeshStandardMaterial({ color: state.chargeSign > 0 ? 0xfb7185 : 0x38bdf8, emissive: state.chargeSign > 0 ? 0xf43f5e : 0x0284c7, emissiveIntensity: 0.32, roughness: 0.32 })); particleGroup.add(sphere);
+              var ringCount = state.chargeSign > 0 ? 1 : 2;
+              for (var ringIndex = 0; ringIndex < ringCount; ringIndex++) {
+                var ring = new THREE.Mesh(new THREE.TorusGeometry(0.25 + ringIndex * 0.08, 0.025, 7, 24), new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.92 })); ring.rotation.x = Math.PI / 2; particleGroup.add(ring);
+              }
+              velocityArrow = addArrow(dynamicGroup, new THREE.Vector3(), new THREE.Vector3(1, 0, 0), 0xfbbf24, 0.9, 1);
+              forceArrow = addArrow(dynamicGroup, new THREE.Vector3(), new THREE.Vector3(0, 0, 1), 0x34d399, 0.75, 1);
+            }
+            function updateParticle(state) {
+              var index = Math.max(0, Math.min(state.points.length - 1, Math.round(state.progress / 100 * (state.points.length - 1))));
+              var point = state.points[index], previous = state.points[Math.max(0, index - 1)], next = state.points[Math.min(state.points.length - 1, index + 1)];
+              var position = new THREE.Vector3(point.x, point.y, point.z);
+              var velocity = new THREE.Vector3(next.x - previous.x, next.y - previous.y, next.z - previous.z);
+              if (velocity.lengthSq() < 1e-9) velocity.set(0, 1, 0); else velocity.normalize();
+              var magneticField = new THREE.Vector3(0, state.fieldSign, 0);
+              var force = velocity.clone().cross(magneticField).multiplyScalar(state.chargeSign);
+              particleGroup.position.copy(position); particleLightRef.position.copy(position);
+              velocityArrow.position.copy(position); velocityArrow.setDirection(velocity); velocityArrow.setLength(0.75 + state.speed * 0.05, 0.22, 0.12);
+              forceArrow.position.copy(position);
+              if (force.lengthSq() < 1e-8) forceArrow.visible = false;
+              else { forceArrow.visible = true; forceArrow.setDirection(force.normalize()); forceArrow.setLength(0.55 + Math.min(1.0, state.force * 0.035), 0.22, 0.12); }
+              if (trailGeometry) trailGeometry.setDrawRange(0, state.trail ? index + 1 : 0);
+            }
+            function rebuild(state) {
+              if (disposed) return;
+              liveState = Object.assign({}, state, { points: state.points.map(function (point) { return Object.assign({}, point); }) });
+              var referenceSignature = state.reference ? [state.reference.chargeSign, state.reference.fieldSign, state.reference.speed, state.reference.field, state.reference.tilt, state.reference.mass].join(':') : 'none';
+              var signature = [state.chargeSign, state.fieldSign, state.speed, state.field, state.tilt, state.mass, state.trail, referenceSignature].join('|');
+              if (signature !== liveSignature) { liveSignature = signature; buildScene(liveState); }
+              updateParticle(liveState); renderScene();
+            }
+            function setView(view) {
+              if (view === 'field') camera.position.set(0.01, 10.5, 0.01);
+              else if (view === 'side') camera.position.set(9.5, 1.3, 0.01);
+              else if (view === 'end') camera.position.set(0.01, 1.0, 10);
+              else camera.position.set(7.8, 5.8, 8.5);
+              controls.target.set(0, 0, 0); camera.lookAt(controls.target); controls.update(); renderScene();
+            }
+            function onContextLost(event) { event.preventDefault(); stopCharge3D(); upd({ charge3dStatus: 'error' }); announceToSR('The 3D particle graphics context was lost. The 2D Lorentz-force diagram remains available.'); }
+            function cleanup() {
+              if (disposed) return; disposed = true;
+              cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
+              clearDynamic(); renderer.dispose(); cv._charge3dInit = false; cv._charge3dUpdate = null; cv._charge3dCleanup = null;
+            }
+            cv.addEventListener('webglcontextlost', onContextLost); controls.addEventListener('change', renderScene);
+            if (typeof ResizeObserver !== 'undefined') { resizeObserver = new ResizeObserver(renderScene); resizeObserver.observe(cv); } else window.addEventListener('resize', renderScene, { passive: true });
+            cv._charge3dUpdate = rebuild; cv._charge3dSetView = setView; cv._charge3dCleanup = cleanup; rebuild(liveState); upd({ charge3dStatus: 'ready', charge3dUsed: true });
+          }).catch(function () { cv._charge3dInit = false; if (cv.isConnected) { stopCharge3D(); upd({ charge3dStatus: 'error' }); announceToSR('The 3D particle engine could not load. Use the complete 2D Lorentz-force diagram or retry.'); } });
+      }
+
+      function charge3DCanvasRef(cv) {
+        if (!cv) { var oldCanvas = _charge3DCanvas; window.setTimeout(function () { if (oldCanvas && !oldCanvas.isConnected && typeof oldCanvas._charge3dCleanup === 'function') oldCanvas._charge3dCleanup(); }, 0); return; }
+        _charge3DCanvas = cv; cv._charge3dState = currentCharge3DState();
+        if (typeof cv._charge3dUpdate === 'function') cv._charge3dUpdate(cv._charge3dState); else initCharge3DCanvas(cv);
+      }
+
+      function chargedParticle3DPanel() {
+        var state = currentCharge3DState();
+        var pathWords = state.motionType === 'straight' ? 'straight along the field axis' : state.motionType === 'circular' ? 'a circle with no axial drift' : 'a helix along the field axis';
+        var turnWords = state.handedness > 0 ? 'initially toward positive z' : 'initially toward negative z';
+        var comparisonText = '';
+        if (state.reference && state.comparison) {
+          var comparison = state.comparison;
+          var changeWords = comparison.count ? comparison.keys.join(', ') : 'no variables';
+          var radiusWords = comparison.radiusRatio == null ? 'radius changed from ' + state.reference.radius.toFixed(2) + ' to ' + state.radius.toFixed(2) : 'radius is ' + comparison.radiusRatio.toFixed(2) + '× the reference';
+          var pitchWords = comparison.pitchRatio == null ? 'pitch changed from ' + state.reference.pitch.toFixed(2) + ' to ' + state.pitch.toFixed(2) : 'pitch is ' + comparison.pitchRatio.toFixed(2) + '× the reference';
+          comparisonText = (comparison.count === 0 ? 'Current controls match the pinned reference. ' : comparison.fair ? 'Fair comparison: only ' + changeWords + ' changed. ' : 'Confounded comparison: ' + changeWords + ' changed. ') + radiusWords + '; ' + pitchWords + '. ' + (comparison.handednessChanged ? 'The helix handedness reversed.' : 'Helix handedness stayed the same.');
+        }
+        function cameraButton(id, label) { return h('button', { key: id, onClick: function () { if (_charge3DCanvas && typeof _charge3DCanvas._charge3dSetView === 'function') _charge3DCanvas._charge3dSetView(id); announceToSR(label + ' particle view selected.'); }, style: btn() }, label); }
+        function pinReference() {
+          stopCharge3D();
+          upd({ charge3dReference: { chargeSign: state.chargeSign, fieldSign: state.fieldSign, speed: state.speed, field: state.field, tilt: state.tilt, mass: state.mass }, charge3dUsed: true, lorentzUsed: true });
+          announceToSR('Current particle path pinned as the dashed comparison reference. Change one variable for a fair test.');
+        }
+        return h('div', null,
+          sceneViewport(h('canvas', { key: 'charge3d-' + (d.charge3dAttempt || 0), ref: charge3DCanvasRef, className: 'mag-charge3d', role: 'img',
+            'aria-label': 'Interactive three-dimensional charged-particle trajectory with uniform magnetic-field arrows, traveled path, optional dashed reference trajectory, particle marker, velocity vector, and Lorentz-force vector.',
+            'aria-describedby': 'mag-charge3d-status mag-charge3d-summary',
+            style: { display: 'block', width: '100%', borderRadius: 10, border: '1px solid ' + BORDER, background: INSTRUMENT, touchAction: 'none' } }), [
+              { label: 'Path', value: state.motionType, tone: '#fb7185' },
+              { label: 'Gyro radius', value: state.radius.toFixed(2), tone: '#38bdf8' },
+              { label: 'Pitch / turn', value: state.pitch.toFixed(2), tone: '#a78bfa' }
+            ], 'B axis · y'),
+          h('div', { id: 'mag-charge3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: d.charge3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
+            d.charge3dStatus === 'ready' ? 'Scene ready. Drag to orbit, run the particle, scrub its position, or pin a path for comparison.' :
+            d.charge3dStatus === 'error' ? h('span', null, '3D graphics did not load. The complete 2D Lorentz-force diagram remains available. ', h('button', { onClick: function () { upd({ charge3dStatus: 'loading', charge3dAttempt: (d.charge3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D particle engine...'),
+          h('div', { 'aria-label': '3D vector key', style: { display: 'flex', gap: 10, flexWrap: 'wrap', color: SOFT, fontSize: 11.5, marginBottom: 8 } },
+            h('span', null, 'B ↑ blue field arrows'), h('span', null, 'v → gold velocity arrow'), h('span', null, 'F → green force arrow'), h('span', null, 'solid pink current path'), state.reference ? h('span', null, 'dashed pale reference path') : null, h('span', null, (state.chargeSign > 0 ? '+ one-ring' : '− two-ring') + ' particle marker')),
+          sceneTextAlternative('mag-charge3d-summary', 'A ' + (state.chargeSign > 0 ? 'positive' : 'negative') + ' particle of relative mass ' + state.mass.toFixed(1) + ' moves through a uniform field along ' + (state.fieldSign > 0 ? 'positive y' : 'negative y') + '. Its velocity is tilted ' + state.tilt + ' degrees from the field axis, with parallel component ' + state.parallelSpeed.toFixed(2) + ' and perpendicular component ' + state.perpendicularSpeed.toFixed(2) + '. The path is ' + pathWords + ', radius ' + state.radius.toFixed(2) + ', and pitch per turn ' + state.pitch.toFixed(2) + '. The magnetic force magnitude is proportional to ' + state.force.toFixed(2) + ' and the path curves ' + turnWords + '. Magnetic force stays perpendicular to velocity, so speed remains constant. ' + comparisonText),
+          h('div', { role: 'group', 'aria-label': '3D particle camera and path controls', style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 9 } },
+            cameraButton('perspective', 'Perspective'), cameraButton('field', 'Along field'), cameraButton('side', 'Side'), cameraButton('end', 'End'),
+            h('button', { 'aria-pressed': state.trail ? 'true' : 'false', onClick: function () { upd({ charge3dTrail: !state.trail, charge3dUsed: true }); }, style: btn(state.trail) }, 'Traveled path: ' + (state.trail ? 'on' : 'off'))),
+          h('div', { role: 'group', 'aria-label': 'Particle path comparison', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
+            h('button', { onClick: pinReference, style: btn(!!state.reference) }, state.reference ? 'Replace pinned path' : 'Pin path for comparison'),
+            state.reference ? h('button', { onClick: function () { upd({ charge3dReference: null, charge3dUsed: true }); announceToSR('Pinned particle path cleared.'); }, style: btn() }, 'Clear comparison') : null),
+          h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
+            d.charge3dRunning ? h('button', { onClick: function () { stopCharge3D('Particle animation paused.'); }, style: btn(true) }, 'Pause particle') : h('button', { onClick: runCharge3D, style: btn(true) }, d.charge3dProgress > 0 && d.charge3dProgress < 100 ? 'Resume particle' : 'Run particle'),
+            h('button', { onClick: function () { stopCharge3D(); upd({ charge3dProgress: 0, charge3dUsed: true }); announceToSR('Particle returned to the start of the path.'); }, style: btn() }, 'Reset particle')),
+          slider('Particle position (%)', Math.round(state.progress), 0, 100, 1, function (v) { stopCharge3D(); upd({ charge3dProgress: v, charge3dUsed: true, lorentzUsed: true }); }),
+          h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
+            h('span', { 'aria-hidden': 'true' }, state.reference ? '⇄' : state.motionType === 'helical' ? '↟' : state.motionType === 'circular' ? '○' : '↑'),
+            h('span', null, h('b', null, state.reference ? 'Pinned-path evidence. ' : state.motionType.charAt(0).toUpperCase() + state.motionType.slice(1) + ' motion. '),
+              state.reference ? comparisonText : 'Only v⊥ bends: radius ∝ m·v⊥/B. The unchanged v∥ component carries the particle along the field axis, while mass and field set the gyro period and helix pitch.')));
+      }
+      function chargedParticleCard() {
         var pts = chargedParticleTrajectory(d.chargeSign, d.chargeField, d.chargeSpeed, d.chargeB, 36);
+        var charge3d = chargedParticleHelix(d.chargeSign, d.chargeField, d.chargeSpeed, d.chargeB, d.chargeTilt, 121, d.chargeMass);
         var path = pts.map(function (p) {
           return (32 + p.x * 1.35).toFixed(1) + ',' + (110 + p.y * 0.55).toFixed(1);
         }).join(' ');
@@ -2737,7 +3044,10 @@
         return card('Charged-particle beam — Lorentz force', h('div', null,
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
             'A moving charge in a magnetic field feels ', h('b', null, 'F = qv × B'), '. The force is sideways, so the field bends the path instead of speeding the particle up. Reverse either the charge or the field and the curve reverses.'),
-          h('svg', { viewBox: '0 0 320 200', width: '100%', style: { maxWidth: 520, display: 'block', margin: '0 auto 10px' }, role: 'img',
+          h('div', { role: 'group', 'aria-label': 'Charged-particle model view', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
+            h('button', { 'aria-pressed': d.chargeView !== '3d' ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeView: '2d', charge3dRunning: false }); announceToSR('Two-dimensional Lorentz-force diagram selected.'); }, style: btn(d.chargeView !== '3d') }, '2D bend diagram'),
+            h('button', { 'aria-pressed': d.chargeView === '3d' ? 'true' : 'false', onClick: function () { if (d.chargeView === '3d') return; upd({ chargeView: '3d', charge3dStatus: 'loading', charge3dUsed: true, lorentzUsed: true }); announceToSR('Three-dimensional particle helix lab selected.'); }, style: btn(d.chargeView === '3d') }, '3D helix lab')),
+          d.chargeView === '3d' ? chargedParticle3DPanel() : h('svg', { viewBox: '0 0 320 200', width: '100%', style: { maxWidth: 520, display: 'block', margin: '0 auto 10px' }, role: 'img',
             'aria-label': 'A ' + chargeName + ' particle moving right through a field ' + fieldName + ', curving ' + (bendsUp ? 'up' : 'down') },
             h('rect', { x: 0, y: 0, width: 320, height: 200, fill: INSTRUMENT, rx: 10 }),
             markers,
@@ -2766,7 +3076,15 @@
                 h('button', { 'aria-pressed': d.chargeField < 0 ? 'true' : 'false', onClick: function () { upd({ chargeField: -1, lorentzUsed: true }); }, style: btn(d.chargeField < 0) }, '⊗ Into')))),
           slider('Particle speed (v)', d.chargeSpeed, 2, 8, 1, function (v) { upd({ chargeSpeed: v, lorentzUsed: true }); }),
           slider('Magnetic field strength (B)', d.chargeB, 1, 8, 1, function (v) { upd({ chargeB: v, lorentzUsed: true }); }),
-          h('div', { className: 'mag-observe', role: 'status' },
+          d.chargeView === '3d' ? h('div', null,
+            slider('Relative particle mass (m)', d.chargeMass, 0.5, 6, 0.5, function (v) { stopCharge3D(); upd({ chargeMass: v, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }),
+            h('div', { role: 'group', 'aria-label': 'Velocity tilt presets', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 } },
+              h('button', { 'aria-pressed': d.chargeTilt === 0 ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeTilt: 0, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }, style: btn(d.chargeTilt === 0) }, '0° · axial line'),
+              h('button', { 'aria-pressed': d.chargeTilt === 45 ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeTilt: 45, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }, style: btn(d.chargeTilt === 45) }, '45° · helix'),
+              h('button', { 'aria-pressed': d.chargeTilt === 90 ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeTilt: 90, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }, style: btn(d.chargeTilt === 90) }, '90° · circle')),
+            slider('Velocity tilt from field axis (°)', d.chargeTilt, 0, 90, 5, function (v) { stopCharge3D(); upd({ chargeTilt: v, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }),
+            h('div', { style: { color: SOFT, fontSize: 11.5, margin: '-3px 0 8px', lineHeight: 1.4 } }, 'm ' + charge3d.mass.toFixed(1) + ' · v∥ ' + charge3d.parallelSpeed.toFixed(2) + ' · v⊥ ' + charge3d.perpendicularSpeed.toFixed(2) + ' · magnetic force ∝ ' + charge3d.force.toFixed(2))) : null,
+          d.chargeView === '3d' ? null : h('div', { className: 'mag-observe', role: 'status' },
             h('span', { 'aria-hidden': 'true' }, '🧭'),
             h('span', null, h('b', null, 'Path bends ' + (bendsUp ? 'up' : 'down') + ' · radius indicator ' + radiusRel.toFixed(2) + '. '),
               'Faster particles make wider arcs; a stronger field makes tighter arcs. This is the operating idea behind mass spectrometers and particle-beam steering.'))
@@ -2842,6 +3160,189 @@
             h('text', { x: 232, y: half > 0 ? 151 : 42, fill: '#34d399', fontSize: 11 }, 'force')) : null,
           h('text', { x: 150, y: 178, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'commutator flips current each half-turn · forces keep the same torque direction')
         );
+      }
+
+      function currentMotor3DState() {
+        return Object.assign(motorSpatialState(d.motorAngle, d.motorCurrent, d.motorField, d.motorCurrentDir, d.motorFieldDir), {
+          current: Math.max(0, Number(d.motorCurrent) || 0),
+          field: Math.max(0, Number(d.motorField) || 0),
+          currentDir: d.motorCurrentDir < 0 ? -1 : 1,
+          fieldDir: d.motorFieldDir < 0 ? -1 : 1,
+          showForces: d.motor3dForces !== false,
+          showCurrent: d.motor3dCurrent !== false
+        });
+      }
+
+      function initMotor3DCanvas(cv) {
+        if (!cv || cv._motor3dInit) return;
+        if (!window.StemLab || typeof window.StemLab.ensureThree !== 'function') return;
+        cv._motor3dInit = true;
+        window.StemLab.ensureThree({ orbit: true, orbitRequired: true, failMessage: 'The 3D motor engine could not load. The complete 2D force diagram remains available.' })
+          .then(function (THREE) {
+            if (!cv.isConnected) { cv._motor3dInit = false; return; }
+            var renderer;
+            try { renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: false, powerPreference: 'high-performance' }); }
+            catch (error) { cv._motor3dInit = false; upd({ motor3dStatus: 'error' }); return; }
+            var scene = new THREE.Scene(), backgroundColor = new THREE.Color(0x07111f);
+            try { var themeBackground = window.getComputedStyle(cv).getPropertyValue('--allo-stem-instrument').trim(); if (themeBackground) backgroundColor.setStyle(themeBackground); } catch (themeError) {}
+            scene.background = backgroundColor; scene.fog = new THREE.FogExp2(backgroundColor.getHex(), 0.026);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6)); if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+            var camera = new THREE.PerspectiveCamera(44, 1, 0.1, 70); camera.position.set(8.2, 5.4, 8.6);
+            var controls = new THREE.OrbitControls(camera, cv); controls.enableDamping = false; controls.minDistance = 5.5; controls.maxDistance = 20; controls.target.set(0, 0, 0);
+            scene.add(new THREE.HemisphereLight(0xdbeafe, 0x172554, 1.2));
+            var keyLight = new THREE.DirectionalLight(0xffffff, 1.25); keyLight.position.set(5, 8, 7); scene.add(keyLight);
+            var rimLight = new THREE.PointLight(0x38bdf8, 1.0, 22); rimLight.position.set(-5, 2, 5); scene.add(rimLight);
+            var grid = new THREE.GridHelper(11, 22, 0x64748b, 0x334155); grid.material.transparent = true; grid.material.opacity = 0.22; grid.position.y = -2.25; scene.add(grid);
+            var dynamicGroup = new THREE.Group(); scene.add(dynamicGroup);
+            var liveState = cv._motor3dState || currentMotor3DState();
+            var resizeObserver = null, disposed = false, liveSignature = '';
+            var rotorGroup = null, forceArrows = [], currentArrows = [], momentArrow = null, torqueArrow = null;
+            var yAxis = new THREE.Vector3(0, 1, 0);
+            function disposeObject(obj) { obj.traverse(function (child) { if (child.geometry && child.geometry.dispose) child.geometry.dispose(); if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(function (material) { if (material && material.dispose) material.dispose(); }); }); }
+            function clearDynamic() { while (dynamicGroup.children.length) { var child = dynamicGroup.children[dynamicGroup.children.length - 1]; dynamicGroup.remove(child); disposeObject(child); } rotorGroup = null; forceArrows = []; currentArrows = []; momentArrow = null; torqueArrow = null; }
+            function resize() { var width = Math.max(1, cv.clientWidth || 680), height = Math.max(1, cv.clientHeight || 410); renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); }
+            function renderScene() { if (!disposed) { resize(); renderer.render(scene, camera); } }
+            function addArrow(parent, origin, direction, color, length, opacity) {
+              var arrow = new THREE.ArrowHelper(direction.clone().normalize(), origin, length, color, Math.min(0.28, length * 0.28), Math.min(0.16, length * 0.17));
+              arrow.line.material.transparent = true; arrow.line.material.opacity = opacity; arrow.cone.material.transparent = true; arrow.cone.material.opacity = opacity; parent.add(arrow); return arrow;
+            }
+            function addPoleMark(x, isNorth) {
+              var radii = isNorth ? [0.42] : [0.28, 0.55];
+              radii.forEach(function (radius) {
+                var ring = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.045, 8, 32), new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.95 }));
+                ring.rotation.y = Math.PI / 2; ring.position.set(x, 0, 0); dynamicGroup.add(ring);
+              });
+            }
+            function buildApparatus(state) {
+              clearDynamic();
+              [-1, 1].forEach(function (side) {
+                var isNorth = side === -state.fieldDirection;
+                var magnet = new THREE.Mesh(new THREE.BoxGeometry(1.15, 3.5, 3.0), new THREE.MeshStandardMaterial({ color: isNorth ? 0xef4444 : 0x2563eb, roughness: 0.42, metalness: 0.3 }));
+                magnet.position.x = side * 3.35; dynamicGroup.add(magnet);
+                addPoleMark(side * 2.76, isNorth);
+              });
+              var fieldStart = state.fieldDirection > 0 ? -2.62 : 2.62;
+              [-0.78, 0, 0.78].forEach(function (yy) { [-0.62, 0.62].forEach(function (zz) {
+                addArrow(dynamicGroup, new THREE.Vector3(fieldStart, yy, zz), new THREE.Vector3(state.fieldDirection, 0, 0), 0x38bdf8, 5.24, 0.28 + state.field / 12);
+              }); });
+              rotorGroup = new THREE.Group(); dynamicGroup.add(rotorGroup);
+              var loopPoints = [new THREE.Vector3(0, -1.28, -1.08), new THREE.Vector3(0, 1.28, -1.08), new THREE.Vector3(0, 1.28, 1.08), new THREE.Vector3(0, -1.28, 1.08)];
+              var loopCurve = new THREE.CatmullRomCurve3(loopPoints, true, 'catmullrom', 0.05);
+              var loop = new THREE.Mesh(new THREE.TubeGeometry(loopCurve, 72, 0.065, 10, true), new THREE.MeshStandardMaterial({ color: state.current > 0 ? 0xf59e0b : 0x64748b, emissive: 0xf59e0b, emissiveIntensity: state.current > 0 ? 0.18 : 0, roughness: 0.38, metalness: 0.62 })); rotorGroup.add(loop);
+              var shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 4.7, 18), new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.28, metalness: 0.82 })); rotorGroup.add(shaft);
+              [0, Math.PI].forEach(function (rotation, index) {
+                var halfRing = new THREE.Mesh(new THREE.TorusGeometry(0.40, 0.11, 9, 24, Math.PI), new THREE.MeshStandardMaterial({ color: index ? 0xb45309 : 0xf59e0b, roughness: 0.32, metalness: 0.72 }));
+                halfRing.rotation.x = Math.PI / 2; halfRing.rotation.z = rotation; halfRing.position.y = -1.72; rotorGroup.add(halfRing);
+              });
+              [-0.62, 0.62].forEach(function (x) { var brush = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.28, 0.48), new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.72 })); brush.position.set(x, -1.72, 0); dynamicGroup.add(brush); });
+              if (state.showCurrent && state.current > 0) {
+                currentArrows = [
+                  addArrow(rotorGroup, new THREE.Vector3(0, -0.38, -1.08), new THREE.Vector3(0, 1, 0), 0xfbbf24, 0.78, 1),
+                  addArrow(rotorGroup, new THREE.Vector3(0, 0.38, 1.08), new THREE.Vector3(0, -1, 0), 0xfbbf24, 0.78, 1)
+                ];
+              }
+              if (state.showForces && state.current > 0 && state.field > 0) {
+                forceArrows = [
+                  addArrow(dynamicGroup, new THREE.Vector3(), new THREE.Vector3(0, 0, 1), 0x34d399, 1, 1),
+                  addArrow(dynamicGroup, new THREE.Vector3(), new THREE.Vector3(0, 0, -1), 0x34d399, 1, 1)
+                ];
+                torqueArrow = addArrow(dynamicGroup, new THREE.Vector3(), new THREE.Vector3(0, 1, 0), 0xfbbf24, 1, 0.95);
+              }
+              if (state.showCurrent && state.current > 0) momentArrow = addArrow(dynamicGroup, new THREE.Vector3(), new THREE.Vector3(1, 0, 0), 0xa78bfa, 1.45, 0.95);
+            }
+            function updatePose(state) {
+              var angleRad = state.angle * Math.PI / 180;
+              if (rotorGroup) rotorGroup.rotation.y = angleRad;
+              if (currentArrows.length) {
+                var currentDirection = state.segmentDirection;
+                currentArrows[0].setDirection(new THREE.Vector3(0, currentDirection, 0));
+                currentArrows[1].setDirection(new THREE.Vector3(0, -currentDirection, 0));
+              }
+              if (forceArrows.length) {
+                var sideA = new THREE.Vector3(0, 0, -1.08).applyAxisAngle(yAxis, angleRad);
+                var sideB = new THREE.Vector3(0, 0, 1.08).applyAxisAngle(yAxis, angleRad);
+                var forceDirection = -state.segmentDirection * state.fieldDirection;
+                forceArrows[0].position.copy(sideA); forceArrows[0].setDirection(new THREE.Vector3(0, 0, forceDirection));
+                forceArrows[1].position.copy(sideB); forceArrows[1].setDirection(new THREE.Vector3(0, 0, -forceDirection));
+                var forceLength = 0.55 + Math.min(1.25, state.force * 6);
+                forceArrows[0].setLength(forceLength, 0.24, 0.13); forceArrows[1].setLength(forceLength, 0.24, 0.13);
+              }
+              if (momentArrow) {
+                var normal = new THREE.Vector3(1, 0, 0).applyAxisAngle(yAxis, angleRad).multiplyScalar(state.segmentDirection);
+                momentArrow.setDirection(normal.normalize()); momentArrow.setLength(1.35, 0.25, 0.14);
+              }
+              if (torqueArrow) {
+                torqueArrow.position.set(0, state.torqueDirection > 0 ? -0.9 : 0.9, 0);
+                torqueArrow.setDirection(new THREE.Vector3(0, state.torqueDirection, 0));
+                torqueArrow.setLength(0.55 + state.torquePercent / 100 * 1.45, 0.25, 0.14);
+              }
+            }
+            function rebuild(state) {
+              if (disposed) return;
+              liveState = Object.assign({}, state);
+              var signature = [state.current, state.field, state.currentDir, state.fieldDir, state.showForces, state.showCurrent].join('|');
+              if (signature !== liveSignature) { liveSignature = signature; buildApparatus(liveState); }
+              updatePose(liveState); renderScene();
+            }
+            function setView(view) {
+              if (view === 'field') camera.position.set(9.5, 1.7, 0.01);
+              else if (view === 'shaft') camera.position.set(0.01, 9.5, 0.01);
+              else if (view === 'commutator') camera.position.set(4.8, -3.4, 5.2);
+              else camera.position.set(8.2, 5.4, 8.6);
+              controls.target.set(0, view === 'commutator' ? -0.7 : 0, 0); camera.lookAt(controls.target); controls.update(); renderScene();
+            }
+            function onContextLost(event) { event.preventDefault(); upd({ motor3dStatus: 'error', motorRunning: false }); announceToSR('The 3D motor graphics context was lost. The 2D force diagram remains available.'); }
+            function cleanup() {
+              if (disposed) return; disposed = true;
+              cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
+              clearDynamic(); renderer.dispose(); cv._motor3dInit = false; cv._motor3dUpdate = null; cv._motor3dCleanup = null;
+            }
+            cv.addEventListener('webglcontextlost', onContextLost); controls.addEventListener('change', renderScene);
+            if (typeof ResizeObserver !== 'undefined') { resizeObserver = new ResizeObserver(renderScene); resizeObserver.observe(cv); } else window.addEventListener('resize', renderScene, { passive: true });
+            cv._motor3dUpdate = rebuild; cv._motor3dSetView = setView; cv._motor3dCleanup = cleanup; rebuild(liveState); upd({ motor3dStatus: 'ready', motor3dUsed: true });
+          }).catch(function () { cv._motor3dInit = false; if (cv.isConnected) { upd({ motor3dStatus: 'error', motorRunning: false }); announceToSR('The 3D motor engine could not load. Use the complete 2D force diagram or retry.'); } });
+      }
+
+      function motor3DCanvasRef(cv) {
+        if (!cv) { var oldCanvas = _motor3DCanvas; window.setTimeout(function () { if (oldCanvas && !oldCanvas.isConnected && typeof oldCanvas._motor3dCleanup === 'function') oldCanvas._motor3dCleanup(); }, 0); return; }
+        _motor3DCanvas = cv; cv._motor3dState = currentMotor3DState();
+        if (typeof cv._motor3dUpdate === 'function') cv._motor3dUpdate(cv._motor3dState); else initMotor3DCanvas(cv);
+      }
+
+      function motor3DPanel() {
+        var state = currentMotor3DState();
+        var direction = state.torqueDirection > 0 ? 'clockwise' : 'counter-clockwise';
+        var fieldPhrase = state.fieldDirection > 0 ? 'left north pole to right south pole' : 'right north pole to left south pole';
+        var currentPhrase = state.segmentDirection > 0 ? 'up the near active side and down the far side' : 'down the near active side and up the far side';
+        function cameraButton(id, label) { return h('button', { key: id, onClick: function () { if (_motor3DCanvas && typeof _motor3DCanvas._motor3dSetView === 'function') _motor3DCanvas._motor3dSetView(id); announceToSR(label + ' motor view selected.'); }, style: btn() }, label); }
+        function setLandmark(angle, label) { upd({ motorAngle: angle, motorRunning: false, motorRan: true, motor3dUsed: true }); announceToSR(label + ' selected at ' + angle + ' degrees.'); }
+        return h('div', null,
+          sceneViewport(h('canvas', { key: 'motor3d-' + (d.motor3dAttempt || 0), ref: motor3DCanvasRef, className: 'mag-motor3d', role: 'img',
+            'aria-label': 'Interactive three-dimensional DC motor with pole pieces, field arrows, rotating current loop, split-ring commutator, brushes, force arrows, magnetic moment, and torque vector.',
+            'aria-describedby': 'mag-motor3d-status mag-motor3d-summary',
+            style: { display: 'block', width: '100%', borderRadius: 10, border: '1px solid ' + BORDER, background: INSTRUMENT, touchAction: 'none' } }), [
+              { label: 'Rotor angle', value: Math.round(state.angle) + '°', tone: '#38bdf8' },
+              { label: 'Relative torque', value: Math.round(state.torquePercent) + '%', tone: '#fbbf24' },
+              { label: 'Commutator', value: 'half ' + state.halfTurn, tone: '#a78bfa' }
+            ], 'shaft · y'),
+          h('div', { id: 'mag-motor3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: d.motor3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
+            d.motor3dStatus === 'ready' ? 'Scene ready. Drag to orbit, then run the motor or freeze it at a landmark angle.' :
+            d.motor3dStatus === 'error' ? h('span', null, '3D graphics did not load. The complete 2D force diagram remains available. ', h('button', { onClick: function () { upd({ motor3dStatus: 'loading', motor3dAttempt: (d.motor3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D motor engine...'),
+          poleLegend(state.fieldDirection > 0 ? 'North pole — left, one bright ring' : 'North pole — right, one bright ring', state.fieldDirection > 0 ? 'South pole — right, two bright rings' : 'South pole — left, two bright rings'),
+          sceneTextAlternative('mag-motor3d-summary', 'The rotor is at ' + Math.round(state.angle) + ' degrees in half-turn ' + state.halfTurn + '. Magnetic field points from ' + fieldPhrase + '. Conventional current moves ' + currentPhrase + '. The two active sides feel equal opposite forces of about ' + state.force.toFixed(3) + ' newtons. Relative torque is ' + Math.round(state.torquePercent) + ' percent and points in the ' + direction + ' rotation direction. ' + (state.deadSpot ? 'The loop is at a torque dead spot; inertia is needed to carry it through.' : 'The forces form a turning pair around the shaft.')),
+          h('div', { role: 'group', 'aria-label': '3D motor camera and visual layers', style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 9 } },
+            cameraButton('perspective', 'Perspective'), cameraButton('field', 'Along field'), cameraButton('shaft', 'Along shaft'), cameraButton('commutator', 'Commutator close-up'),
+            h('button', { 'aria-pressed': state.showForces ? 'true' : 'false', onClick: function () { upd({ motor3dForces: !state.showForces, motor3dUsed: true }); }, style: btn(state.showForces) }, 'Force + torque vectors: ' + (state.showForces ? 'on' : 'off')),
+            h('button', { 'aria-pressed': state.showCurrent ? 'true' : 'false', onClick: function () { upd({ motor3dCurrent: !state.showCurrent, motor3dUsed: true }); }, style: btn(state.showCurrent) }, 'Current + moment vectors: ' + (state.showCurrent ? 'on' : 'off'))),
+          h('div', { role: 'group', 'aria-label': 'Freeze rotor at a concept landmark', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 } },
+            h('button', { onClick: function () { setLandmark(0, 'First torque dead spot'); }, style: btn(state.angle === 0) }, '0° · dead spot'),
+            h('button', { onClick: function () { setLandmark(90, 'Maximum torque'); }, style: btn(state.angle === 90) }, '90° · maximum torque'),
+            h('button', { onClick: function () { setLandmark(180, 'Commutator flip and second dead spot'); }, style: btn(state.angle === 180) }, '180° · commutator flips'),
+            h('button', { onClick: function () { setLandmark(270, 'Maximum torque after commutation'); }, style: btn(state.angle === 270) }, '270° · maximum torque')),
+          h('div', { className: 'mag-observe', role: 'status' },
+            h('span', { 'aria-hidden': 'true' }, state.deadSpot ? '○' : '↻'),
+            h('span', null, h('b', null, state.deadSpot ? 'Torque dead spot. ' : 'Turning pair active. '),
+              'Blue arrows show B, gold arrows show current and torque, green arrows show the equal opposite wire forces, and the violet arrow is the loop’s magnetic moment. Shape, labels, and direction accompany every color.')));
       }
 
       var _spinRAF = null;
@@ -4413,6 +4914,20 @@
           return { station: station, setup: d.turns + ' turns, ' + d.current + ' A, ' + (d.core ? 'iron' : 'air') + ' core, field ' + eDir,
             result: eB.toFixed(eB < 10 ? 2 : 0) + ' mT interior field' };
         }
+        if (d.tab === 'motor' && d.motorMode === 'particle') {
+          if (d.chargeView === '3d') {
+            var c3 = currentCharge3DState();
+            return { station: '3D particle helix lab', setup: (c3.chargeSign > 0 ? 'positive' : 'negative') + ' charge, relative mass ' + c3.mass.toFixed(1) + ', B ' + c3.field + ' along ' + (c3.fieldSign > 0 ? '+y' : '−y') + ', speed ' + c3.speed + ', tilt ' + c3.tilt + '°',
+              result: c3.motionType + ' path, radius ' + c3.radius.toFixed(2) + ', pitch ' + c3.pitch.toFixed(2) + ', v∥ ' + c3.parallelSpeed.toFixed(2) + ', v⊥ ' + c3.perpendicularSpeed.toFixed(2) + (c3.comparison ? '; ' + (c3.comparison.fair ? 'fair comparison' : c3.comparison.count === 0 ? 'matches pinned reference' : 'confounded comparison') + ', radius ' + (c3.comparison.radiusRatio == null ? 'changed from zero' : c3.comparison.radiusRatio.toFixed(2) + '× reference') : '') };
+          }
+          return { station: 'Charged-particle beam', setup: (d.chargeSign > 0 ? 'positive' : 'negative') + ' charge, field ' + (d.chargeField > 0 ? 'out' : 'into') + ' screen, speed ' + d.chargeSpeed + ', B ' + d.chargeB,
+            result: 'path bends ' + (d.chargeSign * d.chargeField > 0 ? 'up' : 'down') + ', radius indicator ' + (d.chargeSpeed / Math.max(0.1, d.chargeB)).toFixed(2) };
+        }
+        if (d.tab === 'motor' && d.motorMode === 'forces' && d.motorView === '3d') {
+          var m3 = currentMotor3DState();
+          return { station: '3D motor torque lab', setup: 'I ' + m3.current + ', B ' + m3.field + ', rotor ' + Math.round(m3.angle) + '°, commutator half ' + m3.halfTurn,
+            result: m3.force.toFixed(3) + ' N on each active side, ' + Math.round(m3.torquePercent) + '% relative torque, ' + (m3.deadSpot ? 'torque dead spot' : (m3.torqueDirection > 0 ? 'clockwise' : 'counter-clockwise') + ' turning pair') };
+        }
         if (d.tab === 'motor' && d.benchUsed) {
           if (d.benchView === 'mission' && (d.benchTrace || []).length) {
             var missionResult = evaluateMotorGeneratorMission(d.benchTrace || []);
@@ -4577,6 +5092,6 @@
 
   // Expose pure helpers for the test suite (no-op in the browser bundle).
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { CORE_MATERIALS: CORE_MATERIALS, coreAdjustedField: coreAdjustedField, finiteSolenoidCenterField: finiteSolenoidCenterField, solenoidWireLength: solenoidWireLength, solenoidHeatingIndex: solenoidHeatingIndex, solenoidFieldAt3D: solenoidFieldAt3D, traceSolenoidLine3D: traceSolenoidLine3D, coilNormal3D: coilNormal3D, coilFlux3D: coilFlux3D, inducedVoltage3D: inducedVoltage3D, inductionPass3D: inductionPass3D, dipoleMoment3D: dipoleMoment3D, dipoleFieldAt3D: dipoleFieldAt3D, fieldAt3D: fieldAt3D, fieldComponentsAt3D: fieldComponentsAt3D, traceLine3D: traceLine3D, findFieldNull3D: findFieldNull3D, dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, fieldComponentsAt: fieldComponentsAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, motorTorqueFactor: motorTorqueFactor, motorGeneratorBench: motorGeneratorBench, motorGeneratorTransientStep: motorGeneratorTransientStep, motorGeneratorSimulate: motorGeneratorSimulate, evaluateMotorGeneratorMission: evaluateMotorGeneratorMission, describeMotorGeneratorTrialChange: describeMotorGeneratorTrialChange, magnetPairForce: magnetPairForce, chargedParticleTrajectory: chargedParticleTrajectory, rotatingFlux: rotatingFlux, rotatingEMF: rotatingEMF, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, transformerLoad: transformerLoad, hysteresisMagnetization: hysteresisMagnetization, eddyBrakeFactor: eddyBrakeFactor, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, countCycles: countCycles, MAZE_ROUNDS: MAZE_ROUNDS, mazeCellToField: mazeCellToField, mazePoles: mazePoles, MATERIALS: MATERIALS, QUIZ: QUIZ, QUIZ_TABS: QUIZ_TABS, QUIZ_PASS: QUIZ_PASS, MU0: MU0 };
+    module.exports = { CORE_MATERIALS: CORE_MATERIALS, coreAdjustedField: coreAdjustedField, finiteSolenoidCenterField: finiteSolenoidCenterField, solenoidWireLength: solenoidWireLength, solenoidHeatingIndex: solenoidHeatingIndex, solenoidFieldAt3D: solenoidFieldAt3D, traceSolenoidLine3D: traceSolenoidLine3D, coilNormal3D: coilNormal3D, coilFlux3D: coilFlux3D, inducedVoltage3D: inducedVoltage3D, inductionPass3D: inductionPass3D, dipoleMoment3D: dipoleMoment3D, dipoleFieldAt3D: dipoleFieldAt3D, fieldAt3D: fieldAt3D, fieldComponentsAt3D: fieldComponentsAt3D, traceLine3D: traceLine3D, findFieldNull3D: findFieldNull3D, dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, fieldComponentsAt: fieldComponentsAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, motorTorqueFactor: motorTorqueFactor, motorSpatialState: motorSpatialState, motorGeneratorBench: motorGeneratorBench, motorGeneratorTransientStep: motorGeneratorTransientStep, motorGeneratorSimulate: motorGeneratorSimulate, evaluateMotorGeneratorMission: evaluateMotorGeneratorMission, describeMotorGeneratorTrialChange: describeMotorGeneratorTrialChange, magnetPairForce: magnetPairForce, chargedParticleTrajectory: chargedParticleTrajectory, chargedParticleHelix: chargedParticleHelix, chargedParticleComparison: chargedParticleComparison, rotatingFlux: rotatingFlux, rotatingEMF: rotatingEMF, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, transformerLoad: transformerLoad, hysteresisMagnetization: hysteresisMagnetization, eddyBrakeFactor: eddyBrakeFactor, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, countCycles: countCycles, MAZE_ROUNDS: MAZE_ROUNDS, mazeCellToField: mazeCellToField, mazePoles: mazePoles, MATERIALS: MATERIALS, QUIZ: QUIZ, QUIZ_TABS: QUIZ_TABS, QUIZ_PASS: QUIZ_PASS, MU0: MU0 };
   }
 })();

@@ -314,7 +314,7 @@
     "      h('p', { style: { marginTop: 0 } }, t('stem.myTool.intro', 'Tap the button to begin.')),",
     "      h('button', {",
     "        onClick: function () { var n = count + 1; setCount(n); ctx.update('myTool', 'count', n); },",
-    "        style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #6366f1', background: '#6366f1', color: '#fff', cursor: 'pointer' }",
+    "        style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #4f46e5', background: '#4f46e5', color: '#fff', cursor: 'pointer' }",
     "      }, t('stem.myTool.tap', 'Tap') + ' (' + count + ')')",
     "    );",
     "  }",

@@ -3787,7 +3787,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-                React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+                React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
               )
 
@@ -3896,7 +3896,7 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mt-1" }, realSkyMessage || "Loading Aladin Lite, sky survey tiles, and catalog services."),
                         realSkyStatus === 'error' && React.createElement("div", { className: "mt-3 flex flex-wrap items-center justify-center gap-2" },
                           React.createElement("button", { type: "button", onClick: function () { patchGalaxy({ realSkyStatus: 'idle', realSkyMessage: '', realSkyRetry: realSkyRetry + 1 }); }, className: "rounded-lg border border-cyan-200/50 bg-cyan-400/15 px-3 py-1.5 text-[11px] font-bold text-cyan-50 hover:bg-cyan-400/25" }, "Retry atlas"),
-                          React.createElement("a", { href: activeAladinUrl, target: "_blank", rel: "noreferrer", className: "inline-block rounded-lg bg-cyan-500 px-3 py-1.5 text-[11px] font-bold text-white" }, "Open external atlas")
+                          React.createElement("a", { href: activeAladinUrl, target: "_blank", rel: "noreferrer", className: "inline-block rounded-lg bg-cyan-700 px-3 py-1.5 text-[11px] font-bold text-white" }, "Open external atlas")
                         )
                       )
                     )
@@ -4549,7 +4549,7 @@ if (!window._galaxyHasLoadedOnce) {
                 }),
 
                 // ── Snapshot button (overlay, bottom-right of canvas) ──
-                React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-3 py-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
+                React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: 'Star Life: ' + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Star life snapshot saved!', 'success'); }, className: "px-3 py-1.5 text-[11px] font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 rounded-full hover:from-amber-700 hover:to-orange-700 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
 
               )
 
@@ -5378,7 +5378,7 @@ if (!window._galaxyHasLoadedOnce) {
                   h('button', { onClick: function() { setIQ({ metallicity: 1, mass: 1, age: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-transparent text-[11px] font-semibold text-slate-400 border border-slate-600' }, '↺ Reset')
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What does metallicity tell us about a star’s history?',
-                  className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-slate-600 rounded p-2 font-mono leading-snug', rows: 3 }),
+                  className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-slate-500 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-700/30 text-[11px] font-bold text-amber-300 border border-amber-700' }, '🤔 Stuck — show open prompts'),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-slate-200 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
@@ -5388,7 +5388,7 @@ if (!window._galaxyHasLoadedOnce) {
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   'I understand — explain in own words'),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how metallicity shaped the early Universe vs today.',
-                  className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-emerald-700 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+                  className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-emerald-600 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                 h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 4-state population marker; no luminosity score; no reveal — by design.')
               );
             })()

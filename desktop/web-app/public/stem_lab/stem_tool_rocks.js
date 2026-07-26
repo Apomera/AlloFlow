@@ -1750,7 +1750,7 @@ const d = labToolData.rocks || {};
                   React.createElement("span", { className: "text-sm font-bold text-amber-700" }, (d.researchPoints || 0) + " RP")
                 ),
                 React.createElement("span", {
-                  className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-600"
+                  className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700"
                 }, (d.completedChallenges || []).length + "/" + ROCKS_CHALLENGES.length + " " + __alloT('stem.rocks.challenges', "challenges"))
               ),
               React.createElement("div", { className: "w-full rounded-full h-2.5 bg-orange-100/50", style: { boxShadow: "inset 0 1px 2px rgba(0,0,0,0.1)" } },
@@ -2123,7 +2123,7 @@ const d = labToolData.rocks || {};
                         React.createElement("button", {
                           disabled: isAnimActive,
                           onClick: startCooling,
-                          className: "transition-colors mt-2 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-[10px] shadow-sm disabled:opacity-50 active:scale-[0.97]"
+                          className: "transition-colors mt-2 px-3 py-1 bg-amber-700 hover:bg-amber-800 text-white font-bold rounded text-[10px] shadow-sm disabled:opacity-50 active:scale-[0.97]"
                         }, isAnimActive ? __alloT('stem.rocks.cooling_ellipsis', "Cooling...") : "⚡ " + __alloT('stem.rocks.run_solidification', "Run Solidification"))
                       ),
                       React.createElement("div", { className: "flex-1 w-full" },
@@ -3274,7 +3274,7 @@ const d = labToolData.rocks || {};
 
                     "aria-label": __alloT('stem.rocks.start_mystery_aria', "Start Mystery Rock challenge"),
 
-                    className: "px-5 py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold text-sm rounded-full shadow-md hover:shadow-lg hover:from-amber-700 hover:to-orange-700"
+                    className: "px-5 py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold text-sm rounded-full shadow-md hover:shadow-lg hover:from-amber-700 hover:to-orange-700"
 
                   }, "🎲 " + __alloT('stem.rocks.start_challenge', "Start Challenge")),
 
@@ -3397,7 +3397,7 @@ const d = labToolData.rocks || {};
             // ── Quiz mode ──
 
             d.quizMode && quizQ && React.createElement("div", {
-              className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in outline-none focus:ring-2 focus:ring-amber-400",
+              className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in outline-none focus:ring-2 focus:ring-amber-600",
               role: "region", "aria-label": __alloT('stem.rocks.quiz_region_aria', "Rock identification quiz. Press 1 through 4 to answer, or N for next."),
               tabIndex: 0,
               ref: function (el) { if (el && !el._rkQuizFocused) { el._rkQuizFocused = true; try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } } },
@@ -3580,7 +3580,7 @@ const d = labToolData.rocks || {};
 
                   addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
 
-                }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-full hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all"
+                }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 rounded-full hover:from-amber-700 hover:to-orange-700 shadow-md hover:shadow-lg transition-all"
 
               }, "\uD83D\uDCF8 " + __alloT('stem.rocks.snapshot', "Snapshot"))
 
@@ -5089,7 +5089,7 @@ const d = labToolData.rockCycle || {};
               )
             ),
 
-            React.createElement("button", { "aria-label": __alloT('stem.rocks.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : t('stem.tools_menu.rock_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.rocks.snapshot', "Snapshot"))
+            React.createElement("button", { "aria-label": __alloT('stem.rocks.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : t('stem.tools_menu.rock_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.rocks.snapshot', "Snapshot"))
 
           );
       })();

@@ -1111,11 +1111,11 @@ window.StemLab = window.StemLab || {
                     onChange: function(e) { upd({ expression: e.target.value }); },
                     placeholder: t('stem.logiclab.or_type_p_q', "Or type: P \u2192 Q"),
                     'aria-label': t('stem.logiclab.logic_expression_input', 'Logic expression input'),
-                    className: "flex-1 px-3 py-2 rounded-lg border border-violet-200 text-sm font-mono text-violet-800 bg-white focus:ring-2 focus:ring-violet-400 outline-none"
+                    className: "flex-1 px-3 py-2 rounded-lg border border-violet-500 text-sm font-mono text-violet-800 bg-white focus:ring-2 focus:ring-violet-400 outline-none"
                   }),
                   React.createElement("button", { "aria-label": t('stem.logiclab.backspace_last_symbol', "Backspace last symbol"),
                     onClick: function() { upd({ expression: expr.slice(0,-1).trimEnd() }); },
-                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-lg text-sm"
+                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-lg text-sm"
                   }, "\u232B"),
                   React.createElement("button", { "aria-label": t('stem.logiclab.clear', "Clear"),
                     onClick: function() { upd({ expression: '' }); },
@@ -1205,7 +1205,7 @@ window.StemLab = window.StemLab || {
 
                     onClick: function() { upd({ expression: expr.length > 0 ? expr.slice(0, -1) : '' }); },
 
-                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-lg transition-all text-sm"
+                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-lg transition-all text-sm"
 
                   }, "\u232B"),
 
@@ -1815,7 +1815,7 @@ window.StemLab = window.StemLab || {
 
                   'aria-label': t('stem.logiclab.your_interests_for_ai_personalization', 'Your interests for AI personalization'),
 
-                  className: "flex-1 px-3 py-1.5 rounded-lg border border-violet-200 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none"
+                  className: "flex-1 px-3 py-1.5 rounded-lg border border-violet-500 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none"
 
                 }),
 
@@ -2108,7 +2108,7 @@ window.StemLab = window.StemLab || {
 
                                     onClick: function() { var a = Object.assign({}, userAnswers); a[ri] = false; upd({ qfAnswers: a }); },
 
-                                    className: "px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded text-xs"
+                                    className: "px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded text-xs"
 
                                   }, "F")
 
@@ -2312,7 +2312,7 @@ window.StemLab = window.StemLab || {
                 ),
                 // Binary-state legend — clarifies what the 1s and 0s on the wires mean
                 React.createElement("div", { className: "flex items-center gap-3 mb-4 text-[11px] font-bold" },
-                  React.createElement("span", { className: "inline-flex items-center gap-1" }, React.createElement("span", { className: "inline-block w-4 h-4 rounded bg-emerald-500 text-white text-center leading-4" }, "1"), React.createElement("span", { className: "text-emerald-700" }, t('stem.logiclab.high_true_on', "HIGH · true · on"))),
+                  React.createElement("span", { className: "inline-flex items-center gap-1" }, React.createElement("span", { className: "inline-block w-4 h-4 rounded bg-emerald-700 text-white text-center leading-4" }, "1"), React.createElement("span", { className: "text-emerald-700" }, t('stem.logiclab.high_true_on', "HIGH · true · on"))),
                   React.createElement("span", { className: "inline-flex items-center gap-1" }, React.createElement("span", { className: "inline-block w-4 h-4 rounded bg-slate-300 text-slate-700 text-center leading-4" }, "0"), React.createElement("span", { className: "text-slate-500" }, t('stem.logiclab.low_false_off', "LOW · false · off")))
                 ),
                 // Gate selector

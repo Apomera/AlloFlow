@@ -161,6 +161,13 @@ describe('Lingua Practice render flow', () => {
     expect(host.textContent).toContain('1 learning');
     expect(host.textContent).toContain('1 well-practiced');
     expect(button('Review 1 due')).toBeTruthy();
+    expect(host.textContent).toContain('Your learning path');
+    expect(host.textContent).toContain('2 of 6 milestones complete');
+    expect(host.textContent).toContain('Save useful words');
+    expect(host.textContent).toContain('A suggested sequence');
+    const pathProgress = host.querySelector('[role="progressbar"][aria-valuemax="6"]');
+    expect(pathProgress.getAttribute('aria-valuenow')).toBe('2');
+    expect(button('Build a practice set')).toBeTruthy();
 
     const labels = Array.from(host.querySelectorAll('p'));
     const practiceSets = labels.find((node) => node.textContent === 'Practice sets');
@@ -194,14 +201,20 @@ describe('Lingua Practice render flow', () => {
       button('Review (1)').dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(host.textContent).toContain('Recall the Spanish word');
+    expect(host.textContent).toContain('English → Spanish');
     expect(host.textContent).toContain('hello');
+    const recall = host.querySelector('#lingua-review-recall');
+    const inputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    await act(async () => { inputSetter.call(recall, 'hola'); recall.dispatchEvent(new Event('input', { bubbles: true })); });
 
     await act(async () => {
       button('Reveal answer').dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(host.textContent).toContain('Hola, me llamo Ana.');
     expect(host.textContent).toContain('OH-lah, meh YAH-moh AH-nah');
-    expect(button('Know')).toBeTruthy();
+    expect(host.textContent).toContain('Your answer: hola');
+    expect(button('Hard')).toBeTruthy();
+    expect(button('Know').textContent).toContain('Next in 3 days');
 
     await act(async () => {
       button('Know').dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -214,6 +227,185 @@ describe('Lingua Practice render flow', () => {
     expect(saved.nextReviewAt).toBeGreaterThan(Date.now());
     const stored = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
     expect(stored.languageStats.Spanish.reviews).toBe(1);
+  });
+
+  it('reverses an established card to target-to-known recall and schedules Hard', async () => {
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [{
+      id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', example: 'Hola.', translation: 'Hello.', reviewStage: 1, nextReviewAt: 0, reviews: 1,
+    }] }));
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {} }));
+    await act(async () => { button('Review (1)').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('Recall the meaning in English');
+    expect(host.textContent).toContain('Spanish → English');
+    expect(host.textContent).toContain('hola');
+    expect(host.querySelector('#lingua-review-recall').lang).toBe('en-US');
+    await act(async () => { button('Reveal answer').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(document.activeElement.textContent).toBe('hello');
+    expect(button('Hard').textContent).toContain('Next in 1 day');
+    await act(async () => { button('Hard').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const saved = JSON.parse(localStorage.getItem('allo_lingua_progress_v1')).saved[0];
+    expect(saved.reviewStage).toBe(1);
+    expect(saved.lastRating).toBe('hard');
+    expect(saved.reviews).toBe(2);
+  });
+});
+
+describe('Lingua Practice Listening Lab', () => {
+  it('keeps the text audio-first, reveals progressive hints, supports dictation, and tracks attempts', async () => {
+    const spoken = [];
+    const oldPlayer = window.AlloSpeechPlayer;
+    window.AlloSpeechPlayer = { speak: (text, opts) => { spoken.push({ text, opts }); }, stop: () => {} };
+    const lesson = {
+      title: 'At school',
+      goal: 'Understand a request for a pencil.',
+      scenario: 'In class.',
+      vocabulary: [
+        { term: 'lápiz', meaning: 'pencil', pronunciation: 'LAH-pees', example: 'Necesito un lápiz.', translation: 'I need a pencil.' },
+        { term: 'ayuda', meaning: 'help', example: 'Necesito ayuda.', translation: 'I need help.' },
+      ],
+      phrases: [{ target: 'Necesito un lápiz.', pronunciation: 'neh-seh-SEE-toh oon LAH-pees', translation: 'I need a pencil.' }],
+      conversation: [{ coach: '¿Qué necesitas?', translation: 'What do you need?', sample: 'Necesito un lápiz.' }],
+    };
+    try {
+      await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, callGemini: async () => JSON.stringify(lesson) }));
+      await act(async () => {
+        button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await Promise.resolve(); await Promise.resolve();
+      });
+      await act(async () => { button('Open Listening Lab').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+      expect(host.textContent).toContain('Listen before revealing the text.');
+      expect(host.textContent).not.toContain('Necesito un lápiz.');
+      await act(async () => { button('Play audio').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      await act(async () => { button('Play slowly').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(spoken.map((entry) => entry.text)).toEqual(['Necesito un lápiz.', 'Necesito un lápiz.']);
+      expect(spoken[0].opts.rate).toBe(1);
+      expect(spoken[1].opts.rate).toBeLessThan(1);
+
+      await act(async () => { button('Show a hint').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(host.textContent).toContain('neh-seh-SEE-toh oon LAH-pees');
+      expect(host.textContent).not.toContain('Necesito un lápiz.');
+      await act(async () => { button('Show a hint').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(host.textContent).toContain('Necesito un lápiz.');
+
+      await act(async () => { button('Type what you hear').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(host.textContent).not.toContain('Necesito un lápiz.');
+      const answer = host.querySelector('#lingua-listening-answer');
+      const inputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+      await act(async () => { inputSetter.call(answer, 'Necesito un lápiz.'); answer.dispatchEvent(new Event('input', { bubbles: true })); });
+      await act(async () => { button('Check answer').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+      expect(host.textContent).toContain('100% match');
+      expect(host.textContent).toContain('That matches.');
+      const savedProgress = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
+      expect(savedProgress.languageStats.Spanish.listeningAttempts).toBe(1);
+    } finally {
+      if (oldPlayer === undefined) delete window.AlloSpeechPlayer; else window.AlloSpeechPlayer = oldPlayer;
+    }
+  });
+});
+
+describe('Lingua Practice Set Studio', () => {
+  it('edits, refreshes, saves, reuses, duplicates, archives, and restores a generated set', async () => {
+    const lesson = {
+      title: 'School help', goal: 'Ask for help.', scenario: 'In class.',
+      vocabulary: [{ term: 'lápiz', meaning: 'pencil', pronunciation: 'LAH-pees', example: 'Necesito un lápiz.', translation: 'I need a pencil.' }],
+      phrases: [{ target: 'Necesito un lápiz.', translation: 'I need a pencil.' }],
+      conversation: [{ coach: '¿Qué necesitas?', translation: 'What do you need?', sample: 'Necesito un lápiz.' }],
+    };
+    let calls = 0;
+    const callGemini = async () => {
+      calls += 1;
+      return calls === 1 ? JSON.stringify(lesson) : JSON.stringify({
+        term: 'cuaderno', meaning: 'notebook', pronunciation: 'kwah-DEHR-noh',
+        example: 'Necesito un cuaderno.', examplePronunciation: '', translation: 'I need a notebook.',
+      });
+    };
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, callGemini, addToast: () => {} }));
+    await act(async () => { button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); await Promise.resolve(); });
+    expect(JSON.parse(localStorage.getItem('allo_lingua_sets_v1'))).toHaveLength(1);
+
+    await act(async () => { button('Practice sets').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('Practice Set Studio');
+    expect(host.textContent).toContain('School help');
+    await act(async () => { button('Edit').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.querySelector('#lingua-studio-title')).toBeTruthy();
+
+    await act(async () => { button('Add word').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.querySelectorAll('[id^="lingua-studio-vocabulary-"][id$="-term"]')).toHaveLength(2);
+    await act(async () => { button('Undo changes').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.querySelectorAll('[id^="lingua-studio-vocabulary-"][id$="-term"]')).toHaveLength(1);
+
+    await act(async () => { button('Refresh with AI').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); await Promise.resolve(); });
+    expect(host.querySelector('#lingua-studio-vocabulary-0-term').value).toBe('cuaderno');
+
+    const title = host.querySelector('#lingua-studio-title');
+    const inputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    await act(async () => { inputSetter.call(title, 'Custom school set'); title.dispatchEvent(new Event('input', { bubbles: true })); });
+    await act(async () => { button('Save changes').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    let sets = JSON.parse(localStorage.getItem('allo_lingua_sets_v1'));
+    expect(sets[0].lesson).toMatchObject({ title: 'Custom school set', vocabulary: [{ term: 'cuaderno' }] });
+
+    await act(async () => { button('Use set').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('cuaderno');
+    await act(async () => { button('Practice sets').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await act(async () => { button('Duplicate').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    sets = JSON.parse(localStorage.getItem('allo_lingua_sets_v1'));
+    expect(sets).toHaveLength(2);
+    expect(host.textContent).toContain('Custom school set copy');
+
+    const archive = button('Archive');
+    expect(archive).toBeTruthy();
+    await act(async () => { archive.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('Archived');
+    await act(async () => { button('Restore').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(JSON.parse(localStorage.getItem('allo_lingua_sets_v1')).filter((entry) => !entry.archived)).toHaveLength(2);
+  });
+});
+
+describe('Lingua Practice Set Studio portability', () => {
+  it('exports a set and imports a validated set from another language', async () => {
+    const spanishLesson = {
+      title: 'Greetings', goal: 'Greet someone.', scenario: 'Meeting a friend.',
+      vocabulary: [{ term: 'hola', meaning: 'hello' }],
+      phrases: [{ target: 'Hola.', translation: 'Hello.' }],
+      conversation: [{ coach: 'Hola.', translation: 'Hello.', sample: 'Hola.' }],
+    };
+    const frenchLesson = {
+      title: 'Au café', goal: 'Order politely.', scenario: 'At a café.',
+      vocabulary: [{ term: 'bonjour', meaning: 'hello' }],
+      phrases: [{ target: 'Bonjour.', translation: 'Hello.' }],
+      conversation: [{ coach: 'Bonjour.', translation: 'Hello.', sample: 'Bonjour.' }],
+    };
+    const spanish = Lingua._savePracticeSet([], 'Spanish', spanishLesson, { level: 'Beginner' }, 100, 'spanish-set')[0];
+    const french = Lingua._savePracticeSet([], 'French', frenchLesson, { level: 'Beginner' }, 200, 'french-set')[0];
+    localStorage.setItem('allo_lingua_sets_v1', JSON.stringify([spanish]));
+
+    const clicks = [];
+    const originalClick = window.HTMLAnchorElement.prototype.click;
+    const originalCreate = window.URL.createObjectURL;
+    const originalRevoke = window.URL.revokeObjectURL;
+    window.HTMLAnchorElement.prototype.click = function () { clicks.push(this.getAttribute('download')); };
+    window.URL.createObjectURL = () => 'blob:practice-set';
+    window.URL.revokeObjectURL = () => {};
+    try {
+      await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, addToast: () => {} }));
+      await act(async () => { button('Practice sets').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      await act(async () => { button('Export set').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(clicks).toContain('lingua-practice-set.json');
+
+      const input = host.querySelector('#lingua-set-import');
+      const portable = Lingua._createPracticeSetExport(french, 300);
+      Object.defineProperty(input, 'files', { configurable: true, value: [{ text: async () => JSON.stringify(portable) }] });
+      await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })); await Promise.resolve(); await Promise.resolve(); });
+      expect(JSON.parse(localStorage.getItem('allo_lingua_profile_v1')).target).toBe('French');
+      expect(host.textContent).toContain('Au café');
+      expect(JSON.parse(localStorage.getItem('allo_lingua_sets_v1'))).toHaveLength(2);
+    } finally {
+      window.HTMLAnchorElement.prototype.click = originalClick;
+      window.URL.createObjectURL = originalCreate;
+      window.URL.revokeObjectURL = originalRevoke;
+    }
   });
 });
 
@@ -481,6 +673,37 @@ describe('Lingua Practice localized chrome details', () => {
     await act(async () => { await new Promise((r) => setTimeout(r, 900)); });
     expect(dialog.getAttribute('dir')).toBe('rtl');
     expect(dialog.getAttribute('lang')).toBe('ar-SA');
+  });
+});
+
+describe('Lingua Practice customizable learning plan', () => {
+  it('persists selected activities and targets and immediately reshapes the roadmap', async () => {
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, addToast: () => {} }));
+    await act(async () => { button('Progress').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await act(async () => { button('Customize plan').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+    const saveGoal = host.querySelector('#lingua-plan-goal-save');
+    const numberSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    await act(async () => { numberSetter.call(saveGoal, '7'); saveGoal.dispatchEvent(new Event('input', { bubbles: true })); });
+    for (const index of [2, 3, 4, 5]) {
+      const checkbox = host.querySelectorAll('#lingua-plan-editor input[type="checkbox"]')[index];
+      await act(async () => { checkbox.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    }
+    await act(async () => { button('Save plan').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+    const stored = JSON.parse(localStorage.getItem('allo_lingua_plans_v1'));
+    expect(stored.Spanish.steps.save).toEqual({ enabled: true, goal: 7 });
+    expect(Object.values(stored.Spanish.steps).filter((step) => step.enabled)).toHaveLength(2);
+    expect(host.querySelector('[role="progressbar"][aria-valuemax="2"]')).toBeTruthy();
+    expect(host.textContent).toContain('Build practice sets');
+    expect(host.textContent).toContain('Save useful words');
+    expect(host.textContent).not.toContain('Complete spaced reviews');
+
+    await act(async () => { button('Customize plan').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('not a grade or proficiency measure');
+    await act(async () => { button('Use recommended targets').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await act(async () => { button('Save plan').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.querySelector('[role="progressbar"][aria-valuemax="6"]')).toBeTruthy();
   });
 });
 

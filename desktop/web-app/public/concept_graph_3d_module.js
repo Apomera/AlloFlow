@@ -909,7 +909,7 @@
       close.onclick = function () { selectNode(null); };
       panel.appendChild(close);
       var ti = document.createElement('div'); ti.style.cssText = 'font-weight:800;font-size:13px;margin-bottom:4px;padding-right:18px;'; ti.textContent = n.label; panel.appendChild(ti);
-      if (n.category) { var st = document.createElement('div'); st.style.cssText = 'color:' + n.color + ';font-weight:700;margin-bottom:5px;'; st.textContent = n.category; panel.appendChild(st); }
+      if (n.category) { var st = document.createElement('div'); st.style.cssText = 'color:#f1f5f9;border-left:4px solid ' + n.color + ';padding-left:7px;font-weight:700;margin-bottom:5px;'; st.textContent = n.category; panel.appendChild(st); }
       if (n.summary) { var sm = document.createElement('div'); sm.style.cssText = 'color:#cbd5e1;margin-bottom:6px;line-height:1.45;'; sm.textContent = n.summary; panel.appendChild(sm); }
       var neigh = scene.adjacency[selectedId] || [];
       if (neigh.length) {
@@ -943,8 +943,8 @@
             var chip = document.createElement('button');
             chip.textContent = l.label;
             chip.disabled = isCur;
-            chip.style.cssText = 'font-size:11px;padding:3px 8px;border-radius:999px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid ' + laneColor + ';'
-              + (isCur ? 'background:' + laneColor + ';color:#0b1020;cursor:default;' : 'background:transparent;color:' + laneColor + ';cursor:pointer;');
+            chip.style.cssText = 'font-size:11px;padding:3px 8px;border-radius:999px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:2px solid ' + laneColor + ';color:#e2e8f0;'
+              + (isCur ? 'background:#1e293b;cursor:default;' : 'background:transparent;cursor:pointer;');
             chip.onclick = function () { editStrand(selectedId, l.key); };
             chipRow.appendChild(chip);
           });
@@ -961,7 +961,7 @@
           mvRow.appendChild(mb);
         });
         panel.appendChild(mvRow);
-        var editHint = document.createElement('div'); editHint.style.cssText = 'margin-top:6px;color:#64748b;font-size:10px;line-height:1.4;';
+        var editHint = document.createElement('div'); editHint.style.cssText = 'margin-top:6px;color:#94a3b8;font-size:10px;line-height:1.4;';
         editHint.textContent = _tr(t, 'cg3d.edit_hint', 'Drag the node to place it on its plane. Keys: [ ] strand · , . earlier/later · - = down/up.');
         panel.appendChild(editHint);
       }

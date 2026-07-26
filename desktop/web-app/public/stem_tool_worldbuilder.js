@@ -909,7 +909,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 value: gradeLevel,
                 onChange: function(e) { upd('playerGradeLevel', e.target.value); },
                 'aria-label': 'Grade level',
-                className: 'text-[10px] font-bold text-violet-600 bg-violet-50 border border-violet-200 rounded-lg px-1 py-0.5 outline-none focus:ring-2 focus:ring-violet-300'
+                className: 'text-[10px] font-bold text-violet-600 bg-violet-50 border border-violet-200 rounded-lg px-1 py-0.5 outline-none focus:ring-2 focus:ring-violet-500'
               },
                 GRADE_OPTIONS.map(function(g) {
                   return h('option', { key: g, value: g }, g);
@@ -968,7 +968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                       value: gradeLevel,
                       onChange: function(e) { upd('playerGradeLevel', e.target.value); },
                       'aria-label': 'Your grade level',
-                      className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-violet-300 bg-white'
+                      className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-violet-500 bg-white'
                     },
                       GRADE_OPTIONS.map(function(g) {
                         return h('option', { key: g, value: g }, g);

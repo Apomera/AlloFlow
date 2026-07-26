@@ -18861,7 +18861,7 @@
                   placeholder: __alloT('stem.chembalance.search_38_sub_tools', 'Search 38 sub-tools...'),
                   value: d._chemSearch || '',
                   onChange: function(e) { upd('_chemSearch', e.target.value); upd('_activeCategory', null); },
-                  className: 'px-2 py-1.5 text-xs bg-white border border-slate-300 rounded text-slate-700 placeholder-slate-400 w-full sm:w-52'
+                  className: 'px-2 py-1.5 text-xs bg-white border border-slate-500 rounded text-slate-700 placeholder-slate-500 w-full sm:w-52'
                 }),
                 searchTerm && h('span', { className: 'text-xs text-slate-500 font-mono' }, searchResults.length + ' match')
               )
@@ -19034,7 +19034,7 @@
             h('p', { className: 'text-[11px] font-bold text-sky-600 uppercase tracking-wider mb-2' }, __alloT('stem.chembalance.ai_chemistry_tutor', '\uD83E\uDD16 AI Chemistry Tutor')),
             h('div', { className: 'flex gap-2 mb-2' },
               h('input', { type: 'text', value: d._chemAIQ || '', onChange: function(e) { upd('_chemAIQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(d._chemAIQ); }, placeholder: __alloT('stem.chembalance.ask_a_chemistry_question', 'Ask a chemistry question...'), 'aria-label': __alloT('stem.chembalance.ask_the_chemistry_tutor', 'Ask the chemistry tutor'), className: 'flex-1 px-3 py-1.5 text-sm border border-sky-600 rounded-lg focus:border-sky-400' }),
-              h('button', { onClick: function() { askAI(d._chemAIQ); }, disabled: d._chemAILoading, 'aria-busy': d._chemAILoading, 'aria-label': d._chemAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: 'transition-colors px-3 py-1.5 text-xs font-bold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:opacity-50' }, d._chemAILoading ? '\u23F3...' : 'Ask')
+              h('button', { onClick: function() { askAI(d._chemAIQ); }, disabled: d._chemAILoading, 'aria-busy': d._chemAILoading, 'aria-label': d._chemAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: 'transition-colors px-3 py-1.5 text-xs font-bold text-white bg-sky-700 rounded-lg hover:bg-sky-800 disabled:opacity-50' }, d._chemAILoading ? '\u23F3...' : 'Ask')
             ),
             d._chemAIResp && h('div', { className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, d._chemAIResp)
           ),
@@ -19090,7 +19090,7 @@
                     h('span', { className: 'text-[11px] font-bold text-slate-600 mb-0.5' }, i < leftCompounds.length ? leftCompounds[i] : rightCompounds[i - leftCompounds.length]),
                     h('button', { 'aria-label': 'Add', onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.min(12, nc[i] + 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-lime-100 rounded-lg font-bold text-lime-700 hover:bg-lime-200 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-700 focus-visible:ring-offset-1' }, '+'),
                     h('span', { className: 'text-2xl font-black text-slate-700 w-9 text-center' }, c),
-                    h('button', { 'aria-label': __alloT('stem.chembalance.subtract', 'Subtract'), onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.max(1, nc[i] - 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-red-50 rounded-lg font-bold text-red-600 hover:bg-red-100 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1' }, '\u2212')
+                    h('button', { 'aria-label': __alloT('stem.chembalance.subtract', 'Subtract'), onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.max(1, nc[i] - 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-red-50 rounded-lg font-bold text-red-700 hover:bg-red-100 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1' }, '\u2212')
                   );
                 })
               ),
@@ -19287,7 +19287,7 @@
               // Presets
               h('div', { className: 'flex flex-wrap gap-1' },
                 MOLAR_PRESETS.map(function(mp) {
-                  return h('button', { 'aria-label': __alloT('stem.chembalance.enter_a_valid_formula_above', 'Enter a valid formula above'), key: mp.formula, onClick: function() { upd('_stoichFormula', mp.formula); chemSound('click'); }, className: 'transition-colors px-2 py-0.5 text-[11px] font-bold rounded bg-white text-teal-600 border border-teal-600 hover:bg-teal-50' }, mp.name);
+                  return h('button', { 'aria-label': __alloT('stem.chembalance.enter_a_valid_formula_above', 'Enter a valid formula above'), key: mp.formula, onClick: function() { upd('_stoichFormula', mp.formula); chemSound('click'); }, className: 'transition-colors px-2 py-0.5 text-[11px] font-bold rounded bg-white text-teal-700 border border-teal-600 hover:bg-teal-50' }, mp.name);
                 })
               )
             ),
@@ -19300,7 +19300,7 @@
               return h('div', { className: 'bg-white rounded-xl border p-3 mb-3' },
                 h('div', { className: 'flex items-center gap-3 mb-3' },
                   h('p', { className: 'text-lg font-bold text-teal-700' }, 'Molar Mass: ' + mass.toFixed(3) + ' g/mol'),
-                  h('span', { className: 'px-2 py-0.5 bg-teal-100 text-teal-600 text-[11px] font-bold rounded-full' }, stoichFormula)
+                  h('span', { className: 'px-2 py-0.5 bg-teal-100 text-teal-700 text-[11px] font-bold rounded-full' }, stoichFormula)
                 ),
                 // Element breakdown
                 h('div', { className: 'flex flex-wrap gap-2 mb-3' },
@@ -19613,7 +19613,7 @@
               h('p', { className: 'text-4xl mb-3' }, '\u2694\uFE0F'),
               h('p', { className: 'text-lg font-bold text-red-700 mb-1' }, __alloT('stem.chembalance.element_battle', 'Element Battle')),
               h('p', { className: 'text-xs text-slate-600 mb-4' }, __alloT('stem.chembalance.answer_correctly_to_deal_damage_wrong_', 'Answer correctly to deal damage. Wrong answers destabilize your compound!')),
-              h('button', { 'aria-label': __alloT('stem.chembalance.start_battle', 'Start Battle'), onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-lg hover:from-red-600 hover:to-orange-600 shadow-lg' }, __alloT('stem.chembalance.start_battle_2', '\u2694\uFE0F Start Battle'))
+              h('button', { 'aria-label': __alloT('stem.chembalance.start_battle', 'Start Battle'), onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-600 to-orange-700 rounded-lg hover:from-red-600 hover:to-orange-700 shadow-lg' }, __alloT('stem.chembalance.start_battle_2', '\u2694\uFE0F Start Battle'))
             ),
             battleActive && battleRound < BATTLE_QS.length && h('div', null,
               h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
@@ -19678,7 +19678,7 @@
               h('p', { className: 'text-4xl mb-2' }, battleResult === 'won' ? '\uD83C\uDFC6' : '\uD83D\uDCA5'),
               h('p', { className: 'text-lg font-bold ' + (battleResult === 'won' ? 'text-emerald-700' : 'text-red-700') }, battleResult === 'won' ? 'Victory! Compound Stabilized!' : 'Defeated! The element escaped...'),
               h('p', { className: 'text-xs text-slate-600 mt-1 mb-3' }, 'Score: ' + battleScore + '/' + BATTLE_QS.length),
-              h('button', { 'aria-label': __alloT('stem.chembalance.battle_again', 'Battle Again'), onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-lg' }, __alloT('stem.chembalance.battle_again_2', '\u2694\uFE0F Battle Again'))
+              h('button', { 'aria-label': __alloT('stem.chembalance.battle_again', 'Battle Again'), onClick: function() { chemSound('click'); updMulti({ _battleActive: true, _battleRound: 0, _battleHP: 100, _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null }); }, className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-600 to-orange-700 rounded-lg' }, __alloT('stem.chembalance.battle_again_2', '\u2694\uFE0F Battle Again'))
             ),
             battleActive && battleRound >= BATTLE_QS.length && !battleResult && h('div', { className: 'text-center bg-amber-50 rounded-xl border border-amber-200 p-6' },
               h('p', { className: 'text-lg font-bold text-amber-700' }, 'Battle Over! Score: ' + battleScore + '/' + BATTLE_QS.length),
@@ -20892,7 +20892,7 @@
           // ── Footer ──
           h('div', { className: 'flex gap-2 mt-4 pt-3 border-t border-slate-200' },
             h('button', { onClick: function() { setStemLabTool('titrationLab'); announceToSR('Opening Titration Lab'); }, className: 'transition-colors px-3 py-1.5 text-xs font-bold text-lime-600 bg-lime-50 border border-lime-600 rounded-full hover:bg-lime-100' }, __alloT('stem.chembalance.titration_lab', '\u2697\uFE0F Titration Lab \u2192')),
-            h('button', { 'aria-label': __alloT('stem.chembalance.snapshot', 'Snapshot'), onClick: takeSnapshot, className: 'ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all' }, __alloT('stem.chembalance.snapshot_2', '\uD83D\uDCF8 Snapshot'))
+            h('button', { 'aria-label': __alloT('stem.chembalance.snapshot', 'Snapshot'), onClick: takeSnapshot, className: 'ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all' }, __alloT('stem.chembalance.snapshot_2', '\uD83D\uDCF8 Snapshot'))
           ),
           // \u2550\u2550\u2550 PERIODIC TABLE BLOCKS \u2550\u2550\u2550
           h('div', { className: 'mt-5 rounded-2xl border border-lime-300 bg-white p-3 shadow-sm' },

@@ -25,6 +25,64 @@
 
   var CLAB_CSS = ".clab-root{\n    --bg:#0f151c; --panel:#161f29; --panel2:#1c2836; --card:#19242f;\n    --line:#26364a; --line2:#31465e;\n    --ink:#e8eef4; --ink2:#9fb0c1; --ink3:#66788a;\n    --accent:#f2a63c; --accent-dim:#8a5f22;\n    --ke:#3f8fd2; --pe:#c05fa0; --heat:#c47c2f;\n    --good:#59c98d; --warn:#f2c14e; --bad:#e5484d;\n    --mono:\"Cascadia Code\",Consolas,\"SF Mono\",ui-monospace,Menlo,monospace;\n    --sans:\"Segoe UI\",system-ui,-apple-system,\"Helvetica Neue\",sans-serif;\n  }.clab-root *{box-sizing:border-box}.clab-root [hidden]{display:none !important}.clab-root #clab-app{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);\n       color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45}.clab-root /* ---------- top bar ---------- */\n  #clab-top{display:flex;align-items:center;justify-content:space-between;gap:12px;\n       padding:0 14px;height:52px;flex:none;background:var(--panel);\n       border-bottom:1px solid var(--line)}.clab-root .brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}.clab-root .brand .name{font-weight:700;letter-spacing:.14em;font-size:15px}.clab-root .brand .name em{color:var(--accent);font-style:normal}.clab-root .brand .sub{color:var(--ink3);font-size:11px;letter-spacing:.08em;text-transform:uppercase}.clab-root .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.clab-root button{font-family:var(--sans);font-size:13px;color:var(--ink);\n         background:var(--panel2);border:1px solid var(--line2);border-radius:6px;\n         padding:6px 12px;cursor:pointer}.clab-root button:hover{border-color:var(--accent-dim)}.clab-root button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root button.primary{background:var(--accent);border-color:var(--accent);color:#22160a;font-weight:700}.clab-root button.primary:hover{filter:brightness(1.08)}.clab-root button.ghost{background:transparent;border-color:var(--line);color:var(--ink2)}.clab-root button:disabled{opacity:.45;cursor:default}.clab-root button.danger{color:var(--bad);border-color:var(--bad)}.clab-root .clab-sel{font-family:var(--sans);font-size:12.5px;color:var(--ink);\n         background:var(--panel2);border:1px solid var(--line2);border-radius:6px;\n         padding:5px 8px;cursor:pointer}.clab-root .clab-sel:hover{border-color:var(--accent-dim)}.clab-root .clab-sel:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root /* ---------- main split ---------- */\n  #clab-main{display:flex;flex:1;min-height:0}.clab-root #clab-side{width:346px;flex:none;display:flex;flex-direction:column;background:var(--panel);\n        border-right:1px solid var(--line);min-height:0}.clab-root #clab-tabs{display:flex;flex:none;border-bottom:1px solid var(--line)}.clab-root #clab-tabs button{flex:1;border:0;border-radius:0;background:transparent;color:var(--ink3);\n               padding:10px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;\n               border-bottom:2px solid transparent}.clab-root #clab-tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}.clab-root #clab-side section{overflow-y:auto;padding:14px;flex:1;min-height:0}.clab-root .eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);\n           margin:0 0 6px;font-weight:600}.clab-root .card{background:var(--card);border:1px solid var(--line);border-radius:8px;\n        padding:12px;margin-bottom:12px}.clab-root .card h3{margin:0 0 6px;font-size:13px;font-weight:600}.clab-root .hint{color:var(--ink2);font-size:12.5px;margin:0 0 10px}.clab-root .hint b{color:var(--ink)}.clab-root kbd{font-family:var(--mono);font-size:11px;background:var(--panel2);\n      border:1px solid var(--line2);border-radius:4px;padding:0 5px}.clab-root .row{display:flex;gap:8px;align-items:center;margin:8px 0}.clab-root .row label{flex:none;width:64px;color:var(--ink2);font-size:12px}.clab-root .row input[type=range]{flex:1;accent-color:var(--accent)}.clab-root .row .val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;\n            width:64px;text-align:right;color:var(--ink)}.clab-root .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.clab-root .coords{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--ink3)}.clab-root /* ---------- certification ---------- */\n  .marker-legend{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 10px}.clab-root .marker-legend span{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink2)}.clab-root .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}.clab-root .prob .given{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;\n               color:var(--ink2);background:var(--panel2);border-radius:6px;padding:7px 9px;margin:8px 0}.clab-root .prob .ask{font-size:13px;margin:6px 0}.clab-root .ansrow{display:flex;gap:8px;align-items:center;margin-top:8px}.clab-root .ansrow input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums;\n      width:110px;background:var(--panel2);color:var(--ink);border:1px solid var(--line2);\n      border-radius:6px;padding:6px 8px;font-size:13px}.clab-root .ansrow input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root .ansrow .unit{color:var(--ink3);font-size:12px;width:40px}.clab-root .verdict{font-size:12px;font-weight:600;margin-left:auto}.clab-root .verdict.ok{color:var(--good)}.clab-root .verdict.no{color:var(--bad)}.clab-root details.work{margin-top:8px}.clab-root details.work summary{cursor:pointer;color:var(--ink3);font-size:12px}.clab-root details.work div{font-family:var(--mono);font-size:11.5px;color:var(--ink2);\n                   padding:6px 0 0;line-height:1.7}.clab-root table.cert{width:100%;border-collapse:collapse;font-family:var(--mono);\n             font-variant-numeric:tabular-nums;font-size:11.5px;margin-top:8px}.clab-root table.cert th{color:var(--ink3);font-weight:600;text-align:right;padding:4px 6px;\n                border-bottom:1px solid var(--line);font-size:10.5px;letter-spacing:.06em}.clab-root table.cert td{text-align:right;padding:4px 6px;border-bottom:1px solid var(--line);color:var(--ink)}.clab-root table.cert th:first-child,.clab-root table.cert td:first-child{text-align:left}.clab-root .certbanner{border-radius:8px;padding:12px;margin-top:12px;font-weight:600;font-size:14px;\n              border:1px solid var(--line2);background:var(--panel2)}.clab-root .certbanner.pass{border-color:var(--good);color:var(--good)}.clab-root .certbanner.fail{border-color:var(--bad);color:var(--bad)}.clab-root /* ---------- report ---------- */\n  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.clab-root .stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px}.clab-root .stat .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}.clab-root .stat .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:17px;margin-top:2px}.clab-root .stat .v small{font-size:11px;color:var(--ink3)}.clab-root .rating{margin:10px 0}.clab-root .rating .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:4px}.clab-root .rating .lbl .num{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}.clab-root .rbar{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden}.clab-root .rbar i{display:block;height:100%;border-radius:4px}.clab-root .modebtn.on{border-color:var(--accent);color:var(--accent)}.clab-root .choice button{display:block;width:100%;text-align:left;margin-top:6px}.clab-root .choice button.on{border-color:var(--accent);color:var(--accent);background:rgba(242,166,60,.08)}.clab-root .exline{font-size:12.5px;margin:6px 0;color:var(--ink2)}.clab-root .exline b.ok{color:var(--good)}.clab-root .exline b.no{color:var(--bad)}.clab-root .mission{display:flex;gap:10px;align-items:flex-start;background:var(--card);\n           border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px}.clab-root .mission .mi{font-size:19px;flex:none;width:26px;text-align:center;filter:grayscale(1);opacity:.55}.clab-root .mission.done .mi{filter:none;opacity:1}.clab-root .mission .mt{font-size:13px;font-weight:600}.clab-root .mission.done .mt{color:var(--good)}.clab-root .mission .md{font-size:12px;color:var(--ink2)}.clab-root .mission .stamp{margin-left:auto;flex:none;font-size:11px;color:var(--good);font-weight:700}.clab-root #clab-gball{width:64px;height:64px;display:block;margin-top:4px;border-radius:6px}.clab-root .chart{width:100%;height:74px;display:block;margin:2px 0 6px}.clab-root .chlabel{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-top:6px}.clab-root .chnote{font-family:var(--mono);font-size:10px;color:var(--ink3);margin:2px 0 0}.clab-root .viol{display:flex;flex-direction:column;gap:6px;margin-top:10px}.clab-root .viol span{font-size:12px;color:var(--bad);background:rgba(229,72,77,.08);\n             border:1px solid rgba(229,72,77,.35);border-radius:6px;padding:5px 9px}.clab-root .viol span.okline{color:var(--good);background:rgba(89,201,141,.07);border-color:rgba(89,201,141,.3)}.clab-root /* ---------- viewport & HUD ---------- */\n  #clab-viewport{flex:1;position:relative;min-width:0;min-height:0;background:#121a24}.clab-root #clab-gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}.clab-root #clab-hud{position:absolute;left:12px;bottom:12px;display:flex;gap:14px;align-items:flex-end;\n       background:rgba(15,21,28,.82);border:1px solid var(--line);border-radius:10px;\n       padding:10px 14px;pointer-events:none;backdrop-filter:blur(3px)}.clab-root .hudcol{display:flex;flex-direction:column;gap:2px}.clab-root .hudk{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:600}.clab-root .hudv{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:21px;line-height:1.1}.clab-root .hudv small{font-size:10.5px;color:var(--ink3)}.clab-root .gmeter{width:120px}.clab-root .gtrack{position:relative;height:9px;background:var(--panel2);border-radius:5px;margin-top:5px;overflow:hidden}.clab-root .gtrack .zone{position:absolute;top:0;bottom:0;background:rgba(229,72,77,.28)}.clab-root .gtrack .zero{position:absolute;top:-1px;bottom:-1px;width:1px;background:var(--ink3)}.clab-root .gtrack .fill{position:absolute;top:1px;bottom:1px;background:var(--accent);border-radius:4px}.clab-root .gval{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;margin-top:3px}.clab-root .gval.hot{color:var(--bad)}.clab-root .ebar{display:flex;width:170px;height:12px;border-radius:6px;overflow:hidden;\n        background:var(--panel2);margin-top:5px}.clab-root .ebar i{display:block;height:100%}.clab-root .ebar i+i{border-left:2px solid var(--bg)}.clab-root .elegend{display:flex;gap:8px;margin-top:4px;font-size:9.5px;letter-spacing:.1em;color:var(--ink3)}.clab-root .elegend b{font-weight:600}.clab-root .elegend .ke{color:var(--ke)}.clab-root .elegend .pe{color:var(--pe)}.clab-root .elegend .heat{color:var(--heat)}.clab-root #clab-xrayLegend{position:absolute;top:12px;right:12px;background:rgba(15,21,28,.85);\n              border:1px solid var(--line);border-radius:8px;padding:8px 12px;width:190px;\n              pointer-events:none;backdrop-filter:blur(3px)}.clab-root .xbar{height:10px;border-radius:5px;margin-top:6px;\n        background:linear-gradient(90deg,#c05fa0 0%,#3f8fd2 18%,#4a5865 28%,#f2a63c 57%,#e5484d 100%)}.clab-root .xlabels{display:flex;justify-content:space-between;font-family:var(--mono);\n           font-size:9.5px;color:var(--ink3);margin-top:3px}.clab-root .photo img{width:100%;border-radius:6px;display:block}.clab-root .photo a{color:var(--accent);font-size:12px}.clab-root #clab-guide{position:absolute;inset:24px;max-width:820px;margin:0 auto;overflow-y:auto;\n         background:rgba(15,21,28,.96);border:1px solid var(--line2);border-radius:14px;\n         padding:16px 18px;backdrop-filter:blur(5px);z-index:8}.clab-root .gd-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.clab-root .gd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.clab-root .gd-grid .card{margin:0}.clab-root .gd-grid h3{margin:0 0 6px;font-size:13px}@media (max-width:900px){.clab-root .gd-grid{grid-template-columns:1fr} }.clab-root .swatch{width:26px;height:26px;border-radius:50%;border:2px solid var(--line2);\n          padding:0;cursor:pointer}.clab-root .swatch.on{border-color:var(--ink);outline:2px solid var(--accent)}.clab-root #clab-rideQ{position:absolute;left:50%;bottom:132px;transform:translateX(-50%);\n         width:min(470px,92%);background:rgba(15,21,28,.95);border:1px solid var(--line2);\n         border-radius:12px;padding:14px 16px;backdrop-filter:blur(4px)}.clab-root .rq-top{display:flex;justify-content:space-between;align-items:baseline}.clab-root .rq-pts{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;color:var(--accent)}.clab-root #clab-rqTimer{display:block;height:4px;background:var(--panel2);border-radius:2px;margin:8px 0 10px;overflow:hidden}.clab-root #clab-rqTimerFill{display:block;height:100%;background:var(--accent);width:100%}.clab-root #clab-rqText{margin:0 0 10px;font-size:14px}.clab-root #clab-rqText b{color:var(--accent)}.clab-root .clab-viz{height:74px;margin:0 0 10px;display:none}.clab-root .clab-viz svg{display:block;height:100%;width:100%}.clab-root .clab-viz.on{display:block}.clab-root .clab-viz .clab-ans{transform-box:fill-box;transform-origin:center}.clab-root .clab-viz .clab-ans.reveal{fill:var(--good) !important;filter:drop-shadow(0 0 5px rgba(89,201,141,.75));animation:clabAnsPop .62s cubic-bezier(.2,.8,.2,1)}@keyframes clabAnsPop{0%{transform:scaleX(.06) scale(.72)}58%{transform:scaleX(1) scale(1.42)}100%{transform:scaleX(1) scale(1)}}.clab-root .clab-spark{position:absolute;width:var(--sz,7px);height:var(--sz,7px);border-radius:50%;pointer-events:none;opacity:0;animation:clabSpark .8s ease-out var(--delay,0ms) forwards}.clab-root .clab-spark.diamond{border-radius:1px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}.clab-root .clab-spark.streak{width:calc(var(--sz,7px) * 1.8);height:3px;border-radius:3px}@keyframes clabSpark{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.25)}}@media (prefers-reduced-motion:reduce){.clab-root .clab-viz .clab-ans.reveal{animation:none}.clab-root .clab-spark{display:none}}.clab-root #clab-rideQ{max-height:calc(100% - 156px);overflow-y:auto;overscroll-behavior:contain;z-index:6}@media (max-width:760px),(max-height:620px){.clab-root #clab-rideQ{top:8px;bottom:auto;max-height:calc(100% - 16px)}}.clab-root .clab-build-start{border-color:rgba(242,166,60,.5);background:linear-gradient(145deg,rgba(242,166,60,.12),rgba(63,143,210,.08)),var(--card);box-shadow:inset 3px 0 0 var(--accent)}.clab-root .clab-build-start h3{font-size:16px}.clab-root .clab-build-steps{display:grid;gap:5px;margin:10px 0 12px;padding:0;list-style:none;counter-reset:build}.clab-root .clab-build-steps li{display:flex;align-items:center;gap:8px;color:var(--ink2);font-size:12px}.clab-root .clab-build-steps li:before{counter-increment:build;content:counter(build);display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#22160a;font:700 11px var(--mono)}.clab-root .clab-node-prompt{border-style:dashed}.clab-root .clab-build-coach{position:absolute;top:56px;left:50%;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid rgba(242,166,60,.6);border-radius:999px;background:rgba(15,21,28,.88);box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none}.clab-root .clab-build-coach small{display:block;color:var(--ink2);font-size:10px}.clab-root .clab-node-beacon{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px rgba(242,166,60,.14);animation:clabBeacon 1.8s ease-in-out infinite}@keyframes clabBeacon{50%{box-shadow:0 0 0 10px rgba(242,166,60,0)}}.clab-root #clab-viewport.ride-question-open:after{content:\"\";position:absolute;inset:0;z-index:5;background:radial-gradient(circle at 50% 55%,rgba(15,21,28,.18),rgba(15,21,28,.62));pointer-events:none}.clab-root #clab-rideQ:not([hidden]){animation:clabCardIn .28s ease-out}.clab-root #clab-rideQ.is-correct{border-color:rgba(89,201,141,.85);box-shadow:0 0 0 1px rgba(89,201,141,.18),0 16px 44px rgba(0,0,0,.38),0 0 28px rgba(89,201,141,.12)}.clab-root #clab-rideQ.is-wrong{border-color:rgba(229,72,77,.8);box-shadow:0 0 0 1px rgba(229,72,77,.14),0 16px 44px rgba(0,0,0,.38)}@keyframes clabCardIn{0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(.98)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}.clab-root .rq-scorebox{position:relative;display:flex;align-items:center;gap:7px}.clab-root .rq-streak{padding:2px 7px;border-radius:999px;background:rgba(242,166,60,.14);border:1px solid rgba(242,166,60,.34);color:var(--accent);font:700 10px var(--mono)}.clab-root .rq-delta{position:absolute;right:0;top:16px;color:var(--good);font:800 13px var(--mono);opacity:0}.clab-root .rq-delta.on{animation:clabScoreGain .75s ease-out}@keyframes clabScoreGain{0%{opacity:0;transform:translateY(4px) scale(.8)}25%{opacity:1}100%{opacity:0;transform:translateY(-18px) scale(1.12)}}.clab-root #clab-rqTimerFill{transition:width .1s linear,background .2s}.clab-root #clab-rqTimer.urgent #clab-rqTimerFill{background:#e98436}.clab-root #clab-rqTimer.critical #clab-rqTimerFill{background:var(--bad);animation:clabTimerPulse .55s ease-in-out infinite alternate}.clab-root #clab-rqTimer.done #clab-rqTimerFill{background:var(--good)}@keyframes clabTimerPulse{to{filter:brightness(1.5)}}.clab-root .choice button{position:relative;min-height:40px;padding-left:42px;transition:border-color .18s,background .18s,color .18s,transform .18s}.clab-root .choice button:before{content:attr(data-key);position:absolute;left:10px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--panel);border:1px solid var(--line2);color:var(--ink2);font:700 10px var(--mono)}.clab-root .choice button.picked{border-color:var(--accent)}.clab-root .choice button.correct{border-color:var(--good);color:var(--good);background:rgba(89,201,141,.11)}.clab-root .choice button.correct:before{content:\"✓\";border-color:var(--good);color:var(--good)}.clab-root .choice button.wrong{border-color:var(--bad);color:#ffb4b6;background:rgba(229,72,77,.1)}.clab-root .choice button.wrong:before{content:\"×\";border-color:var(--bad);color:var(--bad)}.clab-root .choice button:disabled{opacity:1}.clab-root #clab-rqTimer.failed #clab-rqTimerFill{background:var(--bad)}.clab-root #clab-rqNumRow.correct input{border-color:var(--good);box-shadow:0 0 0 2px rgba(89,201,141,.12)}.clab-root #clab-rqNumRow.wrong input{border-color:var(--bad);box-shadow:0 0 0 2px rgba(229,72,77,.1)}.clab-root #clab-rqFeed:not(:empty){padding:8px 10px;border-radius:7px;background:rgba(255,255,255,.035);border-left:3px solid var(--line2)}.clab-root #clab-rideQ.is-correct #clab-rqFeed{border-left-color:var(--good);background:rgba(89,201,141,.07)}.clab-root #clab-rideQ.is-wrong #clab-rqFeed{border-left-color:var(--bad);background:rgba(229,72,77,.06)}.clab-root .clab-viz.on{padding:4px 8px;border:1px solid rgba(49,70,94,.72);border-radius:8px;background:linear-gradient(180deg,rgba(63,143,210,.055),rgba(89,201,141,.025))}.clab-root .ride-result-grid{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;margin:10px 0}.clab-root .ride-accuracy{--pct:0;display:grid;place-items:center;width:90px;height:90px;border-radius:50%;background:conic-gradient(var(--good) calc(var(--pct) * 1%),var(--panel2) 0);position:relative}.clab-root .ride-accuracy:before{content:\"\";position:absolute;inset:8px;border-radius:50%;background:var(--panel)}.clab-root .ride-accuracy span{position:relative;text-align:center;font:800 20px var(--mono)}.clab-root .ride-accuracy small{display:block;color:var(--ink3);font:600 9px var(--sans);text-transform:uppercase;letter-spacing:.08em}.clab-root .ride-checkpoints{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.clab-root .ride-checkpoints i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-style:normal;font-size:11px;background:var(--panel2);border:1px solid var(--line2)}.clab-root .ride-checkpoints i.ok{color:var(--good);border-color:rgba(89,201,141,.5);background:rgba(89,201,141,.08)}.clab-root .ride-checkpoints i.no{color:var(--bad);border-color:rgba(229,72,77,.45);background:rgba(229,72,77,.07)}@media (prefers-reduced-motion:reduce){.clab-root .clab-node-beacon,.clab-root #clab-rideQ:not([hidden]),.clab-root .rq-delta.on,.clab-root #clab-rqTimer.critical #clab-rqTimerFill{animation:none}}@media (max-width:760px){.clab-root .clab-build-coach{top:48px;max-width:90%}.clab-root .ride-result-grid{grid-template-columns:1fr}.clab-root .ride-accuracy{margin:auto}}.clab-root #clab-rideEnd{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);\n           width:min(400px,92%);background:rgba(15,21,28,.96);border:1px solid var(--line2);\n           border-radius:12px;padding:16px 18px;backdrop-filter:blur(4px)}.clab-root #clab-rideEnd .big{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:26px;color:var(--accent)}.clab-root #clab-rideEnd .exline{margin:4px 0}.clab-root #clab-banner{position:absolute;top:14px;left:50%;transform:translateX(-50%);\n          background:rgba(22,31,41,.94);border:1px solid var(--line2);border-radius:8px;\n          padding:9px 18px;font-size:13.5px;pointer-events:none;max-width:70%;text-align:center}.clab-root #clab-banner.pass{border-color:var(--good);color:var(--good)}.clab-root #clab-banner.fail{border-color:var(--bad);color:var(--bad)}.clab-root #clab-err{position:absolute;inset:auto 12px 12px 12px;background:#2a1214;border:1px solid var(--bad);\n       color:#ffb4b6;border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:12px;z-index:9}@media (prefers-reduced-motion:reduce){.clab-root *{scroll-behavior:auto} }@media (max-width:760px){.clab-root #clab-main{flex-direction:column}.clab-root #clab-side{width:100%;max-height:46%;border-right:0;border-bottom:1px solid var(--line)}\n  }.clab-root .clab-start-note,.clab-root .clab-element-note,.clab-root .clab-safety-note{margin:8px 0 0;color:var(--ink3);font-size:11px}.clab-root .clab-element-card{border-color:rgba(63,143,210,.38)}.clab-root .clab-element-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.clab-root .clab-element-btn{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-height:48px;padding:7px 9px;text-align:left}.clab-root .clab-element-btn b{font-size:12px}.clab-root .clab-element-btn small{color:var(--ink3);font-size:10px}.clab-root .clab-element-wide{grid-column:1/-1}.clab-root .clab-safety-card{border-color:rgba(242,193,78,.34)}.clab-root .clab-safety-summary{display:flex;align-items:center;gap:8px;font-weight:700;font-size:12.5px}.clab-root .clab-safety-summary:before{content:\"!\";display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:rgba(242,193,78,.14);border:1px solid rgba(242,193,78,.45);color:var(--warn);font:800 12px var(--mono)}.clab-root .clab-safety-summary.safe{color:var(--good)}.clab-root .clab-safety-summary.safe:before{content:\"✓\";background:rgba(89,201,141,.12);border-color:rgba(89,201,141,.42);color:var(--good)}.clab-root .clab-safety-list{display:grid;gap:7px;margin-top:9px}.clab-root .clab-safety-item{display:grid;grid-template-columns:22px 1fr auto;gap:7px;align-items:start;padding:8px;border:1px solid rgba(242,193,78,.28);border-radius:7px;background:rgba(242,193,78,.055)}.clab-root .clab-safety-item.bad{border-color:rgba(229,72,77,.34);background:rgba(229,72,77,.055)}.clab-root .clab-safety-num{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--warn);color:#241b08;font:800 10px var(--mono)}.clab-root .clab-safety-item.bad .clab-safety-num{background:var(--bad);color:white}.clab-root .clab-safety-copy b{display:block;font-size:11.5px}.clab-root .clab-safety-copy small{display:block;color:var(--ink2);font-size:10.5px;line-height:1.35;margin-top:2px}.clab-root .clab-safety-jump{padding:4px 7px;font-size:10px;white-space:nowrap}@media (max-width:760px){.clab-root .clab-element-btn{min-height:44px}}\n";
   var CLAB_HTML = "<div id=\"clab-app\">\n  <header id=\"clab-top\">\n    <div class=\"brand\">\n      <span class=\"name\">COASTER<em>LAB</em></span>\n      <span class=\"sub\">ride design &amp; physics lab</span>\n    </div>\n    <div class=\"controls\">\n      <button id=\"clab-btnRun\" class=\"primary\">▶ Test run</button>\n      <button id=\"clab-btnRide\" class=\"primary\" title=\"Ride onboard — the train pauses at checkpoints with quick problems you choose\">🧠 Ride &amp; Solve</button>\n      <select id=\"clab-rideTopic\" class=\"clab-sel\" title=\"What kind of checkpoint questions to ask during Ride &amp; Solve\" aria-label=\"Ride and Solve question topic\">\n        <option value=\"physics\">🎢 Physics</option>\n        <option value=\"addition\">➕ Addition</option>\n        <option value=\"subtraction\">➖ Subtraction</option>\n        <option value=\"multiplication\">✖️ Multiplication</option>\n        <option value=\"division\">➗ Division</option>\n        <option value=\"arithmetic\">🔢 Mixed math</option>\n        <option value=\"ai\">🤖 Any topic (AI)</option>\n      </select>\n      <select id=\"clab-rideGrade\" class=\"clab-sel\" title=\"Grade level the questions are tuned to\" aria-label=\"Question grade level\">\n        <option value=\"auto\">🎚 Grade: auto</option>\n        <option value=\"k2\">Grades K–2</option>\n        <option value=\"g35\">Grades 3–5</option>\n        <option value=\"g68\">Grades 6–8</option>\n        <option value=\"g912\">Grades 9–12</option>\n      </select>\n      <input id=\"clab-rideAiSubject\" class=\"clab-sel\" type=\"text\" maxlength=\"60\" placeholder=\"Type a topic for the AI…\" aria-label=\"AI question topic\" hidden style=\"width:168px\">\n      <button id=\"clab-btnCam\" title=\"Cycle camera: orbit, onboard, chase\">Camera: Orbit</button>\n      <button id=\"clab-btnView\" title=\"Color the track spine by predicted seat g\">View: Track</button>\n      <button id=\"clab-btnFric\" title=\"Toggle rolling friction and air drag\">Friction: Realistic</button>\n      <button id=\"clab-btnSound\" title=\"Wind, chain and launch sounds (synthesized)\">🔇 Sound</button>\n      <button id=\"clab-btnFx\" title=\"Lite mode disables shadows and trees for slower devices\">FX: Full</button>\n      <button id=\"clab-btnVR\" hidden title=\"Ride in a VR headset — intense! Short sessions recommended\">🥽 VR ride</button>\n      <button id=\"clab-btnResetDesign\" class=\"ghost\" title=\"Restore the starter layout\">Reset design</button>\n      <button id=\"clab-btnGuide\" class=\"ghost\" title=\"Quick guide (H)\" aria-controls=\"clab-guide\" aria-expanded=\"false\">❓</button>\n    </div>\n  </header>\n\n  <div id=\"clab-main\">\n    <aside id=\"clab-side\">\n      <nav id=\"clab-tabs\" role=\"tablist\" aria-label=\"Coaster Lab panels\">\n        <button id=\"clab-tab-build-btn\" role=\"tab\" aria-controls=\"clab-tab-build\" aria-selected=\"true\" tabindex=\"0\" data-tab=\"build\" class=\"on\">Build</button>\n        <button id=\"clab-tab-cert-btn\" role=\"tab\" aria-controls=\"clab-tab-cert\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"cert\">Certify</button>\n        <button id=\"clab-tab-report-btn\" role=\"tab\" aria-controls=\"clab-tab-report\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"report\">Report</button>\n        <button id=\"clab-tab-missions-btn\" role=\"tab\" aria-controls=\"clab-tab-missions\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"missions\">Missions</button>\n      </nav>\n\n      <section id=\"clab-tab-build\" role=\"tabpanel\" aria-labelledby=\"clab-tab-build-btn\" tabindex=\"0\">\n        <div class=\"card clab-build-start\" id=\"clab-buildStart\">\n          <p class=\"eyebrow\">Your coaster · fully editable</p>\n          <h3>Shape the track yourself</h3>\n          <p class=\"hint\">The coaster in the 3-D view is your design—not a fixed demo.\n            Move its glowing nodes, change their height and banking, or add and remove track sections.</p>\n          <ol class=\"clab-build-steps\">\n            <li><b>Choose</b> a glowing track node</li>\n            <li><b>Shape</b> it with drag or sliders</li>\n            <li><b>Test</b> your design and revise</li>\n          </ol>\n          <button id=\"clab-btnStartSimple\">Start simple</button>\n          <button class=\"primary clab-edit-track\">✦ Edit a track node</button>\n        </div>\n\n        <p class=\"hint clab-build-hint\">Drag a <b>track node</b> across the ground.\n          Hold <kbd>Shift</kbd> while dragging to change <b>height</b>.\n          Drag empty space to orbit · scroll to zoom · <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo.</p>\n\n        <div class=\"card\" id=\"clab-ptCard\" hidden>\n          <p class=\"eyebrow\">Selected node <span id=\"clab-ptIdx\"></span></p>\n          <div class=\"coords\" id=\"clab-ptCoords\"></div>\n          <div class=\"btnrow\" aria-label=\"Track node selection\">\n            <button id=\"clab-btnPrevPt\" type=\"button\" title=\"Select the previous track node\">&larr; Previous node</button>\n            <button id=\"clab-btnNextPt\" type=\"button\" title=\"Select the next track node\">Next node &rarr;</button>\n          </div>\n          <p class=\"hint\" id=\"clab-coordinateHelp\" style=\"margin:8px 0 4px\">Use arrow keys on any slider, or choose a nudge size and move across the ground plane.</p>\n          <div class=\"row\"><label for=\"clab-slX\">X</label>\n            <input type=\"range\" id=\"clab-slX\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"X position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slXV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slZ\">Z</label>\n            <input type=\"range\" id=\"clab-slZ\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"Z position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slZV\"></span></div>\n          <div class=\"row\"><label for=\"clab-nodeStep\">Nudge</label>\n            <select id=\"clab-nodeStep\" class=\"clab-sel\" aria-label=\"Ground movement nudge distance\">\n              <option value=\"0.5\">0.5 m - fine</option><option value=\"2\" selected>2 m - normal</option><option value=\"5\">5 m - coarse</option>\n            </select>\n          </div>\n          <div class=\"btnrow\" aria-label=\"Move selected node across the ground\">\n            <button id=\"clab-btnXMinus\" type=\"button\" aria-label=\"Move selected node in the negative X direction\">X &minus;</button>\n            <button id=\"clab-btnXPlus\" type=\"button\" aria-label=\"Move selected node in the positive X direction\">X +</button>\n            <button id=\"clab-btnZMinus\" type=\"button\" aria-label=\"Move selected node in the negative Z direction\">Z &minus;</button>\n            <button id=\"clab-btnZPlus\" type=\"button\" aria-label=\"Move selected node in the positive Z direction\">Z +</button>\n          </div>\n          <div class=\"row\"><label for=\"clab-slHeight\">Height</label>\n            <input type=\"range\" id=\"clab-slHeight\" min=\"0.5\" max=\"45\" step=\"0.1\">\n            <span class=\"val\" id=\"clab-slHeightV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slBank\">Bank</label>\n            <input type=\"range\" id=\"clab-slBank\" min=\"-180\" max=\"180\" step=\"1\">\n            <span class=\"val\" id=\"clab-slBankV\"></span></div>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAddPt\">＋ Add node after</button>\n            <button id=\"clab-btnDelPt\" class=\"ghost\">Delete</button>\n            <button id=\"clab-btnFlagPt\" class=\"ghost\" title=\"Certification problems use this turn\">⚑ Certify this turn</button>\n          </div>\n        </div>\n\n        <div class=\"card clab-node-prompt\" id=\"clab-noSel\">\n          <p class=\"eyebrow\">Build mode</p>\n          <h3>Choose a glowing track node</h3>\n          <p class=\"hint\">Every glowing sphere is editable. Select one to move it, change\n            height and banking, insert another node, or remove a section.</p>\n          <button class=\"primary clab-edit-track\">Select a node for me</button>\n        </div>\n\n        <div class=\"card clab-element-card\" id=\"clab-elementPalette\">\n          <p class=\"eyebrow\">Add track elements</p>\n          <h3>Build with pieces</h3>\n          <p class=\"hint\">Select a node, then insert an editable shape into the segment after it.</p>\n          <div class=\"clab-element-grid\">\n            <button class=\"clab-element-btn\" data-element=\"hill\" disabled><b>Hill</b><small>airtime crest</small></button>\n            <button class=\"clab-element-btn\" data-element=\"drop\" disabled><b>Drop</b><small>crest + plunge</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-left\" disabled><b>Left turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-right\" disabled><b>Right turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn clab-element-wide\" data-element=\"loop\" disabled><b>Vertical loop</b><small>ten-node editable loop</small></button>\n          </div>\n          <p class=\"clab-element-note\" id=\"clab-elementNote\">Choose a glowing node to unlock these pieces.</p>\n        </div>\n\n        <div class=\"card clab-safety-card\" id=\"clab-safetyCoach\">\n          <p class=\"eyebrow\">Design preflight coach</p>\n          <div id=\"clab-safetySummary\" class=\"clab-safety-summary\" role=\"status\" aria-live=\"polite\"></div>\n          <div id=\"clab-safetyList\" class=\"clab-safety-list\"></div>\n          <p class=\"clab-safety-note\">Educational geometry + ideal-dynamics preview—not structural approval. Numbered markers show where to revise.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Optional starting layouts</p>\n          <p class=\"hint\" style=\"margin:0\">Templates only change your starting shape. Every node stays editable.</p>\n          <div class=\"btnrow\" style=\"margin-top:8px\">\n            <button class=\"tpl\" data-tpl=\"looper\">🎢 Classic Looper</button>\n            <button class=\"tpl\" data-tpl=\"accelerator\">⚡ Accelerator</button>\n            <button class=\"tpl\" data-tpl=\"family\">🌄 Family Camelback</button>\n            <button class=\"tpl\" data-tpl=\"twister\">🐭 Wild Mouse</button>\n            <button class=\"tpl\" data-tpl=\"barrel\">🌀 Barrel Roll</button>\n            <button class=\"tpl\" data-tpl=\"oval\">◻ Starter Oval</button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Train colors</p>\n          <div class=\"btnrow\" id=\"clab-trainColors\" style=\"margin-top:4px\">\n            <button class=\"swatch\" data-c=\"#f2a63c\" style=\"background:#f2a63c\" aria-label=\"amber train\"></button>\n            <button class=\"swatch\" data-c=\"#e5484d\" style=\"background:#e5484d\" aria-label=\"red train\"></button>\n            <button class=\"swatch\" data-c=\"#3fb5b0\" style=\"background:#3fb5b0\" aria-label=\"teal train\"></button>\n            <button class=\"swatch\" data-c=\"#b07ce8\" style=\"background:#b07ce8\" aria-label=\"violet train\"></button>\n            <button class=\"swatch\" data-c=\"#8bc34a\" style=\"background:#8bc34a\" aria-label=\"lime train\"></button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Share your design</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnExport\">⬆ Export</button>\n            <button id=\"clab-btnImport\">⬇ Import</button>\n          </div>\n          <p class=\"hint\" style=\"margin:8px 0 0\">Export copies your design as text —\n            paste it to a classmate or teacher; Import loads one back in.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Propulsion</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnChain\" class=\"modebtn on\">⛓ Chain lift</button>\n            <button id=\"clab-btnLaunch\" class=\"modebtn\">⚡ LSM launch</button>\n          </div>\n          <div class=\"row\" id=\"clab-launchRow\" hidden>\n            <label for=\"clab-slLaunch\">Thrust</label>\n            <input type=\"range\" id=\"clab-slLaunch\" min=\"5\" max=\"14\" step=\"0.5\">\n            <span class=\"val\" id=\"clab-slLaunchV\"></span>\n          </div>\n          <p class=\"hint\" id=\"clab-propNote\" style=\"margin:8px 0 0\"></p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Design brief</p>\n          <p class=\"hint\" style=\"margin:0\">The chain lift releases the train at the first\n            crest at <b>3.5 m/s</b>. After that, gravity is in charge: every hill, loop\n            and turn has to be paid for out of the energy bank you see in the HUD.\n            Stall on a hill and the train rolls back. Pull more than <b>+6 g</b>,\n            less than <b>−1.5 g</b>, or over <b>±1.3 g sideways</b> and the safety\n            report flags your ride.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-cert\" role=\"tabpanel\" aria-labelledby=\"clab-tab-cert-btn\" tabindex=\"0\" hidden>\n        <div class=\"btnrow\" style=\"margin-bottom:10px\">\n          <button id=\"clab-btnExplore\" class=\"modebtn\">🔍 Explore</button>\n          <button id=\"clab-btnEngineer\" class=\"modebtn on\">📐 Engineer</button>\n        </div>\n        <p class=\"hint\" id=\"clab-certIntro\">To pass this educational simulation, file predictions\n          for the flagged checkpoints — then run the inspection and see if the track agrees\n          with your math. Inspection runs are made under <b>ideal conditions</b>\n          (friction off), so conservation of energy holds exactly.</p>\n        <div class=\"marker-legend\" id=\"clab-markerLegend\"></div>\n        <div id=\"clab-problems\"></div>\n        <div class=\"btnrow\" id=\"clab-engineerBtns\">\n          <button id=\"clab-btnCheck\">Check predictions</button>\n          <button id=\"clab-btnCert\" class=\"primary\">🎢 Run inspection</button>\n        </div>\n        <div id=\"clab-certResult\"></div>\n        <div class=\"card\" id=\"clab-aiCard\" hidden>\n          <p class=\"eyebrow\">Stuck? Ask the inspector</p>\n          <p class=\"hint\" style=\"margin:0 0 8px\">Get a nudge in the right direction —\n            the inspector never hands you the answer.</p>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAiHint\">🤖 Hint, please</button>\n          </div>\n          <p class=\"exline\" id=\"clab-aiHintOut\" style=\"min-height:0\"></p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-report\" role=\"tabpanel\" aria-labelledby=\"clab-tab-report-btn\" tabindex=\"0\" hidden>\n        <div id=\"clab-reportBody\">\n          <p class=\"hint\">No completed runs yet. Press <b>▶ Test run</b> and the\n            telemetry report will land here.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-missions\" role=\"tabpanel\" aria-labelledby=\"clab-tab-missions-btn\" tabindex=\"0\" hidden>\n        <p class=\"hint\">Engineering challenges, graded automatically from real telemetry.\n          Finish a run — or an inspection — and any mission you satisfied is stamped.</p>\n        <p class=\"eyebrow\" id=\"clab-missionProgress\"></p>\n        <div id=\"clab-missionList\"></div>\n        <div class=\"btnrow\" style=\"margin-top:4px\">\n          <button id=\"clab-btnSummary\">📋 Copy student summary</button>\n        </div>\n        <p class=\"hint\" style=\"margin:8px 0 0\">Copies a plain-text progress summary —\n          paste it into an email, doc, or LMS.</p>\n      </section>\n    </aside>\n\n    <div id=\"clab-viewport\">\n      <canvas id=\"clab-gl\" role=\"img\" aria-label=\"Interactive 3-D coaster track visualization. Use the Build panel controls to select and edit track nodes.\"></canvas>\n      <div id=\"clab-buildCoach\" class=\"clab-build-coach\" aria-hidden=\"true\">\n        <span class=\"clab-node-beacon\"></span>\n        <span><b>Build your own track</b><small>Glowing spheres are editable nodes</small></span>\n      </div>\n\n      <div id=\"clab-hud\">\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Speed</span>\n          <span class=\"hudv\" id=\"clab-hudSpeed\">0.0 <small>m/s</small></span>\n          <span class=\"gval\" id=\"clab-hudKmh\">0 km/h</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Height</span>\n          <span class=\"hudv\" id=\"clab-hudH\">0.0 <small>m</small></span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\">Seat g (vertical)</span>\n          <div class=\"gtrack\" id=\"clab-gvTrack\">\n            <span class=\"zone\" style=\"left:0;width:5.6%\"></span>\n            <span class=\"zone\" style=\"right:0;width:11.1%\"></span>\n            <span class=\"zero\" style=\"left:22.2%\"></span>\n            <span class=\"fill\" id=\"clab-gvFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-gvVal\">+1.00 g</span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\">Side g (lateral)</span>\n          <div class=\"gtrack\" id=\"clab-glTrack\">\n            <span class=\"zone\" style=\"left:0;width:17%\"></span>\n            <span class=\"zone\" style=\"right:0;width:17%\"></span>\n            <span class=\"zero\" style=\"left:50%\"></span>\n            <span class=\"fill\" id=\"clab-glFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-glVal\">+0.00 g</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">G-map</span>\n          <canvas id=\"clab-gball\"></canvas>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Energy budget</span>\n          <div class=\"ebar\">\n            <i id=\"clab-eKE\" style=\"background:var(--ke);width:33%\"></i>\n            <i id=\"clab-ePE\" style=\"background:var(--pe);width:33%\"></i>\n            <i id=\"clab-eHeat\" style=\"background:var(--heat);width:0%\"></i>\n          </div>\n          <div class=\"elegend\"><b class=\"ke\">KINETIC</b><b class=\"pe\">POTENTIAL</b><b class=\"heat\">HEAT</b></div>\n        </div>\n      </div>\n\n      <div id=\"clab-banner\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" hidden></div>\n\n      <div id=\"clab-rideQ\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rqText\" hidden>\n        <div class=\"rq-top\">\n          <span class=\"eyebrow\" id=\"clab-rqTag\" style=\"margin:0\">Checkpoint</span>\n          <span class=\"rq-scorebox\"><span class=\"rq-pts\" id=\"clab-rqScore\">0 pts</span><span class=\"rq-streak\" id=\"clab-rqStreak\" hidden></span><span class=\"rq-delta\" id=\"clab-rqDelta\" aria-hidden=\"true\"></span></span>\n        </div>\n        <span id=\"clab-rqTimer\" role=\"progressbar\" aria-label=\"Time remaining\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"100\"><i id=\"clab-rqTimerFill\"></i></span>\n        <p id=\"clab-rqText\"></p>\n        <div id=\"clab-rqViz\" class=\"clab-viz\" aria-hidden=\"true\"></div>\n        <div id=\"clab-rqChoices\" class=\"choice\"></div>\n        <div class=\"ansrow\" id=\"clab-rqNumRow\">\n          <input type=\"number\" id=\"clab-rqNum\" step=\"0.1\" inputmode=\"decimal\" aria-label=\"your answer\">\n          <span class=\"unit\" id=\"clab-rqUnit\"></span>\n          <button id=\"clab-rqGo\" class=\"primary\">Answer</button>\n        </div>\n        <p id=\"clab-rqFeed\" class=\"exline\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" style=\"min-height:18px;margin:8px 0 0\"></p>\n      </div>\n\n      <div id=\"clab-rideEnd\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rideEndTitle\" hidden>\n        <p class=\"eyebrow\" id=\"clab-rideEndTitle\">Ride complete</p>\n        <div id=\"clab-rideEndBody\"></div>\n        <div class=\"btnrow\" style=\"margin-top:12px\">\n          <button id=\"clab-btnRideAgain\" class=\"primary\">🎢 Ride again</button>\n          <button id=\"clab-btnRideClose\" class=\"ghost\">Done</button>\n        </div>\n      </div>\n      <div id=\"clab-xrayLegend\" hidden>\n        <span class=\"hudk\">Predicted seat g</span>\n        <div class=\"xbar\"></div>\n        <div class=\"xlabels\"><span>−1</span><span>0</span><span>+1</span><span>+3</span><span>+6</span></div>\n      </div>\n      <div id=\"clab-guide\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-guide-title\" tabindex=\"-1\" hidden>\n        <div class=\"gd-head\">\n          <span class=\"eyebrow\" id=\"clab-guide-title\" style=\"margin:0\">Coaster Lab · quick guide</span>\n          <button id=\"clab-btnGuideClose\" class=\"ghost\">✕ close</button>\n        </div>\n        <div class=\"gd-grid\">\n          <div class=\"card\"><h3>🔧 Build</h3><p class=\"hint\" style=\"margin:0\">\n            The visible coaster is editable: choose a glowing node, drag it to reshape the track · <kbd>Shift</kbd>-drag for height · sliders set\n            height &amp; banking · insert editable hills, drops, turns, and loops ·\n            follow numbered safety markers · flag a turn ⚑ for certification ·\n            <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo · templates &amp; Export/Import\n            to share designs · chain lift or ⚡ LSM launch.</p></div>\n          <div class=\"card\"><h3>🎢 Run &amp; ride</h3><p class=\"hint\" style=\"margin:0\">\n            <kbd>Space</kbd> test run · <kbd>R</kbd> Ride &amp; Solve (checkpoint\n            questions — pick the <b>topic</b> &amp; <b>grade</b> in the top bar: physics,\n            addition, subtraction, multiplication, division, mixed math, or\n            🤖 <b>any topic</b> the AI writes from a subject you type) ·\n            <kbd>C</kbd> camera: orbit → onboard → chase ·\n            <kbd>X</kbd> g-heat X-ray · <kbd>P</kbd> save a snapshot ·\n            🔊 sound &amp; 🥽 VR where supported.</p></div>\n          <div class=\"card\"><h3>📐 Certify</h3><p class=\"hint\" style=\"margin:0\">\n            Explore = quick predictions, Engineer = real numbers. File predictions\n            for the marked checkpoints, then run the inspection — under ideal\n            (frictionless) conditions your math must match the measurements.</p></div>\n          <div class=\"card\"><h3>📊 Learn from it</h3><p class=\"hint\" style=\"margin:0\">\n            HUD: energy bar (kinetic/potential/heat) &amp; G-MAP (side × seat g) ·\n            Report: telemetry traces, on-ride photo, park economics, ⬇ CSV for\n            graphing · run with friction on <i>and</i> off to see the loss ·\n            Missions tab tracks challenges.</p></div>\n        </div>\n      </div>\n      <div id=\"clab-err\" hidden></div>\n    </div>\n  </div>\n</div>";
+  CLAB_CSS += `
+  .clab-root[data-visual-theme="daylight"]{--accent:#61d39a;--accent-dim:#2d7c5a;--line:#385063;--line2:#4d6b80}
+  .clab-root[data-visual-theme="neon"]{--accent:#55e8ff;--accent-dim:#277d91;--ke:#55e8ff;--pe:#ff62c7;--heat:#ff9d4d}
+  .clab-root[data-visual-theme="blueprint"]{--accent:#8bd7ff;--accent-dim:#397ba0;--line:#315d83;--line2:#477da8;--ke:#8bd7ff;--pe:#d2a8ff}
+  .clab-root #clab-top{position:relative;z-index:9;box-shadow:0 8px 30px rgba(0,0,0,.22)}
+  .clab-root #clab-top{height:auto;min-height:52px;padding-block:7px}.clab-root #clab-top .controls{justify-content:flex-end}
+  @media (max-width:1180px){.clab-root #clab-top .brand .sub{display:none}}
+  .clab-root #clab-viewport:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(circle at 50% 42%,transparent 48%,rgba(4,8,13,.28) 100%)}
+  .clab-root[data-visual-theme="daylight"] #clab-viewport:before{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(22,46,32,.12))}
+  .clab-root[data-visual-theme="neon"] #clab-viewport:before{background:radial-gradient(circle at 50% 45%,rgba(46,228,255,.035),rgba(2,3,12,.42) 82%)}
+  .clab-root[data-visual-theme="blueprint"] #clab-viewport:before{background:linear-gradient(rgba(79,157,211,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(79,157,211,.035) 1px,transparent 1px);background-size:24px 24px}
+  .clab-root #clab-hud{z-index:3;max-width:calc(100% - 24px);overflow:hidden;background:linear-gradient(135deg,rgba(12,18,25,.9),rgba(21,32,43,.78));border-color:rgba(116,145,171,.34);box-shadow:0 14px 42px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.045);backdrop-filter:blur(10px) saturate(1.18)}
+  .clab-root #clab-hud .hudcol{position:relative;padding-left:12px;border-left:1px solid rgba(118,146,170,.18)}
+  .clab-root #clab-hud .hudcol:first-child{padding-left:0;border-left:0}
+  .clab-root .hudv{text-shadow:0 0 18px color-mix(in srgb,var(--accent) 25%,transparent)}
+  .clab-root .gtrack,.clab-root .ebar{box-shadow:inset 0 1px 4px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.025)}
+  .clab-root .clab-minimap{width:112px}.clab-root #clab-minimap{display:block;width:112px;height:64px;border:1px solid rgba(118,146,170,.24);border-radius:7px;background:rgba(5,10,15,.5)}
+  .clab-root #clab-vectorLegend{position:absolute;left:12px;top:12px;z-index:3;width:172px;padding:9px 11px;border:1px solid rgba(116,145,171,.34);border-radius:9px;background:rgba(10,16,23,.82);box-shadow:0 10px 30px rgba(0,0,0,.25);backdrop-filter:blur(8px);pointer-events:none}
+  .clab-root .vkey{display:flex;align-items:center;gap:7px;margin-top:5px;color:var(--ink2);font-size:11px}.clab-root .vkey i{display:block;width:20px;height:3px;border-radius:2px;box-shadow:0 0 8px currentColor}
+  .clab-root #clab-btnVectors[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel2))}
+  .clab-root #clab-visualTheme,.clab-root #clab-trackViz{max-width:122px}
+  .clab-root .clab-build-coach{box-shadow:0 12px 34px rgba(0,0,0,.32),0 0 24px rgba(242,166,60,.08)}
+  .clab-root .clab-workbench-card{border-color:color-mix(in srgb,var(--accent) 38%,var(--line))}
+  .clab-root .clab-history-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 12px}
+  .clab-root .clab-challenge-meter{height:7px;overflow:hidden;border-radius:5px;background:var(--panel2);box-shadow:inset 0 1px 3px rgba(0,0,0,.45)}
+  .clab-root .clab-challenge-meter i{display:block;width:0;height:100%;border-radius:inherit;background:var(--accent);transition:width .25s ease}
+  .clab-root #clab-challengeStatus{display:block;margin-top:7px;color:var(--ink2);font-size:12px}
+  .clab-root #clab-challengeStatus.done{color:var(--good)}
+  .clab-root #clab-dispatch{position:absolute;left:50%;top:13%;z-index:4;transform:translateX(-50%);min-width:148px;padding:10px 18px;border:1px solid color-mix(in srgb,var(--accent) 60%,var(--line));border-radius:999px;background:rgba(10,16,23,.86);box-shadow:0 12px 34px rgba(0,0,0,.34),0 0 24px color-mix(in srgb,var(--accent) 14%,transparent);text-align:center;pointer-events:none;backdrop-filter:blur(8px)}
+  .clab-root #clab-dispatch b{display:block;color:var(--accent);font:700 22px var(--mono);letter-spacing:.08em}
+  .clab-root #clab-dispatch small{display:block;color:var(--ink2);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+  .clab-root .clab-state-pill{display:inline-flex;align-items:center;width:max-content;padding:2px 7px;border:1px solid var(--line2);border-radius:999px;color:var(--good);font:700 10px var(--mono);letter-spacing:.08em}
+  .clab-root .clab-state-pill.caution{color:var(--warn);border-color:var(--warn)}.clab-root .clab-state-pill.hot{color:var(--bad);border-color:var(--bad)}
+  .clab-root .clab-insights{display:grid;gap:7px;margin:0;padding:0;list-style:none}
+  .clab-root .clab-insights li{padding:7px 9px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--panel2));color:var(--ink2);font-size:12px}
+  .clab-root .clab-node-lens{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 12px;margin:9px 0 3px;padding:8px 0;border-block:1px solid var(--line)}
+  .clab-root .clab-node-lens span{display:flex;justify-content:space-between;gap:7px;color:var(--ink3);font-size:10px;text-transform:uppercase;letter-spacing:.07em}
+  .clab-root .clab-node-lens b{color:var(--ink);font:600 11px var(--mono);letter-spacing:0;text-transform:none}
+  .clab-root .clab-replay{display:grid;grid-template-columns:auto 1fr;gap:7px 9px;align-items:center;margin:8px 0 10px}
+  .clab-root .clab-replay input{width:100%;accent-color:var(--accent)}
+  .clab-root .clab-replay label{color:var(--ink3);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+  .clab-root .clab-replay output{color:var(--ink2);font:11px var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+  .clab-root #clab-btnComfort[aria-pressed="true"]{border-color:var(--good);color:var(--good)}
+  .clab-root .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+  @media (max-width:1120px){.clab-root .clab-minimap{display:none}.clab-root #clab-hud{gap:10px}.clab-root #clab-hud .hudcol{padding-left:8px}}
+  @media (max-width:820px){.clab-root #clab-hud{right:8px;left:8px;bottom:8px;overflow-x:auto}.clab-root #clab-vectorLegend{top:8px;left:8px}.clab-root #clab-visualTheme,.clab-root #clab-trackViz{max-width:98px}}
+  @media (prefers-reduced-motion:reduce){.clab-root .hudv{text-shadow:none}.clab-root .clab-challenge-meter i{transition:none}}
+  `;
+  var fxControl = '<button id="clab-btnFx" title="Lite mode disables shadows and trees for slower devices">FX: Full</button>';
+  CLAB_HTML = CLAB_HTML.replace(fxControl, fxControl + '\n      <select id="clab-visualTheme" class="clab-sel" aria-label="Environment theme" title="Change the coaster environment"><option value="dusk">Dusk park</option><option value="daylight">Daylight</option><option value="neon">Neon night</option><option value="blueprint">Blueprint</option></select>\n      <select id="clab-trackViz" class="clab-sel" aria-label="Track analysis overlay" title="Color the track by a predicted physics measure"><option value="track">Track colors</option><option value="speed">Speed heatmap</option><option value="vertical">Vertical g heatmap</option><option value="lateral">Lateral g heatmap</option><option value="curvature">Curvature heatmap</option></select>\n      <button id="clab-btnVectors" aria-pressed="false" title="Show velocity, seat-force, and gravity arrows on the lead car">Vectors: Off</button>\n      <button id="clab-btnComfort" aria-pressed="false" title="Reduce camera movement, pulses, and decorative animation">Motion: Standard</button>');
+  var safetyCard = '<div class="card clab-safety-card" id="clab-safetyCoach">';
+  CLAB_HTML = CLAB_HTML.replace(safetyCard, '<div class="card clab-workbench-card" id="clab-workbench"><p class="eyebrow">Designer workbench</p><div class="clab-history-row"><button id="clab-btnUndo" type="button">Undo</button><button id="clab-btnRedo" type="button">Redo</button></div><label class="hint" for="clab-designChallenge" style="display:block;margin-bottom:5px">Guided design challenge</label><select id="clab-designChallenge" class="clab-sel" style="width:100%"><option value="hill20">Build a smooth 20 m hill</option><option value="airtime3">Create 3 seconds of airtime</option><option value="gentle4">Finish below 4.0 vertical g</option></select><div class="clab-challenge-meter" aria-hidden="true" style="margin-top:9px"><i id="clab-challengeFill"></i></div><span id="clab-challengeStatus" role="status" aria-live="polite">Choose a challenge to begin.</span><button id="clab-btnChallengeRun" class="primary" type="button" style="margin-top:9px">Test this challenge</button></div>\n\n        ' + safetyCard);
+  var pointCoords = '<div class="coords" id="clab-ptCoords"></div>';
+  CLAB_HTML = CLAB_HTML.replace(pointCoords, pointCoords + '\n          <div class="clab-node-lens" id="clab-nodeLens" aria-label="Predicted physics at this track node"><span>Section <b id="clab-nodeSection">?</b></span><span>Speed <b id="clab-nodeSpeed">?</b></span><span>Vertical <b id="clab-nodeGV">?</b></span><span>Suggested bank <b id="clab-nodeBank">?</b></span></div>');
+  var energyHud = '<div class="hudcol">\n          <span class="hudk">Energy budget</span>';
+  CLAB_HTML = CLAB_HTML.replace(energyHud, '<div class="hudcol clab-ride-state">\n          <span class="hudk">Ride state</span>\n          <span class="clab-state-pill" id="clab-hudState">READY</span>\n          <span class="gval" id="clab-hudPeak">Peak +1.00 g</span>\n        </div>\n        <div class="hudcol clab-minimap">\n          <span class="hudk">Track map</span>\n          <canvas id="clab-minimap" width="224" height="128" role="img" aria-label="Top-down map of the track and train position"></canvas>\n        </div>\n        ' + energyHud);
+  var xrayLegend = '<div id="clab-xrayLegend" hidden>';
+  CLAB_HTML = CLAB_HTML.replace(xrayLegend, '<div id="clab-dispatch" role="status" aria-live="polite" aria-atomic="true" hidden><small>Dispatch</small><b id="clab-dispatchValue">3</b></div>\n      <div id="clab-telemetryAnnouncer" class="sr-only" aria-live="polite" aria-atomic="true"></div>\n      <div id="clab-vectorLegend" hidden><span class="hudk">Live physics vectors</span><span class="vkey"><i style="background:#55b7ff;color:#55b7ff"></i>Velocity</span><span class="vkey"><i style="background:#f2a63c;color:#f2a63c"></i>Seat force</span><span class="vkey"><i style="background:#d38bff;color:#d38bff"></i>Gravity</span></div>\n      ' + xrayLegend);
 
   function bootCoasterLab(rootEl, THREE, bridge){
 'use strict';
@@ -121,6 +179,41 @@ const COL = {
   accent: 0xf2a63c, ke: 0x3f8fd2, pe: 0xc05fa0, heat: 0xc47c2f,
   good: 0x59c98d, bad: 0xe5484d, ink: 0xe8eef4
 };
+const VISUAL_THEMES = {
+  dusk: {
+    fog: 0x241f26, fogNear: 240, fogFar: 820, exposure: 1.15,
+    hemiSky: 0x35506e, hemiGround: 0x191f16, hemi: 0.9,
+    sun: 0xffb877, sunPower: 1.35, fill: 0x46658a, fillPower: 0.28,
+    zen: 0x051024, mid: 0x111b2b, horizon: 0x5c3426, sunGlow: 0xff8a38, stars: 0.45,
+    ground: 0xd9e2cc, rail: 0xf2a63c, railGlow: 0x3a2408, spine: 0x31424f, support: 0x3a4a58
+  },
+  daylight: {
+    fog: 0xb7d6e2, fogNear: 300, fogFar: 980, exposure: 1.02,
+    hemiSky: 0xcbe9ff, hemiGround: 0x55764d, hemi: 1.12,
+    sun: 0xfff0c7, sunPower: 1.55, fill: 0x8bb9d4, fillPower: 0.34,
+    zen: 0x2f84c8, mid: 0x78bce0, horizon: 0xf2d6a2, sunGlow: 0xffe0a0, stars: 0,
+    ground: 0xe3eccd, rail: 0xf0a235, railGlow: 0x251300, spine: 0x425666, support: 0x536777
+  },
+  neon: {
+    fog: 0x050713, fogNear: 190, fogFar: 690, exposure: 1.25,
+    hemiSky: 0x16255c, hemiGround: 0x10081e, hemi: 0.72,
+    sun: 0xff4fbf, sunPower: 0.9, fill: 0x28d8ff, fillPower: 0.55,
+    zen: 0x02030d, mid: 0x0b1230, horizon: 0x32104c, sunGlow: 0xff3ca6, stars: 0.85,
+    ground: 0x223044, rail: 0x55e8ff, railGlow: 0x0b6575, spine: 0x3a2454, support: 0x283a5c
+  },
+  blueprint: {
+    fog: 0x071b30, fogNear: 230, fogFar: 760, exposure: 1.08,
+    hemiSky: 0x285f91, hemiGround: 0x06111f, hemi: 0.78,
+    sun: 0x9bdcff, sunPower: 0.85, fill: 0x4b9cd3, fillPower: 0.42,
+    zen: 0x041326, mid: 0x092542, horizon: 0x12466a, sunGlow: 0x8bd7ff, stars: 0.18,
+    ground: 0x244866, rail: 0xeaf7ff, railGlow: 0x2b799f, spine: 0x3979a3, support: 0x315f7e
+  }
+};
+let visualTheme = (() => {
+  try{ const v = localStorage.getItem('coaster_lab_theme') || 'dusk'; return VISUAL_THEMES[v] ? v : 'dusk'; }
+  catch(_e){ return 'dusk'; }
+})();
+rootEl.dataset.visualTheme = visualTheme;
 
 let __clabBridge = bridge;
 function bridgeReport(ev){
@@ -423,6 +516,7 @@ function snapshot(){
   history.push(s);
   if(history.length > 60) history.shift();
   hIdx = history.length - 1;
+  syncHistoryButtons();
 }
 function saveDesign(record = true){
   if(record) snapshot();
@@ -449,13 +543,14 @@ renderer.shadowMap.type = THREE.PCFShadowMap;
 
 const scene = new THREE.Scene();
 __clabResources.sceneRoot = scene;
-scene.fog = new THREE.Fog(0x241f26, 240, 820);
+scene.fog = new THREE.Fog(VISUAL_THEMES[visualTheme].fog, VISUAL_THEMES[visualTheme].fogNear, VISUAL_THEMES[visualTheme].fogFar);
 
 const camera = new THREE.PerspectiveCamera(55, 2, 0.1, 2600);
 
 /* dusk lighting: one low warm sun, cool hemisphere, faint cool fill */
-scene.add(new THREE.HemisphereLight(0x35506e, 0x191f16, 0.9));
-const sun = new THREE.DirectionalLight(0xffb877, 1.35);
+const hemi = new THREE.HemisphereLight(VISUAL_THEMES[visualTheme].hemiSky, VISUAL_THEMES[visualTheme].hemiGround, VISUAL_THEMES[visualTheme].hemi);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(VISUAL_THEMES[visualTheme].sun, VISUAL_THEMES[visualTheme].sunPower);
 sun.position.set(260, 74, 50);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
@@ -465,7 +560,7 @@ sun.shadow.camera.near = 20; sun.shadow.camera.far = 720;
 sun.shadow.bias = -0.0004;
 sun.shadow.normalBias = 0.6;
 scene.add(sun, sun.target);
-const fill = new THREE.DirectionalLight(0x46658a, 0.28);
+const fill = new THREE.DirectionalLight(VISUAL_THEMES[visualTheme].fill, VISUAL_THEMES[visualTheme].fillPower);
 fill.position.set(-140, 90, -120);
 scene.add(fill);
 
@@ -474,27 +569,34 @@ const sky = new THREE.Mesh(
   new THREE.SphereGeometry(2200, 32, 20),
   new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
-    uniforms: { sunDir: { value: new THREE.Vector3(260, 74, 50).normalize() } },
+    uniforms: {
+      sunDir: { value: new THREE.Vector3(260, 74, 50).normalize() },
+      zenColor: { value: new THREE.Color(VISUAL_THEMES[visualTheme].zen) },
+      midColor: { value: new THREE.Color(VISUAL_THEMES[visualTheme].mid) },
+      horizonColor: { value: new THREE.Color(VISUAL_THEMES[visualTheme].horizon) },
+      sunGlow: { value: new THREE.Color(VISUAL_THEMES[visualTheme].sunGlow) },
+      starStrength: { value: VISUAL_THEMES[visualTheme].stars }
+    },
     vertexShader:
       'varying vec3 vDir;' +
       'void main(){ vDir = normalize(position);' +
       ' gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader:
-      'varying vec3 vDir; uniform vec3 sunDir;' +
+      'varying vec3 vDir; uniform vec3 sunDir, zenColor, midColor, horizonColor, sunGlow; uniform float starStrength;' +
       'float hash(vec3 p){ p = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3)); p *= 17.0;' +
       ' return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }' +
       'void main(){' +
       ' float h = clamp(vDir.y, -0.05, 1.0);' +
-      ' vec3 zen = vec3(0.020, 0.042, 0.080);' +
-      ' vec3 mid = vec3(0.065, 0.105, 0.170);' +
-      ' vec3 hor = vec3(0.360, 0.205, 0.150);' +
+      ' vec3 zen = zenColor;' +
+      ' vec3 mid = midColor;' +
+      ' vec3 hor = horizonColor;' +
       ' vec3 col = mix(hor, mid, smoothstep(0.0, 0.22, h));' +
       ' col = mix(col, zen, smoothstep(0.22, 0.75, h));' +
       ' float sd = max(dot(vDir, sunDir), 0.0);' +
-      ' col += vec3(1.0, 0.52, 0.22) * pow(sd, 22.0) * 0.50;' +
-      ' col += vec3(1.0, 0.72, 0.42) * pow(sd, 350.0) * 1.40;' +
+      ' col += sunGlow * pow(sd, 22.0) * 0.50;' +
+      ' col += sunGlow * pow(sd, 350.0) * 1.40;' +
       ' float st = step(0.9982, hash(floor(vDir * 460.0))) * smoothstep(0.12, 0.45, h);' +
-      ' gl_FragColor = vec4(col + vec3(st) * 0.45, 1.0); }'
+      ' gl_FragColor = vec4(col + vec3(st) * starStrength, 1.0); }'
   })
 );
 sky.renderOrder = -1;
@@ -527,6 +629,12 @@ const ground = new THREE.Mesh(
 ground.position.y = -0.02;
 ground.receiveShadow = true;
 scene.add(ground);
+const terrainGrid = new THREE.GridHelper(1200, 120, 0x5fb9e8, 0x2f7199);
+terrainGrid.position.y = 0.025;
+terrainGrid.material.transparent = true;
+terrainGrid.material.opacity = 0.16;
+terrainGrid.visible = visualTheme === 'blueprint';
+scene.add(terrainGrid);
 
 /* materials shared across rebuilds; the scene registry disposes them on teardown */
 const MAT = {
@@ -534,6 +642,8 @@ const MAT = {
   spine:   new THREE.MeshStandardMaterial({ color: 0x31424f, metalness: 0.3, roughness: 0.7 }),
   tie:     new THREE.MeshStandardMaterial({ color: 0x243240, metalness: 0.2, roughness: 0.8 }),
   support: new THREE.MeshStandardMaterial({ color: 0x3a4a58, metalness: 0.25, roughness: 0.8 }),
+  footing: new THREE.MeshStandardMaterial({ color: 0x202a31, metalness: 0.05, roughness: 0.95 }),
+  cap:     new THREE.MeshStandardMaterial({ color: 0x526879, metalness: 0.35, roughness: 0.62 }),
   car:     new THREE.MeshStandardMaterial({ color: 0xcfd8e0, metalness: 0.3, roughness: 0.45 }),
   carHead: new THREE.MeshStandardMaterial({ color: COL.accent, metalness: 0.3, roughness: 0.45 }),
   seat:    new THREE.MeshStandardMaterial({ color: 0x1c2836, metalness: 0.1, roughness: 0.9 }),
@@ -550,6 +660,16 @@ const MAT = {
 };
 
 /* station: platform + canopy + lit sign (repositioned on rebuild) */
+const stationEdgeMat = new THREE.MeshBasicMaterial({ color: 0xffc873, transparent: true, opacity: 0.82, toneMapped: false });
+const stationAccentMat = new THREE.MeshStandardMaterial({ color: 0xf2a63c, emissive: 0x4a2805, emissiveIntensity: 0.8, metalness: 0.35, roughness: 0.42 });
+const stationSignalMats = {
+  red: new THREE.MeshStandardMaterial({ color: 0x401010, emissive: 0xff3030, emissiveIntensity: 0.12, roughness: 0.35 }),
+  amber: new THREE.MeshStandardMaterial({ color: 0x402d08, emissive: 0xffb62e, emissiveIntensity: 0.12, roughness: 0.35 }),
+  green: new THREE.MeshStandardMaterial({ color: 0x0b3524, emissive: 0x46e39a, emissiveIntensity: 0.12, roughness: 0.35 })
+};
+const stationFlags = [];
+const stationGates = [];
+let stationLamp = null;
 const station = new THREE.Group();
 {
   const matPlat = new THREE.MeshStandardMaterial({ color: 0x22303e, metalness: 0.15, roughness: 0.85 });
@@ -557,6 +677,45 @@ const station = new THREE.Group();
   const plat = new THREE.Mesh(new THREE.BoxGeometry(12, 1.1, 3.4), matPlat);
   plat.castShadow = plat.receiveShadow = true;
   station.add(plat);
+  /* illuminated platform edges and a compact entrance arch */
+  const edgeGeo = new THREE.BoxGeometry(11.8, 0.055, 0.09);
+  for(const dz of [-1.68, 1.68]){
+    const edge = new THREE.Mesh(edgeGeo, stationEdgeMat); edge.position.set(0, 0.58, dz); station.add(edge);
+    for(let i = -5; i <= 5; i++){
+      const puck = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.08, 0.14), stationEdgeMat);
+      puck.position.set(i, 0.64, dz); station.add(puck);
+    }
+  }
+  /* platform gates open with dispatch, reinforcing the station state */
+  const gateGeo = new THREE.BoxGeometry(1.45, 0.11, 0.13);
+  for(const dz of [-1.46, 1.46]) for(const dx of [-2.7, 0, 2.7]){
+    const pivot = new THREE.Group();
+    pivot.position.set(dx, 1.25, dz);
+    const arm = new THREE.Mesh(gateGeo, stationAccentMat);
+    arm.position.x = 0.72;
+    pivot.add(arm);
+    station.add(pivot);
+    stationGates.push({ pivot, sign: dz > 0 ? -1 : 1 });
+  }
+  for(const dz of [-2.05, 2.05]){
+    const archPost = new THREE.Mesh(new THREE.BoxGeometry(0.16, 3.8, 0.16), stationAccentMat);
+    archPost.position.set(-5.55, 2.45, dz); station.add(archPost);
+  }
+  const archBeam = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 4.3), stationAccentMat);
+  archBeam.position.set(-5.55, 4.35, 0); station.add(archBeam);
+  /* animated station pennants make the loading platform feel alive */
+  const flagMat = new THREE.MeshStandardMaterial({ color: 0xf2a63c, emissive: 0x3a2107, emissiveIntensity: 0.45, side: THREE.DoubleSide, roughness: 0.72 });
+  const flagGeo = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0, 0, 0), new THREE.Vector3(1.15, -0.32, 0), new THREE.Vector3(0, -0.64, 0)
+  ]);
+  flagGeo.setIndex([0, 1, 2]); flagGeo.computeVertexNormals();
+  for(const dz of [-2.12, 2.12]) for(const dx of [-3.8, -1.2, 1.4, 4.0]){
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.3, 6), matPost);
+    pole.position.set(dx, 5.9, dz); station.add(pole);
+    const flag = new THREE.Mesh(flagGeo, flagMat);
+    flag.position.set(dx, 6.92, dz); flag.rotation.y = dz > 0 ? Math.PI : 0;
+    station.add(flag); stationFlags.push(flag);
+  }
   for(const dx of [-5, 5]) for(const dz of [-1.4, 1.4]){
     const post = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 4.2, 8), matPost);
     post.position.set(dx, 2.6, dz);
@@ -566,6 +725,17 @@ const station = new THREE.Group();
   roof.position.y = 4.8;
   roof.castShadow = true;
   station.add(roof);
+  /* three-aspect dispatch signal at the station exit */
+  const signalMast = new THREE.Group();
+  const mastPole = new THREE.Mesh(new THREE.BoxGeometry(0.16, 3.4, 0.16), matPost);
+  mastPole.position.y = 1.7; signalMast.add(mastPole);
+  const housing = new THREE.Mesh(new THREE.BoxGeometry(0.72, 2.25, 0.54), matPost);
+  housing.position.y = 3.5; signalMast.add(housing);
+  [['red', 4.18], ['amber', 3.50], ['green', 2.82]].forEach(([key, y]) => {
+    const lens = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 8), stationSignalMats[key]);
+    lens.position.set(0, y, -0.31); signalMast.add(lens);
+  });
+  signalMast.position.set(4.8, 0, -2.0); station.add(signalMast);
   const cv = document.createElement('canvas'); cv.width = 512; cv.height = 96;
   const g = cv.getContext('2d');
   g.fillStyle = '#141b23'; g.fillRect(0, 0, 512, 96);
@@ -579,28 +749,93 @@ const station = new THREE.Group();
   );
   sign.position.y = 5.9;
   station.add(sign);
-  const lamp = new THREE.PointLight(0xffb066, 1.0, 46, 2);
-  lamp.position.set(0, 4.2, 0);
-  station.add(lamp);
+  stationLamp = new THREE.PointLight(0xffb066, 1.0, 46, 2);
+  stationLamp.position.set(0, 4.2, 0);
+  station.add(stationLamp);
 }
 scene.add(station);
+
+/* distant park atmosphere: low-poly ridge line and a landmark Ferris wheel */
+const atmosphereGroup = new THREE.Group();
+const atmosphereMat = new THREE.MeshBasicMaterial({ color: 0x101827, transparent: true, opacity: 0.62, depthWrite: false });
+const ferrisMat = new THREE.MeshBasicMaterial({ color: 0xf2a63c, transparent: true, opacity: 0.78, toneMapped: false });
+const ferrisCabinMat = new THREE.MeshBasicMaterial({ color: 0x59c98d, toneMapped: false });
+const ridgeGeo = new THREE.ConeGeometry(24, 44, 5);
+for(let i = 0; i < 16; i++){
+  const a = i / 16 * Math.PI * 2, rr = 250 + (i % 3) * 24;
+  const peak = new THREE.Mesh(ridgeGeo, atmosphereMat);
+  peak.position.set(Math.cos(a) * rr, 20 + (i % 4) * 4, Math.sin(a) * rr);
+  peak.scale.set(1 + (i % 3) * 0.35, 0.75 + (i % 4) * 0.12, 1 + ((i + 1) % 3) * 0.28);
+  peak.rotation.y = a * 1.7; atmosphereGroup.add(peak);
+}
+const ferrisWheel = new THREE.Group();
+const ferrisRotor = new THREE.Group();
+ferrisRotor.position.y = 20; ferrisWheel.add(ferrisRotor);
+const wheelRing = new THREE.Mesh(new THREE.TorusGeometry(14, 0.28, 8, 64), ferrisMat);
+ferrisRotor.add(wheelRing);
+for(let i = 0; i < 10; i++){
+  const a = i / 10 * Math.PI * 2;
+  const spoke = new THREE.Mesh(new THREE.BoxGeometry(13.5, 0.11, 0.11), ferrisMat);
+  spoke.rotation.z = a; ferrisRotor.add(spoke);
+  const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.35, 0.85, 1.0), ferrisCabinMat);
+  cabin.position.set(Math.cos(a) * 14, Math.sin(a) * 14, 0); ferrisRotor.add(cabin);
+}
+for(const side of [-1, 1]){
+  const leg = new THREE.Mesh(new THREE.BoxGeometry(0.42, 31, 0.42), atmosphereMat);
+  leg.position.set(side * 6.6, 8.3, 0); leg.rotation.z = side * -0.43; ferrisWheel.add(leg);
+}
+ferrisWheel.position.set(110, 0, -94); ferrisWheel.rotation.y = -0.34;
+atmosphereGroup.add(ferrisWheel);
+/* theme-aware clouds and a distant bird flock add depth without dense geometry */
+const cloudMat = new THREE.MeshBasicMaterial({ color: 0xdde9f4, transparent: true, opacity: 0.18, depthWrite: false });
+const cloudGroup = new THREE.Group();
+for(let i = 0; i < 6; i++){
+  const cluster = new THREE.Group();
+  for(let j = 0; j < 4; j++){
+    const puff = new THREE.Mesh(new THREE.SphereGeometry(5 + (j % 2) * 2, 8, 5), cloudMat);
+    puff.position.set(j * 5.2, (j % 2) * 2.1, (j - 1.5) * 1.8);
+    cluster.add(puff);
+  }
+  cluster.position.set(Math.cos(i * 1.73) * (150 + i * 13), 58 + (i % 3) * 9, Math.sin(i * 1.73) * (150 + i * 13));
+  cloudGroup.add(cluster);
+}
+atmosphereGroup.add(cloudGroup);
+const birdVerts = [];
+for(let i = 0; i < 9; i++){
+  const a = i * 0.71, x = Math.cos(a) * (70 + i * 4), y = 42 + (i % 3) * 2, z = Math.sin(a) * (70 + i * 4);
+  birdVerts.push(
+    new THREE.Vector3(x - 1.4, y, z), new THREE.Vector3(x, y + 0.7, z),
+    new THREE.Vector3(x, y + 0.7, z), new THREE.Vector3(x + 1.4, y, z)
+  );
+}
+const birdGeo = new THREE.BufferGeometry().setFromPoints(birdVerts);
+const birdMat = new THREE.LineBasicMaterial({ color: 0xb9cedd, transparent: true, opacity: 0.5 });
+const birdFlock = new THREE.LineSegments(birdGeo, birdMat);
+birdFlock.position.set(-20, 0, 20);
+atmosphereGroup.add(birdFlock);
+scene.add(atmosphereGroup);
 
 /* groups whose contents are rebuilt (geometry disposed each time) */
 const trackGroup = new THREE.Group();
 const supportGroup = new THREE.Group();
 const markerGroup = new THREE.Group();
+const sectionGroup = new THREE.Group();
 const safetyGroup = new THREE.Group();
 const handleGroup = new THREE.Group();
-scene.add(trackGroup, supportGroup, markerGroup, safetyGroup, handleGroup);
+const previewGroup = new THREE.Group();
+scene.add(trackGroup, supportGroup, markerGroup, sectionGroup, safetyGroup, handleGroup, previewGroup);
 
 /* train: shaped cars, wheels, headlights on the lead car, brake light aft */
 const trainGroup = new THREE.Group();
 const cars = [];
+const trainWheels = [], restraintBars = [];
 {
   const wheelGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.12, 10).rotateZ(Math.PI / 2);
   const wheelMat = new THREE.MeshStandardMaterial({ color: 0x161d26, metalness: 0.4, roughness: 0.6 });
   const glowHead = new THREE.MeshBasicMaterial({ color: 0xffe4b0 });
   const glowTail = new THREE.MeshBasicMaterial({ color: 0xff5a4d });
+  const restraintMat = new THREE.MeshStandardMaterial({ color: 0x25384a, metalness: 0.48, roughness: 0.46 });
+  const restraintGeo = new THREE.BoxGeometry(1.15, 0.09, 0.09);
   for(let c = 0; c < 3; c++){
     const car = new THREE.Group();
     const body = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.5, 2.0), c === 0 ? MAT.carHead : MAT.car);
@@ -611,6 +846,11 @@ const cars = [];
     const back = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.44, 0.22), MAT.seat);
     back.position.set(0, 0.82, -0.72);
     car.add(body, seat, back);
+    const restraint = new THREE.Mesh(restraintGeo, restraintMat);
+    restraint.position.set(0, 0.95, -0.18);
+    restraint.rotation.x = -0.22;
+    car.add(restraint);
+    restraintBars.push(restraint);
     if(c === 0){
       const nose = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.34, 0.6), MAT.carHead);
       nose.position.set(0, 0.44, 1.05);
@@ -634,6 +874,7 @@ const cars = [];
     for(const dz of [-0.68, 0.68]) for(const dx of [-0.62, 0.62]){
       const w = new THREE.Mesh(wheelGeo, wheelMat);
       w.position.set(dx, 0.05, dz);
+      trainWheels.push(w);
       car.add(w);
     }
     trainGroup.add(car);
@@ -641,6 +882,34 @@ const cars = [];
   }
 }
 scene.add(trainGroup);
+
+/* live physics vectors: velocity, seat force, and gravity at the lead car */
+const vectorGroup = new THREE.Group();
+const vectorVelocity = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(), 8, 0x55b7ff, 1.5, 0.8);
+const vectorSeat = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3(), 7, 0xf2a63c, 1.5, 0.8);
+const vectorGravity = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), new THREE.Vector3(), 6, 0xd38bff, 1.4, 0.75);
+vectorGroup.add(vectorVelocity, vectorSeat, vectorGravity);
+vectorGroup.visible = false;
+scene.add(vectorGroup);
+let vectorsOn = (() => { try{ return localStorage.getItem('coaster_lab_vectors') === 'on'; }catch(_e){ return false; } })();
+const vectorPos = new THREE.Vector3(), vectorTan = new THREE.Vector3(), vectorUp = new THREE.Vector3();
+const vectorSeatDir = new THREE.Vector3(), vectorGravityDir = new THREE.Vector3(0, -1, 0);
+
+/* speed streaks are world-space line segments around the train, never a screen filter */
+const SPEED_STREAK_COUNT = 42;
+const speedStreakPositions = new Float32Array(SPEED_STREAK_COUNT * 6);
+const speedStreakGeo = new THREE.BufferGeometry();
+speedStreakGeo.setAttribute('position', new THREE.BufferAttribute(speedStreakPositions, 3));
+const speedStreakMat = new THREE.LineBasicMaterial({ color: 0xffc873, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+const speedStreaks = new THREE.LineSegments(speedStreakGeo, speedStreakMat);
+speedStreaks.visible = false; speedStreaks.frustumCulled = false; scene.add(speedStreaks);
+const speedStreakSeed = Array.from({ length: SPEED_STREAK_COUNT }, (_, i) => ({
+  phase: ((i * 37) % SPEED_STREAK_COUNT) / SPEED_STREAK_COUNT,
+  angle: ((i * 2.399963) % (Math.PI * 2)),
+  radius: 2.4 + (i % 7) * 0.62
+}));
+const streakPos = new THREE.Vector3(), streakTan = new THREE.Vector3(), streakUp = new THREE.Vector3(), streakSide = new THREE.Vector3();
+const streakHead = new THREE.Vector3(), streakTail = new THREE.Vector3();
 
 /* ---------------- track geometry & frames ---------------- */
 let track = null;      // sampled track data
@@ -887,9 +1156,11 @@ function rebuildTrackMeshes(){
   ties.castShadow = true;
   trackGroup.add(ties);
 
-  /* supports down to the ground */
+  /* supports down to the ground: columns, concrete footings, and cross caps */
   const supEvery = 20, maxSup = Math.ceil(M / supEvery);
   const sup = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.13, 0.2, 1, 8), MAT.support, maxSup);
+  const foot = new THREE.InstancedMesh(new THREE.BoxGeometry(1.15, 0.22, 1.15), MAT.footing, maxSup);
+  const cap = new THREE.InstancedMesh(new THREE.BoxGeometry(2.45, 0.16, 0.24), MAT.cap, maxSup);
   let used = 0;
   const sc = new THREE.Vector3(), pp = new THREE.Vector3();
   for(let i = 0; i < M; i += supEvery){
@@ -898,12 +1169,19 @@ function rebuildTrackMeshes(){
     pp.set(t.pos[i].x, attachY / 2, t.pos[i].z);
     sc.set(1, attachY, 1);
     m4.identity().makeScale(sc.x, sc.y, sc.z).setPosition(pp.x, pp.y, pp.z);
-    sup.setMatrixAt(used++, m4);
+    const supportIdx = used++;
+    sup.setMatrixAt(supportIdx, m4);
+    m4.identity().setPosition(t.pos[i].x, 0.11, t.pos[i].z); foot.setMatrixAt(supportIdx, m4);
+    m4.makeBasis(t.side[i], t.up[i], t.T[i])
+      .setPosition(tmp.copy(t.pos[i]).addScaledVector(t.up[i], -0.46));
+    cap.setMatrixAt(supportIdx, m4);
   }
-  sup.count = used;
-  sup.instanceMatrix.needsUpdate = true;
-  sup.castShadow = true;
-  supportGroup.add(sup);
+  for(const mesh of [sup, foot, cap]){
+    mesh.count = used;
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.castShadow = mesh.receiveShadow = true;
+    supportGroup.add(mesh);
+  }
 
   /* running lights under the spine — the dusk payoff */
   const liteEvery = 24, liteCount = Math.ceil(M / liteEvery);
@@ -927,7 +1205,8 @@ function rebuildTrackMeshes(){
 }
 
 /* ---------------- X-ray view: spine heat-colored by predicted seat g ---- */
-let xrayMode = false;
+let heatmapMode = (() => { try{ return localStorage.getItem('coaster_lab_track_viz') || 'track'; }catch(_e){ return 'track'; } })();
+let xrayMode = heatmapMode !== 'track';
 const XSTOPS = [
   [-1, new THREE.Color(0xc05fa0).convertSRGBToLinear()],   // ejector airtime
   [0.3, new THREE.Color(0x3f8fd2).convertSRGBToLinear()],  // floater
@@ -951,6 +1230,39 @@ function idealGV(i){
   const v2 = Math.max(0, analysis.A.v ** 2 + 2 * G0 * (analysis.A.h - track.y[i]));
   return track.upY[i] + v2 * track.kUp[i] / G0;
 }
+const HEAT_RAMP = [
+  new THREE.Color(0x472d7b).convertSRGBToLinear(),
+  new THREE.Color(0x2f7ed8).convertSRGBToLinear(),
+  new THREE.Color(0x23a884).convertSRGBToLinear(),
+  new THREE.Color(0xf4d35e).convertSRGBToLinear()
+];
+const HEAT_CONFIG = {
+  speed: { label: 'Predicted speed', min: 0, max: 40, unit: 'm/s' },
+  vertical: { label: 'Predicted vertical g', min: -1, max: 6, unit: 'g' },
+  lateral: { label: 'Predicted lateral g', min: 0, max: 2, unit: 'g' },
+  curvature: { label: 'Track curvature', min: 0, max: 12, unit: '1/100 m' }
+};
+function idealV2(i){
+  if(!analysis || track.s[i] < track.sCrest) return LIFT_V * LIFT_V;
+  return Math.max(0, analysis.A.v ** 2 + 2 * G0 * (analysis.A.h - track.y[i]));
+}
+function idealGLat(i){
+  const v2 = idealV2(i);
+  return track.sideY[i] + v2 * track.kSide[i] / G0;
+}
+function rampColor(t, out){
+  const x = Math.max(0, Math.min(0.999, t)) * (HEAT_RAMP.length - 1), k = Math.floor(x);
+  return out.copy(HEAT_RAMP[k]).lerp(HEAT_RAMP[k + 1], x - k);
+}
+function heatColor(i, out){
+  if(heatmapMode === 'vertical') return gvColor(idealGV(i), out);
+  const cfg = HEAT_CONFIG[heatmapMode] || HEAT_CONFIG.speed;
+  let value = 0;
+  if(heatmapMode === 'speed') value = Math.sqrt(idealV2(i));
+  else if(heatmapMode === 'lateral') value = Math.abs(idealGLat(i));
+  else value = Math.hypot(track.kUp[i], track.kSide[i]) * 100;
+  return rampColor((value - cfg.min) / (cfg.max - cfg.min), out);
+}
 function colorizeSpine(){
   const spine = trackGroup.userData.spine;
   if(!spine || !analysis) return;
@@ -961,7 +1273,7 @@ function colorizeSpine(){
   const cTmp = new THREE.Color();
   for(let i = 0; i <= tub; i++){
     const si = Math.min(M - 1, Math.round(i / tub * M)) % M;
-    gvColor(idealGV(si), cTmp);
+    heatColor(si, cTmp);
     for(let j = 0; j <= rad; j++){
       const vi = (i * (rad + 1) + j) * 3;
       colors[vi] = cTmp.r; colors[vi + 1] = cTmp.g; colors[vi + 2] = cTmp.b;
@@ -1059,6 +1371,45 @@ function renderMarkers(){
     markerGroup.add(sp);
   }
 }
+function makeSectionSprite(label){
+  const cfg = VISUAL_THEMES[visualTheme] || VISUAL_THEMES.dusk;
+  const cv = document.createElement('canvas'); cv.width = 384; cv.height = 96;
+  const g = cv.getContext('2d');
+  const accent = '#' + cfg.rail.toString(16).padStart(6, '0');
+  const bg = visualTheme === 'daylight' ? 'rgba(20,42,36,0.9)' : visualTheme === 'blueprint' ? 'rgba(7,34,55,0.92)' : 'rgba(10,16,23,0.9)';
+  g.fillStyle = bg; g.fillRect(4, 4, 376, 88);
+  g.strokeStyle = accent; g.lineWidth = 4;
+  g.strokeRect(5, 5, 374, 86);
+  g.font = '600 34px Segoe UI, sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = accent;
+  g.fillText(label.toUpperCase(), 192, 50);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.encoding = THREE.sRGBEncoding;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+  sp.scale.set(7.8, 1.95, 1);
+  sp.renderOrder = 4;
+  return sp;
+}
+function renderSectionLabels(){
+  disposeGroup(sectionGroup);
+  if(!track || !analysis || fxLite) return;
+  const feature = analysis.C ? ['Inversion', analysis.C.s] : analysis.D ? ['Banked turn', analysis.D.s] : ['Valley', analysis.B.s];
+  const defs = [
+    [design.propulsion.mode === 'launch' ? 'Launch' : 'Lift hill', track.sCrest * 0.5],
+    ['First drop', (analysis.A.s + analysis.B.s) * 0.5],
+    feature,
+    ['Brake run', track.L - brakeLen() * 0.5]
+  ];
+  for(const [label, arc] of defs){
+    trackAt(arc);
+    const idx = TMP.i;
+    const sp = makeSectionSprite(label);
+    sp.position.copy(track.pos[idx]).add(new THREE.Vector3(0, 4.8, 0));
+    sectionGroup.add(sp);
+  }
+}
+
 
 /* @clab-geometry-preflight-start — pure sampled-geometry checks */
 function geometryPreflightSamples(pos, s, L, nodes = [], options = {}){
@@ -1636,6 +1987,7 @@ function freshTele(){
   };
 }
 function startRun(cert){
+  stopTelemetryReplay(true);
   if(!track || track.sCrest == null){
     banner('Add a lift hill first — the track needs a first crest.', 'fail', 3000);
     return;
@@ -1645,6 +1997,7 @@ function startRun(cert){
   sim.paused = false; sim.ride = false; sim.exploreCheck = false;
   sim.S = 2; sim.prevS = 2; sim.v = 0; sim.t = 0; sim.sMax = 2; sim.tAtMax = 0;
   sim.tele = freshTele();
+  sim.tele.designKey = JSON.stringify(design.points);
   sim.tele.fricUsed = cert ? false : friction;
   sim.tele.L = track.L;
   if(analysis){
@@ -1655,6 +2008,7 @@ function startRun(cert){
   }
   handleGroup.visible = false; markerGroup.visible = true; safetyGroup.visible = false;
   syncElementPalette();
+  syncHistoryButtons();
   __clabGet('clab-btnRun').textContent = '■ Stop';
   banner(cert ? 'Inspection run — ideal conditions (friction off)' : 'Test run started', '', 2200);
 }
@@ -1663,6 +2017,7 @@ function stopRun(){
   handleGroup.visible = true;
   safetyGroup.visible = !__clabGet('clab-tab-build').hidden;
   syncElementPalette();
+  syncHistoryButtons();
   if(buildCoach) buildCoach.hidden = selIdx >= 0;
   __clabGet('clab-btnRun').textContent = '▶ Test run';
 }
@@ -1795,6 +2150,82 @@ function buildCsv(tele){
   }
   return rows.join('\n');
 }
+function buildRideInsights(tele, sc){
+  const tips = [];
+  if(tele.status !== 'complete') tips.push('Lower the tallest unresolved hill or increase launch work so the train can complete the circuit.');
+  if(tele.maxGV > 4) tips.push(`Broaden the strongest valley: peak vertical force reached ${fmt(tele.maxGV, 1)} g.`);
+  if(tele.minGV < -1) tips.push(`Smooth the sharpest crest: minimum vertical force reached ${fmt(tele.minGV, 1)} g.`);
+  if(tele.maxLat > 0.8) tips.push(`Bank or widen the strongest turn: lateral force reached ${fmt(tele.maxLat, 1)} g.`);
+  if(tele.airtime < 1 && tele.status === 'complete') tips.push('For more airtime, add a broad camelback after a faster valley.');
+  if(sc.excitement < 5 && tele.status === 'complete') tips.push('Raise excitement with one purposeful drop or inversion while watching the force heatmaps.');
+  if(sc.nausea > 6) tips.push('Reduce repeated lateral transitions; smoother banking lowers the nausea estimate.');
+  if(!tips.length) tips.push('This layout is well balanced. Compare realistic and ideal friction runs to study where energy becomes heat.');
+  return tips.slice(0, 4);
+}
+const telemetryReplay = { tele: null, index: 0, playing: false, lastStep: 0 };
+function stopTelemetryReplay(clear = false){
+  telemetryReplay.playing = false;
+  if(clear) telemetryReplay.tele = null;
+  const btn = __clabGet('clab-btnReplay');
+  if(btn) btn.textContent = 'Replay ride';
+}
+function applyTelemetryFrame(index){
+  const tele = telemetryReplay.tele;
+  if(!tele || !tele.trace.length || sim.running) return;
+  const idx = Math.max(0, Math.min(tele.trace.length - 1, Math.round(index)));
+  const point = tele.trace[idx];
+  telemetryReplay.index = idx;
+  sim.S = point.s;
+  sim.prevS = point.s;
+  sim.v = point.v;
+  sim.tele = tele;
+  sim.done = true;
+  const scrub = __clabGet('clab-replayScrub');
+  if(scrub){
+    scrub.value = String(idx);
+    scrub.setAttribute('aria-valuetext', `${fmt(point.s, 0)} meters, ${fmt(point.v * 3.6, 0)} kilometers per hour`);
+  }
+  const out = __clabGet('clab-replayReadout');
+  if(out) out.textContent = `${fmt(point.s, 0)} m ? ${fmt(point.v * 3.6, 0)} km/h ? ${(point.g >= 0 ? '+' : '')}${fmt(point.g, 2)} g ? side ${(point.gl >= 0 ? '+' : '')}${fmt(point.gl, 2)} g`;
+  if(__clabGet('chV')) drawTraces(tele);
+}
+function bindTelemetryReplay(tele){
+  telemetryReplay.tele = tele;
+  telemetryReplay.index = tele.trace.length - 1;
+  telemetryReplay.playing = false;
+  const scrub = __clabGet('clab-replayScrub'), btn = __clabGet('clab-btnReplay'), out = __clabGet('clab-replayReadout');
+  if(!scrub || !btn || !out) return;
+  scrub.max = String(tele.trace.length - 1);
+  scrub.value = String(telemetryReplay.index);
+  const point = tele.trace[telemetryReplay.index];
+  out.textContent = `${fmt(point.s, 0)} m ? ${fmt(point.v * 3.6, 0)} km/h ? ${(point.g >= 0 ? '+' : '')}${fmt(point.g, 2)} g ? side ${(point.gl >= 0 ? '+' : '')}${fmt(point.gl, 2)} g`;
+  scrub.setAttribute('aria-valuetext', `${fmt(point.s, 0)} meters, ${fmt(point.v * 3.6, 0)} kilometers per hour`);
+  btn.textContent = 'Replay ride';
+  scrub.addEventListener('input', () => {
+    stopTelemetryReplay();
+    applyTelemetryFrame(Number(scrub.value));
+  });
+  btn.addEventListener('click', () => {
+    if(telemetryReplay.playing){ stopTelemetryReplay(); return; }
+    if(reducedMotion()){
+      banner('Autoplay is off in Steady Motion mode. Use the ride-position slider to inspect the run.', '', 3400);
+      return;
+    }
+    if(telemetryReplay.index >= tele.trace.length - 1) applyTelemetryFrame(0);
+    telemetryReplay.playing = true;
+    telemetryReplay.lastStep = performance.now();
+    btn.textContent = 'Pause replay';
+  });
+}
+function updateTelemetryReplay(now){
+  if(!telemetryReplay.playing || sim.running || !telemetryReplay.tele) return;
+  if(now - telemetryReplay.lastStep < 90) return;
+  telemetryReplay.lastStep = now;
+  const next = telemetryReplay.index + 1;
+  applyTelemetryFrame(next);
+  if(next >= telemetryReplay.tele.trace.length - 1) stopTelemetryReplay();
+}
+
 function renderReport(tele){
   lastTele = tele;
   const sc = computeScores(tele);
@@ -1821,6 +2252,8 @@ function renderReport(tele){
   html += rating('Intensity',  intensity,  adj(intensity,  ['mild', 'moderate', 'strong', 'extreme', 'brutal']));
   html += rating('Nausea',     nausea,     adj(nausea,     ['calm', 'queasy', 'spinny', 'rough', 'lawsuit']));
   html += '</div>';
+  const insights = buildRideInsights(tele, sc);
+  html += `<div class="card"><p class="eyebrow">Engineer next steps</p><ul class="clab-insights">${insights.map(tip => `<li>${tip}</li>`).join('')}</ul></div>`;
   if(tele.photo){
     html += `<div class="card photo"><p class="eyebrow">On-ride photo</p>
       <img src="${tele.photo}" alt="On-ride photo of your coaster at the valley">
@@ -1837,10 +2270,12 @@ function renderReport(tele){
     const ghost = (other && other !== tele && Math.abs((other.L || 0) - (tele.L || 0)) < 2) ? other : null;
     html += '<div class="card"><p class="eyebrow">Telemetry trace · whole circuit ' +
       '<a id="csvDl" href="#" style="float:right;color:var(--accent);font-size:11px">⬇ CSV</a></p>' +
+      '<div class="clab-replay"><label for="clab-replayScrub">Ride position</label><input id="clab-replayScrub" type="range" min="0" value="0"><button id="clab-btnReplay" type="button">Replay ride</button><output id="clab-replayReadout" for="clab-replayScrub">Select a point on the run</output></div>' +
       `<div class="chlabel">Speed (m/s)${ghost
         ? ` — solid: ${tele.fricUsed ? 'realistic' : 'ideal'}, dashed: ${tele.fricUsed ? 'ideal' : 'realistic'}`
-        : ''}</div><canvas id="chV" class="chart"></canvas>` +
-      '<div class="chlabel">Seat g</div><canvas id="chG" class="chart"></canvas>' +
+        : ''}</div><canvas id="chV" class="chart" role="img" aria-label="Speed over the full coaster circuit in meters per second"></canvas>` +
+      '<div class="chlabel">Seat g</div><canvas id="chG" class="chart" role="img" aria-label="Vertical seat force over the full coaster circuit in g"></canvas>' +
+      '<div class="chlabel">Side g</div><canvas id="chL" class="chart" role="img" aria-label="Lateral seat force over the full coaster circuit in g"></canvas>' +
       '<p class="chnote">A crest · B valley · C loop apex · D cert turn · red = beyond limits</p></div>';
     tele.ghostTrace = ghost ? ghost.trace : null;
   }
@@ -1853,6 +2288,7 @@ function renderReport(tele){
   html += '</div>';
   __clabGet('clab-reportBody').innerHTML = html;
   if(tele.trace.length > 5){
+    bindTelemetryReplay(tele);
     drawTraces(tele);
     const dl = __clabGet('csvDl');
     if(dl) dl.addEventListener('click', e => {
@@ -1865,6 +2301,7 @@ function renderReport(tele){
       setTimeout(() => URL.revokeObjectURL(a.href), 5000);
     });
   }
+  updateDesignChallenge(tele);
   return sc;
 }
 
@@ -1975,19 +2412,32 @@ function drawChart(cv, pts, key, yMin, yMax, color, opts){
     if(i) g.lineTo(x, y); else g.moveTo(x, y);
   });
   g.stroke();
+  if(Number.isFinite(opts.cursorS)){
+    const x = X(opts.cursorS);
+    g.strokeStyle = getComputedStyle(rootEl).getPropertyValue('--ink').trim() || '#e8eef4';
+    g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(x, 11); g.lineTo(x, hh - 4); g.stroke();
+    g.fillStyle = g.strokeStyle; g.beginPath(); g.arc(x, 11, 3, 0, Math.PI * 2); g.fill();
+  }
   g.fillStyle = '#66788a'; g.font = '9px Consolas, monospace'; g.textAlign = 'left';
   g.fillText(String(yMax), 4, Y(yMax) + 9);
   g.fillText(String(yMin), 4, Y(yMin) - 2);
 }
 function drawTraces(tele){
-  const cvV = __clabGet('chV'), cvG = __clabGet('chG');
-  if(!cvV || !cvG) return;
+  const cvV = __clabGet('chV'), cvG = __clabGet('chG'), cvL = __clabGet('chL');
+  if(!cvV || !cvG || !cvL) return;
   const vTop = Math.ceil(Math.max(5, ...tele.trace.map(p => p.v)) + 2);
-  drawChart(cvV, tele.trace, 'v', 0, vTop, '#3f8fd2', { marks: tele.markSs, ghost: tele.ghostTrace });
+  const cursorS = telemetryReplay.tele === tele && tele.trace[telemetryReplay.index] ? tele.trace[telemetryReplay.index].s : null;
+  drawChart(cvV, tele.trace, 'v', 0, vTop, '#3f8fd2', { marks: tele.markSs, ghost: tele.ghostTrace, cursorS });
   drawChart(cvG, tele.trace, 'g', -2.5, 7.5, '#f2a63c', {
     bands: [[LIM.gvMax, 7.5], [-2.5, LIM.gvMin]],
     lines: [[1, true], [0, false]],
-    marks: tele.markSs
+    marks: tele.markSs, cursorS
+  });
+  drawChart(cvL, tele.trace, 'gl', -2, 2, '#23a884', {
+    bands: [[LIM.glat, 2], [-2, -LIM.glat]],
+    lines: [[0, false]],
+    marks: tele.markSs, cursorS
   });
 }
 
@@ -1995,6 +2445,7 @@ function drawTraces(tele){
 const hud = {
   speed: __clabGet('clab-hudSpeed'), kmh: __clabGet('clab-hudKmh'),
   h: __clabGet('clab-hudH'),
+  state: __clabGet('clab-hudState'), peak: __clabGet('clab-hudPeak'),
   gvFill: __clabGet('clab-gvFill'), gvVal: __clabGet('clab-gvVal'),
   glFill: __clabGet('clab-glFill'), glVal: __clabGet('clab-glVal'),
   eKE: __clabGet('clab-eKE'), ePE: __clabGet('clab-ePE'), eHeat: __clabGet('clab-eHeat')
@@ -2004,6 +2455,62 @@ const gball = __clabGet('clab-gball');
 const gbCtx = gball.getContext('2d');
 gball.width = 128; gball.height = 128;
 const gbTrail = [];
+const minimap = __clabGet('clab-minimap');
+const miniCtx = minimap.getContext('2d');
+const miniBase = document.createElement('canvas');
+miniBase.width = minimap.width; miniBase.height = minimap.height;
+const miniBaseCtx = miniBase.getContext('2d');
+const miniState = { minX: 0, maxX: 1, minZ: 0, maxZ: 1, pad: 12 };
+const miniPos = new THREE.Vector3(), miniTan = new THREE.Vector3(), miniUp = new THREE.Vector3();
+function miniXY(x, z){
+  const w = minimap.width, h = minimap.height, p = miniState.pad;
+  const sx = (w - p * 2) / Math.max(1, miniState.maxX - miniState.minX);
+  const sz = (h - p * 2) / Math.max(1, miniState.maxZ - miniState.minZ);
+  const s = Math.min(sx, sz);
+  const ox = (w - (miniState.maxX - miniState.minX) * s) / 2;
+  const oz = (h - (miniState.maxZ - miniState.minZ) * s) / 2;
+  return [ox + (x - miniState.minX) * s, h - (oz + (z - miniState.minZ) * s)];
+}
+function rebuildMiniMap(){
+  if(!track || !minimap) return;
+  miniState.minX = miniState.minZ = Infinity;
+  miniState.maxX = miniState.maxZ = -Infinity;
+  for(let i = 0; i < M; i += 8){
+    const p = track.pos[i];
+    miniState.minX = Math.min(miniState.minX, p.x); miniState.maxX = Math.max(miniState.maxX, p.x);
+    miniState.minZ = Math.min(miniState.minZ, p.z); miniState.maxZ = Math.max(miniState.maxZ, p.z);
+  }
+  const c = miniBaseCtx, cfg = VISUAL_THEMES[visualTheme];
+  c.clearRect(0, 0, miniBase.width, miniBase.height);
+  c.fillStyle = visualTheme === 'daylight' ? '#183328' : visualTheme === 'blueprint' ? '#061a2d' : '#070c13';
+  c.fillRect(0, 0, miniBase.width, miniBase.height);
+  c.strokeStyle = 'rgba(134,170,196,0.10)'; c.lineWidth = 1;
+  for(let x = 16; x < miniBase.width; x += 24){ c.beginPath(); c.moveTo(x, 0); c.lineTo(x, miniBase.height); c.stroke(); }
+  for(let y = 8; y < miniBase.height; y += 24){ c.beginPath(); c.moveTo(0, y); c.lineTo(miniBase.width, y); c.stroke(); }
+  c.strokeStyle = '#' + cfg.rail.toString(16).padStart(6, '0');
+  c.lineWidth = 5; c.lineJoin = c.lineCap = 'round'; c.shadowColor = c.strokeStyle; c.shadowBlur = 8;
+  c.beginPath();
+  for(let i = 0; i < M; i += 5){
+    const q = miniXY(track.pos[i].x, track.pos[i].z);
+    if(i) c.lineTo(q[0], q[1]); else c.moveTo(q[0], q[1]);
+  }
+  c.closePath(); c.stroke(); c.shadowBlur = 0;
+  c.fillStyle = '#e8eef4';
+  for(const p of design.points){ const q = miniXY(p.x, p.z); c.beginPath(); c.arc(q[0], q[1], 2.3, 0, Math.PI * 2); c.fill(); }
+  const start = miniXY(track.pos[0].x, track.pos[0].z);
+  c.fillStyle = '#59c98d'; c.fillRect(start[0] - 3, start[1] - 3, 6, 6);
+}
+function drawMiniMap(){
+  if(!track || !minimap) return;
+  miniCtx.clearRect(0, 0, minimap.width, minimap.height);
+  miniCtx.drawImage(miniBase, 0, 0);
+  frameAt(sim.S, miniPos, miniTan, miniUp);
+  const q = miniXY(miniPos.x, miniPos.z), ang = Math.atan2(miniTan.z, miniTan.x);
+  miniCtx.save(); miniCtx.translate(q[0], q[1]); miniCtx.rotate(-ang);
+  miniCtx.fillStyle = '#ffffff'; miniCtx.shadowColor = '#ffffff'; miniCtx.shadowBlur = 10;
+  miniCtx.beginPath(); miniCtx.moveTo(7, 0); miniCtx.lineTo(-5, -4.5); miniCtx.lineTo(-3, 0); miniCtx.lineTo(-5, 4.5); miniCtx.closePath(); miniCtx.fill();
+  miniCtx.restore();
+}
 function drawGBall(gl, gv){
   const c = gbCtx, W = 64, H = 64;
   const cl = THREE.MathUtils.clamp;
@@ -2047,11 +2554,31 @@ function meter(fillEl, x, lo, hi, zeroFrac){
   fillEl.style.left = (a * 100) + '%';
   fillEl.style.width = Math.max(1.5, (b - a) * 100) + '%';
 }
+const telemetryAnnouncer = __clabGet('clab-telemetryAnnouncer');
+let lastTelemetryAnnouncement = -Infinity, lastTelemetryState = '';
+function announceRideTelemetry(v, gV, gLat, state){
+  if(!telemetryAnnouncer || !sim.running || sim.paused) return;
+  const now = performance.now();
+  const urgent = state === 'LIMIT';
+  if(!urgent && state === lastTelemetryState && now - lastTelemetryAnnouncement < 4500) return;
+  lastTelemetryAnnouncement = now;
+  lastTelemetryState = state;
+  telemetryAnnouncer.textContent = `${state}. Speed ${fmt(v * 3.6, 0)} kilometers per hour. Vertical force ${fmt(gV, 1)} g. Lateral force ${fmt(gLat, 1)} g.`;
+}
+
 function updateHUD(){
   const tr = trackAt(sim.S);
   const v = Math.abs(sim.v);
   const gV = tr.upY + sim.v * sim.v * tr.kUp / G0;
   const gLat = tr.sideY + sim.v * sim.v * tr.kSide / G0;
+  const overLimit = gV > LIM.gvMax || gV < LIM.gvMin || Math.abs(gLat) > LIM.glat;
+  const caution = !overLimit && (gV > 4 || gV < -1 || Math.abs(gLat) > 0.8);
+  const state = !sim.running ? 'READY' : sim.paused ? 'HOLD' : overLimit ? 'LIMIT' : caution ? 'CAUTION' : 'SAFE';
+  hud.state.textContent = state;
+  hud.state.className = 'clab-state-pill' + (overLimit ? ' hot' : caution ? ' caution' : '');
+  const peakG = sim.tele && Number.isFinite(sim.tele.maxGV) ? sim.tele.maxGV : gV;
+  hud.peak.textContent = `Peak ${peakG >= 0 ? '+' : ''}${fmt(peakG, 2)} g`;
+  announceRideTelemetry(v, gV, gLat, state);
   hud.speed.innerHTML = `${fmt(v, 1)} <small>m/s</small>`;
   hud.kmh.textContent = `${fmt(v * 3.6, 0)} km/h`;
   hud.h.innerHTML = `${fmt(tr.y, 1)} <small>m</small>`;
@@ -2074,6 +2601,7 @@ function updateHUD(){
     hud.ePE.style.width = w(pe) + '%';
     hud.eHeat.style.width = w(heat) + '%';
   }
+  drawMiniMap();
 }
 
 /* ---------------- banner ---------------- */
@@ -2117,6 +2645,7 @@ function updateOrbitTarget(){
   sun.target.position.copy(orbit.target);
   sun.position.set(orbit.target.x + 240, 74, orbit.target.z + 46);
   sky.material.uniforms.sunDir.value.copy(sun.position).normalize();
+  atmosphereGroup.position.set(orbit.target.x, 0, orbit.target.z);
 }
 
 const raycaster = new THREE.Raycaster();
@@ -2132,7 +2661,15 @@ function setNDC(e){
 }
 
 const REDUCED_MOTION_QUERY = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-function reducedMotion(){ return !!(REDUCED_MOTION_QUERY && REDUCED_MOTION_QUERY.matches); }
+let motionComfort = (() => { try{ return localStorage.getItem('coaster_lab_motion') === 'steady'; }catch(_e){ return false; } })();
+function reducedMotion(){ return motionComfort || !!(REDUCED_MOTION_QUERY && REDUCED_MOTION_QUERY.matches); }
+function syncMotionUi(){
+  const b = __clabGet('clab-btnComfort');
+  if(!b) return;
+  b.setAttribute('aria-pressed', String(motionComfort));
+  b.textContent = motionComfort ? 'Motion: Steady' : 'Motion: Standard';
+  rootEl.dataset.cameraMotion = motionComfort ? 'steady' : 'standard';
+}
 let userTouched = false;
 
 canvas.addEventListener('pointerdown', e => {
@@ -2207,23 +2744,30 @@ let rebuildTimer = 0;
 function lightRebuild(){
   track = computeTrackData(design.points);
   rebuildTrackMeshes();
+  rebuildMiniMap();
 }
 function throttledRebuild(){
   const now = performance.now();
   if(now - rebuildTimer > 140){ rebuildTimer = now; lightRebuild(); }
 }
 function fullRebuild(){
+  stopTelemetryReplay(true);
   track = computeTrackData(design.points);
   rebuildTrackMeshes();
+  rebuildMiniMap();
   refreshHandles();
   analysis = analyze();
   renderMarkers();
+  renderSectionLabels();
   renderSafetyCoach();
   renderProblems();
   updateOrbitTarget();
   rebuildTrees();
   if(xrayMode) colorizeSpine();
   if(__clabGet('clab-btnChain')) syncPropUI();
+  updateDesignChallenge();
+  syncHistoryButtons();
+  hideElementPreview();
 }
 
 /* ---------------- build-tab UI ---------------- */
@@ -2238,7 +2782,47 @@ const buildCoach = __clabGet('clab-buildCoach');
 const elementButtons = [...rootEl.querySelectorAll('.clab-element-btn')];
 const elementNote = __clabGet('clab-elementNote');
 const safetyList = __clabGet('clab-safetyList');
+const challengeSelect = __clabGet('clab-designChallenge');
+const challengeFill = __clabGet('clab-challengeFill');
+const challengeStatus = __clabGet('clab-challengeStatus');
+let activeChallenge = (() => { try{ return localStorage.getItem('coaster_lab_challenge') || 'hill20'; }catch(_e){ return 'hill20'; } })();
+if(!['hill20', 'airtime3', 'gentle4'].includes(activeChallenge)) activeChallenge = 'hill20';
+function updateDesignChallenge(tele = lastTele){
+  if(!challengeSelect || !challengeFill || !challengeStatus) return;
+  const sameDesign = !!(tele && tele.designKey === JSON.stringify(design.points));
+  let pct = 0, done = false, text = '';
+  if(activeChallenge === 'hill20'){
+    const maxH = Math.max(...design.points.map(p => p.y));
+    pct = Math.min(100, maxH / 20 * 100);
+    done = maxH >= 20 && safetyFindings.length === 0;
+    text = done ? 'Complete: the hill reaches 20 m and preflight is clear.' : `${fmt(maxH, 1)} of 20 m; ${safetyFindings.length ? 'resolve the numbered preflight findings too.' : 'preflight is clear.'}`;
+  } else if(activeChallenge === 'airtime3'){
+    const airtime = sameDesign && tele.status === 'complete' ? tele.airtime : 0;
+    pct = Math.min(100, airtime / 3 * 100);
+    done = airtime >= 3;
+    text = done ? `Complete: ${fmt(airtime, 1)} seconds of airtime.` : sameDesign ? `${fmt(airtime, 1)} of 3.0 seconds. Add a smooth camelback or increase crest speed.` : 'Run this design to measure airtime.';
+  } else {
+    const maxG = sameDesign && tele.status === 'complete' ? tele.maxGV : null;
+    pct = maxG == null ? 0 : Math.min(100, 400 / Math.max(4, maxG) * 100);
+    done = maxG != null && maxG <= 4;
+    text = done ? `Complete: peak vertical force is ${fmt(maxG, 2)} g.` : maxG == null ? 'Run this design to measure its peak vertical force.' : `Peak is ${fmt(maxG, 2)} g. Broaden the strongest valley to get below 4.0 g.`;
+  }
+  challengeFill.style.width = pct + '%';
+  challengeStatus.textContent = text;
+  challengeStatus.classList.toggle('done', done);
+  challengeSelect.value = activeChallenge;
+}
+challengeSelect.value = activeChallenge;
+challengeSelect.addEventListener('change', () => {
+  activeChallenge = challengeSelect.value;
+  try{ localStorage.setItem('coaster_lab_challenge', activeChallenge); }catch(_e){}
+  updateDesignChallenge();
+});
+__clabGet('clab-btnChallengeRun').addEventListener('click', () => {
+  if(sim.running) banner('Finish or stop the current run first.', 'fail', 2200);
+  else startRun(false);
 
+});
 /* @clab-keyboard-edit-start */
 function nudgeNodeXZ(point, dx, dz){
   const x = Number(point && point.x), z = Number(point && point.z);
@@ -2250,6 +2834,41 @@ function nudgeNodeXZ(point, dx, dz){
 }
 /* @clab-keyboard-edit-end */
 
+function nodePhysics(idx){
+  if(!track || !analysis || idx < 0 || idx >= design.points.length) return null;
+  const p = design.points[idx];
+  let best = 0, bestD = Infinity;
+  for(let i = 0; i < M; i++){
+    const q = track.pos[i];
+    const d = (p.x - q.x) ** 2 + (p.y - q.y) ** 2 + (p.z - q.z) ** 2;
+    if(d < bestD){ bestD = d; best = i; }
+  }
+  const arc = track.s[best];
+  const near = marker => marker && Math.abs(marker.s - arc) < Math.max(5, track.L * 0.035);
+  let section = 'Track';
+  if(arc < track.sCrest) section = design.propulsion.mode === 'launch' ? 'Launch' : 'Lift hill';
+  else if(near(analysis.A)) section = 'Crest';
+  else if(near(analysis.B)) section = 'Valley';
+  else if(near(analysis.C)) section = 'Inversion';
+  else if(near(analysis.D)) section = 'Banked turn';
+  else if(Math.abs(track.kSide[best]) > 0.025) section = 'Turn';
+  else if(track.Ty[best] < -0.18) section = 'Drop';
+  const v2 = idealV2(best);
+  const bank = Math.min(80, Math.atan(Math.abs(v2 * track.kH[best]) / G0) * 180 / Math.PI);
+  return { section, speed: Math.sqrt(v2), gv: idealGV(best), bank };
+}
+function syncNodeLens(idx){
+  const d = nodePhysics(idx);
+  const put = (id, value) => { const el = __clabGet(id); if(el) el.textContent = value; };
+  if(!d){
+    for(const id of ['clab-nodeSection', 'clab-nodeSpeed', 'clab-nodeGV', 'clab-nodeBank']) put(id, '?');
+    return;
+  }
+  put('clab-nodeSection', d.section);
+  put('clab-nodeSpeed', fmt(d.speed, 1) + ' m/s');
+  put('clab-nodeGV', (d.gv >= 0 ? '+' : '') + fmt(d.gv, 2) + ' g');
+  put('clab-nodeBank', fmt(d.bank, 0) + '?');
+}
 function selectPoint(idx){
   selIdx = idx;
   refreshHandles();
@@ -2269,6 +2888,7 @@ function syncPointCard(){
     '#' + selIdx + (selIdx === design.certTurnIdx ? ' ⚑' : '');
   __clabGet('clab-ptCoords').textContent =
     `x ${fmt(p.x)}   z ${fmt(p.z)}   height ${fmt(p.y)} m   bank ${fmt(p.bank, 0)}°`;
+  syncNodeLens(selIdx);
   slX.value = p.x;
   slZ.value = p.z;
   slHeight.value = p.y;
@@ -2420,6 +3040,30 @@ function buildElementPoints(kind, p0, p1){
   return [];
 }
 /* @clab-elements-end */
+const previewMat = new THREE.MeshBasicMaterial({ color: 0x78d8ff, transparent: true, opacity: 0.46, depthWrite: false, toneMapped: false });
+const previewNodeMat = new THREE.MeshBasicMaterial({ color: 0xf4d35e, transparent: true, opacity: 0.72, depthWrite: false, toneMapped: false });
+function hideElementPreview(){
+  disposeGroup(previewGroup);
+  previewGroup.visible = false;
+}
+function showElementPreview(kind){
+  hideElementPreview();
+  if(sim.running || selIdx < 0 || !design.points[selIdx]) return;
+  const nextIdx = (selIdx + 1) % design.points.length;
+  const added = buildElementPoints(kind, design.points[selIdx], design.points[nextIdx]);
+  if(!added.length) return;
+  const pts = [design.points[selIdx], ...added, design.points[nextIdx]].map(p => new THREE.Vector3(p.x, p.y, p.z));
+  const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal', 0.5);
+  const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(24, pts.length * 8), 0.16, 6, false), previewMat);
+  tube.renderOrder = 7;
+  previewGroup.add(tube);
+  for(const p of added){
+    const node = new THREE.Mesh(new THREE.SphereGeometry(0.42, 10, 7), previewNodeMat);
+    node.position.set(p.x, p.y, p.z);
+    previewGroup.add(node);
+  }
+  previewGroup.visible = true;
+}
 function syncElementPalette(){
   const ready = selIdx >= 0 && selIdx < design.points.length && !sim.running;
   for(const b of elementButtons) b.disabled = !ready;
@@ -2442,7 +3086,13 @@ function insertTrackElement(kind){
   const label = { hill: 'Hill', drop: 'Drop', 'turn-left': 'Left turn', 'turn-right': 'Right turn', loop: 'Vertical loop' }[kind] || 'Track element';
   banner(`${label} added — reshape any of its glowing nodes.`, 'pass', 3000);
 }
-for(const b of elementButtons) b.addEventListener('click', () => insertTrackElement(b.dataset.element));
+for(const b of elementButtons){
+  b.addEventListener('click', () => insertTrackElement(b.dataset.element));
+  b.addEventListener('mouseenter', () => showElementPreview(b.dataset.element));
+  b.addEventListener('focus', () => showElementPreview(b.dataset.element));
+  b.addEventListener('mouseleave', hideElementPreview);
+  b.addEventListener('blur', hideElementPreview);
+}
 if(safetyList) safetyList.addEventListener('click', e => {
   const b = e.target.closest('[data-safety-index]');
   if(b) focusSafetyFinding(+b.dataset.safetyIndex);
@@ -2596,8 +3246,8 @@ __clabGet('clab-btnCam').addEventListener('click', e => {
   e.target.textContent = 'Camera: ' + { orbit: 'Orbit', onboard: 'Onboard', chase: 'Chase' }[camMode];
 });
 __clabGet('clab-btnView').addEventListener('click', e => {
-  xrayMode = !xrayMode;
-  e.target.textContent = xrayMode ? 'View: g-heat' : 'View: Track';
+  const modes = ['track', 'speed', 'vertical', 'lateral', 'curvature'];
+  applyTrackViz(modes[(modes.indexOf(heatmapMode) + 1) % modes.length]);
   __clabGet('clab-xrayLegend').hidden = !xrayMode;
   rebuildTrackMeshes();
   if(xrayMode) colorizeSpine();
@@ -2653,10 +3303,112 @@ __clabGet('clab-btnImport').addEventListener('click', () => {
 
 /* ---------------- FX quality toggle ---------------- */
 let fxLite = localStorage.getItem('coaster_lab_fx') === 'lite';
+const themeSelect = __clabGet('clab-visualTheme');
+const vectorButton = __clabGet('clab-btnVectors');
+const vectorLegend = __clabGet('clab-vectorLegend');
+const trackVizSelect = __clabGet('clab-trackViz');
+const comfortButton = __clabGet('clab-btnComfort');
+function updateTrackVizLegend(){
+  const legend = __clabGet('clab-xrayLegend');
+  if(!legend) return;
+  const cfg = HEAT_CONFIG[heatmapMode];
+  if(!cfg){
+    legend.hidden = true;
+    return;
+  }
+  const mid = (cfg.min + cfg.max) / 2;
+  legend.innerHTML = `<span class="hudk">${cfg.label}</span><div class="xbar"></div><div class="xlabels"><span>${fmt(cfg.min, cfg.min % 1 ? 1 : 0)}</span><span>${fmt(mid, mid % 1 ? 1 : 0)} ${cfg.unit}</span><span>${fmt(cfg.max, cfg.max % 1 ? 1 : 0)}</span></div>`;
+}
+function applyTrackViz(mode, announce = true){
+  if(mode !== 'track' && !HEAT_CONFIG[mode]) mode = 'track';
+  heatmapMode = mode;
+  xrayMode = mode !== 'track';
+  if(trackVizSelect) trackVizSelect.value = mode;
+  const viewButton = __clabGet('clab-btnView');
+  if(viewButton) viewButton.textContent = xrayMode ? 'View: ' + HEAT_CONFIG[mode].label : 'View: Track';
+  updateTrackVizLegend();
+  const legend = __clabGet('clab-xrayLegend');
+  if(legend) legend.hidden = !xrayMode;
+  if(track){
+    rebuildTrackMeshes();
+    if(xrayMode) colorizeSpine();
+  }
+  try{ localStorage.setItem('coaster_lab_track_viz', mode); }catch(_e){}
+  if(announce) banner(xrayMode ? HEAT_CONFIG[mode].label + ' overlay on.' : 'Track analysis overlay off.', '', 2400);
+}
+function applyVisualTheme(name, announce = true){
+  if(!VISUAL_THEMES[name]) name = 'dusk';
+  visualTheme = name;
+  const cfg = VISUAL_THEMES[name], u = sky.material.uniforms;
+  rootEl.dataset.visualTheme = name;
+  scene.fog.color.setHex(cfg.fog); scene.fog.near = cfg.fogNear; scene.fog.far = cfg.fogFar;
+  renderer.toneMappingExposure = cfg.exposure;
+  hemi.color.setHex(cfg.hemiSky); hemi.groundColor.setHex(cfg.hemiGround); hemi.intensity = cfg.hemi;
+  sun.color.setHex(cfg.sun); sun.intensity = cfg.sunPower;
+  fill.color.setHex(cfg.fill); fill.intensity = cfg.fillPower;
+  u.zenColor.value.setHex(cfg.zen); u.midColor.value.setHex(cfg.mid); u.horizonColor.value.setHex(cfg.horizon);
+  u.sunGlow.value.setHex(cfg.sunGlow); u.starStrength.value = cfg.stars;
+  ground.material.color.setHex(cfg.ground);
+  ground.material.map = name === 'blueprint' ? null : groundTex;
+  ground.material.needsUpdate = true;
+  terrainGrid.visible = !fxLite && name === 'blueprint';
+  treeGroup.visible = !fxLite && name !== 'blueprint';
+  MAT.rail.color.setHex(cfg.rail); MAT.rail.emissive.setHex(cfg.railGlow);
+  MAT.spine.color.setHex(cfg.spine); MAT.support.color.setHex(cfg.support);
+  MAT.railDim.color.setHex(name === 'blueprint' ? 0x386b8c : 0x39434e);
+  MAT.runningLight.color.setHex(name === 'neon' ? 0xff62c7 : name === 'blueprint' ? 0x8bd7ff : 0xffc873);
+  MAT.footing.color.setHex(name === 'daylight' ? 0x606b69 : name === 'blueprint' ? 0x24445d : 0x202a31);
+  MAT.cap.color.setHex(cfg.support).offsetHSL(0, 0, 0.08);
+  stationEdgeMat.color.setHex(cfg.rail); stationAccentMat.color.setHex(cfg.rail); stationAccentMat.emissive.setHex(cfg.railGlow);
+  if(stationLamp){ stationLamp.color.setHex(cfg.sunGlow); stationLamp.intensity = name === 'daylight' ? 0.45 : 1.0; }
+  atmosphereMat.color.setHex(name === 'daylight' ? 0x66808a : name === 'neon' ? 0x110b2c : name === 'blueprint' ? 0x17486a : 0x101827);
+  atmosphereMat.opacity = name === 'daylight' ? 0.36 : 0.62;
+  atmosphereMat.wireframe = name === 'blueprint'; atmosphereMat.needsUpdate = true;
+  ferrisMat.color.setHex(cfg.rail); ferrisCabinMat.color.setHex(name === 'neon' ? 0xff62c7 : 0x59c98d);
+  cloudMat.color.setHex(name === 'daylight' ? 0xf3f8fb : name === 'neon' ? 0x7869b8 : 0xdde9f4);
+  cloudMat.opacity = name === 'daylight' ? 0.3 : 0.18; birdMat.color.setHex(name === 'blueprint' ? 0x8bd7ff : 0xb9cedd);
+  for(const flag of stationFlags){ flag.material.color.setHex(cfg.rail); flag.material.emissive.setHex(cfg.railGlow); }
+  speedStreakMat.color.setHex(name === 'neon' ? 0x55e8ff : cfg.rail);
+  atmosphereGroup.visible = !fxLite;
+  if(themeSelect) themeSelect.value = name;
+  try{ localStorage.setItem('coaster_lab_theme', name); }catch(_e){}
+  if(track){ rebuildMiniMap(); renderSectionLabels(); }
+  if(announce) banner('Environment: ' + themeSelect.options[themeSelect.selectedIndex].textContent + '.', 'pass', 2200);
+}
+function syncVectorUi(){
+  vectorGroup.visible = vectorsOn;
+  vectorButton.setAttribute('aria-pressed', String(vectorsOn));
+  vectorButton.textContent = vectorsOn ? 'Vectors: On' : 'Vectors: Off';
+  vectorLegend.hidden = !vectorsOn;
+}
+themeSelect.value = visualTheme;
+themeSelect.addEventListener('change', () => applyVisualTheme(themeSelect.value));
+vectorButton.addEventListener('click', () => {
+  vectorsOn = !vectorsOn;
+  try{ localStorage.setItem('coaster_lab_vectors', vectorsOn ? 'on' : 'off'); }catch(_e){}
+  syncVectorUi();
+  banner(vectorsOn ? 'Live vectors on: velocity, seat force, and gravity.' : 'Live physics vectors hidden.', '', 2400);
+});
+trackVizSelect.value = heatmapMode;
+trackVizSelect.addEventListener('change', () => applyTrackViz(trackVizSelect.value));
+comfortButton.addEventListener('click', () => {
+  motionComfort = !motionComfort;
+  try{ localStorage.setItem('coaster_lab_motion', motionComfort ? 'steady' : 'standard'); }catch(_e){}
+  syncMotionUi();
+  banner(motionComfort ? 'Steady motion on: camera shake, pulses, and decorative motion reduced.' : 'Standard motion restored.', 'pass', 3000);
+});
+syncMotionUi();
+applyTrackViz(heatmapMode, false);
+applyVisualTheme(visualTheme, false);
+syncVectorUi();
 function applyFx(){
   renderer.shadowMap.enabled = !fxLite;
   sun.castShadow = !fxLite;
-  treeGroup.visible = !fxLite;
+  treeGroup.visible = !fxLite && visualTheme !== 'blueprint';
+  terrainGrid.visible = !fxLite && visualTheme === 'blueprint';
+  atmosphereGroup.visible = !fxLite;
+  if(fxLite) speedStreaks.visible = false;
+  if(track && analysis) renderSectionLabels();
   renderer.setPixelRatio(fxLite ? 1 : Math.min(window.devicePixelRatio || 1, 2));
   scene.traverse(o => { if(o.material) o.material.needsUpdate = true; });
   __clabGet('clab-btnFx').textContent = fxLite ? 'FX: Lite' : 'FX: Full';
@@ -2732,7 +3484,7 @@ __clabGet('clab-btnExplore').addEventListener('click', () => setLevel('explore')
 __clabGet('clab-btnEngineer').addEventListener('click', () => setLevel('engineer'));
 
 /* Ride & Solve topic + grade controls (header selects) */
-(function initRideControls(){
+function initRideControls(){
   const tSel = __clabGet('clab-rideTopic');
   const gSel = __clabGet('clab-rideGrade');
   const aiInput = __clabGet('clab-rideAiSubject');
@@ -2800,7 +3552,7 @@ __clabGet('clab-btnEngineer').addEventListener('click', () => setLevel('engineer
       banner('Question level: ' + (auto ? 'auto (from class grade)' : gSel.options[gSel.selectedIndex].textContent.trim()), '', 2400);
     });
   }
-})();
+}
 
 __clabGet('clab-btnCheck').addEventListener('click', checkPredictions);
 __clabGet('clab-btnCert').addEventListener('click', () => {
@@ -2886,6 +3638,12 @@ rootEl.addEventListener('keydown', e => {
 });
 
 /* undo / redo */
+function syncHistoryButtons(){
+  const undo = __clabGet('clab-btnUndo'), redo = __clabGet('clab-btnRedo');
+  if(undo) undo.disabled = hIdx <= 0 || sim.running;
+  if(redo) redo.disabled = hIdx >= history.length - 1 || sim.running;
+}
+
 function applyHistory(idx){
   if(idx < 0 || idx >= history.length) return;
   hIdx = idx;
@@ -2901,10 +3659,13 @@ rootEl.addEventListener('keydown', e => {
   else if(k === 'y' || (k === 'z' && e.shiftKey)){ e.preventDefault(); applyHistory(hIdx + 1); }
 });
 
+__clabGet('clab-btnUndo').addEventListener('click', () => applyHistory(hIdx - 1));
+__clabGet('clab-btnRedo').addEventListener('click', () => applyHistory(hIdx + 1));
 /* accessible sidebar tabs */
 const tabButtons = [...rootEl.querySelectorAll('#clab-tabs [role="tab"]')];
 function activateTab(b){
   if(!b) return;
+  if(b.dataset.tab !== 'report') stopTelemetryReplay();
   tabButtons.forEach(x => {
     const active = x === b;
     x.classList.toggle('on', active);
@@ -3288,6 +4049,10 @@ function fetchAiQuestions(subject, band, cb){
   });
 }
 /* @clab-aiqueue-end */
+
+// All Ride & Solve lexical state must be initialized before these controls
+// read saved selections and attach their event handlers.
+initRideControls();
 
 function buildRideStops(){
   const a = analysis;
@@ -3741,7 +4506,7 @@ function updateFx(dt){
 
 /* ---------------- render loop ---------------- */
 const _p = new THREE.Vector3(), _t = new THREE.Vector3(), _u = new THREE.Vector3();
-const _m = new THREE.Matrix4(), _side = new THREE.Vector3(), _chase = new THREE.Vector3();
+const _m = new THREE.Matrix4(), _side = new THREE.Vector3(), _chase = new THREE.Vector3(), cameraShakeSide = new THREE.Vector3();
 
 function placeTrain(){
   for(let c = 0; c < cars.length; c++){
@@ -3754,10 +4519,108 @@ function placeTrain(){
     cars[c].matrix.copy(_m);
   }
 }
+function updatePhysicsVectors(){
+  vectorGroup.visible = vectorsOn && !xrOn;
+  if(!vectorGroup.visible || !track) return;
+  frameAt(sim.S, vectorPos, vectorTan, vectorUp);
+  const tr = trackAt(sim.S);
+  const gV = tr.upY + sim.v * sim.v * tr.kUp / G0;
+  const origin = vectorPos.addScaledVector(vectorUp, 2.0);
+  vectorVelocity.position.copy(origin);
+  vectorVelocity.setDirection(vectorTan);
+  vectorVelocity.setLength(3.5 + Math.min(14, Math.abs(sim.v) * 0.38), 1.5, 0.8);
+  vectorSeatDir.copy(vectorUp).multiplyScalar(gV < 0 ? -1 : 1).normalize();
+  vectorSeat.position.copy(origin);
+  vectorSeat.setDirection(vectorSeatDir);
+  vectorSeat.setLength(3 + Math.min(12, Math.abs(gV) * 1.75), 1.5, 0.8);
+  vectorGravity.position.copy(origin);
+  vectorGravity.setDirection(vectorGravityDir);
+  vectorGravity.setLength(6, 1.4, 0.75);
+}
+function updateStationVisuals(now){
+  const phase = sim.running ? sim.t : -1;
+  const active = phase < 0 ? 'red' : phase < 0.65 ? 'red' : phase < 1.3 ? 'amber' : 'green';
+  for(const key of ['red', 'amber', 'green']){
+    stationSignalMats[key].emissiveIntensity = key === active ? 1.8 : 0.1;
+  }
+  const gateOpen = sim.running && phase >= 1.3;
+  const gateBlend = reducedMotion() ? 1 : 0.12;
+  for(const gate of stationGates){
+    const target = gateOpen ? gate.sign * Math.PI * 0.48 : 0;
+    gate.pivot.rotation.y += (target - gate.pivot.rotation.y) * gateBlend;
+  }
+  const motionPulse = reducedMotion() ? 0 : Math.sin(now * 0.004) * 0.13;
+  stationEdgeMat.opacity = (sim.running ? 0.78 : 0.62) + motionPulse;
+  if(stationLamp){
+    const base = visualTheme === 'daylight' ? 0.45 : 1.0;
+    stationLamp.intensity = base + (sim.running && phase < 1.5 ? 0.35 : 0);
+  }
+}
+const dispatchEl = __clabGet('clab-dispatch');
+const dispatchValue = __clabGet('clab-dispatchValue');
+function updateDispatchOverlay(){
+  if(!dispatchEl || !sim.running || sim.t >= 2.25){
+    if(dispatchEl) dispatchEl.hidden = true;
+    return;
+  }
+  dispatchEl.hidden = false;
+  const value = sim.t < 0.55 ? '3'
+    : sim.t < 1.1 ? '2'
+    : sim.t < 1.65 ? '1' : 'GO';
+  dispatchValue.textContent = value;
+}
+function updateTrainPresentation(){
+  const wheelSpin = sim.S * 3.4;
+  for(const wheel of trainWheels) wheel.rotation.x = wheelSpin;
+  const restraintTarget = sim.running ? 0.28 : -0.58;
+  const blend = reducedMotion() ? 1 : 0.12;
+  for(const restraint of restraintBars){
+    restraint.rotation.x += (restraintTarget - restraint.rotation.x) * blend;
+  }
+}
+function updateSpeedStreaks(){
+  const v = Math.abs(sim.v);
+  const enabled = sim.running && !sim.paused && v > 9 && (camMode === 'onboard' || camMode === 'chase') && !fxLite && !xrOn && !reducedMotion();
+  speedStreaks.visible = enabled;
+  if(!enabled) return;
+  frameAt(sim.S + 2.5, streakPos, streakTan, streakUp);
+  streakSide.crossVectors(streakUp, streakTan).normalize();
+  const length = 1.8 + Math.min(9, (v - 9) * 0.28);
+  for(let i = 0; i < SPEED_STREAK_COUNT; i++){
+    const seed = speedStreakSeed[i];
+    const phase = (seed.phase + sim.S * 0.028) % 1;
+    const forward = 4 + phase * 28;
+    const side = Math.cos(seed.angle) * seed.radius;
+    const up = Math.sin(seed.angle) * seed.radius * 0.72 + 1.0;
+    streakHead.copy(streakPos).addScaledVector(streakTan, forward)
+      .addScaledVector(streakSide, side).addScaledVector(streakUp, up);
+    streakTail.copy(streakHead).addScaledVector(streakTan, -length);
+    const j = i * 6;
+    speedStreakPositions[j] = streakHead.x; speedStreakPositions[j + 1] = streakHead.y; speedStreakPositions[j + 2] = streakHead.z;
+    speedStreakPositions[j + 3] = streakTail.x; speedStreakPositions[j + 4] = streakTail.y; speedStreakPositions[j + 5] = streakTail.z;
+  }
+  speedStreakGeo.attributes.position.needsUpdate = true;
+  speedStreakMat.opacity = Math.min(0.72, 0.18 + (v - 9) * 0.025);
+}
+function updateParkAtmosphere(dt){
+  if(fxLite || reducedMotion()) return;
+  const step = Math.min(dt, 0.05);
+  ferrisRotor.rotation.z += step * 0.035;
+  cloudGroup.rotation.y += step * 0.0025;
+  birdFlock.rotation.y += step * 0.018;
+  const now = performance.now() * 0.002;
+  stationFlags.forEach((flag, i) => { flag.rotation.z = Math.sin(now + i * 0.63) * 0.08; });
+}
 function placeCamera(){
   if(camMode === 'onboard'){
     frameAt(sim.S + 1.4, _p, _t, _u);
     camera.position.copy(_p).addScaledVector(_u, 1.25).addScaledVector(_t, 0.2);
+    if(sim.running && !sim.paused && !reducedMotion()){
+      const live = trackAt(sim.S), force = Math.abs(live.upY + sim.v * sim.v * live.kUp / G0 - 1);
+      const shake = Math.min(0.12, Math.abs(sim.v) * 0.0018 + force * 0.012);
+      cameraShakeSide.crossVectors(_u, _t).normalize();
+      camera.position.addScaledVector(cameraShakeSide, Math.sin(sim.t * 17) * shake).addScaledVector(_u, Math.sin(sim.t * 23) * shake * 0.45);
+    }
     camera.up.copy(_u);
     const look = _p.clone().addScaledVector(_t, 12).addScaledVector(_u, 1.2);
     camera.lookAt(look);
@@ -3850,6 +4713,7 @@ let fpsAcc = 0, fpsN = 0, fpsSuggested = false;
 function animate(){
   if(!rootEl.isConnected){ __clabDestroy(); return; }
   const now = performance.now();
+  updateTelemetryReplay(now);
   const dt = (now - lastT) / 1000;
   lastT = now;
   /* gentle nudge toward FX Lite on struggling machines (once per session) */
@@ -3868,9 +4732,21 @@ function animate(){
   if(!userTouched && !sim.running && camMode === 'orbit' && !reducedMotion()){
     orbit.theta += dt * 0.04;   // gentle showcase drift until first interaction
   }
+  sectionGroup.visible = !fxLite && !sim.running && camMode === 'orbit';
   handleGroup.visible = !sim.running && camMode === 'orbit';
   placeTrain();
+  updateTrainPresentation();
+  updateStationVisuals(now);
+  updateDispatchOverlay();
+  updateSpeedStreaks();
+  updateParkAtmosphere(dt);
+  if(handleGroup.visible && selIdx >= 0 && handleGroup.children[selIdx]){
+    const pulse = reducedMotion() ? 1.45 : 1.45 + Math.sin(now * 0.0045) * 0.12;
+    handleGroup.children[selIdx].scale.setScalar(pulse);
+  }
+
   if(sim.wantPhoto){ sim.wantPhoto = false; capturePhoto(sim.tele); }
+  updatePhysicsVectors();
   if(xrOn && renderer.xr.isPresenting) placeXrRig();
   else placeCamera();
   updateHUD();

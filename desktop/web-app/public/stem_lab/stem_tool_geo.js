@@ -1426,7 +1426,7 @@ var d = labToolData || {};
 
             // ── Header bar ──
 
-            React.createElement('div', { className: 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-3 flex items-center justify-between' },
+            React.createElement('div', { className: 'bg-gradient-to-r from-teal-700 to-cyan-700 text-white p-3 flex items-center justify-between' },
 
               React.createElement('div', { className: 'flex items-center gap-2' },
 
@@ -2269,7 +2269,7 @@ var d = labToolData || {};
                     React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
                       React.createElement('span', { className: 'text-lg' }, '\uD83D\uDCCD'),
                       React.createElement('h4', { className: 'text-base font-bold' }, geoGlobeInfo.name),
-                      geoGlobeInfo.iso && React.createElement('span', { className: 'text-[10px] text-slate-400 font-mono bg-slate-700 px-1.5 py-0.5 rounded' }, geoGlobeInfo.iso)
+                      geoGlobeInfo.iso && React.createElement('span', { className: 'text-[10px] text-slate-300 font-mono bg-slate-700 px-1.5 py-0.5 rounded' }, geoGlobeInfo.iso)
                     ),
                     geoGlobeInfo._unknown
                       ? React.createElement('p', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.geo.not_in_the_117_country_dataset_basic_i', 'Not in the 117-country dataset \u2014 basic info only.'))
@@ -2434,7 +2434,7 @@ var d = labToolData || {};
                           upd('geoQuizAnswer', '');
                           upd('geoFeedback', null);
                         },
-                        className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-bold hover:bg-teal-700 shadow'
+                        className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-sm font-bold hover:bg-teal-800 shadow'
                       }, __alloT('stem.geo.retake', '\uD83D\uDD01 Retake')),
                       React.createElement('button', {
                         onClick: function() {
@@ -2521,7 +2521,7 @@ var d = labToolData || {};
                     React.createElement('button', {
                       onClick: function() { submitAnswer(d.geoQuizAnswer || ''); },
                       disabled: answered,
-                      className: 'px-3 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 disabled:bg-slate-300'
+                      className: 'px-3 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-800 disabled:bg-slate-300'
                     }, __alloT('stem.geo.check_2', 'Check')),
 
                     React.createElement('button', {
@@ -3560,7 +3560,7 @@ var d = labToolData || {};
               React.createElement('button',{onClick:()=>{if(gpPoints.length>=2){const last=gpPoints.length-1;if(!gpSegments.some(s=>(s.from===last-1&&s.to===last)||(s.from===last&&s.to===last-1)))gpUpd('segments',[...gpSegments,{from:last-1,to:last}]);}},disabled:gpPoints.length<2,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-violet-100 text-violet-700 hover:bg-violet-200 border border-violet-600 transition-all disabled:opacity-40'},'🔗 Connect Last Two'),
               React.createElement('button',{onClick:()=>{if(gpConnecting!=null)gpUpd('connecting',null);else if(gpPoints.length>0)gpUpd('connecting',gpPoints.length-1);},disabled:gpPoints.length<1,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all focus:ring-2 focus:ring-indigo-300 focus:outline-none ${gpConnecting!=null?'bg-indigo-600 text-white':'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-600'} disabled:opacity-40`},gpConnecting!=null?'✔ Connecting from '+labelFor(gpConnecting):'↗️ Draw Segment'),
               React.createElement('button',{'aria-pressed':gpShowLabels?'true':'false',onClick:()=>gpUpd('showLabels',!gpShowLabels),className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all focus:ring-2 focus:ring-slate-300 focus:outline-none ${gpShowLabels?'bg-emerald-700 text-white':'bg-slate-100 text-slate-600 border border-slate-400'}`},gpShowLabels?'📏 Labels ON':'📏 Labels'),
-              React.createElement('button',{onClick:()=>{if(gpPoints.length>0){const rm=gpPoints.length-1;gpUpd('points',gpPoints.slice(0,-1));gpUpd('segments',gpSegments.filter(s=>s.from!==rm&&s.to!==rm));gpUpd('connecting',null);}},disabled:gpPoints.length<1,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-600 transition-all disabled:opacity-40'},'⌫ Undo'),
+              React.createElement('button',{onClick:()=>{if(gpPoints.length>0){const rm=gpPoints.length-1;gpUpd('points',gpPoints.slice(0,-1));gpUpd('segments',gpSegments.filter(s=>s.from!==rm&&s.to!==rm));gpUpd('connecting',null);}},disabled:gpPoints.length<1,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-600 transition-all disabled:opacity-40'},'⌫ Undo'),
               React.createElement('button',{onClick:()=>{gpUpd('points',[]);gpUpd('segments',[]);gpUpd('connecting',null);gpUpd('feedback',null);gpUpd('challenge',null);gpUpd('challengeAnswer','');},className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 transition-all'},'↺ Clear')
             ),
             renderTheoremPanel(),
@@ -3577,8 +3577,8 @@ var d = labToolData || {};
           gpTab==='challenge'&&React.createElement('div',{className:'space-y-3'},
             React.createElement('p',{className:'text-xs text-slate-600'},'Answer without looking up the formula — use what you know from exploring!'),
             React.createElement('div',{className:'flex gap-2'},
-              React.createElement('button',{onClick:generateChallenge,className:'flex-1 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'},'🎯 New Challenge'),
-              React.createElement('button',{onClick:startMatchGame,className:'flex-1 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md'},'🧩 Theorem Match'),
+              React.createElement('button',{onClick:generateChallenge,className:'flex-1 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'},'🎯 New Challenge'),
+              React.createElement('button',{onClick:startMatchGame,className:'flex-1 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md'},'🧩 Theorem Match'),
               React.createElement('button',{onClick:()=>{gpUpd('challenge',null);gpUpd('feedback',null);gpUpd('challengeAnswer','');gpUpd('matchGame',null);},disabled:!gpChallenge,className:'px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all disabled:opacity-40'},'↺ Reset')
             ),
             gpChallenge&&gpChallenge.type==='theorem_match'&&renderMatchGame(),

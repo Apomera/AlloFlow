@@ -161,7 +161,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // BackBar — title bar with back-to-menu button. Used at the top of every
       // sub-module view for consistent navigation.
       function BackBar(props) {
-        return h('div', { className: 'flex items-center gap-3 bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-4 shadow' },
+        return h('div', { className: 'flex items-center gap-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white p-4 shadow' },
           h('button', {
             onClick: function() { setView('menu'); upd('view', 'menu'); },
             'aria-label': t('stem.evolab.back_to_evolab_menu', 'Back to EvoLab menu'),
@@ -469,7 +469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           },
             visited && h('span', {
               'aria-hidden': true,
-              className: 'absolute top-2 right-2 z-10 bg-emerald-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md'
+              className: 'absolute top-2 right-2 z-10 bg-emerald-700 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md'
             }, '✓'),
             h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white' },
               h('div', { className: 'flex items-start justify-between mb-2' },
@@ -669,7 +669,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               'aria-label': t('stem.evolab.5_day_curriculum_guide_sequenced_unit_', '5-Day Curriculum Guide — sequenced unit plan with warm-ups, labs, discussions, and exit tickets'),
               className: 'text-left bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all border-2 border-amber-300 hover:border-amber-500 overflow-hidden focus:outline-none focus:ring-4 ring-amber-500/40'
             },
-              h('div', { className: 'bg-gradient-to-br from-amber-500 to-orange-700 p-5 text-white' },
+              h('div', { className: 'bg-gradient-to-br from-amber-700 to-orange-700 p-5 text-white' },
                 h('div', { className: 'flex items-start justify-between mb-2' },
                   h('span', { className: 'text-4xl' }, '📅'),
                   h('span', { className: 'bg-white/20 backdrop-blur px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider' }, t('stem.evolab.teacher', '🍎 Teacher'))
@@ -687,7 +687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               'aria-label': t('stem.evolab.module_map_visual_flowchart_of_how_all', 'Module Map — visual flowchart of how all modules connect by conceptual scale'),
               className: 'text-left bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all border-2 border-amber-300 hover:border-amber-500 overflow-hidden focus:outline-none focus:ring-4 ring-amber-500/40'
             },
-              h('div', { className: 'bg-gradient-to-br from-amber-500 to-orange-700 p-5 text-white' },
+              h('div', { className: 'bg-gradient-to-br from-amber-700 to-orange-700 p-5 text-white' },
                 h('div', { className: 'flex items-start justify-between mb-2' },
                   h('span', { className: 'text-4xl' }, '🗺️'),
                   h('span', { className: 'bg-white/20 backdrop-blur px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider' }, t('stem.evolab.teacher_2', '🍎 Teacher'))
@@ -705,7 +705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               'aria-label': t('stem.evolab.standards_crosswalk_find_a_module_that', 'Standards Crosswalk — find a module that addresses a specific NGSS standard'),
               className: 'text-left bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all border-2 border-amber-300 hover:border-amber-500 overflow-hidden focus:outline-none focus:ring-4 ring-amber-500/40'
             },
-              h('div', { className: 'bg-gradient-to-br from-amber-500 to-orange-700 p-5 text-white' },
+              h('div', { className: 'bg-gradient-to-br from-amber-700 to-orange-700 p-5 text-white' },
                 h('div', { className: 'flex items-start justify-between mb-2' },
                   h('span', { className: 'text-4xl' }, '📋'),
                   h('span', { className: 'bg-white/20 backdrop-blur px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider' }, t('stem.evolab.teacher_3', '🍎 Teacher'))
@@ -822,7 +822,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             // student task is tracking allele-frequency change under modeled forces,
             // not the bare algebra. The old hero only stated the formula
             // and a definition; this asks them to test it.
-            h('div', { className: 'bg-gradient-to-br from-cyan-500 to-blue-700 rounded-2xl p-5 text-white shadow-lg text-center' },
+            h('div', { className: 'bg-gradient-to-br from-cyan-700 to-blue-700 rounded-2xl p-5 text-white shadow-lg text-center' },
               h('div', { className: 'text-3xl font-black mb-1', style: { fontFamily: 'serif' } }, t('stem.evolab.p_2pq_q_1', 'p² + 2pq + q² = 1')),
               h('div', { className: 'text-sm opacity-95 mb-2' }, t('stem.evolab.hwe_expected_random_mating', 'Under random mating, p², 2pq, and q² are the expected genotype proportions for the current allele frequencies.')),
               h('div', { className: 'text-[12px] font-bold bg-white/15 rounded-lg px-3 py-1.5 inline-block' },
@@ -904,12 +904,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: stepGeneration,
                 'aria-label': t('stem.evolab.advance_one_generation_applying_any_ac', 'Advance one generation, applying any active selection, mutation, or migration forces'),
-                className: 'px-6 py-3 rounded-xl font-bold bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg transition-colors'
+                className: 'px-6 py-3 rounded-xl font-bold bg-cyan-700 hover:bg-cyan-800 text-white shadow-lg transition-colors'
               }, t('stem.evolab.step_1_generation', '⏭ Step 1 Generation')),
               h('button', {
                 onClick: function() { stepGeneration(10); },
                 'aria-label': t('stem.evolab.advance_ten_generations', 'Advance ten generations'),
-                className: 'px-6 py-3 rounded-xl font-bold bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg transition-colors'
+                className: 'px-6 py-3 rounded-xl font-bold bg-cyan-700 hover:bg-cyan-800 text-white shadow-lg transition-colors'
               }, t('stem.evolab.step_10', '⏭⏭ Step 10')),
               h('button', {
                 onClick: reset,
@@ -1028,7 +1028,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h(BackBar, { icon: '🎲', title: t('stem.evolab.genetic_drift_simulator', 'Genetic Drift Simulator') }),
           h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-3' },
             // Hero
-            h('div', { className: 'bg-gradient-to-br from-rose-500 to-pink-700 rounded-2xl p-5 text-white shadow-lg' },
+            h('div', { className: 'bg-gradient-to-br from-rose-600 to-pink-700 rounded-2xl p-5 text-white shadow-lg' },
               h('h2', { className: 'text-2xl font-black mb-1' }, t('stem.evolab.random_sampling_no_selection', 'Random sampling, no selection')),
               h('p', { className: 'text-sm opacity-90' },
                 t('stem.evolab.set_a_population_size_then_run_5_paral', 'Set a population size, then run 5 parallel lineages. They all start at p = 0.5 (50/50 allele frequencies) and evolve only by chance — no selection, no mutation. Smaller populations drift much harder.'))
@@ -1532,7 +1532,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h(BackBar, { icon: '🧪', title: t('stem.evolab.selection_sandbox_2', 'Selection Sandbox') }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full space-y-3' },
             // Hero with preset description
-            h('div', { className: 'bg-gradient-to-br from-emerald-500 to-teal-700 rounded-2xl p-4 text-white shadow-lg' },
+            h('div', { className: 'bg-gradient-to-br from-emerald-700 to-teal-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-3xl' }, '🧪'),
                 h('div', null,
@@ -1604,12 +1604,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: function() { stepGeneration(); },
                 disabled: autoRun,
-                className: 'px-5 py-3 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white shadow-lg transition-colors'
+                className: 'px-5 py-3 rounded-xl font-bold bg-emerald-700 hover:bg-emerald-800 disabled:bg-emerald-300 text-white shadow-lg transition-colors'
               }, t('stem.evolab.step_1_generation_2', '⏭ Step 1 Generation')),
               h('button', {
                 onClick: function() { for (var i = 0; i < 10; i++) stepGeneration(); },
                 disabled: autoRun,
-                className: 'px-5 py-3 rounded-xl font-bold bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 text-white shadow-lg transition-colors'
+                className: 'px-5 py-3 rounded-xl font-bold bg-emerald-700 hover:bg-emerald-800 disabled:bg-emerald-300 text-white shadow-lg transition-colors'
               }, t('stem.evolab.step_10_2', '⏭⏭ Step 10')),
               h('button', {
                 onClick: function() { setAutoRun(!autoRun); },
@@ -1925,7 +1925,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h(BackBar, { icon: '🐦', title: t('stem.evolab.gal_pagos_beak_lab_2', 'Galápagos Beak Lab') }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full space-y-3' },
             // Hero
-            h('div', { className: 'bg-gradient-to-br from-amber-500 to-orange-700 rounded-2xl p-4 text-white shadow-lg' },
+            h('div', { className: 'bg-gradient-to-br from-amber-700 to-orange-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🌵'),
                 h('div', null,
@@ -1949,7 +1949,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'flex flex-wrap gap-3 justify-center' },
               h('button', {
                 onClick: stepYear,
-                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-lg'
+                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-amber-700 hover:bg-amber-800 text-white shadow-lg'
               }, t('stem.evolab.run_1_year', '⏭ Run 1 Year')),
               h('button', {
                 onClick: function() { setDrought(!drought); },
@@ -2137,7 +2137,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h(BackBar, { icon: '🌳', title: t('stem.evolab.phylogenetic_tree_builder_2', 'Phylogenetic Tree Builder') }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full space-y-3' },
             // Hero
-            h('div', { className: 'bg-gradient-to-br from-violet-500 to-purple-700 rounded-2xl p-4 text-white shadow-lg' },
+            h('div', { className: 'bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🌳'),
                 h('div', null,
@@ -2193,7 +2193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                       value: assigned || '',
                       onChange: function(e) { assign(o.id, e.target.value); },
                       'aria-label': 'Assign clade for ' + o.name,
-                      className: 'mt-2 w-full px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400'
+                      className: 'mt-2 w-full px-2 py-1.5 rounded-lg border border-slate-500 bg-white text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400'
                     },
                       h('option', { value: '' }, t('stem.evolab.select_clade', '— Select clade —')),
                       CLADES.map(function(c) { return h('option', { key: c.id, value: c.id }, c.label); })
@@ -2552,7 +2552,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h(BackBar, { icon: '🦴', title: t('stem.evolab.common_ancestry_viewer', 'Common Ancestry Viewer') }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full space-y-3' },
             // Hero
-            h('div', { className: 'bg-gradient-to-br from-yellow-500 to-amber-700 rounded-2xl p-4 text-white shadow-lg' },
+            h('div', { className: 'bg-gradient-to-br from-yellow-700 to-amber-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🦴'),
                 h('div', null,
@@ -2924,7 +2924,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               }, t('stem.evolab.next', 'Next →'))
             ),
             // Final summary (when all done) — offers Review-Missed if anything was wrong.
-            allDone && h('div', { className: 'bg-gradient-to-br from-emerald-500 to-teal-700 rounded-2xl p-5 text-white shadow-lg text-center' },
+            allDone && h('div', { className: 'bg-gradient-to-br from-emerald-700 to-teal-700 rounded-2xl p-5 text-white shadow-lg text-center' },
               h('div', { className: 'text-5xl mb-2' }, correctCount === ROUND_COUNT ? '🏆' : correctCount >= 9 ? '🌟' : correctCount >= 7 ? '👍' : '📖'),
               h('h3', { className: 'text-2xl font-black mb-1' },
                 correctCount === ROUND_COUNT ? 'Perfect score!' :
@@ -3217,7 +3217,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h(BackBar, { icon: '💊', title: t('stem.evolab.antibiotic_resistance_lab', 'Antibiotic Resistance Lab') }),
           h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-3' },
             // Hero
-            h('div', { className: 'bg-gradient-to-br from-fuchsia-500 to-pink-700 rounded-2xl p-4 text-white shadow-lg' },
+            h('div', { className: 'bg-gradient-to-br from-fuchsia-600 to-pink-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '💊'),
                 h('div', null,
@@ -3670,7 +3670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h(StatCard, { label: t('stem.evolab.trait_overlap_proxy_2', 'Trait overlap proxy'), value: compatPct + '%', color: compat < 0.3 ? 'text-rose-700' : compat < 0.6 ? 'text-amber-700' : 'text-emerald-700' })
             ),
             // Speciation banner
-            speciated && h('div', { 'aria-live': 'polite', className: 'bg-gradient-to-r from-rose-500 to-pink-700 rounded-2xl p-4 text-white shadow-lg flex items-center gap-3' },
+            speciated && h('div', { 'aria-live': 'polite', className: 'bg-gradient-to-r from-rose-600 to-pink-700 rounded-2xl p-4 text-white shadow-lg flex items-center gap-3' },
               h('span', { className: 'text-4xl' }, '🎉'),
               h('div', null,
                 h('div', { className: 'text-lg font-black' }, 'TRAIT-DIVERGENCE MILESTONE'),
@@ -3735,7 +3735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: function() { for (var i = 0; i < 10; i++) stepGeneration(true); },
                 disabled: autoRun,
-                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-indigo-500 hover:bg-indigo-600 disabled:bg-indigo-300 text-white shadow-lg'
+                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white shadow-lg'
               }, t('stem.evolab.step_10_4', '⏭⏭ Step 10')),
               h('button', {
                 onClick: function() { setAutoRun(!autoRun); },
@@ -4160,7 +4160,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: function() { for (var i = 0; i < 10; i++) stepGeneration(true); },
                 disabled: autoRun,
-                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white shadow-lg'
+                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white shadow-lg'
               }, t('stem.evolab.step_10_5', '⏭⏭ Step 10')),
               h('button', {
                 onClick: function() { setAutoRun(!autoRun); },
@@ -4706,7 +4706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h(BackBar, { icon: '🌡️', title: t('stem.evolab.climate_pressure_lab_2', 'Climate Pressure Lab') }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full space-y-3' },
             // Hero
-            h('div', { className: 'bg-gradient-to-br from-orange-500 to-red-700 rounded-2xl p-4 text-white shadow-lg' },
+            h('div', { className: 'bg-gradient-to-br from-orange-700 to-red-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🌡️'),
                 h('div', null,
@@ -4774,7 +4774,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: function() { stepGeneration(); },
                 disabled: autoRun || extinct,
-                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-orange-600 hover:bg-orange-700 disabled:bg-orange-300 text-white shadow-lg'
+                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-orange-700 hover:bg-orange-800 disabled:bg-orange-300 text-white shadow-lg'
               }, t('stem.evolab.step_1_generation_5', '⏭ Step 1 Generation')),
               h('button', {
                 onClick: function() { setAutoRun(!autoRun); },
@@ -5041,7 +5041,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h(BackBar, { icon: '🦚', title: t('stem.evolab.mate_choice_lab_2', 'Mate Choice Lab') }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full space-y-3' },
             // Hero
-            h('div', { className: 'bg-gradient-to-br from-pink-500 to-fuchsia-700 rounded-2xl p-4 text-white shadow-lg' },
+            h('div', { className: 'bg-gradient-to-br from-pink-600 to-fuchsia-700 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🦚'),
                 h('div', null,
@@ -5093,7 +5093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'transition-colors px-7 py-3 rounded-xl font-bold bg-pink-600 hover:bg-pink-700 text-white shadow-lg text-lg'
               }, t('stem.evolab.start_choosing', '▶ Start Choosing'))
             ),
-            phase === 'done' && h('div', { className: 'bg-gradient-to-br from-fuchsia-500 to-pink-700 rounded-2xl p-5 text-white shadow-lg' },
+            phase === 'done' && h('div', { className: 'bg-gradient-to-br from-fuchsia-600 to-pink-700 rounded-2xl p-5 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🎯'),
                 h('div', { className: 'flex-1' },
@@ -5518,7 +5518,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h(BackBar, { icon: '👁️', title: t('stem.evolab.predator_vision_lab', 'Predator Vision Lab') }),
           h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-3' },
             // Hero
-            h('div', { className: 'bg-gradient-to-br from-lime-600 to-green-800 rounded-2xl p-4 text-white shadow-lg' },
+            h('div', { className: 'bg-gradient-to-br from-lime-700 to-green-800 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '👁️'),
                 h('div', null,
@@ -5603,7 +5603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'transition-colors px-5 py-2.5 rounded-lg font-bold bg-slate-200 hover:bg-slate-300 text-slate-700'
               }, t('stem.evolab.restart_2', '↺ Restart'))
             ),
-            phase === 'done' && h('div', { className: 'bg-gradient-to-br from-emerald-500 to-teal-700 rounded-2xl p-5 text-white shadow-lg' },
+            phase === 'done' && h('div', { className: 'bg-gradient-to-br from-emerald-700 to-teal-700 rounded-2xl p-5 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🎯'),
                 h('div', { className: 'flex-1' },
@@ -5779,7 +5779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ),
             h('button', {
               onClick: startSl,
-              className: 'transition-colors w-full px-5 py-3 rounded-xl bg-amber-600 text-white font-bold hover:bg-amber-700 focus:outline-none focus:ring-2 ring-amber-400'
+              className: 'transition-colors w-full px-5 py-3 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-800 focus:outline-none focus:ring-2 ring-amber-400'
             }, t('stem.evolab.start_vignette_1_of_10', '🕵️ Start — vignette 1 of 10'))
           );
         }
@@ -5862,12 +5862,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   ),
                   h('button', {
                     onClick: function() { upd('evoSlIdx', -1); upd('evoSlShown', []); upd('evoSlScore', 0); upd('evoSlRounds', 0); upd('evoSlStreak', 0); },
-                    className: 'transition-colors mt-3 px-4 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-xs hover:bg-amber-700'
+                    className: 'transition-colors mt-3 px-4 py-1.5 rounded-lg bg-amber-700 text-white font-bold text-xs hover:bg-amber-800'
                   }, t('stem.evolab.restart_3', '🔄 Restart'))
                 )
               : h('button', {
                   onClick: startSl,
-                  className: 'transition-colors px-4 py-2 rounded-lg bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 focus:outline-none focus:ring-2 ring-amber-400'
+                  className: 'transition-colors px-4 py-2 rounded-lg bg-amber-700 text-white font-bold text-sm hover:bg-amber-800 focus:outline-none focus:ring-2 ring-amber-400'
                 }, t('stem.evolab.next_vignette', '➡️ Next vignette'))
           )
         );
@@ -5970,7 +5970,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ),
             h('button', {
               onClick: startHs,
-              className: 'transition-colors w-full px-5 py-3 rounded-xl bg-cyan-600 text-white font-bold hover:bg-cyan-700 focus:outline-none focus:ring-2 ring-cyan-400'
+              className: 'transition-colors w-full px-5 py-3 rounded-xl bg-cyan-700 text-white font-bold hover:bg-cyan-800 focus:outline-none focus:ring-2 ring-cyan-400'
             }, t('stem.evolab.start_pair_1_of_10', '🦴 Start — pair 1 of 10'))
           );
         }
@@ -6048,12 +6048,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   ),
                   h('button', {
                     onClick: function() { upd('hsIdx', -1); upd('hsShown', []); upd('hsScore', 0); upd('hsRounds', 0); upd('hsStreak', 0); },
-                    className: 'transition-colors mt-3 px-4 py-1.5 rounded-lg bg-cyan-600 text-white font-bold text-xs hover:bg-cyan-700'
+                    className: 'transition-colors mt-3 px-4 py-1.5 rounded-lg bg-cyan-700 text-white font-bold text-xs hover:bg-cyan-800'
                   }, t('stem.evolab.restart_4', '🔄 Restart'))
                 )
               : h('button', {
                   onClick: startHs,
-                  className: 'transition-colors px-4 py-2 rounded-lg bg-cyan-600 text-white font-bold text-sm hover:bg-cyan-700 focus:outline-none focus:ring-2 ring-cyan-400'
+                  className: 'transition-colors px-4 py-2 rounded-lg bg-cyan-700 text-white font-bold text-sm hover:bg-cyan-800 focus:outline-none focus:ring-2 ring-cyan-400'
                 }, t('stem.evolab.next_pair', '➡️ Next pair'))
           )
         );
@@ -6238,7 +6238,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 onChange: function(e) { setStudentName(e.target.value); },
                 placeholder: t('stem.evolab.enter_your_name', 'Enter your name…'),
                 'aria-label': t('stem.evolab.student_name_for_the_lab_report', 'Student name for the lab report'),
-                className: 'w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400'
+                className: 'w-full px-3 py-2 rounded-lg border border-slate-500 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400'
               })
             )
           );
@@ -6266,7 +6266,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   rows: 3,
                   placeholder: t('stem.evolab.type_your_prediction', 'Type your prediction…'),
                   'aria-label': 'Prediction ' + (i + 1) + ': ' + prompt,
-                  className: 'w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 leading-relaxed'
+                  className: 'w-full px-3 py-2 rounded-lg border border-slate-500 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 leading-relaxed'
                 }),
                 h('div', { className: 'text-[10px] text-slate-600 mt-1' }, predictions[i] && predictions[i].length >= 10 ? '✓ Looks good' : 'Need at least 10 characters')
               );
@@ -6286,7 +6286,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               scenario.module && h('button', {
                 onClick: function() { goto(scenario.module); },
                 'aria-label': 'Open ' + scenario.moduleLabel + ' to run the simulation',
-                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg'
+                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-lg'
               }, '→ Open ' + scenario.moduleLabel)
             ),
             h('div', { className: 'bg-amber-50 border border-amber-300 rounded-xl p-4' },
@@ -6303,7 +6303,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: function() { setStep(3); },
                 'aria-label': t('stem.evolab.i_ve_run_the_simulation_advance_to_the', 'I\'ve run the simulation; advance to the reflection step'),
-                className: 'transition-colors px-5 py-2.5 rounded-lg font-bold bg-cyan-500 hover:bg-cyan-600 text-white'
+                className: 'transition-colors px-5 py-2.5 rounded-lg font-bold bg-cyan-700 hover:bg-cyan-800 text-white'
               }, t('stem.evolab.i_ve_run_it_continue', '✓ I\'ve run it — continue'))
             )
           );
@@ -6327,7 +6327,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   rows: 3,
                   placeholder: t('stem.evolab.type_your_reflection', 'Type your reflection…'),
                   'aria-label': 'Reflection ' + (i + 1) + ': ' + prompt,
-                  className: 'w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 leading-relaxed'
+                  className: 'w-full px-3 py-2 rounded-lg border border-slate-500 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 leading-relaxed'
                 }),
                 h('div', { className: 'text-[10px] text-slate-600 mt-1' }, reflections[i] && reflections[i].length >= 10 ? '✓ Looks good' : 'Need at least 10 characters')
               );
@@ -6556,7 +6556,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h(BackBar, { icon: '🗺️', title: t('stem.evolab.module_map_2', 'Module Map') }),
           h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-4' },
             // Hero
-            h('div', { className: 'bg-gradient-to-br from-amber-500 to-orange-700 rounded-2xl p-5 text-white shadow-lg' },
+            h('div', { className: 'bg-gradient-to-br from-amber-700 to-orange-700 rounded-2xl p-5 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-5xl' }, '🗺️'),
                 h('div', null,
@@ -6755,7 +6755,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h(BackBar, { icon: '📋', title: t('stem.evolab.standards_crosswalk_2', 'Standards Crosswalk') }),
           h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-4' },
             // Hero
-            h('div', { className: 'bg-gradient-to-br from-amber-500 to-orange-700 rounded-2xl p-5 text-white shadow-lg' },
+            h('div', { className: 'bg-gradient-to-br from-amber-700 to-orange-700 rounded-2xl p-5 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-5xl' }, '📋'),
                 h('div', null,
@@ -7015,7 +7015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h(BackBar, { icon: '📅', title: t('stem.evolab.curriculum_guide_5_day_unit_plan', 'Curriculum Guide — 5-Day Unit Plan') }),
           h('div', { className: 'p-4 max-w-4xl mx-auto w-full space-y-4' },
             // Hero
-            h('div', { className: 'bg-gradient-to-br from-amber-500 to-orange-700 rounded-2xl p-5 text-white shadow-lg' },
+            h('div', { className: 'bg-gradient-to-br from-amber-700 to-orange-700 rounded-2xl p-5 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-5xl' }, '🍎'),
                 h('div', null,
@@ -7161,7 +7161,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 'I understand — explain in own words'),
               iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.evolab.explain_how_camouflage_predator_vision', 'Explain how camouflage, predator vision, and environment co-determine population outcomes.'),
                 style: { width: '100%', minHeight: 80, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
-            H('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,28,47,0.5)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#64748b' } },
+            H('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,28,47,0.5)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#cbd5e1' } },
               'Model limit: three arbitrary weighted sliders produce a conceptual regime label. This is not a population-dynamics or measured-fitness model.')
           )
         );

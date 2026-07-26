@@ -1843,7 +1843,7 @@ const d = labToolData.wave;
                 React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, cur.icon),
                 React.createElement("p", { className: "text-xs text-cyan-900 font-semibold flex-1 min-w-[200px] m-0" }, cur.text),
                 React.createElement("span", { className: "text-[10px] font-bold text-cyan-600" }, (step + 1) + '/' + TOUR.length),
-                React.createElement("button", { onClick: function () { if (step + 1 >= TOUR.length) done(); else upd('tourStep', step + 1); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-600 text-white hover:bg-cyan-700 active:scale-[0.97]" }, step + 1 >= TOUR.length ? '✓ ' + __alloT('stem.wave.tour_done', 'Done') : __alloT('stem.wave.tour_next', 'Next') + ' →'),
+                React.createElement("button", { onClick: function () { if (step + 1 >= TOUR.length) done(); else upd('tourStep', step + 1); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-700 text-white hover:bg-cyan-800 active:scale-[0.97]" }, step + 1 >= TOUR.length ? '✓ ' + __alloT('stem.wave.tour_done', 'Done') : __alloT('stem.wave.tour_next', 'Next') + ' →'),
                 React.createElement("button", { onClick: done, "aria-label": __alloT('stem.wave.tour_skip_label', 'Skip the tour'), className: "transition-colors px-2 py-1.5 rounded-lg text-xs text-cyan-700 hover:bg-cyan-100 active:scale-[0.97]" }, __alloT('stem.wave.tour_skip', 'Skip'))
               );
             })(),
@@ -2317,7 +2317,7 @@ const d = labToolData.wave;
                   upd('wallFrac', null);
                   if (typeof addToast === 'function') addToast(__alloT('stem.wave.toast_wall_reset', 'Wall reset to 75% across'), 'info');
                 },
-                className: "transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 active:scale-[0.97]",
+                className: "transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 active:scale-[0.97]",
                 'aria-label': __alloT('stem.wave.aria_reset_wall', 'Reset wall position')
               }, '↻ ' + __alloT('stem.wave.btn_reset_wall', 'Reset wall')),
               React.createElement("span", { className: "text-[11px] text-amber-900 ml-auto" },
@@ -2671,7 +2671,7 @@ const d = labToolData.wave;
 
             ),
 
-            React.createElement("button", { "aria-label": __alloT('stem.wave.snapshot', 'Snapshot'), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 ' + __alloT('stem.wave.toast_snapshot_saved', 'Snapshot saved!'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.wave.snapshot', 'Snapshot')),
+            React.createElement("button", { "aria-label": __alloT('stem.wave.snapshot', 'Snapshot'), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wv-' + Date.now(), tool: 'wave', label: 'A=' + d.amplitude + ' f=' + d.frequency, data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 ' + __alloT('stem.wave.toast_snapshot_saved', 'Snapshot saved!'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.wave.snapshot', 'Snapshot')),
 
             // ── AI Wave Tutor (reading-level aware) ──
             (function () {
@@ -3272,9 +3272,9 @@ const d = labToolData.wave;
               h('input', { id: 'discTen', type: 'range', min: 10, max: 200, step: 5, value: lab.tension, onChange: function(e) { setLab({ tension: parseInt(e.target.value, 10) }); }, className: 'w-full', 'aria-label': __alloT('stem.wave.aria_tension_newtons', 'Tension in newtons') }),
               h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, __alloT('stem.wave.disc_mu_note', '(string mass density μ fixed at 0.01 kg/m)')),
               h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
-                h('button', { onClick: logObservation, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-cyan-600 text-white hover:bg-cyan-700 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]' }, '📝 ' + __alloT('stem.wave.btn_log_observation', 'Log observation')),
-                h('button', { onClick: reveal, disabled: lab.discovered, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]' }, lab.discovered ? '✓ ' + __alloT('stem.wave.btn_revealed', 'Revealed') : '💡 ' + __alloT('stem.wave.btn_i_see_it', 'I see it')),
-                h('button', { onClick: reset, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-400 focus:outline-none active:scale-[0.97]' }, '↻ ' + __alloT('stem.wave.btn_reset', 'Reset'))
+                h('button', { onClick: logObservation, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-cyan-700 text-white hover:bg-cyan-800 focus:ring-2 focus:ring-cyan-300 focus:outline-none active:scale-[0.97]' }, '📝 ' + __alloT('stem.wave.btn_log_observation', 'Log observation')),
+                h('button', { onClick: reveal, disabled: lab.discovered, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]' }, lab.discovered ? '✓ ' + __alloT('stem.wave.btn_revealed', 'Revealed') : '💡 ' + __alloT('stem.wave.btn_i_see_it', 'I see it')),
+                h('button', { onClick: reset, className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-500 focus:outline-none active:scale-[0.97]' }, '↻ ' + __alloT('stem.wave.btn_reset', 'Reset'))
               ),
               (lab.observationsLogged || []).length > 0 && h('div', { className: 'mt-2' },
                 h('div', { className: 'text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, __alloT('stem.wave.disc_your_observations', 'Your observations')),
@@ -3486,7 +3486,7 @@ const d = labToolData.wave;
               value: lab.explanation || '',
               onChange: function(e) { setLab({ explanation: e.target.value }); },
               placeholder: __alloT('stem.wave.sh_explanation_placeholder', 'Explain in your own words: what determines when a standing wave forms? What role does tension play? What role does frequency play? What is "n"?'),
-              className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug bg-white',
+              className: 'w-full text-[12px] border border-emerald-600 rounded p-2 font-mono leading-snug bg-white',
               rows: 4
             }),
             lab.understood && (lab.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },

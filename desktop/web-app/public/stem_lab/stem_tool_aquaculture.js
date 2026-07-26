@@ -7239,7 +7239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   ];
 
   function aqEcoClamp(value, min, max) { return Math.max(min, Math.min(max, Number(value) || 0)); }
-  function aqDefaultEcosystemWorkspace() { var base = ECOSYSTEM_ENVIRONMENTS.longline; return { environmentId: base.id, organisms: { oyster: 2, mussel: 2, kelp: 2, phytoplankton: 1 }, water: Object.assign({}, base.defaults), disturbanceId: 'none', observation: '', experiments: [] }; }
+  function aqDefaultEcosystemWorkspace() { var base = ECOSYSTEM_ENVIRONMENTS.longline; return { environmentId: base.id, organisms: { oyster: 2, mussel: 2, kelp: 2, phytoplankton: 1 }, water: Object.assign({}, base.defaults), disturbanceId: 'none', observation: '', experiments: [], baselineScenario: null }; }
   function aqSanitizeLearnerProfile(raw) { var source = raw && typeof raw === 'object' ? raw : {}; var roles = LEARNER_PROFILE_OPTIONS.roles.map(function(item) { return item.id; }); var goals = LEARNER_PROFILE_OPTIONS.goals.map(function(item) { return item.id; }); var sessions = LEARNER_PROFILE_OPTIONS.sessions.map(function(item) { return item.id; }); return { role: roles.indexOf(source.role) >= 0 ? source.role : 'learner', goal: goals.indexOf(source.goal) >= 0 ? source.goal : 'experiment', session: sessions.indexOf(String(source.session)) >= 0 ? String(source.session) : '30', configured: !!source.configured }; }
 
   function aqSanitizeTeacherPlan(raw) {
@@ -7252,13 +7252,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       includeCheckpoint: source.includeCheckpoint !== false,
       teacherNote: String(source.teacherNote || '').slice(0, 600) };
   }
-  function aqSanitizeEcosystemWorkspace(raw) {
-    var fallback = aqDefaultEcosystemWorkspace(), source = raw && typeof raw === 'object' ? raw : {};
-    var environmentId = ECOSYSTEM_ENVIRONMENTS[source.environmentId] ? source.environmentId : fallback.environmentId, organisms = {};
+  function aqSanitizeEcosystemSummary(raw) {
+    var source = raw && typeof raw === 'object' ? raw : {};
+    return { endingBiomass: aqEcoClamp(source.endingBiomass, 0, 250), survival: Math.round(aqEcoClamp(source.survival, 0, 100)), minOxygen: aqEcoClamp(source.minOxygen, 0, 20), peakAmmonia: aqEcoClamp(source.peakAmmonia, 0, 5), averageResilience: Math.round(aqEcoClamp(source.averageResilience, 0, 100)), riskMonths: Math.round(aqEcoClamp(source.riskMonths, 0, 12)), harvestUnits: Math.round(aqEcoClamp(source.harvestUnits, 0, 100)), operatingEffort: Math.round(aqEcoClamp(source.operatingEffort, 0, 100)) };
+  }  function aqSanitizeEcosystemScenario(raw, fallbackEnvironmentId) {
+    var source = raw && typeof raw === 'object' ? raw : {};
+    var environmentId = ECOSYSTEM_ENVIRONMENTS[source.environmentId] ? source.environmentId : (ECOSYSTEM_ENVIRONMENTS[fallbackEnvironmentId] ? fallbackEnvironmentId : 'longline'), organisms = {};
     ECOSYSTEM_ORGANISMS.forEach(function(organism) { var count = Math.round(Number((source.organisms || {})[organism.id]) || 0); if (count > 0) organisms[organism.id] = aqEcoClamp(count, 1, 5); });
     var defaults = ECOSYSTEM_ENVIRONMENTS[environmentId].defaults, waterSource = source.water && typeof source.water === 'object' ? source.water : {};
-    var experiments = (Array.isArray(source.experiments) ? source.experiments : []).slice(0, 12).map(function(item, index) { var experiment = item && typeof item === 'object' ? item : {}, experimentOrganisms = {}; ECOSYSTEM_ORGANISMS.forEach(function(organism) { var count = Math.round(Number((experiment.organisms || {})[organism.id]) || 0); if (count > 0) experimentOrganisms[organism.id] = aqEcoClamp(count, 1, 5); }); return { id: String(experiment.id || ('experiment-' + index)).slice(0, 80), savedAt: Math.max(0, Number(experiment.savedAt) || 0), environmentId: ECOSYSTEM_ENVIRONMENTS[experiment.environmentId] ? experiment.environmentId : environmentId, organisms: experimentOrganisms, status: ['Stable', 'Watch', 'Critical', 'Empty'].indexOf(experiment.status) >= 0 ? experiment.status : 'Watch', carryingPressure: aqEcoClamp(experiment.carryingPressure, 0, 250), oxygen: aqEcoClamp(experiment.oxygen, 0, 20), ammonia: aqEcoClamp(experiment.ammonia, 0, 5), resilience: aqEcoClamp(experiment.resilience, 0, 100), observation: String(experiment.observation || '').slice(0, 600) }; });
-    return { environmentId: environmentId, organisms: organisms, water: { temperature: aqEcoClamp(waterSource.temperature == null ? defaults.temperature : waterSource.temperature, 0, 32), salinity: aqEcoClamp(waterSource.salinity == null ? defaults.salinity : waterSource.salinity, 0, 38), oxygen: aqEcoClamp(waterSource.oxygen == null ? defaults.oxygen : waterSource.oxygen, 2, 14), pH: aqEcoClamp(waterSource.pH == null ? defaults.pH : waterSource.pH, 6.5, 9), ammonia: aqEcoClamp(waterSource.ammonia == null ? defaults.ammonia : waterSource.ammonia, 0, 2), exchange: aqEcoClamp(waterSource.exchange == null ? defaults.exchange : waterSource.exchange, 0, 100) }, disturbanceId: ECOSYSTEM_DISTURBANCES[source.disturbanceId] ? source.disturbanceId : 'none', observation: String(source.observation || '').slice(0, 600), experiments: experiments };
+    return { environmentId: environmentId, organisms: organisms, water: { temperature: aqEcoClamp(waterSource.temperature == null ? defaults.temperature : waterSource.temperature, 0, 32), salinity: aqEcoClamp(waterSource.salinity == null ? defaults.salinity : waterSource.salinity, 0, 38), oxygen: aqEcoClamp(waterSource.oxygen == null ? defaults.oxygen : waterSource.oxygen, 2, 14), pH: aqEcoClamp(waterSource.pH == null ? defaults.pH : waterSource.pH, 6.5, 9), ammonia: aqEcoClamp(waterSource.ammonia == null ? defaults.ammonia : waterSource.ammonia, 0, 2), exchange: aqEcoClamp(waterSource.exchange == null ? defaults.exchange : waterSource.exchange, 0, 100) }, disturbanceId: ECOSYSTEM_DISTURBANCES[source.disturbanceId] ? source.disturbanceId : 'none' };
+  }
+  function aqSanitizeEcosystemWorkspace(raw) {
+    var fallback = aqDefaultEcosystemWorkspace(), source = raw && typeof raw === 'object' ? raw : {}, scenario = aqSanitizeEcosystemScenario(source, fallback.environmentId);
+    var environmentId = scenario.environmentId, organisms = scenario.organisms;
+    var experiments = (Array.isArray(source.experiments) ? source.experiments : []).slice(0, 12).map(function(item, index) { var experiment = item && typeof item === 'object' ? item : {}, experimentOrganisms = {}; ECOSYSTEM_ORGANISMS.forEach(function(organism) { var count = Math.round(Number((experiment.organisms || {})[organism.id]) || 0); if (count > 0) experimentOrganisms[organism.id] = aqEcoClamp(count, 1, 5); }); return { id: String(experiment.id || ('experiment-' + index)).slice(0, 80), savedAt: Math.max(0, Number(experiment.savedAt) || 0), environmentId: ECOSYSTEM_ENVIRONMENTS[experiment.environmentId] ? experiment.environmentId : environmentId, organisms: experimentOrganisms, status: ['Stable', 'Watch', 'Critical', 'Empty'].indexOf(experiment.status) >= 0 ? experiment.status : 'Watch', carryingPressure: aqEcoClamp(experiment.carryingPressure, 0, 250), oxygen: aqEcoClamp(experiment.oxygen, 0, 20), ammonia: aqEcoClamp(experiment.ammonia, 0, 5), resilience: aqEcoClamp(experiment.resilience, 0, 100), observation: String(experiment.observation || '').slice(0, 600), kind: experiment.kind === 'comparison' ? 'comparison' : 'snapshot', baselineSummary: experiment.baselineSummary && typeof experiment.baselineSummary === 'object' ? aqSanitizeEcosystemSummary(experiment.baselineSummary) : null, currentSummary: experiment.currentSummary && typeof experiment.currentSummary === 'object' ? aqSanitizeEcosystemSummary(experiment.currentSummary) : null }; });
+    return { environmentId: environmentId, organisms: organisms, water: Object.assign({}, scenario.water), disturbanceId: scenario.disturbanceId, observation: String(source.observation || '').slice(0, 600), experiments: experiments, baselineScenario: source.baselineScenario && typeof source.baselineScenario === 'object' ? aqSanitizeEcosystemScenario(source.baselineScenario, environmentId) : null };
   }
 
   function aqCalculateEcosystem(workspace) {
@@ -7283,6 +7291,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     if (clean.disturbanceId === 'pump' && ['longline', 'netpen', 'bottom'].indexOf(environment.id) >= 0) warnings.push({ level: 'watch', text: 'Pump interruption mainly applies to contained systems; try storm or bloom here.' });
     var status = !selected.length ? 'Empty' : warnings.some(function(item) { return item.level === 'critical'; }) ? 'Critical' : warnings.length ? 'Watch' : 'Stable';
     return { environment: environment, disturbance: disturbance, selected: selected, status: status, carryingPressure: Math.round(carryingPressure), temperature: Number(temperature.toFixed(1)), oxygen: Number(oxygen.toFixed(2)), ammonia: Number(ammonia.toFixed(2)), clarity: Math.round(clarity), habitat: Math.round(aqEcoClamp(habitat * 10, 0, 100)), resilience: Math.round(resilience), effectiveExchange: Math.round(effectiveExchange), connections: connections, warnings: warnings };
+  }
+  var AQ_ECOSYSTEM_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var AQ_ECOSYSTEM_SEASONAL_OFFSETS = [-4, -4, -2, 0, 2, 4, 6, 5, 3, 1, -1, -3];
+  var AQ_ECOSYSTEM_EVENT_MONTH = { heatwave: 6, pump: 4, feed: 5, bloom: 7, storm: 9 };
+
+  function aqEcosystemScenarioSnapshot(workspace) {
+    var clean = aqSanitizeEcosystemWorkspace(workspace);
+    return { environmentId: clean.environmentId, organisms: Object.assign({}, clean.organisms), water: Object.assign({}, clean.water), disturbanceId: clean.disturbanceId };
+  }
+
+  function aqSimulateEcosystemYear(workspace) {
+    var clean = aqSanitizeEcosystemWorkspace(workspace), environment = ECOSYSTEM_ENVIRONMENTS[clean.environmentId];
+    var contained = clean.environmentId === 'ras' || clean.environmentId === 'raceway';
+    var baseModel = aqCalculateEcosystem(clean), biomass = Math.max(.1, baseModel.carryingPressure / 100 * environment.capacity);
+    var survival = baseModel.selected.length ? 100 : 0, cumulativeEffort = 0, riskMonths = 0, harvestUnits = 0;
+    var eventMonth = AQ_ECOSYSTEM_EVENT_MONTH[clean.disturbanceId], timeline = AQ_ECOSYSTEM_MONTHS.map(function(month, index) {
+      var eventId = typeof eventMonth === 'number' && eventMonth === index ? clean.disturbanceId : 'none';
+      var seasonalOffset = AQ_ECOSYSTEM_SEASONAL_OFFSETS[index] * (contained ? .18 : 1);
+      var scenario = Object.assign({}, clean, { water: Object.assign({}, clean.water, { temperature: aqEcoClamp(clean.water.temperature + seasonalOffset, 0, 32) }), disturbanceId: eventId });
+      var model = aqCalculateEcosystem(scenario), seaweedCount = (clean.organisms.kelp || 0) + (clean.organisms.dulse || 0);
+      var coolSeasonBoost = seaweedCount && (index <= 3 || index >= 9) ? .018 : 0;
+      var growthRate = model.status === 'Stable' ? .052 : model.status === 'Watch' ? .021 : model.status === 'Critical' ? -.028 : 0;
+      biomass = Math.max(0, biomass * (1 + growthRate + coolSeasonBoost));
+      survival = aqEcoClamp(survival * (model.status === 'Critical' ? .94 : model.status === 'Watch' ? .985 : .997), 0, 100);
+      if (model.status === 'Critical' || model.status === 'Watch') riskMonths += 1;
+      var fedUnits = (clean.organisms.salmon || 0) + (clean.organisms.trout || 0) + (clean.organisms.shrimp || 0);
+      var effort = aqEcoClamp(18 + fedUnits * 7 + model.carryingPressure * .22 + (contained ? 12 : 4) + (eventId !== 'none' ? 18 : 0), 0, 100);
+      cumulativeEffort += effort;
+      var readyThisMonth = 0;
+      baseModel.selected.forEach(function(organism) {
+        var maturity = { kelp: 5, dulse: 6, shrimp: 8, trout: 12, mussel: 14, oyster: 18, salmon: 18, urchin: 18, clam: 20, scallop: 24, 'sea-cucumber': 24 }[organism.id];
+        if (maturity === index + 1 && survival >= 70) readyThisMonth += clean.organisms[organism.id] || 0;
+      });
+      harvestUnits += readyThisMonth;
+      return { month: month, temperature: model.temperature, oxygen: model.oxygen, ammonia: model.ammonia, resilience: model.resilience, status: model.status, survival: Math.round(survival), biomass: Number(biomass.toFixed(1)), effort: Math.round(effort), harvestUnits: readyThisMonth, event: eventId === 'none' ? (index === 6 && !contained ? 'Peak seasonal warming' : '') : ECOSYSTEM_DISTURBANCES[eventId].name };
+    });
+    var minOxygen = Math.min.apply(null, timeline.map(function(item) { return item.oxygen; }));
+    var peakAmmonia = Math.max.apply(null, timeline.map(function(item) { return item.ammonia; }));
+    var avgResilience = timeline.reduce(function(total, item) { return total + item.resilience; }, 0) / timeline.length;
+    return { environmentId: clean.environmentId, timeline: timeline, summary: { endingBiomass: Number(biomass.toFixed(1)), survival: Math.round(survival), minOxygen: Number(minOxygen.toFixed(2)), peakAmmonia: Number(peakAmmonia.toFixed(2)), averageResilience: Math.round(avgResilience), riskMonths: riskMonths, harvestUnits: harvestUnits, operatingEffort: Math.round(cumulativeEffort / timeline.length) } };
+  }
+
+  function aqCompareEcosystemRuns(baselineRun, currentRun) {
+    if (!baselineRun || !currentRun) return null;
+    function delta(key) { return Number((currentRun.summary[key] - baselineRun.summary[key]).toFixed(2)); }
+    return { biomass: delta('endingBiomass'), survival: delta('survival'), minOxygen: delta('minOxygen'), peakAmmonia: delta('peakAmmonia'), resilience: delta('averageResilience'), riskMonths: delta('riskMonths'), harvestUnits: delta('harvestUnits'), operatingEffort: delta('operatingEffort') };
+  }
+  var AQ_CONTENT_TRUST_SOURCES = {
+    maineLaws: { label: 'Maine DMR · Aquaculture laws and regulations', url: 'https://www.maine.gov/dmr/aquaculture/laws-and-regulations' },
+    maineGrowers: { label: 'Maine DMR · Grower FAQ and current process guidance', url: 'https://www.maine.gov/dmr/aquaculture/resources-for-growers/faq' },
+    maineBiosecurity: { label: 'Maine DMR · Biosecurity permits and requirements', url: 'https://www.maine.gov/dmr/fisheries/pathology/permits' },
+    noaaReferences: { label: 'NOAA Fisheries · Aquaculture references', url: 'https://www.fisheries.noaa.gov/national/aquaculture/aquaculture-references-and-further-reading' },
+    usdaAquaculture: { label: 'USDA National Agricultural Library · Aquaculture resources', url: 'https://www.nal.usda.gov/farms-and-agricultural-production-systems/aquaculture-and-aquaponics' }
+  };
+  var AQ_TIME_SENSITIVE_TOPICS = { lease: true, permitwf: true, permitsbystate: true, aqlawsuits: true, econ: true, aqinsurance: true, aqloans: true, pricehistory: true, biotoxin: true, quarantine: true, exports: true };
+  var AQ_MODEL_TOPICS = { ecosystem: true, sim: true, chart: true, wqindex: true, lca: true };
+
+  function aqContentTrustForTopic(topicId) {
+    if (AQ_MODEL_TOPICS[topicId]) return { label: 'Illustrative learning model', tone: '#bfdbfe', context: 'Relationships and values are simplified for exploration. Do not use them as engineering, navigation, veterinary, or production forecasts.', jurisdiction: 'Learning model · not operational guidance', checked: 'Official source gateways checked 26 Jul 2026', sourceIds: ['noaaReferences', 'usdaAquaculture'] };
+    if (AQ_TIME_SENSITIVE_TOPICS[topicId]) return { label: 'Time-sensitive reference', tone: '#fde68a', context: 'Rules, fees, markets, closures, and program details can change. Confirm the jurisdiction, effective year, and current agency page before acting.', jurisdiction: 'Maine / U.S. context unless the lesson states otherwise', checked: 'Official source gateways checked 26 Jul 2026', sourceIds: ['maineLaws', 'maineGrowers', 'maineBiosecurity'] };
+    return { label: 'Educational synthesis', tone: '#a7f3d0', context: 'This lesson combines sources from different publication years. Use the linked primary-source gateways when exact or current values matter.', jurisdiction: 'Maine-centered with broader examples', checked: 'Official source gateways checked 26 Jul 2026', sourceIds: ['noaaReferences', 'usdaAquaculture'] };
   }
   var AQ_KEY = 'aquacultureLab.state.v1';
   function loadState() {
@@ -7810,7 +7879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     icon: '🦪',
     color: 'teal',
     category: 'science',
-    description: 'Build a multi-species aquaculture ecosystem, test water and stocking trade-offs, save experiment evidence, or pilot a Maine shellfish farm in the accessible 3D mission.',
+    description: 'Build a multi-species aquaculture ecosystem, test water and stocking trade-offs, save experiment evidence, or pilot a Maine shellfish farm in the accessible 3D or guided 2D boat mission.',
     desc: 'Pilot your skiff to your Bagaduce River lease. Deploy droppers, monitor water quality, harvest mussels, learn IALA-B buoyage + lease tiers + climate stressors in a 3D sim.',
     tags: ['aquaculture', 'shellfish', 'boating', 'navigation', 'maine', '3d', 'sim'],
     ready: true,
@@ -7863,6 +7932,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var region = regionHook[0], setRegion = regionHook[1];
     var simHook = useState({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
     var sim = simHook[0], setSim = simHook[1];
+    var guidedMissionHook = useState({ active: false, step: 0, droppers: 0, probed: false, feedback: 'Choose guided 2D to complete the same mission without WebGL.', reflection: '' });
+    var guidedMission = guidedMissionHook[0], setGuidedMission = guidedMissionHook[1];
     var hudHook = useState({});
     var hud = hudHook[0], setHud = hudHook[1];
     var statusHook = useState([]);
@@ -8039,7 +8110,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var TAB_GROUPS = [
       { id: 'start', label: 'Start', color: '#a7f3d0', tabs: [
         { id: 'home', label: '🏠 Home' },
-        { id: 'sim', label: '🎮 3D Sim' },
+        { id: 'sim', label: '🚤 Boat Mission' },
         { id: 'chart', label: '🗺 Chart Room' },
         { id: 'ecosystem', label: '🧬 Ecosystem Builder' }
       ] },
@@ -8560,6 +8631,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           var organism = ECOSYSTEM_ORGANISMS.find(function(candidate) { return candidate.id === organismId; });
           return (organism ? organism.name : organismId) + ' × ' + item.organisms[organismId];
         }).join(', ');
+        if (item.kind === 'comparison' && item.baselineSummary && item.currentSummary) return '<article><h3>A/B seasonal comparison · ' + aqEscapeHtml(environment.name) + '</h3><p><strong>Scenario A:</strong> survival ' + item.baselineSummary.survival + '%, risk months ' + item.baselineSummary.riskMonths + ', ending biomass index ' + item.baselineSummary.endingBiomass + '</p><p><strong>Scenario B:</strong> survival ' + item.currentSummary.survival + '%, risk months ' + item.currentSummary.riskMonths + ', ending biomass index ' + item.currentSummary.endingBiomass + '</p><p><strong>Evidence:</strong> ' + aqEscapeHtml(item.observation).replace(/\n/g, '<br>') + '</p></article>';
         return '<article><h3>' + aqEscapeHtml(environment.name) + ' · ' + aqEscapeHtml(item.status) + '</h3><p><strong>Community:</strong> ' + aqEscapeHtml(community || 'No organisms') + '</p><p><strong>Snapshot:</strong> carrying pressure ' + item.carryingPressure + '%, oxygen ' + item.oxygen + ' mg/L, ammonia ' + item.ammonia + ' mg/L, resilience ' + item.resilience + '/100</p><p><strong>Observation:</strong> ' + aqEscapeHtml(item.observation).replace(/\n/g, '<br>') + '</p></article>';
       }).join('') : '<p>No ecosystem experiments saved yet.</p>';
       var profileMarkup = '<p><strong>Role:</strong> ' + aqEscapeHtml(portfolio.learnerProfile.role) + ' · <strong>Goal:</strong> ' + aqEscapeHtml(portfolio.learnerProfile.goal) + ' · <strong>Session:</strong> ' + aqEscapeHtml(portfolio.learnerProfile.session) + ' minutes</p>';
@@ -8581,6 +8653,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       portfolioToHtml: aqPortfolioToHtml,
       sanitizeLearningData: aqSanitizeLearningData,
       calculateEcosystem: aqCalculateEcosystem,
+      simulateEcosystemYear: aqSimulateEcosystemYear,
+      compareEcosystemRuns: aqCompareEcosystemRuns,
+      contentTrustForTopic: aqContentTrustForTopic,
       sanitizeEcosystemWorkspace: aqSanitizeEcosystemWorkspace,
       sanitizeLearnerProfile: aqSanitizeLearnerProfile,
       teacherPlanToHtml: teacherPlanHtml
@@ -8730,6 +8805,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       }
     }
 
+    function startGuidedMission() {
+      setGuidedMission({ active: true, step: 0, droppers: 0, probed: false, feedback: 'At the landing: review the mission, then depart when ready.', reflection: '' });
+      aqAnnounce('Guided 2D boat mission opened at the town landing.');
+    }
+
+    function guidedMissionAction(action) {
+      setGuidedMission(function(previous) {
+        var next = Object.assign({}, previous);
+        if (action === 'depart' && previous.step === 0) { next.step = 1; next.feedback = 'Under way. A red nun marks the channel ahead.'; }
+        else if (action === 'port' && previous.step === 1) { next.feedback = 'That would put the red nun on port while returning from sea. Reconsider red-right-returning.'; }
+        else if (action === 'starboard' && previous.step === 1) { next.step = 2; next.feedback = 'Correct: the red nun stays on starboard as you travel up-river.'; }
+        else if (action === 'shoreline' && previous.step === 2) { next.feedback = 'The shoreline shortcut is shallow and leaves the marked channel. Choose the safer route.'; }
+        else if (action === 'channel' && previous.step === 2) { next.step = 3; next.feedback = 'You followed the marked channel and entered the yellow-buoy lease at low speed.'; }
+        else if (action === 'dropper' && previous.step === 3) { next.droppers = Math.min(5, previous.droppers + 1); next.feedback = 'Seeded dropper ' + next.droppers + ' of 5 deployed inside the lease.'; if (next.droppers >= 5) { next.step = 4; next.feedback = 'All five droppers are placed. Take a water-quality probe before leaving.'; } }
+        else if (action === 'probe' && previous.step === 4) {
+          next.probed = true; next.step = 5; next.feedback = 'Probe logged: 13.2°C, salinity 29.8 ppt, dissolved oxygen 8.1 mg/L, pH 7.9.';
+          var reading = { temp: '13.2', salinity: '29.8', DO: '8.1', pH: '7.9', timestamp: Date.now(), mode: 'guided-2d' };
+          setProbes(function(existing) { var readings = (existing || []).concat([reading]).slice(-50), saved = loadState(); saved.probeReadings = readings; saveState(saved); return readings; });
+          setDroppers(5);
+        }
+        else if (action === 'return' && previous.step === 5) { next.step = 6; next.feedback = 'Returned to the landing with the vessel secured. Add a short evidence reflection to finish.'; }
+        aqAnnounce(next.feedback);
+        return next;
+      });
+    }
+
+    function completeGuidedMission() {
+      var reflection = String(guidedMission.reflection || '').trim();
+      if (guidedMission.step !== 6 || reflection.length < 20) { aqAnnounce('Finish the route and add at least 20 characters of evidence.'); return; }
+      var saved = loadState(), nextCompleted = Object.assign({}, saved.completedMissions || {});
+      nextCompleted['mission-1'] = { completedAt: Date.now(), mode: 'guided-2d', choice: 'Red nun to starboard; marked channel; five droppers; probe; return', reflection: reflection.slice(0, 600) };
+      saved.completedMissions = nextCompleted; saved.droppersDeployed = Math.max(Number(saved.droppersDeployed) || 0, 5);
+      var stored = saveState(saved); setCompletedMissions(nextCompleted);
+      setLearningNotice(stored ? { kind: 'success', message: 'Guided boat mission evidence saved to your portfolio.' } : { kind: 'error', message: 'The mission is complete, but this browser could not store the evidence.' });
+      aqAnnounce(stored ? 'Guided 2D boat mission completed and evidence saved.' : 'Mission completed, but evidence could not be saved.');
+    }
     function saveQuizCheckpointResult(checkpointId, score, total) {
       var savedState = loadState();
       var nextResults = Object.assign({}, savedState.quizCheckpointResults || {});
@@ -8776,7 +8887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function applyEcosystemPreset(preset) {
       if (!preset || !ECOSYSTEM_ENVIRONMENTS[preset.environmentId]) return;
-      var next = { environmentId: preset.environmentId, organisms: Object.assign({}, preset.organisms), water: Object.assign({}, ECOSYSTEM_ENVIRONMENTS[preset.environmentId].defaults), disturbanceId: 'none', observation: '', experiments: ecosystemWorkspace.experiments || [] };
+      var next = { environmentId: preset.environmentId, organisms: Object.assign({}, preset.organisms), water: Object.assign({}, ECOSYSTEM_ENVIRONMENTS[preset.environmentId].defaults), disturbanceId: 'none', observation: '', experiments: ecosystemWorkspace.experiments || [], baselineScenario: ecosystemWorkspace.baselineScenario || null };
       persistEcosystemWorkspace(next, preset.prompt); aqAnnounce(preset.name + ' loaded.');
     }
 
@@ -8813,6 +8924,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       setLearningNotice({ kind: 'success', message: 'Ecosystem experiment saved to your learning portfolio.' }); aqAnnounce('Ecosystem experiment saved.');
     }
 
+    function captureEcosystemBaseline() {
+      var baseline = aqEcosystemScenarioSnapshot(ecosystemWorkspace);
+      persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { baselineScenario: baseline }), 'Baseline A saved. Change the community, water, or disturbance to build scenario B.');
+      aqAnnounce('Baseline scenario A saved for comparison.');
+    }
+
+    function clearEcosystemBaseline() {
+      persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { baselineScenario: null }), 'Comparison baseline cleared.');
+      aqAnnounce('Comparison baseline cleared.');
+    }
+
+    function saveEcosystemComparison() {
+      var observation = String(ecosystemWorkspace.observation || '').trim();
+      if (!ecosystemWorkspace.baselineScenario) { setEcosystemNotice('Save scenario A before creating a comparison report.'); aqAnnounce('A baseline scenario is needed.'); return; }
+      if (observation.length < 20) { setEcosystemNotice('Add an evidence reflection of at least 20 characters before saving the comparison.'); aqAnnounce('More comparison evidence is needed.'); return; }
+      var baselineRun = aqSimulateEcosystemYear(ecosystemWorkspace.baselineScenario), currentRun = aqSimulateEcosystemYear(ecosystemWorkspace), model = aqCalculateEcosystem(ecosystemWorkspace), now = Date.now();
+      var record = { id: 'comparison-' + now, kind: 'comparison', savedAt: now, environmentId: ecosystemWorkspace.environmentId, organisms: Object.assign({}, ecosystemWorkspace.organisms), status: model.status, carryingPressure: model.carryingPressure, oxygen: model.oxygen, ammonia: model.ammonia, resilience: model.resilience, baselineSummary: baselineRun.summary, currentSummary: currentRun.summary, observation: observation };
+      var experiments = [record].concat(ecosystemWorkspace.experiments || []).slice(0, 12);
+      persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { experiments: experiments, observation: '' }), 'A/B comparison saved as portfolio evidence.');
+      setLearningNotice({ kind: 'success', message: 'Seasonal comparison saved to your learning portfolio.' }); aqAnnounce('Seasonal comparison report saved.');
+    }
     function deleteEcosystemExperiment(experimentId) {
       var experiments = (ecosystemWorkspace.experiments || []).filter(function(item) { return item.id !== experimentId; });
       persistEcosystemWorkspace(Object.assign({}, ecosystemWorkspace, { experiments: experiments }), 'Saved experiment removed.'); aqAnnounce('Saved experiment removed.');
@@ -8991,7 +9123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function tabBar() {
       var primaryTopics = [
         { id: 'home', label: 'Home' },
-        { id: 'sim', label: '3D mission' },
+        { id: 'sim', label: 'Boat mission' },
         { id: 'chart', label: 'Chart room' },
         { id: 'ecosystem', label: 'Ecosystem builder' },
         { id: 'species', label: 'Species' },
@@ -9414,7 +9546,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         h('div', { className: 'aq-content-card', style: cardStyle },
           h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Mission studio'),
           h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } },
-            'Mission 1 uses the 3D farm. Missions 2–13 are decision scenarios: choose a response, inspect the trade-off, and save a short reflection as evidence. There is not always one perfect answer.'),
+            'Mission 1 can be completed in 3D or guided 2D. Missions 2–13 are decision scenarios: choose a response, inspect the trade-off, and save a short reflection as evidence. There is not always one perfect answer.'),
           MISSIONS.map(function(m, i) {
             var is3D = m.id === 'mission-1';
             var scenario = MISSION_SCENARIOS[m.id];
@@ -9432,7 +9564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 h('div', { style: { fontSize: 13, fontWeight: 900, color: missionTone } }, (done ? '✓ ' : (i + 1) + '. ') + m.title),
                 h('span', { style: { padding: '2px 7px', borderRadius: 999, background: done ? 'rgba(134,239,172,0.14)' : 'rgba(196,181,253,0.12)',
                   color: missionTone, border: '1px solid ' + missionTone, fontSize: 10, fontWeight: 900 } },
-                  done ? 'Evidence saved' : (is3D ? '3D mission' : 'Decision scenario'))),
+                  done ? 'Evidence saved' : (is3D ? '3D or guided 2D' : 'Decision scenario'))),
               h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, marginBottom: 6 } }, m.brief),
               h('ul', { style: { margin: '4px 0 8px 18px', padding: 0, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
                 m.objectives.map(function(o, oi) { return h('li', { key: oi }, o); })),
@@ -9440,12 +9572,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 h('button', { type: 'button', className: 'aq-btn',
                   'aria-expanded': !is3D ? scenarioOpen : undefined,
                   onClick: function() {
-                    if (is3D) navigateToTopic('sim', 'Opening the 3D farm mission');
+                    if (is3D) navigateToTopic('sim', 'Opening the boat mission modes');
                     else openScenarioMission(m.id);
                   },
                   style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: 'pointer',
                     background: missionTone, color: '#032522', border: '1px solid #f8fafc', fontSize: 11.5, fontWeight: 900 } },
-                  is3D ? (done ? 'Review 3D mission →' : 'Launch 3D mission →') : (scenarioOpen ? 'Close decision lab' : (done ? 'Review decision evidence' : 'Open decision lab'))),
+                  is3D ? (done ? 'Review boat mission →' : 'Choose 3D or guided 2D →') : (scenarioOpen ? 'Close decision lab' : (done ? 'Review decision evidence' : 'Open decision lab'))),
                 h('span', { style: { color: '#a7f3d0', fontSize: 10.5, fontWeight: 800 } }, m.reward)),
               scenarioOpen && scenario ? h('div', { className: 'aq-scenario-panel', style: {
                 marginTop: 10, padding: 11, borderRadius: 9, background: '#031714', border: '1px solid #527a75'
@@ -9505,6 +9637,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function ecosystemTab() {
       var model = aqCalculateEcosystem(ecosystemWorkspace);
+      var currentYearRun = aqSimulateEcosystemYear(ecosystemWorkspace);
+      var baselineYearRun = ecosystemWorkspace.baselineScenario ? aqSimulateEcosystemYear(ecosystemWorkspace.baselineScenario) : null;
+      var yearComparison = aqCompareEcosystemRuns(baselineYearRun, currentYearRun);
       var statusColor = model.status === 'Stable' ? '#86efac' : model.status === 'Critical' ? '#fda4af' : model.status === 'Empty' ? '#cbd5e1' : '#fde68a';
       var organismGroups = ['all'].concat(ECOSYSTEM_ORGANISMS.map(function(item) { return item.group; }).filter(function(group, index, list) { return list.indexOf(group) === index; }));
       var visibleOrganisms = ECOSYSTEM_ORGANISMS.filter(function(item) { return organismFilter === 'all' || item.group === organismFilter; });
@@ -9574,13 +9709,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           h('div', { role: 'radiogroup', 'aria-label': 'Ecosystem disturbance', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 7 } }, Object.keys(ECOSYSTEM_DISTURBANCES).map(function(disturbanceId) { var item = ECOSYSTEM_DISTURBANCES[disturbanceId], selected = ecosystemWorkspace.disturbanceId === disturbanceId; return h('button', { key: disturbanceId, type: 'button', role: 'radio', 'aria-checked': selected, className: 'aq-btn', onClick: function() { setEcosystemDisturbance(disturbanceId); }, style: { minHeight: 74, padding: 9, textAlign: 'left', borderRadius: 9, cursor: 'pointer', background: selected ? '#fde68a' : '#071f1d', color: selected ? '#2a1900' : '#f8fafc', border: '1px solid ' + (selected ? '#fef3c7' : '#527a75') } }, h('div', { style: { fontSize: 12, fontWeight: 950 } }, item.name), h('div', { style: { marginTop: 3, color: selected ? '#713f12' : '#cbd5e1', fontSize: 10.3, lineHeight: 1.35 } }, item.detail)); })),
           model.connections.length ? h('div', { style: { marginTop: 11, padding: 10, borderRadius: 9, background: 'rgba(30,64,175,.13)', border: '1px solid #60a5fa' } }, h('h3', { style: { margin: '0 0 5px', color: '#bfdbfe', fontSize: 12.5 } }, 'Modeled nutrient and habitat connections'), h('ul', { style: { margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 11, lineHeight: 1.5 } }, model.connections.map(function(connection, index) { return h('li', { key: index }, connection); }))) : null),
 
+        h('section', { className: 'aq-content-card aq-ecosystem-card aq-time-compare', style: cardStyle, 'aria-labelledby': 'aq-eco-time-heading' },
+          h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, '5 · Time & Compare'),
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'start', flexWrap: 'wrap' } },
+            h('div', null,
+              h('h2', { id: 'aq-eco-time-heading', style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 18 } }, 'Follow the system through a modeled year'),
+              h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 11.5, lineHeight: 1.55 } }, 'Seasonal temperature, growth, survival, harvest timing, operating effort, and one selected disturbance are projected month by month. Values are illustrative learning estimates, not farm forecasts.')),
+            h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
+              h('button', { type: 'button', className: 'aq-btn', onClick: captureEcosystemBaseline, style: { minHeight: 42, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: ecosystemWorkspace.baselineScenario ? '#bfdbfe' : '#99f6e4', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 11.5, fontWeight: 900 } }, ecosystemWorkspace.baselineScenario ? 'Replace scenario A' : 'Save current as scenario A'),
+              ecosystemWorkspace.baselineScenario ? h('button', { type: 'button', className: 'aq-btn', onClick: clearEcosystemBaseline, style: { minHeight: 42, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: '#2a1b25', color: '#fecdd3', border: '1px solid #9f6672', fontSize: 11.5, fontWeight: 850 } }, 'Clear A') : null)),
+          h('div', { className: 'aq-time-summary', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8, marginTop: 12 } },
+            [
+              { label: 'Ending biomass index', value: currentYearRun.summary.endingBiomass, delta: yearComparison && yearComparison.biomass, better: 'high' },
+              { label: 'Modeled survival', value: currentYearRun.summary.survival + '%', delta: yearComparison && yearComparison.survival, better: 'high' },
+              { label: 'Lowest oxygen', value: currentYearRun.summary.minOxygen + ' mg/L', delta: yearComparison && yearComparison.minOxygen, better: 'high' },
+              { label: 'Peak ammonia', value: currentYearRun.summary.peakAmmonia + ' mg/L', delta: yearComparison && yearComparison.peakAmmonia, better: 'low' },
+              { label: 'Risk months', value: currentYearRun.summary.riskMonths + '/12', delta: yearComparison && yearComparison.riskMonths, better: 'low' },
+              { label: 'Operating effort', value: currentYearRun.summary.operatingEffort + '/100', delta: yearComparison && yearComparison.operatingEffort, better: 'low' }
+            ].map(function(item) {
+              var deltaGood = item.delta == null || item.delta === 0 ? null : item.better === 'low' ? item.delta < 0 : item.delta > 0;
+              return h('div', { key: item.label, style: { padding: 9, borderRadius: 9, background: '#061a18', border: '1px solid #527a75' } },
+                h('div', { style: { color: '#cbd5e1', fontSize: 10.2, fontWeight: 850 } }, item.label),
+                h('div', { style: { marginTop: 2, color: '#f8fafc', fontSize: 17, fontWeight: 950 } }, item.value),
+                yearComparison ? h('div', { style: { marginTop: 2, color: item.delta === 0 ? '#cbd5e1' : deltaGood ? '#86efac' : '#fda4af', fontSize: 10.2, fontWeight: 850 } }, (item.delta > 0 ? '+' : '') + item.delta + ' vs A') : h('div', { style: { marginTop: 2, color: '#bfdbfe', fontSize: 10.2 } }, 'Scenario B preview'));
+            })),
+          baselineYearRun ? h('div', { role: 'status', style: { marginTop: 11, padding: 9, borderRadius: 8, background: 'rgba(30,64,175,.13)', border: '1px solid #60a5fa', color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5 } },
+            'Scenario B finishes with ' + (yearComparison.biomass >= 0 ? '+' : '') + yearComparison.biomass + ' biomass index, ' + (yearComparison.survival >= 0 ? '+' : '') + yearComparison.survival + ' survival points, and ' + (yearComparison.riskMonths >= 0 ? '+' : '') + yearComparison.riskMonths + ' risk months compared with scenario A.') :
+            h('p', { style: { margin: '11px 0 0', color: '#bfdbfe', fontSize: 11.5 } }, 'Save the current design as scenario A, change one or more factors, then compare the new scenario B.'),
+          h('div', { className: 'aq-time-bars', role: 'img', 'aria-label': 'Monthly resilience comparison. ' + (baselineYearRun ? 'Scenario A and scenario B are shown for each month.' : 'Scenario B is shown for each month.'), style: { display: 'grid', gap: 6, marginTop: 13, padding: 10, borderRadius: 10, background: '#031714', border: '1px solid #416c67' } },
+            currentYearRun.timeline.map(function(item, index) {
+              var baselineItem = baselineYearRun && baselineYearRun.timeline[index];
+              return h('div', { key: item.month, className: 'aq-time-bar-row', style: { display: 'grid', gridTemplateColumns: '34px minmax(0,1fr) 38px', gap: 7, alignItems: 'center' } },
+                h('span', { style: { color: '#e2e8f0', fontSize: 10, fontWeight: 850 } }, item.month),
+                h('div', { style: { display: 'grid', gap: 2 } },
+                  baselineItem ? h('div', { title: 'Scenario A resilience ' + baselineItem.resilience, style: { width: Math.max(2, baselineItem.resilience) + '%', height: 5, borderRadius: 999, background: '#93c5fd' } }) : null,
+                  h('div', { title: 'Scenario B resilience ' + item.resilience, style: { width: Math.max(2, item.resilience) + '%', height: 7, borderRadius: 999, background: item.status === 'Critical' ? '#fb7185' : item.status === 'Watch' ? '#fbbf24' : '#2dd4bf' } })),
+                h('span', { style: { color: '#f8fafc', fontSize: 10, textAlign: 'right', fontVariantNumeric: 'tabular-nums' } }, item.resilience));
+            })),
+          h('div', { style: { display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 6, color: '#cbd5e1', fontSize: 10 } }, baselineYearRun ? h('span', null, 'Blue = scenario A') : null, h('span', null, 'Teal/amber/rose = scenario B status')),
+          h('details', { style: { marginTop: 11, borderRadius: 9, border: '1px solid #527a75', background: '#061a18', overflow: 'hidden' } },
+            h('summary', { style: { minHeight: 44, padding: '10px 11px', boxSizing: 'border-box', cursor: 'pointer', color: '#f8fafc', fontSize: 11.5, fontWeight: 900 } }, 'Read the 12-month timeline as a table'),
+            h('div', { style: { overflowX: 'auto', padding: '0 9px 9px' } }, h('table', { style: { width: '100%', borderCollapse: 'collapse', minWidth: 690, color: '#e2e8f0', fontSize: 10.5 } },
+              h('thead', null, h('tr', null, ['Month', 'Event', 'A resilience', 'B resilience', 'B oxygen', 'B ammonia', 'Survival', 'Harvest ready'].map(function(label) { return h('th', { key: label, scope: 'col', style: { padding: 7, textAlign: 'left', color: '#bfdbfe', borderBottom: '1px solid #527a75' } }, label); }))),
+              h('tbody', null, currentYearRun.timeline.map(function(item, index) { var a = baselineYearRun && baselineYearRun.timeline[index]; return h('tr', { key: item.month }, h('th', { scope: 'row', style: { padding: 7, textAlign: 'left' } }, item.month), h('td', { style: { padding: 7 } }, item.event || '—'), h('td', { style: { padding: 7 } }, a ? a.resilience : '—'), h('td', { style: { padding: 7 } }, item.resilience), h('td', { style: { padding: 7 } }, item.oxygen + ' mg/L'), h('td', { style: { padding: 7 } }, item.ammonia + ' mg/L'), h('td', { style: { padding: 7 } }, item.survival + '%'), h('td', { style: { padding: 7 } }, item.harvestUnits ? item.harvestUnits + ' unit(s)' : '—')); })))))),
         h('section', { className: 'aq-content-card aq-ecosystem-card', style: cardStyle, 'aria-labelledby': 'aq-eco-evidence-heading' },
-          h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, '5 · Save evidence'),
+          h('div', { className: 'aq-section-kicker aq-eco-kicker', style: headerStyle }, '6 · Save evidence'),
           h('h2', { id: 'aq-eco-evidence-heading', style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 18 } }, 'Experiment log'),
           h('label', { htmlFor: 'aq-eco-observation', style: { display: 'block', color: '#dbeafe', fontSize: 11.5, fontWeight: 850 } }, 'What changed, what evidence supports your explanation, and what would you test next?'),
           h('textarea', { id: 'aq-eco-observation', rows: 4, maxLength: 600, value: ecosystemWorkspace.observation, onChange: function(event) { updateEcosystemObservation(event.target.value); }, placeholder: 'Example: When I added a third salmon unit, carrying pressure and ammonia rose. The biofilter reduced ammonia but oxygen became the limiting factor…', style: { boxSizing: 'border-box', width: '100%', minHeight: 100, marginTop: 6, padding: 10, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 13 } }),
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } }, h('span', { style: { color: ecosystemWorkspace.observation.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10.5, fontWeight: 800 } }, ecosystemWorkspace.observation.length + '/600 characters · 20 needed'), h('button', { type: 'button', className: 'aq-btn', disabled: ecosystemWorkspace.observation.trim().length < 20 || !model.selected.length, onClick: saveEcosystemExperiment, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: ecosystemWorkspace.observation.trim().length >= 20 && model.selected.length ? 'pointer' : 'not-allowed', opacity: ecosystemWorkspace.observation.trim().length >= 20 && model.selected.length ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 12, fontWeight: 950 } }, 'Save experiment evidence')),
-          (ecosystemWorkspace.experiments || []).length ? h('div', { style: { display: 'grid', gap: 8, marginTop: 13 } }, h('h3', { style: { margin: 0, color: '#f8fafc', fontSize: 14 } }, 'Saved experiments · ' + ecosystemWorkspace.experiments.length + '/12'), ecosystemWorkspace.experiments.map(function(experiment) { var environment = ECOSYSTEM_ENVIRONMENTS[experiment.environmentId]; return h('article', { key: experiment.id, style: { padding: 10, borderRadius: 9, background: '#061a18', border: '1px solid #527a75' } }, h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } }, h('div', { style: { color: '#f8fafc', fontSize: 12.5, fontWeight: 900 } }, (environment ? environment.name : experiment.environmentId) + ' · ' + experiment.status), h('button', { type: 'button', className: 'aq-btn', onClick: function() { deleteEcosystemExperiment(experiment.id); }, style: { minHeight: 36, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#2a1b25', color: '#fecdd3', border: '1px solid #9f6672', fontSize: 10.5, fontWeight: 850 } }, 'Remove')), h('div', { style: { marginTop: 4, color: '#bfdbfe', fontSize: 10.5 } }, 'Pressure ' + experiment.carryingPressure + '% · oxygen ' + experiment.oxygen + ' mg/L · ammonia ' + experiment.ammonia + ' mg/L · resilience ' + experiment.resilience + '/100'), h('p', { style: { margin: '5px 0 0', color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.5 } }, experiment.observation)); })) : h('p', { style: { margin: '10px 0 0', color: '#cbd5e1', fontSize: 11.5 } }, 'No experiment evidence saved yet.')));
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } }, h('span', { style: { color: ecosystemWorkspace.observation.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10.5, fontWeight: 800 } }, ecosystemWorkspace.observation.length + '/600 characters · 20 needed'), h('button', { type: 'button', className: 'aq-btn', disabled: ecosystemWorkspace.observation.trim().length < 20 || !model.selected.length, onClick: saveEcosystemExperiment, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: ecosystemWorkspace.observation.trim().length >= 20 && model.selected.length ? 'pointer' : 'not-allowed', opacity: ecosystemWorkspace.observation.trim().length >= 20 && model.selected.length ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 12, fontWeight: 950 } }, 'Save snapshot evidence'), h('button', { type: 'button', className: 'aq-btn', disabled: ecosystemWorkspace.observation.trim().length < 20 || !ecosystemWorkspace.baselineScenario, onClick: saveEcosystemComparison, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: ecosystemWorkspace.observation.trim().length >= 20 && ecosystemWorkspace.baselineScenario ? 'pointer' : 'not-allowed', opacity: ecosystemWorkspace.observation.trim().length >= 20 && ecosystemWorkspace.baselineScenario ? 1 : .55, background: '#bfdbfe', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 12, fontWeight: 950 } }, 'Save A/B comparison')),
+          (ecosystemWorkspace.experiments || []).length ? h('div', { style: { display: 'grid', gap: 8, marginTop: 13 } }, h('h3', { style: { margin: 0, color: '#f8fafc', fontSize: 14 } }, 'Saved experiments · ' + ecosystemWorkspace.experiments.length + '/12'), ecosystemWorkspace.experiments.map(function(experiment) { var environment = ECOSYSTEM_ENVIRONMENTS[experiment.environmentId]; return h('article', { key: experiment.id, style: { padding: 10, borderRadius: 9, background: '#061a18', border: '1px solid #527a75' } }, h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } }, h('div', { style: { color: '#f8fafc', fontSize: 12.5, fontWeight: 900 } }, (experiment.kind === 'comparison' ? 'A/B seasonal comparison' : (environment ? environment.name : experiment.environmentId)) + ' · ' + experiment.status), h('button', { type: 'button', className: 'aq-btn', onClick: function() { deleteEcosystemExperiment(experiment.id); }, style: { minHeight: 36, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#2a1b25', color: '#fecdd3', border: '1px solid #9f6672', fontSize: 10.5, fontWeight: 850 } }, 'Remove')), h('div', { style: { marginTop: 4, color: '#bfdbfe', fontSize: 10.5 } }, experiment.kind === 'comparison' && experiment.baselineSummary && experiment.currentSummary ? 'A: survival ' + experiment.baselineSummary.survival + '%, risk ' + experiment.baselineSummary.riskMonths + ' months → B: survival ' + experiment.currentSummary.survival + '%, risk ' + experiment.currentSummary.riskMonths + ' months' : 'Pressure ' + experiment.carryingPressure + '% · oxygen ' + experiment.oxygen + ' mg/L · ammonia ' + experiment.ammonia + ' mg/L · resilience ' + experiment.resilience + '/100'), h('p', { style: { margin: '5px 0 0', color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.5 } }, experiment.observation)); })) : h('p', { style: { margin: '10px 0 0', color: '#cbd5e1', fontSize: 11.5 } }, 'No experiment evidence saved yet.')));
     }
 
     function teacherStudioTab() {
@@ -9597,11 +9775,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('label', { htmlFor: 'aq-teacher-note', style: { display: 'block', marginTop: 8, color: '#dbeafe', fontSize: 11.5, fontWeight: 850 } }, 'Teacher note (optional)'), h('textarea', { id: 'aq-teacher-note', rows: 4, maxLength: 600, value: teacherPlan.teacherNote, onChange: function(event) { persistTeacherPlan({ teacherNote: event.target.value }); }, placeholder: 'Add local context, materials, accommodations, or due-date guidance…', style: { boxSizing: 'border-box', width: '100%', minHeight: 90, marginTop: 5, padding: 9, borderRadius: 8, resize: 'vertical', background: '#031714', color: '#f8fafc', border: '1px solid #789b97' } })),
           h('section', { className: 'aq-content-card aq-teacher-card', style: cardStyle, 'aria-labelledby': 'aq-teacher-preview-heading' }, h('div', { className: 'aq-section-kicker aq-teacher-kicker', style: headerStyle }, 'Live assignment preview'), h('h2', { id: 'aq-teacher-preview-heading', style: { margin: '0 0 6px', color: '#f8fafc', fontSize: 20 } }, template.title), h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } }, [teacherPlan.duration + ' minutes', teacherPlan.audience === 'middle' ? 'Middle grades' : teacherPlan.audience === 'adult' ? 'Adult / workforce' : 'High school', template.checkpoint].map(function(tag) { return h('span', { key: tag, style: { padding: '3px 7px', borderRadius: 999, color: '#d1fae5', background: 'rgba(45,212,191,.1)', border: '1px solid #5eead4', fontSize: 10, fontWeight: 850 } }, tag); })), h('h3', { style: { margin: '0 0 4px', color: '#c4b5fd', fontSize: 12.5 } }, 'Driving question'), h('p', { style: { margin: '0 0 11px', color: '#e2e8f0', fontSize: 12.5, lineHeight: 1.55 } }, template.question), h('h3', { style: { margin: '0 0 5px', color: '#c4b5fd', fontSize: 12.5 } }, 'Investigation sequence'), h('ol', { style: { margin: 0, paddingLeft: 20, color: '#e2e8f0', fontSize: 12, lineHeight: 1.65 } }, template.steps.map(function(step, index) { return h('li', { key: index }, step); })), teacherPlan.includeReflection ? h('div', { style: { marginTop: 11, padding: 9, borderRadius: 8, background: 'rgba(96,165,250,.1)', border: '1px solid #60a5fa', color: '#dbeafe', fontSize: 11.5 } }, h('b', null, 'Evidence prompt: '), 'What changed, what evidence supports your explanation, and what would you test next?') : null, h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 13 } }, h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(template.route, 'Opening the student investigation workspace'); }, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 12, fontWeight: 900 } }, 'Open student workspace →'), h('button', { type: 'button', className: 'aq-btn', onClick: exportTeacherPlan, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: '#c4b5fd', color: '#24133f', border: '1px solid #ede9fe', fontSize: 12, fontWeight: 900 } }, 'Download printable assignment')))));
     }
+    function guided2DMissionPanel() {
+      var steps = ['Leave the town landing', 'Pass the red nun correctly', 'Follow the marked channel to the lease', 'Deploy five seeded droppers', 'Take a water-quality probe', 'Return to the landing'];
+      var complete = guidedMission.step >= 6;
+      function actionButton(label, action, tone) {
+        return h('button', { key: action, type: 'button', className: 'aq-btn', onClick: function() { guidedMissionAction(action); }, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: tone || '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 11.5, fontWeight: 900 } }, label);
+      }
+      var actions = null;
+      if (guidedMission.step === 0) actions = actionButton('Depart the landing', 'depart');
+      else if (guidedMission.step === 1) actions = h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } }, actionButton('Keep red nun to starboard', 'starboard'), actionButton('Keep red nun to port', 'port', '#fecdd3'));
+      else if (guidedMission.step === 2) actions = h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } }, actionButton('Follow the marked channel', 'channel'), actionButton('Cut close to shore', 'shoreline', '#fecdd3'));
+      else if (guidedMission.step === 3) actions = actionButton('Deploy seeded dropper ' + (guidedMission.droppers + 1) + ' of 5', 'dropper', '#fde68a');
+      else if (guidedMission.step === 4) actions = actionButton('Take probe reading', 'probe', '#bae6fd');
+      else if (guidedMission.step === 5) actions = actionButton('Return and secure the vessel', 'return', '#c4b5fd');
+      return h('section', { className: 'aq-content-card aq-guided-mission', style: Object.assign({}, cardStyle, { background: 'linear-gradient(135deg,rgba(4,47,46,.96),rgba(30,41,59,.95))' }), 'aria-labelledby': 'aq-guided-mission-heading' },
+        h('div', { className: 'aq-section-kicker aq-guided-kicker', style: headerStyle }, 'Boat Mission · Guided 2D'),
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'start', flexWrap: 'wrap' } },
+          h('div', null,
+            h('h2', { id: 'aq-guided-mission-heading', style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 20 } }, 'Complete the same field decisions without WebGL'),
+            h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.55 } }, 'Buoyage, route choice, lease work, probe evidence, and return-to-dock completion match the 3D mission in a structured, screen-reader-friendly format.')),
+          h('span', { style: { padding: '4px 8px', borderRadius: 999, background: complete ? '#86efac' : '#0b2b28', color: complete ? '#052e24' : '#d1fae5', border: '1px solid #5eead4', fontSize: 10.5, fontWeight: 900 } }, complete ? 'Route complete' : (guidedMission.step + 1) + ' of 6')),
+        !guidedMission.active ? h('div', { style: { marginTop: 12, padding: 11, borderRadius: 9, background: '#031714', border: '1px solid #527a75' } },
+          h('p', { style: { margin: '0 0 9px', color: '#e2e8f0', fontSize: 11.5 } }, 'Use this mode when 3D is unavailable, motion is uncomfortable, or you prefer explicit choices and written feedback.'),
+          h('button', { type: 'button', className: 'aq-btn', onClick: startGuidedMission, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer', background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 12, fontWeight: 950 } }, completedMissions['mission-1'] ? 'Run guided mission again' : 'Start guided 2D mission')) :
+          h('div', { style: { marginTop: 12 } },
+            h('ol', { className: 'aq-guided-steps', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 7, margin: 0, padding: 0, listStyle: 'none' } }, steps.map(function(label, index) { var done = guidedMission.step > index, current = guidedMission.step === index; return h('li', { key: label, 'aria-current': current ? 'step' : undefined, style: { padding: 8, borderRadius: 8, background: done ? 'rgba(134,239,172,.12)' : current ? 'rgba(125,211,252,.13)' : '#061a18', color: done ? '#bbf7d0' : current ? '#bae6fd' : '#cbd5e1', border: '1px solid ' + (done ? '#4ade80' : current ? '#7dd3fc' : '#416c67'), fontSize: 10.5, fontWeight: 800 } }, (done ? '✓ ' : (index + 1) + '. ') + label); })),
+            h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 10, padding: 10, minHeight: 44, boxSizing: 'border-box', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 11.5, lineHeight: 1.5 } }, guidedMission.feedback),
+            h('div', { style: { marginTop: 9 } }, actions),
+            complete ? h('div', { style: { marginTop: 11, padding: 10, borderRadius: 9, background: '#061a18', border: '1px solid #4ade80' } },
+              h('label', { htmlFor: 'aq-guided-reflection', style: { display: 'block', color: '#d1fae5', fontSize: 11.5, fontWeight: 850 } }, 'What navigation or farm-work evidence shows that you completed the mission safely?'),
+              h('textarea', { id: 'aq-guided-reflection', rows: 3, maxLength: 600, value: guidedMission.reflection, onChange: function(event) { var value = String(event.target.value || '').slice(0, 600); setGuidedMission(function(previous) { return Object.assign({}, previous, { reflection: value }); }); }, placeholder: 'Explain the buoy choice, route, deployment, probe result, or return procedure…', style: { boxSizing: 'border-box', width: '100%', minHeight: 84, marginTop: 6, padding: 9, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 13 } }),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } }, h('span', { style: { color: guidedMission.reflection.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10.5 } }, guidedMission.reflection.trim().length + '/600 characters · 20 needed'), h('button', { type: 'button', className: 'aq-btn', disabled: guidedMission.reflection.trim().length < 20, onClick: completeGuidedMission, style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: guidedMission.reflection.trim().length >= 20 ? 'pointer' : 'not-allowed', opacity: guidedMission.reflection.trim().length >= 20 ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 11.5, fontWeight: 900 } }, 'Save mission evidence'))) : null,
+            h('button', { type: 'button', className: 'aq-btn', onClick: startGuidedMission, style: { minHeight: 38, marginTop: 9, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 10.5, fontWeight: 850 } }, 'Restart guided route')));
+    }
     function simTab() {
       return h('div', null,
         regionBar(),
+        guided2DMissionPanel(),
         h('div', { className: 'aq-content-card', style: cardStyle },
-          h('div', { className: 'aq-section-kicker', style: headerStyle }, '3D Farm Simulator'),
+          h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Boat Mission · 3D Mode'),
           !sim.threeLoaded && !sim.threeError && !sim.loading ? h('div', { style: { textAlign: 'center', padding: 20 } },
             h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14 } }, 'three.js r128 loads from cdnjs (~600 KB) on demand.'),
             h('button', { className: 'aq-btn', onClick: startSim,
@@ -9610,13 +9822,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           sim.loading ? h('div', { style: { textAlign: 'center', padding: 20, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, '⏳ Loading three.js…') : null,
           sim.threeError ? h('div', { style: { padding: 14, background: 'rgba(220,38,38,0.15)', borderRadius: 8, border: '1px solid rgba(220,38,38,0.4)' } },
             h('div', { style: { color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '⚠ 3D engine / WebGL failed to load or initialize'),
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, 'Chart Mode (2D) works as a fallback. All other curriculum tabs (Species, Water Quality, Lease, Economics, Buoyage, COLREGS, Quiz) are unaffected.'),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, 'Guided 2D above provides the same mission decisions and evidence without WebGL. Other curriculum tabs remain available.'),
             h('button', {
               onClick: function() {
                 setSim({ active: false, threeLoaded: false, threeError: false, loading: false });
                 setTimeout(startSim, 50);
               },
-              style: { padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
+              style: { padding: '6px 12px', background: '#b91c1c', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
             }, 'Retry 3D Mode')
           ) : null,
           sim.threeLoaded && !sim.active ? h('div', { style: { textAlign: 'center', padding: 14 } },
@@ -9754,6 +9966,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function speciesTab() {
       return h('div', null,
         regionBar(),
+        guided2DMissionPanel(),
         h('div', { className: 'aq-content-card', style: cardStyle },
           h('div', { className: 'aq-section-kicker', style: headerStyle }, '🦪 Species & Methods'),
           SPECIES.map(function(s, i) {
@@ -21937,6 +22150,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var currentTopicBookmarked = (learningProgress.bookmarkedTopics || []).indexOf(tab) !== -1;
     var currentTopicCompleted = !!(learningProgress.completedTopics || {})[tab];
     var currentTopicHasNote = !!String((learningProgress.topicNotes || {})[tab] || '').trim();
+    var currentTopicTrust = aqContentTrustForTopic(tab);
 
     return h('div', { className: 'aq-lab-shell' + (comfortableReading ? ' aq-comfortable-reading' : ''), style: {
       position: 'relative', isolation: 'isolate', padding: 16, borderRadius: 18, background: 'radial-gradient(circle at 8% 0%, rgba(45,212,191,0.15), transparent 30%), radial-gradient(circle at 96% 10%, rgba(59,130,246,0.12), transparent 24%), linear-gradient(180deg, #021816 0%, #031b1a 42%, #020f12 100%)', minHeight: 400, color: '#f8fafc', colorScheme: 'dark',
@@ -21964,7 +22178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         '.aq-topic-nav:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#5eead4,#60a5fa,#c4b5fd);}' +
         '.aq-library-summary{transition:background .16s ease,border-color .16s ease;}' +
         '.aq-library-summary:hover{background:#184943!important;border-color:#99b9b5!important;}' +
-        '.aq-home-card,.aq-resume-card,.aq-lesson-header,.aq-topic-reflection,.aq-portfolio-tools{position:relative;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,0.18);}' +
+        '.aq-home-card,.aq-resume-card,.aq-lesson-header,.aq-topic-reflection,.aq-portfolio-tools,.aq-content-trust{position:relative;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,0.18);}' +
         '.aq-content-card{position:relative;overflow:hidden;box-shadow:0 10px 26px rgba(0,0,0,0.16);transition:border-color .18s ease,box-shadow .18s ease;}' +
         '.aq-content-card:hover{border-color:rgba(94,234,212,0.42)!important;box-shadow:0 14px 30px rgba(0,0,0,0.2);}' +
         '.aq-section-kicker{display:flex;align-items:center;gap:10px;}' +
@@ -21988,13 +22202,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         '.aq-metric-card{min-height:58px;}' +
         '.aq-metric-card:hover,.aq-journey-card:hover,.aq-operation-tile:hover,.aq-mission-card:hover,.aq-checkpoint-card:hover{transform:translateY(-2px);border-color:#789b97!important;box-shadow:0 14px 28px rgba(0,0,0,0.22);}' +
         '.aq-progress-fill{transition:width .35s ease;}' +
-        '.aq-topic-reflection[open],.aq-portfolio-tools[open]{border-color:#789b97!important;}.aq-scenario-panel{box-shadow:inset 0 1px 0 rgba(255,255,255,0.03),0 10px 24px rgba(0,0,0,0.2);}' +
+        '.aq-topic-reflection[open],.aq-portfolio-tools[open],.aq-content-trust[open]{border-color:#99b9b5!important;box-shadow:0 10px 24px rgba(0,0,0,.18);}.aq-scenario-panel{box-shadow:inset 0 1px 0 rgba(255,255,255,0.03),0 10px 24px rgba(0,0,0,0.2);}' +
         '.aq-topic-search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;}' +
         '.aq-eco-organism,.aq-eco-environment,.aq-eco-metric{transition:border-color .16s ease,background .16s ease,transform .16s ease;}' +
         '.aq-eco-organism:hover,.aq-eco-environment:hover{transform:translateY(-1px);border-color:#99f6e4!important;}' +
         '.aq-eco-dashboard{z-index:1}.aq-eco-slider output{font-variant-numeric:tabular-nums;}' +
         '.aq-profile-controls select,.aq-teacher-studio select{font-size:14px;}' +
-        '@media(max-width:900px){.aq-eco-workbench,.aq-teacher-grid,.aq-eco-intro>div{grid-template-columns:1fr!important}.aq-eco-dashboard{position:static!important}.aq-profile-controls{grid-template-columns:1fr!important}}' +
+        '@media(max-width:900px){.aq-eco-workbench,.aq-teacher-grid,.aq-eco-intro>div,.aq-trust-grid{grid-template-columns:1fr!important}.aq-eco-dashboard{position:static!important}.aq-profile-controls{grid-template-columns:1fr!important}}' +
         '@media(prefers-reduced-motion:reduce){.aq-lab-shell *{scroll-behavior:auto!important}.aq-btn,.aq-library-summary,.aq-metric-card,.aq-journey-card,.aq-operation-tile,.aq-mission-card,.aq-checkpoint-card,.aq-eco-organism,.aq-eco-environment,.aq-progress-fill,.aq-content-card,.aq-topic-group,.aq-topic-group-summary,.aq-topic-content tbody tr,.aq-topic-content input,.aq-topic-content textarea,.aq-topic-content select{transition:none!important}.aq-btn:hover,.aq-metric-card:hover,.aq-journey-card:hover,.aq-operation-tile:hover{transform:none!important}}' +
         '@media(max-width:620px){.aq-lab-shell{padding:10px!important;border-radius:12px!important}.aq-topic-nav{padding:10px!important}.aq-nav-heading{align-items:stretch!important}.aq-primary-nav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}.aq-primary-nav button{width:100%}.aq-topic-search-row{grid-template-columns:1fr}.aq-topic-search-clear{width:100%}.aq-topic-pager{grid-template-columns:1fr!important}.aq-topic-pager button{text-align:left!important}.aq-reading-toggle{width:100%}.aq-lesson-header{align-items:stretch!important}.aq-lesson-actions{width:100%;display:grid!important;grid-template-columns:1fr}.aq-lesson-actions .aq-btn{width:100%}.aq-home-card{padding:12px!important}.aq-content-card{padding:12px!important}.aq-section-kicker:after{display:none}.aq-topic-content table{display:block;overflow-x:auto}.aq-journey-card{min-height:0!important}.aq-eco-environments,.aq-eco-organism-grid,.aq-eco-sliders{grid-template-columns:1fr!important}.aq-eco-dashboard dl{grid-template-columns:1fr 1fr!important}}'),
       h('a', { href: '#aq-topic-content', className: 'aq-skip-link' }, 'Skip to lesson content'),
@@ -22023,7 +22237,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer',
                 background: currentTopicBookmarked ? '#fbbf24' : '#163f3b', color: currentTopicBookmarked ? '#2a1900' : '#f8fafc',
                 border: '1px solid ' + (currentTopicBookmarked ? '#fde68a' : '#789b97'), fontSize: 12, fontWeight: 900 } },
-              currentTopicBookmarked ? '★ Saved' : '☆ Save topic')) : null),        tab !== 'home' ? h('details', { className: 'aq-topic-reflection',
+              currentTopicBookmarked ? '★ Saved' : '☆ Save topic')) : null),
+        tab !== 'home' ? h('details', { className: 'aq-content-trust',
+          style: { margin: '-2px 0 12px', borderRadius: 10, background: '#061a18', border: '1px solid #527a75', overflow: 'hidden' } },
+          h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '9px 12px', cursor: 'pointer', color: '#f8fafc', fontSize: 12, fontWeight: 850, listStylePosition: 'inside' } },
+            h('span', { style: { color: currentTopicTrust.tone } }, 'Evidence & freshness'), ' · ', currentTopicTrust.label),
+          h('div', { className: 'aq-trust-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.35fr) minmax(230px,.65fr)', gap: 12, padding: '0 12px 12px' } },
+            h('div', null,
+              h('p', { style: { margin: '0 0 7px', color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.55 } }, currentTopicTrust.context),
+              h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                h('span', { style: { padding: '3px 7px', borderRadius: 999, color: '#dbeafe', background: 'rgba(96,165,250,.1)', border: '1px solid #60a5fa', fontSize: 10, fontWeight: 800 } }, currentTopicTrust.jurisdiction),
+                h('span', { style: { padding: '3px 7px', borderRadius: 999, color: '#d1fae5', background: 'rgba(45,212,191,.1)', border: '1px solid #5eead4', fontSize: 10, fontWeight: 800 } }, currentTopicTrust.checked))),
+            h('div', null,
+              h('div', { style: { marginBottom: 5, color: '#bfdbfe', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.05em' } }, 'Primary-source gateways'),
+              h('ul', { style: { margin: 0, paddingLeft: 17, color: '#e2e8f0', fontSize: 10.8, lineHeight: 1.55 } }, currentTopicTrust.sourceIds.map(function(sourceId) { var source = AQ_CONTENT_TRUST_SOURCES[sourceId]; return h('li', { key: sourceId }, h('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer' }, source.label)); }))))) : null,
+        tab !== 'home' ? h('details', { className: 'aq-topic-reflection',
           style: { margin: '-2px 0 12px', borderRadius: 10, background: '#071f1d', border: '1px solid #527a75', overflow: 'hidden' } },
           h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '10px 12px', cursor: 'pointer',
             color: '#f8fafc', fontSize: 12.5, fontWeight: 850, listStylePosition: 'inside' } },

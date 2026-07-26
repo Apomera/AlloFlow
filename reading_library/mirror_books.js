@@ -394,6 +394,7 @@ function indexEntryFromBook(book, file) {
     level: book.level,
     sourceId: book.sourceId || (book.source && book.source.id) || 'storyweaver',
     contentType: book.contentType || 'story',
+    ...((book.workKey || (book.source && book.source.workKey)) ? { workKey: book.workKey || book.source.workKey } : {}),
     subjects: book.subjects || [],
     license: book.license,
     licenseUrl: book.licenseUrl,

@@ -775,7 +775,7 @@ window.StemLab = window.StemLab || {
               className: 'flex-1 px-3 py-2 border border-sky-600 rounded-lg text-sm'
             }),
             h('button', { onClick: askAITutor, disabled: aiLoading || !aiQuestion.trim(),
-              className: 'px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-sm hover:bg-sky-700 disabled:opacity-50'
+              className: 'px-4 py-2 bg-sky-700 text-white font-bold rounded-lg text-sm hover:bg-sky-800 disabled:opacity-50'
             }, aiLoading ? '\u23F3' : 'Ask')
           ),
           h('div', { className: 'flex flex-wrap gap-1.5' },
@@ -1225,7 +1225,7 @@ window.StemLab = window.StemLab || {
               ),
               chessPracticeOn && !chessChallenge && h('button', {
                 onClick: newChessChallenge,
-                className: 'w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
+                className: 'w-full py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-lg text-sm hover:from-amber-700 hover:to-orange-700 transition-all shadow-md'
               }, t('stem.coordgrid.start_a_challenge', '▶ Start a challenge')),
               chessPracticeOn && chessChallenge && h('div', { className: 'space-y-2' },
                 h('p', { className: 'text-sm font-bold text-amber-900' },
@@ -1768,7 +1768,7 @@ window.StemLab = window.StemLab || {
               ),
               worldPracticeOn && !worldChallenge && h('button', {
                 onClick: newWorldChallenge,
-                className: 'w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
+                className: 'w-full py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-lg text-sm hover:from-amber-700 hover:to-orange-700 transition-all shadow-md'
               }, t('stem.coordgrid.start_a_challenge_2', '▶ Start a challenge')),
               worldPracticeOn && worldChallenge && h('div', { className: 'space-y-2' },
                 h('p', { className: 'text-sm font-bold text-amber-900' },
@@ -1988,7 +1988,7 @@ window.StemLab = window.StemLab || {
               if (connectMode) { setGridFeedback(null); } else { setGridFeedback({ connectMode: true, lines: gridLines, connectFirst: null }); }
               setGridChallenge(null);
             },
-            className: 'flex-1 py-2 font-bold rounded-lg text-sm transition-all shadow-md ' + (connectMode ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600')
+            className: 'flex-1 py-2 font-bold rounded-lg text-sm transition-all shadow-md ' + (connectMode ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-600')
           }, connectMode ? '\u2714 Connect ON' : '\uD83D\uDD17 Connect Points'),
           h('button', { 'aria-label': t('stem.coordgrid.clear', 'Clear'),
             onClick: function() { setGridPoints([]); setGridChallenge(null); setGridFeedback(null); },
@@ -2008,7 +2008,7 @@ window.StemLab = window.StemLab || {
                 setGridChallenge({ type: 'plot', target: { x: tx, y: ty } });
                 setGridPoints([]); setGridFeedback(null);
               },
-              className: 'flex-1 py-2 bg-gradient-to-r from-cyan-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-cyan-600 hover:to-teal-600 transition-all shadow-md'
+              className: 'flex-1 py-2 bg-gradient-to-r from-cyan-700 to-teal-700 text-white font-bold rounded-lg text-sm hover:from-cyan-700 hover:to-teal-700 transition-all shadow-md'
             }, t('stem.coordgrid.plot_a_point_2', '\uD83D\uDCCD Plot a Point')),
             h('button', { 'aria-label': t('stem.coordgrid.find_slope', 'Find Slope'),
               onClick: function() {
@@ -2020,7 +2020,7 @@ window.StemLab = window.StemLab || {
                 setGridChallenge({ type: 'slope', p1: p1, p2: p2, slopeData: calcSlope(p1, p2) });
                 setGridPoints([p1, p2]); setGridFeedback({ slopeAnswer: '' });
               },
-              className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
+              className: 'flex-1 py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-lg text-sm hover:from-amber-700 hover:to-orange-700 transition-all shadow-md'
             }, t('stem.coordgrid.find_slope_2', '\uD83D\uDCCF Find Slope')),
             h('button', { 'aria-label': t('stem.coordgrid.find_distance', 'Find Distance'),
               onClick: function() {
@@ -2033,7 +2033,7 @@ window.StemLab = window.StemLab || {
                 setGridChallenge({ type: 'distance', p1: p1, p2: p2, distance: Math.round(dist * 10) / 10 });
                 setGridPoints([p1, p2]); setGridFeedback({ distanceAnswer: '' });
               },
-              className: 'flex-1 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-lg text-sm hover:from-green-600 hover:to-emerald-600 transition-all shadow-md'
+              className: 'flex-1 py-2 bg-gradient-to-r from-green-700 to-emerald-700 text-white font-bold rounded-lg text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-md'
             }, t('stem.coordgrid.find_distance_2', '\uD83D\uDCCF Find Distance'))
           )
         ),

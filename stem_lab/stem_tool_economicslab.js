@@ -1793,7 +1793,7 @@ var d = labToolData || {};
                 'aria-expanded': d.showAdvisor ? 'true' : 'false',
                 onClick: function () { upd('showAdvisor', !(d.showAdvisor)); },
 
-                className: 'text-[11px] text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200 cursor-pointer font-bold'
+                className: 'text-[11px] text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200 cursor-pointer font-bold'
 
               }, t('stem.economicslab.ask_tutor', '\uD83E\uDDD1\u200D\uD83C\uDFEB Ask Tutor')),
 
@@ -1805,7 +1805,7 @@ var d = labToolData || {};
 
                 onChange: function (e) { upd('econDifficulty', e.target.value); if (addToast) addToast('Difficulty: ' + e.target.value.toUpperCase(), 'info'); },
 
-                className: 'text-[11px] bg-slate-100 border border-slate-400 rounded-full px-2 py-0.5 text-slate-600 cursor-pointer'
+                className: 'text-[11px] bg-slate-100 border border-slate-500 rounded-full px-2 py-0.5 text-slate-600 cursor-pointer'
 
               },
 
@@ -2142,7 +2142,7 @@ var d = labToolData || {};
 
                     disabled: d.quizLoading,
 
-                    className: 'py-3 px-8 rounded-xl text-sm font-bold transition-all ' + (d.quizLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:shadow-lg')
+                    className: 'py-3 px-8 rounded-xl text-sm font-bold transition-all ' + (d.quizLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-rose-600 to-pink-600 text-white hover:shadow-lg')
 
                   }, d.quizLoading ? '\u23F3 Generating...' : '\uD83C\uDFB2 Generate Quiz Question')
 
@@ -2251,7 +2251,7 @@ var d = labToolData || {};
 
                     onClick: function () { upd('advisorInput', q); },
 
-                    className: 'text-[11px] px-2 py-1 rounded-full bg-sky-100 text-sky-600 hover:bg-sky-200'
+                    className: 'text-[11px] px-2 py-1 rounded-full bg-sky-100 text-sky-700 hover:bg-sky-200'
 
                   }, q);
 
@@ -2330,7 +2330,7 @@ var d = labToolData || {};
                         upd('econScenarioIdx', (econScenarioIdx + 1) % ECON_SCENARIOS.length);
                         upd('econScenarioAnswer', -1);
                       },
-                      className: 'w-full py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-rose-500 to-pink-500 text-white'
+                      className: 'w-full py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-rose-600 to-pink-600 text-white'
                     }, t('stem.economicslab.next_scenario', 'Next Scenario \u2192'))
                   )
                 );
@@ -3334,7 +3334,7 @@ var d = labToolData || {};
 
                   disabled: d.sdLoading,
 
-                  className: 'w-full py-3 rounded-xl text-xs font-bold transition-all ' + (d.sdLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:shadow-lg')
+                  className: 'w-full py-3 rounded-xl text-xs font-bold transition-all ' + (d.sdLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:shadow-lg')
 
                 }, d.sdLoading ? '\u23F3 Generating...' : '\uD83C\uDFB2 Generate Random Scenario')
 
@@ -3671,7 +3671,7 @@ var d = labToolData || {};
 
                 ),
 
-                React.createElement('div', { className: 'text-[11px] text-orange-600 mt-2 bg-white rounded-lg p-2 border border-orange-100' },
+                React.createElement('div', { className: 'text-[11px] text-orange-700 mt-2 bg-white rounded-lg p-2 border border-orange-100' },
 
                   (d.pfHousing || 'renting') === 'renting' && '\uD83D\uDCDA Renting means paying a landlord monthly. Pros: flexibility to move, no maintenance costs, lower upfront cost. Cons: no equity buildup, rent may increase annually, no tax deductions.',
 
@@ -3729,7 +3729,7 @@ var d = labToolData || {};
 
                 ),
 
-                (d.pfInvestPct || 0) > 0 && (d.pfInvestType) && React.createElement('div', { className: 'mt-2 text-[11px] text-green-600 bg-white rounded-lg p-2 border border-green-100' },
+                (d.pfInvestPct || 0) > 0 && (d.pfInvestType) && React.createElement('div', { className: 'mt-2 text-[11px] text-green-700 bg-white rounded-lg p-2 border border-green-100' },
 
                   d.pfInvestType === 'Conservative' && '\uD83D\uDCDA Bonds are low-risk, low-return (~3-5% annual). Best for capital preservation and stable income. Less volatile but won\'t beat inflation long-term.',
 
@@ -3865,7 +3865,7 @@ var d = labToolData || {};
 
                   disabled: d.smLoading,
 
-                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-xl')
+                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-green-700 to-emerald-700 text-white hover:shadow-xl')
 
                 }, d.smLoading ? '\u23F3 AI generating companies...' : '\uD83D\uDE80 Open Market')
 
@@ -3979,7 +3979,7 @@ var d = labToolData || {};
 
                       },
 
-                      className: 'flex-1 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                      className: 'flex-1 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-green-700 to-emerald-700 text-white'
 
                     }, '\u25B2 Buy 1 ($' + (smCompanies[smSelected] ? smCompanies[smSelected].price.toFixed(2) : '0') + ')'),
 
@@ -4007,7 +4007,7 @@ var d = labToolData || {};
 
                       },
 
-                      className: 'py-3 px-2 rounded-xl text-[11px] font-bold bg-gradient-to-r from-green-600 to-emerald-600 text-white'
+                      className: 'py-3 px-2 rounded-xl text-[11px] font-bold bg-gradient-to-r from-green-700 to-emerald-700 text-white'
 
                     }, t('stem.economicslab.buy_10', '\u25B2\u25B2 Buy 10')),
 
@@ -4035,7 +4035,7 @@ var d = labToolData || {};
 
                       },
 
-                      className: 'flex-1 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-red-500 to-rose-500 text-white'
+                      className: 'flex-1 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white'
 
                     }, t('stem.economicslab.sell_1', '\u25BC Sell 1')),
 
@@ -4163,7 +4163,7 @@ var d = labToolData || {};
 
                       disabled: d.smLoading,
 
-                      className: 'py-3 px-6 rounded-xl text-xs font-bold transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white')
+                      className: 'py-3 px-6 rounded-xl text-xs font-bold transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-amber-700 to-yellow-700 text-white')
 
                     }, d.smLoading ? '\u23F3...' : '\u23ED Day ' + (smDay + 1))
 
@@ -4374,7 +4374,7 @@ var d = labToolData || {};
 
                   disabled: d.enLoading || !(d.enInput || '').trim(),
 
-                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.enLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-xl')
+                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.enLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-amber-700 to-orange-700 text-white hover:shadow-xl')
 
                 }, d.enLoading ? '\u23F3 AI is building your business...' : '\uD83D\uDE80 Launch Business')
 

@@ -13580,7 +13580,7 @@
                             );
                           })
                         ),
-                        h('button', { onClick: function() { upd('vizBrTh', brAng); }, style: { marginTop: 6, padding: '4px 10px', fontSize: 11, background: '#22c55e', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' } }, 'Set to Brewster angle')
+                        h('button', { onClick: function() { upd('vizBrTh', brAng); }, style: { marginTop: 6, padding: '4px 10px', fontSize: 11, background: '#22c55e', color: '#052e16', border: 'none', borderRadius: 6, cursor: 'pointer' } }, 'Set to Brewster angle')
                       );
                     })()
         )

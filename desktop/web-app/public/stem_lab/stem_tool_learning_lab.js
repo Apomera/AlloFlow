@@ -13638,7 +13638,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 hh('span', { style: eyebrowStyle }, 'Current locus'),
                 hh('span', { style: { padding: '5px 9px', borderRadius: 999, background: 'rgba(16,185,129,0.14)', border: '1px solid rgba(110,231,183,0.46)', color: '#a7f3d0', fontSize: 10, fontWeight: 800 } }, 'Stop ' + (safeIndex + 1))
               ),
-              hh('div', { 'aria-hidden': 'true', style: { float: 'left', width: 44, height: 44, borderRadius: '14px 14px 14px 4px', margin: '0 12px 8px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, #059669, #047857)', color: '#fff', fontSize: 15, fontWeight: 900, boxShadow: '0 8px 18px rgba(5,150,105,0.25)' } }, String(safeIndex + 1)),
+              hh('div', { 'aria-hidden': 'true', style: { float: 'left', width: 44, height: 44, borderRadius: '14px 14px 14px 4px', margin: '0 12px 8px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, #047857, #065f46)', color: '#fff', fontSize: 15, fontWeight: 900, boxShadow: '0 8px 18px rgba(5,150,105,0.25)' } }, String(safeIndex + 1)),
               hh('h3', { style: { fontSize: 11, color: '#6ee7b7', fontWeight: 800, textTransform: 'uppercase', margin: '0 0 8px' } }, 'Location'),
               hh('p', { style: { fontSize: 18, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 14px', lineHeight: 1.5 } }, textValue(current.location)),
               !walkRevealed ? hh('div', { style: { clear: 'both', padding: '14px 16px', borderRadius: 10, background: 'rgba(2,6,23,0.42)', border: '1px dashed rgba(110,231,183,0.48)', textAlign: 'center' } },

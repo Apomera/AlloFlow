@@ -8,12 +8,12 @@ Generated: 2026-07-22
 | --- | ---: |
 | Questions scanned | 1500 |
 | Incorrect options scanned | 4500 |
-| Questions with one or more warnings | 1309 |
-| Incorrect options with one or more warnings | 3789 |
-| Insufficient-detail warnings | 1357 |
-| Generic-template warnings | 2354 |
-| Choice-restatement warnings | 1665 |
-| Full-key-echo warnings | 1436 |
+| Questions with one or more warnings | 635 |
+| Incorrect options with one or more warnings | 1789 |
+| Insufficient-detail warnings | 665 |
+| Generic-template warnings | 1061 |
+| Choice-restatement warnings | 434 |
+| Full-key-echo warnings | 270 |
 | Wave-05 incorrect options with warnings | 0 of 24 |
 | Wave-06 incorrect options with warnings | 0 of 24 |
 | Wave-07 incorrect options with warnings | 0 of 48 |
@@ -28,56 +28,56 @@ The reviewed waves (eppp-native-quality-wave-05, eppp-native-quality-wave-06, ep
 
 | Item | Domain | Incorrect options affected | Warning types | Score |
 | --- | --- | ---: | --- | ---: |
-| eppp-b004-intervention-2 | intervention | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b005-cognitive-1 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b005-professional-1 | professional | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b005-professional-2 | professional | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b006-intervention-1 | intervention | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b006-lifespan-1 | lifespan | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b006-professional-1 | professional | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b006-professional-2 | professional | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b007-biological-1 | biological | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b007-biological-2 | biological | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b007-cognitive-1 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b007-cognitive-2 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b007-intervention-1 | intervention | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b007-intervention-2 | intervention | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b007-lifespan-1 | lifespan | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b007-lifespan-2 | lifespan | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b007-professional-1 | professional | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b007-professional-2 | professional | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b008-biological-2 | biological | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b008-cognitive-1 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b008-cognitive-2 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b008-intervention-2 | intervention | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b008-lifespan-1 | lifespan | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b008-lifespan-2 | lifespan | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b008-professional-2 | professional | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b009-assessment-1 | assessment | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b009-assessment-2 | assessment | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b009-biological-1 | biological | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b009-biological-2 | biological | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b009-cognitive-1 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b009-cognitive-2 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b009-lifespan-1 | lifespan | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b009-lifespan-2 | lifespan | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b009-professional-2 | professional | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b009-social-2 | social-cultural | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b010-assessment-1 | assessment | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b010-assessment-2 | assessment | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b010-biological-1 | biological | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b010-biological-2 | biological | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b010-cognitive-2 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b010-lifespan-1 | lifespan | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b010-professional-2 | professional | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b010-research-2 | research | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b010-social-1 | social-cultural | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b010-social-2 | social-cultural | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b011-assessment-1 | assessment | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b011-biological-1 | biological | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b011-biological-2 | biological | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b011-cognitive-1 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 18 |
-| eppp-b011-intervention-2 | intervention | 3 | generic-template, choice-restatement, full-key-echo | 18 |
+| eppp-b012-assessment-1 | assessment | 3 | generic-template, full-key-echo, choice-restatement | 17 |
+| eppp-b013-research-1 | research | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-assessment-002 | assessment | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-assessment-005 | assessment | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-assessment-010 | assessment | 3 | generic-template, full-key-echo, choice-restatement | 17 |
+| eppp-v3-assessment-012 | assessment | 3 | generic-template, full-key-echo, choice-restatement | 17 |
+| eppp-v3-assessment-044 | assessment | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-cognitive-affective-019 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-cognitive-affective-043 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-cognitive-affective-044 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-intervention-012 | intervention | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-intervention-013 | intervention | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-intervention-017 | intervention | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-intervention-075 | intervention | 3 | generic-template, full-key-echo, choice-restatement | 17 |
+| eppp-v3-lifespan-019 | lifespan | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-professional-022 | professional | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-professional-023 | professional | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-research-008 | research | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-social-cultural-004 | social-cultural | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-social-cultural-005 | social-cultural | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-social-cultural-006 | social-cultural | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-v3-social-cultural-007 | social-cultural | 3 | generic-template, full-key-echo, choice-restatement | 17 |
+| eppp-v3-social-cultural-009 | social-cultural | 3 | generic-template, choice-restatement, full-key-echo | 17 |
+| eppp-b001-social-2 | social-cultural | 3 | generic-template, choice-restatement, full-key-echo | 16 |
+| eppp-b006-cognitive-2 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 16 |
+| eppp-b006-research-1 | research | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-b007-research-2 | research | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-b011-assessment-2 | assessment | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-b013-assessment-2 | assessment | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-v3-assessment-008 | assessment | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-v3-assessment-018 | assessment | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-v3-biological-016 | biological | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-v3-biological-029 | biological | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-v3-cognitive-affective-017 | cognitive-affective | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-v3-cognitive-affective-026 | cognitive-affective | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-v3-cognitive-affective-037 | cognitive-affective | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-v3-cognitive-affective-038 | cognitive-affective | 3 | generic-template, choice-restatement, full-key-echo | 16 |
+| eppp-v3-intervention-007 | intervention | 3 | generic-template, choice-restatement, full-key-echo | 16 |
+| eppp-v3-intervention-029 | intervention | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-v3-intervention-039 | intervention | 3 | generic-template, choice-restatement, full-key-echo | 16 |
+| eppp-v3-intervention-046 | intervention | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-v3-intervention-050 | intervention | 3 | generic-template, choice-restatement, full-key-echo | 16 |
+| eppp-v3-lifespan-006 | lifespan | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-v3-lifespan-046 | lifespan | 3 | generic-template, choice-restatement, full-key-echo | 16 |
+| eppp-v3-professional-039 | professional | 3 | generic-template, choice-restatement, full-key-echo | 16 |
+| eppp-v3-professional-045 | professional | 3 | generic-template, choice-restatement, full-key-echo | 16 |
+| eppp-v3-research-007 | research | 3 | generic-template, choice-restatement, full-key-echo | 16 |
+| eppp-v3-research-033 | research | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-v3-research-035 | research | 3 | generic-template, full-key-echo, choice-restatement | 16 |
+| eppp-b005-social-1 | social-cultural | 3 | generic-template, full-key-echo | 15 |
 
 ## Interpretation
 

@@ -227,12 +227,12 @@ describe('Guided banner - per-step "Worked example" tab', () => {
 });
 
 describe('Guided banner - progress, skips, and real interaction completion', () => {
-  it('reports the visible step number with one-based progress', () => {
+  it('reports the current phase with one-based progress', () => {
     const b = mountBanner(baseProps({ guidedStep: 0 }));
     const progress = b.host.querySelector('[role="progressbar"]');
     expect(progress.getAttribute('aria-valuenow')).toBe('1');
     expect(progress.getAttribute('aria-valuemin')).toBe('1');
-    expect(progress.getAttribute('aria-valuemax')).toBe(String(STEPS.length));
+    expect(progress.getAttribute('aria-valuemax')).toBe('1');
     b.cleanup();
   });
 
@@ -345,12 +345,12 @@ describe('Guided banner - controlled journey UX', () => {
     b.cleanup();
   });
 
-  it('shows entered source text as completed in the segmented progress display', () => {
+  it('shows completed work in the phase progress display', () => {
     localStorage.removeItem('allo_guided_ui_state');
-    const b = mountBanner(baseProps({ guidedStep: 1, inputText: 'A source passage that is definitely longer than twenty characters.' }));
+    const phaseSteps = STEPS.map((item, index) => ({ ...item, phase: ['plan', 'understand', 'practice'][index] }));
+    const b = mountBanner(baseProps({ GUIDED_STEPS: phaseSteps, allGuidedSteps: phaseSteps, guidedStep: 1, inputText: 'A source passage that is definitely longer than twenty characters.' }));
     const firstSegment = b.host.querySelector('[role="progressbar"] > div');
-    expect(firstSegment.style.background).toContain('linear-gradient');
-    expect(firstSegment.style.background).toContain('52, 211, 153');
+    expect(firstSegment.getAttribute('data-state')).toBe('done');
     b.cleanup();
   });
 
@@ -496,14 +496,20 @@ describe('Guided banner - AI-configured lesson path', () => {
     expect(b.text()).toContain('What changed');
     expect(b.text()).toContain('The plan wording was refined without changing its steps, timing, or delivery settings.');
 
+    act(() => { b.button('Review plan').click(); });
+    expect(b.text()).toContain('Review the complete path');
     act(() => { b.button('Save plan').click(); });
     const savedPlans = JSON.parse(localStorage.getItem('allo_guided_saved_plans') || '[]');
     expect(savedPlans).toHaveLength(1);
     expect(savedPlans[0]).toEqual(expect.objectContaining({ name: 'Vocabulary and assessment path', stepIds: ['analysis', 'faq'] }));
+    act(() => { b.button('Back to customize').click(); });
+    act(() => { b.button('Back to description').click(); });
+    act(() => { b.button('Saved plans (1)').click(); });
     expect(b.text()).toContain('Your saved Guided plans');
     act(() => { b.button('Load').click(); });
     expect(b.text()).toContain('Saved plan');
     expect(applyGuidedPreset).not.toHaveBeenCalled();
+    act(() => { b.button('Review plan').click(); });
     act(() => { b.button('Use this Guided plan').click(); });
     expect(applyGuidedPreset).toHaveBeenCalledWith(expect.objectContaining({ id: 'ai-plan', stepIds: ['analysis', 'faq'] }));
     expect(JSON.parse(localStorage.getItem('allo_guided_delivery_preferences') || '{}')).toEqual({ setting: 'lms', priority: 'assessment' });
@@ -535,10 +541,15 @@ describe('Guided banner - AI-configured lesson path', () => {
     expect(b.text()).toContain('QTI packaging requires quiz content');
     expect(applyGuidedPreset).not.toHaveBeenCalled();
     act(() => { b.button('Add Assess step').click(); });
+    expect(b.text()).toContain('Edited by you');
+    act(() => { b.button('Undo last change').click(); });
+    expect(b.text()).toContain('QTI packaging requires quiz content');
+    act(() => { b.button('Add Assess step').click(); });
     expect(b.text()).toContain('Quiz content is included for the planned QTI package.');
     expect(b.text()).not.toContain('QTI packaging requires quiz content');
     expect(b.text()).toContain('13 min to build');
     expect(b.text()).toContain('2 resources');
+    act(() => { b.button('Review plan').click(); });
     act(() => { b.button('Use this Guided plan').click(); });
     expect(applyGuidedPreset).toHaveBeenCalledWith(expect.objectContaining({ stepIds: ['analysis', 'quiz'] }));
     b.cleanup();
@@ -597,6 +608,98 @@ describe('Guided banner - AI-configured lesson path', () => {
     b.cleanup();
   });
 });
+describe('Guided banner - adaptive planning context and phase checkpoints', () => {
+  it('reuses non-identifying classroom context and updates only the remaining path after progress', async () => {
+    const generateGuidedPlanFromGoal = vi.fn().mockResolvedValue({
+      source: 'ai', title: 'Responsive remaining path', summary: 'Support access before the final resource.',
+      stepIds: ['faq'], estimatedMinutes: 8, deliverySetting: 'lms', deliveryPriority: 'accessible', assumptions: [],
+    });
+    const applyGuidedPreset = vi.fn();
+    const applyGuidedPlanToRemaining = vi.fn();
+    const b = mountBanner(baseProps({
+      guidedStep: 1, guidedCompletedIds: ['analysis'], guidedPresets: [], toggleGuidedStepId: vi.fn(), applyGuidedPreset, applyGuidedPlanToRemaining,
+      generateGuidedPlanFromGoal, allGuidedSteps: STEPS, GUIDED_STEPS: STEPS,
+    }));
+    act(() => { b.host.querySelector('button[aria-label="Choose which steps to include"]').click(); });
+    act(() => { b.button('Plan or refine this path with AI').click(); });
+    act(() => { b.button('Multilingual learners').click(); });
+    const languages = b.host.querySelector('#guided-ai-context-languages');
+    const goal = b.host.querySelector('#guided-ai-goal');
+    act(() => {
+      const inputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+      inputSetter.call(languages, 'English and Spanish'); languages.dispatchEvent(new Event('input', { bubbles: true }));
+      const textareaSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+      textareaSetter.call(goal, 'I have 40 minutes with seventh grade students using an LMS and need a short quiz assessment.');
+      goal.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await act(async () => { b.button('Create my Guided plan').click(); await new Promise(resolve => setTimeout(resolve, 0)); });
+    expect(generateGuidedPlanFromGoal).toHaveBeenCalledWith(expect.stringMatching(/PLANNING CONTEXT:[\s\S]*learner supports: Multilingual learners[\s\S]*classroom languages: English and Spanish/));
+    expect(JSON.parse(localStorage.getItem('allo_guided_classroom_context') || '{}')).toEqual(expect.objectContaining({ supports: ['multilingual'], languages: 'English and Spanish' }));
+    act(() => { b.button('Review plan').click(); });
+    act(() => { b.button('Use this Guided plan').click(); });
+    expect(b.text()).toContain('Keep completed work and update only what comes next');
+    act(() => { b.button('Update remaining steps').click(); });
+    expect(applyGuidedPlanToRemaining).toHaveBeenCalledWith(expect.objectContaining({ stepIds: ['faq'] }));
+    expect(applyGuidedPreset).not.toHaveBeenCalled();
+    b.cleanup();
+  });
+
+  it('imports a validated portable plan file and exports the saved collection', async () => {
+    const b = mountBanner(baseProps({
+      guidedStep: 0, guidedPresets: [], generateGuidedPlanFromGoal: vi.fn(),
+      allGuidedSteps: STEPS, GUIDED_STEPS: STEPS,
+    }));
+    act(() => { b.button('Plan with AI').click(); });
+    const input = b.host.querySelector('input[type="file"][accept=".json,application/json"]');
+    const portable = {
+      format: 'alloflow-guided-plans', version: 1,
+      plans: [{ id: 'portable-1', name: 'Portable lesson', title: 'Portable lesson', summary: 'A reusable path.', stepIds: ['analysis', 'retired-step'], stepReasons: { analysis: 'Scan barriers.', 'retired-step': 'Legacy reason.' }, deliverySetting: 'print', deliveryPriority: 'accessible' }],
+    };
+    Object.defineProperty(input, 'files', { configurable: true, value: [{ size: 200, text: async () => JSON.stringify(portable) }] });
+    await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })); await new Promise(resolve => setTimeout(resolve, 0)); });
+    expect(b.text()).toContain('Review plans before importing');
+    expect(b.text()).toContain('Portable lesson');
+    expect(b.text()).toContain('1 unsupported step(s) will be omitted');
+    act(() => { b.button('Import selected plans').click(); });
+    expect(b.text()).toContain('Imported 1 new Guided plan(s).');
+    expect(JSON.parse(localStorage.getItem('allo_guided_saved_plans') || '[]')).toEqual([expect.objectContaining({ name: 'Portable lesson', stepIds: ['analysis'], stepReasons: { analysis: 'Scan barriers.' } })]);
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+    URL.createObjectURL = vi.fn(() => 'blob:guided-plans');
+    URL.revokeObjectURL = vi.fn();
+    const clickSpy = vi.spyOn(window.HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    act(() => { b.button('Export saved plans').click(); });
+    expect(URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+    expect(b.text()).toContain('Exported 1 Guided plan(s).');
+    clickSpy.mockRestore();
+    URL.createObjectURL = originalCreateObjectURL;
+    URL.revokeObjectURL = originalRevokeObjectURL;
+    b.cleanup();
+  });
+  it('pauses at a phase boundary with a compact recap before continuing', () => {
+    const phaseSteps = [
+      { id: 'analysis', phase: 'understand', label: 'Analyze', action: 'Analyze.', success: 'Analysis ready.' },
+      { id: 'faq', phase: 'participate', label: 'Discuss', action: 'Discuss.', success: 'Discussion ready.' },
+    ];
+    const handleGuidedSkip = vi.fn();
+    const openGuidedHistoryItem = vi.fn();
+    const b = mountBanner(baseProps({
+      GUIDED_STEPS: phaseSteps, allGuidedSteps: phaseSteps, guidedStep: 0,
+      guidedCompletedIds: ['analysis'], guidedCreatedHistoryIds: ['a1'],
+      history: [{ id: 'a1', type: 'analysis', title: 'Barrier scan' }],
+      guidedPhases: [{ id: 'understand', label: 'Understand' }, { id: 'participate', label: 'Participate' }],
+      handleGuidedSkip, openGuidedHistoryItem,
+    }));
+    expect(b.text()).toContain('Understand phase complete');
+    expect(b.text()).toContain('1 completed · 0 skipped · 1 resources created');
+    expect(b.text()).toContain('Barrier scan');
+    expect(b.button('Next step')).toBeFalsy();
+    act(() => { b.button('Continue to Participate').click(); });
+    expect(handleGuidedSkip).toHaveBeenCalledWith(false);
+    b.cleanup();
+  });
+});
 describe('Guided banner - outcome phases and delivery actions', () => {
   it('shows a phase-aware delivery recommender and completes only after verified delivery evidence', () => {
     const deliverySteps = [
@@ -638,6 +741,75 @@ describe('Guided banner - outcome phases and delivery actions', () => {
       guidedDeliveryEvidence: { exportCreated: true },
     }));
     expect(markGuidedStepDone).toHaveBeenCalledWith('package-deliver');
+    b.cleanup();
+  });
+});
+
+describe('Guided banner - persistent brief, resilient checkpoints, and launchpad', () => {
+  it('keeps the applied lesson brief and remaining-time estimate visible during the run', () => {
+    const b = mountBanner(baseProps({
+      guidedStep: 1,
+      guidedPlanBrief: {
+        title: 'Seventh-grade ecosystem discussion',
+        summary: 'A focused path from barrier scan to student discussion.',
+        goal: 'Prepare a 40-minute lesson for multilingual learners.',
+        stepReasons: { analysis: 'Find language and concept barriers before students discuss.' },
+      },
+    }));
+    expect(b.text()).toContain('About 4 min remaining');
+    expect(b.text()).toContain('Lesson brief · Seventh-grade ecosystem discussion');
+    expect(b.text()).toContain('Prepare a 40-minute lesson for multilingual learners.');
+    expect(b.text()).toContain('Why this step');
+    expect(b.text()).toContain('Find language and concept barriers before students discuss.');
+    b.cleanup();
+  });
+
+  it('shows the phase checkpoint after a boundary step is skipped', () => {
+    const phaseSteps = [
+      { id: 'analysis', phase: 'understand', label: 'Analyze', action: 'Analyze.', success: 'Analysis ready.' },
+      { id: 'faq', phase: 'participate', label: 'Discuss', action: 'Discuss.', success: 'Discussion ready.' },
+    ];
+    const handleGuidedSkip = vi.fn();
+    const b = mountBanner(baseProps({
+      GUIDED_STEPS: phaseSteps, allGuidedSteps: phaseSteps, guidedStep: 0,
+      guidedSkippedIds: ['analysis'], guidedCompletedIds: [],
+      guidedPhases: [{ id: 'understand', label: 'Understand' }, { id: 'participate', label: 'Participate' }],
+      handleGuidedSkip,
+    }));
+    expect(b.text()).toContain('Understand phase complete');
+    expect(b.text()).toContain('0 completed');
+    expect(b.text()).toContain('1 skipped');
+    expect(b.button('Skip step')).toBeFalsy();
+    act(() => { b.button('Continue to Participate').click(); });
+    expect(handleGuidedSkip).toHaveBeenCalledWith(false);
+    b.cleanup();
+  });
+
+  it('turns the final step into a ready-to-teach launchpad for core materials', () => {
+    const finalSteps = [{ id: '_final', phase: 'finish', label: 'Review & Finish', action: 'Review the lesson.', success: 'All set.' }];
+    const lessonPlan = { id: 'lp-1', type: 'lesson-plan', title: 'Ecosystems lesson plan' };
+    const directions = { id: 'dir-1', type: 'directions', title: 'Student directions' };
+    const openGuidedHistoryItem = vi.fn();
+    const openGuidedDocumentBuilder = vi.fn();
+    const previewGuidedStudentAssignment = vi.fn();
+    const b = mountBanner(baseProps({
+      GUIDED_STEPS: finalSteps, allGuidedSteps: finalSteps, guidedStep: 0,
+      history: [lessonPlan, directions], guidedCreatedHistoryIds: ['lp-1', 'dir-1'],
+      guidedDeliveryEvidence: { directionsSaved: true, studentPreviewed: true, exportCreated: true },
+      openGuidedHistoryItem, openGuidedDocumentBuilder,
+      previewGuidedStudentAssignment, canPreviewGuidedStudentAssignment: true,
+    }));
+    expect(b.text()).toContain('Ready-to-teach launchpad');
+    expect(b.text()).toContain('Lesson plan');
+    expect(b.text()).toContain('Student directions');
+    act(() => { b.button('Open lesson plan').click(); });
+    act(() => { b.button('Open directions').click(); });
+    act(() => { b.button('Open package builder').click(); });
+    act(() => { b.button('Preview learner view').click(); });
+    expect(openGuidedHistoryItem).toHaveBeenNthCalledWith(1, lessonPlan);
+    expect(openGuidedHistoryItem).toHaveBeenNthCalledWith(2, directions);
+    expect(openGuidedDocumentBuilder).toHaveBeenCalledTimes(1);
+    expect(previewGuidedStudentAssignment).toHaveBeenCalledTimes(1);
     b.cleanup();
   });
 });

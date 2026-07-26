@@ -1111,7 +1111,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     if (addToast) addToast('Couldn\'t reach AI \u2014 using default briefing.', 'error');
                   });
                 },
-                className: 'w-full py-2 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all disabled:opacity-60'
+                className: 'w-full py-2 rounded-lg text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 transition-all disabled:opacity-60'
               }, d.aiBriefingLoading
                 ? '\u231B Customizing mission\u2026'
                 : (d.aiBriefing ? '\uD83D\uDD04 Regenerate from source text' : '\u2728 Customize from my source text'))
@@ -1480,7 +1480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     addXP(20);
                     if (addToast) addToast('\uD83C\uDF0D Orbit achieved! Preparing trans-lunar injection.', 'success');
                   },
-                  className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-green-600 hover:bg-green-700 transition-colors'
+                  className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-green-700 hover:bg-green-800 transition-colors'
                 }, t('stem.moonmission.proceed_to_orbit', '\u2705 Proceed to Orbit'))
               )
             )
@@ -1903,7 +1903,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               addXP(15);
               if (addToast) addToast('\u2B07\uFE0F "The Eagle has undocked!" Beginning powered descent.', 'success');
             },
-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-lg'
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg'
           }, t('stem.moonmission.undock_begin_powered_descent', '\u2B07\uFE0F Undock & Begin Powered Descent'))
         ),
 
@@ -1943,7 +1943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('button', {
               'aria-label': t('stem.moonmission.begin_powered_descent_piloting', 'Begin powered descent piloting'),
               onClick: function() { upd('descentStarted', true); },
-              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse'
+              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse'
             }, t('stem.moonmission.begin_descent_take_the_controls', '\uD83D\uDE80 Begin Descent \u2014 Take the Controls!'))
           ),
           // Game canvas (after onboarding)
@@ -2244,7 +2244,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   addXP(30);
                   if (addToast) addToast('\uD83D\uDC68\u200D\uD83D\uDE80 "That\'s one small step..." Preparing for moonwalk!', 'success');
                 },
-                className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-green-600 hover:bg-green-700'
+                className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-green-700 hover:bg-green-800'
               }, t('stem.moonmission.begin_eva', '\uD83D\uDC68\u200D\uD83D\uDE80 Begin EVA'))
             )
           )
@@ -2294,7 +2294,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('button', {
               'aria-label': t('stem.moonmission.begin_eva_on_the_lunar_surface', 'Begin EVA on the lunar surface'),
               onClick: function() { upd('evaStarted', true); },
-              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse'
+              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse'
             }, t('stem.moonmission.step_onto_the_moon_begin_eva', '👨‍🚀 Step Onto the Moon · Begin EVA'))
           ),
           d.evaStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
@@ -2310,7 +2310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   onClick: function() {
                     upd('webglError', false);
                   },
-                  className: 'px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg shadow-md transition-colors'
+                  className: 'px-4 py-2 bg-amber-700 hover:bg-amber-800 text-white font-semibold rounded-lg shadow-md transition-colors'
                 }, t('stem.moonmission.retry_3d_mode', 'Retry 3D Mode'))
               ) : h('canvas', {
                 'data-eva-canvas': 'true',
@@ -3771,7 +3771,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               if (addToast) addToast('\uD83C\uDF89 MISSION COMPLETE! Welcome home, Commander!', 'success');
               if (typeof announceToSR === 'function') announceToSR('Mission complete! Splashdown in the Pacific Ocean. Welcome home, Commander.');
             },
-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg animate-pulse'
+            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-orange-700 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg animate-pulse'
           }, t('stem.moonmission.mission_complete_splashdown', '\uD83C\uDF0A Mission Complete \u2014 SPLASHDOWN!'))
         ),
 

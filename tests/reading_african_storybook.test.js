@@ -127,11 +127,26 @@ describe('African Storybook mirrored catalog', () => {
     }
   });
 
+  it('publishes multilingual work families for verified side-by-side reading', () => {
+    const families = new Map();
+    for (const entry of entries) {
+      if (!entry.workKey) continue;
+      const family = families.get(entry.workKey) || [];
+      family.push(entry);
+      families.set(entry.workKey, family);
+    }
+    const multilingual = [...families.values()].filter((family) =>
+      family.length > 1 && new Set(family.map((entry) => entry.language)).size > 1);
+    expect(multilingual.length).toBeGreaterThanOrEqual(20);
+    expect(multilingual.flat().length).toBeGreaterThanOrEqual(50);
+  });
   it('retains exact rights, attribution, page text, and official sources', () => {
     const allowedLicenses = /^CC BY(?:-NC)?(?:-SA)? \d+(?:\.\d+)?$/;
     for (const entry of entries) {
       const book = JSON.parse(fs.readFileSync(path.join(LIB, entry.file), 'utf8'));
       expect(book.contentType).toBe('story');
+      expect(book.workKey).toMatch(/^asb-(?:images|edition)-/);
+      expect(entry.workKey).toBe(book.workKey);
       expect(book.source.approved).toBe(true);
       expect(book.source.url).toMatch(/^https:\/\/www\.africanstorybook\.org\/newviewer\/index\.php\?/);
       expect(book.license).toMatch(allowedLicenses);

@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "eppp-distractor-halving-campaign-v1",
+  "reviewedAt": "2026-07-25",
+  "reportType": "manifest-driven-source-backed-distractor-halving-campaign",
+  "baseline": {
+    "uniqueKeyStemLexicalLeakageCandidates": 141,
+    "asymmetricExtremeDistractorCandidates": 295,
+    "advancedDirectRecallCandidates": 18,
+    "semanticConceptDuplicatePairs": 240,
+    "semanticConceptDuplicateClusters": 120
+  },
+  "halvingCeilings": {
+    "uniqueKeyStemLexicalLeakageCandidates": 70,
+    "asymmetricExtremeDistractorCandidates": 147,
+    "advancedDirectRecallCandidates": 9,
+    "semanticConceptDuplicatePairs": 120,
+    "semanticConceptDuplicateClusters": 60
+  },
+  "bufferedTargets": {
+    "uniqueKeyStemLexicalLeakageCandidates": 65,
+    "asymmetricExtremeDistractorCandidates": 140,
+    "advancedDirectRecallCandidates": 7,
+    "semanticConceptDuplicatePairs": 110,
+    "semanticConceptDuplicateClusters": 55
+  },
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 263,
+    "newlyAppliedItems": 59,
+    "alreadyAppliedItems": 204,
+    "keyPositionsPreserved": 263,
+    "answerPositionCounts": [
+      375,
+      375,
+      375,
+      375
+    ],
+    "sourceRecordsHydrated": 128,
+    "correctedReferenceUrls": 0,
+    "metricsBefore": {
+      "uniqueKeyStemLexicalLeakageCandidates": 67,
+      "asymmetricExtremeDistractorCandidates": 130,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 116,
+      "semanticConceptDuplicateClusters": 60
+    },
+    "metricsAfter": {
+      "uniqueKeyStemLexicalLeakageCandidates": 65,
+      "asymmetricExtremeDistractorCandidates": 130,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 114,
+      "semanticConceptDuplicateClusters": 58
+    },
+    "ceilingStatus": {
+      "uniqueKeyStemLexicalLeakageCandidates": {
+        "value": 65,
+        "ceiling": 70,
+        "met": true,
+        "bufferedTarget": 65
+      },
+      "asymmetricExtremeDistractorCandidates": {
+        "value": 130,
+        "ceiling": 147,
+        "met": true,
+        "bufferedTarget": 140
+      },
+      "advancedDirectRecallCandidates": {
+        "value": 7,
+        "ceiling": 9,
+        "met": true,
+        "bufferedTarget": 7
+      },
+      "semanticConceptDuplicatePairs": {
+        "value": 114,
+        "ceiling": 120,
+        "met": true,
+        "bufferedTarget": 110
+      },
+      "semanticConceptDuplicateClusters": {
+        "value": 58,
+        "ceiling": 60,
+        "met": true,
+        "bufferedTarget": 55
+      }
+    },
+    "status": "pass"
+  },
+  "shards": [
+    {
+      "shardId": "eppp-distractor-halving-revisions-a",
+      "items": 93,
+      "domains": [
+        "professional",
+        "lifespan",
+        "research"
+      ]
+    },
+    {
+      "shardId": "eppp-distractor-halving-revisions-b",
+      "items": 96,
+      "domains": [
+        "assessment",
+        "biological",
+        "cognitive-affective"
+      ]
+    },
+    {
+      "shardId": "eppp-distractor-halving-revisions-c",
+      "items": 74,
+      "domains": [
+        "intervention",
+        "social-cultural"
+      ]
+    }
+  ],
+  "selectedWarningsAfter": {
+    "lexical": [],
+    "extreme": [],
+    "recall": [],
+    "duplicatePairs": [
+      "eppp-b004-professional-1 / eppp-v3-professional-003"
+    ]
+  },
+  "monotonicity": {
+    "uniqueKeyStemLexicalLeakageCandidates": {
+      "before": 67,
+      "after": 65,
+      "reduction": 2
+    },
+    "asymmetricExtremeDistractorCandidates": {
+      "before": 130,
+      "after": 130,
+      "reduction": 0
+    },
+    "advancedDirectRecallCandidates": {
+      "before": 7,
+      "after": 7,
+      "reduction": 0
+    },
+    "semanticConceptDuplicatePairs": {
+      "before": 116,
+      "after": 114,
+      "reduction": 2
+    },
+    "semanticConceptDuplicateClusters": {
+      "before": 60,
+      "after": 58,
+      "reduction": 2
+    }
+  },
+  "sourceCorrections": [],
+  "limitations": [
+    "Warning heuristics support editorial triage and do not substitute for psychometric calibration or independent licensed-psychologist validation."
+  ]
+}

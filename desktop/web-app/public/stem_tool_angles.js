@@ -167,7 +167,7 @@ window.StemLab = window.StemLab || {
                 setToolSnapshots(function(prev) { return prev.concat([snap]); });
                 addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
               },
-              className: 'text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all'
+              className: 'text-[10px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all'
             }, '\uD83D\uDCF8 Snapshot')
           )
         ),
@@ -237,7 +237,7 @@ window.StemLab = window.StemLab || {
               setAngleValue(0);
               setAngleFeedback(null);
             },
-            className: 'flex-1 py-2 bg-gradient-to-r from-purple-500 to-violet-500 text-white font-bold rounded-lg text-sm hover:from-purple-600 hover:to-violet-600 transition-all shadow-md'
+            className: 'flex-1 py-2 bg-gradient-to-r from-purple-600 to-violet-600 text-white font-bold rounded-lg text-sm hover:from-purple-600 hover:to-violet-600 transition-all shadow-md'
           }, '\uD83C\uDFAF Create Angle'),
           h('button', {
             onClick: function() {
@@ -247,7 +247,7 @@ window.StemLab = window.StemLab || {
               setAngleValue(ta);
               setAngleFeedback(null);
             },
-            className: 'flex-1 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md'
+            className: 'flex-1 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md'
           }, '\uD83E\uDDE0 Classify Angle'),
           h('button', {
             onClick: function() { setAngleValue(45); setAngleChallenge(null); setAngleFeedback(null); },

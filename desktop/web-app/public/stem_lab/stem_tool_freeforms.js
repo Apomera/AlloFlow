@@ -93,6 +93,9 @@ window.StemLab = window.StemLab || {
       '#allo-free-forms { color: #f8fafc; }',
       '#allo-free-forms button:focus-visible, #allo-free-forms input:focus-visible, #allo-free-forms select:focus-visible, #allo-free-forms textarea:focus-visible { outline: 3px solid #facc15 !important; outline-offset: 2px !important; box-shadow: 0 0 0 5px rgba(250,204,21,0.28) !important; }',
       '#allo-free-forms input::placeholder, #allo-free-forms textarea::placeholder { color: #cbd5e1 !important; opacity: 1 !important; }',
+      '#allo-free-forms .ff-sidebar .text-slate-500 { color: #94a3b8 !important; }',
+      '#allo-free-forms :is(.border-slate-600, .border-slate-700) { border-color: #64748b !important; }',
+      '#allo-free-forms .border-violet-700 { border-color: #8b5cf6 !important; }',
       '#allo-free-forms .ff-card { transition: transform 0.15s ease, border-color 0.15s ease; }',
       '#allo-free-forms .ff-card:hover { transform: translateY(-2px); border-color: #a78bfa; }',
       '@media (max-width: 900px) { #allo-free-forms .ff-split { flex-direction: column !important; } #allo-free-forms .ff-sidebar { width: 100% !important; max-height: 42vh; } #allo-free-forms .ff-stage { min-height: 380px; } }',
@@ -921,8 +924,8 @@ window.StemLab = window.StemLab || {
 
       // ═══ UI ═══
       var BTN = 'min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer';
-      var BTN_GHOST = BTN + ' bg-slate-800/70 border-slate-600 text-slate-200 hover:bg-slate-700';
-      var BTN_HOT = BTN + ' bg-violet-600 border-violet-500 text-white hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed';
+      var BTN_GHOST = BTN + ' bg-slate-800/70 border-slate-500 text-slate-200 hover:bg-slate-700';
+      var BTN_HOT = BTN + ' bg-violet-600 border-violet-400 text-white hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed';
 
       // Import confirm strip — shown (on either screen) only when an organizer
       // handoff is pending AND the student already has content to protect.
@@ -1026,7 +1029,7 @@ window.StemLab = window.StemLab || {
             h('input', {
               id: 'ff-title', key: 'title-' + rev, defaultValue: doc.title || '',
               placeholder: t('stem.freeforms.title_placeholder', 'What is this world about?'),
-              className: 'w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-2 text-sm text-slate-100 mb-3',
+              className: 'w-full bg-slate-800 border border-slate-500 rounded-lg px-2 py-2 text-sm text-slate-100 mb-3',
               onBlur: function(e) { if (e.target.value !== doc.title) setTitle(e.target.value); }
             }),
             doc.groups.map(function(g) {
@@ -1059,7 +1062,7 @@ window.StemLab = window.StemLab || {
                   className: 'flex gap-1 mt-1',
                   onSubmit: function(e) { e.preventDefault(); var inp = e.target.elements['ff-add-' + g.id]; if (inp) { addItem(g.id, inp.value); inp.value = ''; } }
                 },
-                  h('input', { name: 'ff-add-' + g.id, placeholder: t('stem.freeforms.add_idea_placeholder', 'Add an idea…'), 'aria-label': t('stem.freeforms.add_idea_to', 'Add an idea to') + ' ' + g.title, className: 'flex-1 min-w-0 bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-sm text-slate-100' }),
+                  h('input', { name: 'ff-add-' + g.id, placeholder: t('stem.freeforms.add_idea_placeholder', 'Add an idea…'), 'aria-label': t('stem.freeforms.add_idea_to', 'Add an idea to') + ' ' + g.title, className: 'flex-1 min-w-0 bg-slate-900 border border-slate-500 rounded-lg px-2 py-1.5 text-sm text-slate-100' }),
                   h('button', { type: 'submit', className: BTN_GHOST, 'aria-label': t('stem.freeforms.add_idea_to', 'Add an idea to') + ' ' + g.title }, '+')
                 )
               );
@@ -1072,7 +1075,7 @@ window.StemLab = window.StemLab || {
               h('textarea', {
                 id: 'ff-note', key: 'note-' + selected.item.id + '-' + rev, defaultValue: selected.item.note || '', rows: 2,
                 placeholder: t('stem.freeforms.note_placeholder', 'Why does this idea live here?'),
-                className: 'w-full bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-100 mb-2',
+                className: 'w-full bg-slate-900 border border-slate-500 rounded-lg px-2 py-1.5 text-xs text-slate-100 mb-2',
                 onBlur: function(e) { if (e.target.value !== (selected.item.note || '')) editItem(selected.group.id, selected.item.id, { note: e.target.value }); }
               }),
               // ── Shape studio — sculpt by hand (no AI needed), from a preset,
@@ -1135,7 +1138,7 @@ window.StemLab = window.StemLab || {
                   ) : null,
                   // AI describe row — optional, same recipe format
                   hasAI ? h('div', { className: 'flex gap-1 mt-1' },
-                    h('input', { id: 'ff-sculpt', value: sculptText, onChange: function(e) { setSculptText(e.target.value); }, placeholder: t('stem.freeforms.sculpt_label', 'Or describe it…') + ' ' + selected.item.text, 'aria-label': t('stem.freeforms.sculpt_label', 'Or describe it…'), className: 'flex-1 min-w-0 bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-100' }),
+                    h('input', { id: 'ff-sculpt', value: sculptText, onChange: function(e) { setSculptText(e.target.value); }, placeholder: t('stem.freeforms.sculpt_label', 'Or describe it…') + ' ' + selected.item.text, 'aria-label': t('stem.freeforms.sculpt_label', 'Or describe it…'), className: 'flex-1 min-w-0 bg-slate-900 border border-slate-500 rounded-lg px-2 py-1.5 text-xs text-slate-100' }),
                     h('button', { className: BTN_HOT, onClick: doSculpt, disabled: sculptBusy, 'aria-busy': sculptBusy ? 'true' : 'false' }, sculptBusy ? '…' : '✨ ' + t('stem.freeforms.sculpt', 'Sculpt'))
                   ) : null,
                   parts.length ? h('button', { className: BTN_GHOST + ' mt-1 w-full', onClick: doClearArt }, t('stem.freeforms.clear_art', 'Remove sculpture')) : null

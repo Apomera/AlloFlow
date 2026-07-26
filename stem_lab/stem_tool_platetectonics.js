@@ -5535,7 +5535,7 @@ var d = labToolData.plateTectonics || {};
                         canvasRef._last.dispatchEvent(new CustomEvent('triggerEruption'));
                       }
                     },
-                    className: 'px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none'
+                    className: 'px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-orange-700 to-red-600 text-white shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none'
                   }, 'Trigger eruption')
                 )
               ),
@@ -6845,7 +6845,7 @@ var d = labToolData.plateTectonics || {};
                   React.createElement("span", { className: "text-sm font-bold text-orange-700" }, (d.researchPoints || 0) + " RP")
                 ),
                 React.createElement("span", {
-                  className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-600"
+                  className: "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700"
                 }, (d.completedChallenges || []).length + "/" + CHALLENGES.length + " challenges")
               ),
               React.createElement("div", { className: "w-full rounded-full h-2.5 bg-orange-100/50", style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
@@ -6947,7 +6947,7 @@ var d = labToolData.plateTectonics || {};
                       canvasRef._last.dispatchEvent(new CustomEvent('triggerEruption'));
                     }
                   },
-                  className: "px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700",
+                  className: "px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none bg-gradient-to-r from-orange-700 to-red-600 text-white hover:from-orange-700 hover:to-red-700",
                   style: { animation: 'pulse 2s infinite', boxShadow: '0 0 12px rgba(255,100,0,0.4)' }
                 }, __alloT('stem.platetectonics.erupt', "\uD83C\uDF0B Erupt!"))
 
@@ -7171,7 +7171,7 @@ var d = labToolData.plateTectonics || {};
                         }
                       },
                       className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none ' +
-                        (timelapsePlaying ? 'bg-red-600 text-white' : 'bg-gradient-to-r from-orange-500 to-red-600 text-white'),
+                        (timelapsePlaying ? 'bg-red-600 text-white' : 'bg-gradient-to-r from-orange-700 to-red-600 text-white'),
                       style: timelapsePlaying ? {} : { animation: 'pulse 2s infinite' }
                     }, timelapsePlaying ? '\u23F8 Pause' : '\u25B6 Time-Lapse'),
 
@@ -7909,7 +7909,7 @@ var d = labToolData.plateTectonics || {};
                   ),
                   React.createElement("button", { "aria-label": __alloT('stem.platetectonics.start_a_myth', "Start a tectonics myth"),
                     onClick: ptStartMyth,
-                    className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all bg-violet-600 text-white hover:bg-violet-700 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                    className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all bg-violet-600 text-white hover:bg-violet-700 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
                   }, m ? "🔄 New Myth" : "▶ Start")
                 ),
                 m && React.createElement("div", { className: "space-y-2" },

@@ -351,16 +351,25 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
    **Sketch Review Cycle** [SHIPPED 2026-07-25] extends that same Sketch Response
    owner rather than adding an AI-whiteboard or voting transport. A teacher-authored
    success criterion travels only to selected peers. Submitted boards can receive
-   private teacher feedback and one bounded revision over the existing data channel;
-   optional AI polish receives only the teacher's observation note, prompt, and
-   criterion—never the sketch bitmap, strokes, uid, or codename. After collection
-   closes, the teacher can freeze 2-6 approved boards into an anonymous gallery.
-   Candidate payloads remove owner identity, identify the local author's own board
-   only with a boolean self-vote guard, accept changeable P2P votes, and reveal only
-   aggregate totals on close. Raw strokes, feedback, votes, and author mappings stay
-   in device memory; Activity Pulse receives only revised, feedback-sent, showcased,
-   and votes-cast aggregates. Existing individual/group resource follow-up remains
-   the differentiation path.
+   private teacher feedback and one bounded revision over the existing data channel.
+   Text-only AI polish receives only the teacher's observation note, prompt, and
+   criterion—never the sketch bitmap, strokes, uid, or codename. A separate optional
+   teacher-triggered vision action rasterizes only the selected board into a bounded
+   720×480 identity-free PNG and sends that PNG plus the prompt and criterion to the
+   teacher-configured AI provider. The UI names the provider and discloses the transfer
+   before the click; no image is sent automatically, and the returned text remains an
+   editable draft until the teacher explicitly sends it through the private P2P
+   feedback channel. Cloud-provider use remains subject to district policy; selecting
+   an approved local multimodal provider keeps the analysis on that configured local
+   endpoint. Neither path includes uid, codename, group, roster, or resource assignment.
+   After collection closes, the teacher can freeze 2-6 approved boards into an
+   anonymous gallery. Candidate payloads remove owner identity, identify the local
+   author's own board only with a boolean self-vote guard, accept changeable P2P votes,
+   and reveal only aggregate totals on close.
+   Raw strokes, feedback, votes, and author mappings stay in device memory.
+   Activity Pulse receives only revised, feedback-sent, showcased, and votes-cast
+   aggregates. Existing individual/group resource follow-up
+   remains the differentiation path.
    **Feedback Response** [SHIPPED 2026-07-23] is a teacher-controlled mode of
    the existing free-text poll. It adds connected class/group/individual
    audience targeting, status-only drafting progress, criteria-aligned AI
@@ -426,6 +435,15 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
    dock lists fresh (<10 min) signals with clear buttons. Still open for the full vision:
    roster connected/disconnected
    per-card privacy badges and longer-term cross-session activity analysis.
+   **Private Presenter Cues** [SHIPPED 2026-07-25] refine the existing
+   Live Lesson path rather than adding speaker-note fields to resources. Each
+   selected student-safe step has bounded Say/Ask, Look/Listen for, and Next
+   move fields. The map is keyed by existing resource id in teacher React
+   memory above the dock, survives closing the dock, and clears whenever the
+   active session changes. It is never copied into History, annotations,
+   Firestore, Class Mailbox, WebRTC, Activity Pulse, or saved session history.
+   Existing class presentation and individual/group sends remain the only
+   resource-delivery paths.
 7. **Shared `LiveTransport` extraction** — when the third WebRTC activity appears, lift the
    duplicated host/guest classes (signaling, timeout, re-offer, terminal events, state-sync replay)
    into one module with the §5 envelope. Two implementations is duplication; three is a law.
@@ -468,6 +486,9 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
   individual/group resource callbacks.
 - `tests/live_polling_feedback_response_ui.test.js` — runtime hydration of the Live Center
   preset inside the existing free-text HostPanel.
+- `tests/live_presenter_cues.test.js` — bounded allowlisted facilitation cards,
+  resource-key pruning, prototype-id rejection, session-reset ownership, teacher-only
+  disclosure, and absence of persistence/transport calls.
 - `tests/live_activity_pulse.test.js` — snapshot allowlist/privacy boundary,
   active-pulse selection, evidence-to-resource reuse, Polling/Pictionary/Quiz
   owner wiring, clean quiz-attempt lifecycle, and uid/raw-content exclusion
@@ -477,6 +498,12 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
 - `tests/concept_pictionary_sketch_response.test.js` — private per-student stroke isolation,
   participant-scoped round/reveal delivery, submission moderation, anonymous sanitization,
   retained teacher gallery, and individual/group follow-up resource wiring.
+- `tests/concept_pictionary_sketch_review.test.js` and
+  `tests/concept_pictionary_sketch_review_render.test.js` — private feedback/revision,
+  anonymous voting, text-only polish compatibility, and teacher-gallery render coverage.
+- `tests/concept_pictionary_sketch_vision_feedback.test.js` — identity stripping,
+  stroke/point/base64 bounds, opaque raster semantics, configured-provider wiring,
+  explicit teacher disclosure, editable-draft ownership, and unchanged P2P/resource paths.
 - `tests/session_soft_end_terminal.test.js` — source pins: soft-end terminal check in ANTI,
   `livePolling` Tier-1 leaf, presence props at the mount site.
 - `tests/session_asset_sync.test.js`, `tests/firestore_sync.test.js` — manifest/chunking + sanitizers.

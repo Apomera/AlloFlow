@@ -1925,10 +1925,50 @@ describe('RoadReady road-local traffic invariants', () => {
     const src = readRoadReady(relPath);
     expect(src).toContain('function trafficRoadCoordinates(world, vehicle)');
     expect(src).toContain('function trafficRelativeRoadPosition(world, observer, target)');
+    expect(src).toContain('function followingVehicleRoadState(world, observer, target, laneTolerance)');
+    expect(src).toContain('var followingState = followingVehicleRoadState(');
+    expect(src).toContain('var gapState = followingVehicleRoadState(');
+    expect(src).toContain('var rearState = followingVehicleRoadState(');
+    expect(src).not.toContain('var sameLaneAsNearest;');
+    expect(src).not.toContain('stats._lastCloseFollow');
     expect(src).toContain('var roadRel = trafficRelativeRoadPosition(');
     expect(src).toContain('var pendingRel = trafficRelativeRoadPosition(');
     expect(src).not.toContain('var ah = (other2.y - t.y) * myDirSign');
     expect(src).not.toContain('var ahp = (other3.y - t.y) * pendingDirSign');
+  });
+});
+
+describe('RoadReady authored AI lane consistency', () => {
+  it.each(ROADREADY_FILES)('%s keeps recovery and passing targets on painted lane centers', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('function authoredTrafficLaneOffsets(profileOrChunk, travelSign)');
+    expect(src).toContain('function nearestAuthoredTrafficLaneOffset(profileOrChunk, travelSign, lateralOffset)');
+    expect(src).toContain('function trafficRightShoulderOffset(profileOrChunk, travelSign)');
+    expect(src).toContain('t._emergencyHomeLaneOffset = nearestAuthoredTrafficLaneOffset(');
+    expect(src).toContain('var highwayLaneOffsets = authoredTrafficLaneOffsets(');
+    expect(src).toContain('var defaultOffset = highwayLaneOffsets[highwayLaneOffsets.length - 1]');
+    expect(src).toContain('t.laneOffset = nearestAuthoredTrafficLaneOffset(');
+    expect(src).toContain('var respSpeedLimit = getPostedLimitMphAt(t.y)');
+    expect(src).not.toContain("var defaultOffset = myDirSign === 1 ? -4.6 : 4.6");
+    expect(src).not.toContain("var innerOffset = myDirSign === 1 ? -1.8 : 1.8");
+    expect(src).not.toContain("var defaultMagPost = scn.id === 'highway' ? 4.6 : 1.5");
+    expect(src).not.toContain('var respawnLaneMag = 1.5');
+  });
+});
+
+describe('RoadReady four-wheel surface-contact invariants', () => {
+  it.each(ROADREADY_FILES)('%s uses the tire footprint for road, water, audio, and scoring', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('function vehicleWheelContactPoints(car, vehicleOrSize)');
+    expect(src).toContain('function sampleVehicleWheelContacts(car, vehicleOrSize, getCell, puddleAt)');
+    expect(src).toContain('function aggregateWheelSurfaceDynamics(contacts)');
+    expect(src).toContain('var wheelContacts = sampleVehicleWheelContacts(');
+    expect(src).toContain('dt * surfaceContact.offRoadFraction');
+    expect(src).toContain('var audioContact = tireDynamicsRef.current && tireDynamicsRef.current.surfaceContact');
+    expect(src).toContain('var sprayWaterCoverage = sprayContact ? sprayContact.waterCoverage : 0');
+    expect(src).toContain('var dustContact = tireDynamicsRef.current && tireDynamicsRef.current.surfaceContact');
+    expect(src).not.toContain('var tireCell = 0');
+    expect(src).not.toContain('streamedPuddleAt(infiniteWorldRef.current, car.x, car.y)');
   });
 });
 
@@ -2060,7 +2100,7 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).toContain('function assessRoadLanePosition(profileOrChunk, lateralOffset, travelSign)');
     expect(src).toContain('function controlDistanceAhead(world, signal, car, vehicleLength)');
     expect(src).toContain('var departureAssessment = assessRoadLanePosition');
-    expect(src).toContain('var gapRel = roadRelativeTarget(infiniteWorldRef.current, car, t)');
+    expect(src).toContain('var gapState = followingVehicleRoadState(infiniteWorldRef.current, car, t,');
     expect(src).toContain("if (scn.weather === 'rain') streamedPuddlesForChunk(iw, ci)");
     expect(src).toContain('Splash audio is emitted once on puddle entry by the physics loop.');
     expect(src).not.toContain('var offset = car.x - roadCenter;');

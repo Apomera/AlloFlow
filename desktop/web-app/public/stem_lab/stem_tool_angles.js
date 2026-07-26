@@ -974,7 +974,7 @@ window.StemLab = window.StemLab || {
                 setAngleChallenge({ type: 'create', target: ta }); setAngleValue(0); setAngleFeedback(null);
                 logAngle(ta, 'create_challenge');
               },
-              className: 'py-2.5 bg-gradient-to-r from-purple-500 to-violet-500 text-white font-bold rounded-lg text-sm hover:from-purple-600 hover:to-violet-600 transition-all shadow-md'
+              className: 'py-2.5 bg-gradient-to-r from-purple-600 to-violet-600 text-white font-bold rounded-lg text-sm hover:from-purple-600 hover:to-violet-600 transition-all shadow-md'
             }, t('stem.angles.create_2', '\uD83C\uDFAF Create')),
             h('button', { 'aria-label': t('stem.angles.classify', 'Classify'),
               onClick: function() {
@@ -982,16 +982,16 @@ window.StemLab = window.StemLab || {
                 setAngleChallenge({ type: 'classify', target: ta }); setAngleValue(ta); setAngleFeedback(null);
                 logAngle(ta, 'classify_challenge');
               },
-              className: 'py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md'
+              className: 'py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md'
             }, t('stem.angles.classify_2', '\uD83E\uDDE0 Classify')),
             h('button', { 'aria-label': t('stem.angles.estimate', 'Estimate'),
               onClick: startEstimate,
-              className: 'py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
+              className: 'py-2.5 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-lg text-sm hover:from-amber-700 hover:to-orange-700 transition-all shadow-md'
             }, t('stem.angles.estimate_2', '\uD83D\uDC41\uFE0F Estimate')),
             h('button', { 'aria-label': t('stem.angles.speed_round', 'Speed Round'),
               onClick: startSpeedRound,
               disabled: speedActive,
-              className: 'py-2.5 bg-gradient-to-r from-red-500 to-rose-500 text-white font-bold rounded-lg text-sm hover:from-red-600 hover:to-rose-600 transition-all shadow-md disabled:opacity-50'
+              className: 'py-2.5 bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold rounded-lg text-sm hover:from-red-600 hover:to-rose-600 transition-all shadow-md disabled:opacity-50'
             }, t('stem.angles.speed_round_2', '\u26A1 Speed Round'))
           ),
 
@@ -1904,7 +1904,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-[12px] text-slate-700 mb-2' }, h('strong', null, 'Find: '), currentQuiz.ask),
               h('div', { className: 'flex items-center gap-2 flex-wrap' },
                 h('input', { type: 'number', step: 'any', value: state.quizAns, onChange: function(e) { setPC({ quizAns: e.target.value, quizRevealed: false }); }, placeholder: t('stem.angles.your_answer', 'your answer'), className: 'px-2 py-1 rounded border border-slate-300 text-[12px] w-32 focus:ring-2 focus:ring-amber-400 focus:outline-none', 'aria-label': t('stem.angles.your_answer_2', 'Your answer') }),
-                h('button', { onClick: submitQuiz, disabled: state.quizAns === '', className: 'px-3 py-1 rounded text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none' }, t('stem.angles.check_5', 'Check')),
+                h('button', { onClick: submitQuiz, disabled: state.quizAns === '', className: 'px-3 py-1 rounded text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none' }, t('stem.angles.check_5', 'Check')),
                 state.quizRevealed && h('span', { className: 'text-[11px] font-bold ' + (correct ? 'text-green-700' : 'text-rose-700') }, correct ? '✓ Within tolerance' : '✗ Expected ≈ ' + currentQuiz.expected.toFixed(2))
               ),
               state.quizRevealed && h('p', { className: 'text-[11px] text-slate-700 mt-1 italic' }, t('stem.angles.tip_rearrange_tan_opp_adj_if_you_know_', 'Tip: rearrange tan(θ) = opp/adj — if you know θ and one side, you can solve for the other. If you know both sides, take arctan.'))

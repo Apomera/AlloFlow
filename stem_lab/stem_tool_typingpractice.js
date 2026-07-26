@@ -13513,7 +13513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), __alloT('stem.typingpractice.i_understand_the_tradeoff_explain_in_o', 'I understand the tradeoff — explain in own words')),
                   iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.typingpractice.explain_in_your_own_words_how_do_wpm_a', 'Explain in your own words: how do WPM, accuracy, and momentum interact? What does the Pareto frontier mean for typing practice?'),
                     style: { width: '100%', minHeight: 80, padding: 6, border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
-                h('div', { style: { marginTop: 10, padding: 8, background: '#f1f5f9', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#64748b' } },
+                h('div', { style: { marginTop: 10, padding: 8, background: '#f1f5f9', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#475569' } },
                   __alloT('stem.typingpractice.design_note_discrete_5_zone_marker_par', 'Design note: discrete 5-zone marker; Pareto curve shows tradeoff space; no "correct" target — by design.'))
               )
             );

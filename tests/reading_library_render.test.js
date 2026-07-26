@@ -105,6 +105,12 @@ function selectLang(value) {
   act(() => { sel.value = value; sel.dispatchEvent(new window.Event('change', { bubbles: true })); });
 }
 
+function selectFacet(label, value) {
+  const sel = host.querySelector(`select[aria-label="${label}"]`);
+  if (!sel) throw new Error(`no facet select labelled "${label}"`);
+  act(() => { sel.value = value; sel.dispatchEvent(new window.Event('change', { bubbles: true })); });
+}
+
 async function chooseCollection(label) {
   clickByText(host, 'button', label);
   await flush();
@@ -141,8 +147,9 @@ describe('browse view', () => {
     expect(textOf(host)).toContain('Reading Collections');
     expect(textOf(host)).toContain('Science & nonfiction');
     expect(textOf(host)).toContain('Frontiers for Young Minds');
-    // The Stories shelf carries both picture-book sources.
-    const storyEntries = index.books.filter((b) => ['storyweaver', 'bloom'].includes(b.sourceId || 'storyweaver'));
+    // The Stories shelf carries every mirrored picture-book source.
+    const storyEntries = index.books.filter((b) =>
+      ['storyweaver', 'african-storybook', 'bloom', 'book-dash'].includes(b.sourceId || 'storyweaver'));
     await chooseStories();
     // the grid defaults to the English language filter
     const langSelect = host.querySelector('select[aria-label="Language"]');
@@ -150,7 +157,7 @@ describe('browse view', () => {
     // language filter carries every language on this shelf (+ All languages)
     const storyLanguages = new Set(storyEntries.map((entry) => entry.language));
     expect(langSelect.querySelectorAll('option').length).toBe(storyLanguages.size + 1);
-    // switch to All languages: the Stories shelf counts only StoryWeaver books
+    // switch to All languages: the Stories shelf counts every picture-book source
     selectLang(''); await flush();
     expect(textOf(host)).toContain(storyEntries.length + ' ');
     // narrated-only toggle narrows the grid
@@ -172,6 +179,69 @@ describe('browse view', () => {
     await flush();
     expect(textOf(host)).toContain('Instant AI translation');
     expect(textOf(host)).toContain('Request a permanent addition');
+  });
+  it('filters by topic and reading length with removable active-filter feedback', async () => {
+    await mount();
+    await chooseStories();
+    selectLang('');
+    await flush();
+    expect(host.querySelector('select[aria-label="Topic"]')).toBeTruthy();
+    expect(host.querySelector('select[aria-label="Reading length"]')).toBeTruthy();
+    expect(host.querySelector('select[aria-label="Reuse rights"]')).toBeTruthy();
+
+    const storyEntries = index.books.filter((book) =>
+      ['storyweaver', 'african-storybook', 'bloom', 'book-dash'].includes(book.sourceId || 'storyweaver'));
+    selectFacet('Topic', 'animals-nature');
+    await flush();
+    let expected = storyEntries.filter((book) => ReadingLibrary._topicIdsForBook(book).includes('animals-nature'));
+    expect(textOf(host.querySelector('[data-testid="catalog-status"]'))).toContain(String(expected.length));
+
+    selectFacet('Reading length', 'quick');
+    await flush();
+    expected = expected.filter((book) => ReadingLibrary._readingLengthId(book) === 'quick');
+    expect(textOf(host.querySelector('[data-testid="catalog-status"]'))).toContain(String(expected.length));
+    const active = host.querySelector('[data-testid="active-catalog-filters"]');
+    expect(textOf(active)).toContain('Animals & nature');
+    expect(textOf(active)).toContain('Up to 5 minutes');
+
+    clickByText(active, 'button', 'Animals & nature');
+    await flush();
+    expect(host.querySelector('select[aria-label="Topic"]').value).toBe('');
+  });
+
+  it('finds a subject through a small spelling error', async () => {
+    const fixture = allBooks.find((book) =>
+      ['wikisource', 'loc', 'gutenberg'].includes(book.sourceId) &&
+      /astronomy/i.test((book.subjects || []).join(' ')));
+    expect(fixture).toBeTruthy();
+    await mount();
+    await chooseCollection('History & primary sources');
+    selectLang('');
+    const search = host.querySelector('input[aria-label="Search"]');
+    setInputValue(search, 'astronmy');
+    await settle();
+    expect(textOf(host)).toContain(fixture.title);
+  });
+
+  it('renders compact access, multilingual, and reuse badges', async () => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    await act(async () => {
+      root.render(React.createElement(ReadingLibrary.BookCard, {
+        book: {
+          slug: 'badge-book', title: 'Badge Book', language: 'Somali', level: '2',
+          contentType: 'story', sourceId: 'african-storybook', license: 'CC BY-NC 4.0',
+          authors: ['A. Author'], subjects: ['Animals'], wordCount: 120,
+        },
+        familySize: 3,
+        onOpen: () => {},
+      }));
+    });
+    await flush();
+    expect(textOf(host)).toContain('In app');
+    expect(textOf(host)).toContain('3 languages');
+    expect(textOf(host)).toContain('Noncommercial');
   });
 
   it('hides the language-options and find-more entries for students', async () => {
@@ -1125,6 +1195,54 @@ describe('AI translation', () => {
     expect(calls.toasts.some(([m, t]) => t === 'error' && /translate/i.test(m))).toBe(true);
     // original text still shown
     expect(textOf(host)).toContain(rtlBook.title);
+  });
+});
+describe('published bilingual editions', () => {
+  it('loads a verified companion and keeps unequal page counts synchronized', async () => {
+    const primary = {
+      slug: 'family-en', title: 'Shared Story', language: 'English', langCode: 'en', isRtl: false,
+      level: '2', workKey: 'shared-work', authors: ['A. Author'], license: 'CC BY 4.0',
+      source: { id: 'african-storybook', name: 'African Storybook', url: 'https://example.test/en' },
+      pages: [
+        { n: 1, text: 'English opening.' },
+        { n: 2, text: 'English middle.' },
+        { n: 3, text: 'English ending.' },
+      ],
+    };
+    const companion = {
+      slug: 'family-so', title: 'Sheeko Wadaag', language: 'Somali', langCode: 'so', isRtl: false,
+      level: '2', workKey: 'shared-work', authors: ['A. Author'], license: 'CC BY 4.0',
+      source: { id: 'african-storybook', name: 'African Storybook', url: 'https://example.test/so' },
+      pages: [{ n: 1, text: 'Bilowga Soomaaliga.' }, { n: 2, text: 'Dhammaadka Soomaaliga.' }],
+    };
+    const edition = { slug: companion.slug, title: companion.title, language: companion.language, file: 'books/family-so.json' };
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    await act(async () => {
+      root.render(React.createElement(ReadingLibrary.BookReader, {
+        book: primary,
+        editions: [edition],
+        onLoadEdition: () => Promise.resolve(companion),
+        onOpenEdition: () => {},
+        onExit: () => {},
+        addToast: () => {},
+      }));
+    });
+    await flush();
+    expect(host.querySelector('[data-testid="published-edition-family"]')).toBeTruthy();
+    const picker = host.querySelector('#readinglib-pair-edition');
+    picker.value = companion.slug;
+    await act(async () => { picker.dispatchEvent(new window.Event('change', { bubbles: true })); });
+    await settle();
+    expect(textOf(host.querySelector('[data-testid="published-pair-primary"]'))).toContain('English opening.');
+    expect(textOf(host.querySelector('[data-testid="published-pair-companion"]'))).toContain('Bilowga Soomaaliga.');
+    clickByText(host, 'button', '›');
+    await flush();
+    clickByText(host, 'button', '›');
+    await flush();
+    expect(textOf(host.querySelector('[data-testid="published-pair-primary"]'))).toContain('English ending.');
+    expect(textOf(host.querySelector('[data-testid="published-pair-companion"]'))).toContain('Dhammaadka Soomaaliga.');
   });
 });
 

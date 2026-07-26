@@ -751,7 +751,7 @@
                     h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '11px', lineHeight: '1.5', color: '#e2e8f0', marginBottom: '4px' } }, ch.prompt),
                     isActive ? h('div', null,
                       h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: '10px', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '6px 8px', borderRadius: '6px', marginTop: '4px' } }, '\uD83D\uDCA1 ' + ch.hint),
-                      h('button', { 'aria-label': 'Complete', onClick: function(e) { e.stopPropagation(); SOUNDS.quizCorrect(); updMulti({ _challengesCompleted: (d._challengesCompleted || 0) + 1, activeChallenge: -1 }); if (addToast) addToast('\u2705 Challenge done! +5 XP'); if (awardStemXP) awardStemXP(5); }, style: { marginTop: '6px', padding: '4px 12px', borderRadius: '6px', background: '#22c55e', color: '#fff', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Complete')
+                      h('button', { 'aria-label': 'Complete', onClick: function(e) { e.stopPropagation(); SOUNDS.quizCorrect(); updMulti({ _challengesCompleted: (d._challengesCompleted || 0) + 1, activeChallenge: -1 }); if (addToast) addToast('\u2705 Challenge done! +5 XP'); if (awardStemXP) awardStemXP(5); }, style: { marginTop: '6px', padding: '4px 12px', borderRadius: '6px', background: '#22c55e', color: '#052e16', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Complete')
                     ) : null
                   );
                 })
@@ -771,7 +771,7 @@
                 ),
                 h('div', { style: { display: 'flex', gap: '4px' } },
                   h('input', { type: 'text', value: aiInput, onChange: function(e) { upd('aiInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) handleAiQuestion(aiInput.trim()); }, placeholder: 'Ask about math...', 'aria-label': 'Ask the math tutor', className: 'focus:ring-2 focus:ring-indigo-500', style: { flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)', color: '#e2e8f0', fontSize: '11px' } }),
-                  h('button', { 'aria-label': 'Graphcalc action', onClick: function() { if (aiInput.trim()) handleAiQuestion(aiInput.trim()); }, style: { padding: '6px 10px', borderRadius: '6px', background: '#6366f1', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2191')
+                  h('button', { 'aria-label': 'Graphcalc action', onClick: function() { if (aiInput.trim()) handleAiQuestion(aiInput.trim()); }, style: { padding: '6px 10px', borderRadius: '6px', background: '#4f46e5', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2191')
                 )
               ) : null,
               // Badges

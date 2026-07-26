@@ -38,8 +38,8 @@ describe('EPPP editorial-backlog answer-key alignment', () => {
 
   it('keeps key alignment ahead of feedback completion in full-bank regeneration', () => {
     const builder = fs.readFileSync(resolve(process.cwd(), 'dev-tools/build_eppp_1500_expansion.cjs'), 'utf8');
-    const keyRepair = "require('./repair_eppp_key_alignment_backlog.cjs')";
-    const feedbackCompletion = "require('./complete_eppp_option_feedback.cjs')";
+    const keyRepair = "runReplayScript('./repair_eppp_key_alignment_backlog.cjs')";
+    const feedbackCompletion = "runReplayScript('./complete_eppp_option_feedback.cjs')";
     expect(builder).toContain(keyRepair);
     expect(builder).toContain(feedbackCompletion);
     expect(builder.indexOf(keyRepair)).toBeLessThan(builder.indexOf(feedbackCompletion));

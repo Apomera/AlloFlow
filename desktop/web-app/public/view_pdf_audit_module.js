@@ -3490,6 +3490,27 @@ function PdfAuditView(props) {
       return "*";
     }
   })();
+  const _VERAPDF_IDENTITY_TIMEOUT_MS = 2e4;
+  const _veraPdfReportedError = (d) => {
+    if (!d || d.type !== "verapdf-error") return null;
+    const _text = (value, max) => {
+      const raw = typeof value === "string" ? value : value && typeof value.message === "string" ? value.message : "";
+      return raw.trim().replace(/\s+/g, " ").slice(0, max);
+    };
+    const stage = _text(d.stage || d.phase, 40).toLowerCase();
+    const code = _text(d.code, 80);
+    const detail = _text(d.error || d.message || d.detail, 500);
+    const phase = stage === "boot" || stage === "startup" || stage === "assets" ? "startup" : stage === "validate" || stage === "validation" ? "validation" : stage === "remediate" || stage === "remediation" ? "remediation" : "runtime";
+    const fallback = phase === "startup" ? "the browser runtime or deployed validator assets did not load" : "the validator reported an unexpected failure";
+    const hint = phase === "startup" ? " Check the AlloFlow validator deployment/runtime and your connection." : "";
+    return new Error("veraPDF " + phase + " failed" + (code ? " [" + code + "]" : "") + ": " + (detail || fallback) + hint);
+  };
+  const _veraPdfPageMismatchError = () => _veraPdfReportedError({
+    type: "verapdf-error",
+    phase: "boot",
+    code: "VERAPDF_PAGE_MISMATCH",
+    error: "The opened page did not identify itself as the veraPDF validator. It may be an app-shell fallback or incomplete deployment."
+  });
   const [veraPdfResult, setVeraPdfResult] = useState(null);
   const [veraPdfAutoSkipped, setVeraPdfAutoSkipped] = useState(null);
   const [veraPdfBusy, setVeraPdfBusy] = useState(false);
@@ -3723,9 +3744,10 @@ function PdfAuditView(props) {
       reject(new Error("Popup blocked \u2014 allow pop-ups so AlloFlow can run veraPDF validation."));
       return;
     }
-    let done = false, gotReady = false;
+    let done = false, gotReady = false, gotIdentity = false;
     const timer = setTimeout(() => {
       if (!done) {
+        done = true;
         cleanup();
         try {
           win.close();
@@ -3736,6 +3758,7 @@ function PdfAuditView(props) {
     }, 6e5);
     const readyTimer = setTimeout(() => {
       if (!gotReady && !done) {
+        done = true;
         cleanup();
         try {
           win.close();
@@ -3744,8 +3767,20 @@ function PdfAuditView(props) {
         reject(new Error("veraPDF validator did not start (check your connection / allow pop-ups)."));
       }
     }, 9e4);
+    const identityTimer = setTimeout(() => {
+      if (!gotIdentity && !done) {
+        done = true;
+        cleanup();
+        try {
+          win.close();
+        } catch (e) {
+        }
+        reject(_veraPdfPageMismatchError());
+      }
+    }, _VERAPDF_IDENTITY_TIMEOUT_MS);
     const closePoll = setInterval(() => {
       if (!done && win.closed) {
+        done = true;
         cleanup();
         reject(new Error("veraPDF validation window was closed before it finished."));
       }
@@ -3753,13 +3788,30 @@ function PdfAuditView(props) {
     function cleanup() {
       clearTimeout(timer);
       clearTimeout(readyTimer);
+      clearTimeout(identityTimer);
       clearInterval(closePoll);
       window.removeEventListener("message", onMsg);
     }
     function onMsg(ev) {
       if (!ev || ev.source !== win) return;
       const d = ev.data || {};
-      if (d.type === "verapdf-ready") {
+      if (d.type === "verapdf-loading") {
+        gotIdentity = true;
+        clearTimeout(identityTimer);
+        return;
+      }
+      const reportedError = _veraPdfReportedError(d);
+      if (reportedError) {
+        done = true;
+        cleanup();
+        try {
+          win.close();
+        } catch (e) {
+        }
+        reject(reportedError);
+      } else if (d.type === "verapdf-ready") {
+        gotIdentity = true;
+        clearTimeout(identityTimer);
         gotReady = true;
         clearTimeout(readyTimer);
         try {
@@ -3789,9 +3841,10 @@ function PdfAuditView(props) {
       reject(new Error("Popup blocked \u2014 allow pop-ups so AlloFlow can run veraPDF remediation."));
       return;
     }
-    let done = false, gotReady = false;
+    let done = false, gotReady = false, gotIdentity = false;
     const timer = setTimeout(() => {
       if (!done) {
+        done = true;
         cleanup();
         try {
           win.close();
@@ -3802,6 +3855,7 @@ function PdfAuditView(props) {
     }, 6e5);
     const readyTimer = setTimeout(() => {
       if (!gotReady && !done) {
+        done = true;
         cleanup();
         try {
           win.close();
@@ -3810,8 +3864,20 @@ function PdfAuditView(props) {
         reject(new Error("veraPDF validator did not start (check your connection / allow pop-ups)."));
       }
     }, 9e4);
+    const identityTimer = setTimeout(() => {
+      if (!gotIdentity && !done) {
+        done = true;
+        cleanup();
+        try {
+          win.close();
+        } catch (e) {
+        }
+        reject(_veraPdfPageMismatchError());
+      }
+    }, _VERAPDF_IDENTITY_TIMEOUT_MS);
     const closePoll = setInterval(() => {
       if (!done && win.closed) {
+        done = true;
         cleanup();
         reject(new Error("veraPDF remediation window was closed before it finished."));
       }
@@ -3819,13 +3885,30 @@ function PdfAuditView(props) {
     function cleanup() {
       clearTimeout(timer);
       clearTimeout(readyTimer);
+      clearTimeout(identityTimer);
       clearInterval(closePoll);
       window.removeEventListener("message", onMsg);
     }
     function onMsg(ev) {
       if (!ev || ev.source !== win) return;
       const d = ev.data || {};
-      if (d.type === "verapdf-ready") {
+      if (d.type === "verapdf-loading") {
+        gotIdentity = true;
+        clearTimeout(identityTimer);
+        return;
+      }
+      const reportedError = _veraPdfReportedError(d);
+      if (reportedError) {
+        done = true;
+        cleanup();
+        try {
+          win.close();
+        } catch (e) {
+        }
+        reject(reportedError);
+      } else if (d.type === "verapdf-ready") {
+        gotIdentity = true;
+        clearTimeout(identityTimer);
         gotReady = true;
         clearTimeout(readyTimer);
         try {
@@ -3852,22 +3935,38 @@ function PdfAuditView(props) {
     } catch (e) {
     }
     if (!win) return null;
-    const handle = { win, warmed: false };
+    const handle = { win, warmed: false, identified: false, error: null };
     handle.ready = new Promise((resolve) => {
+      let settled = false, readyTimer = null, identityTimer = null;
+      const finish = (ok, error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(readyTimer);
+        clearTimeout(identityTimer);
+        window.removeEventListener("message", onReady);
+        handle.warmed = !!ok;
+        handle.error = error || null;
+        resolve(handle.warmed);
+      };
       const onReady = (ev) => {
         if (!ev || ev.source !== win) return;
         const d = ev.data || {};
-        if (d.type === "verapdf-ready") {
-          handle.warmed = true;
-          window.removeEventListener("message", onReady);
-          resolve(true);
+        if (d.type === "verapdf-loading") {
+          handle.identified = true;
+          clearTimeout(identityTimer);
+          return;
+        }
+        const reportedError = _veraPdfReportedError(d);
+        if (reportedError) finish(false, reportedError);
+        else if (d.type === "verapdf-ready") {
+          handle.identified = true;
+          clearTimeout(identityTimer);
+          finish(true, null);
         }
       };
       window.addEventListener("message", onReady);
-      setTimeout(() => {
-        window.removeEventListener("message", onReady);
-        resolve(handle.warmed);
-      }, 9e4);
+      identityTimer = setTimeout(() => finish(false, _veraPdfPageMismatchError()), _VERAPDF_IDENTITY_TIMEOUT_MS);
+      readyTimer = setTimeout(() => finish(handle.warmed, null), 9e4);
     });
     return handle;
   };
@@ -3880,12 +3979,14 @@ function PdfAuditView(props) {
     let done = false;
     const timer = setTimeout(() => {
       if (!done) {
+        done = true;
         cleanup();
         reject(new Error("veraPDF timed out"));
       }
     }, 6e5);
     const closePoll = setInterval(() => {
       if (!done && win.closed) {
+        done = true;
         cleanup();
         reject(new Error("validator window closed"));
       }
@@ -3898,7 +3999,16 @@ function PdfAuditView(props) {
     function onMsg(ev) {
       if (!ev || ev.source !== win) return;
       const d = ev.data || {};
-      if (d.type === "verapdf-result") {
+      const reportedError = _veraPdfReportedError(d);
+      if (reportedError) {
+        done = true;
+        cleanup();
+        try {
+          win.close();
+        } catch (e) {
+        }
+        reject(reportedError);
+      } else if (d.type === "verapdf-result") {
         done = true;
         cleanup();
         try {
@@ -3911,18 +4021,21 @@ function PdfAuditView(props) {
     }
     window.addEventListener("message", onMsg);
     handle.ready.then(() => {
+      if (done) return;
       if (!handle.warmed) {
+        done = true;
         cleanup();
         try {
           win.close();
         } catch (e) {
         }
-        reject(new Error("veraPDF validator did not start (boot/CDN failure)"));
+        reject(handle.error || new Error("veraPDF validator did not start (boot/CDN failure)"));
         return;
       }
       try {
         win.postMessage({ type: "verapdf-validate", bytes }, VERAPDF_ORIGIN);
       } catch (e) {
+        done = true;
         cleanup();
         reject(e);
       }
@@ -3955,22 +4068,40 @@ function PdfAuditView(props) {
     } catch (_) {
       return null;
     }
-    const handle = { frame, warmed: false };
+    const handle = { frame, warmed: false, identified: false, error: null };
     handle.ready = new Promise((resolve) => {
+      let settled = false, readyTimer = null, identityTimer = null;
+      const finish = (ok, error, markBlocked) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(readyTimer);
+        clearTimeout(identityTimer);
+        window.removeEventListener("message", onReady);
+        handle.warmed = !!ok;
+        handle.error = error || null;
+        if (handle.warmed) _setVeraEmbedPref("ok");
+        else if (markBlocked && _veraEmbedPref() !== "ok") _setVeraEmbedPref("blocked");
+        resolve(handle.warmed);
+      };
       const onReady = (ev) => {
-        if (frame.contentWindow && ev.source === frame.contentWindow && ev.data && ev.data.type === "verapdf-ready") {
-          handle.warmed = true;
-          window.removeEventListener("message", onReady);
-          _setVeraEmbedPref("ok");
-          resolve(true);
+        if (!frame.contentWindow || !ev || ev.source !== frame.contentWindow) return;
+        const d = ev.data || {};
+        if (d.type === "verapdf-loading") {
+          handle.identified = true;
+          clearTimeout(identityTimer);
+          return;
+        }
+        const reportedError = _veraPdfReportedError(d);
+        if (reportedError) finish(false, reportedError, true);
+        else if (d.type === "verapdf-ready") {
+          handle.identified = true;
+          clearTimeout(identityTimer);
+          finish(true, null, false);
         }
       };
       window.addEventListener("message", onReady);
-      setTimeout(() => {
-        window.removeEventListener("message", onReady);
-        if (!handle.warmed && _veraEmbedPref() !== "ok") _setVeraEmbedPref("blocked");
-        resolve(handle.warmed);
-      }, 35e3);
+      identityTimer = setTimeout(() => finish(false, _veraPdfPageMismatchError(), true), _VERAPDF_IDENTITY_TIMEOUT_MS);
+      readyTimer = setTimeout(() => finish(handle.warmed, null, !handle.warmed), 35e3);
     });
     handle.isReady = () => handle.warmed;
     _veraIframeRef.current = handle;
@@ -3985,6 +4116,7 @@ function PdfAuditView(props) {
     let done = false;
     const timer = setTimeout(() => {
       if (!done) {
+        done = true;
         cleanup();
         reject(new Error("veraPDF timed out"));
       }
@@ -3994,9 +4126,14 @@ function PdfAuditView(props) {
       window.removeEventListener("message", onMsg);
     }
     function onMsg(ev) {
-      if (ev.source !== cw) return;
-      const d = ev && ev.data || {};
-      if (d.type === "verapdf-result") {
+      if (!ev || ev.source !== cw) return;
+      const d = ev.data || {};
+      const reportedError = _veraPdfReportedError(d);
+      if (reportedError) {
+        done = true;
+        cleanup();
+        reject(reportedError);
+      } else if (d.type === "verapdf-result") {
         done = true;
         cleanup();
         if (d.error) reject(new Error(d.error));
@@ -4005,14 +4142,17 @@ function PdfAuditView(props) {
     }
     window.addEventListener("message", onMsg);
     handle.ready.then((ok) => {
+      if (done) return;
       if (!ok) {
+        done = true;
         cleanup();
-        reject(new Error("validator iframe not ready"));
+        reject(handle.error || new Error("validator iframe not ready"));
         return;
       }
       try {
         cw.postMessage({ type: "verapdf-validate", bytes }, VERAPDF_ORIGIN);
       } catch (e) {
+        done = true;
         cleanup();
         reject(e);
       }

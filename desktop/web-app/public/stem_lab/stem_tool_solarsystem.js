@@ -2184,7 +2184,7 @@ const d = labToolData.solarSystem || {};
                     ? "bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-500/30 ring-1 ring-indigo-300/40 hover:shadow-xl hover:scale-[1.02]"
                     : (isDark
                         ? "bg-gradient-to-r from-purple-700/80 to-indigo-700/80 text-white shadow-md shadow-purple-900/40 hover:from-purple-600 hover:to-indigo-600 border border-purple-500/40"
-                        : "bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-md shadow-indigo-200 hover:from-purple-600 hover:to-indigo-700 ring-1 ring-white/40"))
+                        : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-indigo-200 hover:from-purple-600 hover:to-indigo-700 ring-1 ring-white/40"))
                 },
                   d.orreryMode ? "\uD83C\uDF0D 3D Explorer" : "\uD83C\uDF0C Open Orrery Lab",
                   // Small "NEW" badge for never-opened users, helps discoverability.
@@ -5587,7 +5587,7 @@ const d = labToolData.solarSystem || {};
               }
             },
             className: "orr-btn",
-            style: { padding: "8px 22px", borderRadius: "8px", border: "none", background: "linear-gradient(135deg, #27ae60, #229954)", color: "#fff", cursor: "pointer", fontWeight: 700, fontSize: "14px", boxShadow: "0 2px 8px rgba(39,174,96,0.3)" }
+            style: { padding: "8px 22px", borderRadius: "8px", border: "none", background: "linear-gradient(135deg, #15803d, #166534)", color: "#fff", cursor: "pointer", fontWeight: 700, fontSize: "14px", boxShadow: "0 2px 8px rgba(39,174,96,0.3)" }
           }, __alloT('stem.solarsystem.submit', "\u2714 Submit"))
         ) : h("div", { key: "acorr", style: {
           color: "#27ae60", fontWeight: 700, fontSize: "16px", padding: "12px 16px",
@@ -6031,7 +6031,7 @@ const d = labToolData.solarSystem || {};
 
                   onClick: () => upd('paused', !paused),
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (paused ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'bg-white/15 text-white/90 hover:bg-white/25'),
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (paused ? 'bg-gradient-to-r from-emerald-700 to-emerald-700 text-white shadow-lg shadow-emerald-500/30' : 'bg-white/15 text-white/90 hover:bg-white/25'),
                   style: { border: 'none' }
 
                 }, paused ? "\u25B6 Play" : "\u23F8 Pause"),
@@ -6223,7 +6223,7 @@ const d = labToolData.solarSystem || {};
                       className: "px-3 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all hover:-translate-y-0.5 " +
 
                         ((d.viewTab || 'overview') === tab
-                          ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/40 ring-1 ring-indigo-400/40'
+                          ? 'bg-gradient-to-r from-indigo-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/40 ring-1 ring-indigo-400/40'
                           : (isDark ? 'bg-gradient-to-br from-slate-700 to-slate-800 text-slate-300 hover:from-slate-600 hover:to-slate-700 hover:text-white border border-slate-600/50' : 'transition-colors bg-gradient-to-br from-white to-slate-100 text-slate-700 hover:from-slate-50 hover:to-slate-200 hover:text-indigo-700 border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300')),
 
                       style: ((d.viewTab || 'overview') === tab) ? { textShadow: '0 1px 1px rgba(15,23,42,0.4)' } : {}
@@ -7707,7 +7707,7 @@ const d = labToolData.solarSystem || {};
                       onClick: function() { upd('surfaceExplore', isActive ? null : btn.key); },
                       className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all border " +
                         (isActive
-                          ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white border-indigo-400/50 shadow-lg shadow-indigo-500/25 scale-[1.03] ring-1 ring-indigo-400/30'
+                          ? 'bg-gradient-to-r from-indigo-600 to-indigo-600 text-white border-indigo-400/50 shadow-lg shadow-indigo-500/25 scale-[1.03] ring-1 ring-indigo-400/30'
                           : (isDark
                             ? 'transition-colors bg-slate-800 text-slate-300 border-slate-600 hover:border-indigo-500/50 hover:bg-slate-700 hover:text-indigo-300'
                             : 'transition-colors bg-white text-slate-600 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 shadow-sm'))
@@ -7726,7 +7726,7 @@ const d = labToolData.solarSystem || {};
                       NOTABLE_MOONS[sel.name].map(function(moon, mi) {
                         return React.createElement("div", { key: mi, className: "bg-white/5 rounded-lg p-3 border border-white/10 hover:border-indigo-400/40 hover:bg-white/10 hover:shadow-lg hover:shadow-indigo-500/10 transition-all cursor-default group" },
                           React.createElement("div", { className: "flex items-start gap-2" },
-                            React.createElement("div", { className: "w-8 h-8 rounded-full bg-gradient-to-br from-slate-300 to-slate-500 flex items-center justify-center text-[11px] font-bold text-slate-800 shrink-0 group-hover:from-indigo-300 group-hover:to-indigo-500 transition-all" }, moon.name.charAt(0)),
+                            React.createElement("div", { className: "w-8 h-8 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center text-[11px] font-bold text-slate-800 shrink-0 group-hover:from-indigo-300 group-hover:to-indigo-400 transition-all" }, moon.name.charAt(0)),
                             React.createElement("div", { className: "flex-1 min-w-0" },
                               React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
                                 React.createElement("span", { className: "text-xs font-bold text-white" }, moon.name),
@@ -12229,7 +12229,7 @@ const d = labToolData.solarSystem || {};
 
                           '<div style="display:flex;gap:6px;margin-top:8px">' +
 
-                          '<button id="wp-launch" style="flex:1;padding:5px;border-radius:6px;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-weight:bold;font-size:10px;border:none;cursor:pointer">\uD83D\uDE80 Launch Route</button>' +
+                          '<button id="wp-launch" style="flex:1;padding:5px;border-radius:6px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:bold;font-size:10px;border:none;cursor:pointer">\uD83D\uDE80 Launch Route</button>' +
 
                           '<button id="wp-clear" style="padding:5px 10px;border-radius:6px;background:rgba(239,68,68,0.2);color:#f87171;font-weight:bold;font-size:10px;border:1px solid rgba(239,68,68,0.3);cursor:pointer">Clear</button>' +
 
@@ -13403,7 +13403,7 @@ const d = labToolData.solarSystem || {};
                               if (!proxEl2 && nearestOceanDist < 4) {
                                 proxEl2 = document.createElement('div');
                                 proxEl2.id = 'hud-sample-prox';
-                                proxEl2.style.cssText = 'position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,180,255,0.9);backdrop-filter:blur(4px);color:#fff;font-weight:bold;font-size:13px;padding:8px 18px;border-radius:10px;z-index:20;text-align:center;pointer-events:none;transition:opacity 0.3s';
+                                proxEl2.style.cssText = 'position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,180,255,0.9);backdrop-filter:blur(4px);color:#082f49;font-weight:bold;font-size:13px;padding:8px 18px;border-radius:10px;z-index:20;text-align:center;pointer-events:none;transition:opacity 0.3s';
                                 canvasEl.parentElement.appendChild(proxEl2);
                               }
                               if (proxEl2) {
@@ -16841,7 +16841,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex justify-center gap-1' },
                                           React.createElement('button', { onClick: function() { move(-1, 0); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600' : 'transition-colors bg-slate-200 hover:bg-slate-300') }, '←'),
-                                          React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors px-3 py-2 rounded font-bold text-xs bg-orange-500 text-white hover:bg-orange-600' }, __alloT('stem.solarsystem.reset_2', 'Reset')),
+                                          React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors px-3 py-2 rounded font-bold text-xs bg-orange-700 text-white hover:bg-orange-800' }, __alloT('stem.solarsystem.reset_2', 'Reset')),
                                           React.createElement('button', { onClick: function() { move(1, 0); }, disabled: reached, className: 'px-3 py-2 rounded font-bold text-lg ' + (isDark ? 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600' : 'transition-colors bg-slate-200 hover:bg-slate-300') }, '→')
                                         ),
                                         React.createElement('div', { className: 'flex justify-center gap-1' },
@@ -17196,7 +17196,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-2 flex gap-1' },
                                           React.createElement('button', { disabled: asteroids.filter(function(a) { return a.alive; }).length === 0, onClick: function() { var next = asteroids.filter(function(a) { return a.alive; })[0]; if (next) blast(next.id); }, className: 'transition-colors flex-1 px-3 py-1.5 rounded font-bold text-xs bg-amber-500 text-slate-950 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed' }, __alloT('stem.solarsystem.destroy_next_asteroid', 'Destroy next asteroid')),
-                                          React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors flex-1 px-3 py-1.5 rounded font-bold text-xs bg-red-500 text-white hover:bg-red-600' }, __alloT('stem.solarsystem.new_wave', '🚀 New Wave')),
+                                          React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors flex-1 px-3 py-1.5 rounded font-bold text-xs bg-red-600 text-white hover:bg-red-700' }, __alloT('stem.solarsystem.new_wave', '🚀 New Wave')),
                                           React.createElement('div', { className: 'flex-1 text-center text-xs font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, 'Hits: ' + earthHits + ' • Asteroids left: ' + asteroids.filter(function(a) { return a.alive; }).length)
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -17721,9 +17721,9 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 flex gap-1' },
-                                          React.createElement('button', { onClick: function() { thrust(); }, disabled: ll.landed || ll.crashed || ll.fuel <= 0, className: 'transition-colors flex-1 px-3 py-2 rounded font-bold text-sm bg-orange-500 text-white hover:bg-orange-600 disabled:bg-slate-400' }, __alloT('stem.solarsystem.thrust', '🔥 Thrust')),
+                                          React.createElement('button', { onClick: function() { thrust(); }, disabled: ll.landed || ll.crashed || ll.fuel <= 0, className: 'transition-colors flex-1 px-3 py-2 rounded font-bold text-sm bg-orange-700 text-white hover:bg-orange-800 disabled:bg-slate-400' }, __alloT('stem.solarsystem.thrust', '🔥 Thrust')),
                                           React.createElement('button', { onClick: function() { step(); }, disabled: ll.landed || ll.crashed, className: 'flex-1 px-3 py-2 rounded font-bold text-sm ' + (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200') }, __alloT('stem.solarsystem.fall_tick', '⏬ Fall (tick)')),
-                                          React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors px-3 py-2 rounded font-bold text-sm bg-red-500 text-white hover:bg-red-600' }, '↻')
+                                          React.createElement('button', { onClick: function() { reset(); }, className: 'transition-colors px-3 py-2 rounded font-bold text-sm bg-red-600 text-white hover:bg-red-700' }, '↻')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.apollo_11_nearly_ran_out_of_fuel_durin', 'Apollo 11 nearly ran out of fuel during the lunar descent. Neil Armstrong manually overrode the autopilot to find a smoother landing area. Touchdown happened with ~25 seconds of fuel left.')
@@ -21706,7 +21706,7 @@ const d = labToolData.solarSystem || {};
                   ),
                   React.createElement("button", { type: "button", "aria-label": __alloT('stem.solarsystem.start_exploring', "Start Exploring!"),
                     onClick: function() { upd('tutorialDismissed', true); playBeep(); },
-                    className: "mt-4 w-full min-h-[44px] py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                    className: "mt-4 w-full min-h-[44px] py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-600 hover:to-purple-600 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                   }, __alloT('stem.solarsystem.start_exploring_2', "\uD83D\uDE80 Start Exploring!"))
                 )
               ),
@@ -21860,7 +21860,7 @@ const d = labToolData.solarSystem || {};
                       ),
                       !active && React.createElement("button", {
                         onClick: function() { upd('activeAssignment', asn.id); },
-                        className: "mt-2 w-full px-2 py-1 text-[11px] font-bold rounded bg-blue-500 text-white hover:bg-blue-600 transition-all"
+                        className: "mt-2 w-full px-2 py-1 text-[11px] font-bold rounded bg-blue-600 text-white hover:bg-blue-700 transition-all"
                       }, __alloT('stem.solarsystem.start_assignment', "Start Assignment"))
                     );
                   })
@@ -21892,7 +21892,7 @@ const d = labToolData.solarSystem || {};
                 )
               ),
 
-              React.createElement("button", { "aria-label": __alloT('stem.solarsystem.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ss-' + Date.now(), tool: 'solarSystem', label: sel ? sel.name : 'Solar System', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, __alloT('stem.solarsystem.snapshot_2', "\uD83D\uDCF8 Snapshot"))
+              React.createElement("button", { "aria-label": __alloT('stem.solarsystem.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ss-' + Date.now(), tool: 'solarSystem', label: sel ? sel.name : 'Solar System', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, __alloT('stem.solarsystem.snapshot_2', "\uD83D\uDCF8 Snapshot"))
 
             )
 

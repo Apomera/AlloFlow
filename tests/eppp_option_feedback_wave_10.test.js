@@ -9,6 +9,7 @@ const {
   wave09WarningSnapshot,
   wave10WarningSnapshot,
 } = require('../dev-tools/eppp_option_feedback_wave_10_data.cjs');
+const { CAMPAIGN_ID: distractorHalvingCampaignId } = require('../dev-tools/eppp_distractor_halving_campaign_manifest.cjs');
 
 const root = process.cwd();
 const sourcePath = path.join(root, 'test_prep', 'eppp_native_items.json');
@@ -63,10 +64,8 @@ describe('EPPP incorrect-option explanation repair wave 10', () => {
   it('replays wave 10 after wave 09 and before the canonical audits', () => {
     const builder = fs.readFileSync(expansionBuilderPath, 'utf8');
     const steps = [
-      "require('./repair_eppp_option_feedback_wave_09.cjs')",
-      "require('./repair_eppp_option_feedback_wave_10.cjs')",
-      "require('./audit_eppp_distractor_quality.cjs')",
-      "require('./audit_eppp_option_feedback.cjs')",
+      "runReplayScript('./repair_eppp_option_feedback_wave_09.cjs')",
+      "runReplayScript('./repair_eppp_option_feedback_wave_10.cjs')",
     ];
     const positions = steps.map((step) => builder.indexOf(step));
     expect(positions.every((position) => position >= 0)).toBe(true);
@@ -84,6 +83,7 @@ describe('EPPP incorrect-option explanation repair wave 10', () => {
     ids.forEach((id, index) => {
       const revision = revisions[id];
       const item = byId.get(id);
+      const deepReview = item?.qualityCampaignReview?.campaignId === distractorHalvingCampaignId;
       const authoredChoices = [0, 1, 2, 3].map((optionIndex) => revision.choices[optionIndex]);
       const incorrectIndexes = [0, 1, 2, 3].filter((optionIndex) => optionIndex !== expectedKeys[index]);
 
@@ -94,20 +94,22 @@ describe('EPPP incorrect-option explanation repair wave 10', () => {
       expect(item.difficulty).toBe(revision.difficulty);
       expect(item.optionFeedbackRefinementWave).toBe('eppp-option-feedback-wave-10');
       expect(item.optionFeedbackRefinedAt).toBe('2026-07-18');
-      expect(item.qaReviewedAt).toBe('2026-07-18');
+      expect(item.qaReviewedAt).toBe(deepReview ? '2026-07-25' : '2026-07-18');
       expect(revision.sourceCheck.length).toBeGreaterThanOrEqual(100);
       expect(revision.feedbackDesign).toHaveLength(3);
       expect(new Set(revision.feedbackDesign).size).toBe(3);
       expect(revision.qualityFlags.length).toBeGreaterThan(0);
 
-      expect(item.prompt).toBe(revision.prompt);
+      if (!deepReview) expect(item.prompt).toBe(revision.prompt);
+      else expect(item.qualityCampaignReview.mode).toBe('deep-rewrite');
       expect(item.prompt.length).toBeGreaterThanOrEqual(120);
-      expect(item.choices).toEqual(authoredChoices);
+      if (!deepReview) expect(item.choices).toEqual(authoredChoices);
       expect(item.choices.every((choice) => choice.length >= 40)).toBe(true);
       expect(new Set(item.choices.map(normalize)).size).toBe(4);
       expect(item.choices.some((choice) => extremeCuePattern.test(choice))).toBe(false);
       expect(item.choices.some((choice) => /\b(?:all|none) of the above\b/i.test(choice))).toBe(false);
-      expect(item.rationale).toBe(revision.rationale);
+      if (!deepReview) expect(item.rationale).toBe(revision.rationale);
+      else expect(item.rationale.length).toBeGreaterThanOrEqual(120);
       expect(item.choiceRationales).toHaveLength(4);
       expect(item.choiceRationales[item.answerIndex]).toBe(item.rationale);
       expect(Object.keys(revision.incorrectFeedback).map(Number).sort()).toEqual(incorrectIndexes);
@@ -116,7 +118,8 @@ describe('EPPP incorrect-option explanation repair wave 10', () => {
       incorrectIndexes.forEach((optionIndex) => {
         const feedback = item.choiceRationales[optionIndex];
         explanations.push(normalize(feedback));
-        expect(feedback).toBe(revision.incorrectFeedback[optionIndex]);
+        if (!deepReview) expect(feedback).toBe(revision.incorrectFeedback[optionIndex]);
+        else expect(item.qualityCampaignReview.feedbackModes[optionIndex]).toBeTruthy();
         expect(feedback.length).toBeGreaterThanOrEqual(100);
         expect(wordCount(feedback)).toBeGreaterThanOrEqual(16);
         expect(feedback).not.toMatch(genericFeedbackPattern);
@@ -145,8 +148,10 @@ describe('EPPP incorrect-option explanation repair wave 10', () => {
     ids.forEach((id) => {
       const item = byId.get(id);
       const revision = revisions[id];
-      expect(item.references).toEqual(revision.references);
-      expect(item.sourceDetails).toEqual(revision.sourceDetails);
+      const deepReview = item.qualityCampaignReview?.campaignId === distractorHalvingCampaignId;
+      if (!deepReview) expect(item.references).toEqual(revision.references);
+      else expect(item.qualityCampaignReview.mode).toBe('deep-rewrite');
+      if (!deepReview) expect(item.sourceDetails).toEqual(revision.sourceDetails);
       expect(item.sourceDetails).toHaveLength(item.references.length);
       expect(new Set(item.references).size).toBe(item.references.length);
 

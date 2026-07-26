@@ -73,8 +73,9 @@ describe('EPPP native quality repair wave 02', () => {
     expect(flashbulb.sourceDetails[0].credibility).toContain('peer-reviewed');
     const ethicsCode = byId.get('eppp-v3-professional-060');
     expect(ethicsCode.references).toEqual(['https://www.apa.org/ethics/code']);
-    expect(ethicsCode.sourceDetails[0].title).toContain('American Psychological Association');
-    expect(ethicsCode.sourceDetails[0].credibility).toContain('primary authoritative source');
+    expect(ethicsCode.sourceDetails[0].title).toBe('Ethical Principles of Psychologists and Code of Conduct');
+    expect(ethicsCode.sourceDetails[0].organization).toBe('American Psychological Association');
+    expect(ethicsCode.sourceDetails[0].credibility).toMatch(/primary source/i);
     expect(ethicsCode.choices[ethicsCode.answerIndex]).toContain('2002');
   });
 
@@ -113,6 +114,6 @@ describe('EPPP native quality repair wave 02', () => {
     for (const name of ['eppp_native_items.json', 'eppp_native_quality_audit_wave_02.json', 'eppp_native_quality_audit_wave_02.md', 'eppp_native_qa.json', 'eppp_native_qa.md']) {
       expect(read(`desktop/web-app/public/test_prep/${name}`)).toBe(read(`test_prep/${name}`));
     }
-    expect(read('dev-tools/build_eppp_1500_expansion.cjs')).toContain("require('./repair_eppp_native_quality_wave_02.cjs')");
+    expect(read('dev-tools/build_eppp_1500_expansion.cjs')).toContain("runReplayScript('./repair_eppp_native_quality_wave_02.cjs')");
   });
 });

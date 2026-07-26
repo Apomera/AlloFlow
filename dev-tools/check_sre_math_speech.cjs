@@ -15,6 +15,8 @@ const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.woff2': 'font/woff2',
 };
 
 function serveFile(req, res) {
@@ -82,19 +84,43 @@ async function main() {
       const options = { allowRemoteFallback: false, timeoutMs: 20000 };
       const english = await window.AlloMathSpeech.toSpeech('\\frac{1}{2}', { ...options, lang: 'English' });
       const spanish = await window.AlloMathSpeech.toSpeech('x^2 + 1', { ...options, lang: 'Spanish' });
-      return { english, spanish, diagnostics: window.AlloMathSpeech.diagnostics() };
+      const nestedFraction = await window.AlloMathRenderer.renderToString('\\frac{1}{1+\\frac{1}{x}}', options);
+      const matrix = await window.AlloMathRenderer.renderToString('\\begin{bmatrix}1&2\\\\3&4\\end{bmatrix}', { ...options, displayMode: true });
+      const mount = document.createElement('div');
+      mount.style.cssText = 'max-width:100%;overflow-x:auto';
+      mount.innerHTML = nestedFraction + matrix;
+      document.body.appendChild(mount);
+      return {
+        english,
+        spanish,
+        nestedFraction,
+        matrix,
+        diagnostics: window.AlloMathSpeech.diagnostics(),
+        renderDiagnostics: window.AlloMathRenderer.diagnostics(),
+        mathCount: mount.querySelectorAll('math').length,
+        fractionCount: mount.querySelectorAll('mfrac').length,
+        tableCount: mount.querySelectorAll('mtable').length,
+      };
     });
 
     assert.ok(result.english && /half|divided|over/i.test(result.english), `unexpected English speech: ${result.english}`);
     assert.ok(result.spanish && result.spanish.length > 2, `unexpected Spanish speech: ${result.spanish}`);
     assert.match(result.diagnostics.sreSource, /\/sre-assets\/sre\.js$/);
     assert.match(result.diagnostics.temmlSource, /\/sre-assets\/temml\.min\.js$/);
-    assert.match(result.diagnostics.mathmapsSource, /\/sre-assets\/mathmaps$/);
+assert.match(result.diagnostics.mathmapsSource, /\/sre-assets\/mathmaps$/);
+    assert.match(result.renderDiagnostics.temmlSource, /\/sre-assets\/temml\.min\.js$/);
+    assert.match(result.renderDiagnostics.cssSource, /\/sre-assets\/Temml-Local\.css$/);
+    assert.equal(result.renderDiagnostics.role, 'semantic-math-renderer');
+    assert.equal(result.mathCount, 2);
+    assert.ok(result.fractionCount >= 2, `expected nested fractions, got ${result.fractionCount}`);
+    assert.ok(result.tableCount >= 1, 'expected semantic matrix table');
+    assert.doesNotMatch(result.nestedFraction + result.matrix, /temml-error|<merror/i);
     assert.equal(pageErrors.length, 0, pageErrors.join('\n'));
 
     console.log('[SRE smoke] PASS');
     console.log('  English:', result.english);
     console.log('  Spanish:', result.spanish);
+    console.log('  Rendering: semantic MathML (nested fractions + matrix)');
     console.log('  Assets: local-only');
   } finally {
     if (browser) await browser.close();

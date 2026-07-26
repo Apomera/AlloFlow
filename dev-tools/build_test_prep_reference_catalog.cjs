@@ -19,6 +19,20 @@ const shorten = (value, limit = 420) => {
 };
 
 
+function mergeCatalogEntry(existing = {}, incoming = {}) {
+  const merged = { ...existing, ...incoming };
+  const existingIsAuthored = existing.metadataSource === 'pack-authored';
+  const incomingIsAuthored = incoming.metadataSource === 'pack-authored';
+  for (const field of ['title', 'organization', 'summary', 'credibility']) {
+    const prior = cleanText(existing[field]);
+    const next = cleanText(incoming[field]);
+    merged[field] = incomingIsAuthored && !existingIsAuthored
+      ? (next || prior)
+      : (next.length >= prior.length ? next : prior);
+  }
+  return merged;
+}
+
 function collectReferences(value, references, catalog, protectedMetadataUrls = new Set()) {
   if (typeof value === 'string') {
     if (/^https:\/\/\S+$/i.test(value.trim())) references.add(value.trim());
@@ -30,13 +44,13 @@ function collectReferences(value, references, catalog, protectedMetadataUrls = n
   }
   if (!value || typeof value !== 'object') return;
   if (/^https:\/\//i.test(String(value.url || '')) && value.title && !protectedMetadataUrls.has(value.url)) {
-    catalog[value.url] = {
+    catalog[value.url] = mergeCatalogEntry(catalog[value.url], {
       title: cleanText(value.title),
       organization: cleanText(value.organization || ''),
       summary: shorten(value.summary || value.relevance || value.credibility || value.whyReputable || ''),
       credibility: shorten(value.credibility || value.whyReputable || ''),
       metadataSource: 'pack-authored',
-    };
+    });
   }
   for (const entry of Object.values(value)) collectReferences(entry, references, catalog, protectedMetadataUrls);
 }
@@ -52,13 +66,13 @@ for (const file of files) {
     for (const source of item.sourceDetails || []) {
       if (!source || !source.url || !source.title) continue;
       itemBankAuthoredMetadataUrls.add(source.url);
-      catalog[source.url] = {
+      catalog[source.url] = mergeCatalogEntry(catalog[source.url], {
         title: cleanText(source.title),
         organization: cleanText(source.organization || ''),
         summary: shorten(source.summary || source.relevance || source.credibility || source.whyReputable || ''),
         credibility: shorten(source.credibility || source.whyReputable || ''),
         metadataSource: 'pack-authored',
-      };
+      });
     }
   }
 }

@@ -1443,7 +1443,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-2 flex-wrap' },
           h('button', { 'aria-label': t('stem.multtable.quick_quiz', 'Quick Quiz'),
             onClick: function() { nextProblem(); },
-            className: 'flex-1 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-rose-600 transition-all shadow-md',
+            className: 'flex-1 py-2 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-rose-600 transition-all shadow-md',
             title: t('stem.multtable.quick_quiz_q', 'Quick Quiz (Q)')
           }, t('stem.multtable.quick_quiz_2', '\uD83C\uDFAF Quick Quiz')),
           h('button', { 'aria-label': t('stem.multtable.speed_run_2min', 'Speed Run (2min)'),
@@ -1455,7 +1455,7 @@ window.StemLab = window.StemLab || {
               playSound('speedStart');
               addToast('\u23F1\uFE0F Speed Run started! 2 minutes on the clock!', 'success');
             },
-            className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md',
+            className: 'flex-1 py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-lg text-sm hover:from-amber-700 hover:to-orange-700 transition-all shadow-md',
             title: t('stem.multtable.speed_run_s', 'Speed Run (S)')
           }, t('stem.multtable.speed_run_2min_2', '\u23F1\uFE0F Speed Run (2min)')),
           h('button', { 'aria-label': t('stem.multtable.reset_3', 'Reset'),
@@ -1536,7 +1536,7 @@ window.StemLab = window.StemLab || {
                 nextProblem();
                 setTimeout(function() { var _inp = document.getElementById('multtable-input'); if (_inp) _inp.focus(); }, 50);
               },
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-600 hover:bg-pink-200 border border-pink-600 transition-all'
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 hover:bg-pink-200 border border-pink-600 transition-all'
             }, t('stem.multtable.skip_next_2', 'Skip \u2192 Next'))
           )
         ),

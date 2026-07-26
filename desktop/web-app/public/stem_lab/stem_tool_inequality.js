@@ -1145,7 +1145,7 @@ window.StemLab = window.StemLab || {
             });
             addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
           },
-          className: 'mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all'
+          className: 'mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all'
         }, '\uD83D\uDCF8 ' + __alloT('stem.inequality.snapshot', 'Snapshot'))
       );
     }

@@ -68,8 +68,9 @@ engines:
   `studyTimeLeft`; no second countdown state or interval exists.
 - The existing session-code button opens `SessionModal`, whose current
   projection mode remains the canonical join-code/QR projection surface.
-- Private speaker notes are intentionally deferred. Teacher annotations are
-  student/export-facing and must not be silently repurposed as private notes.
+- Student-facing teacher annotations retain their existing resource/export
+  semantics. Private facilitation cues use the explicit teacher-memory owner in
+  Phase 8 and are never written into those annotations.
 
 ## Phase 4: Word Cloud through Live Polling
 
@@ -104,10 +105,23 @@ not a new drawing engine:
   to classmates.
 - Students explicitly submit or return to editing. The teacher gallery keeps
   submissions held until approved or hidden.
+- Text-only AI polish still receives only a teacher observation, prompt, and
+  criterion. An additional explicit vision action uses the same gallery and
+  feedback draft: it rasterizes one submitted sketch into a bounded 720×480 PNG
+  with no uid, codename, group, roster, or resource metadata, then sends that
+  image plus the prompt and criterion to the named configured AI provider.
+- Vision analysis never runs on submit or reveal. The teacher clicks the
+  disclosed action, reviews or edits the returned draft, and explicitly sends
+  it through the existing private P2P feedback/revision channel. A cloud
+  provider is governed by district policy; a configured local multimodal
+  provider uses that local endpoint.
 - Reveal sends a sanitized, anonymous stroke payload with no uid, codename, or
   group metadata.
 - Gallery follow-up actions call the existing individual and group resource
-  delivery handlers with an existing student-safe resource id.
+  delivery handlers with an existing student-safe resource id. AI analysis
+  does not select, assign, or send resources.
+- Activity Pulse remains aggregate-only and receives no sketch bitmap, stroke
+  payload, feedback text, prompt, provider response, or student identity.
 - Pictionary remains the default mode with its collaborative canvas, hidden
   concept, guessing, scoring, teams, and round log unchanged.
 
@@ -164,22 +178,47 @@ owners without becoming a new activity engine or reporting stream:
   only aggregate activity records plus codename-matched participation counts.
   Activity ids, uids, and raw student work are omitted from the saved summary.
 
+## Phase 8: Private presenter cues
+
+Each selected Lesson path step can now carry a small private facilitation card:
+
+- **Say / ask** holds an opening question, explanation, or discussion prompt.
+- **Look / listen for** holds evidence of understanding, likely misconceptions,
+  and access needs the teacher wants to notice.
+- **Next move** holds a transition, checkpoint, or differentiated follow-up.
+
+The owner is `livePresenterCuesByResourceId` in teacher React memory, keyed by
+the existing resource id. The state lives above the dock, so closing and
+reopening the Live Session Center does not discard a cue. Changing or ending
+the active session clears the entire map. The pure module helpers rebuild cue
+objects from an allowlist, cap field lengths and resource count, reject
+prototype-like ids, and remove a card when all three fields are cleared.
+
+The component performs no persistence or transport work. Cues are not copied
+into History resources, student/export-facing annotations, the session
+document, Class Mailbox packs, WebRTC messages, Activity Pulse, or saved
+session summaries. This makes the visibility promise structural rather than a
+label applied to a student-visible note field.
+
 ## Next increments
 
 Future work should continue as refinements over this contract:
 
-1. Define an explicit private presenter-notes owner and visibility contract
-   before adding notes to the live controls.
-2. Add the existing Live Quiz owner to the same snapshot contract after its
-   Firestore/P2P merged response state is normalized at the host boundary.
-3. Refine the existing saved-session-history view with activity-kind filters
+1. Refine the existing saved-session-history view with activity-kind filters
    and teacher-authored follow-up notes; do not add a cloud reporting stream.
-4. Improve ordering/editing in History or units when sequence authoring needs
+2. Improve ordering/editing in History or units when sequence authoring needs
    grow; do not add a separate slide organizer.
+3. If reusable cue templates are added later, store only teacher-authored
+   templates through an explicit local-project owner; never silently promote
+   session-private cues into lesson content.
 
 ## Verification
 
 The phase is pinned by `tests/live_lesson_run.test.js`,
+`tests/live_presenter_cues.test.js`,
+`tests/concept_pictionary_sketch_review.test.js`,
+`tests/concept_pictionary_sketch_review_render.test.js`,
+`tests/concept_pictionary_sketch_vision_feedback.test.js`,
 `tests/live_polling_wordcloud.test.js`,
 `tests/live_polling_feedback_response.test.js`,
 `tests/live_activity_pulse.test.js`,

@@ -67,6 +67,18 @@ const diagramCatalog = buildDiagramCatalog({ root, chapters, diagramTemplates, c
 const diagramPlacementBySectionId = new Map(diagramCatalog.placements.map((placement) => [placement.sectionId, placement]));
 const overridesPath = path.join(root, 'test_prep', 'eppp_learning_review_overrides.json');
 const reviewOverrides = fs.existsSync(overridesPath) ? JSON.parse(fs.readFileSync(overridesPath, 'utf8')) : { memoryAids: {} };
+const referenceCatalogPath = path.join(root, 'test_prep', 'reference_catalog.json');
+const referenceCatalog = fs.existsSync(referenceCatalogPath) ? JSON.parse(fs.readFileSync(referenceCatalogPath, 'utf8')) : {};
+const reviewedSourceCorrections = {
+  'https://pubmed.ncbi.nlm.nih.gov/31420757/': {
+    title: 'Tardive Dyskinesia: Treatment Update',
+    organization: 'Current Neurology and Neuroscience Reports; PubMed, U.S. National Library of Medicine',
+  },
+  'https://pubmed.ncbi.nlm.nih.gov/11818582/': {
+    title: 'Psychoneuroimmunology and Psychosomatic Medicine: Back to the Future',
+    organization: 'Psychosomatic Medicine; PubMed, U.S. National Library of Medicine',
+  },
+};
 const flashcardWavePattern = /^eppp_flashcard_review_wave_\d+\.json$/i;
 const memoryAidWavePattern = /^eppp_memory_aid_review_wave_\d+\.json$/i;
 const knowledgeCheckWavePattern = /^eppp_knowledge_check_review_wave_\d+\.json$/i;
@@ -101,6 +113,21 @@ for (const filename of fs.readdirSync(path.join(root, 'test_prep')).filter((entr
     knowledgeCheckWaveRecords.set(legacyId, { ...item, reviewArtifact: filename });
   }
 }
+function reviewedSourceDetails(references) {
+  return (Array.isArray(references) ? references : []).map((urlValue) => {
+    const url = cleanText(urlValue);
+    const source = { ...(referenceCatalog[url] || {}), ...(reviewedSourceCorrections[url] || {}) };
+    let fallbackOrganization = 'Authoritative source';
+    try { fallbackOrganization = new URL(url).hostname; } catch {}
+    return {
+      title: cleanText(source.title) || 'Reviewed source for this flashcard',
+      organization: cleanText(source.organization) || fallbackOrganization,
+      url,
+      credibility: cleanText(source.credibility || source.summary) || 'This source is retained in the EPPP reference catalog and was reviewed for direct topical alignment with the flashcard claim.',
+    };
+  }).filter((source) => source.url);
+}
+
 const domainByNumber = new Map(domains.map((domain) => [Number(domain.id), String(domain.name)]));
 const reviewChecks = ['source-support', 'accuracy-and-currency', 'instructional-quality', 'accessibility', 'bias-and-context', 'expert-review'];
 
@@ -235,6 +262,8 @@ for (const domain of domains) {
         sourceSupport: override.reviewStatus === 'source-reviewed-editorial-pass' ? 'pass' : 'pending',
         duplication: override.reviewStatus ? 'pass' : 'pending',
         accessibility: front && back ? 'structure-pass' : 'review-required',
+        accuracyAndCurrency: override.reviewStatus === 'source-reviewed-editorial-pass' ? 'assisted-review-pass-expert-pending' : 'pending',
+        biasAndContext: override.reviewStatus === 'source-reviewed-editorial-pass' ? 'assisted-review-pass-expert-pending' : 'pending',
       };
     const waveMetadata = waveOverride.id ? {
       legacyFront,
@@ -251,6 +280,11 @@ for (const domain of domains) {
       productionStatus: cleanText(override.productionStatus) || 'not-production-validated',
       learnerVisible: override.learnerVisible === true,
     } : override.reviewStatus === 'source-reviewed-editorial-pass' ? {
+      reviewMode: cleanText(override.reviewMode || reviewOverrides.reviewMode),
+      reviewWave: cleanText(override.reviewWave || reviewOverrides.reviewWave),
+      reviewDate: cleanText(override.reviewDate || reviewOverrides.reviewDate),
+      reviewArtifact: 'eppp_learning_review_overrides.json',
+      sourceDetails: reviewedSourceDetails(override.references),
       contentDisposition: cleanText(override.contentDisposition) || 'retain-after-rewrite',
       independentExpertStatus: cleanText(override.independentExpertStatus) || 'not-started',
       productionStatus: cleanText(override.productionStatus) || 'not-production-validated',

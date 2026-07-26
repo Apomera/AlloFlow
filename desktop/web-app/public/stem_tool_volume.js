@@ -1867,7 +1867,7 @@ window.StemLab = window.StemLab || {
                 var l = Math.floor(Math.random()*8)+1, w = Math.floor(Math.random()*6)+1, hh = Math.floor(Math.random()*6)+1;
                 upd({ dims: {l:l,w:w,h:hh}, challenge: {l:l,w:w,h:hh,answer:l*w*hh}, answer: '', feedback: null, showLayers: null });
               },
-              className: 'flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md',
+              className: 'flex-1 py-2 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-lg text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-md',
               title: 'New challenge (N)'
             }, '\uD83C\uDFB2 Random Challenge'),
             h('button', { 'aria-label': 'Reset',
@@ -1880,27 +1880,27 @@ window.StemLab = window.StemLab || {
                 var pl=2+Math.floor(Math.random()*4), pw=2+Math.floor(Math.random()*3), ph=1+Math.floor(Math.random()*3);
                 upd({ mode: 'freeform', positions: [], builderChallenge: {type:'prism',target:{l:pl,w:pw,h:ph},answer:pl*pw*ph}, builderFeedback: null, challenge: null, feedback: null });
               },
-              className: 'flex-1 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-lg text-sm hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md'
+              className: 'flex-1 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-lg text-sm hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md'
             }, '\uD83C\uDFD7\uFE0F Build Prism'),
             h('button', { 'aria-label': 'L-Block Vol',
               onClick: function() {
                 var lb = generateLBlock();
                 upd({ mode: 'freeform', positions: lb.positions, builderChallenge: {type:'volume',answer:lb.volume,shape:'L-Block'}, builderFeedback: null, challenge: null, feedback: null });
               },
-              className: 'flex-1 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'
+              className: 'flex-1 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'
             }, '\uD83D\uDCD0 L-Block Vol'),
             h('button', { 'aria-label': 'Random Vol',
               onClick: function() {
                 var tv = 5+Math.floor(Math.random()*16);
                 upd({ mode: 'freeform', positions: [], builderChallenge: {type:'volume',answer:tv,shape:'any'}, builderFeedback: null, challenge: null, feedback: null });
               },
-              className: 'flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-lg text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
+              className: 'flex-1 py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-lg text-sm hover:from-amber-700 hover:to-orange-700 transition-all shadow-md'
             }, '\uD83C\uDFB2 Random Vol'),
             h('button', { 'aria-label': 'Open buildable challenges library',
               onClick: function() { upd({ showBuildLibrary: !showBuildLibrary, mode: 'freeform' }); },
               'aria-expanded': showBuildLibrary,
               title: 'Browse named structures to build',
-              className: 'flex-1 py-2 bg-gradient-to-r from-pink-500 to-fuchsia-500 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-fuchsia-600 transition-all shadow-md'
+              className: 'flex-1 py-2 bg-gradient-to-r from-pink-600 to-fuchsia-600 text-white font-bold rounded-lg text-sm hover:from-pink-600 hover:to-fuchsia-600 transition-all shadow-md'
             }, '\uD83D\uDCDA Library')
           )
         ),
@@ -2004,7 +2004,7 @@ window.StemLab = window.StemLab || {
               className: 'px-3 py-1.5 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-xs',
               title: 'Get a hint from AI'
             }, '\uD83E\uDDE0 Hint'),
-            h('button', { 'aria-label': 'Check', onClick: checkChallenge, className: 'ml-auto px-4 py-1.5 bg-indigo-500 text-white font-bold rounded-lg text-sm hover:bg-indigo-600' }, '\u2714 Check')
+            h('button', { 'aria-label': 'Check', onClick: checkChallenge, className: 'ml-auto px-4 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700' }, '\u2714 Check')
           ),
           builderFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (builderFeedback.correct ? 'text-green-600' : 'text-red-600') }, builderFeedback.msg)
         ),
@@ -2021,7 +2021,7 @@ window.StemLab = window.StemLab || {
                 announceToSR('Display unit changed to ' + (REAL_UNITS.find(function(u) { return u.id === e.target.value; }) || {}).long);
               },
               'aria-label': 'Real-world unit selector',
-              className: 'text-[11px] px-2 py-1 rounded border border-emerald-300 bg-emerald-50 text-emerald-800 font-mono'
+              className: 'text-[11px] px-2 py-1 rounded border border-emerald-600 bg-emerald-50 text-emerald-800 font-mono'
             }, REAL_UNITS.map(function(u) {
               return h('option', { key: u.id, value: u.id, title: u.desc }, u.short + ' — ' + u.long);
             })),

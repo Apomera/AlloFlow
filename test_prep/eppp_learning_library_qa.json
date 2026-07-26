@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T16:44:06.403Z",
+  "generatedAt": "2026-07-26T06:45:01.513Z",
   "libraryId": "eppp-learning-library",
   "standard": {
     "checks": [
@@ -34,16 +34,16 @@
     "sourceReviewedChapters": 49,
     "qaPassedFlashcards": 0,
     "sourceReviewedFlashcards": 415,
-    "retainedReviewedFlashcards": 336,
-    "retiredRedundantFlashcards": 79,
+    "retainedReviewedFlashcards": 335,
+    "retiredRedundantFlashcards": 80,
     "qaPassedMemoryAids": 0,
     "qaPassedKnowledgeChecks": 0,
-    "sourceReviewedKnowledgeChecks": 32,
-    "releasedKnowledgeChecks": 32,
-    "reviewRequiredKnowledgeChecks": 77,
+    "sourceReviewedKnowledgeChecks": 48,
+    "releasedKnowledgeChecks": 48,
+    "reviewRequiredKnowledgeChecks": 61,
     "sourceReviewedMemoryAids": 56,
     "releasedMemoryAids": 56,
-    "releasedFlashcards": 336,
+    "releasedFlashcards": 335,
     "editorialReviewedSourcePendingMemoryAids": 2
   },
   "status": "review-in-progress",
@@ -52,7 +52,7 @@
     "Shared renderer accessibility controls are implemented. 22 of 58 learner-visible placements have source-review records; 36 placements still need concept and label review.",
     "58 learner-visible diagram placements are cataloged: 16 use shared templates and 42 are inline chapter diagrams. 10 shared templates are currently unused.",
     "415 of 415 flashcards have source-review records; 0 remain in first-pass review, and independent qualified expert validation is still pending.",
-    "79 source-reviewed duplicate flashcards are explicitly retired from future learner release rather than counted as distinct study targets.",
-    "32 of 109 knowledge checks have source-review records and are released to their chapter payloads; 77 remain gated for review."
+    "80 source-reviewed duplicate flashcards are explicitly retired from future learner release rather than counted as distinct study targets.",
+    "48 of 109 knowledge checks have source-review records and are released to their chapter payloads; 61 remain gated for review."
   ]
 }

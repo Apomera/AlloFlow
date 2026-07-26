@@ -1904,12 +1904,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       sfxClick();
                       updSage({ phase: 'practice', practiceSpellId: ps.id, practiceQuestion: null, practiceSession: { correct: 0, attempted: 0 }, previewingSpellId: null });
                     },
-                    className: 'transition-colors flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:outline-none',
+                    className: 'transition-colors flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-700 hover:bg-emerald-800 focus:ring-2 focus:ring-emerald-300 focus:outline-none',
                     'aria-label': 'Drill ' + ps.name + ' in Study Hall'
                   }, t('stem.allobotsage.drill_in_study_hall', '📚 Drill in Study Hall')),
                   h('button', {
                     onClick: function() { sfxClick(); updKey('previewingSpellId', null); },
-                    className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-400 focus:outline-none'
+                    className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-500 focus:outline-none'
                   }, t('stem.allobotsage.close', 'Close'))
                 )
               )
@@ -2004,12 +2004,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       var defaults = unlockedSpells.slice(0, 3).map(function(s) { return s.id; });
                       updSage({ phase: 'loadout', equippedLoadout: equippedLoadout.length >= 1 ? equippedLoadout : defaults });
                     },
-                    className: 'transition-colors flex-1 px-6 py-3 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-400 focus:outline-none shadow-lg'
+                    className: 'transition-colors flex-1 px-6 py-3 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-300 focus:outline-none shadow-lg'
                   }, t('stem.allobotsage.begin_expedition_3_rooms_boss', '\uD83C\uDF0C Begin Expedition (3 rooms \u2192 boss)')),
                   h('button', {
                     key: 'shop',
                     onClick: function() { sfxClick(); updKey('phase', 'shop'); },
-                    className: 'transition-colors px-5 py-3 rounded-xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border-2 border-amber-200 focus:ring-2 focus:ring-amber-400 focus:outline-none'
+                    className: 'transition-colors px-5 py-3 rounded-xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border-2 border-amber-200 focus:ring-2 focus:ring-amber-600 focus:outline-none'
                   }, t('stem.allobotsage.spell_shop', '\uD83D\uDD2E Spell Shop'))
                 ]
           ),
@@ -2031,7 +2031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             return h('div', { className: 'flex flex-col md:flex-row gap-2 mb-5' },
               h('button', {
                 onClick: function() { sfxClick(); updSage({ phase: 'practice', practiceSpellId: null, practiceQuestion: null, practiceSession: null }); },
-                className: 'transition-colors flex-1 px-5 py-2.5 rounded-xl font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 focus:ring-2 focus:ring-emerald-400 focus:outline-none flex items-center justify-center gap-2',
+                className: 'transition-colors flex-1 px-5 py-2.5 rounded-xl font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 focus:ring-2 focus:ring-emerald-600 focus:outline-none flex items-center justify-center gap-2',
                 'aria-label': t('stem.allobotsage.open_study_hall_untimed_practice_mode', 'Open Study Hall \u2014 untimed practice mode')
               },
                 h('span', { className: 'text-xl' }, '\uD83D\uDCDA'),
@@ -2042,7 +2042,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               ),
               h('button', {
                 onClick: function() { sfxClick(); updSage({ phase: 'review_mistakes', reviewIdx: 0, reviewRevealed: false }); },
-                className: 'transition-colors flex-1 px-5 py-2.5 rounded-xl font-bold text-red-800 bg-red-50 hover:bg-red-100 border-2 border-red-200 focus:ring-2 focus:ring-red-400 focus:outline-none flex items-center justify-center gap-2',
+                className: 'transition-colors flex-1 px-5 py-2.5 rounded-xl font-bold text-red-800 bg-red-50 hover:bg-red-100 border-2 border-red-200 focus:ring-2 focus:ring-red-500 focus:outline-none flex items-center justify-center gap-2',
                 'aria-label': 'Review tough questions \u2014 ' + toughCount + ' queued'
               },
                 h('span', { className: 'text-xl' }, '\uD83C\uDFAF'),
@@ -2060,7 +2060,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               ),
               h('button', {
                 onClick: function() { sfxClick(); updKey('phase', 'dashboard'); },
-                className: 'transition-colors flex-1 px-5 py-2.5 rounded-xl font-bold text-sky-800 bg-sky-50 hover:bg-sky-100 border-2 border-sky-200 focus:ring-2 focus:ring-sky-400 focus:outline-none flex items-center justify-center gap-2',
+                className: 'transition-colors flex-1 px-5 py-2.5 rounded-xl font-bold text-sky-800 bg-sky-50 hover:bg-sky-100 border-2 border-sky-200 focus:ring-2 focus:ring-sky-600 focus:outline-none flex items-center justify-center gap-2',
                 'aria-label': t('stem.allobotsage.view_your_progress_dashboard', 'View your progress dashboard')
               },
                 h('span', { className: 'text-xl' }, '\uD83D\uDCCA'),
@@ -2470,7 +2470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     addToast('Failed to generate AI questions. Try again.', 'error');
                   });
                 },
-                className: 'transition-colors px-3 py-1.5 rounded-lg text-[11px] font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-400 focus:outline-none'
+                className: 'transition-colors px-3 py-1.5 rounded-lg text-[11px] font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-300 focus:outline-none'
               }, t('stem.allobotsage.pre_load', '\u2728 Pre-load'))
             ),
             // Per-spell AI status row
@@ -2715,7 +2715,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               updSage({ phase: 'expedition', expedition: exp });
               announceSR('Expedition begins in the ' + sector.name + ' on ' + diffProfile.name + ' difficulty. ' + firstRoom.name + ' appears in room 1 of ' + diffProfile.rooms + '.');
             },
-            className: 'transition-colors w-full py-3 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-violet-400 focus:outline-none'
+            className: 'transition-colors w-full py-3 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-violet-300 focus:outline-none'
           }, equippedLoadout.length === 0 ? 'Equip at least 1 spell' : '\u2728 Launch Expedition (3 rooms)')
         );
       }
@@ -3659,7 +3659,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 ].map(function(opt) {
                   var rc = runConfidence[opt.level];
                   var tot = rc.right + rc.wrong;
-                  if (tot === 0) return h('div', { key: 'cal-' + opt.level, className: 'p-2 rounded-lg bg-slate-50 text-[10px] text-slate-400' },
+                  if (tot === 0) return h('div', { key: 'cal-' + opt.level, className: 'p-2 rounded-lg bg-slate-50 text-[10px] text-slate-500' },
                     h('div', null, opt.icon, ' ' + opt.label),
                     h('div', { className: 'text-[9px] mt-0.5' }, '\u2014')
                   );
@@ -3690,7 +3690,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             // Backfire-driven CTA: review tough questions
             globalToughCount > 0 && h('button', {
               onClick: function() { sfxClick(); updSage({ phase: 'review_mistakes', reviewIdx: 0, reviewRevealed: false, expedition: null }); },
-              className: 'transition-colors p-3 rounded-xl border-2 border-red-300 bg-red-50 hover:bg-red-100 text-left flex items-center gap-3 focus:ring-2 focus:ring-red-400 focus:outline-none'
+              className: 'transition-colors p-3 rounded-xl border-2 border-red-300 bg-red-50 hover:bg-red-100 text-left flex items-center gap-3 focus:ring-2 focus:ring-red-500 focus:outline-none'
             },
               h('div', { className: 'text-2xl' }, '\uD83C\uDFAF'),
               h('div', { className: 'flex-1' },
@@ -3705,7 +3705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               if (!ws) return null;
               return h('button', {
                 onClick: function() { sfxClick(); updSage({ phase: 'practice', practiceSpellId: weakestSpell, practiceQuestion: null, practiceSession: { correct: 0, attempted: 0 }, expedition: null }); },
-                className: 'transition-colors p-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-left flex items-center gap-3 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
+                className: 'transition-colors p-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-left flex items-center gap-3 focus:ring-2 focus:ring-emerald-600 focus:outline-none'
               },
                 h('div', { className: 'text-2xl' }, ws.icon),
                 h('div', { className: 'flex-1' },
@@ -3760,7 +3760,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               maxLength: 200,
               rows: 2,
               placeholder: t('stem.allobotsage.e_g_the_bee_flower_question_keeps_trip', 'e.g., "The bee/flower question keeps tripping me up — mutualism = both benefit"'),
-              className: 'w-full p-2 rounded-md border border-sky-300 bg-white text-[12px] text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400'
+              className: 'w-full p-2 rounded-md border border-sky-600 bg-white text-[12px] text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400'
             }),
             h('div', { className: 'flex justify-end mt-2' },
               h('button', {
@@ -3787,22 +3787,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   addToast('📝 Reflection saved — view it any time in Your Progress', 'success');
                   announceSR('Reflection saved.');
                 },
-                className: 'transition-colors px-4 py-1.5 rounded-lg text-[11px] font-bold text-white bg-sky-600 hover:bg-sky-700 focus:ring-2 focus:ring-sky-400 focus:outline-none'
+                className: 'transition-colors px-4 py-1.5 rounded-lg text-[11px] font-bold text-white bg-sky-700 hover:bg-sky-800 focus:ring-2 focus:ring-sky-300 focus:outline-none'
               }, t('stem.allobotsage.save_reflection', 'Save reflection'))
             )
           ),
           h('div', { className: 'flex flex-wrap gap-2 justify-center' },
             h('button', {
               onClick: function() { sfxClick(); updSage({ phase: 'hub', expedition: null }); },
-              className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-400 focus:outline-none'
+              className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-300 focus:outline-none'
             }, t('stem.allobotsage.return_to_spellforge', 'Return to Spellforge')),
             h('button', {
               onClick: function() { sfxClick(); updSage({ phase: 'shop', expedition: null }); },
-              className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 focus:ring-2 focus:ring-amber-400 focus:outline-none'
+              className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 focus:ring-2 focus:ring-amber-600 focus:outline-none'
             }, t('stem.allobotsage.visit_spell_shop', '\u2B50 Visit Spell Shop')),
             h('button', {
               onClick: function() { sfxClick(); updSage({ phase: 'loadout', expedition: null }); },
-              className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 focus:ring-2 focus:ring-violet-400 focus:outline-none'
+              className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 focus:ring-2 focus:ring-violet-500 focus:outline-none'
             }, t('stem.allobotsage.another_expedition', 'Another Expedition'))
           )
         );
@@ -4118,7 +4118,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           practiceAnswered && h('div', { className: 'flex gap-2 justify-end' },
             h('button', {
               onClick: function() { sfxClick(); nextPractice(); },
-              className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
+              className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-white bg-emerald-700 hover:bg-emerald-800 focus:ring-2 focus:ring-emerald-300 focus:outline-none'
             }, t('stem.allobotsage.next_question', 'Next question →'))
           )
         );
@@ -4249,7 +4249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             ),
             !reviewRevealed && h('button', {
               onClick: function() { sfxClick(); updKey('reviewRevealed', true); },
-              className: 'transition-colors mt-4 w-full py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 focus:ring-2 focus:ring-red-400 focus:outline-none'
+              className: 'transition-colors mt-4 w-full py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 focus:ring-2 focus:ring-red-200 focus:outline-none'
             }, t('stem.allobotsage.reveal_answer_explanation', '👁 Reveal answer + explanation')),
             reviewRevealed && h('div', { className: 'mt-4 p-3 rounded-lg bg-white border border-emerald-200' },
               h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-1' }, t('stem.allobotsage.why_this_is_correct', '✓ Why this is correct')),
@@ -4260,11 +4260,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           reviewRevealed && h('div', { className: 'flex gap-2' },
             h('button', {
               onClick: stillTough,
-              className: 'transition-colors flex-1 py-2.5 rounded-xl font-bold text-red-700 bg-red-50 hover:bg-red-100 border-2 border-red-200 focus:ring-2 focus:ring-red-400 focus:outline-none'
+              className: 'transition-colors flex-1 py-2.5 rounded-xl font-bold text-red-700 bg-red-50 hover:bg-red-100 border-2 border-red-200 focus:ring-2 focus:ring-red-500 focus:outline-none'
             }, t('stem.allobotsage.still_tough_keep_in_queue', 'Still tough — keep in queue')),
             h('button', {
               onClick: gotIt,
-              className: 'transition-colors flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
+              className: 'transition-colors flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-700 hover:bg-emerald-800 focus:ring-2 focus:ring-emerald-300 focus:outline-none'
             }, t('stem.allobotsage.got_it_now', 'Got it now ✓'))
           )
         );
@@ -4467,7 +4467,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 { level: 'low',  icon: '🤷', label: t('stem.allobotsage.guessing_4', 'Guessing') }
               ].map(function(opt) {
                 var c = calData[opt.level];
-                if (c.total === 0) return h('div', { key: 'cd-' + opt.level, className: 'p-2 rounded-lg bg-slate-50 text-center text-[10px] text-slate-400' },
+                if (c.total === 0) return h('div', { key: 'cd-' + opt.level, className: 'p-2 rounded-lg bg-slate-50 text-center text-[10px] text-slate-500' },
                   h('div', null, opt.icon + ' ' + opt.label),
                   h('div', { className: 'mt-1' }, '—')
                 );

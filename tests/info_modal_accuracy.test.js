@@ -5,6 +5,12 @@ import { spawnSync } from 'node:child_process';
 const source = readFileSync('view_info_modal_source.jsx', 'utf8');
 const strings = readFileSync('ui_strings.js', 'utf8');
 const licenses = readFileSync('THIRD_PARTY_LICENSES.md', 'utf8');
+const catalogItems = (file) => {
+  const parsed = JSON.parse(readFileSync(file, 'utf8'));
+  return Array.isArray(parsed) ? parsed : (parsed.books || parsed.items || parsed.cards || []);
+};
+const readingIndex = catalogItems('reading_library/index.json');
+const readingCards = catalogItems('reading_library/index_cards.json');
 
 describe('Info modal accuracy contracts', () => {
   it('uses live in-app onboarding instead of missing media assets', () => {
@@ -75,6 +81,26 @@ describe('Info modal accuracy contracts', () => {
     const result = spawnSync(process.execPath, ['dev-tools/check_oss_credits.cjs'], { encoding: 'utf8' });
     expect(result.status, result.stderr || result.stdout).toBe(0);
     expect(result.stdout).toMatch(/credited libraries all present with copyright notices/);
+  });
+
+  it('recognizes every active reading-catalog provider without relicensing its works', () => {
+    const creditStart = source.indexOf('const READING_SOURCE_CREDITS = [');
+    const creditEnd = source.indexOf('\n];', creditStart);
+    expect(creditStart).toBeGreaterThan(-1);
+    expect(creditEnd).toBeGreaterThan(creditStart);
+
+    const creditedSourceIds = [...source.slice(creditStart, creditEnd).matchAll(/\bsourceId:\s*'([^']+)'/g)]
+      .map((match) => match[1])
+      .sort();
+    const catalogSourceIds = [...new Set([...readingIndex, ...readingCards]
+      .map((item) => item?.source?.id)
+      .filter(Boolean))]
+      .sort();
+
+    expect(creditedSourceIds).toEqual(catalogSourceIds);
+    expect(source).toContain('Reading works and catalog records are not covered by AlloFlow’s AGPL license');
+    expect(source).toContain('Collections with mixed or unclear rights stay link-only');
+    expect(source).toContain('generative and extract-to-text handoffs are blocked');
   });
 
   it('the NOTICES file carries real copyright notices, not placeholders', () => {

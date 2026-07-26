@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "eppp-quality-halving-final-verification-v1",
+  "generatedAt": "2026-07-26T06:53:50.330Z",
+  "reportType": "read-only-cross-artifact-eppp-quality-halving-verification",
+  "status": "pass",
+  "reviewStatus": "Automated repository gates passed; no independent human, psychometric, expert, or licensed-psychologist validation is claimed.",
+  "baseline": {
+    "distractor": {
+      "uniqueKeyStemLexicalLeakageCandidates": 141,
+      "asymmetricExtremeDistractorCandidates": 295,
+      "advancedDirectRecallCandidates": 18,
+      "semanticConceptDuplicatePairs": 240,
+      "semanticConceptDuplicateClusters": 120
+    },
+    "feedback": {
+      "itemsWithWarnings": 1309,
+      "incorrectOptionsWithWarnings": 3789,
+      "insufficientDetailOptions": 1357,
+      "genericTemplateOptions": 2354,
+      "choiceRestatementOptions": 1665,
+      "fullKeyEchoOptions": 1436
+    }
+  },
+  "halvingCeilings": {
+    "distractor": {
+      "uniqueKeyStemLexicalLeakageCandidates": 70,
+      "asymmetricExtremeDistractorCandidates": 147,
+      "advancedDirectRecallCandidates": 9,
+      "semanticConceptDuplicatePairs": 120,
+      "semanticConceptDuplicateClusters": 60
+    },
+    "feedback": {
+      "itemsWithWarnings": 654,
+      "incorrectOptionsWithWarnings": 1894,
+      "insufficientDetailOptions": 678,
+      "genericTemplateOptions": 1177,
+      "choiceRestatementOptions": 832,
+      "fullKeyEchoOptions": 718
+    }
+  },
+  "currentMetrics": {
+    "distractor": {
+      "uniqueKeyStemLexicalLeakageCandidates": 65,
+      "asymmetricExtremeDistractorCandidates": 130,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 114,
+      "semanticConceptDuplicateClusters": 58
+    },
+    "feedback": {
+      "itemsWithWarnings": 635,
+      "incorrectOptionsWithWarnings": 1789,
+      "insufficientDetailOptions": 665,
+      "genericTemplateOptions": 1061,
+      "choiceRestatementOptions": 434,
+      "fullKeyEchoOptions": 270
+    }
+  },
+  "ceilingStatus": {
+    "distractor": {
+      "uniqueKeyStemLexicalLeakageCandidates": {
+        "baseline": 141,
+        "ceiling": 70,
+        "value": 65,
+        "met": true
+      },
+      "asymmetricExtremeDistractorCandidates": {
+        "baseline": 295,
+        "ceiling": 147,
+        "value": 130,
+        "met": true
+      },
+      "advancedDirectRecallCandidates": {
+        "baseline": 18,
+        "ceiling": 9,
+        "value": 7,
+        "met": true
+      },
+      "semanticConceptDuplicatePairs": {
+        "baseline": 240,
+        "ceiling": 120,
+        "value": 114,
+        "met": true
+      },
+      "semanticConceptDuplicateClusters": {
+        "baseline": 120,
+        "ceiling": 60,
+        "value": 58,
+        "met": true
+      }
+    },
+    "feedback": {
+      "itemsWithWarnings": {
+        "baseline": 1309,
+        "ceiling": 654,
+        "value": 635,
+        "met": true
+      },
+      "incorrectOptionsWithWarnings": {
+        "baseline": 3789,
+        "ceiling": 1894,
+        "value": 1789,
+        "met": true
+      },
+      "insufficientDetailOptions": {
+        "baseline": 1357,
+        "ceiling": 678,
+        "value": 665,
+        "met": true
+      },
+      "genericTemplateOptions": {
+        "baseline": 2354,
+        "ceiling": 1177,
+        "value": 1061,
+        "met": true
+      },
+      "choiceRestatementOptions": {
+        "baseline": 1665,
+        "ceiling": 832,
+        "value": 434,
+        "met": true
+      },
+      "fullKeyEchoOptions": {
+        "baseline": 1436,
+        "ceiling": 718,
+        "value": 270,
+        "met": true
+      }
+    }
+  },
+  "summary": {
+    "uniqueItems": 1500,
+    "answerPositionCounts": [
+      375,
+      375,
+      375,
+      375
+    ],
+    "qaItemsPassing": 1500,
+    "deepCampaignMarkers": 263,
+    "deepCampaignSelectedWarningsRemaining": 1,
+    "feedbackOnlyCampaignMarkers": 420,
+    "feedbackAuditItems": 420,
+    "deepCohortSourceRecords": 268,
+    "keyedFeedbackMatchingRationale": 1500,
+    "canonicalRuntimeItemsEqual": true,
+    "sourceDeployParity": true
+  },
+  "campaignAudits": {
+    "distractor": {
+      "campaignId": "eppp-distractor-halving-campaign-v1",
+      "status": "pass"
+    },
+    "feedback": {
+      "campaignId": "eppp-feedback-halving-campaign",
+      "status": "automated-gates-pass-editorial-review-required"
+    }
+  },
+  "artifactSha256": {
+    "bank": "03586ff75bd15266c2b8d959c09f2499e06755cebe9a0a26d9f0da4a1fd6df86",
+    "catalog": "675de04128fabc3b8a4350fc040207b0c07ca6104aaf0bc8f429467ba2e53c84",
+    "distractorDiagnostics": "e166c4b893753651fa9a3911b70877be64dfcf7616f175f3cb25481a435b0f4a",
+    "feedbackDiagnostics": "2802c2c052d5eaee346404623694e6237c5e96be8b7e04949b2084e1e618bcf8",
+    "qa": "d32467b3665c3cb30dc098b5452c5ed57110795942fae756c4f127c1dc8032ef",
+    "distractorAudit": "f31e106b29cb82dd013734343cdd40c91ee1acf58d47d795b0005b2423caaf30",
+    "feedbackAudit": "ca181761630323f57cf705b425023e51ac0785b5e596fec7ca8e2459b9d650a9",
+    "runtime": "b4492070b3cb2ba6705c96a37322d48498455be8262dca423eb2c72397fdbf99"
+  },
+  "limitations": [
+    "These gates verify repository invariants and heuristic metric ceilings; they are not psychometric calibration or evidence of exam-score validity.",
+    "No independent human, licensed-psychologist, or subject-matter-expert validation is claimed.",
+    "Complete source records establish internal catalog coverage and parity, not independent re-verification of every source claim."
+  ]
+}

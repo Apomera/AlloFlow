@@ -1256,11 +1256,11 @@ var d = (labToolData.probability) || {};
 
                       React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), 'aria-label': 'Name for marble color ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-600 text-sm font-bold flex-shrink-0" }),
 
-                      React.createElement("button", { "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-red-100 text-red-600 font-bold text-sm hover:bg-red-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "\u2212"),
+                      React.createElement("button", { "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-red-100 text-red-700 font-bold text-sm hover:bg-red-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "\u2212"),
 
                       React.createElement("span", { className: "w-8 text-center text-sm font-black text-slate-700" }, count),
 
-                      React.createElement("button", { "aria-label": "Increase marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 font-bold text-sm hover:bg-emerald-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "+"),
+                      React.createElement("button", { "aria-label": "Increase marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm hover:bg-emerald-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "+"),
 
                       React.createElement("span", { className: "ml-1 text-[11px] font-mono text-amber-600" }, count + '/' + customOutcomes.reduce(function (s, c) { return s + (c.count || 1); }, 0) + ' = ' + (o.prob * 100).toFixed(1) + '%'),
 
@@ -1848,7 +1848,7 @@ var d = (labToolData.probability) || {};
                     return React.createElement('button', {
                       key: 'drop-' + n,
                       onClick: function() { dropN(n); },
-                      className: 'px-4 py-2 rounded-lg font-bold bg-cyan-500 text-white hover:bg-cyan-400 focus:ring-2 focus:ring-white focus:outline-none transition',
+                      className: 'px-4 py-2 rounded-lg font-bold bg-cyan-700 text-white hover:bg-cyan-800 focus:ring-2 focus:ring-white focus:outline-none transition',
                       'aria-label': 'Drop ' + n + ' ball' + (n > 1 ? 's' : '')
                     }, '⚪ Drop ' + n);
                   }),
@@ -2094,7 +2094,7 @@ var d = (labToolData.probability) || {};
                       batch.runs > 0 && React.createElement('button', {
                         onClick: resetBatch,
                         className: 'px-2 py-1 rounded-md text-[10px] font-bold transition',
-                        style: { background: 'rgba(220,38,38,0.15)', color: '#dc2626' },
+                        style: { background: '#fee2e2', color: '#991b1b' },
                         'aria-label': 'Reset simulation counts'
                       }, '↻')
                     ),
@@ -2350,7 +2350,7 @@ var d = (labToolData.probability) || {};
 
               [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": "Run " + n + " trials", key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm" }, "+" + n)),
 
-              React.createElement("button", { "aria-label": "Reset all trials", onClick: () => { upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); }, className: "px-4 py-2 bg-red-50 text-red-500 font-bold rounded-lg hover:bg-red-100 text-sm" }, "\uD83D\uDD04 Reset")
+              React.createElement("button", { "aria-label": "Reset all trials", onClick: () => { upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); }, className: "px-4 py-2 bg-red-50 text-red-700 font-bold rounded-lg hover:bg-red-100 text-sm" }, "\uD83D\uDD04 Reset")
 
             ),
 
@@ -2909,8 +2909,8 @@ var d = (labToolData.probability) || {};
 
             })(),
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pr-' + Date.now(), tool: 'probability', label: d.mode + ' ' + d.trials + ' trials', data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
-            React.createElement("button", { "aria-label": "Export CSV", onClick: function() { try { var _r = (typeof d !== 'undefined' && d && d.results) ? d.results : []; if (!_r.length) return; var _counts = {}; _r.forEach(function(o){ var k = String(o); _counts[k] = (_counts[k]||0)+1; }); var _csv = 'outcome,count\n' + Object.keys(_counts).map(function(k){ return '\"' + k.replace(/\"/g,'') + '\",' + _counts[k]; }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _a = document.createElement('a'); _a.href = URL.createObjectURL(_b); _a.download = 'probability_' + Date.now() + '.csv'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 CSV saved!', 'success'); } catch(e){} }, className: "mt-3 ml-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full hover:from-emerald-600 hover:to-teal-600 shadow-md" }, "\uD83D\uDCE5 Export CSV"),
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pr-' + Date.now(), tool: 'probability', label: d.mode + ' ' + d.trials + ' trials', data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
+            React.createElement("button", { "aria-label": "Export CSV", onClick: function() { try { var _r = (typeof d !== 'undefined' && d && d.results) ? d.results : []; if (!_r.length) return; var _counts = {}; _r.forEach(function(o){ var k = String(o); _counts[k] = (_counts[k]||0)+1; }); var _csv = 'outcome,count\n' + Object.keys(_counts).map(function(k){ return '\"' + k.replace(/\"/g,'') + '\",' + _counts[k]; }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _a = document.createElement('a'); _a.href = URL.createObjectURL(_b); _a.download = 'probability_' + Date.now() + '.csv'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 CSV saved!', 'success'); } catch(e){} }, className: "mt-3 ml-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-700 to-teal-700 rounded-full hover:from-emerald-700 hover:to-teal-700 shadow-md" }, "\uD83D\uDCE5 Export CSV"),
 
             // ── AI Explain Results + TTS Narrate ──
             React.createElement("div", { className: "mt-4 pt-4", style: { borderTop: '1px solid ' + (isDark||isContrast?'rgba(139,92,246,0.15)':'#ede9fe') } },

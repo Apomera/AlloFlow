@@ -3257,7 +3257,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full transition-all', style: { width: Math.min(100, (score % 5) * 20) + '%' } })
               )
             ),
-            btn('\uD83D\uDE80 Start Challenge', function() { updMulti({ challengeActive: true, challengeFeedback: null, challengeAnswer: null, challengeIdx: Math.floor(Math.random() * available.length), challengeShowHint: false }); }, 'bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-6 py-2 text-sm')
+            btn('\uD83D\uDE80 Start Challenge', function() { updMulti({ challengeActive: true, challengeFeedback: null, challengeAnswer: null, challengeIdx: Math.floor(Math.random() * available.length), challengeShowHint: false }); }, 'bg-gradient-to-r from-cyan-700 to-indigo-600 text-white px-6 py-2 text-sm')
           );
         }
 
@@ -3375,7 +3375,7 @@ window.StemLab = window.StemLab || {
             btn('\u2694\uFE0F Start Battle', function() {
               updMulti({ battleActive: true, battleRound: 0, battleHP: 5, battleEnemyHP: 5, battleLog: [], battleFeedback: null });
               tryAwardXP('battle-start', 5, 'Started Chip Defense');
-            }, 'bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-2 text-sm')
+            }, 'bg-gradient-to-r from-red-600 to-orange-700 text-white px-6 py-2 text-sm')
           );
         }
 
@@ -3787,7 +3787,7 @@ window.StemLab = window.StemLab || {
           addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
           if (announceToSR) announceToSR('Snapshot saved');
         },
-        className: 'mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full hover:from-cyan-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all'
+        className: 'mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-700 to-indigo-600 rounded-full hover:from-cyan-700 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all'
       }, t('stem.semiconductor.snapshot', '\uD83D\uDCF8 Snapshot'));
 
       var currentSubtool = SUBTOOLS.find(function(st) { return st.id === subtool; }) || SUBTOOLS[0];

@@ -698,7 +698,7 @@
                   h('button', {
                     onClick: runReaction,
                     disabled: running,
-                    className: 'flex-grow px-5 py-3 rounded-full font-black text-sm text-white bg-gradient-to-r from-amber-500 to-rose-500 shadow-lg shadow-rose-200 hover:shadow-rose-300 disabled:opacity-50 transition-all active:scale-95'
+                    className: 'flex-grow px-5 py-3 rounded-full font-black text-sm text-white bg-gradient-to-r from-amber-700 to-rose-600 shadow-lg shadow-rose-200 hover:shadow-rose-300 disabled:opacity-50 transition-all active:scale-95'
                   }, running ? tr('baking.leavening.mix_running', 'Reacting\u2026') : (tr('baking.leavening.mix_btn', 'Mix & React') + ' \uD83E\uDDEA'))
                 )
               ),
@@ -852,7 +852,7 @@
                 }),
                 h('button', {
                   onClick: checkMix,
-                  className: 'w-full px-5 py-3 rounded-full font-black text-sm text-white bg-gradient-to-r from-yellow-500 to-amber-500 shadow-lg shadow-yellow-200 hover:shadow-yellow-300 transition-all active:scale-95'
+                  className: 'w-full px-5 py-3 rounded-full font-black text-sm text-white bg-gradient-to-r from-yellow-700 to-amber-700 shadow-lg shadow-yellow-200 hover:shadow-yellow-300 transition-all active:scale-95'
                 }, tr('baking.emulsion.shake_btn', 'Shake & check') + ' \uD83E\uDD64')
               ),
               // Visualization
@@ -1050,7 +1050,7 @@
                 ),
                 h('button', {
                   onClick: applyScale,
-                  className: 'w-full px-5 py-3 rounded-full font-black text-sm text-white bg-gradient-to-r from-orange-500 to-rose-500 shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all active:scale-95'
+                  className: 'w-full px-5 py-3 rounded-full font-black text-sm text-white bg-gradient-to-r from-orange-700 to-rose-600 shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all active:scale-95'
                 }, tr('baking.scaler.save_btn', 'Save scaled recipe') + ' \uD83D\uDCBE')
               ),
               // Ingredient table
@@ -1471,11 +1471,11 @@
               !revealed && h('button', {
                 onClick: submitAnswer,
                 disabled: !selected,
-                className: 'px-5 py-2.5 rounded-full font-black text-sm text-white bg-gradient-to-r from-pink-500 to-rose-500 shadow-lg shadow-pink-200 hover:shadow-pink-300 disabled:opacity-40 disabled:shadow-none transition-all active:scale-95'
+                className: 'px-5 py-2.5 rounded-full font-black text-sm text-white bg-gradient-to-r from-pink-600 to-rose-600 shadow-lg shadow-pink-200 hover:shadow-pink-300 disabled:opacity-40 disabled:shadow-none transition-all active:scale-95'
               }, tr('baking.diagnosis.check', 'Check answer') + ' \uD83D\uDD0E'),
               revealed && h('button', {
                 onClick: nextScenario,
-                className: 'px-5 py-2.5 rounded-full font-black text-sm text-white bg-gradient-to-r from-pink-500 to-rose-500 shadow-lg shadow-pink-200 hover:shadow-pink-300 transition-all active:scale-95'
+                className: 'px-5 py-2.5 rounded-full font-black text-sm text-white bg-gradient-to-r from-pink-600 to-rose-600 shadow-lg shadow-pink-200 hover:shadow-pink-300 transition-all active:scale-95'
               }, tr('baking.diagnosis.next', 'Next scenario') + ' \u2192')
             ),
             // Best-streak note
@@ -1675,7 +1675,7 @@
                 ),
                 h('button', {
                   onClick: matchTarget,
-                  className: 'w-full px-5 py-3 rounded-full font-black text-sm text-white bg-gradient-to-r from-teal-500 to-emerald-500 shadow-lg shadow-teal-200 hover:shadow-teal-300 transition-all active:scale-95'
+                  className: 'w-full px-5 py-3 rounded-full font-black text-sm text-white bg-gradient-to-r from-teal-700 to-emerald-700 shadow-lg shadow-teal-200 hover:shadow-teal-300 transition-all active:scale-95'
                 }, tr('baking.gluten.check_btn', 'Check against targets') + ' \uD83C\uDFAF')
               ),
               // Visualization column
@@ -1956,7 +1956,7 @@
                 ),
                 h('button', {
                   onClick: cook,
-                  className: 'w-full px-5 py-3 rounded-full font-black text-sm text-white bg-gradient-to-r from-orange-500 to-amber-500 shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all active:scale-95'
+                  className: 'w-full px-5 py-3 rounded-full font-black text-sm text-white bg-gradient-to-r from-orange-700 to-amber-700 shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all active:scale-95'
                 }, tr('baking.browning.cook_btn', 'Cook it') + ' \uD83D\uDD25')
               ),
               // Result

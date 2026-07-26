@@ -928,11 +928,11 @@ window.StemLab = window.StemLab || {
                     onChange: function(e) { upd({ expression: e.target.value }); },
                     placeholder: "Or type: P \u2192 Q",
                     'aria-label': 'Logic expression input',
-                    className: "flex-1 px-3 py-2 rounded-lg border border-violet-200 text-sm font-mono text-violet-800 bg-white focus:ring-2 focus:ring-violet-400 outline-none"
+                    className: "flex-1 px-3 py-2 rounded-lg border border-violet-200 text-sm font-mono text-violet-800 bg-white focus:ring-2 focus:ring-violet-500 outline-none"
                   }),
                   React.createElement("button", { "aria-label": "Backspace last symbol",
                     onClick: function() { upd({ expression: expr.slice(0,-1).trimEnd() }); },
-                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-lg text-sm"
+                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-lg text-sm"
                   }, "\u232B"),
                   React.createElement("button", { "aria-label": "Clear",
                     onClick: function() { upd({ expression: '' }); },
@@ -1022,7 +1022,7 @@ window.StemLab = window.StemLab || {
 
                     onClick: function() { upd({ expression: expr.length > 0 ? expr.slice(0, -1) : '' }); },
 
-                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-lg transition-all text-sm"
+                    className: "px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-lg transition-all text-sm"
 
                   }, "\u232B"),
 
@@ -1598,7 +1598,7 @@ window.StemLab = window.StemLab || {
 
                   'aria-label': 'Your interests for AI personalization',
 
-                  className: "flex-1 px-3 py-1.5 rounded-lg border border-violet-200 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-violet-400 focus:border-violet-400 outline-none"
+                  className: "flex-1 px-3 py-1.5 rounded-lg border border-violet-200 text-sm text-slate-700 bg-white focus:ring-2 focus:ring-violet-500 focus:border-violet-400 outline-none"
 
                 }),
 
@@ -1891,7 +1891,7 @@ window.StemLab = window.StemLab || {
 
                                     onClick: function() { var a = Object.assign({}, userAnswers); a[ri] = false; upd({ qfAnswers: a }); },
 
-                                    className: "px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded text-xs"
+                                    className: "px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded text-xs"
 
                                   }, "F")
 

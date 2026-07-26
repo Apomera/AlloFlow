@@ -23,9 +23,9 @@ describe('EPPP learning-library inventory and full-review program', () => {
       chapterReferences: 383,
       sourceReviewedChapters: 49,
       sourceReviewedFlashcards: 415,
-      retainedReviewedFlashcards: 336,
-      retiredRedundantFlashcards: 79,
-      sourceReviewedMemoryAids: 40,
+      retainedReviewedFlashcards: 335,
+      retiredRedundantFlashcards: 80,
+      sourceReviewedMemoryAids: 56,
       editorialReviewedSourcePendingMemoryAids: 2,
       aiReflectiveCodas: 49,
       learnerModes: 14,
@@ -34,8 +34,8 @@ describe('EPPP learning-library inventory and full-review program', () => {
     expect(report.migrationTracks).toHaveLength(6);
     expect(report.migrationTracks.find((track) => track.contentType === 'legacy questions')).toMatchObject({ count: 2933, status: 'active-full-review' });
     expect(report.migrationTracks.find((track) => track.contentType === 'textbook chapters')).toMatchObject({ status: 'review-in-progress', reviewedCount: 49 });
-    expect(report.migrationTracks.find((track) => track.contentType === 'flashcards')).toMatchObject({ status: 'first-pass-complete-expert-pending', reviewedCount: 415, retainedCount: 336, retiredRedundantCount: 79 });
-    expect(report.migrationTracks.find((track) => track.contentType === 'memory aids')).toMatchObject({ status: 'review-in-progress', reviewedCount: 40, editorialSourcePendingCount: 2 });
+    expect(report.migrationTracks.find((track) => track.contentType === 'flashcards')).toMatchObject({ status: 'first-pass-complete-expert-pending', reviewedCount: 415, retainedCount: 335, retiredRedundantCount: 80 });
+    expect(report.migrationTracks.find((track) => track.contentType === 'memory aids')).toMatchObject({ status: 'review-in-progress', reviewedCount: 56, editorialSourcePendingCount: 2 });
     expect(report.migrationTracks.find((track) => track.contentType === 'interactive diagrams')).toMatchObject({ count: 58, reviewedCount: 22, status: 'review-in-progress' });
     expect(report.migrationTracks.find((track) => track.contentType === 'term definitions')).toMatchObject({ count: 1583, status: 'legacy-preserved-review-not-started' });
   });

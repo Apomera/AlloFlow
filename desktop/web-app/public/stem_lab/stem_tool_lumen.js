@@ -2715,7 +2715,7 @@
             (chartType === 'multiSeriesLine' ? h('label', { key: 'seslab', className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.series_category', 'Series (category)'),
               h('input', { type: 'text', value: d.draftSeries == null ? '' : d.draftSeries, onChange: function (ev) { upd('draftSeries', ev.target.value); }, className: 'w-28 px-2 py-1 border rounded' })) : null),
             h('button', {
-              className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500',
+              className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800',
               onClick: function () {
                 var x = parseFloat(d.draftX), y = parseFloat(d.draftY);
                 if (isNaN(x) || isNaN(y)) { announce('Enter a numeric ' + xLabel.toLowerCase() + ' and value.'); return; }
@@ -2844,7 +2844,7 @@
                     key: 'genScenario', value: d.genScenario || 'improving',
                     onChange: function (ev) { upd('genScenario', ev.target.value); },
                     'aria-label': __alloT('stem.lumen.practice_data_scenario', 'Practice-data scenario'),
-                    className: 'px-2 py-1 text-sm border border-slate-300 rounded bg-white'
+                    className: 'px-2 py-1 text-sm border border-slate-500 rounded bg-white'
                   }, Object.keys(PRACTICE_SCENARIOS).map(function (s) { return h('option', { key: s, value: s }, scenarioLabels[s] || s); }))),
                 h('button', {
                   key: 'genBtn', className: 'px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 bg-white hover:bg-violet-50',
@@ -2875,7 +2875,7 @@
                 'aria-label': __alloT('stem.lumen.paste_data_as_csv_tsv_or_json', 'Paste data as CSV, TSV, or JSON')
               }),
               h('div', { className: 'mt-2 flex gap-2' },
-                h('button', { className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () { stagePastedText(d.pasteText); } }, __alloT('stem.lumen.parse_pasted_data', 'Parse pasted data')),
+                h('button', { className: 'px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800', onClick: function () { stagePastedText(d.pasteText); } }, __alloT('stem.lumen.parse_pasted_data', 'Parse pasted data')),
                 h('button', { className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50', onClick: function () { upd('pasteText', ''); upd('showPaste', false); announce('Paste cancelled.'); } }, __alloT('stem.lumen.cancel', 'Cancel'))))
             );
           }
@@ -2905,7 +2905,7 @@
                 h('div', { className: 'text-sm font-semibold text-slate-700' }, __alloT('stem.lumen.map_columns_from', '⇪ Map columns from') + ' ' + (ip.fileName || __alloT('stem.lumen.imported_file', 'imported file')) + (ip.fileType ? (' · ' + ip.fileType + (ip.delimiter && ip.fileType !== 'xlsx' ? (' · delim ' + (ip.delimiter === '\t' ? 'TAB' : '"' + ip.delimiter + '"')) : '')) : '')),
                 h('div', { className: 'flex gap-2' },
                   h('button', { className: 'px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: function () { upd('importPreview', null); announce('Import cancelled.'); } }, __alloT('stem.lumen.cancel_2', 'Cancel')),
-                  h('button', { className: 'px-3 py-1 text-xs font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () {
+                  h('button', { className: 'px-3 py-1 text-xs font-semibold rounded bg-amber-700 text-white hover:bg-amber-800', onClick: function () {
                     var mapped = mapTextTableToObservations({ headers: ip.headers, rows: ip.rows }, imp);
                     if (mapped.error) { announce('Import error: ' + mapped.error); return; }
                     if (!mapped.rows.length) { announce('Import bound 0 rows (every row missing or non-numeric in the mapped columns).'); return; }

@@ -45,7 +45,7 @@ describe('Coding Lab program replacement dialog accessibility', () => {
   async function renderHarness(initialState) {
     function Harness() {
       const [toolData, setToolData] = React.useState({
-        _codingPlayground: initialState,
+        _codingPlayground: { codeMode: 'outline', ...initialState },
       });
       return config.render(makeCtx({ toolData, setToolData }));
     }

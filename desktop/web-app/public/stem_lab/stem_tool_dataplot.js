@@ -1145,7 +1145,7 @@ window.StemLab = window.StemLab || {
           // ── Controls row ──
           h('div', { className: 'flex gap-2 flex-wrap items-center' },
             h('button', { onClick: doUndo, disabled: !undoStack.length, className: 'px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg text-sm disabled:opacity-40' }, t('stem.dataplot.undo_2', '\u21A9 Undo')),
-            h('button', { 'aria-label': t('stem.dataplot.clear', 'Clear'), onClick: clearAll, disabled: !points.length, className: 'px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm disabled:opacity-40' }, t('stem.dataplot.clear_2', '\uD83D\uDDD1\uFE0F Clear')),
+            h('button', { 'aria-label': t('stem.dataplot.clear', 'Clear'), onClick: clearAll, disabled: !points.length, className: 'px-3 py-1.5 bg-red-50 text-red-700 font-bold rounded-lg text-sm disabled:opacity-40' }, t('stem.dataplot.clear_2', '\uD83D\uDDD1\uFE0F Clear')),
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-violet-600 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showResiduals, onChange: function() { upd('showResiduals', !showResiduals); }, className: 'accent-violet-600' }), t('stem.dataplot.residuals', 'Residuals')),
             h('label', { className: 'flex items-center gap-1 text-[11px] font-bold text-teal-600 cursor-pointer' },
@@ -1219,7 +1219,7 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-xs font-bold text-slate-700' }, item.n + ' pts'),
                     h('span', { className: 'text-[11px] text-slate-600' }, 'R\u00B2=' + (item.r2||0).toFixed(3)),
                     h('span', { className: 'text-[11px] text-slate-600 ml-auto' }, new Date(item.timestamp).toLocaleDateString()),
-                    h('button', { onClick: function() { loadChart(item); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-teal-50 text-teal-600 rounded hover:bg-teal-100' }, t('stem.dataplot.load', 'Load')),
+                    h('button', { onClick: function() { loadChart(item); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-teal-50 text-teal-700 rounded hover:bg-teal-100' }, t('stem.dataplot.load', 'Load')),
                     h('button', { 'aria-label': t('stem.dataplot.remove_item', 'Remove item'), onClick: function() { deleteChart(item.id); }, className: 'px-2 py-0.5 text-[11px] font-bold text-red-400 hover:text-red-600' }, '\u2715')
                   );
                 }))

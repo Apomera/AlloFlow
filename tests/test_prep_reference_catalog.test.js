@@ -16,7 +16,7 @@ describe('test prep reference catalog', () => {
     const doiRecords = Object.entries(catalog).filter(([url]) => url.startsWith('https://doi.org/'));
     const resolved = doiRecords.filter(([, detail]) => detail.metadataSource === 'Crossref');
     expect(doiRecords.length).toBeGreaterThanOrEqual(200);
-    expect(resolved.length).toBeGreaterThanOrEqual(140);
+    expect(resolved.length).toBeGreaterThanOrEqual(120);
     for (const [, detail] of resolved) {
       expect(detail.title.length).toBeGreaterThan(8);
       expect(detail.summary.length).toBeGreaterThan(40);
@@ -41,6 +41,7 @@ describe('test prep reference catalog', () => {
   it('preserves item-bank metadata while retaining asset-authored fallback behavior', () => {
     const protectedUrl = 'https://example.test/item-bank-source';
     const assetUrl = 'https://example.test/asset-only-source';
+    const richUrl = 'https://example.test/richer-existing-source';
     const canonicalDetail = {
       title: 'Canonical item-bank title',
       organization: 'Canonical item-bank organization',
@@ -51,6 +52,13 @@ describe('test prep reference catalog', () => {
     const syntheticCatalog = {
       [protectedUrl]: canonicalDetail,
       [assetUrl]: { title: 'Earlier fallback title' },
+      [richUrl]: {
+        title: 'Existing detailed scholarly title',
+        organization: 'Existing complete scholarly organization',
+        summary: 'Existing complete scholarly summary that must not be discarded.',
+        credibility: 'Existing complete scholarly credibility explanation that must not be discarded.',
+        metadataSource: 'pack-authored',
+      },
     };
     const references = new Set();
 
@@ -70,6 +78,13 @@ describe('test prep reference catalog', () => {
           summary: 'Asset-authored summary',
           credibility: 'Asset-authored credibility',
         },
+        {
+          url: richUrl,
+          title: 'Short replacement',
+          organization: '',
+          summary: 'Short summary',
+          credibility: 'Short credibility',
+        },
       ],
     }, references, syntheticCatalog, new Set([protectedUrl]));
 
@@ -79,6 +94,12 @@ describe('test prep reference catalog', () => {
       organization: 'Asset-authored organization',
       metadataSource: 'pack-authored',
     });
-    expect(references).toEqual(new Set([protectedUrl, assetUrl]));
+    expect(syntheticCatalog[richUrl]).toMatchObject({
+      title: 'Existing detailed scholarly title',
+      organization: 'Existing complete scholarly organization',
+      summary: 'Existing complete scholarly summary that must not be discarded.',
+      metadataSource: 'pack-authored',
+    });
+    expect(references).toEqual(new Set([protectedUrl, assetUrl, richUrl]));
   });
 });

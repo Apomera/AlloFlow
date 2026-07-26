@@ -1,5 +1,8 @@
 {
   "schemaVersion": 1,
+  "reviewDate": "2026-07-26",
+  "reviewMode": "assisted-source-review-provenance-normalization",
+  "reviewWave": "eppp-learning-review-overrides",
   "memoryAids": {
     "Limits of Confidentiality": {
       "reviewStatus": "source-reviewed-editorial-pass",

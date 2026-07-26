@@ -2072,7 +2072,7 @@ const d = labToolData.physics;
 
                   if (cv && cv._launch) cv._launch();
 
-                }, className: "px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-sm hover:from-amber-600 hover:to-orange-600 shadow-md transition-all"
+                }, className: "px-4 py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-xl text-sm hover:from-amber-700 hover:to-orange-700 shadow-md transition-all"
 
               }, "\uD83D\uDE80 Launch!"),
 
@@ -2089,7 +2089,7 @@ const d = labToolData.physics;
                   placeholder: "m",
                   "aria-label": "Predicted landing distance in meters",
                   onChange: function(e) { upd('predictedRange', e.target.value); },
-                  className: "w-16 px-1.5 py-0.5 text-xs font-mono border border-fuchsia-300 rounded bg-white text-slate-700 focus:outline-none focus:border-fuchsia-500"
+                  className: "w-16 px-1.5 py-0.5 text-xs font-mono border border-fuchsia-600 rounded bg-white text-slate-700 focus:outline-none focus:border-fuchsia-500"
                 }),
                 React.createElement("span", { className: "text-[10px] text-fuchsia-600" }, "m")
               ),
@@ -2175,7 +2175,7 @@ const d = labToolData.physics;
               // vectors, energy bars, and position without losing context.
               // Active speed gets indigo background so state is obvious.
               React.createElement("div", { className: "flex items-center gap-0 bg-slate-50 border border-slate-300 rounded-lg overflow-hidden", role: "group", "aria-label": "Simulation speed" },
-                React.createElement("span", { className: "px-2 py-1.5 text-[10px] font-bold text-slate-500 bg-slate-100 border-r border-slate-300" }, "SPEED"),
+                React.createElement("span", { className: "px-2 py-1.5 text-[10px] font-bold text-slate-600 bg-slate-100 border-r border-slate-300" }, "SPEED"),
                 [{ v: 1.0, label: "1×" }, { v: 0.5, label: "½×" }, { v: 0.25, label: "¼×" }, { v: 0, label: "⏸" }].map(function (sp) {
                   var isActive = (d.simSpeed != null ? d.simSpeed : 1.0) === sp.v;
                   return React.createElement("button", {
@@ -2988,7 +2988,7 @@ const d = labToolData.physics;
               );
             })(),
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
 
             // === H7b'' inquiry widget: gravity-angle explorer ===
             (function() {

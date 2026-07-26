@@ -125,10 +125,6 @@ const OSS_CREDITS = [
         site: 'https://openseadragon.github.io', repo: 'https://github.com/openseadragon/openseadragon' },
       { name: 'Smithsonian Open Access', use: 'CC0 museum images in the Zoom Gallery (deep-zoom IIIF)', license: 'CC0 1.0', url: 'https://www.si.edu/openaccess' },
       { name: 'NASA Image and Video Library', use: 'public-domain space photographs in the Zoom Gallery', license: 'Public domain (NASA media guidelines)', url: 'https://images.nasa.gov' },
-      { name: 'StoryWeaver', use: 'openly licensed picture books (Reading Library) — Pratham Books; authors & illustrators credited per book', license: 'CC BY 4.0', url: 'https://storyweaver.org.in',
-        featured: 6, owner: 'Pratham Books',
-        blurb: 'Supplies the openly licensed picture books in the Reading Library — hundreds of titles across dozens of languages — which double as oral-reading-fluency passages.',
-        site: 'https://storyweaver.org.in', repo: 'https://github.com/PrathamBooks/StoryWeaverOpen' },
     ],
   },
   {
@@ -214,6 +210,48 @@ const FEATURED_OSS = OSS_CREDITS
 
 // Total bundled libraries — used in the "show all" label so it never drifts.
 const OSS_TOTAL = OSS_CREDITS.reduce((n, section) => n + section.items.length, 0);
+
+// Reading works and catalog metadata have their own licenses; they are not
+// relicensed under AlloFlow's AGPL. Keep one sourceId entry for every provider
+// represented by reading_library/index.json or index_cards.json. The accuracy
+// test intentionally fails when a new provider ships without recognition here.
+const READING_SOURCE_CREDITS = [
+  {
+    group: 'Readable or mirrored in AlloFlow',
+    items: [
+      { sourceId: 'storyweaver', name: 'StoryWeaver · Pratham Books', scope: 'multilingual picture books with creator credits retained per edition', license: 'CC BY 4.0', url: 'https://storyweaver.org.in' },
+      { sourceId: 'african-storybook', name: 'African Storybook · SAIDE', scope: 'approved multilingual editions with writers, illustrators, translators, and copyright holders retained', license: 'Creative Commons variant per edition; some are noncommercial', url: 'https://www.africanstorybook.org/' },
+      { sourceId: 'bloom', name: 'Bloom Library · SIL', scope: 'open picture books mirrored only when adaptation and redistribution are allowed; restricted editions remain link-only', license: 'CC BY / CC BY-SA / CC0 per title; other variants link-only', url: 'https://bloomlibrary.org/' },
+      { sourceId: 'book-dash', name: 'Book Dash', scope: 'attributed language-edition discovery records; complete illustrated editions remain at Book Dash', license: 'CC BY 4.0', url: 'https://bookdash.org/books/' },
+      { sourceId: 'openstax', name: 'OpenStax', scope: 'selected noncommercial chapter mirrors with required “Access for free at” attribution; generative and extract-to-text handoffs are blocked', license: 'CC BY-NC-SA 4.0 for the audited mirrored titles', url: 'https://openstax.org/' },
+      { sourceId: 'open-rn', name: 'Open RN · Chippewa Valley Technical College', scope: 'selected nursing textbook text from NCBI Bookshelf; third-party figures and media are excluded', license: 'CC BY 4.0', url: 'https://www.cvtc.edu/grants/open-rn' },
+      { sourceId: 'gutenberg', name: 'Project Gutenberg', scope: 'curated full text and discovery records with the official work and license links retained', license: 'Public domain in the U.S. / Project Gutenberg License', url: 'https://www.gutenberg.org/' },
+      { sourceId: 'frontiers', name: 'Frontiers for Young Minds', scope: 'curated youth-facing science articles with author and source attribution', license: 'CC BY 4.0 for the included articles', url: 'https://kids.frontiersin.org/' },
+      { sourceId: 'usgs', name: 'U.S. Geological Survey', scope: 'curated government-science excerpts and source cards', license: 'Public domain for included U.S. government text; linked media may vary', url: 'https://www.usgs.gov/' },
+      { sourceId: 'wikisource', name: 'Wikisource · Wikimedia community', scope: 'curated primary-source excerpts and link-out records with work-level source notes', license: 'Public domain or free license per work', url: 'https://wikisource.org/' },
+    ],
+  },
+  {
+    group: 'Discovery and linked collections',
+    items: [
+      { sourceId: 'ck12', name: 'CK-12', scope: 'textbook discovery cards only; content stays at CK-12', license: 'CK-12 Curriculum Materials License', url: 'https://www.ck12.org/' },
+      { sourceId: 'open-textbook-library', name: 'Open Textbook Library', scope: 'CC0 catalog metadata linking to independently licensed textbooks', license: 'License varies by linked title', url: 'https://open.umn.edu/opentextbooks' },
+      { sourceId: 'core-knowledge', name: 'Core Knowledge Foundation', scope: 'collection links pending resource-level asset audits', license: 'Generally CC BY-NC-SA 4.0 curriculum; third-party exceptions', url: 'https://www.coreknowledge.org/' },
+      { sourceId: 'wikibooks', name: 'Wikibooks · Wikimedia community', scope: 'revision-pinned discovery cards; no book text or media is copied', license: 'CC BY-SA 4.0 / GFDL; media may vary', url: 'https://www.wikibooks.org/' },
+      { sourceId: 'oapen', name: 'OAPEN Library', scope: 'CC0 catalog discovery linking to independently licensed books', license: 'License varies by linked title', url: 'https://library.oapen.org/' },
+      { sourceId: 'doab', name: 'Directory of Open Access Books', scope: 'directory discovery only', license: 'License varies by linked title', url: 'https://www.doabooks.org/' },
+      { sourceId: 'pressbooks', name: 'Pressbooks Directory', scope: 'directory discovery only', license: 'License varies by linked title', url: 'https://pressbooks.directory/' },
+      { sourceId: 'standard-ebooks', name: 'Standard Ebooks', scope: 'library discovery card; editions remain at the source', license: 'Public domain and CC0', url: 'https://standardebooks.org/' },
+      { sourceId: 'mit-ocw', name: 'MIT OpenCourseWare', scope: 'collection discovery only', license: 'Mostly CC BY-NC-SA; marked third-party exceptions', url: 'https://ocw.mit.edu/' },
+      { sourceId: 'ncbi-bookshelf', name: 'NCBI Bookshelf', scope: 'collection discovery only; title and component rights are checked separately', license: 'Rights vary by title and page', url: 'https://www.ncbi.nlm.nih.gov/books/' },
+      { sourceId: 'nasa', name: 'NASA learning resources', scope: 'curated source cards linking to NASA science and education collections', license: 'U.S. government works; item-level media exceptions may apply', url: 'https://www.nasa.gov/learning-resources/' },
+      { sourceId: 'noaa', name: 'NOAA education resources', scope: 'curated source cards linking to NOAA and partner collections', license: 'U.S. government works; linked partner rights may vary', url: 'https://www.noaa.gov/education' },
+      { sourceId: 'loc', name: 'Library of Congress', scope: 'primary-source discovery cards with item pages retained for rights review', license: 'Item-level rights vary', url: 'https://www.loc.gov/' },
+    ],
+  },
+];
+
+const READING_SOURCE_TOTAL = READING_SOURCE_CREDITS.reduce((n, section) => n + section.items.length, 0);
 
 const MEDIA_SOURCE_GUIDE = [
   {
@@ -312,6 +350,39 @@ function OpenSourceTab({ t }) {
         </div>
       </div>
 
+      <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+        <h5 className="font-bold text-amber-950 text-sm mb-1">
+          Reading catalog acknowledgements
+        </h5>
+        <p className="text-xs text-slate-700 leading-relaxed">
+          Reading works and catalog records are not covered by AlloFlow’s AGPL license. Every readable title keeps its creators, publisher, source link, exact item-level license, and applicable restrictions. Collections with mixed or unclear rights stay link-only until a title-level audit approves more.
+        </p>
+        <details className="mt-3 rounded-lg border border-amber-200 bg-white group">
+          <summary className="min-h-11 cursor-pointer select-none px-3 py-2.5 font-bold text-amber-900 text-xs flex items-center gap-2 hover:text-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-700">
+            <span aria-hidden="true" className="text-amber-600 group-open:rotate-90 transition-transform motion-reduce:transition-none">▸</span>
+            View recognized reading sources ({READING_SOURCE_TOTAL})
+          </summary>
+          <div className="px-3 pb-3 pt-1 space-y-4">
+            {READING_SOURCE_CREDITS.map((section) => (
+              <div key={section.group}>
+                <h6 className="font-bold text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">{section.group}</h6>
+                <ul className="space-y-2 list-none">
+                  {section.items.map((item) => (
+                    <li key={item.sourceId} className="text-[11px] text-slate-700 leading-relaxed">
+                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-700 hover:text-indigo-900 hover:underline rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+                        {item.name}
+                      </a>
+                      <span className="text-slate-600"> — {item.scope}</span>
+                      <span className="block text-slate-500"><span className="font-semibold">Rights:</span> {item.license}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </details>
+      </div>
+
       <div>
         <h5 className="font-bold text-[11px] uppercase tracking-wider text-slate-500 mb-2">
           {t('about.oss_featured_header') || 'Learning tools we integrate'}
@@ -355,7 +426,7 @@ function OpenSourceTab({ t }) {
       </details>
 
       <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
-        {t('about.oss_credits_footer') || 'Hosted AI features use the provider configured in AI settings (such as Gemini, OpenAI, Claude, or an OpenAI-compatible endpoint); those services are not bundled software. Each library above is credited with its own copyright notice in THIRD_PARTY_LICENSES.md, and the full verbatim license texts ship with the source in the licenses/ folder — bundled into the School Box desktop app too, so the attribution travels even offline. Spot something we should credit or correct? Let us know.'}
+        {t('about.oss_credits_footer') || 'Hosted AI features use the provider configured in AI settings (such as Gemini, OpenAI, Claude, or an OpenAI-compatible endpoint); those services are not bundled software. Software libraries above are credited with their copyright notices in THIRD_PARTY_LICENSES.md, and full verbatim license texts ship with the source in the licenses/ folder — bundled into the School Box desktop app too. Reading works retain title-level attribution, source, and rights notices in the catalog and reader. Spot something we should credit or correct? Let us know.'}
       </p>
     </div>
   );

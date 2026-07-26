@@ -110,6 +110,8 @@ const processMathHTML = (text) => {
         .replace(/>/g, '&gt;');
     content = content.replace(/^\$\$/, '').replace(/\$\$$/, '');
     content = content.replace(/^\$/, '').replace(/\$$/, '');
+    content = content.replace(/^\\\(/, '').replace(/\\\)$/, '');
+    content = content.replace(/^\\\[/, '').replace(/\\\]$/, '');
     content = content.replace(/\\left\s*([(\[{|.])/g, '$1');
     content = content.replace(/\\right\s*([)\]}|.])/g, '$1');
     content = content.replace(/\\begin\{cases\}([\s\S]*?)\\end\{cases\}/g, (_, body) => {

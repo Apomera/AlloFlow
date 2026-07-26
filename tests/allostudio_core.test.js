@@ -691,6 +691,17 @@ describe('resource shelf + portfolio continuity helpers', () => {
     expect(modes.map(m => m.id)).toEqual(expect.arrayContaining(['smart-card', 'worksheet-question', 'captioned-image', 'anchor-section', 'source-note']));
     expect(ST.stResourceInsertModes({ kind: 'image', imageSrc: 'https://example.com/nope.png' }).map(m => m.id)).not.toContain('captioned-image');
   });
+  it('summarizes insert previews before adding resource objects', () => {
+    const visual = ST.stResourceInsertPreview({ kind: 'image', label: 'Cloud diagram', text: 'Clouds form as vapor cools.', imageSrc: 'data:image/png;base64,abc' }, 'captioned-image');
+    expect(visual).toMatchObject({ mode: 'captioned-image', imageCount: 1, hasImage: true, hasText: true });
+    expect(visual.objectCount).toBeGreaterThan(2);
+    expect(visual.summary).toMatch(/image/);
+
+    const question = ST.stResourceInsertPreview({ kind: 'glossary', label: 'Erosion', text: 'How does erosion change land?' }, 'worksheet-question');
+    expect(question.label).toBe('Question');
+    expect(question.labels).toEqual(expect.arrayContaining(['Question', 'Answer space']));
+    expect(question.summary).toMatch(/text/);
+  });
   it('can force a resource into question and source-note layouts', () => {
     const question = ST.stObjectsFromResourceCue({ id: 'r1', kind: 'glossary', label: 'Erosion', text: 'How does erosion change land?', sourceTitle: 'Earth pack' }, { insertAs: 'worksheet-question' });
     expect(question.some(o => o.type === 'text' && /Answer space/.test(o.runs[0].text))).toBe(true);
@@ -966,6 +977,25 @@ describe('templates (doc §11 set)', () => {
       expect(ST.stAltGate(d.objects)).toEqual([]);
       expect(ST.stExportHtml(d, { lang: 'en' })).toMatch(/^<!DOCTYPE html>/);
     }
+  });
+  it('discovers templates by category, use case, search, and saved keys', () => {
+    const templates = ST.stTemplates();
+    const byKey = new Map(templates.map(t => [t.key, t]));
+    expect(ST.stTemplateCategory(byKey.get('visualSchedule'))).toBe('organizer');
+    expect(ST.stTemplateUseCases(byKey.get('socialStory'))).toEqual(expect.arrayContaining(['sel', 'support']));
+
+    expect(ST.stFilterTemplates(templates, { category: 'worksheet' }).map(t => t.key)).toEqual(expect.arrayContaining(['worksheet', 'rubric', 'reflectionPage']));
+    expect(ST.stFilterTemplates(templates, { useCase: 'science' }).map(t => t.key)).toEqual(expect.arrayContaining(['labSafety', 'cerOrganizer', 'labSheet']));
+    expect(ST.stFilterTemplates(templates, { query: 'social story' }).map(t => t.key)).toEqual(['socialStory']);
+    expect(ST.stFilterTemplates(templates, { category: 'favorites', favorites: ['labSheet', 'socialStory'] }).map(t => t.key)).toEqual(['socialStory', 'labSheet']);
+  });
+  it('persists template favorites locally without duplicates', () => {
+    ST.stWriteTemplateFavorites([]);
+    expect(ST.stReadTemplateFavorites()).toEqual([]);
+    expect(ST.stToggleTemplateFavorite('labSheet')).toEqual(['labSheet']);
+    expect(ST.stToggleTemplateFavorite('labSheet')).toEqual([]);
+    expect(ST.stWriteTemplateFavorites(['worksheet', 'worksheet', 'socialStory'])).toEqual(['worksheet', 'socialStory']);
+    ST.stWriteTemplateFavorites([]);
   });
   it('blank canvas honors the chosen orientation at creation (portrait/landscape/square)', () => {
     const blank = ST.stTemplates().find(t => t.key === 'blank');

@@ -710,7 +710,7 @@ window.StemLab = window.StemLab || {
                 !challenge
                   ? h('button', { 'aria-label': 'Generate Challenge',
                       onClick: genChallenge,
-                      className: 'w-full py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl text-sm hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md'
+                      className: 'w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl text-sm hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md'
                     }, '\uD83C\uDFB2 Generate Challenge')
                   : h('div', { className: 'space-y-2' },
                       h('div', { className: 'flex items-center gap-2' },
@@ -1772,7 +1772,7 @@ window.StemLab = window.StemLab || {
                 }),
                 h('button', { onClick: askAITutor,
                   disabled: aiLoading || !aiQuestion.trim(),
-                  className: 'px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-sm hover:bg-sky-700 disabled:opacity-50'
+                  className: 'px-4 py-2 bg-sky-700 text-white font-bold rounded-lg text-sm hover:bg-sky-800 disabled:opacity-50'
                 }, aiLoading ? '\u23F3' : 'Ask')
               ),
               h('div', { className: 'flex flex-wrap gap-1.5' },

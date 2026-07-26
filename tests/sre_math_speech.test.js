@@ -28,20 +28,32 @@ function mockLoaderDom() {
     runScripts: 'outside-only',
   });
   const requested = [];
+  const requestedStyles = [];
+  const temmlCalls = [];
   let activeProfile = null;
   Object.defineProperty(dom.window.document, 'currentScript', {
     configurable: true,
     get: () => ({ src: 'https://app.example.test/sre_loader.js' }),
   });
-  dom.window.document.head.appendChild = (script) => {
-    requested.push(script.src);
+  dom.window.document.head.appendChild = (element) => {
+    if (element.tagName === 'LINK') {
+      requestedStyles.push(element.href);
+      dom.window.queueMicrotask(() => element.onload());
+      return element;
+    }
+    requested.push(element.src);
     dom.window.queueMicrotask(() => {
-      if (script.src.endsWith('/sre-assets/temml.min.js')) {
-        dom.window.temml = { renderToString: (latex) => `<math><mtext>${latex}</mtext></math>` };
-        script.onload();
+      if (element.src.endsWith('/sre-assets/temml.min.js')) {
+        dom.window.temml = {
+          renderToString: (latex, options = {}) => {
+            temmlCalls.push({ latex, options: { ...options } });
+            return `<math><mrow><mtext>${latex}</mtext></mrow></math>`;
+          },
+        };
+        element.onload();
         return;
       }
-      if (script.src.endsWith('/sre-assets/sre.js')) {
+      if (element.src.endsWith('/sre-assets/sre.js')) {
         dom.window.SRE = {
           setupEngine: async (features) => {
             await new Promise((done) => dom.window.setTimeout(done, features.locale === 'en' ? 8 : 1));
@@ -50,17 +62,16 @@ function mockLoaderDom() {
           engineReady: async () => {},
           toSpeech: (mathml) => `${activeProfile.locale}:${activeProfile.domain || 'default'}:${mathml}`,
         };
-        script.onload();
+        element.onload();
         return;
       }
-      script.onerror(new Error(`unexpected script ${script.src}`));
+      element.onerror(new Error(`unexpected script ${element.src}`));
     });
-    return script;
+    return element;
   };
   dom.window.eval(LOADER_SOURCE);
-  return { dom, requested };
+  return { dom, requested, requestedStyles, temmlCalls };
 }
-
 describe('offline Speech Rule Engine loader', () => {
   it('loads local pinned assets first and serializes concurrent locale changes', async () => {
     const { dom, requested } = mockLoaderDom();
@@ -78,6 +89,31 @@ describe('offline Speech Rule Engine loader', () => {
     ]));
     expect(requested.every((url) => url.startsWith('https://app.example.test/'))).toBe(true);
     expect(speech.diagnostics().mathmapsSource).toBe('https://app.example.test/sre-assets/mathmaps');
+    dom.window.close();
+  });
+
+  it('renders complex LaTeX as semantic MathML with local visual assets', async () => {
+    const { dom, requested, requestedStyles, temmlCalls } = mockLoaderDom();
+    const renderer = dom.window.AlloMathRenderer;
+    const mathml = await renderer.renderToString('\\frac{1}{1+\\frac{1}{x}}', {
+      displayMode: false,
+      allowRemoteFallback: false,
+    });
+
+    expect(mathml).toContain('<math>');
+    expect(requested).toEqual(['https://app.example.test/sre-assets/temml.min.js']);
+    expect(requestedStyles).toEqual(['https://app.example.test/sre-assets/Temml-Local.css']);
+    expect(temmlCalls[0]).toMatchObject({
+      latex: '\\frac{1}{1+\\frac{1}{x}}',
+      options: { displayMode: false, throwOnError: false, strict: 'warn', trust: false },
+    });
+    expect(renderer.diagnostics()).toMatchObject({
+      ready: true,
+      role: 'semantic-math-renderer',
+      temmlSource: 'https://app.example.test/sre-assets/temml.min.js',
+      cssSource: 'https://app.example.test/sre-assets/Temml-Local.css',
+      preserves: expect.arrayContaining(['AlgebraCAS-grading', 'MathLive-input', 'SRE-speech']),
+    });
     dom.window.close();
   });
 

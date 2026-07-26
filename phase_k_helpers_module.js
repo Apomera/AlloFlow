@@ -1612,9 +1612,9 @@ const formatInlineText = (text, enableGlossary = true, isDarkBg = false, deps) =
     warnLog("formatInlineText received non-string:", text);
     return String(text);
   }
-  const parts = text.split(/(\$\$[\s\S]+?\$\$|\$[^\$]+?\$|\[.*?\]\(resource:.*?\)|\[.*?\]\(.*?\)|https?:\/\/[^\s"']+(?<![.,;)])|`[^`]*`|\*\*.*?\*\*|\*.*?\*|==.*?==)/g);
+  const parts = text.split(/(\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)|\$\$[\s\S]+?\$\$|\$[^\$]+?\$|\[.*?\]\(resource:.*?\)|\[.*?\]\(.*?\)|https?:\/\/[^\s"']+(?<![.,;)])|`[^`]*`|\*\*.*?\*\*|\*.*?\*|==.*?==)/g);
   return parts.map((part, pIdx) => {
-    if (part.startsWith("$") && part.endsWith("$") || part.startsWith("$$") && part.endsWith("$$")) {
+    if (part.startsWith("$") && part.endsWith("$") || part.startsWith("\\(") && part.endsWith("\\)") || part.startsWith("\\[") && part.endsWith("\\]")) {
       return /* @__PURE__ */ React.createElement(React.Fragment, { key: pIdx }, /* @__PURE__ */ React.createElement(MathSymbol, { text: part }));
     }
     const resourceMatch = part.match(/^\[(.*?)\]\(resource:(.*?)\)$/);
@@ -1728,9 +1728,9 @@ const formatInlineText = (text, enableGlossary = true, isDarkBg = false, deps) =
     else if (isItalic) content = part.slice(1, -1);
     else if (isHighlight) content = part.slice(2, -2);
     else if (isCode) content = part.slice(1, -1);
-    const subParts = content.split(/(\$\$[\s\S]+?\$\$|\$[^\$]+?\$)/g);
+    const subParts = content.split(/(\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)|\$\$[\s\S]+?\$\$|\$[^\$]+?\$)/g);
     const renderedSubParts = subParts.filter((sp) => sp != null).map((subPart, sIdx) => {
-      if (subPart.startsWith("$") && subPart.endsWith("$") || subPart.startsWith("$$") && subPart.endsWith("$$")) {
+      if (subPart.startsWith("$") && subPart.endsWith("$") || subPart.startsWith("\\(") && subPart.endsWith("\\)") || subPart.startsWith("\\[") && subPart.endsWith("\\]")) {
         return /* @__PURE__ */ React.createElement(React.Fragment, { key: sIdx }, /* @__PURE__ */ React.createElement(MathSymbol, { text: subPart }));
       }
       if (enableGlossary) {

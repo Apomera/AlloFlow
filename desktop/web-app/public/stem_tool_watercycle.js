@@ -3640,13 +3640,13 @@ const d = labToolData.waterCycle || {};
 
               React.createElement("button", {
                 onClick: () => switchMode('steward'),
-                className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-sky-500 to-emerald-500 text-white hover:from-sky-600 hover:to-emerald-600 shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none",
+                className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-sky-700 to-emerald-700 text-white hover:from-sky-700 hover:to-emerald-700 shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                 'aria-label': 'Switch to Watershed Steward 10-year campaign'
               }, "\uD83D\uDCA7 Watershed Steward \u2192"),
 
               React.createElement("button", {
                 onClick: () => switchMode('precipHunt'),
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600 shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none",
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-700 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-600 shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none",
                 'aria-label': 'Switch to Precipitation Discovery widget'
               }, "\uD83C\uDF27\uFE0F Precipitation Lab \u2192")
 
@@ -3829,7 +3829,7 @@ const d = labToolData.waterCycle || {};
                         if (typeof announceToSR === 'function') announceToSR('Journey started. You are now a water droplet in the ocean.');
                         addToast('\uD83D\uDCA7 You are now a water droplet in the ocean! Watch and learn as you travel through the water cycle.', 'info');
                       },
-                      className: "px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold rounded-xl hover:from-cyan-600 hover:to-blue-600 shadow-lg transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                      className: "px-4 py-2 bg-gradient-to-r from-cyan-700 to-blue-600 text-white text-xs font-bold rounded-xl hover:from-cyan-700 hover:to-blue-600 shadow-lg transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                     }, "\uD83C\uDFAE Start Journey (J)")
                   : React.createElement("div", { className: "flex gap-1.5" },
                       React.createElement("button", { "aria-label": "End Journey mode (shortcut: J)",
@@ -3928,7 +3928,7 @@ const d = labToolData.waterCycle || {};
                       }
                       addToast('\uD83C\uDF89 Cycle complete! +25 XP. Starting new loop...', 'success');
                     },
-                    className: "mt-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-xs font-bold rounded-xl hover:from-emerald-600 hover:to-cyan-600 shadow-md transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                    className: "mt-2 px-4 py-2 bg-gradient-to-r from-emerald-700 to-cyan-700 text-white text-xs font-bold rounded-xl hover:from-emerald-700 hover:to-cyan-700 shadow-md transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                   }, "\uD83D\uDD04 Start Another Loop")
                 ),
 
@@ -3990,7 +3990,7 @@ const d = labToolData.waterCycle || {};
                 React.createElement("button", {
                   disabled: d.hydrologistLoading,
                   onClick: askHydrologist,
-                  className: "px-3 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 transition-all disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                  className: "px-3 py-1.5 bg-sky-700 text-white rounded-lg text-xs font-bold hover:bg-sky-800 transition-all disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                 }, d.hydrologistLoading ? "Thinking..." : "Ask")
               ),
               d.hydrologistReply && React.createElement("div", { className: "mt-2 p-2.5 rounded-lg border animate-in slide-in-from-top-1 " + (isDark ? "bg-sky-950/40 border-sky-900/50 text-slate-200" : "bg-sky-50 border-sky-100 text-slate-700") },
@@ -4111,12 +4111,12 @@ const d = labToolData.waterCycle || {};
                   });
                 },
                 disabled: d.aiQuizLoading,
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (d.aiQuizLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (d.aiQuizLoading ? 'bg-purple-300 text-white cursor-wait' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md')
               }, d.aiQuizLoading ? '\u23F3 Generating...' : '\u2728 AI Question'),
 
               d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
               d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
-              (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
+              (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-700 to-red-600 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
               (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
 
               d.wcQuiz && React.createElement("div", { className: "mt-2 rounded-xl p-3 border shadow-sm " + (isDark ? "bg-slate-950/60 border-sky-900/40 backdrop-blur-md" : "bg-gradient-to-br from-sky-50 to-indigo-50 border-sky-200") },
@@ -4228,7 +4228,7 @@ const d = labToolData.waterCycle || {};
 
             ),
 
-            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none" }, "\uD83D\uDCF8 Snapshot")
+            React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none" }, "\uD83D\uDCF8 Snapshot")
 
           );
       })();

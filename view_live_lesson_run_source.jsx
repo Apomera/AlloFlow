@@ -98,6 +98,59 @@ function summarizeLiveLessonDelivery(resourceId, audience, roster) {
   };
 }
 
+const LIVE_PRESENTER_CUE_LIMITS = Object.freeze({
+  sayAsk: 1200,
+  lookFor: 600,
+  nextMove: 600,
+});
+const LIVE_PRESENTER_CUE_FIELDS = Object.freeze(Object.keys(LIVE_PRESENTER_CUE_LIMITS));
+const LIVE_PRESENTER_CUE_MAX_RESOURCES = 250;
+const LIVE_PRESENTER_CUE_RESERVED_IDS = new Set(['__proto__', 'prototype', 'constructor']);
+
+function normalizeLivePresenterCue(input) {
+  const source = input && typeof input === 'object' ? input : {};
+  const cue = {};
+  LIVE_PRESENTER_CUE_FIELDS.forEach(field => {
+    cue[field] = String(source[field] || '').replace(/\u0000/g, '').slice(0, LIVE_PRESENTER_CUE_LIMITS[field]);
+  });
+  return cue;
+}
+
+function sanitizeLivePresenterCuesByResourceId(input, allowedResourceIds = null) {
+  const source = input && typeof input === 'object' ? input : {};
+  const allowed = Array.isArray(allowedResourceIds)
+    ? new Set(allowedResourceIds.map(id => String(id || '').trim()).filter(Boolean))
+    : null;
+  const result = {};
+  Object.entries(source).slice(-LIVE_PRESENTER_CUE_MAX_RESOURCES).forEach(([rawId, rawCue]) => {
+    const resourceId = String(rawId || '').trim().slice(0, 128);
+    if (!resourceId || LIVE_PRESENTER_CUE_RESERVED_IDS.has(resourceId)) return;
+    if (allowed && !allowed.has(resourceId)) return;
+    const cue = normalizeLivePresenterCue(rawCue);
+    if (!LIVE_PRESENTER_CUE_FIELDS.some(field => cue[field].trim())) return;
+    result[resourceId] = cue;
+  });
+  return result;
+}
+
+function upsertLivePresenterCue(existing, resourceId, patch) {
+  const safeResourceId = String(resourceId || '').trim().slice(0, 128);
+  if (!safeResourceId || LIVE_PRESENTER_CUE_RESERVED_IDS.has(safeResourceId)) {
+    return sanitizeLivePresenterCuesByResourceId(existing);
+  }
+  const current = sanitizeLivePresenterCuesByResourceId(existing);
+  const cue = normalizeLivePresenterCue({
+    ...(current[safeResourceId] || {}),
+    ...(patch && typeof patch === 'object' ? patch : {}),
+  });
+  const next = { ...current };
+  delete next[safeResourceId];
+  if (LIVE_PRESENTER_CUE_FIELDS.some(field => cue[field].trim())) {
+    next[safeResourceId] = cue;
+  }
+  return sanitizeLivePresenterCuesByResourceId(next);
+}
+
 const LIVE_ACTIVITY_SNAPSHOT_SCHEMA_VERSION = 1;
 const LIVE_ACTIVITY_FAMILIES = new Set(['polling', 'pictionary', 'quiz']);
 const LIVE_ACTIVITY_KINDS = new Set([
@@ -524,6 +577,8 @@ function LiveLessonRunPanel(props) {
     onSendToStudents,
     activitySnapshots = [],
     onOpenActivity,
+    presenterCuesByResourceId = {},
+    onChangePresenterCue,
     now = Date.now(),
     signalFreshMs = LIVE_ATTENTION_SIGNAL_FRESH_MS,
     t = key => key,
@@ -565,6 +620,18 @@ function LiveLessonRunPanel(props) {
   );
   const teacherPaced = sessionMode === 'sync';
   const focusIsCurrent = currentIndex >= 0 && focusIndex === currentIndex;
+  const presenterCue = normalizeLivePresenterCue(
+    focusItem && presenterCuesByResourceId && presenterCuesByResourceId[focusItem.id]
+  );
+  const hasPresenterCue = LIVE_PRESENTER_CUE_FIELDS.some(field => presenterCue[field].trim());
+  const updatePresenterCue = (field, value) => {
+    if (!focusItem || typeof onChangePresenterCue !== 'function') return;
+    onChangePresenterCue(focusItem.id, { [field]: value });
+  };
+  const clearPresenterCue = () => {
+    if (!focusItem || typeof onChangePresenterCue !== 'function') return;
+    onChangePresenterCue(focusItem.id, { sayAsk: '', lookFor: '', nextMove: '' });
+  };
 
   const activityPulse = selectLiveActivityPulse(activitySnapshots);
   const attentionQueue = React.useMemo(() => buildLiveAttentionQueue({
@@ -1005,6 +1072,78 @@ function LiveLessonRunPanel(props) {
             </div>
           </div>
 
+
+          <details
+            data-live-presenter-cues="teacher-memory-only"
+            style={{
+              marginTop: 6,
+              padding: '0.42rem 0.48rem',
+              border: '1px solid #c4b5fd',
+              borderRadius: 8,
+              background: '#f5f3ff',
+            }}
+          >
+            <summary style={{ color: '#5b21b6', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 900 }}>
+              {t('live_lesson.presenter_cues') || 'Private presenter cues'}
+              {hasPresenterCue ? ' · ' + (t('common.ready') || 'ready') : ''}
+            </summary>
+            <p style={{ margin: '0.35rem 0', color: '#6d28d9', fontSize: '0.59rem', lineHeight: 1.35 }}>
+              {t('live_lesson.presenter_cues_privacy') || 'Teacher-only in this live-session tab. These cues are not added to the resource or sent to students.'}
+            </p>
+            {[
+              ['sayAsk', t('live_lesson.presenter_say_ask') || 'Say / ask', t('live_lesson.presenter_say_ask_placeholder') || 'Opening question, explanation, or discussion prompt…'],
+              ['lookFor', t('live_lesson.presenter_look_for') || 'Look / listen for', t('live_lesson.presenter_look_for_placeholder') || 'Evidence of understanding, likely misconception, or access need…'],
+              ['nextMove', t('live_lesson.presenter_next_move') || 'Next move', t('live_lesson.presenter_next_move_placeholder') || 'Transition, checkpoint, or differentiated follow-up…'],
+            ].map(([field, label, placeholder]) => (
+              <label key={field} style={{ display: 'block', marginTop: 5, color: '#4c1d95', fontSize: '0.61rem', fontWeight: 800 }}>
+                {label}
+                <textarea
+                  value={presenterCue[field]}
+                  maxLength={LIVE_PRESENTER_CUE_LIMITS[field]}
+                  rows={field === 'sayAsk' ? 3 : 2}
+                  disabled={typeof onChangePresenterCue !== 'function'}
+                  onChange={event => updatePresenterCue(field, event.target.value)}
+                  placeholder={placeholder}
+                  aria-label={label + ' for ' + getTitle(focusItem)}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    marginTop: 2,
+                    resize: 'vertical',
+                    border: '1px solid #c4b5fd',
+                    borderRadius: 6,
+                    background: 'white',
+                    color: '#0f172a',
+                    padding: '0.35rem',
+                    fontFamily: 'inherit',
+                    fontSize: '0.64rem',
+                    lineHeight: 1.35,
+                  }}
+                />
+              </label>
+            ))}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginTop: 5 }}>
+              <span style={{ color: '#7c3aed', fontSize: '0.56rem' }}>
+                {t('live_lesson.presenter_cues_session_only') || 'Clears when this live session changes.'}
+              </span>
+              <button
+                type="button"
+                disabled={!hasPresenterCue || typeof onChangePresenterCue !== 'function'}
+                onClick={clearPresenterCue}
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  color: hasPresenterCue ? '#6d28d9' : '#a78bfa',
+                  padding: 2,
+                  fontSize: '0.58rem',
+                  fontWeight: 900,
+                  cursor: hasPresenterCue ? 'pointer' : 'not-allowed',
+                }}
+              >
+                {t('live_lesson.clear_cues') || 'Clear cues'}
+              </button>
+            </div>
+          </details>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginTop: 6 }}>
             <button
               type="button"

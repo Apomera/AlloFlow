@@ -8396,13 +8396,13 @@ var d = labToolData.brainAtlas || {};
                   React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                     React.createElement("span", { style: { fontSize: 22 }, 'aria-hidden': 'true' }, '🕵️'),
                     React.createElement("div", null,
-                      React.createElement("div", { style: { color: '#6d28d9', fontSize: 14, fontWeight: 900 } }, t('stem.brainatlas.function_match', 'Function Match')),
+                      React.createElement("div", { style: { color: 'var(--allo-stem-text, #5b21b6)', fontSize: 14, fontWeight: 900 } }, t('stem.brainatlas.function_match', 'Function Match')),
                       React.createElement("div", { style: { color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, fontStyle: 'italic' } }, t('stem.brainatlas.12_function_clinical_syndrome_vignette', '12 function / clinical-syndrome vignettes — pick the brain region.'))
                     )
                   ),
                   React.createElement("button", {
                     onClick: function() { upd('fmOpen', !fmOpen); },
-                    style: { padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(124,58,237,0.40)', background: 'rgba(124,58,237,0.10)', color: '#6d28d9', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                    style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #7c3aed', background: '#5b21b6', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                   }, fmOpen ? 'Hide ▴' : 'Play →')
                 ),
                 fmOpen && (fmIdx < 0

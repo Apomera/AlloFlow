@@ -2053,7 +2053,7 @@ window.StemLab = window.StemLab || {
                 }),
                 h('button', { onClick: askAI,
                   disabled: aiLoading || !aiQuestion.trim(),
-                  className: 'px-3 py-1.5 text-xs font-bold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:opacity-50'
+                  className: 'px-3 py-1.5 text-xs font-bold text-white bg-sky-700 rounded-lg hover:bg-sky-800 disabled:opacity-50'
                 }, aiLoading ? 'Thinking...' : 'Ask')
               ),
               aiResponse && h('div', { className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, aiResponse)
@@ -3446,7 +3446,7 @@ window.StemLab = window.StemLab || {
                       _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null
                     });
                   },
-                  className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-lg hover:from-red-600 hover:to-orange-600 shadow-lg'
+                  className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-600 to-orange-700 rounded-lg hover:from-red-600 hover:to-orange-700 shadow-lg'
                 }, '\u2694\uFE0F Start Battle')
               ),
 
@@ -3570,7 +3570,7 @@ window.StemLab = window.StemLab || {
                       _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null
                     });
                   },
-                  className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded-lg hover:from-red-600 hover:to-orange-600'
+                  className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-red-600 to-orange-700 rounded-lg hover:from-red-600 hover:to-orange-700'
                 }, '\u2694\uFE0F Battle Again')
               ),
 
@@ -3587,7 +3587,7 @@ window.StemLab = window.StemLab || {
                       _battleEnemyHP: 100, _battleFeedback: null, _battleScore: 0, _battleResult: null
                     });
                   },
-                  className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg'
+                  className: 'px-6 py-2 text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 rounded-lg'
                 }, '\u2694\uFE0F Try Again')
               )
             ),
@@ -3747,7 +3747,7 @@ window.StemLab = window.StemLab || {
               }, '\uD83E\uDDEC DNA Lab \u2192'),
               h('button', { 'aria-label': 'Snapshot',
                 onClick: takeSnapshot,
-                className: 'ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all'
+                className: 'ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all'
               }, '\uD83D\uDCF8 Snapshot')
             ),
 

@@ -29,6 +29,7 @@ describe('Coding Lab playback controls', () => {
       _codingPlayground: {
         tutorialDismissed: true,
         playgroundMode: 'robot',
+        codeMode: 'outline',
         robotChallengeIdx: 0,
         robotRunning: true,
         robotBlocks: [{ type: 'moveForward' }],

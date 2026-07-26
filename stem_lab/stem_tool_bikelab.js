@@ -479,7 +479,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           },
             visited && h('span', {
               'aria-hidden': true,
-              className: 'absolute top-2 right-2 z-10 bg-emerald-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md'
+              className: 'absolute top-2 right-2 z-10 bg-emerald-700 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md'
             }, '✓'),
             h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white' },
               h('div', { className: 'flex items-start justify-between mb-2' },
@@ -1726,7 +1726,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 )
               ),
               // Stats card
-              h('div', { className: 'bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-lg text-white p-5' },
+              h('div', { className: 'bg-gradient-to-br from-violet-600 to-purple-600 rounded-xl shadow-lg text-white p-5' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider opacity-80 mb-3' }, t('stem.bikelab.this_gear', 'This Gear')),
                 h('div', { className: 'grid grid-cols-2 gap-4' },
                   h('div', null,
@@ -1980,7 +1980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               )
             ),
             // Current step instruction
-            h('div', { className: 'bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl shadow-lg text-white p-6' },
+            h('div', { className: 'bg-gradient-to-br from-indigo-600 to-blue-600 rounded-xl shadow-lg text-white p-6' },
               h('div', { className: 'flex items-start justify-between gap-3 mb-1' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider opacity-80' }, t('stem.bikelab.current_step', 'Current Step')),
                 callTTS && h('button', {
@@ -2014,7 +2014,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     onDragEnd: function() { setDragged(null); },
                     onClick: function() { handleDrop(t); },
                     onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDrop(t); } },
-                    className: 'w-20 h-20 rounded-xl border-2 border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 cursor-pointer flex flex-col items-center justify-center gap-1 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500 ' + (dragged === t ? 'opacity-40 scale-95' : '')
+                    className: 'w-20 h-20 rounded-xl border-2 border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 cursor-pointer flex flex-col items-center justify-center gap-1 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-600 ' + (dragged === t ? 'opacity-40 scale-95' : '')
                   },
                     h('span', { className: 'text-3xl' }, TOOL_ICONS[t] || '🔧'),
                     h('span', { className: 'text-[10px] font-bold text-slate-600 capitalize' }, t.replace(/-/g, ' '))
@@ -2049,7 +2049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 'Step ' + (step + 1) + ' / ' + job.steps.length),
               h('button', {
                 onClick: nextStep,
-                className: 'px-4 py-2 rounded-lg font-bold text-sm bg-amber-500 hover:bg-amber-600 text-white'
+                className: 'px-4 py-2 rounded-lg font-bold text-sm bg-amber-700 hover:bg-amber-800 text-white'
               }, step === job.steps.length - 1 ? 'Finish Job ✓' : 'Skip Step →')
             )
           )
@@ -2129,7 +2129,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 )
               ),
               h('div', { className: 'lg:col-span-3 space-y-3' },
-                h('div', { className: 'bg-gradient-to-br from-sky-500 to-blue-600 rounded-xl shadow-lg text-white p-5' },
+                h('div', { className: 'bg-gradient-to-br from-sky-700 to-blue-600 rounded-xl shadow-lg text-white p-5' },
                   h('div', { className: 'text-xs font-bold uppercase tracking-wider opacity-80 mb-3' }, t('stem.bikelab.your_fit', 'Your Fit')),
                   h('svg', { role: 'img', 'aria-label': 'Bike fit diagram showing saddle height ' + saddleHeight.toFixed(1) + ' centimeters, reach ' + reachCm.toFixed(1) + ' centimeters, saddle setback ' + setback + ' centimeters, and handlebar drop ' + drop + ' centimeters', viewBox: '0 0 420 240', className: 'w-full h-48' },
                     h('circle', { cx: 80, cy: 190, r: 36, fill: 'none', stroke: '#fff', strokeWidth: 3 }),
@@ -2904,7 +2904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 }, running ? '⏸ Pause' : (posRef.current > 0 && posRef.current < COURSE_LENGTH ? '▶ Resume' : '▶ Start Ride')),
                 finished && h('button', {
                   onClick: function() { reset(); setRunning(true); },
-                  className: 'py-2.5 px-4 rounded-lg font-bold bg-emerald-500 hover:bg-emerald-600 text-white transition-colors shadow'
+                  className: 'py-2.5 px-4 rounded-lg font-bold bg-emerald-700 hover:bg-emerald-800 text-white transition-colors shadow'
                 }, t('stem.bikelab.ride_again', '↻ Ride Again')),
                 h('button', {
                   onClick: function() { setRunning(false); reset(); },
@@ -2973,7 +2973,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('div', { className: 'text-[10px] text-slate-600 mt-2 text-center' }, t('stem.bikelab.hold_to_slow_or_stop', 'Hold to slow or stop'))
               )
             ),
-            finished && h('div', { className: 'bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg text-white p-5' },
+            finished && h('div', { className: 'bg-gradient-to-br from-emerald-700 to-teal-700 rounded-xl shadow-lg text-white p-5' },
               h('div', { className: 'flex items-center gap-3 mb-3' },
                 h('span', { className: 'text-5xl' }, '🏫'),
                 h('div', null,
@@ -3171,7 +3171,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                         upd('repairJobId', selected.repairJob);
                         goto('repair');
                       },
-                      className: 'w-full py-2.5 px-4 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition-colors shadow'
+                      className: 'w-full py-2.5 px-4 rounded-lg bg-amber-700 hover:bg-amber-800 text-white font-bold text-sm transition-colors shadow'
                     }, t('stem.bikelab.open_related_repair_job', '🔧 Open related repair job →'))
                   )
                 ),
@@ -3398,7 +3398,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           BackBar({ icon: '❄️', title: t('stem.bikelab.maine_winter_biking_2', 'Maine Winter Biking') }),
           h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-3' },
             // Hero / context
-            h('div', { className: 'bg-gradient-to-br from-sky-600 to-blue-800 rounded-2xl p-5 text-white shadow-lg' },
+            h('div', { className: 'bg-gradient-to-br from-sky-700 to-blue-800 rounded-2xl p-5 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🇺🇸'),
                 h('div', null,
@@ -3582,7 +3582,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('p', { className: 'text-slate-700 mb-4 max-w-md' }, t('stem.bikelab.a_traffic_situation_will_appear_press_', 'A traffic situation will appear. Press the matching hand signal as fast as you can. 10 rounds. Best correct-only average is your personal best.')),
                 h('button', {
                   onClick: startGame,
-                  className: 'px-6 py-3 rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg'
+                  className: 'px-6 py-3 rounded-xl font-bold bg-amber-700 hover:bg-amber-800 text-white shadow-lg'
                 }, t('stem.bikelab.start_drill', '▶ Start Drill'))
               ) : gameMode === 'playing' ? h('div', { className: 'text-center', 'aria-live': 'polite' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-700 mb-2' }, 'Round ' + (roundIdx + 1)),
@@ -3596,7 +3596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 ),
                 h('button', {
                   onClick: startGame,
-                  className: 'mt-3 px-5 py-2 rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white shadow'
+                  className: 'mt-3 px-5 py-2 rounded-xl font-bold bg-amber-700 hover:bg-amber-800 text-white shadow'
                 }, t('stem.bikelab.run_again', '↻ Run Again'))
               )
             ),

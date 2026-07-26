@@ -21781,7 +21781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     startFlying('kpwm');
                     if (typeof addToast === 'function') addToast(armToast, 'info');
                   },
-                  style: { flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #0891b2, #06b6d4)', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(8,145,178,0.4)' }
+                  style: { flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #0e7490, #155e75)', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(8,145,178,0.4)' }
                 }, __alloT('stem.flightsim.i_understand_begin_flight', '✓ I Understand — Begin Flight'))
               )
             )
@@ -21805,7 +21805,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var flightMinutes = Math.floor((d.totalFlightTime || 0) / 60);
             var discoveryCount = Object.keys(d.geoDiscovered || {}).length;
             var badgeCount = Object.keys(earnedBadges).length;
-            var launchStyle = { padding: '11px 12px', borderRadius: '8px', border: '1px solid rgba(125,211,252,0.35)', background: 'linear-gradient(135deg, #0369a1, #0ea5e9)', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer', textAlign: 'center', boxShadow: '0 10px 24px rgba(14,165,233,0.22)' };
+            var launchStyle = { padding: '11px 12px', borderRadius: '8px', border: '1px solid rgba(125,211,252,0.35)', background: 'linear-gradient(135deg, #0369a1, #075985)', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer', textAlign: 'center', boxShadow: '0 10px 24px rgba(14,165,233,0.22)' };
             var secondaryStyle = { padding: '11px 12px', borderRadius: '8px', border: '1px solid rgba(148,163,184,0.24)', background: 'rgba(15,23,42,0.72)', color: '#dbeafe', fontSize: '12px', fontWeight: 800, cursor: 'pointer', textAlign: 'center' };
             return h('section', {
               'data-flightsim-briefing': 'true',
@@ -21963,7 +21963,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   h('button', { onClick: function() {
                     createFlightPlan(d.planDep || 'kpwm', d.planDest || 'kjfk');
                     startFlying(d.planDep || 'kpwm');
-                  }, style: { width: '100%', marginTop: '8px', padding: '10px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #059669, #10b981)', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }
+                  }, style: { width: '100%', marginTop: '8px', padding: '10px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #047857, #065f46)', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }
                   }, __alloT('stem.flightsim.file_flight_plan_depart', '🗺️ File Flight Plan & Depart'))
                 );
               })()
@@ -22185,7 +22185,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: '1.5' } }, les.variables)
             ),
             h('button', { onClick: function() { startFlying('kpwm'); },
-              style: { width: '100%', marginTop: '16px', padding: '12px', borderRadius: '10px', border: 'none', background: '#3b82f6', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
+              style: { width: '100%', marginTop: '16px', padding: '12px', borderRadius: '10px', border: 'none', background: '#1d4ed8', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.flightsim.try_it_free_flight', '✈️ Try It — Free Flight')),
             // Completion affordance — the 'complete_lesson' quest hook reads
             // d.lessonsCompleted, which previously had NO writer anywhere: the
@@ -22662,7 +22662,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               style: { padding: '10px 24px', borderRadius: '8px', border: '1px solid #3b82f6', background: '#1e40af', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.flightsim.back_to_menu_2', '🏠 Back to Menu')),
             h('button', { onClick: function() { startFlying('kpwm'); },
-              style: { padding: '10px 24px', borderRadius: '8px', border: 'none', background: '#3b82f6', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+              style: { padding: '10px 24px', borderRadius: '8px', border: 'none', background: '#1d4ed8', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.flightsim.fly_again', '🛫 Fly Again'))
           )
         );
@@ -23089,7 +23089,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               }, __alloT('stem.flightsim.previous', '◀ Previous')),
               h('div', { style: { display: 'flex', gap: '8px' } },
                 h('button', { onClick: randomQuiz, style: { padding: '10px 16px', borderRadius: '8px', border: '1px solid #334155', background: 'transparent', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.flightsim.random', '🎲 Random')),
-                h('button', { onClick: nextQuiz, style: { padding: '10px 16px', borderRadius: '8px', border: 'none', background: '#3b82f6', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.flightsim.next', 'Next ▶'))
+                h('button', { onClick: nextQuiz, style: { padding: '10px 16px', borderRadius: '8px', border: 'none', background: '#1d4ed8', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.flightsim.next', 'Next ▶'))
               )
             )
           )

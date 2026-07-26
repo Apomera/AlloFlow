@@ -1846,7 +1846,7 @@
                 ),
                 React.createElement("button", { "aria-label": "Got it!",
                   onClick: function () { upd('tutorialDismissed', true); },
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-500 text-white hover:bg-indigo-400 transition-all shrink-0"
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shrink-0"
                 }, "Got it! ✕")
               )
             ),
@@ -2851,14 +2851,14 @@
               // Name your creation (only when a program exists)
               blocks.length > 0 && React.createElement("input", { "aria-label": "Name your creation", type: "text", value: projectName, placeholder: "Name your creation", maxLength: 40,
                 onChange: function (e) { upd('projectName', e.target.value); },
-                className: "px-3 py-1.5 text-xs rounded-full border border-slate-300 bg-white text-slate-700 placeholder-slate-400 w-44" }),
+                className: "px-3 py-1.5 text-xs rounded-full border border-slate-500 bg-white text-slate-700 placeholder-slate-500 w-44" }),
               // Snapshot button
               React.createElement("button", { "aria-label": "Snapshot",
                 onClick: function () {
                   setToolSnapshots(function (prev) { return prev.concat([{ id: 'code-' + Date.now(), tool: 'codingPlayground', label: projectName || 'Coding Playground', data: Object.assign({}, d), timestamp: Date.now() }]); });
                   if (addToast) addToast('📸 Code snapshot saved!', 'success');
                 },
-                className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
+                className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
               }, "📸 Snapshot")
             )
           );

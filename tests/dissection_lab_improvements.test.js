@@ -128,9 +128,20 @@ describe('dissection improvement contracts', () => {
       expect(source).toContain('var relationshipColor =');
       expect(source).toContain('var flowT = relationshipMotion && !dissMotionReduced');
       expect(source).toContain('var focusRadius = 12 + (1 - focusEntryProgress)');
-      expect(source).toContain('var focusMuted = focusMode');
+      expect(source).toContain('var focusMuted = (focusMode || (denseHotspotView && d.selectedOrgan))');
       expect(source).toContain('focusEntryProgress = 1 - Math.pow');
-      expect(source).toContain('focusMode: focusMode');
+      expect(source).toContain('Nearest-target hit testing also treats laid-out labels as interactive targets.');
+      expect(source).toContain('function closestVisibleOrganAt(x, y, radius)');
+      expect(source).toContain('canvas._hotspotLabelBoxes || []');
+      expect(source).toContain('Adaptive hotspot labels share collision-aware columns and remain clickable.');
+      expect(source).toContain("var denseHotspotView = d.labelMode !== 'hidden' && organs.length >= 8 && zoom < 1.22");
+      expect(source).toContain('function resolveAdaptiveLabelColumn(items, minY, maxY)');
+      expect(source).toContain('canvas._hotspotLabelBoxes = adaptiveHotspotLayout.map');
+      expect(source).toContain('Reticle marks make selected state readable without color alone.');
+      expect(source).toContain("'Adaptive labels \\u00B7 ' + compactHotspotCount + ' compact \\u00B7 hover to expand'");
+      expect(source).toContain('var hit = closestVisibleOrganAt(mx, my, clickHitRadius);');
+      expect(source).toContain('var hit = closestVisibleOrganAt(mx, my, hoverHitRadius);');
+      expect(source).not.toContain('var lx = px + 12, ly = py - 8;');      expect(source).toContain('focusMode: focusMode');
       expect(source).toContain('lightDirection: lightDirection');
       expect(source).toContain('focusMode: data.focusMode !== false');
       expect(source).toContain('parallaxDepth: parallaxDepth');
@@ -158,9 +169,189 @@ describe('dissection improvement contracts', () => {
       expect(source).toContain('endpointDistance');
       expect(source).toContain('Undo last technique action');
       expect(source).toContain('generalized, non-graphic teaching simulation');
+      expect(source).toContain('function procedureInstrumentStatus(toolId)');
+      expect(source).toContain('data-diss-tool-status');
+      expect(source).toContain("performProcedureAction('probe', { organ: hit });");
+      expect(source).toContain('Next-layer tissue bed becomes visible beneath the retracted flaps.');
+      expect(source).toContain('var nextTissueLayer = spec.layers[Math.min(spec.layers.length - 1, currentLayerIdx + 1)]');
+      expect(source).toContain('Probe confirmation remains anchored to the traced structure as persistent visual evidence.');
+      expect(source).toContain('canvasProcedure.probed && canvasProcedure.probedOrganId');
+      expect(source).toContain("var probeLabel = 'Trace recorded';");      expect(source).toContain('ann.prevX * W');
+      expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
+      expect(source).toContain('var transitionDuration = prefersReducedLayerMotion ? 650 : 1150');
+      expect(source).toContain('_layerTransition: layerTransition');
+      expect(source).toContain('Specimen-shaped layer transition opens along the dominant body axis to reveal the new anatomy beneath.');
+      expect(source).toContain('var transitionHorizontalBody = transitionRX > transitionRY * 1.18');
+      expect(source).toContain('Temporary connective strands bridge the opening and release as the flaps retract.');
+      expect(source).toContain('Screen-fixed confirmation stays readable even when the specimen is mirrored, zoomed, or panned.');
+      expect(source).toContain("ctx.fillText('LAYER REVEALED'");
+      expect(source).toContain("_layerTransition.fromName + '  \\u2192  '");
+      expect(source).toContain('_layerTransition.reducedMotion ? 1 : layerTransitionProgress');      expect(source).toContain('d.rulerStart.x * W');
+      expect(source).toContain('Measurement complete: ');
+      expect(source).toContain('Clear annotations');
       expect(source).toContain("Technique cautions reviewed: ");
       expect(source).toContain("Current layer technique score: ");
       expect((source.match(/performProcedureAction\('forceps', \{ point:/g) || []).length).toBe(1);
+    }
+  });
+
+  it('uses an anatomy-aware fetal pig silhouette instead of mascot-like features', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('var pigTissueGradient = ctx.createLinearGradient');
+      expect(source).toContain('function tracePigBody()');
+      expect(source).toContain('function drawPigLimb(shoulderX, shoulderY, kneeX, kneeY, hoofX, hoofY, farSide)');
+      expect(source).toContain('Far-side limbs sit behind the torso');
+      expect(source).toContain('closed eyelid read as fetal anatomy');
+      expect(source).toContain('Fetal-specific external landmark: a short, softly modeled umbilical stump.');
+      expect(source).toContain('The fetal tail is a narrow taper with one relaxed curve');
+      expect(source).toContain('for (var pigFollicle = 0; pigFollicle < 42; pigFollicle++)');
+      expect(source).toContain("{ id: 'masseter_p', name: 'Masseter', x: 0.26, y: 0.42");
+      expect(source).toContain("{ id: 'heart_p', name: 'Heart (4-chamber)', x: 0.44, y: 0.44");
+      expect(source).toContain("{ id: 'brain_p', name: 'Brain', x: 0.24, y: 0.39");
+      expect(source).not.toContain("ctx.arc(cx - W * 0.24, cy - H * 0.06, 4");
+    }
+  });
+
+  it('keeps earthworm surface and internal anatomy registered to one curved body axis', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('function earthwormPoint(t)');
+      expect(source).toContain('function earthwormFrame(t)');
+      expect(source).toContain('function traceEarthwormBody()');
+      expect(source).toContain('function traceEarthwormLine(offsetRatio, startT, endT)');
+      expect(source).toContain('function traceEarthwormBand(startT, endT, widthScale)');
+      expect(source).toContain('var wormSurfaceGradient = ctx.createLinearGradient');
+      expect(source).toContain('The clitellum is a gently expanded glandular saddle');
+      expect(source).toContain('Four paired setal positions are suggested');
+      expect(source).toContain('Five paired aortic arches encircle the anterior digestive tract');
+      expect(source).toContain('Ventral cord sits slightly off the digestive midline');
+      expect(source).toContain("{ id: 'setae', name: 'Setae', x: 0.46, y: 0.55");
+      expect(source).toContain("{ id: 'clitellum', name: 'Clitellum', x: 0.51, y: 0.33");
+      expect(source).toContain("{ id: 'cerebral_g', name: 'Cerebral Ganglia', x: 0.51, y: 0.12");
+      expect(source).not.toContain('var ww = W * 0.045;');
+    }
+  });
+
+  it('adds immersive tray depth and anatomy-aware perch and crayfish materials', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('var trayFluid = ctx.createRadialGradient');
+      expect(source).toContain('small condensation beads give the tray depth');
+      expect(source).toContain('Recessed stainless tray well with a sealed inner gasket and reflected rim light.');
+      expect(source).toContain('Engraved edge ticks suggest a calibrated teaching tray without competing with the scale tool.');
+      expect(source).toContain('A specimen-shaped absorbent pad grounds the body and catches the preservation-fluid meniscus.');
+      expect(source).toContain("specimenVariationValue('tray-pad-angle-' + padFiberIndex)");
+      expect(source).toContain("var stableStippleSize = 0.5 + specimenVariationValue('tissue-stipple-size-' + stip) * 2");
+      expect(source).toContain('Compact instrument bay: grounded metal tools replace the earlier faint line-art corner icons.');
+      expect(source).toContain("ctx.fillText('INSTRUMENT BAY'");
+      expect(source).toContain('background: linear-gradient(145deg, #64748b 0%, #26364b 16%, #0f172a 78%, #475569 100%)');
+      expect(source).not.toContain('Math.random() * 2 + 0.5');      expect(source).toContain('var fishBodyGradient = ctx.createLinearGradient');
+      expect(source).toContain('var fishIridescence = ctx.createLinearGradient');
+      expect(source).toContain('var fishEyeGradient = ctx.createRadialGradient');
+      expect(source).toContain("{ id: 'operculum', name: 'Operculum', x: 0.31, y: 0.44");
+      expect(source).toContain('Perch internal cutaway: dorsal buoyancy/excretory organs and ventral viscera share one coelomic cavity.');
+      expect(source).toContain('function tracePerchCoelom()');
+      expect(source).toContain('function drawPerchGillArch(archIndex)');
+      expect(source).toContain('The kidney is a dark, elongated organ fixed against the dorsal body wall.');
+      expect(source).toContain('Swim bladder: a thin-walled dorsal sac with a vascular rete mirabile patch.');
+      expect(source).toContain('Rete mirabile is represented as a compact vascular network along the anterior bladder wall.');
+      expect(source).toContain('Three overlapping liver lobes occupy the anterior ventral cavity.');
+      expect(source).toContain('Pyloric ceca are distinct blind fingers, not a single generic line.');
+      expect(source).toContain('Two functional chambers are shown with the sinus venosus and bulbus arteriosus in series.');
+      expect(source).toContain("{ id: 'heart_f', name: 'Heart (2-chamber)', x: 0.32, y: 0.51");
+      expect(source).toContain("{ id: 'gonads_f', name: 'Gonads', x: 0.59, y: 0.46");
+      const perchCutawayStart = source.indexOf('// Perch internal cutaway:');
+      const perchCutaway = source.slice(perchCutawayStart, source.indexOf("if (activeLayer === 'skeleton')", perchCutawayStart));
+      expect(perchCutaway).not.toContain('ctx.ellipse(cx, cy - H * 0.04, W * 0.10, H * 0.035');
+      expect(source).toContain('function drawCraySegment(x1, y1, x2, y2, r1, r2, alpha)');
+      expect(source).toContain('function drawCrayWalkingLeg(side, index, alpha)');
+      expect(source).toContain('function drawCrayCheliped(side)');
+      expect(source).toContain('Overlapping abdomen plates taper naturally into the telson.');
+      expect(source).toContain('Tail fan: central telson plus paired overlapping uropods');
+      expect(source).toContain('Movable eye stalks with faceted, low-glare compound eyes.');
+      expect(source).toContain("if (activeLayer === 'muscle')");
+      expect(source).toContain("{ id: 'carapace', name: 'Carapace', x: 0.47, y: 0.37");
+      expect(source).toContain("{ id: 'telson', name: 'Telson & Uropods', x: 0.89, y: 0.45");
+      const crayfishRenderer = source.slice(source.indexOf("spec.bodyShape === 'crayfish'"), source.indexOf("spec.bodyShape === 'eye'"));
+      expect(crayfishRenderer).not.toContain('ctx.rect(segX');
+      expect(crayfishRenderer).not.toContain("ctx.fillStyle = 'rgba(255,255,255,0.4)'");
+    }
+  });
+  it('uses species-appropriate sheep-eye layers and an anatomical sheep-heart silhouette', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('function traceSheepEyeGlobe(scaleX, scaleY)');
+      expect(source).toContain('Tapetum lucidum occupies the dorsal posterior fundus in sheep');
+      expect(source).toContain('Corneal dome and anterior chamber form a true bulge');
+      expect(source).toContain('The iris is shown as two pigmented leaflets');
+      expect(source).toContain('Sheep retinal specialization is represented as an area centralis, not a human fovea/macula.');
+      expect(source).toContain("{ id: 'cornea', name: 'Cornea', x: 0.20, y: 0.45");
+      expect(source).toContain("{ id: 'tapetum', name: 'Tapetum Lucidum', x: 0.67, y: 0.27");
+      const eyeRenderer = source.slice(source.indexOf('// Sheep eye: layered lateral cross-section'), source.indexOf('// Sheep heart: asymmetric ventricular mass'));
+      expect(eyeRenderer).not.toContain('Fovea centralis');
+      expect(eyeRenderer).not.toContain('Macula lutea region');
+      expect(source).toContain('function traceSheepHeartBody()');
+      expect(source).toContain('var heartPhase = dissMotionReduced ? 0');
+      expect(source).toContain('Atrial auricles break the silhouette at the base');
+      expect(source).toContain('Directional myocardial fibers follow the ventricular spiral');
+      expect(source).toContain("if (activeLayer === 'organs' || activeLayer === 'chambers' || activeLayer === 'interior')");
+      expect(source).toContain("(activeLayer === 'organs' && d.selectedOrgan === 'conduction')");
+      expect(source).toContain("{ id: 'aorta_h', name: 'Aorta', x: 0.54, y: 0.12");
+      expect(source).toContain("{ id: 'sup_vena_h', name: 'Cranial (Superior) Vena Cava', x: 0.69, y: 0.14");
+      const heartRendererStart = source.indexOf('// Sheep heart: asymmetric ventricular mass');
+      const heartRenderer = source.slice(heartRendererStart, source.indexOf('// Conduction system animation', heartRendererStart));
+      expect(heartRenderer).not.toContain('ctx.moveTo(cx, cy - H * 0.25)');
+    }
+  });
+  it('uses an integrated frog posture with registered external and internal anatomy', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('function traceFrogTorso()');
+      expect(source).toContain('function drawFrogLimbSegment(x1, y1, x2, y2, r1, r2, alpha)');
+      expect(source).toContain('function drawFrogHindFoot(side, footX, footY, alpha)');
+      expect(source).toContain('function drawFrogHindLimb(side, alpha)');
+      expect(source).toContain('function drawFrogForelimb(side, alpha)');
+      expect(source).toContain('Folded hindlimbs and smaller forelimbs establish the characteristic resting posture.');
+      expect(source).toContain('Dorsolateral folds, chromatophores, and moisture all conform to the unified torso.');
+      expect(source).toContain('Layered muscle masses replace generic animated stripes.');
+      expect(source).toContain('Organs are drawn posterior-to-anterior so overlap conveys their position in the coelom.');
+      expect(source).toContain('Three-chambered heart: paired atria over one muscular ventricle and conus.');
+      expect(source).toContain('J-shaped stomach with a duodenal turn.');
+      expect(source).toContain('Bilobed urinary bladder and shared cloacal outlet.');
+      expect(source).toContain("{ id: 'tympanum', name: 'Tympanic Membrane', x: 0.65, y: 0.24");
+      expect(source).toContain("{ id: 'gastrocnemius', name: 'Gastrocnemius', x: 0.24, y: 0.69");
+      expect(source).toContain("{ id: 'heart', name: 'Heart (3-chamber)', x: 0.50, y: 0.35");
+      expect(source).toContain("{ id: 'astragalus', name: 'Elongated Ankle Bones', x: 0.27, y: 0.78");
+      const frogRendererStart = source.indexOf('// Frog: integrated head-and-torso silhouette');
+      const frogRenderer = source.slice(frogRendererStart, source.indexOf('// Earthworm geometry is built', frogRendererStart));
+      expect(frogRenderer).not.toContain('var bS = breathScale;');
+      expect(frogRenderer).not.toContain('Specular highlight (top-left)');
+      expect(frogRenderer).not.toContain('draw simplified organ shapes inside body');
+    }
+  });
+  it('renders anatomically layered heart and fetal-pig internal cutaways', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('Internal cutaway: chamber geometry, wall thickness, valves, chordae, and trabeculae.');
+      expect(source).toContain('function traceHeartAtrium(side)');
+      expect(source).toContain('function drawHeartValveLeaflet(x, y, width, side, color)');
+      expect(source).toContain('The interventricular septum is a muscular partition');
+      expect(source).toContain('Papillary muscles rise from the wall and anchor multiple branching chordae.');
+      expect(source).toContain('Trabeculae carneae follow each ventricular wall');
+      expect(source).toContain('function drawSemilunarValve(x, y, color)');
+      expect(source).toContain("{ id: 'mitral', name: 'Mitral (Bicuspid) Valve', x: 0.44, y: 0.43");
+      expect(source).toContain("{ id: 'septum', name: 'Interventricular Septum', x: 0.50, y: 0.53");
+      expect(source).toContain('Side-lying visceral cavity with thoracic and abdominal organs registered to the torso.');
+      expect(source).toContain('function drawPigLungLobe(x, y, rx, ry, rotation, alpha)');
+      expect(source).toContain('Large fetal thymus extends from the neck into the anterior mediastinum.');
+      expect(source).toContain('The diaphragm forms a curved muscular boundary between thorax and abdomen.');
+      expect(source).toContain('Five liver lobes overlap near the cranial abdomen.');
+      expect(source).toContain('porcine spiral colon forms a watch-spring coil.');
+      expect(source).toContain('Urinary bladder and urachus connect directly toward the umbilical stump.');
+      expect(source).toContain('Umbilical vein courses to the liver; paired arteries return alongside the bladder.');
+      expect(source).toContain("{ id: 'heart_p', name: 'Heart (4-chamber)', x: 0.44, y: 0.44");
+      expect(source).toContain("{ id: 'lg_int_p', name: 'Spiral Colon', x: 0.65, y: 0.53");
     }
   });
 });
@@ -235,6 +426,11 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Technique practice');
     expect(html).toContain('role="radiogroup"');
     expect(html).toContain('Scalpel');
+    expect(html).toContain('Active tool: Scalpel');
+    expect(html).toContain('Selected · Ready');
+    expect(html).toContain('Drag from one end of the teaching corridor');
+    expect(html).toContain('data-readiness="ready"');
+    expect(html).toContain('data-diss-tool-status="true"');
     expect(html).toContain('Deep (practice warning)');
     expect(html).toContain('Make a shallow guided incision');
     expect(html).toContain('Technique score');
@@ -290,6 +486,7 @@ describe('dissection improved UI render', () => {
     });
 
     expect(html).toContain('Capture evidence');
+    expect(html).toContain('Clear annotations');
     expect(html).toContain('Evidence notebook');
     expect(html).toContain('Reference frame');
     expect(html).toContain('data-split="true"');

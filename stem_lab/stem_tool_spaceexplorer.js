@@ -2375,7 +2375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             h('button', { onClick: function() { setOh({ sma: 2, ecc: 0.1, drag: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-transparent text-[11px] font-semibold text-slate-400 border border-slate-600' }, t('stem.spaceexplorer.reset', '↺ Reset'))
           ),
           h('textarea', { value: iqOh.hypothesis || '', onChange: function(e) { setOh({ hypothesis: e.target.value }); }, placeholder: t('stem.spaceexplorer.hypothesis_what_combination_produces_e', 'Hypothesis: What combination produces escape?'),
-            className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-slate-600 rounded p-2 font-mono leading-snug', rows: 3 }),
+            className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-slate-500 rounded p-2 font-mono leading-snug', rows: 3 }),
           !iqOh.stuckRevealed && h('button', { onClick: function() { setOh({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-700/30 text-[11px] font-bold text-amber-300 border border-amber-700' }, t('stem.spaceexplorer.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
           iqOh.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-slate-200 leading-relaxed' },
             h('ul', { className: 'list-disc pl-5 space-y-1' },
@@ -2385,7 +2385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             h('input', { type: 'checkbox', checked: !!iqOh.understood, onChange: function(e) { setOh({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
             t('stem.spaceexplorer.i_understand_explain_in_own_words', 'I understand — explain in own words')),
           iqOh.understood && h('textarea', { value: iqOh.explanation || '', onChange: function(e) { setOh({ explanation: e.target.value }); }, placeholder: t('stem.spaceexplorer.explain_how_sma_eccentricity_and_drag_', 'Explain how SMA, eccentricity, and drag jointly determine orbital fate.'),
-            className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-emerald-700 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+            className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-emerald-600 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
           h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.spaceexplorer.design_note_discrete_4_state_orbital_m', 'Design note: discrete 4-state orbital marker; no fuel-efficiency score; no reveal — by design.'))
         );
       }

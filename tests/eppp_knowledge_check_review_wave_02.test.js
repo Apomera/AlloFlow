@@ -25,9 +25,9 @@ describe('EPPP knowledge-check source-review wave 02', () => {
   });
   it('integrates each wave 02 record exactly once and updates the cumulative gate', () => {
     const inventory = new Map(catalog.knowledgeChecks.map((item) => [item.id, item])); const released = catalog.chapters.flatMap((chapter) => chapter.knowledgeChecks); const releasedIds = released.map((item) => item.id);
-    expect(catalog.summary).toMatchObject({ knowledgeChecks: 109, sourceReviewedKnowledgeChecks: 32, releasedKnowledgeChecks: 32, reviewRequiredKnowledgeChecks: 77 }); expect(released).toHaveLength(32);
+    expect(catalog.summary).toMatchObject({ knowledgeChecks: 109, sourceReviewedKnowledgeChecks: 48, releasedKnowledgeChecks: 48, reviewRequiredKnowledgeChecks: 61 }); expect(released).toHaveLength(48);
     for (const id of expectedIds) { expect(inventory.get(id)).toMatchObject({ reviewStatus: 'source-reviewed-editorial-pass', reviewArtifact: 'eppp_knowledge_check_review_wave_02.json' }); expect(releasedIds.filter((candidate) => candidate === id)).toHaveLength(1); expect(Object.values(inventory.get(id).checks).every((status) => status === 'pass')).toBe(true); }
-    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'review-required')).toHaveLength(77);
+    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'review-required')).toHaveLength(61);
   });
   it('preserves clinical, ethical, cultural, developmental, and research-inference boundaries', () => {
     const byId = new Map(wave.items.map((item) => [item.legacyId, item]));

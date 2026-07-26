@@ -1483,7 +1483,7 @@ window.StemLab = window.StemLab || {
                         if (addToast) addToast('\uD83C\uDF93 Lesson complete! +15 XP', 'success');
                       }
                     },
-                    className: 'mt-3 w-full py-2 rounded-lg text-xs font-bold text-white bg-indigo-500 hover:bg-indigo-600 transition-all'
+                    className: 'mt-3 w-full py-2 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all'
                   }, 'Check Answer'),
 
                   learnShowResult && h('div', { 
@@ -1501,7 +1501,7 @@ window.StemLab = window.StemLab || {
                   if (idx < LESSONS.length - 1) {
                     return h('button', { 'aria-label': 'Next Lesson:',
                       onClick: function() { upd({ activeLesson: LESSONS[idx + 1].id, learnAnswer: null, learnShowResult: false }); },
-                      className: 'w-full py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-all'
+                      className: 'w-full py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-600 hover:to-purple-600 transition-all'
                     }, 'Next Lesson: ' + LESSONS[idx + 1].icon + ' ' + LESSONS[idx + 1].title + ' \u2192');
                   }
                   return h('div', { className: 'text-center text-xs font-bold text-indigo-600 p-3' }, '\uD83C\uDF89 You\'ve completed all lessons! Now apply what you\'ve learned in the Challenges tab.');
@@ -1610,7 +1610,7 @@ window.StemLab = window.StemLab || {
                     if (typeof awardStemXP === 'function') awardStemXP('gameStudio', ch.xp, 'challenge: ' + ch.title);
                     if (addToast) addToast('\uD83C\uDFC6 Challenge complete! +' + ch.xp + ' XP', 'success');
                   },
-                  className: 'w-full py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-md transition-all'
+                  className: 'w-full py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-md transition-all'
                 }, '\uD83C\uDFC6 Claim ' + ch.xp + ' XP!'),
 
                 // Already complete badge

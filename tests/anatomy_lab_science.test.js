@@ -1014,12 +1014,12 @@ describe('Anatomy regional deep-dive atlas', () => {
     expect(source).toContain("aria-labelledby': 'anatomy-heart-atlas-title anatomy-heart-atlas-desc'");
   });
 });
-describe('Anatomy kidney and nephron deep dive', () => {
-  it('opens a labeled nephron atlas from the posterior kidney structure', () => {
+describe('Anatomy Kidney Filtration Scale Bridge', () => {
+  it('connects posterior body location, kidney regions, and nephron processing', () => {
     const closed = renderAnatomy({
       system: 'organs', view: 'posterior', complexity: 3, selectedStructure: 'kidneys'
     });
-    expect(closed).toContain('aria-label="Open Kidney and nephron deep dive"');
+    expect(closed).toContain('aria-label="Open Kidney Filtration Scale Bridge"');
     expect(closed).not.toContain('data-anatomy-atlas="kidneys"');
 
     const open = renderAnatomy({
@@ -1027,8 +1027,18 @@ describe('Anatomy kidney and nephron deep dive', () => {
       _regionalAtlasOpen: 'kidneys'
     });
     expect(open).toContain('data-anatomy-atlas="kidneys"');
-    expect(open).toContain('Kidney cross-section and nephron processing diagram');
+    expect(open).toContain('data-anatomy-scale-bridge="kidneys"');
+    expect(open).toContain('data-anatomy-atlas-step="glomerular_filtration"');
+    expect(open).toContain('Body-to-kidney-to-nephron Scale Bridge diagram');
+    expect(open).toContain('aria-label="Scale progression: posterior body location to kidney cross-section to nephron microanatomy"');
     expect(open).toContain('aria-label="Nephron processing steps"');
+    expect(open).toContain('BODY LOCATION');
+    expect(open).toContain('KIDNEY CROSS-SECTION');
+    expect(open).toContain('NEPHRON MICROANATOMY');
+    expect(open).toContain('Posterior body');
+    expect(open).toContain('Kidney regions');
+    expect(open).toContain('Nephron flow');
+    expect(open).toContain('Step 1 of 4');
     expect(open).toContain('glomerulus');
     expect(open).toContain('proximal tubule');
     expect(open).toContain('loop of Henle');
@@ -1042,8 +1052,10 @@ describe('Anatomy kidney and nephron deep dive', () => {
     });
     expect(html).toContain('class="anatomy-atlas is-paused"');
     expect(html).toContain('aria-label="Play filtrate-flow animation"');
+    expect(html).toContain('data-anatomy-atlas-step="urine_concentration"');
     expect(html).toContain('4. Urine formation');
     expect(html).toContain('before urine enters the renal pelvis and ureter');
+    expect(html).toContain('Step 4 of 4');
   });
 });
 describe('Anatomy alveolar gas-exchange deep dive', () => {
@@ -1309,5 +1321,125 @@ describe('Anatomy Skin Repair Scale Bridge', () => {
     expect(html).toContain('4. Remodeling');
     expect(html).toContain('Collagen fibers are replaced and reorganized');
     expect(html).toContain('Step 4 of 4');
+  });
+});
+describe('Anatomy atlas shared visual refinement', () => {
+  const diagrams = [
+    { id: 'heart', system: 'circulatory', view: 'anterior', firstStep: 'venous_return', key: 'Blood oxygenation key' },
+    { id: 'kidneys', system: 'organs', view: 'posterior', firstStep: 'glomerular_filtration', key: 'Kidney flow key' },
+    { id: 'alveoli', system: 'respiratory', view: 'anterior', firstStep: 'alveolar_ventilation', key: 'Gas-exchange key' },
+    { id: 'patella', system: 'skeletal', view: 'anterior', firstStep: 'knee_architecture', key: 'Knee mechanics key' },
+    { id: 'biceps', system: 'muscular', view: 'anterior', firstStep: 'motor_terminal', key: 'Muscle activation key' },
+    { id: 'liver', system: 'organs', view: 'anterior', firstStep: 'portal_entry', key: 'Liver transport key' },
+    { id: 'sm_intestine', system: 'organs', view: 'anterior', firstStep: 'brush_border', key: 'Villus transport key' },
+    { id: 'epidermis', system: 'integumentary', view: 'anterior', firstStep: 'hemostasis', key: 'Skin repair key' }
+  ];
+
+  it('gives every focused diagram a labeled visual key and explicit step state', () => {
+    diagrams.forEach((diagram) => {
+      const html = renderAnatomy({
+        system: diagram.system, view: diagram.view, complexity: 3, selectedStructure: diagram.id,
+        _regionalAtlasOpen: diagram.id
+      });
+      expect(html).toContain(`data-anatomy-visual-key="${diagram.id}"`);
+      expect(html).toContain(`aria-label="${diagram.key}"`);
+      expect(html).toContain(`data-anatomy-atlas-step="${diagram.firstStep}"`);
+      expect(html).toContain('Step 1 of 4');
+    });
+  });
+
+  it('adds scale and orientation cues to the four original regional diagrams', () => {
+    const cases = [
+      { id: 'heart', system: 'circulatory', view: 'anterior', cue: 'Orientation progression: body return to heart and lungs to body supply' },
+      { id: 'alveoli', system: 'respiratory', view: 'anterior', cue: 'Scale progression: conducting airway to air-blood barrier to capillary blood' },
+      { id: 'patella', system: 'skeletal', view: 'anterior', cue: 'Scale progression: lower limb to knee cutaway to movement forces' },
+      { id: 'biceps', system: 'muscular', view: 'anterior', cue: 'Scale progression: motor neuron to muscle fiber to sarcomere' }
+    ];
+    cases.forEach((diagram) => {
+      const html = renderAnatomy({
+        system: diagram.system, view: diagram.view, complexity: 3, selectedStructure: diagram.id,
+        _regionalAtlasOpen: diagram.id
+      });
+      expect(html).toContain(`aria-label="${diagram.cue}"`);
+    });
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('.anatomy-atlas-stage svg text{paint-order:stroke');
+    expect(source).toContain('.anatomy-scale-path span:not(.anatomy-scale-arrow){white-space:normal}');
+  });
+});
+describe('Anatomy diagram Mechanism Pass', () => {
+  const mechanismCases = [
+    { id: 'kidneys', system: 'organs', view: 'posterior', step: 1, mechanism: 'proximal-reabsorption', label: 'glucose · Na+ · water return' },
+    { id: 'alveoli', system: 'respiratory', view: 'anterior', step: 1, mechanism: 'oxygen-binding', label: 'O2 binds hemoglobin' },
+    { id: 'patella', system: 'skeletal', view: 'anterior', step: 2, mechanism: 'tibial-flexion-geometry', label: 'flexed tibia position' },
+    { id: 'biceps', system: 'muscular', view: 'anterior', step: 3, mechanism: 'cross-bridge-power-stroke', label: 'Z discs move closer' },
+    { id: 'liver', system: 'organs', view: 'anterior', step: 3, mechanism: 'bile-counterflow', label: 'bile moves outward · opposite blood flow' },
+    { id: 'sm_intestine', system: 'organs', view: 'anterior', step: 2, mechanism: 'chylomicron-lymph-transport', label: 'chylomicrons enter lymph' },
+    { id: 'epidermis', system: 'integumentary', view: 'anterior', step: 2, mechanism: 'epithelial-closure-angiogenesis', label: 'wound narrows · new vessels grow' }
+  ];
+
+  it('activates a structure-changing mechanism layer in every non-cardiac diagram', () => {
+    mechanismCases.forEach((diagram) => {
+      const html = renderAnatomy({
+        system: diagram.system, view: diagram.view, complexity: 3, selectedStructure: diagram.id,
+        _regionalAtlasOpen: diagram.id, _regionalAtlasStep: diagram.step
+      });
+      expect(html).toContain(`class="anatomy-mechanism-layer anatomy-diagram-emphasis is-active" data-anatomy-mechanism="${diagram.mechanism}"`);
+      expect(html).toContain(diagram.label);
+    });
+  });
+
+  it('changes cardiac valve state and ventricular geometry with the selected flow phase', () => {
+    const filling = renderAnatomy({
+      system: 'circulatory', view: 'anterior', complexity: 3, selectedStructure: 'heart',
+      _regionalAtlasOpen: 'heart', _regionalAtlasStep: 0
+    });
+    expect(filling).toContain('data-anatomy-mechanism="heart-valve-gating"');
+    expect(filling).toContain('tricuspid · OPEN');
+    expect(filling).toContain('mitral · CLOSED');
+
+    const systemic = renderAnatomy({
+      system: 'circulatory', view: 'anterior', complexity: 3, selectedStructure: 'heart',
+      _regionalAtlasOpen: 'heart', _regionalAtlasStep: 3
+    });
+    expect(systemic).toContain('data-anatomy-mechanism="left-ventricle-contraction"');
+    expect(systemic).toContain('class="anatomy-mechanism-layer anatomy-diagram-emphasis is-active" data-anatomy-mechanism="aortic-valve-open"');
+    expect(systemic).toContain('LV contracts · aortic valve opens');
+  });
+});
+describe('Anatomy responsive label focus', () => {
+  const focusCases = [
+    { id: 'heart', system: 'circulatory', view: 'anterior', step: 0, expected: 'Right atrium, Tricuspid valve, Venae cavae' },
+    { id: 'kidneys', system: 'organs', view: 'posterior', step: 1, expected: 'Proximal tubule, Peritubular capillaries, Reabsorbed solutes' },
+    { id: 'alveoli', system: 'respiratory', view: 'anterior', step: 2, expected: 'Capillary blood, Carbon dioxide, Alveolar air' },
+    { id: 'patella', system: 'skeletal', view: 'anterior', step: 3, expected: 'ACL, PCL, Collateral ligament' },
+    { id: 'biceps', system: 'muscular', view: 'anterior', step: 3, expected: 'Actin, Myosin, Z discs' },
+    { id: 'liver', system: 'organs', view: 'anterior', step: 3, expected: 'Bile canaliculi, Bile duct branch, Counterflow' },
+    { id: 'sm_intestine', system: 'organs', view: 'anterior', step: 2, expected: 'Chylomicrons, Central lacteal, Lymph' },
+    { id: 'epidermis', system: 'integumentary', view: 'anterior', step: 2, expected: 'Keratinocytes, New vessels, Granulation tissue' }
+  ];
+
+  it('keeps the three most relevant structures readable for every selected step', () => {
+    focusCases.forEach((diagram) => {
+      const html = renderAnatomy({
+        system: diagram.system, view: diagram.view, complexity: 3, selectedStructure: diagram.id,
+        _regionalAtlasOpen: diagram.id, _regionalAtlasStep: diagram.step
+      });
+      expect(html).toContain(`data-anatomy-step-focus="${diagram.id}"`);
+      expect(html).toContain(`aria-label="Current structures: ${diagram.expected}"`);
+      expect(html).toContain('Current structures');
+    });
+  });
+
+  it('classifies small SVG annotations as secondary while preserving active mechanism labels on phones', () => {
+    const html = renderAnatomy({
+      system: 'organs', view: 'posterior', complexity: 3, selectedStructure: 'kidneys',
+      _regionalAtlasOpen: 'kidneys', _regionalAtlasStep: 1
+    });
+    expect(html).toContain('class="anatomy-label-secondary"');
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('.anatomy-label-secondary{display:none}');
+    expect(source).toContain('.anatomy-mechanism-layer.is-active .anatomy-label-secondary{display:inline}');
+    expect(source).toContain('className: atlasLabelClass(labelOptions, 10)');
   });
 });

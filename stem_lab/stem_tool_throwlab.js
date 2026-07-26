@@ -2011,8 +2011,8 @@ window.StemLab = window.StemLab || {
         var cardHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
           + '<title>ThrowLab Trading Card — ' + name + '</title>'
           + '<style>'
-          + '*{box-sizing:border-box} body{margin:30px;font-family:Georgia,serif;background:#0f172a;color:#1a1a1a;display:flex;justify-content:center}'
-          + '.card{width:380px;border:8px solid #fbbf24;border-radius:18px;background:linear-gradient(135deg,#fef3c7,#fde68a);padding:0;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.3)}'
+          + '*{box-sizing:border-box} body{margin:30px;font-family:Georgia,serif;background:#0f172a;color:#f8fafc;display:flex;justify-content:center}'
+          + '.card{width:380px;border:8px solid #fbbf24;border-radius:18px;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#1a1a1a;padding:0;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.3)}'
           + '.banner{background:linear-gradient(135deg,#1e293b,#334155);color:#fbbf24;padding:14px 20px;text-align:center}'
           + '.banner .icon{font-size:32px;display:block;margin-bottom:4px}'
           + '.banner .name{font-size:24px;font-weight:bold;margin:0;letter-spacing:1px}'
@@ -2025,7 +2025,7 @@ window.StemLab = window.StemLab || {
           + '.stat-line{font-size:12px;color:#1a1a1a;font-weight:bold;margin-bottom:10px;padding:8px;background:rgba(30,41,59,0.05);border-radius:6px;border-left:3px solid #fbbf24}'
           + '.badges{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}'
           + '.badge{background:#1e293b;color:#fbbf24;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:bold}'
-          + '.badge-empty{color:#94a3b8;font-style:italic;font-size:10px}'
+          + '.badge-empty{color:#475569;font-style:italic;font-size:10px}'
           + '.footer{text-align:center;font-size:9px;color:#666;border-top:1px dashed #94a3b8;padding-top:6px;margin-top:8px}'
           + '@media print{body{background:white;margin:0}.card{box-shadow:none}}'
           + '</style></head><body>'
@@ -5426,7 +5426,7 @@ window.StemLab = window.StemLab || {
                   React.createElement('button', { onClick: function() { setIQ({ angle: 45, velocity: 30, spin: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-3 py-1 rounded bg-transparent text-[11px] font-semibold text-slate-300 border border-slate-600' }, __alloT('stem.throwlab.reset', '↺ Reset'))
                 ),
                 React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.throwlab.hypothesis_why_is_45_special_what_abou', 'Hypothesis: Why is 45° special? What about with spin?'),
-                  className: 'w-full text-[11px] bg-slate-900 text-slate-100 border border-slate-600 rounded p-1 font-mono', rows: 2 }),
+                  className: 'w-full text-[11px] bg-slate-900 text-slate-100 border border-slate-500 rounded p-1 font-mono', rows: 2 }),
                 !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-3 py-1 rounded bg-amber-700/30 text-[11px] font-bold text-amber-300 border border-amber-700' }, __alloT('stem.throwlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-slate-200' },
                   React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5' },

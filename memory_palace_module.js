@@ -56,6 +56,22 @@
   function _tr(t, k, fallback) { try { var v = t && t(k); return (v && v !== k) ? v : fallback; } catch (e) { return fallback; } }
   function _itemText(it) { return (it && typeof it === 'object') ? String(it.text || '') : String(it == null ? '' : it); }
 
+  // Sanitize a saved learner route against the current organizer. Unknown and
+  // duplicate ids are dropped; newly generated loci are appended in source order.
+  // The entrance is always first, so a stale customization can never break a walk.
+  function normalizeRouteOrder(defaultRoute, preferredOrder) {
+    var base = Array.isArray(defaultRoute) ? defaultRoute.filter(function (id) { return id !== '__entry'; }) : [];
+    var allowed = {}, seen = {}, ordered = ['__entry'];
+    base.forEach(function (id) { allowed[id] = true; });
+    (Array.isArray(preferredOrder) ? preferredOrder : []).forEach(function (id) {
+      if (allowed[id] && !seen[id]) { seen[id] = true; ordered.push(id); }
+    });
+    base.forEach(function (id) {
+      if (!seen[id]) { seen[id] = true; ordered.push(id); }
+    });
+    return ordered;
+  }
+
   // ── buildPalace — PURE: {main, branches[±mnemonics]} → rooms/loci/route ──
   // Rooms in a row along +X (entry hall first), items alternate left/right walls
   // in reading order, each locus carries its camera stop. Deterministic.
@@ -120,6 +136,11 @@
         route.push(id);
       });
     });
+
+    var preferredRoute = Array.isArray(opts.routeOrder)
+      ? opts.routeOrder
+      : (data && data.memoryPalace && Array.isArray(data.memoryPalace.routeOrder) ? data.memoryPalace.routeOrder : null);
+    route = normalizeRouteOrder(route, preferredRoute);
 
     var reach = SPOKE_R + ROOM_D / 2 + 80;               // radial extent (square bounds around the hub)
     return {
@@ -807,11 +828,11 @@
     // walk. Depth maps come from the same Imagen path as the art (buildDepthPrompt).
     var depths = (opts && opts.depths) || {};
     var RELIEF_DEPTH = 26;                    // world-units of max displacement (frame is 175×130)
-    function applyRelief(ref, li, color, img, depth) {
+    function applyRelief(ref, routeNo, color, img, depth) {
       if (!ref || !ref.canvasMesh || !img || !depth) return false;
       try {
         var ctex = texLoader.load(img, function () { try { ref.mat.needsUpdate = true; } catch (e) {} }, undefined,
-          function () { try { ref.mat.map = makeCardTexture(THREE, li, color); ref.mat.needsUpdate = true; } catch (e2) {} });
+          function () { try { ref.mat.map = makeCardTexture(THREE, routeNo, color); ref.mat.needsUpdate = true; } catch (e2) {} });
         if (THREE.sRGBEncoding) ctex.encoding = THREE.sRGBEncoding;
         var dtex = texLoader.load(depth, undefined, undefined, function () {});   // decode-fail → flat (bias 0 ≙ no displacement data)
         var m2 = new THREE.MeshStandardMaterial({
@@ -848,6 +869,7 @@
     } catch (e) {}
     palace.loci.forEach(function (l, li) {
       if (l.id === '__entry') return;
+      var routeNo = Math.max(1, palace.route.indexOf(l.id));
       var room = palace.rooms[l.roomIdx];
       var color = (room && room.color) || '#6366f1';
       var g2 = new THREE.Group();
@@ -879,11 +901,11 @@
         // onError callback, NOT a synchronous throw — so fall back to the numbered card
         // there too, or a bad image would render as a blank frame.
         try {
-          var tx = texLoader.load(img, undefined, undefined, function () { try { mat.map = makeCardTexture(THREE, li, color); mat.needsUpdate = true; } catch (e2) {} });
+          var tx = texLoader.load(img, undefined, undefined, function () { try { mat.map = makeCardTexture(THREE, routeNo, color); mat.needsUpdate = true; } catch (e2) {} });
           if (THREE.sRGBEncoding) tx.encoding = THREE.sRGBEncoding; mat.map = tx;
-        } catch (e) { mat.map = makeCardTexture(THREE, li, color); }
+        } catch (e) { mat.map = makeCardTexture(THREE, routeNo, color); }
       } else {
-        mat.map = makeCardTexture(THREE, li, color);
+        mat.map = makeCardTexture(THREE, routeNo, color);
       }
       var canvasMesh = new THREE.Mesh(new THREE.PlaneGeometry(FRAME_W, FRAME_H), mat);
       canvasMesh.position.z = 4;
@@ -897,7 +919,7 @@
       // once the numbered placeholder card is replaced by art). Safe in recall —
       // the position is already announced; only the LABEL is the answer.
       try {
-        var badge = makeNumBadge(THREE, li, color);
+        var badge = makeNumBadge(THREE, routeNo, color);
         badge.position.set(-(FRAME_W / 2 + 4), FRAME_H / 2 + 22, 10);
         g2.add(badge);
       } catch (eB) {}
@@ -916,20 +938,36 @@
       // which would leak "you struggled here"): loci the student recalled weakly in
       // past walks render dimmer, so re-study focuses where their OWN measured
       // memory is fragile (docs §4.5). Re-walking correctly brightens them.
+      var masteryRing = null;
       if (!recall && opts.mastery) {
         var _st = masteryStrength(opts.mastery, l.id);
         if (_st != null) {
-          var _op = 0.32 + Math.max(0, Math.min(1, _st)) * 0.68;
+          var _mastery = Math.max(0, Math.min(1, _st));
+          var _op = 0.32 + _mastery * 0.68;
           borderMat.transparent = true; borderMat.opacity = _op;
           mat.transparent = true; mat.opacity = _op;
+          // Explicit memory-strength ring: red = needs practice, amber = developing,
+          // green = strong. Hidden in recall mode so prior performance never hints
+          // which test items are likely to be difficult.
+          try {
+            var _masteryColor = _mastery >= 0.8 ? 0x22c55e : (_mastery >= 0.5 ? 0xf59e0b : 0xef4444);
+            var _ringBack = new THREE.Mesh(new THREE.RingGeometry(12, 17, 32),
+              new THREE.MeshBasicMaterial({ color: 0x334155, transparent: true, opacity: 0.72, depthWrite: false, side: THREE.DoubleSide }));
+            var _ringArc = new THREE.Mesh(new THREE.RingGeometry(12, 17, 32, 1, Math.PI / 2, Math.max(0.035, Math.PI * 2 * _mastery)),
+              new THREE.MeshBasicMaterial({ color: _masteryColor, transparent: true, opacity: 0.98, depthWrite: false, side: THREE.DoubleSide }));
+            _ringBack.position.set(FRAME_W / 2 + 20, FRAME_H / 2 + 18, 10);
+            _ringArc.position.copy(_ringBack.position);
+            g2.add(_ringBack); g2.add(_ringArc);
+            masteryRing = { back: _ringBack, arc: _ringArc, strength: _mastery };
+          } catch (eM) {}
         }
       }
       group.add(g2);
       frameMeshes.push(canvasMesh);
-      frameRefs[l.id] = { group: g2, label: lab, captionText: recall ? '?' : l.label, borderMat: borderMat, baseColor: color, locus: l, mat: mat, canvasMesh: canvasMesh, idx: li, hasImage: !!img, busy: false, empty: !img && !((opts && opts.objects) || {})[l.id] };
+      frameRefs[l.id] = { group: g2, label: lab, captionText: recall ? '?' : l.label, borderMat: borderMat, baseColor: color, locus: l, mat: mat, canvasMesh: canvasMesh, masteryRing: masteryRing, idx: routeNo, hasImage: !!img, busy: false, empty: !img && !((opts && opts.objects) || {})[l.id] };
       if (frameRefs[l.id].empty) borderMat.emissiveIntensity = 0.12;
       // Existing relief pair (reload path): upgrade the flat frame in place.
-      if (img && depths[l.id]) applyRelief(frameRefs[l.id], li, color, img, depths[l.id]);
+      if (img && depths[l.id]) applyRelief(frameRefs[l.id], routeNo, color, img, depths[l.id]);
     });
 
     // Rebuild frame captions when the app's reading typography changes. Canvas
@@ -1323,6 +1361,7 @@
         var leaving = frameRefs[_nearEmptyId];
         var leaveReason = leaving && !leaving.empty ? 'filled' : 'departed';
         try { opts.onEmptyLocusApproach(leaving && leaving.locus, false, leaving ? palace.route.indexOf(leaving.locus.id) : -1, palace.route.length, leaveReason); } catch (e) {}
+        if (typeof opts.onEmptyLocusAnchor === 'function') { try { opts.onEmptyLocusAnchor(_nearEmptyId, null); } catch (eA) {} }
         _nearEmptyId = null;
       }
       var best = null, bestD = 210 * 210;
@@ -1337,16 +1376,39 @@
         try { opts.onEmptyLocusApproach(best.locus, true, palace.route.indexOf(best.locus.id), palace.route.length); } catch (e2) {}
       }
     }
+    var _anchorProject = new THREE.Vector3(), _anchorLast = 0;
+    function _emitEmptyAnchor() {
+      if (!_nearEmptyId || typeof opts.onEmptyLocusAnchor !== 'function') return;
+      var now = (window.performance && window.performance.now) ? window.performance.now() : 0;
+      if (now - _anchorLast < 120) return;
+      _anchorLast = now;
+      var ref = frameRefs[_nearEmptyId];
+      if (!ref) return;
+      try {
+        ref.group.getWorldPosition(_anchorProject);
+        _anchorProject.y -= FRAME_H * 0.15;
+        _anchorProject.project(camera);
+        opts.onEmptyLocusAnchor(_nearEmptyId, {
+          x: Math.max(2, Math.min(98, (_anchorProject.x * 0.5 + 0.5) * 100)),
+          y: Math.max(2, Math.min(98, (-_anchorProject.y * 0.5 + 0.5) * 100)),
+          visible: _anchorProject.z >= -1 && _anchorProject.z <= 1
+        });
+      } catch (e) {}
+    }
     state.cleanup.push(function () {
       if (_nearEmptyId && typeof opts.onEmptyLocusApproach === 'function') {
         try { opts.onEmptyLocusApproach(frameRefs[_nearEmptyId] && frameRefs[_nearEmptyId].locus, false); } catch (e) {}
       }
+      if (typeof opts.onEmptyLocusAnchor === 'function') { try { opts.onEmptyLocusAnchor(_nearEmptyId, null); } catch (e2) {} }
       _nearEmptyId = null;
     });
 
-    // Caption scale compensates gently for walking distance, while overview mode
-    // deliberately shrinks labels so a wide palace remains calm and scannable.
+    // Caption scale compensates gently for walking distance. In overview, labels
+    // are projected to screen space and overlapping neighbors yield to the closest
+    // (the current locus always wins), preventing a wall of unreadable captions.
+    var _captionProject = new THREE.Vector3();
     function _scaleFrameLabels() {
+      var candidates = [];
       Object.keys(frameRefs).forEach(function (id) {
         var ref = frameRefs[id], label = ref && ref.label;
         if (!label || !label.userData || !label.userData.baseScale) return;
@@ -1361,6 +1423,24 @@
           label.scale.x += (tx - label.scale.x) * 0.12;
           label.scale.y += (ty - label.scale.y) * 0.12;
         }
+        if (!overview) { label.visible = true; return; }
+        ref.group.getWorldPosition(_captionProject);
+        _captionProject.y -= FRAME_H * 0.72;
+        _captionProject.project(camera);
+        candidates.push({ ref: ref, label: label, x: _captionProject.x, y: _captionProject.y, z: _captionProject.z, dist: dist, current: ref === _hlRef });
+      });
+      if (!overview) return;
+      candidates.sort(function (a, b) { return a.current ? -1 : (b.current ? 1 : a.dist - b.dist); });
+      var placed = [];
+      candidates.forEach(function (c) {
+        var visible = c.z >= -1 && c.z <= 1 && c.x >= -1.1 && c.x <= 1.1 && c.y >= -1.1 && c.y <= 1.1;
+        if (visible && !c.current) {
+          for (var i = 0; i < placed.length; i++) {
+            if (Math.abs(c.x - placed[i].x) < 0.2 && Math.abs(c.y - placed[i].y) < 0.1) { visible = false; break; }
+          }
+        }
+        c.label.visible = visible;
+        if (visible) placed.push(c);
       });
     }
 
@@ -1885,6 +1965,7 @@
       }
       _scaleFrameLabels();
       _notifyEmptyApproach();
+      _emitEmptyAnchor();
       _pulseHl();
       _animateFlourish();
       renderer.render(root, camera);
@@ -2048,6 +2129,7 @@
     PALETTE: PALETTE,
     THEME_KEYS: THEME_KEYS,
     buildPalace: buildPalace,
+    normalizeRouteOrder: normalizeRouteOrder,
     navigateRoute: navigateRoute,
     decorSpot: decorSpot,
     landmarkSpot: landmarkSpot,

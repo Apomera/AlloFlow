@@ -1,179 +1,421 @@
 /**
- * mathlive_loader.js — AlloFlow accessible math INPUT (MathLive)
+ * mathlive_loader.js - AlloFlow accessible math input adapter
  *
- * The input twin of sre_loader.js (which gives math OUTPUT — spoken/braille).
- * MathLive (mathlive.io, MIT — by the author of Speech Rule Engine) is a
- * WYSIWYG equation editor web component with built-in virtual math keyboards,
- * screen-reader support, and export to LaTeX / MathML / spoken text. Authoring
- * an equation here produces the SAME <math> MathML the doc pipeline already
- * makes with temml, so it flows straight through the accessibility chain:
- * SRE speaks it, native MathML renders it, liblouis+SRE can braille it.
+ * MathLive is an input and serialization layer for the existing Math view and
+ * STEM Lab. It does not generate problems, solve them, or replace AlgebraCAS.
+ * The result includes LaTeX/MathML for accessible display and an ASCIIMath-like
+ * engineText value that existing deterministic graders can consume.
  *
- * Exposes a fallback-safe, framework-agnostic entry point:
- *     window.AlloMathInput.promptEquation(opts) -> Promise<{latex, mathml, spoken} | null>
- * Opens a small modal with a MathLive field; resolves with the equation in
- * three formats on Insert, or NULL on cancel / load failure (caller does
- * nothing — never a regression). opts: { initialLatex, title }.
- *
- * Lazy: the ~840 KB MathLive UMD + fonts load only on the first call, never at
- * page load. Loaded via a plain <script> tag (MathLive's root build is UMD and
- * attaches window.MathLive + registers the <math-field> custom element).
- *
- * NOTE (2026-07-06): written against verified CDN artifacts (mathlive@0.110.0
- * root mathlive.min.js UMD → window.MathLive; convertLatexToMathMl /
- * convertLatexToSpeakableText present; getValue('math-ml'|'spoken') supported;
- * fonts/ dir 200) but NOT yet browser-smoke-tested.
+ * Offline-first: MathLive 0.110.0 and its fonts ship in ./mathlive-assets.
+ * Pinned CDN URLs are optional recovery sources for incomplete web deployments.
  */
 (function () {
   'use strict';
   if (window.AlloMathInput && typeof window.AlloMathInput.promptEquation === 'function') return;
 
   var MATHLIVE_VERSION = '0.110.0';
-  var MATHLIVE_URLS = [
-    'https://cdn.jsdelivr.net/npm/mathlive@' + MATHLIVE_VERSION + '/mathlive.min.js',
-    'https://unpkg.com/mathlive@' + MATHLIVE_VERSION + '/mathlive.min.js'
+  var SETTINGS_KEY = 'alloflow_math_input_v1';
+
+  function loaderBaseUrl() {
+    try {
+      var current = document.currentScript && document.currentScript.src;
+      if (current) return new URL('.', current).href;
+    } catch (_) {}
+    try { return new URL('./', window.location.href).href; }
+    catch (_) { return './'; }
+  }
+
+  var LOCAL_ASSET_BASE = loaderBaseUrl() + 'mathlive-assets/';
+  var SOURCES = [
+    {
+      script: LOCAL_ASSET_BASE + 'mathlive.min.js',
+      fonts: LOCAL_ASSET_BASE + 'fonts/'
+    },
+    {
+      script: 'https://cdn.jsdelivr.net/npm/mathlive@' + MATHLIVE_VERSION + '/mathlive.min.js',
+      fonts: 'https://cdn.jsdelivr.net/npm/mathlive@' + MATHLIVE_VERSION + '/fonts/'
+    },
+    {
+      script: 'https://unpkg.com/mathlive@' + MATHLIVE_VERSION + '/mathlive.min.js',
+      fonts: 'https://unpkg.com/mathlive@' + MATHLIVE_VERSION + '/fonts/'
+    }
   ];
-  var FONTS_DIR = 'https://cdn.jsdelivr.net/npm/mathlive@' + MATHLIVE_VERSION + '/fonts/';
 
+  var DEFAULT_SETTINGS = {
+    allowRemoteFallback: true,
+    virtualKeyboardMode: 'onfocus'
+  };
   var _readyPromise = null;
+  var _source = null;
+  var _fontsSource = null;
 
-  function loadScriptChain(urls, isReady) {
-    return new Promise(function (resolve, reject) {
-      (function tryAt(i) {
-        if (isReady()) { resolve(); return; }
-        if (i >= urls.length) { reject(new Error('all sources failed')); return; }
-        var s = document.createElement('script');
-        s.src = urls[i];
-        s.async = true;
-        s.onload = function () { isReady() ? resolve() : tryAt(i + 1); };
-        s.onerror = function () { try { s.remove(); } catch (_) {} tryAt(i + 1); };
-        document.head.appendChild(s);
-      })(0);
-    });
+  function readStoredSettings() {
+    try {
+      var parsed = JSON.parse(window.localStorage.getItem(SETTINGS_KEY) || 'null');
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (_) { return {}; }
+  }
+
+  function normalizeSettings(input) {
+    var src = input && typeof input === 'object' ? input : {};
+    var keyboard = String(src.virtualKeyboardMode || DEFAULT_SETTINGS.virtualKeyboardMode).toLowerCase();
+    if (keyboard !== 'onfocus' && keyboard !== 'manual' && keyboard !== 'off') keyboard = 'onfocus';
+    return {
+      allowRemoteFallback: src.allowRemoteFallback !== false,
+      virtualKeyboardMode: keyboard
+    };
+  }
+
+  var _settings = normalizeSettings(readStoredSettings());
+
+  function settingsCopy() {
+    return {
+      allowRemoteFallback: _settings.allowRemoteFallback,
+      virtualKeyboardMode: _settings.virtualKeyboardMode
+    };
+  }
+
+  function effectiveSettings(opts) {
+    var merged = settingsCopy();
+    var src = opts && typeof opts === 'object' ? opts : {};
+    Object.keys(src).forEach(function (key) { merged[key] = src[key]; });
+    return normalizeSettings(merged);
+  }
+
+  function mathfieldClass() {
+    return window.MathfieldElement || (window.MathLive && window.MathLive.MathfieldElement) || null;
+  }
+
+  function apiObject() {
+    return window.MathLive || window;
   }
 
   function customElementReady() {
-    return !!(window.MathLive && window.customElements && window.customElements.get('math-field'));
+    return !!(window.customElements && window.customElements.get('math-field') && mathfieldClass());
   }
 
-  function ensureMathLive() {
-    if (customElementReady()) return Promise.resolve(window.MathLive);
+  function configureRuntime(fontsUrl) {
+    try {
+      var ElementClass = mathfieldClass();
+      if (ElementClass) {
+        ElementClass.fontsDirectory = fontsUrl;
+        ElementClass.soundsDirectory = null;
+      }
+      _fontsSource = fontsUrl;
+    } catch (_) {}
+  }
+
+  function sourceList(settings) {
+    return settings.allowRemoteFallback ? SOURCES.slice() : SOURCES.slice(0, 1);
+  }
+
+  function loadAt(sources, index, resolve, reject) {
+    if (customElementReady()) { resolve({ source: 'preloaded', fonts: _fontsSource }); return; }
+    if (index >= sources.length) { reject(new Error('all MathLive sources failed')); return; }
+    var candidate = sources[index];
+    var script = document.createElement('script');
+    script.src = candidate.script;
+    script.async = true;
+    script.onload = function () {
+      configureRuntime(candidate.fonts);
+      var deadline = Date.now() + 5000;
+      (function poll() {
+        if (customElementReady()) { resolve({ source: candidate.script, fonts: candidate.fonts }); return; }
+        if (Date.now() >= deadline) {
+          try { script.remove(); } catch (_) {}
+          loadAt(sources, index + 1, resolve, reject);
+          return;
+        }
+        setTimeout(poll, 50);
+      })();
+    };
+    script.onerror = function () {
+      try { script.remove(); } catch (_) {}
+      loadAt(sources, index + 1, resolve, reject);
+    };
+    document.head.appendChild(script);
+  }
+
+  function ensureMathLive(opts) {
+    var settings = effectiveSettings(opts);
+    if (customElementReady()) {
+      if (!_fontsSource) configureRuntime(LOCAL_ASSET_BASE + 'fonts/');
+      return Promise.resolve(apiObject());
+    }
     if (_readyPromise) return _readyPromise;
-    _readyPromise = loadScriptChain(MATHLIVE_URLS, function () { return !!window.MathLive; })
-      .then(function () {
-        // Point the renderer at the CDN fonts; silence keypress sounds (avoids
-        // extra requests + is quieter in a classroom). Both are static config
-        // on the element class, safe to set once.
-        try {
-          var El = window.MathfieldElement || (window.MathLive && window.MathLive.MathfieldElement);
-          if (El) { El.fontsDirectory = FONTS_DIR; El.soundsDirectory = null; }
-        } catch (_) {}
-        // The custom element may register a tick after the script's onload.
-        return new Promise(function (resolve) {
-          var deadline = Date.now() + 5000;
-          (function poll() {
-            if (customElementReady()) { resolve(window.MathLive); return; }
-            if (Date.now() > deadline) { resolve(window.MathLive || null); return; }
-            setTimeout(poll, 60);
-          })();
-        });
-      })
-      .catch(function (e) { _readyPromise = null; throw e; });
+    _readyPromise = new Promise(function (resolve, reject) {
+      loadAt(sourceList(settings), 0, resolve, reject);
+    }).then(function (loaded) {
+      _source = loaded.source;
+      _fontsSource = loaded.fonts;
+      return apiObject();
+    }).catch(function (error) {
+      _readyPromise = null;
+      throw error;
+    });
     return _readyPromise;
   }
 
-  // Minimal, framework-agnostic modal (vanilla DOM, appended to <body> so it
-  // sits above any React overlay). Escape / Cancel / backdrop → resolve(null).
-  function buildModal(ML, opts, resolve) {
+  function readValue(field, format) {
+    try { return String(field.getValue ? field.getValue(format) : '').trim(); }
+    catch (_) { return ''; }
+  }
+
+  function engineTextFrom(value) {
+    var result = value && typeof value === 'object' ? value : {};
+    var text = String(result.asciiMath || result.plainText || result.latex || value || '').trim();
+    return text
+      .replace(/[\u2212\u2013\u2014]/g, '-')
+      .replace(/[\u00d7\u22c5]/g, '*')
+      .replace(/\u00f7/g, '/')
+      .replace(/\*\*/g, '^')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function maybeUseSre(formats, opts, loadSpeech) {
+    var options = opts && typeof opts === 'object' ? opts : {};
+    if (options.useSre === false) return Promise.resolve(formats);
+    var prepare = Promise.resolve();
+    if (loadSpeech && (!window.AlloMathSpeech || typeof window.AlloMathSpeech.toSpeech !== 'function') && window.__alloLoadPlugin) {
+      prepare = Promise.resolve().then(function () { return window.__alloLoadPlugin('sre_loader.js'); }).catch(function () { return null; });
+    }
+    return prepare.then(function () {
+      if (!window.AlloMathSpeech || typeof window.AlloMathSpeech.toSpeech !== 'function') return formats;
+      var speechOptions = options.mathSpeech && typeof options.mathSpeech === 'object'
+        ? options.mathSpeech : {};
+      return window.AlloMathSpeech.toSpeech(formats.mathml || formats.latex, {
+        domain: speechOptions.domain,
+        style: speechOptions.style,
+        lang: options.lang || options.locale,
+        timeoutMs: Number(speechOptions.timeoutMs) > 0 ? Number(speechOptions.timeoutMs) : 5000
+      }).then(function (spoken) {
+        if (spoken && String(spoken).trim()) formats.spoken = String(spoken).trim();
+        return formats;
+      }).catch(function () { return formats; });
+    });
+  }
+
+  function collectFormats(field, opts, loadSpeech) {
+    var api = apiObject();
+    var latex = readValue(field, 'latex') || String(field.value || '').trim();
+    var mathml = readValue(field, 'math-ml');
+    var asciiMath = readValue(field, 'ascii-math');
+    var plainText = readValue(field, 'plain-text');
+    var spoken = readValue(field, 'spoken-text') || readValue(field, 'spoken');
+    if (!mathml && api && typeof api.convertLatexToMathMl === 'function') {
+      try { mathml = String(api.convertLatexToMathMl(latex) || '').trim(); } catch (_) {}
+    }
+    if (mathml && !/^<math[\s>]/i.test(mathml)) {
+      mathml = '<math xmlns="http://www.w3.org/1998/Math/MathML">' + mathml + '</math>';
+    }
+    if (!spoken && api && typeof api.convertLatexToSpeakableText === 'function') {
+      try { spoken = String(api.convertLatexToSpeakableText(latex) || '').trim(); } catch (_) {}
+    }
+    var formats = {
+      latex: latex,
+      mathml: mathml,
+      asciiMath: asciiMath,
+      plainText: plainText,
+      spoken: spoken
+    };
+    formats.engineText = engineTextFrom(formats);
+    return maybeUseSre(formats, opts, loadSpeech);
+  }
+
+  function applyFieldOptions(field, opts, settings) {
+    field.setAttribute('aria-label', (opts && opts.ariaLabel) || 'Equation editor');
+    try { field.mathVirtualKeyboardPolicy = settings.virtualKeyboardMode; } catch (_) {}
+    try { field.smartFence = true; } catch (_) {}
+    if (opts && opts.initialLatex) {
+      try { field.value = String(opts.initialLatex); } catch (_) {}
+    }
+  }
+
+  function speakWithBrowser(text) {
+    if (!text || !window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') return false;
+    try {
+      window.speechSynthesis.cancel();
+      var utterance = new window.SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+      return true;
+    } catch (_) { return false; }
+  }
+
+  function buildModal(opts, resolve) {
+    var options = opts || {};
+    var settings = effectiveSettings(options);
     var settled = false;
-    var done = function (val) { if (settled) return; settled = true; cleanup(); resolve(val); };
+    var previousFocus = document.activeElement;
+    var uid = 'allo-math-input-' + Date.now().toString(36);
+    var done = function (value) {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(value);
+    };
 
     var backdrop = document.createElement('div');
     backdrop.setAttribute('role', 'presentation');
-    backdrop.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,0.55);display:flex;align-items:center;justify-content:center;padding:16px;';
+    backdrop.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:16px;';
 
     var panel = document.createElement('div');
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
-    panel.setAttribute('aria-label', (opts && opts.title) || 'Insert an equation');
-    panel.style.cssText = 'background:#fff;color:#0f172a;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.35);width:min(640px,100%);max-height:90vh;overflow:auto;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;';
+    panel.setAttribute('aria-labelledby', uid + '-title');
+    panel.setAttribute('aria-describedby', uid + '-hint');
+    panel.style.cssText = 'background:#fff;color:#0f172a;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:min(680px,100%);max-height:90vh;overflow:auto;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;';
 
-    var head = document.createElement('div');
-    head.style.cssText = 'padding:14px 16px 6px;font-size:15px;font-weight:700;';
-    head.textContent = (opts && opts.title) || '∑  Insert an equation';
-    panel.appendChild(head);
+    var title = document.createElement('h2');
+    title.id = uid + '-title';
+    title.style.cssText = 'padding:16px 16px 6px;margin:0;font-size:17px;font-weight:800;';
+    title.textContent = options.title || 'Insert an equation';
 
-    var hint = document.createElement('div');
-    hint.style.cssText = 'padding:0 16px 8px;font-size:12px;color:#64748b;line-height:1.4;';
-    hint.textContent = 'Type math naturally (e.g. x^2, \\frac, sqrt) or tap the on-screen keyboard. It will be inserted as accessible math — a screen reader can read it and it exports to braille.';
-    panel.appendChild(hint);
+    var hint = document.createElement('p');
+    hint.id = uid + '-hint';
+    hint.style.cssText = 'padding:0 16px 10px;margin:0;font-size:12px;color:#475569;line-height:1.5;';
+    hint.textContent = options.hint || 'Type an equation or use the on-screen math keyboard. This changes how math is entered, not how AlloFlow generates or grades the problem.';
 
     var field = document.createElement('math-field');
-    field.setAttribute('aria-label', 'Equation editor');
-    field.style.cssText = 'display:block;margin:4px 16px 12px;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:22px;min-height:56px;';
-    try { field.mathVirtualKeyboardPolicy = 'onfocus'; } catch (_) {}
-    if (opts && opts.initialLatex) { try { field.value = String(opts.initialLatex); } catch (_) {} }
-    panel.appendChild(field);
+    field.style.cssText = 'display:block;margin:4px 16px 12px;padding:12px;border:2px solid #94a3b8;border-radius:10px;font-size:24px;min-height:62px;';
+    applyFieldOptions(field, options, settings);
+
+    var status = document.createElement('div');
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+    status.style.cssText = 'min-height:20px;padding:0 16px;font-size:12px;color:#475569;';
 
     var footer = document.createElement('div');
-    footer.style.cssText = 'display:flex;justify-content:flex-end;gap:8px;padding:8px 16px 16px;';
-    var cancelBtn = document.createElement('button');
-    cancelBtn.type = 'button';
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.style.cssText = 'padding:8px 14px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc;color:#334155;font-weight:600;font-size:13px;cursor:pointer;';
-    var insertBtn = document.createElement('button');
-    insertBtn.type = 'button';
-    insertBtn.textContent = 'Insert equation';
-    insertBtn.style.cssText = 'padding:8px 14px;border-radius:8px;border:none;background:#4f46e5;color:#fff;font-weight:700;font-size:13px;cursor:pointer;';
-    footer.appendChild(cancelBtn);
-    footer.appendChild(insertBtn);
+    footer.style.cssText = 'display:flex;justify-content:flex-end;gap:8px;padding:10px 16px 16px;flex-wrap:wrap;';
+    var cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.textContent = 'Cancel';
+    cancel.style.cssText = 'padding:9px 14px;border-radius:8px;border:1px solid #94a3b8;background:#f8fafc;color:#334155;font-weight:700;cursor:pointer;';
+    var hear = document.createElement('button');
+    hear.type = 'button';
+    hear.textContent = 'Hear equation';
+    hear.style.cssText = 'padding:9px 14px;border-radius:8px;border:1px solid #4f46e5;background:#eef2ff;color:#3730a3;font-weight:700;cursor:pointer;';
+    var insert = document.createElement('button');
+    insert.type = 'button';
+    insert.textContent = options.insertLabel || 'Insert equation';
+    insert.style.cssText = 'padding:9px 14px;border-radius:8px;border:0;background:#4f46e5;color:#fff;font-weight:800;cursor:pointer;';
+
+    footer.appendChild(cancel);
+    footer.appendChild(hear);
+    footer.appendChild(insert);
+    panel.appendChild(title);
+    panel.appendChild(hint);
+    panel.appendChild(field);
+    panel.appendChild(status);
     panel.appendChild(footer);
     backdrop.appendChild(panel);
     document.body.appendChild(backdrop);
 
     function commit() {
-      var latex = '';
-      try { latex = field.getValue ? field.getValue('latex') : (field.value || ''); } catch (_) { latex = field.value || ''; }
-      latex = String(latex || '').trim();
-      if (!latex) { done(null); return; }
-      var mathml = '';
-      var spoken = '';
-      try { mathml = field.getValue ? field.getValue('math-ml') : ''; } catch (_) {}
-      if (!mathml && ML && ML.convertLatexToMathMl) { try { mathml = ML.convertLatexToMathMl(latex); } catch (_) {} }
-      try { spoken = field.getValue ? field.getValue('spoken') : ''; } catch (_) {}
-      if (!spoken && ML && ML.convertLatexToSpeakableText) { try { spoken = ML.convertLatexToSpeakableText(latex); } catch (_) {} }
-      done({ latex: latex, mathml: String(mathml || ''), spoken: String(spoken || '').trim() });
+      insert.disabled = true;
+      collectFormats(field, options, false).then(function (formats) {
+        insert.disabled = false;
+        if (!formats.latex) { status.textContent = 'Enter an equation first.'; return; }
+        done(formats);
+      });
     }
 
-    function onKey(e) { if (e.key === 'Escape') { e.stopPropagation(); done(null); } }
+    function hearEquation() {
+      hear.disabled = true;
+      status.textContent = 'Preparing spoken math...';
+      collectFormats(field, options, true).then(function (formats) {
+        hear.disabled = false;
+        if (!formats.latex) { status.textContent = 'Enter an equation first.'; return; }
+        if (!formats.spoken) { status.textContent = 'This equation could not be converted to speech.'; return; }
+        if (typeof options.onSpeak === 'function') {
+          return Promise.resolve(options.onSpeak(formats)).then(function () {
+            status.textContent = 'Reading equation.';
+          }).catch(function () { status.textContent = 'The selected voice could not read this equation.'; });
+        }
+        status.textContent = speakWithBrowser(formats.spoken) ? 'Reading equation.' : formats.spoken;
+      }).catch(function () {
+        hear.disabled = false;
+        status.textContent = 'Spoken math is unavailable right now.';
+      });
+    }
+
+    function onKey(event) {
+      if (event.key === 'Escape') { event.preventDefault(); done(null); return; }
+      if (event.key !== 'Tab') return;
+      var focusables = [field, cancel, hear, insert].filter(function (item) { return !item.disabled; });
+      var current = focusables.indexOf(document.activeElement);
+      if (event.shiftKey && current <= 0) { event.preventDefault(); focusables[focusables.length - 1].focus(); }
+      else if (!event.shiftKey && current === focusables.length - 1) { event.preventDefault(); focusables[0].focus(); }
+    }
+
     function cleanup() {
       document.removeEventListener('keydown', onKey, true);
       try { if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop); } catch (_) {}
-      // Dismiss the virtual keyboard if MathLive left it up.
       try { if (window.mathVirtualKeyboard) window.mathVirtualKeyboard.hide(); } catch (_) {}
+      try { if (previousFocus && previousFocus.focus) previousFocus.focus(); } catch (_) {}
     }
 
-    cancelBtn.addEventListener('click', function () { done(null); });
-    backdrop.addEventListener('mousedown', function (e) { if (e.target === backdrop) done(null); });
-    insertBtn.addEventListener('click', commit);
-    field.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); commit(); } });
+    cancel.addEventListener('click', function () { done(null); });
+    hear.addEventListener('click', hearEquation);
+    insert.addEventListener('click', commit);
+    backdrop.addEventListener('mousedown', function (event) { if (event.target === backdrop) done(null); });
+    field.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); commit(); }
+    });
     document.addEventListener('keydown', onKey, true);
     setTimeout(function () { try { field.focus(); } catch (_) {} }, 30);
   }
 
   window.AlloMathInput = {
     ready: customElementReady,
-    /**
-     * Open the equation editor. Resolves to { latex, mathml, spoken } on Insert,
-     * or NULL on cancel / load failure. Never throws.
-     */
-    promptEquation: function (opts) {
-      return ensureMathLive().then(function (ML) {
-        if (!ML || !customElementReady()) return null;
-        return new Promise(function (resolve) { buildModal(ML, opts || {}, resolve); });
+    preload: function (opts) {
+      return ensureMathLive(opts || {}).then(function () { return true; }).catch(function () { return false; });
+    },
+    fromLatex: function (latex, opts) {
+      var options = opts || {};
+      return ensureMathLive(options).then(function () {
+        var field = document.createElement('math-field');
+        field.style.cssText = 'position:fixed;left:-10000px;top:-10000px;';
+        applyFieldOptions(field, { initialLatex: latex, ariaLabel: 'Equation conversion field' }, effectiveSettings(options));
+        document.body.appendChild(field);
+        return new Promise(function (resolve) {
+          setTimeout(function () {
+            collectFormats(field, options, false).then(function (formats) {
+              try { field.remove(); } catch (_) {}
+              resolve(formats.latex ? formats : null);
+            });
+          }, 0);
+        });
       }).catch(function () { return null; });
+    },
+    promptEquation: function (opts) {
+      var options = opts || {};
+      return ensureMathLive(options).then(function () {
+        if (!customElementReady()) return null;
+        return new Promise(function (resolve) { buildModal(options, resolve); });
+      }).catch(function () { return null; });
+    },
+    toEngineText: engineTextFrom,
+    configure: function (next) {
+      _settings = normalizeSettings(Object.assign(settingsCopy(), next || {}));
+      try { window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings)); } catch (_) {}
+      return settingsCopy();
+    },
+    settings: settingsCopy,
+    diagnostics: function () {
+      return {
+        ready: customElementReady(),
+        version: MATHLIVE_VERSION,
+        source: _source,
+        fontsSource: _fontsSource,
+        localAssetBase: LOCAL_ASSET_BASE,
+        settings: settingsCopy(),
+        role: 'accessible-input-adapter',
+        replaces: []
+      };
     }
   };
 
-  console.log('[AlloMathInput] mathlive_loader.js ready — window.AlloMathInput.promptEquation() (lazy MathLive editor)');
+  console.log('[AlloMathInput] offline-first MathLive ' + MATHLIVE_VERSION + ' ready (shared input adapter; existing graders unchanged)');
 })();

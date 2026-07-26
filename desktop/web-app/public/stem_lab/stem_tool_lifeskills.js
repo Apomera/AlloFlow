@@ -3141,10 +3141,10 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-4' },
 
         // Badge toast
-        d.badgeToast && h('div', { className: 'fixed top-4 right-4 z-50 bg-gradient-to-r from-amber-400 to-yellow-500 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-bold animate-bounce' }, '\uD83C\uDFC6 Badge: ' + d.badgeToast),
+        d.badgeToast && h('div', { className: 'fixed top-4 right-4 z-50 bg-gradient-to-r from-amber-700 to-yellow-700 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-bold animate-bounce' }, '\uD83C\uDFC6 Badge: ' + d.badgeToast),
 
         // Header
-        h('div', { className: 'bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 rounded-2xl p-5 text-white shadow-lg' },
+        h('div', { className: 'bg-gradient-to-r from-cyan-700 via-teal-700 to-emerald-700 rounded-2xl p-5 text-white shadow-lg' },
           h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
             h('div', null,
               h('h3', { className: 'text-base font-bold flex items-center gap-2' }, __alloT('stem.lifeskills.life_skills_lab', '\uD83E\uDDED Life Skills Lab')),
@@ -3296,7 +3296,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'grid md:grid-cols-[1fr_1fr] gap-3' },
               h('div', { className: 'space-y-2' },
                 h('label', { className: 'block text-[11px] font-bold text-slate-600 uppercase' }, 'Focus area'),
-                h('select', { value: overviewFocus, onChange: function(e) { upd('overviewFocus', e.target.value); }, className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-bold bg-white text-slate-800' },
+                h('select', { value: overviewFocus, onChange: function(e) { upd('overviewFocus', e.target.value); }, className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm font-bold bg-white text-slate-800' },
                   LIFE_SKILL_PATHS.map(function(path) { return h('option', { key: path.id, value: path.id }, path.title); })
                 )
               ),
@@ -3310,7 +3310,7 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'space-y-2' },
               h('label', { className: 'block text-[11px] font-bold text-slate-600 uppercase' }, 'One small next step'),
-              h('textarea', { value: overviewNextStep, onChange: function(e) { upd('overviewNextStep', e.target.value); }, rows: 3, placeholder: 'Example: Compare two phone plans before I choose one.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'One small next step' })
+              h('textarea', { value: overviewNextStep, onChange: function(e) { upd('overviewNextStep', e.target.value); }, rows: 3, placeholder: 'Example: Compare two phone plans before I choose one.', className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'One small next step' })
             ),
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, 'Suggested first activity: ' + overviewPath.steps[0] + '. Confidence can change after practice.'),
@@ -3603,7 +3603,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               recordScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (recordScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, recordScenarioFb),
-              h('button', { onClick: function() { updMulti({ recordScenarioIdx: recordScenarioIdx + 1, recordScenarioChoice: '', recordScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-slate-800 text-white hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Next scenario')
+              h('button', { onClick: function() { updMulti({ recordScenarioIdx: recordScenarioIdx + 1, recordScenarioChoice: '', recordScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-slate-800 text-white hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Next scenario')
             )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
@@ -3668,13 +3668,13 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: prompt, onClick: function() { updMulti({ recordPlanIdx: i, recordPlanNote: prompt, recordPlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:border-slate-500') }, 'Plan ' + (i + 1));
               })
             ),
-            h('textarea', { value: recordPlanNote, onChange: function(e) { upd('recordPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one record, form, or deadline action.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Paperwork plan note' }),
+            h('textarea', { value: recordPlanNote, onChange: function(e) { upd('recordPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one record, form, or deadline action.', className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Paperwork plan note' }),
             h('button', { onClick: function() {
               if (!recordPlanNote.trim()) { upd('recordPlanMsg', 'Write one paperwork step first.'); return; }
               updMulti({ recordPlanMsg: 'Plan saved: ' + recordPlanNote.trim(), recordPlanSaved: Date.now() });
               checkBadge('recordsReady');
               announceToSR('Paperwork plan saved');
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save paperwork plan'),
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save paperwork plan'),
             recordPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.recordPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, recordPlanMsg)
           )
         ),
@@ -3735,7 +3735,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               transportScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (transportScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, transportScenarioFb),
-              h('button', { onClick: function() { updMulti({ transportScenarioIdx: transportScenarioIdx + 1, transportScenarioChoice: '', transportScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-sky-700 text-white hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-700' }, 'Next scenario')
+              h('button', { onClick: function() { updMulti({ transportScenarioIdx: transportScenarioIdx + 1, transportScenarioChoice: '', transportScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-sky-700 text-white hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-300' }, 'Next scenario')
             )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
@@ -3798,13 +3798,13 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: prompt, onClick: function() { updMulti({ transportPlanIdx: i, transportPlanNote: prompt, transportPlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-sky-700 text-white border-sky-700' : 'bg-white text-sky-800 border-sky-200 hover:border-sky-400') }, 'Plan ' + (i + 1));
               })
             ),
-            h('textarea', { value: transportPlanNote, onChange: function(e) { upd('transportPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one route, buffer, fare, or backup step.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Trip plan note' }),
+            h('textarea', { value: transportPlanNote, onChange: function(e) { upd('transportPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one route, buffer, fare, or backup step.', className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Trip plan note' }),
             h('button', { onClick: function() {
               if (!transportPlanNote.trim()) { upd('transportPlanMsg', 'Write one trip plan step first.'); return; }
               updMulti({ transportPlanMsg: 'Plan saved: ' + transportPlanNote.trim(), transportPlanSaved: Date.now() });
               checkBadge('tripReady');
               announceToSR('Trip plan saved');
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save trip plan'),
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save trip plan'),
             transportPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.transportPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, transportPlanMsg)
           )
         ),
@@ -3865,7 +3865,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               workScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (workScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, workScenarioFb),
-              h('button', { onClick: function() { updMulti({ workScenarioIdx: workScenarioIdx + 1, workScenarioChoice: '', workScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-indigo-700 text-white hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700' }, 'Next scenario')
+              h('button', { onClick: function() { updMulti({ workScenarioIdx: workScenarioIdx + 1, workScenarioChoice: '', workScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-indigo-700 text-white hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-300' }, 'Next scenario')
             )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
@@ -3928,13 +3928,13 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: prompt, onClick: function() { updMulti({ workPlanIdx: i, workPlanNote: prompt, workPlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-indigo-800 border-indigo-200 hover:border-indigo-400') }, 'Plan ' + (i + 1));
               })
             ),
-            h('textarea', { value: workPlanNote, onChange: function(e) { upd('workPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one job, interview, schedule, or workplace question step.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Work readiness plan note' }),
+            h('textarea', { value: workPlanNote, onChange: function(e) { upd('workPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one job, interview, schedule, or workplace question step.', className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Work readiness plan note' }),
             h('button', { onClick: function() {
               if (!workPlanNote.trim()) { upd('workPlanMsg', 'Write one work readiness step first.'); return; }
               updMulti({ workPlanMsg: 'Plan saved: ' + workPlanNote.trim(), workPlanSaved: Date.now() });
               checkBadge('jobReady');
               announceToSR('Work readiness plan saved');
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save work plan'),
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save work plan'),
             workPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.workPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, workPlanMsg)
           )
         ),
@@ -3995,7 +3995,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               resumeScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (resumeScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, resumeScenarioFb),
-              h('button', { onClick: function() { updMulti({ resumeScenarioIdx: resumeScenarioIdx + 1, resumeScenarioChoice: '', resumeScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-teal-700 text-white hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-700' }, 'Next scenario')
+              h('button', { onClick: function() { updMulti({ resumeScenarioIdx: resumeScenarioIdx + 1, resumeScenarioChoice: '', resumeScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-teal-700 text-white hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-300' }, 'Next scenario')
             )
           ),
           h('div', { className: glassCard + ' space-y-3' },
@@ -4008,19 +4008,19 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'grid md:grid-cols-2 xl:grid-cols-5 gap-3' },
               h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Target role',
-                h('input', { type: 'text', value: resumeRole, onChange: function(e) { upd('resumeRole', e.target.value); }, className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Target role or opportunity' })
+                h('input', { type: 'text', value: resumeRole, onChange: function(e) { upd('resumeRole', e.target.value); }, className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'Target role or opportunity' })
               ),
               h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Action verb',
-                h('input', { type: 'text', value: resumeAction, onChange: function(e) { upd('resumeAction', e.target.value); }, placeholder: 'Organized, greeted, tracked...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Resume action verb' })
+                h('input', { type: 'text', value: resumeAction, onChange: function(e) { upd('resumeAction', e.target.value); }, placeholder: 'Organized, greeted, tracked...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'Resume action verb' })
               ),
               h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Context',
-                h('input', { type: 'text', value: resumeContext, onChange: function(e) { upd('resumeContext', e.target.value); }, placeholder: 'a project, shift, event...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Resume bullet context' })
+                h('input', { type: 'text', value: resumeContext, onChange: function(e) { upd('resumeContext', e.target.value); }, placeholder: 'a project, shift, event...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'Resume bullet context' })
               ),
               h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Skill',
-                h('input', { type: 'text', value: resumeSkill, onChange: function(e) { upd('resumeSkill', e.target.value); }, placeholder: 'communication, Excel...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Resume bullet skill' })
+                h('input', { type: 'text', value: resumeSkill, onChange: function(e) { upd('resumeSkill', e.target.value); }, placeholder: 'communication, Excel...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'Resume bullet skill' })
               ),
               h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Result',
-                h('input', { type: 'text', value: resumeResult, onChange: function(e) { upd('resumeResult', e.target.value); }, placeholder: 'finish faster, reduce errors...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Resume bullet result' })
+                h('input', { type: 'text', value: resumeResult, onChange: function(e) { upd('resumeResult', e.target.value); }, placeholder: 'finish faster, reduce errors...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'Resume bullet result' })
               )
             ),
             h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
@@ -4033,7 +4033,7 @@ window.StemLab = window.StemLab || {
               updMulti({ resumeBulletMsg: 'Bullet saved: ' + resumeBulletPreview, resumeBulletSaved: Date.now() });
               checkBadge('bulletBuilder');
               announceToSR('Resume bullet saved');
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save evidence bullet'),
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save evidence bullet'),
             resumeBulletMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.resumeBulletSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, resumeBulletMsg)
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
@@ -4123,13 +4123,13 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: prompt, onClick: function() { updMulti({ resumePlanIdx: i, resumePlanNote: prompt, resumePlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-teal-700 text-white border-teal-700' : 'bg-white text-teal-800 border-teal-200 hover:border-teal-400') }, 'Plan ' + (i + 1));
               })
             ),
-            h('textarea', { value: resumePlanNote, onChange: function(e) { upd('resumePlanNote', e.target.value); }, rows: 4, placeholder: 'Write one resume target, evidence bullet, privacy check, or review step.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Resume plan note' }),
+            h('textarea', { value: resumePlanNote, onChange: function(e) { upd('resumePlanNote', e.target.value); }, rows: 4, placeholder: 'Write one resume target, evidence bullet, privacy check, or review step.', className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Resume plan note' }),
             h('button', { onClick: function() {
               if (!resumePlanNote.trim()) { upd('resumePlanMsg', 'Write one resume step first.'); return; }
               updMulti({ resumePlanMsg: 'Plan saved: ' + resumePlanNote.trim(), resumePlanSaved: Date.now() });
               checkBadge('resumeReady');
               announceToSR('Resume plan saved');
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save resume plan'),
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save resume plan'),
             resumePlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.resumePlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, resumePlanMsg)
           )
         ),
@@ -4190,7 +4190,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               proofScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (proofScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, proofScenarioFb),
-              h('button', { onClick: function() { updMulti({ proofScenarioIdx: proofScenarioIdx + 1, proofScenarioChoice: '', proofScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-cyan-700 text-white hover:bg-cyan-800 focus:outline-none focus:ring-2 focus:ring-cyan-700' }, 'Next scenario')
+              h('button', { onClick: function() { updMulti({ proofScenarioIdx: proofScenarioIdx + 1, proofScenarioChoice: '', proofScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-cyan-700 text-white hover:bg-cyan-800 focus:outline-none focus:ring-2 focus:ring-cyan-300' }, 'Next scenario')
             )
           ),
           h('div', { className: glassCard + ' space-y-3' },
@@ -4203,19 +4203,19 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'grid md:grid-cols-2 xl:grid-cols-5 gap-3' },
               h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Item type',
-                h('input', { type: 'text', value: proofItemType, onChange: function(e) { upd('proofItemType', e.target.value); }, className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Proof item type' })
+                h('input', { type: 'text', value: proofItemType, onChange: function(e) { upd('proofItemType', e.target.value); }, className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'Proof item type' })
               ),
               h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Title',
-                h('input', { type: 'text', value: proofItemTitle, onChange: function(e) { upd('proofItemTitle', e.target.value); }, placeholder: 'Food drive spreadsheet...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Proof item title' })
+                h('input', { type: 'text', value: proofItemTitle, onChange: function(e) { upd('proofItemTitle', e.target.value); }, placeholder: 'Food drive spreadsheet...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'Proof item title' })
               ),
               h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Skill shown',
-                h('input', { type: 'text', value: proofItemSkill, onChange: function(e) { upd('proofItemSkill', e.target.value); }, placeholder: 'teamwork, planning...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Proof item skill' })
+                h('input', { type: 'text', value: proofItemSkill, onChange: function(e) { upd('proofItemSkill', e.target.value); }, placeholder: 'teamwork, planning...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'Proof item skill' })
               ),
               h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Evidence note',
-                h('input', { type: 'text', value: proofItemEvidence, onChange: function(e) { upd('proofItemEvidence', e.target.value); }, placeholder: 'what it proves...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Proof item evidence note' })
+                h('input', { type: 'text', value: proofItemEvidence, onChange: function(e) { upd('proofItemEvidence', e.target.value); }, placeholder: 'what it proves...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'Proof item evidence note' })
               ),
               h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Share level',
-                h('input', { type: 'text', value: proofItemShare, onChange: function(e) { upd('proofItemShare', e.target.value); }, placeholder: 'public, limited, private...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Proof item share level' })
+                h('input', { type: 'text', value: proofItemShare, onChange: function(e) { upd('proofItemShare', e.target.value); }, placeholder: 'public, limited, private...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'Proof item share level' })
               )
             ),
             h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
@@ -4228,7 +4228,7 @@ window.StemLab = window.StemLab || {
               updMulti({ proofItemMsg: 'Proof item saved: ' + proofItemPreview, proofItemSaved: Date.now() });
               checkBadge('proofLockerReady');
               announceToSR('Proof item saved');
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save proof item'),
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save proof item'),
             proofItemMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.proofItemSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, proofItemMsg)
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
@@ -4313,13 +4313,13 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: prompt, onClick: function() { updMulti({ proofPlanIdx: i, proofPlanNote: prompt, proofPlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-cyan-700 text-white border-cyan-700' : 'bg-white text-cyan-800 border-cyan-200 hover:border-cyan-400') }, 'Plan ' + (i + 1));
                 })
               ),
-              h('textarea', { value: proofPlanNote, onChange: function(e) { upd('proofPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one proof item, skill label, privacy check, or review step.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Proof locker plan note' }),
+              h('textarea', { value: proofPlanNote, onChange: function(e) { upd('proofPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one proof item, skill label, privacy check, or review step.', className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Proof locker plan note' }),
               h('button', { onClick: function() {
                 if (!proofPlanNote.trim()) { upd('proofPlanMsg', 'Write one proof locker step first.'); return; }
                 updMulti({ proofPlanMsg: 'Plan saved: ' + proofPlanNote.trim(), proofPlanSaved: Date.now() });
                 checkBadge('portfolioCurator');
                 announceToSR('Proof locker plan saved');
-              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save proof plan'),
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save proof plan'),
               proofPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.proofPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, proofPlanMsg)
             )
           )
@@ -4367,17 +4367,17 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'grid lg:grid-cols-[1fr_0.9fr] gap-3' },
               h('div', { className: 'space-y-3' },
                 h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'This week I will...',
-                  h('textarea', { value: interviewPlanGoal, onChange: function(e) { upd('interviewPlanGoal', e.target.value); }, rows: 3, placeholder: 'Write one interview practice goal for this week.', className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview weekly practice goal' })
+                  h('textarea', { value: interviewPlanGoal, onChange: function(e) { upd('interviewPlanGoal', e.target.value); }, rows: 3, placeholder: 'Write one interview practice goal for this week.', className: 'mt-1 w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview weekly practice goal' })
                 ),
                 h('label', { className: 'block text-[11px] font-bold text-slate-700' }, 'Practice minutes: ' + interviewPlanMinutes,
                   h('input', { type: 'range', min: 5, max: 15, step: 1, value: interviewPlanMinutes, onChange: function(e) { upd('interviewPlanMinutes', Number(e.target.value)); }, className: 'mt-2 w-full accent-violet-700', 'aria-label': 'Interview practice minutes' })
                 ),
                 h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Plan note',
-                  h('input', { type: 'text', value: interviewPlanNote, onChange: function(e) { upd('interviewPlanNote', e.target.value); }, placeholder: 'Optional note, support, proof item, or reminder.', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Interview practice plan note' })
+                  h('input', { type: 'text', value: interviewPlanNote, onChange: function(e) { upd('interviewPlanNote', e.target.value); }, placeholder: 'Optional note, support, proof item, or reminder.', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'Interview practice plan note' })
                 ),
                 h('div', { className: 'flex flex-wrap gap-2' },
                   h('button', { onClick: buildInterviewPlanFromFeedback, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-700' }, 'Use coaching feedback'),
-                  h('button', { onClick: saveInterviewPracticePlan, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save practice plan'),
+                  h('button', { onClick: saveInterviewPracticePlan, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save practice plan'),
                   h('button', { onClick: resetInterviewPracticePlan, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Reset progress')
                 ),
                 interviewPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewPlanSavedAt ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'), role: 'status' }, interviewPlanMsg)
@@ -4449,10 +4449,10 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-xs text-slate-800 leading-relaxed font-medium' }, interviewRehearsalScript.script)
                 ),
                 h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Rehearsal note',
-                  h('textarea', { value: interviewRehearsalNote, onChange: function(e) { upd('interviewRehearsalNote', e.target.value); }, rows: 3, placeholder: 'One reset idea, confidence cue, or support reminder...', className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview rehearsal note' })
+                  h('textarea', { value: interviewRehearsalNote, onChange: function(e) { upd('interviewRehearsalNote', e.target.value); }, rows: 3, placeholder: 'One reset idea, confidence cue, or support reminder...', className: 'mt-1 w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview rehearsal note' })
                 ),
                 h('div', { className: 'flex flex-wrap gap-2' },
-                  h('button', { onClick: saveInterviewRehearsalNote, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save rehearsal note'),
+                  h('button', { onClick: saveInterviewRehearsalNote, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save rehearsal note'),
                   h('button', { onClick: useInterviewRehearsalScript, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-700' }, 'Use script in chat')
                 ),
                 interviewRehearsalMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewRehearsalSavedAt ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'), role: 'status' }, interviewRehearsalMsg)
@@ -4488,14 +4488,14 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { className: 'space-y-3' },
                 h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Proof item or real example',
-                  h('textarea', { value: interviewProofNote, onChange: function(e) { upd('interviewProofNote', e.target.value); }, rows: 3, placeholder: interviewProofMatcher.proofPrompt, className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview proof item or example' })
+                  h('textarea', { value: interviewProofNote, onChange: function(e) { upd('interviewProofNote', e.target.value); }, rows: 3, placeholder: interviewProofMatcher.proofPrompt, className: 'mt-1 w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview proof item or example' })
                 ),
                 h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
                   h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Answer cue'),
                   h('p', { className: 'text-xs text-slate-800 leading-relaxed font-medium' }, interviewProofCuePreview)
                 ),
                 h('div', { className: 'flex flex-wrap gap-2' },
-                  h('button', { onClick: saveInterviewProofCue, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save proof cue'),
+                  h('button', { onClick: saveInterviewProofCue, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save proof cue'),
                   h('button', { onClick: useInterviewProofCueInChat, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-700' }, 'Use cue in chat')
                 ),
                 interviewProofCueMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewProofCueSavedAt ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'), role: 'status' }, interviewProofCueMsg)
@@ -4530,15 +4530,15 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { className: 'space-y-3' },
                 h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Arrival/tech plan',
-                  h('textarea', { value: interviewArrivalPlan, onChange: function(e) { upd('interviewArrivalPlan', e.target.value); }, rows: 3, placeholder: 'Route, meeting link, device check, arrival buffer...', className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview arrival or tech plan' })
+                  h('textarea', { value: interviewArrivalPlan, onChange: function(e) { upd('interviewArrivalPlan', e.target.value); }, rows: 3, placeholder: 'Route, meeting link, device check, arrival buffer...', className: 'mt-1 w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview arrival or tech plan' })
                 ),
                 h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Materials note',
-                  h('input', { type: 'text', value: interviewMaterialsNote, onChange: function(e) { upd('interviewMaterialsNote', e.target.value); }, placeholder: 'Resume, proof item, notes, charger, ID if needed...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Interview materials note' })
+                  h('input', { type: 'text', value: interviewMaterialsNote, onChange: function(e) { upd('interviewMaterialsNote', e.target.value); }, placeholder: 'Resume, proof item, notes, charger, ID if needed...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'Interview materials note' })
                 ),
                 h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Backup/access plan',
-                  h('textarea', { value: interviewBackupPlan, onChange: function(e) { upd('interviewBackupPlan', e.target.value); }, rows: 3, placeholder: 'Who to contact, access support, reset script, backup route...', className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview backup or access plan' })
+                  h('textarea', { value: interviewBackupPlan, onChange: function(e) { upd('interviewBackupPlan', e.target.value); }, rows: 3, placeholder: 'Who to contact, access support, reset script, backup route...', className: 'mt-1 w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview backup or access plan' })
                 ),
-                h('button', { onClick: saveInterviewDayRunSheet, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save run sheet'),
+                h('button', { onClick: saveInterviewDayRunSheet, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save run sheet'),
                 interviewDayMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewDaySavedAt ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'), role: 'status' }, interviewDayMsg)
               )
             )
@@ -4581,7 +4581,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               interviewScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, interviewScenarioFb),
-              h('button', { onClick: function() { updMulti({ interviewScenarioIdx: interviewScenarioIdx + 1, interviewScenarioChoice: '', interviewScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-violet-700 text-white hover:bg-violet-800 focus:outline-none focus:ring-2 focus:ring-violet-700' }, 'Next scenario')
+              h('button', { onClick: function() { updMulti({ interviewScenarioIdx: interviewScenarioIdx + 1, interviewScenarioChoice: '', interviewScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-violet-700 text-white hover:bg-violet-800 focus:outline-none focus:ring-2 focus:ring-violet-300' }, 'Next scenario')
             )
           ),
           h('div', { className: glassCard + ' space-y-3' },
@@ -4621,10 +4621,10 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'grid lg:grid-cols-[1fr_0.85fr] gap-3' },
               h('div', { className: 'space-y-2' },
                 h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Your answer',
-                  h('textarea', { value: interviewInput, onChange: function(e) { upd('interviewInput', e.target.value); }, rows: 4, placeholder: interviewMode === 'guided' ? 'Use a suggested response or write your own STAR answer...' : 'Write your answer freely...', className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview answer input' })
+                  h('textarea', { value: interviewInput, onChange: function(e) { upd('interviewInput', e.target.value); }, rows: 4, placeholder: interviewMode === 'guided' ? 'Use a suggested response or write your own STAR answer...' : 'Write your answer freely...', className: 'mt-1 w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview answer input' })
                 ),
                 h('div', { className: 'flex flex-wrap gap-2' },
-                  h('button', { onClick: function() { sendInterviewMessage(); }, disabled: !interviewInput.trim() || interviewLoading, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-violet-700 text-white hover:bg-violet-800 disabled:bg-slate-200 disabled:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-700', 'aria-busy': interviewLoading ? 'true' : 'false' }, interviewLoading ? 'Sending...' : 'Send answer'),
+                  h('button', { onClick: function() { sendInterviewMessage(); }, disabled: !interviewInput.trim() || interviewLoading, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-violet-700 text-white hover:bg-violet-800 disabled:bg-slate-200 disabled:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-300', 'aria-busy': interviewLoading ? 'true' : 'false' }, interviewLoading ? 'Sending...' : 'Send answer'),
                   h('button', { onClick: sparkInterviewTopic, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-700' }, 'Topic spark'),
                   h('button', { onClick: saveInterviewTranscript, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-700' }, 'Save transcript'),
                   h('button', { onClick: resetInterviewChat, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Reset chat')
@@ -4706,16 +4706,16 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { className: 'grid sm:grid-cols-2 gap-3' },
                 h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Situation',
-                  h('input', { type: 'text', value: interviewStarSituation, onChange: function(e) { upd('interviewStarSituation', e.target.value); }, placeholder: 'At a volunteer event...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'STAR situation' })
+                  h('input', { type: 'text', value: interviewStarSituation, onChange: function(e) { upd('interviewStarSituation', e.target.value); }, placeholder: 'At a volunteer event...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'STAR situation' })
                 ),
                 h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Task',
-                  h('input', { type: 'text', value: interviewStarTask, onChange: function(e) { upd('interviewStarTask', e.target.value); }, placeholder: 'We needed to...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'STAR task' })
+                  h('input', { type: 'text', value: interviewStarTask, onChange: function(e) { upd('interviewStarTask', e.target.value); }, placeholder: 'We needed to...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'STAR task' })
                 ),
                 h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Action',
-                  h('input', { type: 'text', value: interviewStarAction, onChange: function(e) { upd('interviewStarAction', e.target.value); }, placeholder: 'I organized, asked, built...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'STAR action' })
+                  h('input', { type: 'text', value: interviewStarAction, onChange: function(e) { upd('interviewStarAction', e.target.value); }, placeholder: 'I organized, asked, built...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'STAR action' })
                 ),
                 h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Result',
-                  h('input', { type: 'text', value: interviewStarResult, onChange: function(e) { upd('interviewStarResult', e.target.value); }, placeholder: 'The result was...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'STAR result' })
+                  h('input', { type: 'text', value: interviewStarResult, onChange: function(e) { upd('interviewStarResult', e.target.value); }, placeholder: 'The result was...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-500 bg-white text-sm text-slate-800', 'aria-label': 'STAR result' })
                 )
               ),
               h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
@@ -4723,7 +4723,7 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-xs text-slate-800 leading-relaxed font-medium' }, interviewStarPreview)
               ),
               h('div', { className: 'flex flex-wrap gap-2' },
-                h('button', { onClick: saveInterviewStarAnswer, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save STAR answer'),
+                h('button', { onClick: saveInterviewStarAnswer, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save STAR answer'),
                 h('button', { onClick: function() { upd('interviewInput', interviewStarPreview); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-700' }, 'Use in chat')
               ),
               interviewStarMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.interviewStarSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, interviewStarMsg)
@@ -4742,17 +4742,17 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: prompt, onClick: function() { updMulti({ interviewReflectionIdx: i, interviewReflectionNote: prompt, interviewReflectionMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-violet-800 border-violet-200 hover:border-violet-400') }, 'Reflect ' + (i + 1));
                 })
               ),
-              h('textarea', { value: interviewReflectionNote, onChange: function(e) { upd('interviewReflectionNote', e.target.value); }, rows: 4, placeholder: 'Write one interview reflection, follow-up question, or support plan.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview reflection note' }),
+              h('textarea', { value: interviewReflectionNote, onChange: function(e) { upd('interviewReflectionNote', e.target.value); }, rows: 4, placeholder: 'Write one interview reflection, follow-up question, or support plan.', className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview reflection note' }),
               h('button', { onClick: function() {
                 if (!interviewReflectionNote.trim()) { upd('interviewReflectionMsg', 'Write one reflection step first.'); return; }
                 updMulti({ interviewReflectionMsg: 'Reflection saved: ' + interviewReflectionNote.trim(), interviewReflectionSaved: Date.now() });
                 checkBadge('interviewReady');
                 announceToSR('Interview reflection saved');
-              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save reflection'),
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save reflection'),
               interviewReflectionMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.interviewReflectionSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, interviewReflectionMsg),
               h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
                 h('p', { className: 'text-xs font-black text-slate-800' }, 'Follow-up message frame'),
-                h('textarea', { value: interviewFollowUpMessage, onChange: function(e) { upd('interviewFollowUpMessage', e.target.value); }, rows: 3, className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 bg-white resize-y', 'aria-label': 'Interview follow-up message' })
+                h('textarea', { value: interviewFollowUpMessage, onChange: function(e) { upd('interviewFollowUpMessage', e.target.value); }, rows: 3, className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-xs text-slate-800 bg-white resize-y', 'aria-label': 'Interview follow-up message' })
               )
             )
           ),
@@ -4777,7 +4777,7 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 h('div', { className: 'flex flex-wrap gap-2' },
-                  h('button', { onClick: saveInterviewPrepPacket, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save packet'),
+                  h('button', { onClick: saveInterviewPrepPacket, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save packet'),
                   h('button', { onClick: copyInterviewPrepPacket, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-700' }, 'Copy packet'),
                   h('button', { onClick: downloadInterviewPrepPacket, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-700' }, 'Download .txt'),
                   h('button', { onClick: openInterviewPacketPrintView, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-700' }, 'Open print view')
@@ -4785,7 +4785,7 @@ window.StemLab = window.StemLab || {
                 interviewPacketMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewPacketSavedAt ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'), role: 'status' }, interviewPacketMsg)
               ),
               h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Packet preview',
-                h('textarea', { readOnly: true, value: interviewPacketPreview, rows: 16, className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 bg-white resize-y font-mono leading-relaxed', 'aria-label': 'Interview prep packet preview' })
+                h('textarea', { readOnly: true, value: interviewPacketPreview, rows: 16, className: 'mt-1 w-full px-3 py-2 border border-slate-500 rounded-xl text-xs text-slate-800 bg-white resize-y font-mono leading-relaxed', 'aria-label': 'Interview prep packet preview' })
               )
             )
           )
@@ -4847,7 +4847,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               communicationScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (communicationScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, communicationScenarioFb),
-              h('button', { onClick: function() { updMulti({ communicationScenarioIdx: communicationScenarioIdx + 1, communicationScenarioChoice: '', communicationScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-orange-700 text-white hover:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-700' }, 'Next scenario')
+              h('button', { onClick: function() { updMulti({ communicationScenarioIdx: communicationScenarioIdx + 1, communicationScenarioChoice: '', communicationScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-orange-700 text-white hover:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-300' }, 'Next scenario')
             )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
@@ -4910,13 +4910,13 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: prompt, onClick: function() { updMulti({ communicationPlanIdx: i, communicationPlanNote: prompt, communicationPlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-orange-700 text-white border-orange-700' : 'bg-white text-orange-800 border-orange-200 hover:border-orange-400') }, 'Plan ' + (i + 1));
               })
             ),
-            h('textarea', { value: communicationPlanNote, onChange: function(e) { upd('communicationPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one conversation, boundary, repair, or support step.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Conversation plan note' }),
+            h('textarea', { value: communicationPlanNote, onChange: function(e) { upd('communicationPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one conversation, boundary, repair, or support step.', className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Conversation plan note' }),
             h('button', { onClick: function() {
               if (!communicationPlanNote.trim()) { upd('communicationPlanMsg', 'Write one communication step first.'); return; }
               updMulti({ communicationPlanMsg: 'Plan saved: ' + communicationPlanNote.trim(), communicationPlanSaved: Date.now() });
               checkBadge('communicationReady');
               announceToSR('Communication plan saved');
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save communication plan'),
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save communication plan'),
             communicationPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.communicationPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, communicationPlanMsg)
           )
         ),
@@ -4977,7 +4977,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               timeScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (timeScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, timeScenarioFb),
-              h('button', { onClick: function() { updMulti({ timeScenarioIdx: timeScenarioIdx + 1, timeScenarioChoice: '', timeScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-yellow-700 text-white hover:bg-yellow-800 focus:outline-none focus:ring-2 focus:ring-yellow-700' }, 'Next scenario')
+              h('button', { onClick: function() { updMulti({ timeScenarioIdx: timeScenarioIdx + 1, timeScenarioChoice: '', timeScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-yellow-700 text-white hover:bg-yellow-800 focus:outline-none focus:ring-2 focus:ring-yellow-400' }, 'Next scenario')
             )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
@@ -5040,13 +5040,13 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: prompt, onClick: function() { updMulti({ timePlanIdx: i, timePlanNote: prompt, timePlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-yellow-700 text-white border-yellow-700' : 'bg-white text-yellow-800 border-yellow-200 hover:border-yellow-400') }, 'Plan ' + (i + 1));
               })
             ),
-            h('textarea', { value: timePlanNote, onChange: function(e) { upd('timePlanNote', e.target.value); }, rows: 4, placeholder: 'Write one task, estimate, reminder, or recovery step.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Time plan note' }),
+            h('textarea', { value: timePlanNote, onChange: function(e) { upd('timePlanNote', e.target.value); }, rows: 4, placeholder: 'Write one task, estimate, reminder, or recovery step.', className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Time plan note' }),
             h('button', { onClick: function() {
               if (!timePlanNote.trim()) { upd('timePlanMsg', 'Write one time-management step first.'); return; }
               updMulti({ timePlanMsg: 'Plan saved: ' + timePlanNote.trim(), timePlanSaved: Date.now() });
               checkBadge('timePlanner');
               announceToSR('Time plan saved');
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save time plan'),
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save time plan'),
             timePlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.timePlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, timePlanMsg)
           )
         ),
@@ -5507,7 +5507,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: prompt, onClick: function() { updMulti({ medQuestionIdx: i, medQuestionNote: prompt, medQuestionMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-violet-700 border-violet-200') }, 'Q' + (i + 1));
                 })
               ),
-              h('textarea', { value: medQuestionNote, onChange: function(e) { upd('medQuestionNote', e.target.value); }, rows: 4, placeholder: 'Write a question you would ask a pharmacist, prescriber, nurse, or trusted adult.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Medication question note' }),
+              h('textarea', { value: medQuestionNote, onChange: function(e) { upd('medQuestionNote', e.target.value); }, rows: 4, placeholder: 'Write a question you would ask a pharmacist, prescriber, nurse, or trusted adult.', className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Medication question note' }),
               h('button', { onClick: function() {
                 if (!medQuestionNote.trim()) { upd('medQuestionMsg', 'Write one question first.'); return; }
                 updMulti({ medQuestionMsg: 'Question saved: ' + medQuestionNote.trim(), medQuestionSaved: Date.now() });
@@ -5620,7 +5620,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: prompt, onClick: function() { updMulti({ appointmentScriptIdx: i, appointmentScriptNote: prompt, appointmentScriptMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-cyan-700 text-white border-cyan-700' : 'bg-white text-cyan-700 border-cyan-200') }, 'Line ' + (i + 1));
                 })
               ),
-              h('textarea', { value: appointmentScriptNote, onChange: function(e) { upd('appointmentScriptNote', e.target.value); }, rows: 4, placeholder: 'Write a sentence you could say or show during the appointment.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Appointment script note' }),
+              h('textarea', { value: appointmentScriptNote, onChange: function(e) { upd('appointmentScriptNote', e.target.value); }, rows: 4, placeholder: 'Write a sentence you could say or show during the appointment.', className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Appointment script note' }),
               h('button', { onClick: function() {
                 if (!appointmentScriptNote.trim()) { upd('appointmentScriptMsg', 'Write one sentence first.'); return; }
                 updMulti({ appointmentScriptMsg: 'Script saved: ' + appointmentScriptNote.trim(), appointmentScriptSaved: Date.now() });
@@ -5732,7 +5732,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: prompt, onClick: function() { updMulti({ homePlanIdx: i, homePlanNote: prompt, homePlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-red-700 text-white border-red-700' : 'bg-white text-red-700 border-red-200') }, 'Plan ' + (i + 1));
                 })
               ),
-              h('textarea', { value: homePlanNote, onChange: function(e) { upd('homePlanNote', e.target.value); }, rows: 4, placeholder: 'Write one part of your emergency plan.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Home safety plan note' }),
+              h('textarea', { value: homePlanNote, onChange: function(e) { upd('homePlanNote', e.target.value); }, rows: 4, placeholder: 'Write one part of your emergency plan.', className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Home safety plan note' }),
               h('button', { onClick: function() {
                 if (!homePlanNote.trim()) { upd('homePlanMsg', 'Write one plan note first.'); return; }
                 updMulti({ homePlanMsg: 'Plan saved: ' + homePlanNote.trim(), homePlanSaved: Date.now() });
@@ -5843,7 +5843,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: prompt, onClick: function() { updMulti({ digitalPlanIdx: i, digitalPlanNote: prompt, digitalPlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-blue-700 border-blue-200') }, 'Plan ' + (i + 1));
                 })
               ),
-              h('textarea', { value: digitalPlanNote, onChange: function(e) { upd('digitalPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one digital safety action you can take.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Digital safety plan note' }),
+              h('textarea', { value: digitalPlanNote, onChange: function(e) { upd('digitalPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one digital safety action you can take.', className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Digital safety plan note' }),
               h('button', { onClick: function() {
                 if (!digitalPlanNote.trim()) { upd('digitalPlanMsg', 'Write one digital safety step first.'); return; }
                 updMulti({ digitalPlanMsg: 'Plan saved: ' + digitalPlanNote.trim(), digitalPlanSaved: Date.now() });
@@ -6381,7 +6381,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               foodConfidenceScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (foodConfidenceScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, foodConfidenceScenarioFb),
-              h('button', { onClick: function() { updMulti({ foodConfidenceScenarioIdx: foodConfidenceScenarioIdx + 1, foodConfidenceScenarioChoice: '', foodConfidenceScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-700' }, 'Next scenario')
+              h('button', { onClick: function() { updMulti({ foodConfidenceScenarioIdx: foodConfidenceScenarioIdx + 1, foodConfidenceScenarioChoice: '', foodConfidenceScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-300' }, 'Next scenario')
             )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
@@ -6426,7 +6426,7 @@ window.StemLab = window.StemLab || {
                 return h('div', { key: group.key, className: 'grid sm:grid-cols-[110px_1fr] gap-2 items-start' },
                   h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase pt-2', htmlFor: group.key }, group.label),
                   h('div', null,
-                    h('select', { id: group.key, value: group.value, onChange: function(e) { upd(group.key, parseInt(e.target.value, 10) || 0); }, className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-bold bg-white text-slate-800' },
+                    h('select', { id: group.key, value: group.value, onChange: function(e) { upd(group.key, parseInt(e.target.value, 10) || 0); }, className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm font-bold bg-white text-slate-800' },
                       group.items.map(function(item, i) { return h('option', { key: item.name, value: i }, item.name + ' - $' + item.cost.toFixed(2)); })
                     ),
                     h('p', { className: 'text-[11px] text-slate-700 mt-1' }, current.note)
@@ -6466,9 +6466,9 @@ window.StemLab = window.StemLab || {
               ),
               h('label', { className: 'block text-xs font-bold text-slate-700' },
                 foodLabel.question,
-                h('input', { value: foodLabelAnswer, onChange: function(e) { upd('foodLabelAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') checkFoodLabelAnswer(); }, placeholder: 'Type the label clue here', className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white', 'aria-label': 'Nutrition label answer' })
+                h('input', { value: foodLabelAnswer, onChange: function(e) { upd('foodLabelAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') checkFoodLabelAnswer(); }, placeholder: 'Type the label clue here', className: 'mt-1 w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white', 'aria-label': 'Nutrition label answer' })
               ),
-              h('button', { onClick: checkFoodLabelAnswer, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Check label'),
+              h('button', { onClick: checkFoodLabelAnswer, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Check label'),
               foodLabelFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (foodLabelFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, foodLabelFb)
             ),
             h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
@@ -6673,7 +6673,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'grid grid-cols-2 gap-2' },
                   h('div', null,
                     h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Water temperature'),
-                    h('select', { value: laundryWater, onChange: function(e) { upd('laundryWater', e.target.value); }, className: 'w-full mt-1 px-2 py-2 rounded-xl border border-slate-300 text-sm font-bold bg-white' },
+                    h('select', { value: laundryWater, onChange: function(e) { upd('laundryWater', e.target.value); }, className: 'w-full mt-1 px-2 py-2 rounded-xl border border-slate-500 text-sm font-bold bg-white' },
                       h('option', { value: 'cold' }, 'Cold'),
                       h('option', { value: 'warm' }, 'Warm'),
                       h('option', { value: 'hot' }, 'Hot')
@@ -6681,7 +6681,7 @@ window.StemLab = window.StemLab || {
                   ),
                   h('div', null,
                     h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Cycle'),
-                    h('select', { value: laundryCycle, onChange: function(e) { upd('laundryCycle', e.target.value); }, className: 'w-full mt-1 px-2 py-2 rounded-xl border border-slate-300 text-sm font-bold bg-white' },
+                    h('select', { value: laundryCycle, onChange: function(e) { upd('laundryCycle', e.target.value); }, className: 'w-full mt-1 px-2 py-2 rounded-xl border border-slate-500 text-sm font-bold bg-white' },
                       h('option', { value: 'delicate' }, 'Delicate'),
                       h('option', { value: 'normal' }, 'Normal'),
                       h('option', { value: 'heavy' }, 'Heavy duty')
@@ -6875,7 +6875,7 @@ window.StemLab = window.StemLab || {
             h('input', { type: 'text', value: chalAnswer, onChange: function(e) { upd('chalAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') chalCheck(); }, placeholder: __alloT('stem.lifeskills.type_your_answer', 'Type your answer...'), className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm focus:border-teal-400', 'aria-label': __alloT('stem.lifeskills.answer', 'Answer') }),
             h('div', { className: 'flex gap-2' },
               h('button', { onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-teal-700 hover:bg-teal-800 active:scale-95 transition-all text-white rounded-xl' }, __alloT('stem.lifeskills.check_3', 'Check')),
-              h('button', { onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (chalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, __alloT('stem.lifeskills.hint', '\uD83D\uDCA1 Hint')),
+              h('button', { onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (chalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-700 rounded-xl' }, __alloT('stem.lifeskills.hint', '\uD83D\uDCA1 Hint')),
               h('button', { onClick: function() { updMulti({ chalIdx: chalIdx + 1, chalFeedback: '', chalAnswer: '' }); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, __alloT('stem.lifeskills.skip', 'Skip \u27A1')),
               callGemini && h('button', { onClick: function() {
                 upd('chalAILoading', true);
@@ -6926,7 +6926,7 @@ window.StemLab = window.StemLab || {
                   h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Answer...', className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-red-400' }),
                   h('div', { className: 'flex gap-2' },
                     h('button', { onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 hover:bg-red-700 active:scale-95 transition-all text-white rounded-xl' }, __alloT('stem.lifeskills.attack', '\u2694\uFE0F Attack!')),
-                    h('button', { 'aria-label': __alloT('stem.lifeskills.hint_2', 'Hint'), onClick: function() { upd('battleFeedback', '\uD83D\uDCA1 ' + (q.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, __alloT('stem.lifeskills.hint_3', '\uD83D\uDCA1 Hint'))
+                    h('button', { 'aria-label': __alloT('stem.lifeskills.hint_2', 'Hint'), onClick: function() { upd('battleFeedback', '\uD83D\uDCA1 ' + (q.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-700 rounded-xl' }, __alloT('stem.lifeskills.hint_3', '\uD83D\uDCA1 Hint'))
                   ),
                   battleFeedback && h('p', { className: 'text-sm font-bold p-2 rounded-lg ' + (battleFeedback[0] === '\u2705' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700') }, battleFeedback)
                 );

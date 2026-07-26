@@ -76,7 +76,7 @@ that change their source. Some concrete cases:
   code is not altered.
 - **Vendored minified copies** — lamejs (`lame.min.js`), iframe-phone
   (`data_lab/vendor/iframe-phone.js`), A-Frame (`immersive_geometry/vendor/aframe.min.js`),
-  and Temml (`temml/temml.min.js`) — are upstream release builds. Each carries its
+  and Temml (`sre-assets/temml.min.js`, `Temml-Local.css`, and `Temml.woff2`) — are upstream release builds. Each carries its
   original copyright/license banner at the top of the file (restored where an earlier
   minification step had stripped it, so the notice travels with the code).
 - **FFmpeg** (`video_studio/vendor/ffmpeg/`) is the unmodified upstream `@ffmpeg/core`

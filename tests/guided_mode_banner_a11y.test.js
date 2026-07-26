@@ -42,12 +42,12 @@ describe('Guided Mode banner accessibility', () => {
     expect(component).not.toContain("position: 'fixed', top: guidedRect.top");
   });
 
-  it('reports one-based progress and distinguishes skipped steps', () => {
-    expect(component).toContain('aria-valuenow={Math.min(guidedStep + 1, GUIDED_STEPS.length)}');
+  it('reports one-based phase progress and distinguishes completed phases', () => {
+    expect(component).toContain('aria-valuenow={currentPhaseIndex + 1}');
     expect(component).toContain('aria-valuemin={1}');
     expect(component).toContain("(t('guided.step_of') || 'Step {current} of {total}').replace");
-    expect(component).toContain('guidedSkippedIds.includes(s.id)');
-    expect(component).toContain("repeating-linear-gradient(135deg");
+    expect(component).toContain('guidedSkippedIds.includes(item.id)');
+    expect(component).toContain("const phaseState = phaseIndex === currentPhaseIndex");
   });
 
   it('allows the action controls to wrap in narrow or translated layouts', () => {
@@ -80,6 +80,13 @@ describe('Guided Mode banner follow-up safeguards', () => {
     expect(component).toContain('htmlFor="guided-ai-goal"');
     expect(component).toContain('id="guided-ai-goal"');
     expect(component).toContain('maxLength={1200}');
+    expect(component).toContain("aria-label={t('guided.ai_plan_portability_group')");
+    expect(component).toContain('accept=".json,application/json"');
+    expect(component).toContain('htmlFor="guided-ai-context-languages"');
+    expect(component).toContain('htmlFor="guided-ai-context-devices"');
+    expect(component).toContain('htmlFor="guided-ai-context-notes"');
+    expect(component).toContain('aria-pressed={classroomContext.supports.includes(option.id)}');
+    expect(component).toContain('aria-labelledby="guided-phase-checkpoint-title"');
     expect(component).toContain("t('guided.ai_plan_privacy')");
     expect(component).toContain("t('guided.ai_plan_steps_title')");
     expect(component).toContain('role="log" aria-live="polite"');
@@ -88,7 +95,7 @@ describe('Guided Mode banner follow-up safeguards', () => {
     expect(component).toContain('aria-labelledby="guided-ai-roadmap-title"');
     expect(component).toContain('aria-label={t(\'guided.ai_plan_phase_roadmap\')');
     expect(component).toContain('aria-labelledby="guided-ai-questions-title"');
-    expect(component).toContain("getAiPlannerQuestions(goal).filter");
+    expect(component).toContain("getAiPlannerQuestions([goal, ...classroomContextLines()].join(' ')).filter");
     expect(component).toContain('aria-labelledby="guided-ai-readiness-title"');
     expect(component).toContain('aria-live="polite"');
     expect(component).toContain('allo-guided-planning-actions');
@@ -97,12 +104,22 @@ describe('Guided Mode banner follow-up safeguards', () => {
     expect(component).toContain('onClick={applyAiPlan}');
     expect(component).toContain('pendingAiPlanApply');
     expect(component).toContain("localStorage.setItem('allo_guided_planner_draft'");
-    expect(component).toContain('aria-labelledby="guided-planner-close-title"');
+    expect(component).toContain("pendingPlannerClose ? 'guided-planner-close-title'");
     expect(component).toContain('aria-labelledby="guided-planner-recovery-title"');
     expect(component).toContain('aria-labelledby="guided-ai-changes-title"');
     expect(component).toContain("requestAiGuidedPlan('best-judgment')");
     expect(component).toContain('estimateAiPlanMinutes(next)');
     expect(component).toContain('aiPlanResourceLabels.length');
+    expect(component).toContain('allo-guided-stage-nav');
+    expect(component).toContain("aria-current={aiPlannerStage === stageId ? 'step' : undefined}");
+    expect(component).toContain('role="alertdialog" aria-modal="true"');
+    expect(component).toContain('inert={plannerConfirmationOpen');
+    expect(component).toContain("plannerSaveState === 'saving'");
+    expect(component).toContain('undoAiPlannerChange');
+    expect(component).toContain('restoreOriginalAiPlan');
+    expect(component).toContain('allo-guided-edit-chip');
+    expect(component).toContain('100dvh');
+    expect(component).toContain('safe-area-inset-bottom');
   });
   it('provides a named completion summary and a progress-preserving Resume later action', () => {
     expect(component).toContain('role="list" aria-label={t(\'guided.summary_label\')');
@@ -124,17 +141,33 @@ describe('Guided Mode resilience and responsive safeguards', () => {
     expect(component).toContain('id="guided-banner-details"');
     expect(component).toContain('allo_guided_ui_state');
     expect(component).toContain("aria-label={t('guided.estimate_label') || 'Step estimate'}");
+    expect(component).toContain('estimatedRemainingMinutes');
+    expect(component).toContain('allo-guided-lesson-brief');
+    expect(component).toContain('activeStepReason');
   });
 
   it('provides direct step navigation and comfortable touch targets', () => {
     expect(component).toContain('id="guided-step-jump"');
     expect(component).toContain('.allo-guided-banner button,.allo-guided-banner select{min-height:40px}');
     expect(component).toContain('disabled={guidedBusy}');
+    expect(component).toContain("t('guided.advanced_navigation')");
+    expect(component).toContain('className="allo-guided-phase-rail" role="progressbar"');
+    expect(component).toContain('activePhaseDefinitions.map((phase, phaseIndex)');
   });
   it('announces recoverable errors and source changes', () => {
     expect(component).toContain('{guidedStepError && (');
     expect(component).toContain('<div role="alert"');
     expect(component).toContain('onClick={retryGuidedStep}');
     expect(component).toContain('{sourceStale && (');
+  });
+  it('focuses phase transitions and makes import preview and launchpad discoverable', () => {
+    expect(component).toContain('ref={_phaseCheckpointRef} tabIndex={-1} role="status" aria-live="polite"');
+    expect(component).toContain('ref={_phaseNoticeRef} tabIndex={-1} role="status"');
+    expect(component).toContain('phaseCheckpointReady');
+    expect(component).toContain('pendingPlanImport');
+    expect(component).toContain('guided-import-preview-title');
+    expect(component).toContain('Import selected plans');
+    expect(component).toContain('guided-launchpad-title');
+    expect(component).toContain('role="region" aria-labelledby="guided-launchpad-title"');
   });
 });

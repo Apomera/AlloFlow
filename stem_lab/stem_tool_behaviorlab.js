@@ -3540,7 +3540,7 @@ dataRef.current = d;
 
                 },
 
-                className: "w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold text-base shadow-lg shadow-amber-500/30 hover:from-amber-600 hover:to-orange-600 transition-all hover:scale-[1.02]"
+                className: "w-full py-3 rounded-xl bg-gradient-to-r from-amber-700 to-orange-700 text-white font-extrabold text-base shadow-lg shadow-amber-500/30 hover:from-amber-700 hover:to-orange-700 transition-all hover:scale-[1.02]"
 
               }, __alloT('stem.behaviorlab.start_experiment_2', "\uD83D\uDE80 Start Experiment")),
 
@@ -4014,7 +4014,7 @@ dataRef.current = d;
 
                 },
 
-                className: "w-full mt-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-extrabold text-sm shadow-lg shadow-emerald-500/25 hover:from-emerald-600 hover:to-teal-600 transition-all hover:scale-[1.02]"
+                className: "w-full mt-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-extrabold text-sm shadow-lg shadow-emerald-500/25 hover:from-emerald-700 hover:to-teal-700 transition-all hover:scale-[1.02]"
 
               }, __alloT('stem.behaviorlab.next_level_2', "\u27A1\uFE0F Next Level"))
 
@@ -4163,7 +4163,7 @@ dataRef.current = d;
 
                     (blLastAction && blPhase === 'running'
 
-                      ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md hover:from-amber-600 hover:to-yellow-600 hover:scale-[1.02]"
+                      ? "bg-gradient-to-r from-amber-700 to-yellow-700 text-white shadow-md hover:from-amber-700 hover:to-yellow-700 hover:scale-[1.02]"
 
                       : "bg-slate-700 text-slate-200 cursor-not-allowed"),
 
@@ -4271,7 +4271,7 @@ dataRef.current = d;
 
                 blChainStep >= CHAIN_SEQ.length && React.createElement("span", {
 
-                  className: "ml-2 px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-white animate-pulse shadow-lg shadow-amber-500/30"
+                  className: "ml-2 px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-700 to-yellow-700 text-white animate-pulse shadow-lg shadow-amber-500/30"
 
                 }, __alloT('stem.behaviorlab.reinforce_now', "🍕 REINFORCE NOW!"))
 
@@ -4681,7 +4681,7 @@ dataRef.current = d;
 
                   className: "flex-1 py-2 rounded-xl font-bold text-xs transition-all " +
 
-                    (blCcPhase === 'pairing' ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md hover:from-amber-600 hover:to-yellow-600 hover:scale-[1.02]" : "bg-slate-700 text-slate-200 cursor-not-allowed")
+                    (blCcPhase === 'pairing' ? "bg-gradient-to-r from-amber-700 to-yellow-700 text-white shadow-md hover:from-amber-700 hover:to-yellow-700 hover:scale-[1.02]" : "bg-slate-700 text-slate-200 cursor-not-allowed")
 
                 }, "\uD83D\uDD14+\uD83C\uDF55 Pair (" + blPairCount + "/5)")
 
@@ -5278,7 +5278,7 @@ dataRef.current = d;
                     React.createElement("button", {
                       onClick: startRound,
                       "aria-label": __alloT('stem.behaviorlab.start_schedule_sleuth', "Start Schedule Sleuth"),
-                      className: "transition-colors px-4 py-2 rounded-lg bg-amber-600 text-white font-bold text-[11px] hover:bg-amber-500 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
+                      className: "transition-colors px-4 py-2 rounded-lg bg-amber-700 text-white font-bold text-[11px] hover:bg-amber-800 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
                     }, __alloT('stem.behaviorlab.start_the_game', "\uD83D\uDD75\uFE0F Start the game"))
                   );
                 }
@@ -5450,7 +5450,7 @@ dataRef.current = d;
                     React.createElement("button", {
                       onClick: startRound,
                       "aria-label": __alloT('stem.behaviorlab.next_round', "Next round"),
-                      className: "transition-colors px-4 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-[11px] hover:bg-amber-500 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
+                      className: "transition-colors px-4 py-1.5 rounded-lg bg-amber-700 text-white font-bold text-[11px] hover:bg-amber-800 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
                     }, __alloT('stem.behaviorlab.next_round_2', "\u27A1\uFE0F Next round"))
                   )
                 );
@@ -5897,7 +5897,7 @@ dataRef.current = d;
                         },
                         placeholder: s.placeholder,
                         rows: 2,
-                        className: "w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-[11px] text-slate-200 placeholder-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 focus:outline-none resize-none"
+                        className: "w-full bg-slate-800 border border-slate-500 rounded-lg p-2 text-[11px] text-slate-200 placeholder-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 focus:outline-none resize-none"
                       }),
                       React.createElement("div", { className: "flex gap-2 justify-end" },
                         blBipStep > 0 && React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.back', "Back"),
@@ -5915,7 +5915,7 @@ dataRef.current = d;
                             upd('blBipStep', blBipStep + 1);
                             if (addToast) addToast('\u2705 Step ' + (blBipStep + 1) + ' complete!', 'success');
                           },
-                          className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-red-600 text-white hover:bg-red-500 focus:ring-2 focus:ring-red-400 focus:outline-none transition-all active:scale-[0.97]"
+                          className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-red-600 text-white hover:bg-red-500 focus:ring-2 focus:ring-red-200 focus:outline-none transition-all active:scale-[0.97]"
                         }, __alloT('stem.behaviorlab.next_2', 'Next \u2192'))
                       )
                     );
@@ -6032,7 +6032,7 @@ dataRef.current = d;
                         upd('blScenarioIdx', nextIdx);
                         upd('blScenarioAnswer', -1);
                       },
-                      className: "w-full py-1.5 rounded-lg text-[11px] font-bold bg-gradient-to-r from-red-600 to-amber-600 text-white hover:from-red-500 hover:to-amber-500 transition-all"
+                      className: "w-full py-1.5 rounded-lg text-[11px] font-bold bg-gradient-to-r from-red-600 to-amber-700 text-white hover:from-red-600 hover:to-amber-700 transition-all"
                     }, 'Next Scenario \u2192 (' + ((blScenarioIdx + 1) % SCENARIO_CHALLENGES.length + 1) + '/' + SCENARIO_CHALLENGES.length + ')')
                   )
                 );

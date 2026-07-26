@@ -3844,12 +3844,13 @@
       "front": "Competence boundaries",
       "back": "APA Ethics Code Standard 2.01 requires psychologists to provide services, teach, and conduct research within boundaries of competence based on education, training, supervised experience, consultation, study, or professional experience. New areas may require relevant preparation; emergency and emerging-area provisions have specific limits.",
       "revisionApplied": true,
-      "revisionReason": "Aligned the summary more closely with the standard and avoided one mandatory path for every new area.",
+      "revisionReason": "Aligned the summary more closely with the standard, then retired this card because wave 03 contains a more complete retrieval target for the same Standard 2.01 construct.",
+      "contentDisposition": "retire-redundant",
       "reviewStatus": "source-reviewed-editorial-pass",
       "reviewMode": "assisted-flashcard-editorial-review",
       "reviewWave": "eppp-flashcard-review-wave-01",
       "reviewDate": "2026-07-14",
-      "reviewNote": "Legacy wording was revised for accuracy, nuance, or source alignment. Reviewed for a focused retrieval target, readable wording, stable framing, and topical alignment with Ethical Principles of Psychologists and Code of Conduct. Independent qualified expert validation remains pending.",
+      "reviewNote": "Source alignment remains valid, but this card is retired as redundant with flashcard-10736b0e2a20017d, which preserves the same Standard 2.01 target with fuller population, method, technology, context, and emergency safeguards. Independent qualified expert validation remains pending.",
       "references": [
         "https://www.apa.org/ethics/code"
       ],

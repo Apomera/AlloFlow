@@ -4888,7 +4888,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('textarea', { id: 'eq-hypo', value: iq.hypothesis || '',
                   onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
                   placeholder: 'Which slider matters MOST for triggering a collapse? Can you balance the system with predator birth at 80%? Type your own theory.',
-                  className: 'w-full text-[12px] border border-slate-300 dark:border-slate-600 rounded p-2 font-mono leading-snug bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200', rows: 3 })
+                  className: 'w-full text-[12px] border border-slate-500 dark:border-slate-600 rounded p-2 font-mono leading-snug bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200', rows: 3 })
               ),
               // Opt-in
               h('div', { className: 'mb-3' },
@@ -4914,7 +4914,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 iq.understood && h('textarea', { value: iq.explanation || '',
                   onChange: function(e) { setIQ({ explanation: e.target.value }); },
                   placeholder: 'Explain in your own words: how do predator birth, prey lifespan, and resource scarcity interact? Why does balanced cycling require something specific? When do predators win? When does the system collapse?',
-                  className: 'w-full text-[12px] border border-emerald-300 dark:border-emerald-700 rounded p-2 font-mono leading-snug bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200', rows: 4 }),
+                  className: 'w-full text-[12px] border border-emerald-600 dark:border-emerald-700 rounded p-2 font-mono leading-snug bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200', rows: 4 }),
                 iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700 dark:text-emerald-400' },
                   '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
               ),

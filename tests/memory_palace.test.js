@@ -52,6 +52,24 @@ describe('MemoryPalace.buildPalace (pure palace model)', () => {
     expect(p.route).toEqual(['__entry', 'b0_i0', 'b0_i1', 'b1_i0', 'b1_i1']);
   });
 
+  it('normalizes persisted route order, removes stale duplicates, and appends new loci', () => {
+    const data = sampleData();
+    data.memoryPalace = { routeOrder: ['b1_i1', 'missing', 'b0_i0', 'b1_i1'] };
+    const p = MP.buildPalace(data);
+    expect(p.route).toEqual(['__entry', 'b1_i1', 'b0_i0', 'b0_i1', 'b1_i0']);
+    expect(MP.normalizeRouteOrder(['__entry', 'a', 'b', 'c'], ['c', 'c', 'nope', 'a']))
+      .toEqual(['__entry', 'c', 'a', 'b']);
+  });
+
+  it('lets an unsaved preview override the persisted route without mutating source data', () => {
+    const data = sampleData();
+    data.memoryPalace = { routeOrder: ['b1_i1', 'b1_i0', 'b0_i1', 'b0_i0'] };
+    const preview = ['b0_i1', 'b1_i0'];
+    const p = MP.buildPalace(data, { routeOrder: preview });
+    expect(p.route).toEqual(['__entry', 'b0_i1', 'b1_i0', 'b0_i0', 'b1_i1']);
+    expect(data.memoryPalace.routeOrder[0]).toBe('b1_i1');
+  });
+
   it('loci carry labels, mnemonics ({text} items handled), and per-stop camera rails', () => {
     const p = MP.buildPalace(sampleData());
     const byId = {}; p.loci.forEach((l) => { byId[l.id] = l; });
@@ -485,5 +503,95 @@ describe('MemoryPalace - live 3D organizer HUD contract', () => {
     expect(source).toContain('var factor = overview ? 0.82');
     expect(source).toContain('_scaleFrameLabels();');
     expect(source).toContain('if (reduce) label.scale.set(tx, ty, 1)');
+  });
+  it('provides a clickable status map and a responsive frame callout', () => {
+    const source = readFileSync(resolve(process.cwd(), 'memory_palace_module.js'), 'utf8');
+    const view = readFileSync(resolve(process.cwd(), 'view_renderers_source.jsx'), 'utf8');
+    expect(view).toContain("const progressStops = progressPalace");
+    expect(view).toContain('role="progressbar"');
+    expect(view).toContain('role="listitem"');
+    expect(view).toContain("handleRef.current?.goTo(i + 1)");
+    expect(view).toContain("Visual palace progress map");
+    expect(view).toContain("onEmptyLocusAnchor: (id, point)");
+    expect(view).toContain("ref={calloutLineRef}");
+    expect(view).toContain("max-h-[58%] sm:max-h-none");
+    expect(source).toContain("function _emitEmptyAnchor()");
+    expect(source).toContain("_anchorProject.project(camera)");
+    expect(source).toContain("function _scaleFrameLabels()");
+    expect(source).toContain("c.label.visible = visible");
+    expect(source).toContain("Math.abs(c.x - placed[i].x) < 0.2");
+  });
+
+  it('keeps a bounded three-version tray and replaces regenerated sculptures live', () => {
+    const view = readFileSync(resolve(process.cwd(), 'view_renderers_source.jsx'), 'utf8');
+    expect(view).toContain("const nextVariants = [...session.variants");
+    expect(view).toContain("].slice(-3)");
+    expect(view).toContain("const handleQuickVariant = (index)");
+    expect(view).toContain("Recent versions");
+    expect(view).toContain("aria-pressed={quickCreate.selected === index");
+    expect(view).toContain("live?.replaceLocusObject");
+    expect(view).toContain("onClick={() => handleQuickVariant(index)}");
+  });
+  it('adds a guided self-check journey without replacing the existing quiz modes', () => {
+    const view = readFileSync(resolve(process.cwd(), 'view_renderers_source.jsx'), 'utf8');
+    expect(view).toContain("mode:'bank'|'type'|'self'");
+    expect(view).toContain("startRecall('self', false)");
+    expect(view).toContain("const revealSelfCheck = () =>");
+    expect(view).toContain("const markSelfCheck = (remembered) =>");
+    expect(view).toContain('I remembered');
+    expect(view).toContain('I missed it');
+    expect(view).toContain('Reveal, then rate my recall');
+    expect(view).toContain('_laterRecall(() => advanceRecall())');
+  });
+
+  it('shows study-only in-world mastery rings with weak, developing, and strong colors', () => {
+    const source = readFileSync(resolve(process.cwd(), 'memory_palace_module.js'), 'utf8');
+    expect(source).toContain('var masteryRing = null');
+    expect(source).toContain('new THREE.RingGeometry(12, 17, 32');
+    expect(source).toContain('_mastery >= 0.8 ? 0x22c55e');
+    expect(source).toContain('Math.PI * 2 * _mastery');
+    expect(source).toContain('masteryRing: masteryRing');
+    expect(source).toContain('if (!recall && opts.mastery)');
+    const view = readFileSync(resolve(process.cwd(), 'view_renderers_source.jsx'), 'utf8');
+    expect(view).toContain('Memory rings:');
+    expect(view).toContain("memory strength ' + strengthLabel");
+    expect(view).toContain('hasMasteryRings');
+  });
+  it('provides a distraction-free palace presentation with native fullscreen fallback', () => {
+    const view = readFileSync(resolve(process.cwd(), 'view_renderers_source.jsx'), 'utf8');
+    expect(view).toContain('const [presenting, setPresenting] = React.useState(false)');
+    expect(view).toContain('const handlePresentation = async () =>');
+    expect(view).toContain('node.requestFullscreen || node.webkitRequestFullscreen');
+    expect(view).toContain('document.exitFullscreen || document.webkitExitFullscreen');
+    expect(view).toContain('webkitfullscreenchange');
+    expect(view).toContain("document.body.style.overflow = 'hidden'");
+    expect(view).toContain('h-[100dvh]');
+    expect(view).toContain("event.key === 'Escape'");
+    expect(view).toContain('Present palace');
+    expect(view).toContain('Exit presentation');
+    expect(view).toContain('fixed inset-0 z-[9999]');
+    expect(view).toContain("height: presenting ? '100%'");
+    expect(view).toContain('!presenting && !recall && proximityLocus');
+    expect(view).toContain('!presenting && directMode && !recall');
+    expect(view).toContain('!presenting && recall && !finished');
+  });
+  it('supports accessible drag, move, preview, save, reset, and undo route arrangement', () => {
+    const source = readFileSync(resolve(process.cwd(), 'memory_palace_module.js'), 'utf8');
+    const view = readFileSync(resolve(process.cwd(), 'view_renderers_source.jsx'), 'utf8');
+    expect(source).toContain('function normalizeRouteOrder(defaultRoute, preferredOrder)');
+    expect(source).toContain('var routeNo = Math.max(1, palace.route.indexOf(l.id))');
+    expect(source).toContain('makeNumBadge(THREE, routeNo, color)');
+    expect(view).toContain('Arrange walking route');
+    expect(view).toContain('draggable');
+    expect(view).toContain('const moveRouteItem = (fromIndex, toIndex)');
+    expect(view).toContain('Move {label} earlier');
+    expect(view).toContain('Move {label} later');
+    expect(view).toContain('Preview route in 3D');
+    expect(view).toContain('Save walking route');
+    expect(view).toContain('Undo route change');
+    expect(view).toContain('Original order');
+    expect(view).toContain('This palace has recall history.');
+    expect(view).toContain('routeOrder = routeDraft.slice()');
+    expect(view).toContain('routeOrder: activeRouteOrder');
   });
 });

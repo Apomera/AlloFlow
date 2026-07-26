@@ -1251,15 +1251,17 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_voicedetective.js'
 ];
 
-// Companion-window assets used by STEM Lab launchers. These are not JS modules,
-// so they must be copied as folders into desktop/web-app/public for clean builds.
+// Companion-window/runtime assets are not JS modules, so they must be copied as
+// folders into desktop/web-app/public for clean builds and CDN deployments.
 const COMPANION_ASSET_DIRS = [
     'alphafold_explorer',
     'circuit_shelf',
+    'mathlive-assets',
     'molecule_shelf',
     'sre-assets',
     'sim_shelf',
     'timeline_studio',
+    'verapdf',
     'zoom_gallery'
 ];
 

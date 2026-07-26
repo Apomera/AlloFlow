@@ -4,7 +4,7 @@
 // golden, so this is the only thing pinning the new recursive renderer.
 
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
-import { resetStemLab, loadTool, renderTool } from './helpers/stem_widgets_smoke_harness.js';
+import { React, ReactDOMClient, makeCtx, resetStemLab, loadTool, renderTool } from './helpers/stem_widgets_smoke_harness.js';
 
 const FILE = 'stem_lab/stem_tool_coding.js';
 
@@ -74,6 +74,65 @@ describe('Robot Commander recursive renderer (B4)', () => {
     // (depth 1) is leaf-only, so it must NOT offer another conditional add.
     const addIfWall = (html.match(/\+ If Wall Ahead/g) || []).length;
     expect(addIfWall).toBe(1);
+  });
+});
+
+describe('Visual Blocks keyboard access', () => {
+  beforeEach(() => resetStemLab());
+
+  it('renders discoverable keyboard help with an explicit control relationship', () => {
+    loadTool(FILE, 'codingPlayground');
+    const html = renderTool('codingPlayground', {
+      _codingPlayground: { playgroundMode: 'turtle', codeMode: 'visual', blocks: [] },
+    });
+
+    expect(html).toContain('Keyboard help');
+    expect(html).toContain('aria-controls="coding-blockly-keyboard-help-turtle"');
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).toContain('aria-describedby="coding-blockly-keyboard-help-turtle-summary"');
+    expect(html).toContain('Choose Accessible Outline for a linear editor');
+  });
+
+  it('opens with focus, closes on Escape, and returns focus to the trigger', async () => {
+    const config = loadTool(FILE, 'codingPlayground');
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    const ctx = makeCtx({
+      toolData: {
+        _codingPlayground: {
+          tutorialDismissed: true,
+          playgroundMode: 'turtle',
+          codeMode: 'visual',
+          blocks: []
+        }
+      }
+    });
+    const Component = function() { return config.render(ctx); };
+
+    await React.act(async () => {
+      root.render(React.createElement(Component));
+      await Promise.resolve();
+    });
+    const trigger = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Keyboard help');
+    expect(trigger).toBeTruthy();
+
+    await React.act(async () => { trigger.click(); });
+    const panel = host.querySelector('#coding-blockly-keyboard-help-turtle');
+    expect(panel).toBeTruthy();
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    expect(document.activeElement).toBe(panel);
+
+    await React.act(async () => {
+      panel.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(host.querySelector('#coding-blockly-keyboard-help-turtle')).toBeNull();
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(trigger);
+
+    await React.act(async () => { root.unmount(); });
+    host.remove();
   });
 });
 

@@ -252,7 +252,7 @@
             : '🌱 ' + t('stem.dataLab.ai_off', 'AI hints are off — the Data Lab still works, with built-in thinking prompts instead of the AI tutor.')))),
         h('button', {
           onClick: openDataLab,
-          className: 'px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 shadow-md shadow-indigo-600/20 transition-all w-fit',
+          className: 'px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-sky-700 hover:from-indigo-700 hover:to-sky-700 shadow-md shadow-indigo-600/20 transition-all w-fit',
           'aria-label': t('stem.dataLab.open_title', 'Open the Data Lab in a new window (CODAP workspace with the AlloFlow tutor)')
         }, t('stem.dataLab.open', '📊 Open Data Lab')),
         popupState === 'opening' && h('p', { className: 'text-xs text-sky-300', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
