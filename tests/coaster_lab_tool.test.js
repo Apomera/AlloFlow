@@ -402,14 +402,30 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
     expect(genElementMath('multiplication', 'g68', FACTS).key).toBeTruthy();
   });
 
-  it('mixed math mixes +, −, × and never division; a flat/empty checkpoint still works', () => {
+  it('avoid also takes the whole list of keys this ride has already used', () => {
+    const { genElementMath } = loadGen(TOOL_PATHS[0]);
+    // hand it every subtraction key but one; only the survivor may come back
+    const used = ['sub-drop', 'sub-here', 'sub-loop', 'sub-left'];
+    for (let i = 0; i < 300; i++) {
+      expect(used).not.toContain(genElementMath('subtraction', 'g68', FACTS, used).key);
+    }
+    // a four-stop ride threading its used list gets four different questions
+    const seen = [];
+    for (let stop = 0; stop < 4; stop++) seen.push(genElementMath('arithmetic', 'g68', FACTS, seen).key);
+    expect(new Set(seen).size).toBe(4);
+  });
+
+  it('mixed math mixes +, −, × and ÷, but keeps division away from K-2; a flat checkpoint still works', () => {
     const { genElementMath } = loadGen(TOOL_PATHS[0]);
     const ops = new Set();
     for (let i = 0; i < 600; i++) ops.add(genElementMath('arithmetic', 'g68', FACTS).mathOp);
     expect(ops.has('addition')).toBe(true);
     expect(ops.has('subtraction')).toBe(true);
     expect(ops.has('multiplication')).toBe(true);
-    expect(ops.has('division')).toBe(false);
+    expect(ops.has('division')).toBe(true);
+    const k2 = new Set();
+    for (let i = 0; i < 600; i++) k2.add(genElementMath('arithmetic', 'k2', FACTS).mathOp);
+    expect(k2.has('division')).toBe(false);   // sharing is not a K-2 skill here
     // no facts at all (e.g. a flat track with no drop) → still a valid question, never a throw
     for (const op of OPS) {
       const q = genElementMath(op, 'g35', {});
@@ -564,11 +580,11 @@ describe('coaster lab — Ride & Solve math is GROUNDED in the checkpoint elemen
   it.each(TOOL_PATHS)('%s: physics is the default; math reads live facts at the checkpoint', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     expect(src).toContain("localStorage.getItem('coaster_lab_ride_topic') || 'physics'");
-    expect(src).toContain("if(rideTopic === 'physics'){");
+    expect(src).toContain("const asPhysics = rideTopic === 'physics' ||");
     // the checkpoint math is grounded via facts read from the live sim + analysis,
-    // and threads the previous question's key so it does not repeat back-to-back
-    expect(src).toContain('ride.current = genElementMath(rideTopic, rideBand(), _coasterFacts(liveState, stop), ride.lastQKey);');
-    expect(src).toContain('if(ride.current && ride.current.key) ride.lastQKey = ride.current.key;');
+    // and threads every key this ride has used so the questions keep changing
+    expect(src).toContain('ride.current = genElementMath(mathTopic, rideBand(), _coasterFacts(liveState, stop), ride.usedKeys);');
+    expect(src).toContain('if(ride.current.key) ride.usedKeys.push(ride.current.key);');
     expect(src).toContain('function _coasterFacts(live, stop){');
     expect(src).toContain('crestH: a.A ? R(a.A.h) : null');
     // the checkpoint's own feature + radius are read so different stops differ
@@ -1126,12 +1142,254 @@ describe('coaster lab — AI "any topic" Ride & Solve questions', () => {
     expect(src).toContain("const opt = tSel.querySelector('option[value=\"ai\"]');");
     // a checkpoint serves a buffered question, else falls back to a grounded math question
     expect(src).toContain('if(aiQ.buffer.length){');
-    expect(src).toContain("ride.current = genElementMath('arithmetic', rideBand(), _coasterFacts(liveState, stop), ride.lastQKey);");
+    expect(src).toContain("ride.current = genElementMath('arithmetic', rideBand(), _coasterFacts(liveState, stop), ride.usedKeys);");
     // questions are pre-fetched (never fetched synchronously at the freeze)
     expect(src).toContain('fetchAiQuestions(rideAiSubject, rideBand())');
     // grade-tuned prompt + JSON-only contract
     expect(src).toContain("{ k2: 'grades K-2', g35: 'grades 3-5', g68: 'grades 6-8', g912: 'grades 9-12' }");
     expect(src).toContain('Return ONLY a JSON array of 6 questions');
+  });
+});
+
+describe('coaster lab — Ride & Solve asks a different question at every checkpoint', () => {
+  function loadPicker(p) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('/* @clab-ridepick-start');
+    const e = src.indexOf('/* @clab-ridepick-end');
+    expect(s).toBeGreaterThan(-1);
+    expect(e).toBeGreaterThan(s);
+    return new Function(src.slice(s, e) + '\nreturn pickRideQuestion;')();
+  }
+  function rideStopsSource(p) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('function buildRideStops(){');
+    const e = src.indexOf('\nfunction startRide(){', s);
+    expect(s).toBeGreaterThan(-1);
+    expect(e).toBeGreaterThan(s);
+    return src.slice(s, e);
+  }
+
+  it.each(TOOL_PATHS)('%s: every checkpoint question carries its own key', (p) => {
+    const body = rideStopsSource(p);
+    const keys = [...body.matchAll(/key:\s*'([A-Za-z0-9-]+)'/g)].map((m) => m[1]);
+    // a healthy pool, and no key reused for two different questions
+    expect(keys.length).toBeGreaterThanOrEqual(25);
+    expect(new Set(keys).size).toBe(keys.length);
+    // every question object in the pools is keyed — count the `text:` fields too
+    const texts = (body.match(/\btext:\s*[`']/g) || []).length;
+    expect(keys.length).toBe(texts);
+  });
+
+  it.each(TOOL_PATHS)('%s: both levels get a pool, not a single fixed question', (p) => {
+    const body = rideStopsSource(p);
+    // engineer keys (numeric) and explore keys (multiple choice, marked -x-)
+    const keys = [...body.matchAll(/key:\s*'([A-Za-z0-9-]+)'/g)].map((m) => m[1]);
+    const explore = keys.filter((k) => k.includes('-x-'));
+    const engineer = keys.filter((k) => !k.includes('-x-'));
+    expect(engineer.length).toBeGreaterThanOrEqual(15);
+    expect(explore.length).toBeGreaterThanOrEqual(10);
+    // a launched design gets its own checkpoint just after the LSM
+    expect(body).toContain("tag: 'Checkpoint · launch'");
+  });
+
+  it('the picker never returns a key the ride already used while alternatives remain', () => {
+    const pick = loadPicker(TOOL_PATHS[0]);
+    const pool = [{ key: 'a' }, { key: 'b' }, { key: 'c' }];
+    for (let i = 0; i < 500; i++) {
+      expect(pick(pool, ['a', 'b']).key).toBe('c');
+      expect(['b', 'c']).toContain(pick(pool, ['a']).key);
+    }
+    // a four-stop ride threading its own used list covers three distinct ideas
+    const used = [];
+    for (let i = 0; i < 3; i++) used.push(pick(pool, used).key);
+    expect(new Set(used).size).toBe(3);
+    // once everything has been asked it recycles rather than returning nothing
+    expect(pick(pool, ['a', 'b', 'c'])).toBeTruthy();
+    // tolerates a bare question object and an empty pool
+    expect(pick({ key: 'solo' }, []).key).toBe('solo');
+    expect(pick([], [])).toBe(null);
+  });
+
+  it.each(TOOL_PATHS)('%s: the header offers a physics+math topic and the ride resets its used list', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('<option value=\\"mix\\">');
+    // physics on the even stops, grounded arithmetic on the odd ones
+    expect(src).toContain("rideTopic === 'physics' || (rideTopic === 'mix' && ride.idx % 2 === 0)");
+    expect(src).toContain('ride.usedKeys = [];');
+    expect(src).toContain('ride.usedKeys.push(ride.current.key)');
+    // a checkpoint that cannot build a question is skipped, never frozen forever
+    expect(src).toContain('if(!ride.current){');
+    // the grade control still nudges the level for the mixed topic
+    expect(src).toContain("if(rideTopic === 'physics' || rideTopic === 'mix') setLevel(");
+  });
+});
+
+describe('coaster lab — procedural coaster generator', () => {
+  // randomDesign is pure: a number in, a complete buildable design out. Slice it
+  // together with the design validator the tool itself uses, and check that every
+  // generated coaster survives that validator and respects its own energy budget.
+  function loadGen(p) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const pick = (a, b) => {
+      const s = src.indexOf(a);
+      const e = src.indexOf(b);
+      expect(s).toBeGreaterThan(-1);
+      expect(e).toBeGreaterThan(s);
+      return src.slice(s, e);
+    };
+    return new Function(
+      pick('/* @clab-random-start', '/* @clab-random-end') +
+      pick('/* @clab-design-normalize-start', '/* @clab-design-normalize-end') +
+      '\nreturn { randomDesign, normalizeDesign, _clabRng, RANDOM_STYLES, DESIGN_BOUNDS };'
+    )();
+  }
+  const STYLES = ['family', 'classic', 'thrill', 'launch'];
+
+  it.each(TOOL_PATHS)('%s: the same number always rebuilds the same coaster', (p) => {
+    const { randomDesign, _clabRng } = loadGen(p);
+    expect(JSON.stringify(randomDesign(4821))).toBe(JSON.stringify(randomDesign(4821)));
+    expect(JSON.stringify(randomDesign(4821))).not.toBe(JSON.stringify(randomDesign(4822)));
+    // the PRNG itself is deterministic and stays in range
+    const a = _clabRng(7), b = _clabRng(7);
+    for (let i = 0; i < 200; i++) {
+      const v = a();
+      expect(v).toBe(b());
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThan(1);
+    }
+    // a garbage seed still produces a design instead of throwing
+    for (const seed of [0, -5, NaN, undefined, 1e12]) {
+      expect(randomDesign(seed).points.length).toBeGreaterThan(5);
+    }
+  });
+
+  it('every style and seed produces a design the tool itself accepts', () => {
+    const { randomDesign, normalizeDesign, DESIGN_BOUNDS } = loadGen(TOOL_PATHS[0]);
+    for (const style of STYLES) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const raw = randomDesign(seed, { style });
+        const d = normalizeDesign(raw);          // throws on anything out of bounds
+        expect(d.points.length).toBeGreaterThanOrEqual(6);
+        expect(d.points.length).toBeLessThanOrEqual(80);
+        expect(d.certTurnIdx).toBeGreaterThanOrEqual(0);
+        expect(d.certTurnIdx).toBeLessThan(d.points.length);
+        expect(raw.meta.style).toBe(style);
+        expect(d.propulsion.mode).toBe(style === 'launch' ? 'launch' : 'chain');
+        expect(d.propulsion.accel).toBeGreaterThanOrEqual(DESIGN_BOUNDS.accelMin);
+        expect(d.propulsion.accel).toBeLessThanOrEqual(DESIGN_BOUNDS.accelMax);
+        for (const pt of d.points) {
+          expect(Number.isFinite(pt.x) && Number.isFinite(pt.y) && Number.isFinite(pt.z)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('the lift crest is the high point and every later hill sits under the energy budget', () => {
+    const { randomDesign } = loadGen(TOOL_PATHS[0]);
+    for (const style of STYLES) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const raw = randomDesign(seed, { style });
+        const { crestH, head, valleyY } = raw.meta;
+        const top = Math.max(...raw.points.map((p) => p.y));
+        expect(top, `${style}/${seed}`).toBeLessThanOrEqual(head);          // never above the ceiling
+        if (style === 'launch') {
+          // a launch buys head the crest alone does not, so later hills may be
+          // taller than it — but they still have to fit under the ceiling
+          expect(top, `${style}/${seed}`).toBeLessThan(head);
+        } else {
+          // on a chain lift the crest IS the summit, and it is the only one
+          expect(top - crestH, `${style}/${seed}`).toBeLessThan(0.05);
+          expect(raw.points.filter((p) => p.y > crestH - 0.5)).toHaveLength(1);
+          for (const p of raw.points) {
+            if (p.y > crestH - 0.5) continue;
+            expect(p.y, `${style}/${seed}`).toBeLessThan(crestH - 2);
+          }
+        }
+        expect(valleyY).toBeLessThan(crestH - 7);   // there is always a real first drop
+        expect(valleyY).toBeGreaterThan(0.5);
+      }
+    }
+  });
+
+  it('build nodes stay far enough apart for the preflight coach', () => {
+    const { randomDesign } = loadGen(TOOL_PATHS[0]);
+    for (const style of STYLES) {
+      for (let seed = 1; seed <= 40; seed++) {
+        const pts = randomDesign(seed, { style }).points;
+        for (let i = 0; i < pts.length; i++) {
+          const a = pts[i], b = pts[(i + 1) % pts.length];
+          const d = Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+          expect(d, `${style}/${seed} nodes ${i}`).toBeGreaterThan(1.25);  // the tool's own spacing warning
+        }
+      }
+    }
+  });
+
+  it('each style has its own character, and the ground plan closes without doubling back', () => {
+    const { randomDesign } = loadGen(TOOL_PATHS[0]);
+    const drop = (style) => {
+      let sum = 0;
+      for (let seed = 1; seed <= 40; seed++) {
+        const m = randomDesign(seed, { style }).meta;
+        sum += m.crestH - m.valleyY;
+      }
+      return sum / 40;
+    };
+    // gentler styles really are gentler: a smaller drop means less speed and less g
+    expect(drop('family')).toBeLessThan(drop('classic'));
+    expect(drop('classic')).toBeLessThan(drop('thrill'));
+    // the ground plan is star-shaped about its own centre, which is what makes it
+    // impossible for the circuit to cross itself: the bearing to each node only
+    // ever turns one way around the lap
+    for (const style of STYLES) {
+      for (let seed = 1; seed <= 25; seed++) {
+        const pts = randomDesign(seed, { style }).points;
+        const cx = pts.reduce((t, p) => t + p.x, 0) / pts.length;
+        const cz = pts.reduce((t, p) => t + p.z, 0) / pts.length;
+        let turn = 0;
+        for (let i = 0; i < pts.length; i++) {
+          const a = Math.atan2(pts[i].z - cz, pts[i].x - cx);
+          const b = Math.atan2(pts[(i + 1) % pts.length].z - cz, pts[(i + 1) % pts.length].x - cx);
+          let d = b - a;
+          while (d > Math.PI) d -= 2 * Math.PI;
+          while (d < -Math.PI) d += 2 * Math.PI;
+          expect(Math.sign(d), `${style}/${seed} node ${i} doubles back`).not.toBe(0);
+          turn += d;
+        }
+        // exactly one full turn around the centre — a simple closed circuit
+        expect(Math.abs(turn), `${style}/${seed}`).toBeCloseTo(2 * Math.PI, 3);
+      }
+    }
+  });
+
+  it('the generator deliberately builds no inversions', () => {
+    const src = readFileSync(resolve(process.cwd(), TOOL_PATHS[0]), 'utf8');
+    // documented, not accidental: a loop that stays inside the comfort limits
+    // needs a hand-shaped valley, which is what the Build tab's element is for
+    expect(src).toContain('NO procedural inversions, deliberately');
+    const { randomDesign } = loadGen(TOOL_PATHS[0]);
+    for (const style of STYLES) {
+      for (let seed = 1; seed <= 30; seed++) {
+        // no node is ever banked past vertical, so nothing generated inverts
+        for (const p of randomDesign(seed, { style }).points) expect(Math.abs(p.bank)).toBeLessThan(90);
+      }
+    }
+  });
+
+  it.each(TOOL_PATHS)('%s: the generator is wired to a button, a style, and a shareable number', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('id=\\"clab-btnRandom\\"');
+    expect(src).toContain('id=\\"clab-randomStyle\\"');
+    expect(src).toContain('id=\\"clab-randomSeed\\"');
+    // replacing the design is confirmed first, and the preflight coach is the referee
+    expect(src).toContain("confirm('Generate a new coaster?");
+    expect(src).toContain("safetyFindings.filter(f => f.severity === 'bad')");
+    // the second, track-aware banking pass runs before the design is accepted
+    expect(src).toContain('autoBankDesign(raw.points, raw.meta.head');
+    // and a generated coaster has to survive a REALISTIC run, not just an ideal one
+    expect(src).toContain('function generatedRunStalls(){');
+    expect(src).toContain('const stalls = generatedRunStalls();');
+    expect(src).toContain('MU_ROLL * G0 * Math.min(Math.abs(gV), 6) + K_DRAG * v2');
   });
 });
 
