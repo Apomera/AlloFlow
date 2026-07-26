@@ -21175,6 +21175,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
   };
 
   const fixAndVerifyPdf = async (batchOverrides = null) => {
+    // M18 (audit 2026-07-26): the "Continue a previous session" OCR seed this run consumed. Declared
+    // at RUN scope, not inside the extraction helper, so the failure path below can hand it back — a
+    // failed attempt must not cost the next one a full re-OCR. (The first placement was one function
+    // out and check_free_vars caught it as three ReferenceErrors-in-waiting.)
+    let _consumedResumeSeed = null;
     // ── Unified pipeline: supports both single-file UI and batch mode ──
     // S1 step 5: run-entry snapshot. batchOverrides win (the batch runner pins a whole batch
     // to one configuration); otherwise the ctx captured HERE governs every read for the rest
@@ -21724,6 +21729,15 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // same name could pick it up and inject the prior doc's text. (multisession-resume-3, 2026-06-21)
           const _seed = window.__resumeExtractedText;
           window.__resumeExtractedText = null;
+          // M18 (audit 2026-07-26): single-use WITHIN a run, not once per document. The seed was
+          // deleted on the first attempt and never re-armed, so when that attempt died on the very
+          // throttle it was loaded to survive, the hands-off wrapper's up-to-3 automatic retries
+          // each re-ran the FULL Tesseract + Vision extraction on a 40-page scan — burning exactly
+          // the quota the resume feature exists to avoid, into a proxy that was already throttling,
+          // and the teacher was never told the shortcut had been lost. (The seeded run also banks
+          // nothing in the session OCR cache: that write gate requires window.__lastOcrMethod, which
+          // only the real dual-OCR path sets.) Held here and restored on the failure path below.
+          _consumedResumeSeed = _seed || null;
           if ((!extractedText || extractedText.length <= 100) && !_forceFullOcr && _seed && _seed.fileName === _fileName && typeof _seed.text === 'string' && _seed.text.trim().length >= 50) {
             // H2 (deep dive 2026-07-02): content identity, not just the name. Filename-only
             // matching meant a DIFFERENT "scan.pdf" re-uploaded at the resume prompt shipped the
@@ -25674,6 +25688,15 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const _runWasCancelled = !!((err && (err.name === 'AbortError' || err.isAbort || err.code === 'ALLO_REMEDIATION_CANCELLED')) || _runGenStale());
       if (_runWasCancelled) warnLog('[PDF Fix] Cancelled:', err && err.message ? err.message : err);
       else warnLog('[PDF Fix] Error:', err);
+      // M18: hand the resume seed back so a retry does not re-OCR the whole document. Only if the
+      // slot is still empty — a newer run may already have armed its own, and this run's seed must
+      // never overwrite it.
+      try {
+        if (_consumedResumeSeed && typeof window !== 'undefined' && !window.__resumeExtractedText) {
+          window.__resumeExtractedText = _consumedResumeSeed;
+          warnLog('[Resume] Attempt failed — restored the saved-session text so a retry can reuse it instead of re-running the full OCR.');
+        }
+      } catch (_) {}
       const _failurePipelineStats = {
         runId: _runId, runSequence: _runSequence, documentEpoch: _runDocumentEpoch, outcome: _runWasCancelled ? 'cancelled' : 'failed',
         apiCalls: _runStats.apiCalls, visionCalls: _runStats.visionCalls,
@@ -25809,6 +25832,18 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         && window.__alloActivePdfRemediation.runId === _runId) {
         window.__alloActivePdfRemediation = null;
       }
+      // M20 (audit 2026-07-26): retire the PUBLISHED snapshot too. The auto-continue watchdog takes
+      // its "live owner" from `__alloActivePdfRemediation || __alloRemediationProgress`, and the
+      // second half was never cleared — so after a run finished, a watchdog could adopt a COMPLETED
+      // run as proof that something was live. An ownership proof has to be a live fact, not a
+      // leftover one. The view re-reads this on mount for hydration, so it is cleared only by its
+      // own run and only once that run is genuinely over.
+      try {
+        if (typeof window !== 'undefined' && window.__alloRemediationProgress
+          && window.__alloRemediationProgress.runId === _runId) {
+          window.__alloRemediationProgress = null;
+        }
+      } catch (_) {}
     }
   };
 

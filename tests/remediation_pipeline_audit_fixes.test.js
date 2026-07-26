@@ -1097,3 +1097,52 @@ describe('H18/M7 — a stranded loading flag always gets cleared', () => {
     expect((anti.match(/logHostDiagnostic\('Watchdog'/g) || []).length).toBeGreaterThanOrEqual(3);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M18 / M20 — a failed attempt must not cost the retry a full re-OCR, and a
+// finished run must not look "live" to a watchdog.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('M18 — the resume seed survives a failed attempt', () => {
+  it('the consumed seed is held at RUN scope, not inside the extraction helper', () => {
+    // The first placement was one function out; check_free_vars caught it as three
+    // ReferenceErrors-in-waiting, which is precisely what that gate is for.
+    const iDecl = dp.indexOf('let _consumedResumeSeed = null;');
+    const iFn = dp.indexOf('const fixAndVerifyPdf = async (batchOverrides = null) => {');
+    const iUse = dp.indexOf('_consumedResumeSeed = _seed || null;');
+    expect(iFn).toBeGreaterThan(0);
+    expect(iDecl).toBeGreaterThan(iFn);
+    expect(iUse).toBeGreaterThan(iDecl);
+    expect((dp.match(/let _consumedResumeSeed = null;/g) || []).length).toBe(1);
+  });
+
+  it('it is handed back on the failure path', () => {
+    // The seed was deleted on the first attempt and never re-armed, so when that attempt died on
+    // the very throttle it was loaded to survive, each of the wrapper's up-to-3 retries re-ran the
+    // FULL Tesseract + Vision extraction on a 40-page scan.
+    expect(dp).toContain('window.__resumeExtractedText = _consumedResumeSeed;');
+    const iCatch = dp.indexOf('const _runWasCancelled = !!((err &&');
+    const iRestore = dp.indexOf('window.__resumeExtractedText = _consumedResumeSeed;');
+    expect(iRestore).toBeGreaterThan(iCatch);
+  });
+
+  it('it never overwrites a seed a NEWER run has already armed', () => {
+    expect(dp).toContain("if (_consumedResumeSeed && typeof window !== 'undefined' && !window.__resumeExtractedText) {");
+  });
+});
+
+describe('M20 — a completed run cannot be adopted as a live owner', () => {
+  it('the published progress snapshot is retired by its own run', () => {
+    // The auto-continue watchdog reads `__alloActivePdfRemediation || __alloRemediationProgress`,
+    // and the second half was never cleared — so after a run finished, a watchdog could take a
+    // COMPLETED run as proof that something was live. An ownership proof has to be a live fact.
+    expect(dp).toContain('window.__alloRemediationProgress\n          && window.__alloRemediationProgress.runId === _runId) {');
+    expect(dp).toContain('window.__alloRemediationProgress = null;');
+  });
+
+  it('it is cleared only in the run finally, next to the other ownership slots', () => {
+    const iActive = dp.indexOf('window.__alloActivePdfRemediation = null;');
+    const iProgress = dp.indexOf('window.__alloRemediationProgress = null;');
+    expect(iActive).toBeGreaterThan(0);
+    expect(iProgress).toBeGreaterThan(iActive);
+  });
+});
