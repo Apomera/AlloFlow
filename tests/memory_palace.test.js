@@ -917,6 +917,8 @@ describe('MemoryPalace view — build wiring', () => {
     expect(v).toContain('MP.nextExtraLocusId(mineLoci)');
     expect(v).toContain("persist({ ...(mpRef.current || {}), extraLoci: next }, 'memoryPalace')");
     expect(v).toContain("t('memory_palace.build_toggle')");
+    // build mode must not survive into a quiz or the presentation view
+    expect(v).toContain('const on = buildMode && !recall && !presenting;');
   });
 
   it('rebuilds the scene for structural additions (unlike a rewritten image)', () => {

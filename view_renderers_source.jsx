@@ -4464,9 +4464,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const mineRooms = data?.memoryPalace?.extraRooms || [];
     const mineLoci = data?.memoryPalace?.extraLoci || [];
 
+    // Never live during a quiz: a floor click has to go back to selecting frames,
+    // and the build panel is hidden then, so a pending spot would be invisible.
     React.useEffect(() => {
-        try { handleRef.current?.setBuildMode?.(buildMode); } catch (e) {}
-    }, [buildMode, ready, failed, dataKey]);
+        const on = buildMode && !recall && !presenting;
+        try { handleRef.current?.setBuildMode?.(on); } catch (e) {}
+        if (!on && pendingSpot) { setPendingSpot(null); setSpotLabel(''); }
+    }, [buildMode, recall, presenting, ready, failed, dataKey]);   // eslint-disable-line react-hooks/exhaustive-deps
 
     const saveNewSpot = () => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;

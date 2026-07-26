@@ -3729,11 +3729,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const mineRooms = data?.memoryPalace?.extraRooms || [];
   const mineLoci = data?.memoryPalace?.extraLoci || [];
   React.useEffect(() => {
+    const on = buildMode && !recall && !presenting;
     try {
-      handleRef.current?.setBuildMode?.(buildMode);
+      handleRef.current?.setBuildMode?.(on);
     } catch (e) {
     }
-  }, [buildMode, ready, failed, dataKey]);
+    if (!on && pendingSpot) {
+      setPendingSpot(null);
+      setSpotLabel("");
+    }
+  }, [buildMode, recall, presenting, ready, failed, dataKey]);
   const saveNewSpot = () => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     if (!MP || !persist || !pendingSpot) return;
