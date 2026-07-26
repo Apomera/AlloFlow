@@ -5328,6 +5328,9 @@
         // and loaded nothing, leaving the student in an empty default world. Retry
         // briefly instead, and only dismiss the intro once the lesson is actually in.
         if (!eng && !window[engineKey + '_failed']) {
+          // Stop if the tool went away mid-retry — otherwise we keep waking up for
+          // 2s and then push state into a world that is no longer mounted.
+          if (_attempt && !document.getElementById('geoworld-fs-wrap')) return;
           var attempt = _attempt || 0;
           if (attempt < 20) { // ~2s of retries
             setTimeout(function() { loadLessonByKey(lessonKey, attempt + 1); }, 100);

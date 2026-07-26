@@ -17,7 +17,7 @@
 // geometry_world_measurement_model.test.js) because the animate loop it normally
 // runs inside needs a WebGL context jsdom does not have.
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { React, ReactDOMClient, makeCtx, resetStemLab, loadTool } from './helpers/stem_widgets_smoke_harness.js';
 
@@ -106,17 +106,22 @@ function loadLookMath() {
 describe('Geometry World world-surface accessibility', () => {
   let cfg;
 
-  beforeEach(() => {
+  // Loaded ONCE: loadTool re-parses a 550KB IIFE, and doing that per-test pushed
+  // the mount cases past vitest's 5s default on a loaded machine.
+  beforeAll(() => {
     resetStemLab();
     window.THREE = makeThreeStub();
     cfg = loadTool(FILE, 'geometryWorld');
+  });
+
+  beforeEach(() => {
+    window.THREE = makeThreeStub();
     window[ENGINE_KEY] = makeFakeEngine();
   });
 
   afterEach(() => {
     delete window[ENGINE_KEY];
     delete window[ENGINE_KEY + '_failed'];
-    delete window.THREE;
     document.body.innerHTML = '';
   });
 

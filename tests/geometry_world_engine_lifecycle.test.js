@@ -17,7 +17,7 @@
 // Deliberately NOT stubbing THREE: initEngine is skipped whenever
 // window.__geoWorldEngine already exists, which is exactly the state we want.
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { React, ReactDOMClient, makeCtx, resetStemLab, loadTool } from './helpers/stem_widgets_smoke_harness.js';
 
 const FILE = 'stem_lab/stem_tool_geometryworld.js';
@@ -154,10 +154,16 @@ function findByText(container, text) {
 describe('Geometry World engine lifecycle', () => {
   let cfg;
 
-  beforeEach(() => {
+  // Loaded ONCE: loadTool re-parses a 550KB IIFE, and doing that per-test pushed
+  // the mount cases past vitest's 5s default on a loaded machine.
+  beforeAll(() => {
     resetStemLab();
     window.THREE = makeThreeStub();
     cfg = loadTool(FILE, 'geometryWorld');
+  });
+
+  beforeEach(() => {
+    window.THREE = makeThreeStub();
     delete window[ENGINE_KEY];
     delete window[ENGINE_KEY + '_failed'];
   });
@@ -165,7 +171,6 @@ describe('Geometry World engine lifecycle', () => {
   afterEach(() => {
     delete window[ENGINE_KEY];
     delete window[ENGINE_KEY + '_failed'];
-    delete window.THREE;
     document.body.innerHTML = '';
   });
 
@@ -252,10 +257,14 @@ describe('Geometry World engine lifecycle', () => {
 describe('Geometry World lesson start', () => {
   let cfg;
 
-  beforeEach(() => {
+  beforeAll(() => {
     resetStemLab();
     window.THREE = makeThreeStub();
     cfg = loadTool(FILE, 'geometryWorld');
+  });
+
+  beforeEach(() => {
+    window.THREE = makeThreeStub();
     delete window[ENGINE_KEY];
     delete window[ENGINE_KEY + '_failed'];
   });
@@ -263,7 +272,6 @@ describe('Geometry World lesson start', () => {
   afterEach(() => {
     delete window[ENGINE_KEY];
     delete window[ENGINE_KEY + '_failed'];
-    delete window.THREE;
     document.body.innerHTML = '';
   });
 
