@@ -1225,7 +1225,11 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('Radar: light to intense');
     expect(html).toContain('id="weather-map-description"');
     expect(html).toContain('Approaching Cold Front weather map at model hour 0.');
-    expect(html).toContain('Visible layers include pressure contours, fronts, radar intensity and sweep, and directional wind tracers. Selected station: Central School.');
+    expect(html).toContain('Visible layers include pressure contours, fronts, radar intensity and sweep, and directional wind tracers.');
+    expect(html).toContain('Selected station: Central School.');
+    // The description names the painted appearance so non-visual users get the same cues.
+    expect(html).toContain('The scene is painted as');
+    expect(html).toContain('Station markers show each station name with its current temperature.');
     expect(html).toContain('data-weather-map-canvas="true"');
     expect(html).toContain('aria-hidden="true"');
     expect(html).not.toContain('width="960"');
@@ -1406,7 +1410,7 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('North Valley');
     expect(html).toContain('Harbor Point');
     expect(html).toContain('Boundary supported');
-    expect(html).toContain('strongest contrast');
+    expect(html).toContain('STRONGEST CONTRAST');
     expect(html).toContain('data-weather-station-network');
   });
 
@@ -1926,6 +1930,317 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('Harbor Point');
   });
 
+});
+
+describe('Weather Systems 2D map scene rendering', () => {
+  // jsdom has no 2D context, so the canvas painter is exercised against a recording stub.
+  // This is the only gate that runs the drawing code at all.
+  function recordingContext() {
+    const calls = [];
+    const gradient = { addColorStop() {} };
+    const ctx = {
+      calls,
+      canvas: null,
+      globalAlpha: 1,
+      globalCompositeOperation: 'source-over',
+      fillStyle: '#000',
+      strokeStyle: '#000',
+      lineWidth: 1,
+      lineCap: 'butt',
+      lineJoin: 'miter',
+      font: '',
+      textAlign: 'start',
+      textBaseline: 'alphabetic',
+      shadowColor: 'transparent',
+      shadowBlur: 0,
+      shadowOffsetY: 0,
+      measureText: (text) => ({ width: String(text).length * 6 }),
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+    };
+    [
+      'save', 'restore', 'setTransform', 'translate', 'scale', 'clip',
+      'beginPath', 'closePath', 'moveTo', 'lineTo', 'bezierCurveTo', 'arc', 'arcTo', 'ellipse', 'rect',
+      'fill', 'stroke', 'fillRect', 'strokeRect', 'clearRect', 'fillText', 'strokeText',
+    ].forEach((name) => {
+      ctx[name] = (...args) => { calls.push([name, args]); };
+    });
+    return ctx;
+  }
+
+  function fakeCanvas() {
+    const ctx = recordingContext();
+    const canvas = { style: {}, width: 0, height: 0, _dpr: 1, getContext: () => ctx };
+    ctx.canvas = canvas;
+    return canvas;
+  }
+
+  function paint(overrides, options) {
+    const kernel = window.WeatherSystemsKernel;
+    const opts = options || {};
+    const state = kernel.resolvedState(overrides || {});
+    const scenario = kernel.scenarios.filter((item) => item.id === state.scenario)[0] || kernel.scenarios[1];
+    const canvas = fakeCanvas();
+    kernel.drawWeatherScene(canvas, state, scenario, opts.station || 'central', opts.time == null ? 1200 : opts.time, !!opts.dark, !!opts.contrast);
+    return canvas.getContext('2d');
+  }
+
+  it('paints every scenario in light, dark, and high-contrast modes without throwing', () => {
+    const kernel = window.WeatherSystemsKernel;
+    kernel.scenarios.forEach((scenario) => {
+      [
+        { dark: false, contrast: false },
+        { dark: true, contrast: false },
+        { dark: true, contrast: true },
+      ].forEach((mode) => {
+        const ctx = paint({ scenario: scenario.id, simHour: 6 }, mode);
+        expect(ctx.calls.length).toBeGreaterThan(50);
+      });
+    });
+  });
+
+  it('keeps save and restore balanced so later layers are not left with leaked state', () => {
+    const ctx = paint({ scenario: 'summerStorm', simHour: 8 }, { dark: false });
+    let depth = 0;
+    let lowest = 0;
+    ctx.calls.forEach(([name]) => {
+      if (name === 'save') depth += 1;
+      if (name === 'restore') { depth -= 1; lowest = Math.min(lowest, depth); }
+    });
+    expect(lowest).toBe(0);
+    expect(depth).toBe(0);
+  });
+
+  it('emits no non-finite geometry for extreme slider values', () => {
+    [
+      { scenario: 'winterStorm', temp: -15, humidity: 100, windSpeed: 80, windDir: 359, frontSpeed: 65, terrain: 100, instability: 100, simHour: 24 },
+      { scenario: 'fair', temp: 38, humidity: 10, windSpeed: 0, windDir: 0, frontSpeed: 0, terrain: 0, instability: 0, simHour: 0 },
+    ].forEach((overrides) => {
+      const ctx = paint(overrides, { dark: false, time: 0 });
+      ctx.calls.forEach(([name, args]) => {
+        args.forEach((arg) => {
+          if (typeof arg === 'number') expect(Number.isFinite(arg), name + ' received ' + arg).toBe(true);
+        });
+      });
+    });
+  });
+
+  it('drops decorative passes in high-contrast mode but keeps the data layers', () => {
+    const overrides = { scenario: 'coldFront', simHour: 6 };
+    const standard = paint(overrides, { dark: true, contrast: false });
+    const contrast = paint(overrides, { dark: true, contrast: true });
+    expect(contrast.calls.length).toBeLessThan(standard.calls.length);
+    // Station markers and the pressure system survive the contrast pass.
+    const contrastText = contrast.calls.filter(([name]) => name === 'fillText').map(([, args]) => String(args[0]));
+    expect(contrastText.join(' ')).toContain('Central School');
+    expect(contrastText).toContain('L');
+  });
+
+  it('labels each station pill with its modeled temperature', () => {
+    const ctx = paint({ scenario: 'coldFront', simHour: 6 }, { dark: false });
+    const labels = ctx.calls.filter(([name]) => name === 'fillText').map(([, args]) => String(args[0]));
+    ['West Ridge', 'Central School', 'Harbor Point', 'North Valley'].forEach((name) => {
+      expect(labels.some((label) => label.indexOf(name) === 0 && /-?\d+°$/.test(label))).toBe(true);
+    });
+  });
+
+  it('derives appearance cues from the model so the sliders visibly change the map', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const humid = kernel.sceneAppearance(kernel.resolvedState({ scenario: 'coldFront', simHour: 5 }));
+    const dry = kernel.sceneAppearance(kernel.resolvedState({ scenario: 'coldFront', humidity: 12, instability: 5, simHour: 5 }));
+    expect(dry.storminess).toBeLessThan(humid.storminess);
+    expect(dry.sunStrength).toBeGreaterThan(humid.sunStrength);
+    expect(dry.sunVisible).toBe(true);
+    // Fully overcast hides the sun entirely rather than leaving a washed-out disc behind cloud.
+    const overcast = kernel.sceneAppearance(kernel.resolvedState({ scenario: 'winterStorm', simHour: 5 }));
+    expect(overcast.sunVisible).toBe(false);
+
+    // Dropping the temperature slider whitens the ground; a warm scenario never does.
+    const frozen = kernel.sceneAppearance(kernel.resolvedState({ scenario: 'winterStorm', temp: -12, simHour: 5 }));
+    const warm = kernel.sceneAppearance(kernel.resolvedState({ scenario: 'fair', simHour: 5 }));
+    expect(frozen.snowCover).toBeGreaterThan(0.5);
+    expect(frozen.groundLabel).toBe('snow-covered ground');
+    expect(warm.snowCover).toBe(0);
+    expect(warm.groundLabel).toBe('green ground');
+    expect(warm.skyLabel).toBe('a bright sunlit sky');
+  });
+
+  it('blends palette anchors continuously rather than snapping between two looks', () => {
+    const kernel = window.WeatherSystemsKernel;
+    expect(kernel.mixColor('#000000', '#ffffff', 0)).toBe('rgb(0,0,0)');
+    expect(kernel.mixColor('#000000', '#ffffff', 1)).toBe('rgb(255,255,255)');
+    expect(kernel.mixColor('#000000', '#ffffff', 0.5)).toBe('rgb(128,128,128)');
+    expect(kernel.mixColor('#000000', '#ffffff', 0.5, 0.4)).toBe('rgba(128,128,128,0.4)');
+    // Out-of-range amounts clamp instead of producing invalid channels.
+    expect(kernel.mixColor('#112233', '#ffffff', -3)).toBe('rgb(17,34,51)');
+  });
+});
+
+describe('Weather Systems meteogram chart', () => {
+  const MAP_STATE = { weatherSystems: { tab: 'map', scenario: 'coldFront', selectedStation: 'central' } };
+
+  it('gives every measure its own lane instead of stacking units on one axis', () => {
+    const html = renderTool('weatherSystems', MAP_STATE, { gradeLevel: '8th Grade' });
+    // Four captioned lanes, each carrying its own printed range.
+    ['Temperature &amp; dew point', 'Sea-level pressure', 'Wind speed', 'Cloud cover &amp; precipitation potential'].forEach((caption) => {
+      expect(html).toContain(caption);
+    });
+    expect(html).toContain('hPa</text>');
+    expect(html).toContain(' km/h</text>');
+    expect(html).toContain('Each band keeps its own scale');
+  });
+
+  it('paints the validated categorical hues and never colors the label text', () => {
+    const light = renderTool('weatherSystems', MAP_STATE, { gradeLevel: '8th Grade', isDark: false });
+    ['#eb6834', '#1baf7a', '#4a3aa7', '#008300', '#2a78d6', '#e87ba4'].forEach((hex) => {
+      expect(light).toContain(hex);
+    });
+    const dark = renderTool('weatherSystems', MAP_STATE, { gradeLevel: '8th Grade', isDark: true });
+    ['#d95926', '#199e70', '#9085e9', '#008300', '#3987e5', '#d55181'].forEach((hex) => {
+      expect(dark).toContain(hex);
+    });
+    // The old unvalidated palette is gone.
+    ['#fb923c', '#22d3ee', '#a78bfa', '#34d399'].forEach((hex) => {
+      expect(light).not.toContain(hex);
+    });
+  });
+
+  it('ships a legend, direct end labels, and a data table so nothing is color-only', () => {
+    const html = renderTool('weatherSystems', MAP_STATE, { gradeLevel: '8th Grade' });
+    expect(html).toContain('data-weather-meteogram-legend');
+    // Legend keys are drawn marks beside text, not colored text.
+    expect(html).toContain('data-weather-front-meteogram');
+    expect(html).toContain('Show data table');
+    expect(html).toContain('aria-controls="weather-meteogram-table"');
+    expect(html).toContain('Every plotted value is also listed in the data table below the chart.');
+
+    const open = renderTool('weatherSystems', {
+      weatherSystems: Object.assign({}, MAP_STATE.weatherSystems, { meteogramTable: true }),
+    }, { gradeLevel: '8th Grade' });
+    expect(open).toContain('<table');
+    expect(open).toContain('Hide data table');
+    expect(open).toContain('hour by hour');
+  });
+
+  it('exposes a focusable hit column per hour that announces the full reading', () => {
+    const html = renderTool('weatherSystems', MAP_STATE, { gradeLevel: '8th Grade' });
+    const hits = html.match(/T plus \d+ hours: temperature/g) || [];
+    expect(hits).toHaveLength(13);
+    expect(html).toContain('precipitation potential');
+    expect(html).toContain('tabindex="0"');
+  });
+
+  it('shows a crosshair tooltip on focus and clears it on blur [mount]', async () => {
+    const { React, ReactDOMClient, makeCtx } = await import('./helpers/stem_widgets_smoke_harness.js');
+    const cfg = window.StemLab._registry.weatherSystems;
+    // motion: false keeps the canvas animation loop out of the mounted test.
+    let toolData = { weatherSystems: { tab: 'map', scenario: 'coldFront', selectedStation: 'central', motion: false } };
+    const base = makeCtx({ gradeLevel: '8th Grade' });
+    const Comp = () => cfg.render(Object.assign({}, base, {
+      toolData,
+      setToolData: (fn) => { toolData = typeof fn === 'function' ? fn(toolData) : fn; },
+    }));
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = ReactDOMClient.createRoot(container);
+    await React.act(async () => { root.render(React.createElement(Comp)); });
+
+    const hits = container.querySelectorAll('[data-weather-front-meteogram] rect[tabindex="0"]');
+    expect(hits).toHaveLength(13);
+    expect(container.querySelector('[data-weather-meteogram-tooltip]')).toBeNull();
+
+    await React.act(async () => { hits[6].dispatchEvent(new window.FocusEvent('focusin', { bubbles: true })); });
+    const tooltip = container.querySelector('[data-weather-meteogram-tooltip]');
+    expect(tooltip).not.toBeNull();
+    expect(tooltip.textContent).toContain('T +6 hours');
+    expect(tooltip.textContent).toContain('Dew point');
+    // Values carry their unit, matching the lane the series lives in.
+    expect(tooltip.textContent).toMatch(/hPa/);
+    expect(tooltip.textContent).toMatch(/km\/h/);
+
+    await React.act(async () => { hits[6].dispatchEvent(new window.FocusEvent('focusout', { bubbles: true })); });
+    expect(container.querySelector('[data-weather-meteogram-tooltip]')).toBeNull();
+
+    await React.act(async () => { root.unmount(); });
+    container.remove();
+  });
+
+  it('keeps the young-learner band on the before/during/after story, not the chart', () => {
+    const html = renderTool('weatherSystems', MAP_STATE, { gradeLevel: 'Kindergarten' });
+    expect(html).toContain('Before, during, and after');
+    expect(html).not.toContain('data-weather-meteogram-legend');
+  });
+});
+
+describe('Weather Systems station-network and experiment charts', () => {
+  const NETWORK_STATE = { tab: 'map', scenario: 'coldFront', simHour: 6 };
+  const CHECKED = Object.assign({}, NETWORK_STATE, {
+    boundaryGuess: 'north-coast',
+    boundaryResult: { guess: 'north-coast', correct: true },
+  });
+
+  it('scales station colour to the network range instead of a fixed threshold', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: NETWORK_STATE }, { gradeLevel: '7th Grade' });
+    // A diverging scale always ships its key, naming the range it is centred on.
+    expect(html).toContain('data-weather-network-scale');
+    expect(html).toContain('Colder');
+    expect(html).toContain('Warmer');
+    expect(html).toContain('across the network');
+    // The old fixed-threshold hues are gone.
+    expect(html).not.toContain('#fb7185');
+    expect(html).not.toContain('#60a5fa');
+  });
+
+  it('re-centres that scale when the scenario shifts the whole network', () => {
+    const warm = renderTool('weatherSystems', { weatherSystems: Object.assign({}, NETWORK_STATE, { scenario: 'summerStorm' }) }, { gradeLevel: '7th Grade' });
+    const cold = renderTool('weatherSystems', { weatherSystems: Object.assign({}, NETWORK_STATE, { scenario: 'winterStorm' }) }, { gradeLevel: '7th Grade' });
+    const range = (html) => (html.match(/\(([-\d.]+)°C to ([-\d.]+)°C across the network\)/) || []).slice(1).map(Number);
+    const [warmLow] = range(warm);
+    const [coldLow] = range(cold);
+    expect(warmLow).toBeGreaterThan(coldLow);
+    // Both scenarios still span both poles, so contrast is visible either way.
+    [warm, cold].forEach((html) => {
+      expect(html).toContain('Colder');
+      expect(html).toContain('Warmer');
+    });
+  });
+
+  it('withholds the neighbour-contrast bars until the learner has answered', () => {
+    const before = renderTool('weatherSystems', { weatherSystems: NETWORK_STATE }, { gradeLevel: '7th Grade' });
+    expect(before).not.toContain('data-weather-network-contrast-bars');
+    const after = renderTool('weatherSystems', { weatherSystems: CHECKED }, { gradeLevel: '7th Grade' });
+    expect(after).toContain('data-weather-network-contrast-bars');
+    expect(after).toContain('COMBINED CONTRAST BETWEEN NEIGHBOURS');
+  });
+
+  it('gives the experiment dumbbell a signed change column and ink-coloured values', () => {
+    const html = renderTool('weatherSystems', {
+      weatherSystems: {
+        tab: 'experiment',
+        scenario: 'coldFront',
+        experimentVariable: 'humidity',
+        experimentResult: {
+          hour: 6,
+          variable: 'humidity',
+          baselineValue: 72,
+          testValue: 90,
+          direction: 'increase',
+          deltas: { precipPotential: 12 },
+          control: { temperature: 20, humidity: 72, pressure: 1008, windSpeed: 24, cloudCover: 60, precipPotential: 55 },
+          test: { temperature: 20, humidity: 90, pressure: 1008, windSpeed: 24, cloudCover: 78, precipPotential: 67 },
+        },
+      },
+    }, { gradeLevel: '8th Grade' });
+    expect(html).toContain('data-weather-experiment-chart');
+    expect(html).toContain('CHANGE');
+    // Metrics the single variable did not touch say so rather than showing a bare zero.
+    expect(html).toContain('no change');
+    expect(html).toContain('+18%');
+    expect(html).toContain('+12%');
+    // The unvalidated sky-blue series colour is gone.
+    expect(html).not.toContain('#38bdf8"');
+  });
 });
 
 describe('Weather Systems geographic map loader resilience', () => {

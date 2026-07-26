@@ -1721,6 +1721,9 @@ var GEOGRAPHY_PROFILES = {
     regionalWeatherFieldGeoJSON: regionalWeatherFieldGeoJSON,
     regionalWeatherFieldStatus: regionalWeatherFieldStatus,
     forecastCheckpointStatus: forecastCheckpointStatus,
+    mixColor: mixColor,
+    sceneAppearance: sceneAppearance,
+    drawWeatherScene: drawWeatherScene,
     resolvedState: resolvedState
   };
 
@@ -1735,42 +1738,133 @@ var GEOGRAPHY_PROFILES = {
     g.closePath();
   }
 
-  function drawCloud(g, x, y, scale, dark, storm) {
+  // Deterministic per-element jitter keeps the scene varied without flickering between frames.
+  function sceneNoise(seed) {
+    var value = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
+    return value - Math.floor(value);
+  }
+
+  // Accepts both hex and the rgb()/rgba() strings mixColor itself produces, so mixes can be chained.
+  function parseCanvasColor(value) {
+    var raw = String(value).trim();
+    if (raw.charAt(0) !== '#') {
+      var parts = raw.replace(/^rgba?\(/i, '').replace(/\)$/, '').split(',');
+      if (parts.length >= 3) {
+        var channels = [Number(parts[0]), Number(parts[1]), Number(parts[2])];
+        if (isFinite(channels[0]) && isFinite(channels[1]) && isFinite(channels[2])) {
+          return [clamp(channels[0], 0, 255), clamp(channels[1], 0, 255), clamp(channels[2], 0, 255)];
+        }
+      }
+      return [128, 128, 128];
+    }
+    var clean = raw.slice(1);
+    if (clean.length === 3) clean = clean.charAt(0) + clean.charAt(0) + clean.charAt(1) + clean.charAt(1) + clean.charAt(2) + clean.charAt(2);
+    var packed = parseInt(clean, 16);
+    if (!isFinite(packed)) return [128, 128, 128];
+    return [(packed >> 16) & 255, (packed >> 8) & 255, packed & 255];
+  }
+
+  // Blending palette anchors lets the sky, land, and water respond continuously to the model
+  // instead of snapping between a fixed "clear" and "stormy" look.
+  function mixColor(from, to, amount, alpha) {
+    var a = parseCanvasColor(from);
+    var b = parseCanvasColor(to);
+    var t = clamp(amount, 0, 1);
+    var r = Math.round(a[0] + (b[0] - a[0]) * t);
+    var gr = Math.round(a[1] + (b[1] - a[1]) * t);
+    var bl = Math.round(a[2] + (b[2] - a[2]) * t);
+    if (alpha == null) return 'rgb(' + r + ',' + gr + ',' + bl + ')';
+    return 'rgba(' + r + ',' + gr + ',' + bl + ',' + alpha + ')';
+  }
+
+  function drawCloud(g, x, y, scale, dark, storm, seed, contrast) {
+    var jitter = sceneNoise((seed || 1) * 2.3);
     g.save();
     g.translate(x, y);
     g.scale(scale, scale);
-    g.shadowColor = 'rgba(2, 6, 23, .35)';
-    g.shadowBlur = 12;
-    g.shadowOffsetY = 6;
-    var fill = storm ? (dark ? '#64748b' : '#475569') : (dark ? '#e2e8f0' : '#f8fafc');
-    g.fillStyle = fill;
+    var top = storm ? (dark ? '#94a3b8' : '#e2e8f0') : (dark ? '#f8fafc' : '#ffffff');
+    var base = storm ? (dark ? '#334155' : '#64748b') : (dark ? '#8fa3bd' : '#c3d4e6');
+    if (!contrast) {
+      g.shadowColor = 'rgba(2, 6, 23, .32)';
+      g.shadowBlur = 16;
+      g.shadowOffsetY = 8;
+    }
+    if (storm) {
+      // A spreading anvil top reads as a deep, mature convective cloud.
+      g.fillStyle = mixColor(top, base, 0.2);
+      g.beginPath();
+      g.ellipse(2, -25, 44 + jitter * 6, 10, 0, 0, Math.PI * 2);
+      g.fill();
+    }
+    var body = g.createLinearGradient(0, -30, 0, 22);
+    body.addColorStop(0, top);
+    body.addColorStop(0.58, mixColor(top, base, 0.42));
+    body.addColorStop(1, base);
+    g.fillStyle = body;
     g.beginPath();
-    g.arc(-20, 3, 17, 0, Math.PI * 2);
-    g.arc(0, -7, 24, 0, Math.PI * 2);
-    g.arc(25, 1, 19, 0, Math.PI * 2);
-    g.rect(-24, 0, 52, 19);
+    g.arc(-26, 5, 14 + jitter * 3, 0, Math.PI * 2);
+    g.arc(-8, -6, 20, 0, Math.PI * 2);
+    g.arc(10, -11 - jitter * 4, 21, 0, Math.PI * 2);
+    g.arc(29, 2, 15 + jitter * 3, 0, Math.PI * 2);
+    g.rect(-28, 2, 60, 17);
     g.fill();
+    g.shadowColor = 'transparent';
+    g.shadowBlur = 0;
+    g.shadowOffsetY = 0;
+    if (!contrast) {
+      // Lit crown separates the cloud tops from the flat, shaded base.
+      g.globalAlpha = storm ? 0.26 : 0.5;
+      g.fillStyle = dark ? '#f8fafc' : '#ffffff';
+      g.beginPath();
+      g.arc(10, -12 - jitter * 4, 16, Math.PI * 1.06, Math.PI * 1.94);
+      g.fill();
+      g.globalAlpha = 1;
+    }
     g.restore();
   }
 
-  function drawFront(g, width, height, state, scenario, palette) {
+  function drawFront(g, width, height, state, scenario, palette, contrast) {
     if (!state.fronts || scenario.frontType === 'none') return;
     var progress = clamp((state.simHour * state.frontSpeed) / 500, 0, 0.55);
     var baseX = width * (0.28 + progress);
     var color = scenario.frontType === 'warm' ? '#ef4444' : scenario.frontType === 'occluded' ? '#a855f7' : scenario.frontType === 'outflow' ? '#14b8a6' : '#2563eb';
+    var top = height * 0.2;
+    var points = [];
+    for (var i = 0; i <= 12; i += 1) {
+      points.push({ x: baseX + Math.sin(i * 0.8 + state.simHour * 0.15) * 24, y: top + i * height * 0.052 });
+    }
+    var last = points[points.length - 1];
     g.save();
+    if (!contrast) {
+      // A shaded wedge behind the boundary shows which side the advancing air mass occupies.
+      var wedge = g.createLinearGradient(baseX - 104, 0, baseX + 14, 0);
+      wedge.addColorStop(0, mixColor(color, '#ffffff', 0.15, 0));
+      wedge.addColorStop(1, mixColor(color, '#ffffff', 0.15, 0.24));
+      g.fillStyle = wedge;
+      g.beginPath();
+      g.moveTo(points[0].x, points[0].y);
+      for (var p = 1; p < points.length; p += 1) g.lineTo(points[p].x, points[p].y);
+      g.lineTo(last.x - 104, last.y);
+      g.lineTo(points[0].x - 104, points[0].y);
+      g.closePath();
+      g.fill();
+      g.shadowColor = mixColor(color, '#ffffff', 0.25, 0.8);
+      g.shadowBlur = 12;
+    }
     g.strokeStyle = color;
     g.lineWidth = 4;
+    g.lineJoin = 'round';
+    g.lineCap = 'round';
     g.beginPath();
-    for (var i = 0; i <= 12; i += 1) {
-      var y = height * 0.2 + i * height * 0.052;
-      var x = baseX + Math.sin(i * 0.8 + state.simHour * 0.15) * 24;
-      if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+    for (var s = 0; s < points.length; s += 1) {
+      if (s === 0) g.moveTo(points[s].x, points[s].y); else g.lineTo(points[s].x, points[s].y);
     }
     g.stroke();
+    g.shadowColor = 'transparent';
+    g.shadowBlur = 0;
     for (var j = 1; j < 12; j += 2) {
-      var sy = height * 0.2 + j * height * 0.052;
-      var sx = baseX + Math.sin(j * 0.8 + state.simHour * 0.15) * 24;
+      var sy = points[j].y;
+      var sx = points[j].x;
       g.fillStyle = color;
       if (scenario.frontType === 'warm') {
         g.beginPath(); g.arc(sx + 7, sy, 7, -Math.PI / 2, Math.PI / 2); g.fill();
@@ -1781,9 +1875,20 @@ var GEOGRAPHY_PROFILES = {
         g.beginPath(); g.moveTo(sx, sy - 7); g.lineTo(sx + 14, sy); g.lineTo(sx, sy + 7); g.closePath(); g.fill();
       }
     }
-    g.font = '600 12px system-ui';
-    g.fillStyle = palette.text;
-    g.fillText(scenario.name, Math.max(12, baseX - 64), height * 0.16);
+    // Label the boundary on a solid chip so it stays readable over any sky or terrain colour.
+    g.font = '700 12px system-ui';
+    var labelWidth = g.measureText(scenario.name).width + 20;
+    var labelX = Math.max(10, Math.min(baseX - labelWidth / 2, width - 258 - labelWidth));
+    roundedRect(g, labelX, top - 36, labelWidth, 23, 11);
+    g.fillStyle = contrast ? '#000000' : mixColor(color, '#000000', 0.3, 0.94);
+    g.fill();
+    g.strokeStyle = contrast ? '#ffffff' : mixColor(color, '#ffffff', 0.4, 0.85);
+    g.lineWidth = 1.5;
+    g.stroke();
+    g.fillStyle = '#ffffff';
+    g.textAlign = 'left';
+    g.textBaseline = 'alphabetic';
+    g.fillText(scenario.name, labelX + 10, top - 20);
     g.restore();
   }
 
@@ -1792,13 +1897,25 @@ var GEOGRAPHY_PROFILES = {
     g.translate(x, y);
     g.scale(scale, scale);
     g.globalAlpha = alpha;
+    // A wide soft bloom under the bolt suggests the flash lighting up the cloud base.
+    var bloom = g.createRadialGradient(2, 14, 2, 2, 14, 52);
+    bloom.addColorStop(0, 'rgba(254, 240, 138, .55)');
+    bloom.addColorStop(1, 'rgba(254, 240, 138, 0)');
+    g.fillStyle = bloom;
+    g.beginPath(); g.arc(2, 14, 52, 0, Math.PI * 2); g.fill();
     g.shadowColor = '#fde047';
-    g.shadowBlur = 16;
+    g.shadowBlur = 18;
     g.strokeStyle = '#fef08a';
     g.lineWidth = 3;
     g.lineJoin = 'round';
+    g.lineCap = 'round';
     g.beginPath();
     g.moveTo(0, 0); g.lineTo(-7, 17); g.lineTo(2, 15); g.lineTo(-5, 34); g.lineTo(12, 11); g.lineTo(4, 12); g.lineTo(10, 0);
+    g.stroke();
+    g.lineWidth = 1.6;
+    g.strokeStyle = 'rgba(254, 249, 195, .85)';
+    g.beginPath();
+    g.moveTo(2, 15); g.lineTo(11, 26); g.lineTo(7, 27); g.lineTo(14, 38);
     g.stroke();
     g.restore();
   }
@@ -1808,12 +1925,20 @@ var GEOGRAPHY_PROFILES = {
     var y = 18;
     var frontColor = scenario.frontType === 'warm' ? '#ef4444' : scenario.frontType === 'occluded' ? '#a855f7' : scenario.frontType === 'outflow' ? '#14b8a6' : scenario.frontType === 'none' ? '#64748b' : '#2563eb';
     g.save();
+    g.textAlign = 'left';
     roundedRect(g, x, y, 228, 92, 13);
-    g.fillStyle = dark ? 'rgba(2,6,23,.80)' : 'rgba(255,255,255,.88)';
+    g.fillStyle = dark ? 'rgba(2,6,23,.86)' : 'rgba(255,255,255,.92)';
     g.fill();
-    g.strokeStyle = dark ? 'rgba(125,211,252,.25)' : 'rgba(14,116,144,.22)';
+    g.strokeStyle = dark ? 'rgba(125,211,252,.32)' : 'rgba(14,116,144,.28)';
     g.lineWidth = 1;
     g.stroke();
+    // Accent rail ties the key to the front colour currently on the map.
+    g.save();
+    roundedRect(g, x, y, 228, 92, 13);
+    g.clip();
+    g.fillStyle = frontColor;
+    g.fillRect(x, y, 4, 92);
+    g.restore();
     g.fillStyle = palette.muted;
     g.font = '700 11px system-ui';
     g.fillText('VISIBLE MAP LAYERS', x + 14, y + 19);
@@ -1840,16 +1965,56 @@ var GEOGRAPHY_PROFILES = {
     var cx = width - 42; var cy = height - 42;
     g.save();
     g.translate(cx, cy);
-    g.fillStyle = dark ? 'rgba(2,6,23,.72)' : 'rgba(255,255,255,.82)';
+    g.fillStyle = dark ? 'rgba(2,6,23,.82)' : 'rgba(255,255,255,.9)';
     g.beginPath(); g.arc(0, 0, 25, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = dark ? 'rgba(186,230,253,.45)' : 'rgba(15,23,42,.28)'; g.stroke();
+    g.strokeStyle = dark ? 'rgba(186,230,253,.45)' : 'rgba(15,23,42,.28)';
+    g.lineWidth = 1;
+    g.stroke();
+    // Minor ticks make the rose read as an instrument rather than a sticker.
+    g.strokeStyle = dark ? 'rgba(186,230,253,.35)' : 'rgba(15,23,42,.22)';
+    for (var tick = 0; tick < 8; tick += 1) {
+      var tickAngle = tick * Math.PI / 4;
+      g.beginPath();
+      g.moveTo(Math.cos(tickAngle) * 20, Math.sin(tickAngle) * 20);
+      g.lineTo(Math.cos(tickAngle) * 24, Math.sin(tickAngle) * 24);
+      g.stroke();
+    }
+    g.fillStyle = dark ? 'rgba(148,163,184,.75)' : 'rgba(100,116,139,.75)';
+    g.beginPath(); g.moveTo(0, 18); g.lineTo(-6, -4); g.lineTo(0, 0); g.lineTo(6, -4); g.closePath(); g.fill();
     g.fillStyle = '#38bdf8';
     g.beginPath(); g.moveTo(0, -18); g.lineTo(-6, 4); g.lineTo(0, 0); g.lineTo(6, 4); g.closePath(); g.fill();
     g.fillStyle = palette.text; g.font = '800 11px system-ui'; g.textAlign = 'center'; g.fillText('N', 0, -7);
     g.restore();
   }
 
-  function drawWeatherScene(canvas, state, scenario, selectedStation, time, dark) {
+  // Single source of truth for the map's appearance cues, so the painted scene and the
+  // screen-reader description of that scene cannot drift apart.
+  function sceneAppearance(state, current) {
+    var conditions = current || projectConditions(state, state.simHour);
+    var storminess = clamp(conditions.cloudCover / 100 * 0.55 + conditions.precipPotential / 100 * 0.45, 0, 1);
+    var snowCover = clamp((3 - conditions.temperature) / 6, 0, 1) * (conditions.precipType === 'snow' ? 1 : conditions.precipType === 'mixed' ? 0.72 : 0.45);
+    var sunStrength = clamp(1 - conditions.cloudCover / 100, 0, 1);
+    return {
+      storminess: round(storminess, 2),
+      snowCover: round(snowCover, 2),
+      sunStrength: round(sunStrength, 2),
+      sunVisible: sunStrength > 0.22,
+      groundLabel: snowCover > 0.55 ? 'snow-covered ground' : snowCover > 0.2 ? 'ground under a light snow cover' : 'green ground',
+      skyLabel: storminess > 0.7 ? 'a dark storm sky' : storminess > 0.4 ? 'a grey clouding sky' : sunStrength > 0.6 ? 'a bright sunlit sky' : 'a partly cloudy sky'
+    };
+  }
+
+  function weatherWaterPath(g, width, height) {
+    g.beginPath();
+    g.moveTo(620, 327);
+    g.bezierCurveTo(735, 292, 815, 350, width, 308);
+    g.lineTo(width, height);
+    g.lineTo(700, height);
+    g.bezierCurveTo(685, 430, 655, 375, 620, 327);
+    g.closePath();
+  }
+
+  function drawWeatherScene(canvas, state, scenario, selectedStation, time, dark, contrast) {
     if (!canvas || !canvas.getContext) return;
     var logicalWidth = 960;
     var logicalHeight = 500;
@@ -1866,38 +2031,107 @@ var GEOGRAPHY_PROFILES = {
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     var W = logicalWidth;
     var H = logicalHeight;
-    var palette = dark ? {
-      sky1: '#071a33', sky2: '#123b5d', land: '#184d47', land2: '#2f6b55',
-      water: '#0b4f6c', grid: 'rgba(186,230,253,.13)', text: '#e2e8f0', muted: '#bae6fd'
-    } : {
-      sky1: '#c8e8ff', sky2: '#e6f5ff', land: '#8ac08d', land2: '#5f9f72',
-      water: '#4aa7c7', grid: 'rgba(15,23,42,.13)', text: '#0f172a', muted: '#164e63'
-    };
     var current = projectConditions(state, state.simHour);
+
+    // The scene reads the model rather than the scenario name: cloud cover, precipitation
+    // potential, and temperature slide the palette, so moving a slider is visible on the map.
+    var appearance = sceneAppearance(state, current);
+    var storminess = appearance.storminess;
+    var snowCover = appearance.snowCover;
+    var clearSky = dark ? ['#040d1f', '#0b2e52', '#1d5872'] : ['#2f86cf', '#8ed0f4', '#e2f2fc'];
+    var stormSky = dark ? ['#03060f', '#151f33', '#2d3b52'] : ['#3a465f', '#6f7d95', '#a8b4c4'];
+    var palette = {
+      sky0: mixColor(clearSky[0], stormSky[0], storminess),
+      sky1: mixColor(clearSky[1], stormSky[1], storminess),
+      sky2: mixColor(clearSky[2], stormSky[2], storminess),
+      land: mixColor(dark ? '#184d47' : '#4e8f5f', dark ? '#0d2f2d' : '#3c5f4d', storminess),
+      land2: mixColor(dark ? '#2f6b55' : '#82c185', dark ? '#1a3f38' : '#617f68', storminess),
+      // Water tracks the storm palette only partway so the coastline stays legible as water.
+      water: mixColor(dark ? '#0b4f6c' : '#4aa7c7', dark ? '#082f42' : '#3d7189', storminess * 0.55),
+      grid: dark ? 'rgba(186,230,253,.13)' : 'rgba(15,23,42,.13)',
+      text: dark ? '#e2e8f0' : '#0f172a',
+      muted: dark ? '#bae6fd' : '#164e63'
+    };
+    if (snowCover > 0) {
+      palette.land = mixColor(palette.land, dark ? '#8fa3bd' : '#e6eef4', snowCover * 0.86);
+      palette.land2 = mixColor(palette.land2, dark ? '#cbd5e1' : '#ffffff', snowCover * 0.9);
+    }
+    if (contrast) {
+      // High-contrast mode drops the atmospheric shading in favour of flat, separable fills.
+      palette.sky0 = '#000000'; palette.sky1 = '#0b1220'; palette.sky2 = '#1b283f';
+      palette.land = '#052e16'; palette.land2 = '#14532d'; palette.water = '#082f49';
+      palette.grid = 'rgba(255,255,255,.24)'; palette.text = '#ffffff'; palette.muted = '#e0f2fe';
+    }
+
     var grad = g.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, palette.sky1);
-    grad.addColorStop(0.52, palette.sky2);
-    grad.addColorStop(1, dark ? '#0f2d3a' : '#d8eef2');
+    grad.addColorStop(0, palette.sky0);
+    grad.addColorStop(0.3, palette.sky1);
+    grad.addColorStop(0.56, palette.sky2);
+    grad.addColorStop(1, mixColor(palette.sky2, palette.land2, 0.35));
     g.fillStyle = grad;
     g.fillRect(0, 0, W, H);
 
-    // A soft horizon glow and storm tint create atmospheric depth while preserving data contrast.
-    var horizonGlow = g.createRadialGradient(W * 0.72, 205, 12, W * 0.72, 205, 360);
-    horizonGlow.addColorStop(0, current.precipPotential > 65 ? 'rgba(129,140,248,.16)' : (dark ? 'rgba(56,189,248,.19)' : 'rgba(255,255,255,.58)'));
-    horizonGlow.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = horizonGlow;
-    g.fillRect(0, 0, W, H);
-    if (current.precipPotential > 70) {
-      g.fillStyle = dark ? 'rgba(30,41,59,.16)' : 'rgba(71,85,105,.10)';
-      g.fillRect(0, 0, W, H);
+    // Sun disc and glow fade out as cloud cover climbs, which makes coverage legible at a glance.
+    var sunStrength = appearance.sunStrength;
+    if (!contrast && appearance.sunVisible) {
+      var sunX = W * 0.3;
+      var sunY = 82;
+      var sunGlow = g.createRadialGradient(sunX, sunY, 4, sunX, sunY, 190);
+      sunGlow.addColorStop(0, 'rgba(255,246,204,' + (0.8 * sunStrength).toFixed(3) + ')');
+      sunGlow.addColorStop(0.22, 'rgba(255,231,153,' + (0.26 * sunStrength).toFixed(3) + ')');
+      sunGlow.addColorStop(1, 'rgba(255,231,153,0)');
+      g.fillStyle = sunGlow;
+      g.fillRect(sunX - 200, sunY - 200, 400, 400);
+      g.save();
+      g.globalAlpha = clamp(sunStrength * 1.25, 0, 1);
+      g.fillStyle = dark ? '#fde68a' : '#fffbeb';
+      g.beginPath(); g.arc(sunX, sunY, 20, 0, Math.PI * 2); g.fill();
+      g.restore();
     }
 
-    // Distant atmosphere and terrain establish depth without hiding data layers.
-    g.fillStyle = dark ? 'rgba(148,163,184,.13)' : 'rgba(255,255,255,.42)';
+    // High cirrus drifts with the wind and only appears when the sky is not already packed.
+    if (!contrast && current.cloudCover < 72) {
+      g.save();
+      g.globalAlpha = 0.42 * (1 - current.cloudCover / 72);
+      g.strokeStyle = dark ? '#e2e8f0' : '#ffffff';
+      g.lineWidth = 3;
+      g.lineCap = 'round';
+      for (var ci = 0; ci < 7; ci += 1) {
+        var cirrusY = 34 + ci * 17 + sceneNoise(ci * 3.7) * 12;
+        var cirrusX = ((ci * 197 + time * 0.006 * Math.max(3, state.windSpeed)) % (W + 300)) - 150;
+        g.beginPath();
+        g.moveTo(cirrusX, cirrusY);
+        g.bezierCurveTo(cirrusX + 44, cirrusY - 6, cirrusX + 92, cirrusY + 5, cirrusX + 140, cirrusY - 3);
+        g.stroke();
+      }
+      g.restore();
+    }
+
+    // Horizon haze separates sky from land and grows with humidity.
+    if (!contrast) {
+      var haze = g.createLinearGradient(0, 170, 0, 282);
+      haze.addColorStop(0, dark ? 'rgba(148,163,184,0)' : 'rgba(255,255,255,0)');
+      haze.addColorStop(1, dark ? 'rgba(148,163,184,' + (0.08 + current.humidity / 100 * 0.1).toFixed(3) + ')' : 'rgba(255,255,255,' + (0.18 + current.humidity / 100 * 0.22).toFixed(3) + ')');
+      g.fillStyle = haze;
+      g.fillRect(0, 170, W, 112);
+    }
+
+    // Two ridge lines with atmospheric perspective give the map depth without hiding data layers.
+    var farRidge = mixColor(dark ? '#1e3a5f' : '#7fa8c4', palette.sky2, 0.5);
+    if (snowCover > 0) farRidge = mixColor(farRidge, dark ? '#cbd5e1' : '#ffffff', snowCover * 0.5);
+    g.fillStyle = farRidge;
     g.beginPath();
-    g.moveTo(0, 230);
-    for (var m = 0; m <= W; m += 32) g.lineTo(m, 212 + Math.sin(m / 82) * 18 - state.terrain * 0.3);
-    g.lineTo(W, 330); g.lineTo(0, 330); g.closePath(); g.fill();
+    g.moveTo(0, 254);
+    for (var fr = 0; fr <= W; fr += 24) g.lineTo(fr, 238 + Math.sin(fr / 118 + 1.4) * 15 + Math.sin(fr / 47) * 5 - state.terrain * 0.16);
+    g.lineTo(W, 340); g.lineTo(0, 340); g.closePath(); g.fill();
+
+    var midRidge = mixColor(dark ? '#154440' : '#5f8f76', palette.sky2, 0.22);
+    if (snowCover > 0) midRidge = mixColor(midRidge, dark ? '#94a3b8' : '#f1f7fa', snowCover * 0.45);
+    g.fillStyle = midRidge;
+    g.beginPath();
+    g.moveTo(0, 262);
+    for (var m = 0; m <= W; m += 22) g.lineTo(m, 250 + Math.sin(m / 82) * 18 + Math.cos(m / 33) * 4 - state.terrain * 0.3);
+    g.lineTo(W, 350); g.lineTo(0, 350); g.closePath(); g.fill();
 
     var landGrad = g.createLinearGradient(0, 250, 0, H);
     landGrad.addColorStop(0, palette.land2);
@@ -1909,10 +2143,54 @@ var GEOGRAPHY_PROFILES = {
     g.bezierCurveTo(680, 230, 720, 315, W, 278);
     g.lineTo(W, H); g.lineTo(0, H); g.closePath(); g.fill();
 
-    g.fillStyle = palette.water;
+    // Field bands read as ground texture receding toward the horizon.
+    if (!contrast) {
+      g.save();
+      g.globalAlpha = 0.09;
+      g.fillStyle = dark ? '#020617' : '#1f5132';
+      for (var fb = 0; fb < 5; fb += 1) {
+        var fieldY = 318 + fb * 36;
+        var fieldDepth = 11 + fb * 3;
+        g.beginPath();
+        g.moveTo(0, fieldY);
+        for (var fx = 0; fx <= W; fx += 40) g.lineTo(fx, fieldY + Math.sin(fx / 140 + fb) * 6);
+        for (var bx = W; bx >= 0; bx -= 40) g.lineTo(bx, fieldY + fieldDepth + Math.sin(bx / 140 + fb) * 6);
+        g.closePath();
+        g.fill();
+      }
+      g.restore();
+    }
+
+    g.save();
+    weatherWaterPath(g, W, H);
+    g.clip();
+    var waterGrad = g.createLinearGradient(0, 300, 0, H);
+    waterGrad.addColorStop(0, mixColor(palette.water, '#ffffff', contrast ? 0 : 0.2));
+    waterGrad.addColorStop(1, mixColor(palette.water, '#000000', contrast ? 0 : 0.32));
+    g.fillStyle = waterGrad;
+    g.fillRect(600, 280, W - 600, H - 280);
+    if (!contrast) {
+      // Slow-drifting highlights suggest open water without competing with the data layers.
+      g.strokeStyle = dark ? 'rgba(186,230,253,.3)' : 'rgba(255,255,255,.55)';
+      g.lineWidth = 1.5;
+      g.lineCap = 'round';
+      for (var wl = 0; wl < 14; wl += 1) {
+        var waveY = 330 + wl * 13;
+        var waveX = 650 + (wl % 5) * 58 + Math.sin(time / 900 + wl) * 12 + sceneNoise(wl * 5.1) * 70;
+        g.globalAlpha = 0.34 - wl * 0.016;
+        g.beginPath(); g.moveTo(waveX, waveY); g.lineTo(waveX + 22 + (wl % 3) * 12, waveY); g.stroke();
+      }
+      g.globalAlpha = 1;
+    }
+    g.restore();
+    // Shoreline edge keeps the land/water boundary crisp under every palette.
+    g.save();
+    g.strokeStyle = contrast ? 'rgba(255,255,255,.8)' : (dark ? 'rgba(186,230,253,.45)' : 'rgba(255,255,255,.75)');
+    g.lineWidth = 2;
     g.beginPath();
     g.moveTo(620, 327); g.bezierCurveTo(735, 292, 815, 350, W, 308);
-    g.lineTo(W, H); g.lineTo(700, H); g.bezierCurveTo(685, 430, 655, 375, 620, 327); g.fill();
+    g.stroke();
+    g.restore();
 
     // Perspective analysis grid.
     g.strokeStyle = palette.grid;
@@ -1925,43 +2203,98 @@ var GEOGRAPHY_PROFILES = {
     }
 
     // Pressure contours.
+    var pressureX = scenario.id === 'fair' ? 690 : 230;
     g.save();
-    g.strokeStyle = dark ? 'rgba(226,232,240,.28)' : 'rgba(15,23,42,.28)';
+    if (!contrast) {
+      // A soft core tints the centre of the system: cool for high pressure, warm for low.
+      var core = g.createRadialGradient(pressureX, 315, 8, pressureX, 315, 215);
+      core.addColorStop(0, scenario.id === 'fair' ? 'rgba(56,189,248,.18)' : 'rgba(244,114,182,.18)');
+      core.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = core;
+      g.fillRect(pressureX - 225, 100, 450, 360);
+    }
+    g.strokeStyle = dark ? 'rgba(226,232,240,.32)' : 'rgba(15,23,42,.3)';
     g.lineWidth = 1.5;
     for (var ring = 0; ring < 4; ring += 1) {
       g.beginPath();
-      g.ellipse(scenario.id === 'fair' ? 690 : 230, 315, 72 + ring * 42, 28 + ring * 18, -0.15, 0, Math.PI * 2);
+      g.ellipse(pressureX, 315, 72 + ring * 42, 28 + ring * 18, -0.15, 0, Math.PI * 2);
       g.stroke();
     }
-    g.fillStyle = palette.text;
+    g.textAlign = 'left';
+    g.lineJoin = 'round';
     g.font = '700 24px system-ui';
-    g.fillText(scenario.id === 'fair' ? 'H' : 'L', scenario.id === 'fair' ? 681 : 221, 322);
-    g.font = '500 11px system-ui';
-    g.fillText(Math.round(state.pressure) + ' hPa', scenario.id === 'fair' ? 660 : 198, 342);
+    g.strokeStyle = dark ? 'rgba(2,6,23,.75)' : 'rgba(255,255,255,.85)';
+    g.lineWidth = 4;
+    g.strokeText(scenario.id === 'fair' ? 'H' : 'L', pressureX - 9, 322);
+    g.fillStyle = palette.text;
+    g.fillText(scenario.id === 'fair' ? 'H' : 'L', pressureX - 9, 322);
+    g.font = '600 11px system-ui';
+    g.lineWidth = 3;
+    g.strokeText(Math.round(state.pressure) + ' hPa', pressureX - 30, 342);
+    g.fillText(Math.round(state.pressure) + ' hPa', pressureX - 30, 342);
     g.restore();
 
-    drawFront(g, W, H, state, scenario, palette);
+    drawFront(g, W, H, state, scenario, palette, contrast);
 
+    var windRadians = (state.windDir - 90) * Math.PI / 180;
+    var precipSkew = clamp(Math.cos(windRadians) * state.windSpeed * 0.2, -16, 16);
     var cloudCount = Math.round(current.cloudCover / 14);
+    var lightningFired = false;
     for (var c = 0; c < cloudCount; c += 1) {
       var cx = 170 + ((c * 137 + state.simHour * state.windSpeed * 0.9) % 720);
       var cy = 95 + (c % 3) * 47 + Math.sin(c * 2.2) * 10;
       var storm = current.precipPotential > 65 && (c % 2 === 0);
-      drawCloud(g, cx, cy, 0.58 + (c % 3) * 0.13, dark, storm);
-      if (storm && current.precipType === 'storms' && (c + Math.floor(time / 650)) % 3 === 0) drawLightning(g, cx + 6, cy + 22, 0.72 + (c % 2) * 0.12, 0.72);
+      var cloudScale = 0.58 + (c % 3) * 0.13;
+      // A translucent shaft connects each raining cloud to the ground beneath it.
+      if (!contrast && current.precipPotential > 40) {
+        var shaftTop = cy + 18 * cloudScale;
+        var shaftRgb = current.precipType === 'snow' ? '248,250,252' : current.precipType === 'mixed' ? '196,181,253' : '56,189,248';
+        var shaft = g.createLinearGradient(0, shaftTop, 0, 332);
+        shaft.addColorStop(0, 'rgba(' + shaftRgb + ',0)');
+        shaft.addColorStop(0.18, 'rgba(' + shaftRgb + ',' + (0.0016 * current.precipPotential).toFixed(3) + ')');
+        shaft.addColorStop(1, 'rgba(' + shaftRgb + ',0)');
+        g.fillStyle = shaft;
+        var halfShaft = 34 * cloudScale;
+        g.beginPath();
+        g.moveTo(cx - halfShaft, shaftTop);
+        g.lineTo(cx + halfShaft, shaftTop);
+        g.lineTo(cx + halfShaft + precipSkew * 2.2, 332);
+        g.lineTo(cx - halfShaft + precipSkew * 2.2, 332);
+        g.closePath();
+        g.fill();
+      }
+      drawCloud(g, cx, cy, cloudScale, dark, storm, c + 1, contrast);
+      if (storm && current.precipType === 'storms' && (c + Math.floor(time / 650)) % 3 === 0) {
+        drawLightning(g, cx + 6, cy + 22, 0.72 + (c % 2) * 0.12, 0.72);
+        lightningFired = true;
+      }
       if (current.precipPotential > 28) {
         g.save();
         g.strokeStyle = current.precipType === 'snow' ? '#f8fafc' : current.precipType === 'mixed' ? '#c4b5fd' : '#38bdf8';
         g.lineWidth = current.precipType === 'snow' ? 3 : 1.7;
+        g.lineCap = 'round';
         var drops = Math.round(current.precipPotential / 18);
         for (var r = 0; r < drops; r += 1) {
-          var rx = cx - 34 + r * 15 + ((time / 38 + r * 7) % 9);
-          var ry = cy + 27 + ((time / 8 + r * 13) % 45);
+          var fall = (time / 7 + r * 37 + c * 19) % 62;
+          var rx = cx - 34 + r * 15 + fall * precipSkew * 0.03;
+          var ry = cy + 24 + fall;
           g.beginPath();
-          if (current.precipType === 'snow') { g.arc(rx, ry, 2, 0, Math.PI * 2); }
-          else { g.moveTo(rx, ry); g.lineTo(rx - 4, ry + 12); }
+          if (current.precipType === 'snow') { g.arc(rx + Math.sin(time / 420 + r) * 5, ry, 2.2, 0, Math.PI * 2); }
+          else { g.moveTo(rx, ry); g.lineTo(rx - 4 - precipSkew * 0.28, ry + 12 + state.windSpeed * 0.05); }
           g.stroke();
         }
+        g.restore();
+      }
+    }
+
+    // Whole-scene flash on the frames a bolt is drawn, matching how lightning lights up a sky.
+    if (lightningFired && !contrast && time > 0) {
+      var flash = Math.max(0, 1 - (time % 650) / 210);
+      if (flash > 0) {
+        g.save();
+        g.globalCompositeOperation = 'lighter';
+        g.fillStyle = 'rgba(191,219,254,' + (0.15 * flash).toFixed(3) + ')';
+        g.fillRect(0, 0, W, H);
         g.restore();
       }
     }
@@ -1987,6 +2320,18 @@ var GEOGRAPHY_PROFILES = {
       g.lineWidth = 1;
       [38, 76, 114].forEach(function (radius) { g.beginPath(); g.arc(radarX, radarY, radius, 0, Math.PI * 2); g.stroke(); });
       var sweepAngle = (time * 0.0012) % (Math.PI * 2);
+      if (!contrast) {
+        // Fading wedge behind the sweep line reads as a real scanning radar.
+        var trail = g.createRadialGradient(radarX, radarY, 4, radarX, radarY, 116);
+        trail.addColorStop(0, 'rgba(103,232,249,.20)');
+        trail.addColorStop(1, 'rgba(103,232,249,0)');
+        g.fillStyle = trail;
+        g.beginPath();
+        g.moveTo(radarX, radarY);
+        g.arc(radarX, radarY, 116, sweepAngle - 0.75, sweepAngle);
+        g.closePath();
+        g.fill();
+      }
       var sweep = g.createLinearGradient(radarX, radarY, radarX + Math.cos(sweepAngle) * 116, radarY + Math.sin(sweepAngle) * 116);
       sweep.addColorStop(0, 'rgba(103,232,249,.12)'); sweep.addColorStop(1, 'rgba(103,232,249,.75)');
       g.strokeStyle = sweep; g.lineWidth = 2;
@@ -2025,10 +2370,23 @@ var GEOGRAPHY_PROFILES = {
       var x = station.x * W;
       var y = station.y * H;
       var chosen = station.id === selectedStation;
+      var reading = stationObservation(state, station);
       g.save();
+      if (!contrast) {
+        // A contact shadow seats each marker on the terrain instead of floating above it.
+        g.fillStyle = 'rgba(2,6,23,.26)';
+        g.beginPath(); g.ellipse(x, y + 9, chosen ? 15 : 11, chosen ? 5 : 4, 0, 0, Math.PI * 2); g.fill();
+      }
       if (chosen) {
         var pulse = 16 + Math.sin(time / 180) * 3;
-        g.strokeStyle = 'rgba(251,191,36,.55)';
+        if (!contrast) {
+          var halo = g.createRadialGradient(x, y, 4, x, y, pulse + 14);
+          halo.addColorStop(0, 'rgba(251,191,36,.42)');
+          halo.addColorStop(1, 'rgba(251,191,36,0)');
+          g.fillStyle = halo;
+          g.beginPath(); g.arc(x, y, pulse + 14, 0, Math.PI * 2); g.fill();
+        }
+        g.strokeStyle = 'rgba(251,191,36,.75)';
         g.lineWidth = 3;
         g.beginPath(); g.arc(x, y, pulse, 0, Math.PI * 2); g.stroke();
       }
@@ -2036,22 +2394,48 @@ var GEOGRAPHY_PROFILES = {
       g.strokeStyle = chosen ? '#7c2d12' : (dark ? '#0f172a' : '#f8fafc');
       g.lineWidth = chosen ? 4 : 2;
       g.beginPath(); g.arc(x, y, chosen ? 10 : 7, 0, Math.PI * 2); g.fill(); g.stroke();
+      g.fillStyle = chosen ? '#7c2d12' : (dark ? '#0f172a' : '#f8fafc');
+      g.beginPath(); g.arc(x, y, chosen ? 3.4 : 2.4, 0, Math.PI * 2); g.fill();
+      // The pill carries the current temperature so the map itself shows the air-mass contrast.
       g.font = '600 12px system-ui';
-      var labelWidth = g.measureText(station.name).width + 16;
+      var label = station.name + '  ' + Math.round(reading.temperature) + '°';
+      var labelWidth = g.measureText(label).width + 18;
       roundedRect(g, x - labelWidth / 2, y + 14, labelWidth, 24, 8);
-      g.fillStyle = dark ? 'rgba(15,23,42,.88)' : 'rgba(248,250,252,.9)'; g.fill();
-      g.fillStyle = palette.text; g.textAlign = 'center'; g.fillText(station.name, x, y + 30);
+      g.fillStyle = dark ? 'rgba(15,23,42,.9)' : 'rgba(248,250,252,.92)'; g.fill();
+      g.strokeStyle = chosen ? 'rgba(251,191,36,.85)' : (dark ? 'rgba(148,163,184,.35)' : 'rgba(15,23,42,.18)');
+      g.lineWidth = chosen ? 2 : 1;
+      g.stroke();
+      g.fillStyle = palette.text; g.textAlign = 'center'; g.fillText(label, x, y + 30);
       g.restore();
     });
+
+    // Vignette focuses attention on the centre of the map; HUD chrome is drawn on top of it.
+    if (!contrast) {
+      var vignette = g.createRadialGradient(W / 2, H * 0.52, H * 0.36, W / 2, H * 0.52, H * 1.05);
+      vignette.addColorStop(0, 'rgba(0,0,0,0)');
+      vignette.addColorStop(1, dark ? 'rgba(0,0,0,.4)' : 'rgba(15,23,42,.18)');
+      g.fillStyle = vignette;
+      g.fillRect(0, 0, W, H);
+    }
 
     drawCanvasVisualKey(g, W, H, state, scenario, current, palette, dark, time);
 
     // Compact model-time badge.
     g.save();
-    roundedRect(g, 18, 18, 154, 54, 12);
-    g.fillStyle = dark ? 'rgba(2,6,23,.74)' : 'rgba(255,255,255,.82)'; g.fill();
-    g.fillStyle = palette.muted; g.font = '500 11px system-ui'; g.fillText('MODEL TIME', 32, 38);
-    g.fillStyle = palette.text; g.font = '700 20px system-ui'; g.fillText('T +' + state.simHour + ' hours', 32, 61);
+    g.textAlign = 'left';
+    roundedRect(g, 18, 18, 158, 54, 12);
+    g.fillStyle = dark ? 'rgba(2,6,23,.82)' : 'rgba(255,255,255,.9)'; g.fill();
+    g.strokeStyle = dark ? 'rgba(125,211,252,.32)' : 'rgba(14,116,144,.28)';
+    g.lineWidth = 1;
+    g.stroke();
+    g.save();
+    roundedRect(g, 18, 18, 158, 54, 12);
+    g.clip();
+    g.fillStyle = '#38bdf8';
+    g.fillRect(18, 18, 4, 54);
+    g.restore();
+    g.fillStyle = palette.muted; g.font = '700 11px system-ui'; g.fillText('MODEL TIME', 34, 38);
+    g.fillStyle = palette.text; g.font = '700 20px system-ui'; g.fillText('T +' + state.simHour + ' hours', 34, 61);
     g.restore();
   }
 
@@ -2083,6 +2467,12 @@ var GEOGRAPHY_PROFILES = {
       var dark = !!ctx.isDark || contrast;
       var band = gradeBand(ctx.gradeLevel);
       var canvasRef = React.useRef(null);
+      // Meteogram hover lives in component state, never in toolData: it is a pointer position,
+      // not saved work. Declared here at the top of render because a hook inside a
+      // tab-conditional panel would crash on navigation.
+      var meteogramHoverState = React.useState(null);
+      var meteogramHoverHour = meteogramHoverState[0];
+      var setMeteogramHoverHour = meteogramHoverState[1];
       var immersiveCanvasRef = React.useRef(null);
       var immersiveRuntimeRef = React.useRef(null);
       var geographicMapRef = React.useRef(null);
@@ -2891,12 +3281,12 @@ function openImmersiveTourStep(stepId) {
         var reduce = false;
         try { reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduce = false; }
         function draw() {
-          drawWeatherScene(canvasRef.current, state, scenario, selectedStation, state.motion && !reduce ? Date.now() - started : 0, dark);
+          drawWeatherScene(canvasRef.current, state, scenario, selectedStation, state.motion && !reduce ? Date.now() - started : 0, dark, contrast);
           if (state.motion && !reduce) frame = window.requestAnimationFrame(draw);
         }
         draw();
         return function () { if (frame) window.cancelAnimationFrame(frame); };
-      }, [state.scenario, state.temp, state.humidity, state.pressure, state.windSpeed, state.windDir, state.frontSpeed, state.instability, state.terrain, state.simHour, state.radar, state.fronts, state.windLayer, state.motion, selectedStation, dark]);
+      }, [state.scenario, state.temp, state.humidity, state.pressure, state.windSpeed, state.windDir, state.frontSpeed, state.instability, state.terrain, state.simHour, state.radar, state.fronts, state.windLayer, state.motion, selectedStation, dark, contrast]);
 
       React.useEffect(function () {
         if (!d.liveWeatherTimelinePlaying) return undefined;
@@ -4130,11 +4520,31 @@ var geographyGroup = new THREE.Group();
         var correct = checked && d.boundaryGuess === analysis.strongest.id;
         var textColor = dark ? '#e2e8f0' : '#0f172a';
         var mutedColor = dark ? '#94a3b8' : '#475569';
+        var surfaceColor = dark ? '#0f172a' : '#ffffff';
+        var gridColor = dark ? '#1e293b' : '#e2e8f0';
         function xFor(value) { return 70 + clamp((value - 0.18) / 0.6, 0, 1) * 580; }
+
+        // Temperature is polarity here, not identity: warmer or colder than the rest of the
+        // network. A diverging scale centred on this hour's own range makes the two air
+        // masses visible, where the old fixed 12\u00B0C cut painted whole scenarios one colour.
+        var networkTemps = analysis.observations.map(function (item) { return item.temperature; });
+        var tempMin = Math.min.apply(Math, networkTemps);
+        var tempMax = Math.max.apply(Math, networkTemps);
+        var tempMid = (tempMin + tempMax) / 2;
+        var tempHalfRange = Math.max(0.6, (tempMax - tempMin) / 2);
+        var coldPole = dark ? '#86b6ef' : '#184f95';
+        var warmPole = dark ? '#f0a08a' : '#a52a2a';
+        var neutralPole = dark ? '#44403c' : '#e7e5e4';
+        function temperatureFill(value) {
+          var t = clamp((value - tempMid) / tempHalfRange, -1, 1);
+          return t < 0 ? mixColor(neutralPole, coldPole, -t) : mixColor(neutralPole, warmPole, t);
+        }
+
         var networkSummary = analysis.observations.map(function (item) {
           return item.name + ': ' + item.temperature + ' degrees Celsius, dew point ' + item.dewPoint + ', pressure ' + item.seaLevelPressure + ' hectopascals, wind ' + cardinal(item.windDir) + ' ' + item.windSpeed + ' kilometers per hour';
         }).join('. ');
         var strongestMid = (xFor(analysis.strongest.left.x) + xFor(analysis.strongest.right.x)) / 2;
+        var maxPairScore = Math.max.apply(Math, analysis.pairs.map(function (pair) { return pair.score; }));
         return h('section', { className: panelClass + ' p-4', 'data-weather-station-network': true, 'aria-labelledby': 'weather-network-title' },
           h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
             h('div', null,
@@ -4144,28 +4554,55 @@ var geographyGroup = new THREE.Group();
             ),
             h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (dark ? 'bg-amber-950/50 text-amber-300' : 'bg-amber-100 text-amber-800') }, 'T +' + state.simHour + ' h')
           ),
+          // A diverging scale always ships its key.
+          h('div', { className: 'mt-2 flex flex-wrap items-center gap-2 text-xs font-bold ' + mutedClass, 'data-weather-network-scale': true },
+            h('span', null, 'Colder'),
+            h('span', {
+              className: 'inline-block h-2 w-24 rounded-full',
+              'aria-hidden': 'true',
+              style: { backgroundImage: 'linear-gradient(to right, ' + coldPole + ', ' + neutralPole + ', ' + warmPole + ')' }
+            }),
+            h('span', null, 'Warmer'),
+            h('span', { className: 'tabular-nums' }, '(' + round(tempMin, 1) + '\u00B0C to ' + round(tempMax, 1) + '\u00B0C across the network)')
+          ),
           h('svg', {
-            viewBox: '0 0 720 205', className: 'mt-3 h-auto w-full', role: 'img',
+            viewBox: '0 0 720 250', className: 'mt-2 h-auto w-full', role: 'img',
             'aria-label': 'West-to-east station transect. ' + networkSummary + (checked ? '. Strongest modeled contrast is ' + analysis.strongest.label + '.' : '. Boundary result is hidden until checked.')
           },
             h('line', { x1: 70, y1: 92, x2: 650, y2: 92, stroke: dark ? '#334155' : '#cbd5e1', strokeWidth: 5, strokeLinecap: 'round' }),
             checked && analysis.hasFront && h('g', null,
-              h('line', { x1: strongestMid, y1: 35, x2: strongestMid, y2: 155, stroke: '#f59e0b', strokeWidth: 3, strokeDasharray: '7 5' }),
-              h('text', { x: strongestMid, y: 24, textAnchor: 'middle', fill: '#f59e0b', fontSize: 11, fontWeight: 700 }, 'strongest contrast')
+              h('line', { x1: strongestMid, y1: 38, x2: strongestMid, y2: 155, stroke: '#f59e0b', strokeWidth: 2 }),
+              h('rect', { x: strongestMid - 62, y: 14, width: 124, height: 17, rx: 8, fill: '#f59e0b' }),
+              h('text', { x: strongestMid, y: 27, textAnchor: 'middle', fill: '#1c1917', fontSize: 10, fontWeight: 800 }, 'STRONGEST CONTRAST')
             ),
             analysis.observations.map(function (item) {
               var x = xFor(item.x);
-              var warm = item.temperature >= 12;
+              var selected = item.id === selectedStation;
               return h('g', { key: item.id },
-                h('circle', { cx: x, cy: 92, r: item.id === selectedStation ? 19 : 15, fill: warm ? '#fb7185' : '#60a5fa', stroke: item.id === selectedStation ? '#facc15' : (dark ? '#0f172a' : '#ffffff'), strokeWidth: item.id === selectedStation ? 5 : 3 }),
-                h('text', { x: x, y: 55, textAnchor: 'middle', fill: textColor, fontSize: 12, fontWeight: 700 }, item.temperature + '\u00B0C'),
+                h('circle', { cx: x, cy: 92, r: selected ? 19 : 15, fill: temperatureFill(item.temperature), stroke: selected ? '#f59e0b' : surfaceColor, strokeWidth: selected ? 5 : 3 }),
+                h('text', { x: x, y: 55, textAnchor: 'middle', fill: textColor, fontSize: 12, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums' } }, item.temperature + '\u00B0C'),
                 h('text', { x: x, y: 126, textAnchor: 'middle', fill: textColor, fontSize: 11, fontWeight: 700 }, item.name),
                 h('text', { x: x, y: 143, textAnchor: 'middle', fill: mutedColor, fontSize: 11 }, 'dew ' + item.dewPoint + '\u00B0 | ' + cardinal(item.windDir)),
-                h('text', { x: x, y: 159, textAnchor: 'middle', fill: mutedColor, fontSize: 11 }, item.seaLevelPressure + ' hPa')
+                h('text', { x: x, y: 159, textAnchor: 'middle', fill: mutedColor, fontSize: 11, style: { fontVariantNumeric: 'tabular-nums' } }, item.seaLevelPressure + ' hPa')
               );
             }),
-            h('text', { x: 70, y: 190, fill: mutedColor, fontSize: 11, fontWeight: 700 }, 'WEST'),
-            h('text', { x: 650, y: 190, textAnchor: 'end', fill: mutedColor, fontSize: 11, fontWeight: 700 }, 'EAST')
+            // Neighbour-contrast bars stay hidden until the learner has committed to an
+            // answer \u2014 revealing them earlier would just hand over the task.
+            checked && analysis.hasFront && h('g', { 'data-weather-network-contrast-bars': true },
+              h('text', { x: 70, y: 182, fill: mutedColor, fontSize: 10, fontWeight: 700 }, 'COMBINED CONTRAST BETWEEN NEIGHBOURS'),
+              analysis.pairs.map(function (pair) {
+                var left = xFor(pair.left.x);
+                var right = xFor(pair.right.x);
+                var strongest = pair.id === analysis.strongest.id;
+                var height = 6 + clamp(pair.score / Math.max(1, maxPairScore), 0, 1) * 24;
+                return h('g', { key: pair.id },
+                  h('rect', { x: left + 6, y: 218 - height, width: Math.max(8, right - left - 12), height: height, rx: 4, fill: strongest ? '#f59e0b' : (dark ? '#475569' : '#cbd5e1') }),
+                  h('text', { x: (left + right) / 2, y: 234, textAnchor: 'middle', fill: strongest ? textColor : mutedColor, fontSize: 10, fontWeight: strongest ? 800 : 600, style: { fontVariantNumeric: 'tabular-nums' } }, pair.score)
+                );
+              })
+            ),
+            h('text', { x: 70, y: (checked && analysis.hasFront) ? 248 : 190, fill: mutedColor, fontSize: 11, fontWeight: 700 }, 'WEST'),
+            h('text', { x: 650, y: (checked && analysis.hasFront) ? 248 : 190, textAnchor: 'end', fill: mutedColor, fontSize: 11, fontWeight: 700 }, 'EAST')
           ),
           analysis.hasFront ? h('div', { className: 'mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]' },
             h('label', { htmlFor: 'weather-boundary-guess', className: 'block' },
@@ -4338,14 +4775,25 @@ var geographyGroup = new THREE.Group();
           );
         }
 
-        function xFor(hour) { return 86 + hour / 12 * 610; }
-        function pathFor(field, low, high, top, bottom) {
-          return points.map(function (point, index) {
-            var x = xFor(point.hour);
-            var y = bottom - clamp((point[field] - low) / Math.max(1, high - low), 0, 1) * (bottom - top);
-            return (index === 0 ? 'M' : 'L') + x + ' ' + y;
-          }).join(' ');
-        }
+        // Categorical hues validated against both panel surfaces (adjacent-pair CVD and
+        // normal-vision floors) before use; the order is the safety mechanism, not decoration.
+        var seriesColor = dark
+          ? { temperature: '#d95926', dewPoint: '#199e70', seaLevelPressure: '#9085e9', windSpeed: '#008300', precipPotential: '#3987e5', cloudCover: '#d55181' }
+          : { temperature: '#eb6834', dewPoint: '#1baf7a', seaLevelPressure: '#4a3aa7', windSpeed: '#008300', precipPotential: '#2a78d6', cloudCover: '#e87ba4' };
+        var textColor = dark ? '#e2e8f0' : '#0f172a';
+        var mutedColor = dark ? '#94a3b8' : '#64748b';
+        var gridColor = dark ? '#1e293b' : '#e2e8f0';
+        var baselineColor = dark ? '#334155' : '#cbd5e1';
+        var surfaceColor = dark ? '#0f172a' : '#ffffff';
+        var laneWash = dark ? 'rgba(148,163,184,.06)' : 'rgba(15,23,42,.03)';
+
+        var VIEW_W = 800;
+        var VIEW_H = 384;
+        var PLOT_LEFT = 44;
+        var PLOT_RIGHT = 676;
+        var LABEL_X = 684;
+        function xFor(hour) { return PLOT_LEFT + hour / 12 * (PLOT_RIGHT - PLOT_LEFT); }
+
         var temperatures = points.reduce(function (all, point) { all.push(point.temperature, point.dewPoint); return all; }, []);
         var tempLow = Math.floor(Math.min.apply(Math, temperatures) - 2);
         var tempHigh = Math.ceil(Math.max.apply(Math, temperatures) + 2);
@@ -4353,59 +4801,224 @@ var geographyGroup = new THREE.Group();
         var pressureLow = Math.floor(Math.min.apply(Math, pressures) - 1);
         var pressureHigh = Math.ceil(Math.max.apply(Math, pressures) + 1);
         var windHigh = Math.max(20, Math.ceil(Math.max.apply(Math, points.map(function (point) { return point.windSpeed; })) / 10) * 10);
-        var textColor = dark ? '#e2e8f0' : '#0f172a';
-        var mutedColor = dark ? '#94a3b8' : '#475569';
-        var gridColor = dark ? '#334155' : '#cbd5e1';
+
+        // Four stacked lanes, each with its own scale. Measures in different units never
+        // share an axis: a dual-scale plot would invent a correlation the model does not have.
+        var lanes = [
+          { key: 'thermal', label: 'Temperature & dew point', unit: '°C', top: 26, low: tempLow, high: tempHigh, spread: true,
+            series: [{ id: 'temperature', label: 'Temperature' }, { id: 'dewPoint', label: 'Dew point' }] },
+          { key: 'pressure', label: 'Sea-level pressure', unit: ' hPa', top: 108, low: pressureLow, high: pressureHigh,
+            series: [{ id: 'seaLevelPressure', label: 'Pressure' }] },
+          { key: 'wind', label: 'Wind speed', unit: ' km/h', top: 190, low: 0, high: windHigh,
+            series: [{ id: 'windSpeed', label: 'Wind speed' }] },
+          { key: 'moisture', label: 'Cloud cover & precipitation potential', unit: '%', top: 272, low: 0, high: 100,
+            series: [{ id: 'precipPotential', label: 'Precipitation' }, { id: 'cloudCover', label: 'Cloud cover', dash: '5 4' }] }
+        ];
+        var LANE_PLOT_TOP = 15;
+        var LANE_PLOT_BOTTOM = 70;
+        var plotTopY = lanes[0].top + LANE_PLOT_TOP;
+        var plotBottomY = lanes[lanes.length - 1].top + LANE_PLOT_BOTTOM;
+        function yFor(lane, value) {
+          var top = lane.top + LANE_PLOT_TOP;
+          var bottom = lane.top + LANE_PLOT_BOTTOM;
+          return bottom - clamp((value - lane.low) / Math.max(1, lane.high - lane.low), 0, 1) * (bottom - top);
+        }
+        function pathFor(lane, field) {
+          return points.map(function (point, index) {
+            return (index === 0 ? 'M' : 'L') + round(xFor(point.hour), 1) + ' ' + round(yFor(lane, point[field]), 1);
+          }).join(' ');
+        }
+        var legendItems = lanes.reduce(function (all, lane) {
+          lane.series.forEach(function (item) { all.push({ id: item.id, label: item.label, dash: item.dash, unit: lane.unit }); });
+          return all;
+        }, []);
+        function valueText(id, point) {
+          var lane = lanes.filter(function (entry) { return entry.series.some(function (item) { return item.id === id; }); })[0];
+          return point[id] + (lane ? lane.unit : '');
+        }
+
         var passageX = passageVisible ? xFor(series.passageHour) : null;
-        var summary = 'Twelve-hour meteogram for ' + station.name + '. Temperature changes from ' + points[0].temperature + ' to ' + points[points.length - 1].temperature + ' degrees Celsius, pressure from ' + points[0].seaLevelPressure + ' to ' + points[points.length - 1].seaLevelPressure + ' hectopascals, wind from ' + points[0].windSpeed + ' to ' + points[points.length - 1].windSpeed + ' kilometers per hour, and precipitation potential from ' + points[0].precipPotential + ' to ' + points[points.length - 1].precipPotential + ' percent.' + (passageVisible ? ' The modeled front reaches the station near hour ' + series.passageHour + '.' : '');
+        var last = points[points.length - 1];
+        var hoverPoint = meteogramHoverHour == null ? null : points.filter(function (point) { return point.hour === meteogramHoverHour; })[0] || null;
+        var tableOpen = !!d.meteogramTable;
+        var summary = 'Twelve-hour meteogram for ' + station.name + '. Temperature changes from ' + points[0].temperature + ' to ' + last.temperature + ' degrees Celsius, dew point from ' + points[0].dewPoint + ' to ' + last.dewPoint + ' degrees Celsius, pressure from ' + points[0].seaLevelPressure + ' to ' + last.seaLevelPressure + ' hectopascals, wind from ' + points[0].windSpeed + ' to ' + last.windSpeed + ' kilometers per hour, cloud cover from ' + points[0].cloudCover + ' to ' + last.cloudCover + ' percent, and precipitation potential from ' + points[0].precipPotential + ' to ' + last.precipPotential + ' percent.' + (passageVisible ? ' The modeled front reaches the station near hour ' + series.passageHour + '.' : '') + ' Every plotted value is also listed in the data table below the chart.';
 
         return h('section', { className: panelClass + ' p-4', 'data-weather-front-meteogram': true, 'aria-labelledby': 'weather-meteogram-title' },
           h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
             h('div', null,
               h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, '12-hour model trend at ' + station.name),
               h('h3', { id: 'weather-meteogram-title', className: 'text-base font-black' }, 'Front-Passage Meteogram'),
-              h('p', { className: 'mt-1 text-xs ' + mutedClass }, 'A meteogram aligns several station measurements on one time axis.')
+              h('p', { className: 'mt-1 text-xs ' + mutedClass }, 'A meteogram aligns several station measurements on one time axis. Each band keeps its own scale, so only the shape of each line is compared.')
             ),
             passageVisible && h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (dark ? 'bg-amber-950/60 text-amber-300' : 'bg-amber-100 text-amber-800') }, 'Front near T +' + series.passageHour + ' h')
           ),
-          h('div', { className: 'mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold ' + mutedClass },
-            [
-              ['#fb923c', 'Temperature'], ['#22d3ee', 'Dew point'], ['#a78bfa', 'Pressure'],
-              ['#34d399', 'Wind speed'], ['#38bdf8', 'Precipitation'], ['#94a3b8', 'Cloud cover']
-            ].map(function (item) { return h('span', { key: item[1] }, h('span', { className: 'mr-1 inline-block h-2 w-4 rounded', style: { backgroundColor: item[0] } }), item[1]); })
-          ),
-          h('svg', { viewBox: '0 0 760 355', className: 'mt-2 h-auto w-full', role: 'img', 'aria-label': summary },
-            [0, 3, 6, 9, 12].map(function (hour) {
-              var x = xFor(hour);
-              return h('g', { key: 'hour-' + hour },
-                h('line', { x1: x, y1: 35, x2: x, y2: 315, stroke: gridColor, strokeWidth: 1 }),
-                h('text', { x: x, y: 340, textAnchor: 'middle', fill: mutedColor, fontSize: 11 }, 'T+' + hour)
+          h('div', { className: 'mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold ' + mutedClass, 'data-weather-meteogram-legend': true },
+            legendItems.map(function (item) {
+              return h('span', { key: item.id, className: 'inline-flex items-center gap-1.5' },
+                h('svg', { width: 18, height: 8, 'aria-hidden': 'true', className: 'shrink-0' },
+                  h('line', { x1: 1, y1: 4, x2: 17, y2: 4, stroke: seriesColor[item.id], strokeWidth: 2, strokeLinecap: 'round', strokeDasharray: item.dash })
+                ),
+                item.label
               );
-            }),
-            [
-              { y: 42, label: 'Temp / dew' },
-              { y: 112, label: 'Pressure' },
-              { y: 182, label: 'Wind' },
-              { y: 252, label: 'Clouds / precip' }
-            ].map(function (lane) {
-              return h('g', { key: lane.label },
-                h('text', { x: 76, y: lane.y + 26, textAnchor: 'end', fill: textColor, fontSize: 11, fontWeight: 700 }, lane.label),
-                h('line', { x1: 86, y1: lane.y + 58, x2: 696, y2: lane.y + 58, stroke: gridColor, strokeWidth: 1 })
-              );
-            }),
-            passageVisible && h('g', null,
-              h('line', { x1: passageX, y1: 25, x2: passageX, y2: 315, stroke: '#f59e0b', strokeWidth: 3, strokeDasharray: '7 5' }),
-              h('text', { x: passageX, y: 18, textAnchor: 'middle', fill: '#f59e0b', fontSize: 11, fontWeight: 700 }, 'FRONT')
-            ),
-            h('path', { d: pathFor('temperature', tempLow, tempHigh, 42, 100), fill: 'none', stroke: '#fb923c', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-            h('path', { d: pathFor('dewPoint', tempLow, tempHigh, 42, 100), fill: 'none', stroke: '#22d3ee', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-            h('path', { d: pathFor('seaLevelPressure', pressureLow, pressureHigh, 112, 170), fill: 'none', stroke: '#a78bfa', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-            h('path', { d: pathFor('windSpeed', 0, windHigh, 182, 240), fill: 'none', stroke: '#34d399', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-            h('path', { d: pathFor('cloudCover', 0, 100, 252, 310), fill: 'none', stroke: '#94a3b8', strokeWidth: 3, strokeDasharray: '6 4', strokeLinecap: 'round', strokeLinejoin: 'round' }),
-            h('path', { d: pathFor('precipPotential', 0, 100, 252, 310), fill: 'none', stroke: '#38bdf8', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-            points.filter(function (point) { return point.hour % 3 === 0; }).map(function (point) {
-              return h('circle', { key: 'precip-' + point.hour, cx: xFor(point.hour), cy: 310 - point.precipPotential / 100 * 58, r: 4, fill: '#38bdf8' });
             })
+          ),
+          h('div', { className: 'relative mt-2' },
+            h('svg', {
+              viewBox: '0 0 ' + VIEW_W + ' ' + VIEW_H,
+              className: 'h-auto w-full',
+              role: 'img',
+              'aria-label': summary,
+              onMouseLeave: function () { setMeteogramHoverHour(null); }
+            },
+              // Gridlines stay inside their own lane band, so nothing rules through the
+              // gap where the lane captions sit.
+              lanes.map(function (lane) {
+                var top = lane.top + LANE_PLOT_TOP;
+                var bottom = lane.top + LANE_PLOT_BOTTOM;
+                return h('g', { key: lane.key },
+                  h('rect', { x: PLOT_LEFT, y: top, width: PLOT_RIGHT - PLOT_LEFT, height: bottom - top, fill: laneWash, rx: 4 }),
+                  [0, 3, 6, 9, 12].map(function (hour) {
+                    return h('line', { key: hour, x1: xFor(hour), y1: top, x2: xFor(hour), y2: bottom, stroke: gridColor, strokeWidth: 1 });
+                  }),
+                  h('line', { x1: PLOT_LEFT, y1: (top + bottom) / 2, x2: PLOT_RIGHT, y2: (top + bottom) / 2, stroke: gridColor, strokeWidth: 1 }),
+                  h('line', { x1: PLOT_LEFT, y1: bottom, x2: PLOT_RIGHT, y2: bottom, stroke: baselineColor, strokeWidth: 1 })
+                );
+              }),
+              [0, 3, 6, 9, 12].map(function (hour) {
+                return h('text', { key: 'tick-' + hour, x: xFor(hour), y: plotBottomY + 20, textAnchor: 'middle', fill: mutedColor, fontSize: 11, style: { fontVariantNumeric: 'tabular-nums' } }, 'T+' + hour);
+              }),
+              // The closing gap between temperature and dew point is the saturation story,
+              // so the spread itself is drawn rather than left to be inferred from two lines.
+              h('path', {
+                d: pathFor(lanes[0], 'temperature') + ' ' + points.slice().reverse().map(function (point) { return 'L' + round(xFor(point.hour), 1) + ' ' + round(yFor(lanes[0], point.dewPoint), 1); }).join(' ') + ' Z',
+                fill: seriesColor.dewPoint,
+                fillOpacity: 0.1,
+                stroke: 'none'
+              }),
+              lanes.map(function (lane) {
+                return h('g', { key: 'lines-' + lane.key }, lane.series.map(function (item) {
+                  return h('path', {
+                    key: item.id,
+                    d: pathFor(lane, item.id),
+                    fill: 'none',
+                    stroke: seriesColor[item.id],
+                    strokeWidth: 2,
+                    strokeDasharray: item.dash,
+                    strokeLinecap: 'round',
+                    strokeLinejoin: 'round'
+                  });
+                }));
+              }),
+              passageVisible && h('g', null,
+                h('line', { x1: passageX, y1: plotTopY - 6, x2: passageX, y2: plotBottomY, stroke: '#f59e0b', strokeWidth: 2 }),
+                h('rect', { x: passageX - 26, y: 2, width: 52, height: 16, rx: 8, fill: '#f59e0b' }),
+                h('text', { x: passageX, y: 14, textAnchor: 'middle', fill: '#1c1917', fontSize: 10, fontWeight: 800 }, 'FRONT')
+              ),
+              // Captions ride above every rule with a surface halo, so the front marker
+              // crossing a lane gap can never slice through the words.
+              lanes.map(function (lane) {
+                var halo = { paintOrder: 'stroke', stroke: surfaceColor, strokeWidth: 3, strokeLinejoin: 'round' };
+                return h('g', { key: 'caption-' + lane.key },
+                  h('text', { x: PLOT_LEFT, y: lane.top + 8, fill: textColor, fontSize: 11, fontWeight: 700, style: halo }, lane.label),
+                  h('text', { x: PLOT_RIGHT, y: lane.top + 8, textAnchor: 'end', fill: mutedColor, fontSize: 10, style: Object.assign({ fontVariantNumeric: 'tabular-nums' }, halo) }, lane.low + ' to ' + lane.high + lane.unit)
+                );
+              }),
+              // Direct end labels carry the values the lanes do not tick, and are the
+              // required relief for the two hues that sit under 3:1 on the light surface.
+              lanes.map(function (lane) {
+                // Converging series get pushed apart and then, if the group would spill past
+                // the lane, shifted back up as a block — a label never drifts into the axis row.
+                var laneBottom = lane.top + LANE_PLOT_BOTTOM;
+                var placed = lane.series.map(function (item) {
+                  return { id: item.id, markerY: yFor(lane, last[item.id]) };
+                }).sort(function (a, b) { return a.markerY - b.markerY; });
+                var cursor = null;
+                placed.forEach(function (entry) {
+                  entry.labelY = cursor == null ? entry.markerY : Math.max(entry.markerY, cursor + 13);
+                  cursor = entry.labelY;
+                });
+                var overflow = cursor - (laneBottom + 4);
+                if (overflow > 0) placed.forEach(function (entry) { entry.labelY -= overflow; });
+                return h('g', { key: 'ends-' + lane.key }, placed.map(function (entry) {
+                  return h('g', { key: entry.id },
+                    h('circle', { cx: xFor(12), cy: entry.markerY, r: 4, fill: seriesColor[entry.id], stroke: surfaceColor, strokeWidth: 2 }),
+                    Math.abs(entry.labelY - entry.markerY) > 1 && h('line', { x1: xFor(12) + 6, y1: entry.markerY, x2: LABEL_X - 3, y2: entry.labelY - 3, stroke: baselineColor, strokeWidth: 1 }),
+                    h('text', { x: LABEL_X, y: entry.labelY + 4, fill: textColor, fontSize: 11, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums' } }, valueText(entry.id, last))
+                  );
+                }));
+              }),
+              hoverPoint && h('g', { 'aria-hidden': 'true' },
+                h('line', { x1: xFor(hoverPoint.hour), y1: plotTopY - 6, x2: xFor(hoverPoint.hour), y2: plotBottomY, stroke: mutedColor, strokeWidth: 1 }),
+                lanes.map(function (lane) {
+                  return h('g', { key: 'hover-' + lane.key }, lane.series.map(function (item) {
+                    return h('circle', { key: item.id, cx: xFor(hoverPoint.hour), cy: yFor(lane, hoverPoint[item.id]), r: 4, fill: seriesColor[item.id], stroke: surfaceColor, strokeWidth: 2 });
+                  }));
+                })
+              ),
+              // Full-height hit columns: the target is the whole column, never the 8px dot.
+              points.map(function (point) {
+                var half = (PLOT_RIGHT - PLOT_LEFT) / 24;
+                return h('rect', {
+                  key: 'hit-' + point.hour,
+                  x: xFor(point.hour) - half,
+                  y: plotTopY - 8,
+                  width: half * 2,
+                  height: plotBottomY - plotTopY + 16,
+                  fill: 'transparent',
+                  tabIndex: 0,
+                  role: 'img',
+                  'aria-label': 'T plus ' + point.hour + ' hours: temperature ' + point.temperature + ' degrees, dew point ' + point.dewPoint + ' degrees, pressure ' + point.seaLevelPressure + ' hectopascals, wind ' + point.windSpeed + ' kilometers per hour, cloud cover ' + point.cloudCover + ' percent, precipitation potential ' + point.precipPotential + ' percent.',
+                  onMouseEnter: function () { setMeteogramHoverHour(point.hour); },
+                  onFocus: function () { setMeteogramHoverHour(point.hour); },
+                  onBlur: function () { setMeteogramHoverHour(null); }
+                });
+              })
+            ),
+            hoverPoint && h('div', {
+              className: 'pointer-events-none absolute top-0 w-44 rounded-lg border p-2 text-xs shadow-lg ' + (dark ? 'border-slate-600 bg-slate-950 text-slate-100' : 'border-slate-300 bg-white text-slate-900'),
+              style: { left: 'clamp(0px, ' + round(xFor(hoverPoint.hour) / VIEW_W * 100, 2) + '% - 5.5rem, calc(100% - 11rem))' },
+              'data-weather-meteogram-tooltip': true,
+              role: 'status',
+              'aria-live': 'polite'
+            },
+              h('p', { className: 'font-black' }, 'T +' + hoverPoint.hour + ' hours'),
+              legendItems.map(function (item) {
+                return h('p', { key: item.id, className: 'mt-0.5 flex items-center justify-between gap-2' },
+                  h('span', { className: 'flex items-center gap-1.5' },
+                    h('span', { className: 'inline-block h-2 w-2 rounded-full', style: { backgroundColor: seriesColor[item.id] }, 'aria-hidden': 'true' }),
+                    h('span', { className: mutedClass }, item.label)
+                  ),
+                  h('span', { className: 'font-bold tabular-nums' }, valueText(item.id, hoverPoint))
+                );
+              })
+            )
+          ),
+          h('button', {
+            type: 'button',
+            onClick: function () { update({ meteogramTable: !tableOpen }); },
+            className: buttonClass + ' mt-3',
+            'aria-expanded': tableOpen,
+            'aria-controls': 'weather-meteogram-table'
+          }, tableOpen ? '▾ Hide data table' : '▸ Show data table'),
+          h('div', { id: 'weather-meteogram-table', hidden: !tableOpen, className: 'mt-2 overflow-x-auto' },
+            tableOpen && h('table', { className: 'w-full min-w-[34rem] border-collapse text-left text-xs tabular-nums' },
+              h('caption', { className: 'pb-1 text-left text-xs ' + mutedClass }, 'Every plotted value for ' + station.name + ', hour by hour.'),
+              h('thead', null,
+                h('tr', { className: dark ? 'border-b border-slate-700' : 'border-b border-sky-200' },
+                  ['Hour'].concat(legendItems.map(function (item) { return item.label; })).map(function (heading) {
+                    return h('th', { key: heading, scope: 'col', className: 'py-1 pr-3 font-black' }, heading);
+                  })
+                )
+              ),
+              h('tbody', null, points.map(function (point) {
+                return h('tr', { key: point.hour, className: (dark ? 'border-b border-slate-800' : 'border-b border-slate-100') + (passageVisible && Math.abs(point.hour - series.passageHour) < 0.5 ? (dark ? ' bg-amber-950/40' : ' bg-amber-50') : '') },
+                  h('th', { scope: 'row', className: 'py-1 pr-3 font-bold' }, 'T +' + point.hour),
+                  legendItems.map(function (item) {
+                    return h('td', { key: item.id, className: 'py-1 pr-3' }, valueText(item.id, point));
+                  })
+                );
+              }))
+            )
           ),
           h('div', { className: 'mt-3 rounded-lg p-3 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') },
             h('p', { className: 'text-xs font-black' }, passageVisible ? 'Modeled front passage near T +' + series.passageHour + ' h' : 'No modeled front passage in this 12-hour window'),
@@ -4825,7 +5438,8 @@ var geographyGroup = new THREE.Group();
 
       function mapLab() {
         var showAdvanced = band === '6-8' || band === '9-12';
-        var mapDescription = scenario.name + ' weather map at model hour ' + state.simHour + '. ' + current.cloudCover + ' percent cloud cover, ' + current.precipPotential + ' percent precipitation potential, wind from ' + cardinal(current.windDir) + ' at ' + current.windSpeed + ' kilometers per hour. Visible layers include pressure contours' + (state.fronts ? ', fronts' : '') + (state.radar ? ', radar intensity and sweep' : '') + (state.windLayer ? ', and directional wind tracers' : '') + '. Selected station: ' + station.name + '.';
+        var appearance = sceneAppearance(state, current);
+        var mapDescription = scenario.name + ' weather map at model hour ' + state.simHour + '. ' + current.cloudCover + ' percent cloud cover, ' + current.precipPotential + ' percent precipitation potential, wind from ' + cardinal(current.windDir) + ' at ' + current.windSpeed + ' kilometers per hour. The scene is painted as ' + appearance.skyLabel + ' over ' + appearance.groundLabel + (appearance.sunVisible ? ', with the sun visible' : ', with the sun hidden by cloud') + '. Visible layers include pressure contours' + (state.fronts ? ', fronts' : '') + (state.radar ? ', radar intensity and sweep' : '') + (state.windLayer ? ', and directional wind tracers' : '') + '. Station markers show each station name with its current temperature. Selected station: ' + station.name + '.';
         return h('div', { className: 'grid gap-4 p-4 lg:grid-cols-[285px_minmax(0,1fr)]' },
           h('aside', { className: 'space-y-3' },
             scenarioPicker(),
@@ -4870,9 +5484,11 @@ var geographyGroup = new THREE.Group();
               h('div', { id: 'weather-map-visual-key', className: 'flex flex-wrap items-center gap-x-4 gap-y-2 border-t px-3 py-2 text-xs font-bold ' + (dark ? 'border-slate-700 bg-slate-950/80 text-slate-300' : 'border-sky-200 bg-sky-50 text-slate-700'), 'data-weather-canvas-visual-key': true },
                 h('span', { className: 'font-black uppercase tracking-wide ' + skyAccentClass }, 'Canvas visual key'),
                 h('span', null, '\u25CF Selected station pulses amber'),
+                h('span', null, '\uD83C\uDF21\uFE0F Each station pill shows its temperature'),
                 h('span', null, '\u25B3 Front symbols show movement'),
                 h('span', null, '\u2192 Wind marks show direction'),
-                h('span', null, '\uD83D\uDFE9\uD83D\uDFE8\uD83D\uDFE5 Radar: light to intense')
+                h('span', null, '\uD83D\uDFE9\uD83D\uDFE8\uD83D\uDFE5 Radar: light to intense'),
+                h('span', null, '\uD83C\uDF24\uFE0F Sky and ground colour follow the model: ' + appearance.skyLabel + ' over ' + appearance.groundLabel)
               ),
               h('div', { className: 'grid gap-2 p-3 sm:grid-cols-4' },
                 STATIONS.map(function (item) {
@@ -5886,40 +6502,63 @@ var geographyGroup = new THREE.Group();
             { label: 'Cloud cover', key: 'cloudCover', min: 0, max: 100, unit: '%' },
             { label: 'Precip. potential', key: 'precipPotential', min: 0, max: 100, unit: '%' }
           ];
+          var PLOT_LEFT = 160;
+          var PLOT_RIGHT = 600;
           function xFor(value, metric) {
-            return 160 + clamp((value - metric.min) / (metric.max - metric.min), 0, 1) * 475;
+            return PLOT_LEFT + clamp((value - metric.min) / (metric.max - metric.min), 0, 1) * (PLOT_RIGHT - PLOT_LEFT);
           }
-          var baseColor = dark ? '#94a3b8' : '#475569';
-          var testColor = '#38bdf8';
+          // Two entities, two validated categorical slots. The connector is chrome, not data,
+          // so it stays neutral and lets the two ends carry identity.
+          var baseColor = dark ? '#3987e5' : '#2a78d6';
+          var testColor = dark ? '#d95926' : '#eb6834';
           var textColor = dark ? '#e2e8f0' : '#0f172a';
+          var mutedColor = dark ? '#94a3b8' : '#64748b';
+          var gridColor = dark ? '#1e293b' : '#e2e8f0';
+          var connectorColor = dark ? '#475569' : '#cbd5e1';
+          var surfaceColor = dark ? '#0f172a' : '#ffffff';
           var summary = metrics.map(function (metric) {
             return metric.label + ' ' + result.control[metric.key] + ' to ' + result.test[metric.key] + metric.unit;
           }).join(', ');
           return h('svg', {
-            viewBox: '0 0 700 330',
+            viewBox: '0 0 700 350',
             className: 'mt-4 h-auto w-full',
             role: 'img',
             'data-weather-experiment-chart': true,
             'aria-label': 'Controlled experiment comparison at plus ' + result.hour + ' hours: ' + summary
           },
             h('g', null,
-              h('circle', { cx: 185, cy: 22, r: 6, fill: baseColor }),
-              h('text', { x: 198, y: 26, fill: textColor, fontSize: 12, fontWeight: 700 }, 'Baseline'),
-              h('polygon', { points: '287,15 294,22 287,29 280,22', fill: testColor }),
-              h('text', { x: 300, y: 26, fill: textColor, fontSize: 12, fontWeight: 700 }, 'One-variable test')
+              h('circle', { cx: 167, cy: 22, r: 6, fill: baseColor, stroke: surfaceColor, strokeWidth: 2 }),
+              h('text', { x: 180, y: 26, fill: textColor, fontSize: 12, fontWeight: 700 }, 'Baseline'),
+              h('polygon', { points: '269,15 276,22 269,29 262,22', fill: testColor, stroke: surfaceColor, strokeWidth: 2 }),
+              h('text', { x: 284, y: 26, fill: textColor, fontSize: 12, fontWeight: 700 }, 'One-variable test'),
+              h('text', { x: 690, y: 26, textAnchor: 'end', fill: mutedColor, fontSize: 11, fontWeight: 700 }, 'CHANGE')
             ),
             metrics.map(function (metric, index) {
-              var y = 66 + index * 46;
-              var x1 = xFor(result.control[metric.key], metric);
-              var x2 = xFor(result.test[metric.key], metric);
+              var y = 70 + index * 46;
+              var controlValue = result.control[metric.key];
+              var testValue = result.test[metric.key];
+              var x1 = xFor(controlValue, metric);
+              var x2 = xFor(testValue, metric);
+              var delta = round(testValue - controlValue, 1);
+              var moved = Math.abs(delta) > 0.05;
               return h('g', { key: metric.key },
                 h('text', { x: 145, y: y + 4, textAnchor: 'end', fill: textColor, fontSize: 12, fontWeight: 700 }, metric.label),
-                h('line', { x1: 160, y1: y, x2: 635, y2: y, stroke: dark ? '#334155' : '#cbd5e1', strokeWidth: 2 }),
-                h('line', { x1: x1, y1: y, x2: x2, y2: y, stroke: testColor, strokeWidth: 4, strokeLinecap: 'round' }),
-                h('circle', { cx: x1, cy: y, r: 7, fill: baseColor }),
-                h('polygon', { points: x2 + ',' + (y - 8) + ' ' + (x2 + 8) + ',' + y + ' ' + x2 + ',' + (y + 8) + ' ' + (x2 - 8) + ',' + y, fill: testColor }),
-                h('text', { x: x1, y: y - 11, textAnchor: 'middle', fill: baseColor, fontSize: 11, fontWeight: 700 }, result.control[metric.key] + metric.unit),
-                h('text', { x: x2, y: y + 21, textAnchor: 'middle', fill: testColor, fontSize: 11, fontWeight: 700 }, result.test[metric.key] + metric.unit)
+                h('line', { x1: PLOT_LEFT, y1: y, x2: PLOT_RIGHT, y2: y, stroke: gridColor, strokeWidth: 1 }),
+                // The row's own range, so a bar position is never mistaken for a shared scale.
+                h('text', { x: PLOT_LEFT, y: y + 21, fill: mutedColor, fontSize: 9, style: { fontVariantNumeric: 'tabular-nums' } }, metric.min + metric.unit),
+                h('text', { x: PLOT_RIGHT, y: y + 21, textAnchor: 'end', fill: mutedColor, fontSize: 9, style: { fontVariantNumeric: 'tabular-nums' } }, metric.max + metric.unit),
+                moved && h('line', { x1: x1, y1: y, x2: x2, y2: y, stroke: connectorColor, strokeWidth: 3, strokeLinecap: 'round' }),
+                // The baseline circle is drawn wider than the test diamond so that when a
+                // variable does not move, it still rims the diamond instead of vanishing under it.
+                h('circle', { cx: x1, cy: y, r: 9, fill: baseColor, stroke: surfaceColor, strokeWidth: 2 }),
+                h('polygon', { points: x2 + ',' + (y - 8) + ' ' + (x2 + 8) + ',' + y + ' ' + x2 + ',' + (y + 8) + ' ' + (x2 - 8) + ',' + y, fill: testColor, stroke: surfaceColor, strokeWidth: 2 }),
+                // Values ride in ink; the coloured mark beside them carries identity. A held
+                // variable prints its value once — repeating it either side reads as noise.
+                moved && h('text', { x: x1, y: y - 12, textAnchor: 'middle', fill: mutedColor, fontSize: 11, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums', paintOrder: 'stroke', stroke: surfaceColor, strokeWidth: 3, strokeLinejoin: 'round' } }, controlValue + metric.unit),
+                h('text', { x: x2, y: y + 22, textAnchor: 'middle', fill: textColor, fontSize: 11, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums', paintOrder: 'stroke', stroke: surfaceColor, strokeWidth: 3, strokeLinejoin: 'round' } }, testValue + metric.unit),
+                // The signed change is the answer to "what did one variable do", so it gets
+                // its own aligned column instead of being left for the reader to subtract.
+                h('text', { x: 690, y: y + 4, textAnchor: 'end', fill: moved ? textColor : mutedColor, fontSize: 12, fontWeight: moved ? 800 : 600, style: { fontVariantNumeric: 'tabular-nums' } }, moved ? (delta > 0 ? '+' : '') + delta + metric.unit : 'no change')
               );
             })
           );
