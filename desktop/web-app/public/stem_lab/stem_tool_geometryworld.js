@@ -2118,6 +2118,16 @@
       // are read by assistive tech even when the visual game UI changes. Previously the tool
       // referenced `announceToSR` without defining it — the `typeof === 'function'` guards
       // silently skipped announcements, which meant no SR support.
+      // Send focus back to the 3D world. Closing a dialog with focus inside it drops
+      // the caret to the top of the document, so a keyboard student had to tab all the
+      // way back in before WASD meant anything again.
+      function focusWorldSurface() {
+        try {
+          var wrap = document.getElementById('geoworld-fs-wrap');
+          if (wrap) wrap.focus({ preventScroll: true });
+        } catch (e) {}
+      }
+
       function announceToSR(message) {
         try {
           var lr = document.getElementById('allo-live-geometryworld');
@@ -3450,13 +3460,14 @@
               if (ev.shiftKey) {
                 ev.preventDefault();
                 upd({ showNpcDialog: false, showMyLessons: false, showLessonEditor: false, showLessonIntro: false, showReflection: false, showHelp: false, showCreatorPanel: false, showGrowthNudge: false, showTeacherView: false, showPeerWorlds: false });
+                focusWorldSurface();
                 if (addToast) addToast('🎮 Closed all overlays — back in the game', 'info');
                 break;
               }
               // Plain Esc: close the top-priority open dialog/overlay one at a time.
               // Read from engine._modalState (updated each React render) to avoid stale closure.
               var ms = (engine && engine._modalState) || {};
-              if (ms.showNpcDialog) { upd('showNpcDialog', false); break; }
+              if (ms.showNpcDialog) { upd('showNpcDialog', false); focusWorldSurface(); break; }
               if (ms.showHelp) { upd('showHelp', false); break; }
               if (ms.showGrowthNudge) { upd('showGrowthNudge', false); break; }
               if (ms.showPeerWorlds) { upd('showPeerWorlds', false); break; }
@@ -7627,7 +7638,28 @@
               });
           };
           var npcHexColor = '#' + (data.color || 0x7c3aed).toString(16).padStart(6, '0');
-          return el('div', { style: {
+          return el('div', {
+              // The NPC dialog carries the lesson's actual assessment — the answer
+              // choices — and opening it exits pointer lock, so the mouse is freed but
+              // keyboard focus stayed behind on the world surface. A screen-reader user
+              // got no signal it had appeared and had to tab through the whole HUD to
+              // reach the choices. Naming it a dialog and moving focus into it makes
+              // the reader announce it and puts the choices one Tab away.
+              role: 'dialog',
+              'aria-modal': 'true',
+              'aria-label': data.name + (data.question ? ' — question' : ''),
+              tabIndex: -1,
+              // Guarded on the NODE, not an identity-stable callback: React re-invokes
+              // an inline ref on every re-render, and re-focusing on each one would
+              // yank focus back off whichever choice the student had tabbed to. The
+              // flag lives on the element, so it only fires for a genuinely new node.
+              ref: function(node) {
+                if (node && !node._gwDialogFocused) {
+                  node._gwDialogFocused = true;
+                  try { node.focus({ preventScroll: true }); } catch (e) { try { node.focus(); } catch (e2) {} }
+                }
+              },
+              style: {
               position: 'absolute',
               // On mobile the dialog sits a bit higher so it doesn't overlap the touch-action buttons
               bottom: isMobile ? '160px' : '60px',
@@ -7654,7 +7686,7 @@
                 el('div', { style: { fontSize: '13px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, data.name),
                 data.question && !isAnswered && el('div', { style: { fontSize: '9px', color: npcHexColor, fontWeight: 600, letterSpacing: '0.3px' } }, 'HAS A QUESTION')
               ),
-              el('button', { 'aria-label': __alloT('stem.geometryworld.close_npc_dialog', 'Close NPC dialog'), onClick: function() { upd({ showNpcDialog: false }); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
+              el('button', { 'aria-label': __alloT('stem.geometryworld.close_npc_dialog', 'Close NPC dialog'), onClick: function() { upd({ showNpcDialog: false }); focusWorldSurface(); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
             ),
             // Body content
             el('div', { style: { padding: '12px 16px' } },

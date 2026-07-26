@@ -90,6 +90,7 @@ function mountTool(cfg, bucket) {
   React.act(function () { root.render(React.createElement(Comp)); });
   return {
     container: container,
+    rerender: function () { React.act(function () { bump(); }); },
     unmount: function () { React.act(function () { root.unmount(); }); container.remove(); },
   };
 }
@@ -172,6 +173,88 @@ describe('Geometry World world-surface accessibility', () => {
     expect(m.container.textContent).toContain('Look around (no mouse)');
     m.unmount();
   }, 20000);
+});
+
+describe('Geometry World NPC dialog focus', () => {
+  let cfg;
+
+  beforeAll(() => {
+    resetStemLab();
+    window.THREE = makeThreeStub();
+    cfg = loadTool(FILE, 'geometryWorld');
+  });
+
+  beforeEach(() => {
+    window.THREE = makeThreeStub();
+    const eng = makeFakeEngine();
+    eng.npcs = [{
+      body: { position: { x: 0, y: 0, z: 0 } },
+      data: { name: 'Ada', color: 0x7c3aed, dialogue: 'Count the layers.', question: { text: 'What is 2x3x4?', choices: ['24', '9', '12'], correct: 0 } },
+    }];
+    window[ENGINE_KEY] = eng;
+  });
+
+  afterEach(() => {
+    delete window[ENGINE_KEY];
+    document.body.innerHTML = '';
+  });
+
+  function openDialog() {
+    return mountTool(cfg, {
+      _introShownOnce: true,
+      worldActive: true,
+      showNpcDialog: true,
+      dialogNpcIdx: 0,
+      npcTypewriterNpc: 0,
+      npcTypewriterPos: 999,
+    });
+  }
+
+  it('is a labelled modal dialog, not an anonymous div', () => {
+    const m = openDialog();
+    const dlg = m.container.querySelector('[role="dialog"]');
+
+    expect(dlg).toBeTruthy();
+    expect(dlg.getAttribute('aria-modal')).toBe('true');
+    // Named after the character so a reader says who is speaking.
+    expect(dlg.getAttribute('aria-label')).toContain('Ada');
+    m.unmount();
+  }, 20000);
+
+  it('moves focus into the dialog when it opens', () => {
+    // Opening exits pointer lock, but focus used to stay on the world surface — a
+    // keyboard student had to tab through the whole HUD to reach the answer choices.
+    const m = openDialog();
+    const dlg = m.container.querySelector('[role="dialog"]');
+
+    expect(document.activeElement).toBe(dlg);
+    m.unmount();
+  }, 20000);
+
+  it('does not re-steal focus on a re-render', () => {
+    // An unguarded inline ref re-fires on every commit; re-focusing there would yank
+    // focus off whichever choice the student had tabbed to.
+    const m = openDialog();
+    const dlg = m.container.querySelector('[role="dialog"]');
+    const choice = m.container.querySelector('[role="dialog"] button');
+    expect(choice).toBeTruthy();
+
+    choice.focus();
+    expect(document.activeElement).toBe(choice);
+
+    m.rerender();
+
+    expect(document.activeElement).toBe(choice);
+    expect(document.activeElement).not.toBe(dlg);
+    m.unmount();
+  }, 20000);
+
+  it('sends focus back to the world when the dialog closes', () => {
+    expect(SOURCE).toContain('function focusWorldSurface() {');
+    // Every close path: the X button, Escape, and Shift+Escape.
+    expect(SOURCE).toContain("onClick: function() { upd({ showNpcDialog: false }); focusWorldSurface(); }");
+    expect(SOURCE).toContain("if (ms.showNpcDialog) { upd('showNpcDialog', false); focusWorldSurface(); break; }");
+  });
 });
 
 describe('Geometry World keyboard building', () => {
