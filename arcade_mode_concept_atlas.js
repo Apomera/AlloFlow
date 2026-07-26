@@ -121,21 +121,45 @@
     var highlightCardId = opts.highlightCardId || null;
     var showLegend = opts.showLegend === true;
     var nodeRadius = opts.nodeRadius || (nodes.length > 8 ? 18 : 22);
-    if (opts.size === 'mini') {
+    var isMini = opts.size === 'mini';
+    if (isMini) {
       nodeRadius = 8;
       showLabels = false;
       showEdgeLabels = false;
     }
 
+    // The diagram's geometry is not an equivalent text alternative. Full
+    // diagrams expose the actual concepts and relationships; miniatures are
+    // hidden because the host renders the same name and counts beside them.
+    var diagramName = atlas.name || atlas.topic || 'Concept atlas';
+    var nodeSummary = nodes.slice(0, 20).map(function (n) {
+      return n.cardName || n.name || n.cardId || 'Unnamed concept';
+    }).join(', ');
+    if (nodes.length > 20) nodeSummary += ', and ' + (nodes.length - 20) + ' more';
+    var relationSummary = edges.slice(-20).map(function (e) {
+      var fromName = e.fromCardName || e.fromCardId || 'Unnamed concept';
+      var relation = e.edgeLabel || e.edgeType || 'relates to';
+      var toName = e.toCardName || e.toCardId || 'Unnamed concept';
+      return fromName + ' ' + relation + ' ' + toName;
+    }).join('; ');
+    if (edges.length > 20) relationSummary = (edges.length - 20) + ' earlier relationships; ' + relationSummary;
+    var diagramDescription = nodes.length === 0
+      ? 'No concepts have been added yet.'
+      : 'Concepts: ' + nodeSummary + '. '
+        + (edges.length > 0 ? 'Relationships: ' + relationSummary + '.' : 'No relationships have been added yet.');
+
     // Empty-state stub
     if (nodes.length === 0) {
-      return h('svg', {
+      return h('svg', { role: 'img',
         viewBox: '0 0 ' + width + ' ' + height,
         width: '100%',
         height: '100%',
-        style: { background: bg, borderRadius: '8px' },
-        'aria-label': 'Empty atlas'
+        focusable: 'false',
+        'aria-hidden': isMini ? 'true' : undefined,
+        'aria-label': isMini ? undefined : diagramName + ', empty concept atlas',
+        style: { background: bg, borderRadius: '8px' }
       },
+        !isMini ? h('desc', null, diagramDescription) : null,
         h('text', {
           x: width / 2, y: height / 2,
           textAnchor: 'middle',
@@ -339,14 +363,16 @@
       );
     }
 
-    return h('svg', {
+    return h('svg', { role: 'img',
       viewBox: '0 0 ' + width + ' ' + height,
       width: '100%',
       height: '100%',
-      style: { background: bg, borderRadius: isPrint ? '4px' : '8px', display: 'block' },
-      role: 'img',
-      'aria-label': 'Atlas diagram: ' + nodes.length + ' nodes, ' + edges.length + ' edges'
+      focusable: 'false',
+      'aria-hidden': isMini ? 'true' : undefined,
+      'aria-label': isMini ? undefined : diagramName + ': ' + nodes.length + ' concepts and ' + edges.length + ' relationships',
+      style: { background: bg, borderRadius: isPrint ? '4px' : '8px', display: 'block' }
     },
+      !isMini ? h('desc', { key: 'atlas-description' }, diagramDescription) : null,
       h('defs', null, defs),
       edgeEls,
       nodeEls,

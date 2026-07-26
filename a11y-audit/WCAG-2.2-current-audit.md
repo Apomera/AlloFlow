@@ -227,6 +227,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Tightened the WCAG 2.2.1 static timer heuristic so background registry polling, autosave, presence refresh, and retry intervals are not misclassified as user deadlines. TIMER-001 now requires both an observed clock and explicit countdown/deadline state, while still reporting real unadjustable countdowns and accepting pause or extension mechanisms. Focused regression fixtures cover polling, autosave, failing countdown, pause, and extension cases.
 
+- Replaced Concept Atlas SVG count-only naming with meaningful text alternatives that enumerate concept names and relationship statements in SVG descriptions. Full and empty diagrams expose concise image names plus detailed descriptions; miniature constellation thumbnails are hidden because the same atlas name and counts are adjacent; and the root/deployed AlloHaven host mirrors remain synchronized. The focused Atlas static audit now reports no SVG findings (WCAG 1.1.1, 1.3.1, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

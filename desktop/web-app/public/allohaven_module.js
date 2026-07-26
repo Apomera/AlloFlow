@@ -23266,7 +23266,7 @@
             }, '🗺');
           }
           return h('div', {
-            'aria-label': 'Atlas mini-diagram preview',
+            'aria-hidden': 'true',
             style: { width: '64px', height: '64px', flexShrink: 0, background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', overflow: 'hidden' }
           },
             window.AlloHavenArcade.renderAtlasDiagram(atlas, {
