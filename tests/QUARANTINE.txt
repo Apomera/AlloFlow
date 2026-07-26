@@ -60,7 +60,6 @@ tests/mcp_driver_scripted_e2e.test.js  # 1 failing · driver behavioral e2e (scr
 tests/misc_handlers_error_alerts_a11y.test.js  # 1 failing · project-load error announcement accessibility announces invalid and unreadable projects once through the acces
 tests/non_eppp_eppp_guided_qa.test.js  # 1 failing · EPPP-guided QA for every non-EPPP test-prep pack binds the suite verdict to every reviewed source artifact
 tests/open_items_b3_b7_m11.test.js  # 6 failing · B3 — context reasons no longer make complete unreachable (live policy module) a clean static-web audit reaches
-tests/output_audit_storm_resilience.test.js  # 2 failing · source-pins: B — cooldown-aware deferred final re-audit bounded LOOP (superseded the one-shot ≤45s wait, 2026-
 tests/palette_ai_propose.test.js  # 1 failing · anti-drift: exported + wired into the picker, feeding the SAME clamp pipeline the picker has an AI-suggest for
 tests/palette_ui_wiring.test.js  # 3 failing · palette state + handlers _applyPalette uses the deterministic clamp+apply tools and re-audits (no AI)
 tests/particle_lab_3d_accessibility.test.js  # 1 failing · STEM Lab Three.js loading — single canonical path (sweep) no tool loads Three.js on its own: only the host mod

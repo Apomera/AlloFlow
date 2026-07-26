@@ -3137,6 +3137,9 @@ function _alloDistributionVerdict(r, opts) {
   // order, and no reading-order check runs against the source — so "preserved in reading order"
   // claimed more than the measurement supports. State what was actually measured.
   if (cov != null && cov < 90) review.push('only ' + cov + '% of the source characters are present in the output — check the Diff for missing content');
+  // L5 part 2: the verdict can now cite a REAL order measurement instead of implying one from the
+  // character count. Content that is all present and in the wrong order is still unreadable.
+  if (kinds.sourceReadingOrder) review.push('the output text runs in a noticeably different order from the source — content can be present and still be unreadable in the wrong order; read the Diff');
   if (kinds.numeric) review.push('numbers may have changed between source and output — verify scores, dates, and percentages before anyone reads this');
   if (kinds.refusal) review.push('AI meta/refusal text leaked into the output — it should not ship; re-run the remediation');
   if (kinds.tables) review.push('one or more tables may have been collapsed or lost — check the Diff');
@@ -4286,6 +4289,12 @@ var createDocPipeline = function(deps) {
   // Canvas-visible sink: in canvas/embedded runtimes, warnLog/console.warn aren't shown. We keep
   // a rolling window-level array AND dispatch a CustomEvent so a host listener (panel, toast,
   // diagnostic overlay) can surface pipeline telemetry without touching each call site.
+  //
+  // L2 (audit 2026-07-26) — be accurate about who reads what, because the previous wording sent
+  // people looking in the wrong place. The ARRAY below has no in-app reader: it is a
+  // DevTools/debugger aid only. The CustomEvent does have listeners (the view's progress + warn
+  // hooks). The log a teacher can actually copy is window.__alloDiagLog, fed by warnLog from the
+  // flattened prefix built in _pipeLog — which is why the run identity has to live in that string.
   if (typeof window !== 'undefined' && !window._alloflowPipelineWarnings) {
     window._alloflowPipelineWarnings = [];
   }
@@ -4298,7 +4307,17 @@ var createDocPipeline = function(deps) {
         ? _activeRemediationProgress.documentEpoch
         : (Object.prototype.hasOwnProperty.call(_logStats, 'documentEpoch') ? _logStats.documentEpoch : null));
     var elapsed = _logStats.startTime ? '+' + ((performance.now() - _logStats.startTime) / 1000).toFixed(1) + 's' : '';
-    var prefix = '[DocPipe][' + tag + '] ' + elapsed + ' — ';
+    // L2 (audit 2026-07-26): put the run identity in the string that actually TRAVELS. runId and
+    // documentEpoch were computed here and pushed to window._alloflowPipelineWarnings — which
+    // nothing in the app reads. The panel a teacher copies from renders window.__alloDiagLog, which
+    // received only the flattened prefix, so a pasted field log was one interleaved stream with no
+    // way to tell which run, which document or which batch file a line belonged to. The `+12.4s`
+    // elapsed prefix restarts at zero every run, so it even reads as time travel. Diagnosing the
+    // exact bug class this audit was opened for — two runs disagreeing about ownership — was
+    // impossible from that artifact.
+    var _runTag = String(_logRunId || '-').slice(-6);
+    var _epochTag = (_logDocumentEpoch === null || _logDocumentEpoch === undefined) ? '-' : String(_logDocumentEpoch);
+    var prefix = '[DocPipe][' + tag + '][' + _runTag + '/e' + _epochTag + '] ' + elapsed + ' — ';
     // warnLog is the canonical sink: besides DevTools it feeds the capped
     // window.__alloDiagLog ring used by the in-app diagnostics panel. The old
     // data-bearing branch wrote only to console.group(), so the most useful
@@ -24536,28 +24555,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           }
         }
         finalAfterScore = governingFinal;
-        // ── D (throttle resilience 2026-07-03): honest reframe of a residual throttled partial ──
-        // If B could not fully close a throttle-caused partial, the coverage summary still reads as an
-        // alarming "score covers audited sections only". But the automated engines (axe + Equal Access)
-        // DID audit the FULL document and GOVERN this headline — only the AI SEMANTIC re-check was
-        // throttled on the failed section(s). Reframe the summary so the disclosure is honest and
-        // non-alarming. Messaging ONLY — the min-blend score above is untouched (do NOT null/re-weight).
-        if (verification && verification._partialAudit) {
-          verification._aiReCheckThrottled = _finalAuditThrottled;
-          const _didSec = verification.chunksAudited, _reqSec = verification.chunksRequested;
-          // R3: name only the engine(s) that ACTUALLY ran (EA is optional — axe alone satisfies this
-          // branch, so claiming "IBM Equal Access" verified it when eaResults was null is an overclaim),
-          // and attribute the shortfall to a rate-limit ONLY when the partial was throttle-caused.
-          const _enginesRan = [axeScoreAvailable ? 'axe-core' : null, eaScoreAvailable ? 'IBM Equal Access' : null].filter(Boolean);
-          const _engineList = _enginesRan.join(' + ') || 'an automated engine';
-          const _engineNoun = _enginesRan.length > 1 ? 'engines' : 'engine';
-          const _reason = _finalAuditThrottled
-            ? 'the rest were throttled by a temporary Canvas rate-limit'
-            : 'the rest could not be re-checked (the response was empty or malformed)';
-          verification.summary = String(verification.summary || '')
-            .replace(/\s*\(\s*\d+\s*\/\s*\d+\s+sections audited[^)]*\)\s*$/i, '')
-            + ` (The AI semantic re-check reached ${_didSec} of ${_reqSec} section${_reqSec === 1 ? '' : 's'} — ${_reason}. The full document was still verified by the automated ${_engineNoun} (${_engineList}), and this headline reflects that complete structural coverage.)`;
-        }
+        // L4 (audit 2026-07-26): block D (the partial-coverage reframe) used to live RIGHT HERE,
+        // inside the `!_aiDegraded` arm, where it could never run. `_aiDegraded`
+        // is `!_alloUsableCompleteAiAudit(verification) || …`, and that predicate returns false for
+        // any audit with `_partialAudit === true`, so `verification._partialAudit` was provably
+        // false at this point and `_aiReCheckThrottled` was a field nothing could ever write. It now
+        // runs after the whole headline ladder, which is the only place a partial audit arrives.
       } else if (_aiDegraded && deterministicScore !== null) {
         // AI semantic audit incomplete but a deterministic engine DID run → headline = the reliable
         // structural score (min of axe/EA, or whichever ran), flagged so the UI labels it honestly.
@@ -24584,6 +24587,39 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         axeCoreFailed = true;
         if (_aiDegraded) finalAfterScore = null;
         warnLog(`[PDF Fix] WARNING: no deterministic engine score available (axe + Equal Access both failed) — final score is AI-only (${finalAfterScore}). Results may be less reliable.`);
+      }
+
+      // ── D (throttle resilience 2026-07-03): honest reframe of a residual throttled partial ──
+      // Made REACHABLE by L4 (audit 2026-07-26) — it used to sit inside a branch that could not
+      // contain a partial audit, so it never ran.
+      // If the deferred re-audit could not fully close a partial, the coverage summary reads as an
+      // alarming "score covers audited sections only". But when the automated engines audited the
+      // FULL document, the shortfall is confined to the AI SEMANTIC re-check on a few sections.
+      // Say exactly that, naming only the engines that actually ran and attributing the shortfall
+      // to a rate-limit only when one was actually involved.
+      //
+      // Deliberately MESSAGING ONLY: the headline chosen above, and whether _aiVerificationIncomplete
+      // suppresses it, are untouched. Whether a 29-of-30-section partial should be allowed to show a
+      // score at all is a product judgement about how much coverage is enough, not a mechanical fix —
+      // it stays with the existing conservative behaviour until someone decides otherwise.
+      if (verification && verification._partialAudit) {
+        verification._aiReCheckThrottled = _finalAuditThrottled;
+        const _didSec = verification.chunksAudited, _reqSec = verification.chunksRequested;
+        if (Number.isFinite(_didSec) && Number.isFinite(_reqSec) && _reqSec > 0 && deterministicScore !== null) {
+          // R3: name only the engine(s) that ACTUALLY ran (EA is optional — axe alone satisfies this
+          // branch, so claiming "IBM Equal Access" verified it when eaResults was null is an overclaim),
+          // and attribute the shortfall to a rate-limit ONLY when the partial was throttle-caused.
+          const _enginesRan = [axeScoreAvailable ? 'axe-core' : null, eaScoreAvailable ? 'IBM Equal Access' : null].filter(Boolean);
+          const _engineList = _enginesRan.join(' + ') || 'an automated engine';
+          const _engineNoun = _enginesRan.length > 1 ? 'engines' : 'engine';
+          const _reason = _finalAuditThrottled
+            ? 'the rest were throttled by a temporary Canvas rate-limit'
+            : 'the rest could not be re-checked (the response was empty or malformed)';
+          verification.summary = String(verification.summary || '')
+            .replace(/\s*\(\s*\d+\s*\/\s*\d+\s+sections audited[^)]*\)\s*$/i, '')
+            + ` (The AI semantic re-check reached ${_didSec} of ${_reqSec} section${_reqSec === 1 ? '' : 's'} — ${_reason}. The full document was still verified by the automated ${_engineNoun} (${_engineList}).)`;
+          warnLog('[PDF Fix] Partial AI re-check reframed: ' + _didSec + '/' + _reqSec + ' sections, deterministic coverage complete via ' + _engineList + '.');
+        }
       }
 
       // Score divergence check
@@ -24709,6 +24745,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       let integrityCoverage = null;
       let integrityWarning = null;
       let _folioLeakWarn = null; // #F (2026-07-05): a detected page folio leaked inline into the body
+      // L5 (audit 2026-07-26): declared HERE, above the integrity block that assigns it, on purpose.
+      // A `let` declared after the assignment site is a TDZ ReferenceError that the surrounding
+      // try/catch swallows, so the disclosure would vanish with nothing in the log — the exact trap
+      // an earlier fix in this audit hit.
+      let _readingOrderWarn = null;
       let _placementWarn = null; // H6 (2026-07-09): placement/reading-order warning — carried into the
       // persistent fidelity panel like the numeric one below. It used to live ONLY in integrityWarning
       // (a 3-second toast + the downloadable report), so during an unattended run the teacher never saw
@@ -24829,6 +24870,27 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             }
           }
         } catch (_) {}
+        // L5 (audit 2026-07-26): an actual READING-ORDER signal against the source. integrityCoverage
+        // is a character-count ratio and is completely order-blind — a document whose sections were
+        // re-ordered, or whose columns were interleaved, scores 100% — yet the distribution verdict
+        // was turning that number into a reading-order claim. readingOrderSequenceRatio exists and is
+        // exported, but Step 2 never ran it against the deterministic source: the only calls compared
+        // HTML to HTML inside a single fix pass, so a Step-2 transform that scrambled the whole
+        // document produced a green verdict. Threshold 0.80 leaves generous room for the legitimate
+        // reflow a remediation performs (headings promoted, captions moved next to their figure, a
+        // preserved-content box appended); WARN only.
+        try {
+          const _outPlainOrder = htmlToPlainText(_finalForIntegrity);
+          if (_srcRaw && _srcRaw.length > 400 && _outPlainOrder && _outPlainOrder.length > 400) {
+            const _orderRatio = readingOrderSequenceRatio(_srcRaw, _outPlainOrder);
+            if (Number.isFinite(_orderRatio) && _orderRatio < 0.80) {
+              _readingOrderWarn = 'The output text runs in a noticeably different order from the source (about '
+                + Math.round(_orderRatio * 100) + '% of the source wording is still in its original sequence). '
+                + 'Content can be present and still be unreadable in the wrong order — read the Diff before distributing.';
+              warnLog('[Integrity] READING-ORDER — ratio ' + _orderRatio.toFixed(2) + ' — ' + _readingOrderWarn);
+            }
+          }
+        } catch (_orderErr) { warnLog('[Integrity] reading-order check failed (non-critical): ' + (_orderErr && _orderErr.message)); }
       } catch (integrityErr) {
         warnLog('[Integrity] check failed (non-critical):', integrityErr?.message);
       }
@@ -24862,6 +24924,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       if (_placementWarn) _structuralFidelityNotes.push({ kind: 'placement', msg: _placementWarn }); // H6: rides the panel + fidelityLimited
       if (_numericLossWarn) _structuralFidelityNotes.push({ kind: 'numeric', msg: _numericLossWarn });
       if (_folioLeakWarn) _structuralFidelityNotes.push({ kind: 'folioLeak', msg: _folioLeakWarn }); // #F: leaked page number inline in the body
+      if (_readingOrderWarn) _structuralFidelityNotes.push({ kind: 'sourceReadingOrder', msg: _readingOrderWarn }); // L5: a DISTINCT kind from the view's 'reading-order' note, which compares a re-fix against the PREVIOUS version. This one compares the output against the SOURCE DOCUMENT, so a re-fix lane must not clobber it; only a re-extraction can change it, which is why it lives with the durable kinds.
       // #G (2026-07-05): disclose reconcile-time echo collapses in the same persistent panel. Gated on
       // _heavyScanned so a stale stash from a previous scanned run can't annotate a born-digital doc
       // (the stash is only written when reconciliation actually runs).

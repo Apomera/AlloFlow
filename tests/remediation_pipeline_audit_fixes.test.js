@@ -967,3 +967,76 @@ describe('L9/L3 — the re-OCR flag and the re-audit abort signal', () => {
     expect(view).not.toContain('auditOutputAccessibility(newHtml, undefined,');
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// L2 / L4 / L5 — diagnosability and disclosures that describe what was measured.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('L2 — the copyable log carries the run identity', () => {
+  it('runId and documentEpoch are in the string that actually travels', () => {
+    // They were computed in _pipeLog and pushed to window._alloflowPipelineWarnings, which nothing
+    // in the app reads. The panel a teacher copies from renders window.__alloDiagLog, which got
+    // only the flattened prefix — so a pasted field log was one interleaved stream with no way to
+    // tell which run, document or batch file a line belonged to. The +12.4s elapsed prefix even
+    // restarts at zero each run, so it reads as time travel.
+    expect(dp).toContain("var prefix = '[DocPipe][' + tag + '][' + _runTag + '/e' + _epochTag + '] ' + elapsed + ' — ';");
+    expect(dp).toContain("var _runTag = String(_logRunId || '-').slice(-6);");
+  });
+
+  it('the comment no longer sends the next reader to a buffer with no reader', () => {
+    expect(dp).toContain('The ARRAY below has no in-app reader');
+  });
+});
+
+describe('L4 — the partial-coverage reframe is reachable', () => {
+  it('it runs after the headline ladder, not inside a branch that excludes partials', () => {
+    // `_aiDegraded` is `!_alloUsableCompleteAiAudit(verification) || …`, and that predicate returns
+    // false for any audit with _partialAudit === true — so inside the `!_aiDegraded` arm the block's
+    // own guard was provably false and _aiReCheckThrottled was a field nothing could ever write.
+    const iLadderEnd = dp.indexOf('no deterministic engine score available');
+    const iReframe = dp.indexOf('verification._aiReCheckThrottled = _finalAuditThrottled;');
+    expect(iLadderEnd).toBeGreaterThan(0);
+    expect(iReframe).toBeGreaterThan(iLadderEnd);
+  });
+
+  it('it is messaging only — the headline and its suppression are untouched', () => {
+    const block = dp.slice(dp.indexOf('honest reframe of a residual throttled partial'), dp.indexOf('Score divergence check'));
+    expect(block).not.toMatch(/finalAfterScore\s*=/);
+    expect(block).not.toMatch(/_aiVerificationIncomplete\s*=/);
+  });
+
+  it('it still refuses to name an engine that did not run', () => {
+    const block = dp.slice(dp.indexOf('honest reframe of a residual throttled partial'), dp.indexOf('Score divergence check'));
+    expect(block).toContain("eaScoreAvailable ? 'IBM Equal Access' : null");
+    expect(block).toContain('const _reason = _finalAuditThrottled');
+  });
+});
+
+describe('L5 — the reading-order claim is backed by a reading-order measurement', () => {
+  it('the output is compared against the SOURCE, not HTML-to-HTML within one pass', () => {
+    // integrityCoverage is a character-count ratio and completely order-blind: a document whose
+    // sections were re-ordered, or whose columns were interleaved, scores 100%. The verdict was
+    // turning that number into a reading-order claim.
+    expect(dp).toContain('const _orderRatio = readingOrderSequenceRatio(_srcRaw, _outPlainOrder);');
+    expect(dp).toContain("kind: 'sourceReadingOrder'");
+  });
+
+  it('it uses a DISTINCT kind from the view\'s within-pass reading-order note', () => {
+    // The view's 'reading-order' note compares a re-fix against the PREVIOUS version and is
+    // replaced by the re-fix lane. This one is a property of the source document, so sharing the
+    // kind would let a re-fix silently clear it — the two-lane drift this audit keeps finding.
+    const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+    expect(view).toContain("kind: 'reading-order'");
+    expect(view).not.toContain("kind: 'sourceReadingOrder'");
+  });
+
+  it('the declaration sits ABOVE the block that assigns it (TDZ)', () => {
+    const iDecl = dp.indexOf('let _readingOrderWarn = null;');
+    const iAssign = dp.indexOf('_readingOrderWarn = \'The output text runs in a noticeably different order');
+    expect(iDecl).toBeGreaterThan(0);
+    expect(iAssign).toBeGreaterThan(iDecl);
+  });
+
+  it('the distribution verdict can now cite it', () => {
+    expect(dp).toContain('if (kinds.sourceReadingOrder) review.push(');
+  });
+});

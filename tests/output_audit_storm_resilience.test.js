@@ -24,8 +24,11 @@ describe('source-pins: B — cooldown-aware deferred final re-audit', () => {
     expect(bIdx).toBeGreaterThan(-1);
     expect(bBlock).toContain('verification._partialAudit');
     expect(bBlock).toContain('_finalAuditThrottled && !_finalAuditHadUsableScore'); // M1: null/thrown audits circle back too
-    expect(bBlock).toContain('_geminiCooldownUntil > Date.now()');
-    expect(bBlock).toContain('_geminiCap < _geminiEffectiveMax'); // R7: cap suppressed below the run ceiling = storm
+    // Audit finding L7 (2026-07-26) replaced the hand-rolled `cooldown || cap < ceiling` here with
+    // the gate's own time-bounded snapshot. The old expression was true for the WHOLE run once
+    // anything tripped, so a malformed-JSON partial published a rate-limit attribution that was
+    // simply false. Pin the fact, not the arithmetic.
+    expect(bBlock).toContain('_geminiThrottleInfo().recentlyThrottled');
     expect(bBlock).not.toContain('authThrottles'); // the non-existent field the design first suggested
   });
   it('bounded LOOP (superseded the one-shot ≤45s wait, 2026-07-07 + M1/M2 2026-07-09): circles back until coverage completes, clamped to the budget', () => {
@@ -38,7 +41,9 @@ describe('source-pins: B — cooldown-aware deferred final re-audit', () => {
     // Capture the exact bytes before the await so the adopted audit cannot silently
     // attest to a different HTML revision.
     expect(bBlock).toContain('const _reFinalAuditHtml = accessibleHtml;');
-    expect(bBlock).toContain('_reFinalAudit = await _withTimeout(auditOutputAccessibility(_reFinalAuditHtml)');
+    // Stale as written: the call gained a `{ signal }` argument. What matters is that the captured
+    // bytes are what gets re-audited, under the budget clamp.
+    expect(bBlock).toContain('_reFinalAudit = await _withTimeout(auditOutputAccessibility(_reFinalAuditHtml');
     // fail-soft: keep the best result on any error (incl. a budget timeout)
     expect(bBlock).toMatch(/catch\s*\(_reErr\)/);
   });
@@ -50,7 +55,11 @@ describe('source-pins: B — cooldown-aware deferred final re-audit', () => {
 
 describe('source-pins: D — honest reframe of a residual throttled partial', () => {
   const dIdx = dp.indexOf('honest reframe of a residual throttled partial');
-  const dBlock = dp.slice(dIdx, dIdx + 2050); // contains all of D; stops before the next branch's finalAfterScore=
+  // Bounded by the NEXT block's own anchor rather than a character count. Audit finding L4
+  // (2026-07-26) moved D out of the `!_aiDegraded` arm — where its guard was provably false, so it
+  // had never once run — to after the headline ladder, and a fixed-width window silently swallowed
+  // the following branch's `finalAfterScore =`, turning the "messaging only" assertion into noise.
+  const dBlock = dp.slice(dIdx, dp.indexOf('Score divergence check', dIdx));
   it('sets _aiReCheckThrottled from the throttle flag and rewrites the summary honestly (R3)', () => {
     expect(dIdx).toBeGreaterThan(-1);
     expect(dBlock).toContain('verification._aiReCheckThrottled = _finalAuditThrottled');
@@ -71,8 +80,12 @@ describe('source-pins: minimal-A — storm-aware loop early-stop', () => {
   const aBlock = dp.slice(aIdx, aIdx + 1400);
   it('breaks only under storm AND axe==0 AND partial re-audit', () => {
     expect(aIdx).toBeGreaterThan(-1);
-    expect(aBlock).toContain('_geminiCap < _geminiEffectiveMax'); // R7: cap suppressed below the run ceiling = storm
-    expect(aBlock).toMatch(/if \(_stormActive && newAxeViolations === 0 && _rePartial\)/);
+    // L7 (2026-07-26): one time-bounded definition of "a throttle happened recently", on the gate
+    // snapshot, instead of a hand-rolled cap comparison that stayed true for the rest of the run.
+    expect(aBlock).toContain('_geminiThrottleInfo().recentlyThrottled');
+    // `_reAxeUsable` was added after this pin was written — an unusable re-audit must not be read
+    // as "axe clean".
+    expect(aBlock).toMatch(/if \(_stormActive && _reAxeUsable && newAxeViolations === 0 && _rePartial\)/);
     expect(aBlock).toContain('Canvas rate-limit storm active + axe clean + AI audit partial');
   });
   it('lives after the target-score stop gate (ships the axe-clean best, does not lower the bar in the common case)', () => {
