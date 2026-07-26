@@ -7069,9 +7069,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const _aiThrottledClean = !!(r && r._aiVerificationIncomplete && r.axeAudit && r.axeAudit.totalViolations === 0);
                     if (_aiThrottledClean) addToast(t('toasts.ai_throttled_shipped') || '⚠ The AI service is throttled, so the AI semantic score is incomplete — but the structural/automated checks are clean. Shipped the structural result; re-run in a few minutes for a full AI-verified score.', 'warning');
                     while (!_aiThrottledClean && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX && !_stopped() && _oneClickDocumentIsCurrent()) {
-                      try { await runAutoFixLoop(8); }
+                      let _loopOutcome;
+                      try { _loopOutcome = await runAutoFixLoop(8); }
                       catch (error) {
                         addToast('Auto-remediation stopped after an error: ' + ((error && error.message) || error), 'error');
+                        break;
+                      }
+                      // L11 (audit 2026-07-26): the loop's re-entry guard used to resolve undefined,
+                      // so a round that never ran looked exactly like one that did — this wrapper
+                      // counted the iteration, toasted "retrying the loop (1/3, 72/100…)" and slept,
+                      // then did it again. The teacher was shown progress rounds that never
+                      // executed, and the bounded retry budget was spent on no-ops.
+                      if (_loopOutcome && _loopOutcome.started === false) {
+                        warnLog('[Hands-off] Auto-continue declined to start (' + (_loopOutcome.reason || 'unknown') + ') — not counting this as a retry.');
                         break;
                       }
                       if (!_oneClickDocumentIsCurrent()) return;

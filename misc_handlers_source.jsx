@@ -1198,7 +1198,12 @@ async function runAutoFixLoop(maxRounds, deps) {
     // Re-entry guard (sweep 2026-06-11 [5]): a second concurrent loop's
     // rounds would interleave with the first and its finally would clobber
     // the first loop's flags.
-    if (pdfAutoContinueAbortCtrlRef.current) { addToast(t('toasts.auto_continue_already_running') || 'Auto-continue is already running — use Stop first if you want to restart.', 'info'); return; }
+    // L11 (audit 2026-07-26): return a SENTINEL the caller can test. This resolved `undefined`, so
+    // the hands-off wrapper saw a settled promise, read an unchanged score, counted the iteration,
+    // toasted "retrying the loop (1/3, 72/100...)" and slept — then did it again. The teacher was
+    // shown progress rounds that never executed, and the wrapper's bounded retry budget was spent
+    // on no-ops.
+    if (pdfAutoContinueAbortCtrlRef.current) { addToast(t('toasts.auto_continue_already_running') || 'Auto-continue is already running — use Stop first if you want to restart.', 'info'); return { started: false, reason: 'already-running' }; }
     pdfAutoContinueAbortRef.current = false;
     const _abortCtrl = new AbortController();
     pdfAutoContinueAbortCtrlRef.current = _abortCtrl;

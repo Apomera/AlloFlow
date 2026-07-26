@@ -1213,3 +1213,110 @@ describe('M5/M3/M6 — the reliability history counts what actually happened', (
     expect(view).toContain('(_failed.length === 0 && _incomplete.length === 0 && _cancelled.length === 0)');
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M11 / M17 — the failed-chunk banner, and one recovery file per document.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('M11 — the failed-chunk banner survives sanitization', () => {
+  it('the banner carries no inline handler', () => {
+    // The banner is a rawhtml block, so it goes through _sanitizeRawHtmlBlock: DOMPurify's config
+    // FORBIDs `button` and omits `onclick`, and _alloSanitizeRemediationBodyFragment strips every
+    // on* attribute again — so the control rendered as inert text. Worse, when DOMPurify has NOT
+    // loaded, _execShaped matches the ` onclick=` and replaces the WHOLE banner with the generic
+    // "an embedded HTML block was withheld" notice, so the teacher was not even told which pages
+    // failed.
+    const banner = dp.slice(dp.indexOf("html: '<div data-chunk-fail="), dp.indexOf("html: '<div data-chunk-fail=") + 1400);
+    expect(banner).not.toContain('onclick=');
+    expect(banner).not.toContain('<button');
+  });
+
+  it('it still says which pages are missing, and what to do', () => {
+    const banner = dp.slice(dp.indexOf("html: '<div data-chunk-fail="), dp.indexOf("html: '<div data-chunk-fail=") + 1400);
+    expect(banner).toContain('failed to process');
+    expect(banner).toContain('This section is missing from the document below');
+    expect(banner).toContain('data-chunk-pages=');   // so a real control can be built from it later
+    expect(banner).toContain('role="alert"');
+  });
+
+  it('the retry handler splices ONLY its own section, never the whole body', () => {
+    // It used to re-render the entire body from allBlocks — the un-polished, un-sanitized,
+    // un-imaged Step-2 draft — discarding the skip link, the main landmark, the footer, every
+    // Step-3/4 axe fix, the grammar corrections and the restored image data URLs, while the
+    // displayed score stayed unchanged.
+    expect(dp).toContain('const _spliceInto = (html) => {');
+    expect(dp).toContain('_doc.querySelector(\'[data-chunk-fail="\' + chunkIdx + \'"]\')');
+    expect(dp).not.toContain("accessibleHtml: prev.accessibleHtml.replace(/<body[^>]*>[\s\S]*<\/body>/");
+  });
+
+  it('it refuses to publish across a document change', () => {
+    expect(dp).toContain('const _retryDocumentEpoch = _runDocumentEpoch;');
+    expect(dp).toContain('const _liveEpochNow = _readCurrentDocumentEpoch();');
+    expect(dp).toContain('discarding it rather than rewriting the new document');
+  });
+
+  it('a successful retry marks the score stale', () => {
+    // The score described the document WITHOUT this section.
+    expect(dp).toContain('_scoreStaleAfterChunkRetry: true');
+  });
+});
+
+describe('M17 — one recovery file per document, not per attempt', () => {
+  const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+
+  it('a second failure on the same document does not download another copy', () => {
+    // The hands-off wrapper re-runs a failed fix up to 3 more times and this ran in EVERY attempt's
+    // catch — four near-identical ~40 MB files carrying the full base64 of the source PDF, and four
+    // "Remediation stopped" toasts while the run was in fact still going.
+    expect(anti).toContain("if (_incDocKey && typeof window !== 'undefined' && window.__alloLastIncompleteSaveKey === _incDocKey) {");
+    expect(anti).toContain('not downloading another copy');
+  });
+
+  it('the retry toast says retrying, not stopped', () => {
+    expect(anti).toContain("t('toasts.incomplete_project_retrying')");
+    expect(anti).toContain('AlloFlow is retrying');
+  });
+
+  it('the latch releases on success and on a new document', () => {
+    // Otherwise a LATER genuine failure on the same document would bank nothing.
+    expect((anti.match(/window\.__alloLastIncompleteSaveKey = null;/g) || []).length).toBe(2);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// L10 / L11 — a slow file must not end the batch; a round that never ran must
+// not be counted as a retry.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('L10/L11 — batch continuation and hands-off retry accounting', () => {
+  const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+  const misc = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
+
+  it('L10: a drain timeout only stops the batch if a lock is genuinely held', () => {
+    // The stated reason for stopping — later files would fail with
+    // RemediationAlreadyRunningError — described a hazard that did not exist on this path. The
+    // cost was real: a wedged transport can outlast the 30s drain (a gate slot is held up to 45s
+    // past a 120-180s timeout), so one slow scan could lose files 11-50 of an overnight batch.
+    expect(dp).toContain("_lockStillHeld = !!(typeof _getActiveRemediationRun === 'function' && _getActiveRemediationRun());");
+    expect(dp).toContain('if (_lockStillHeld) {');
+  });
+
+  it('L10: otherwise the file is marked failed and the batch continues', () => {
+    const block = dp.slice(dp.indexOf("err.code === 'ALLO_BATCH_REMEDIATION_DRAIN_TIMEOUT'"));
+    const arm = block.slice(0, block.indexOf('// Quota circuit-breaker'));
+    expect(arm).toContain('continue;');
+    expect(arm).toContain('the batch continued');
+  });
+
+  it('L11: the re-entry guard returns a testable sentinel', () => {
+    expect(misc).toContain("return { started: false, reason: 'already-running' };");
+  });
+
+  it('L11: the hands-off wrapper stops instead of counting a round that never ran', () => {
+    expect(view).toContain('if (_loopOutcome && _loopOutcome.started === false) {');
+    expect(view).toContain('not counting this as a retry');
+    // and it must break BEFORE the retry counter / toast
+    const iCheck = view.indexOf('if (_loopOutcome && _loopOutcome.started === false) {');
+    const iCount = view.indexOf('_prevScore = _s; _loopTries++;');
+    expect(iCheck).toBeGreaterThan(0);
+    expect(iCount).toBeGreaterThan(iCheck);
+  });
+});

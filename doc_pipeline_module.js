@@ -14666,10 +14666,29 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         queue[i] = { ...item, status: 'failed', error: err.message };
         setPdfBatchQueue([...queue]);
         if (err && err.code === 'ALLO_BATCH_REMEDIATION_DRAIN_TIMEOUT') {
-          _batchHandoffStopped = true;
-          setPdfBatchStep('Batch paused safely — the timed-out file is still shutting down. Remaining files stay queued for resume.');
-          warnLog('[Batch] Pausing before file ' + (i + 2) + ': prior remediation still owns the pipeline lock after its cancellation drain.');
-          break;
+          // L10 (audit 2026-07-26): only stop the batch if a lock is GENUINELY still held. The
+          // stated reason for stopping — "advancing would make every later file fail spuriously
+          // with RemediationAlreadyRunningError" — described a hazard that did not exist on this
+          // path: the batch calls the unwrapped fixAndVerifyPdf per file, so a drained file holds
+          // no per-file lock. Meanwhile the cost was real: a wedged Gemini transport can easily
+          // outlast the 30s drain (a gate slot is held up to 45s past a 120-180s timeout), so one
+          // slow scan could lose files 11-50 of an overnight batch of 50 IEPs.
+          //
+          // Ask the pipeline instead of assuming. A single-file run that really does own the lock
+          // is still a reason to pause; anything else means the aborted file holds nothing the
+          // next file needs, so mark it failed and move on.
+          let _lockStillHeld = false;
+          try { _lockStillHeld = !!(typeof _getActiveRemediationRun === 'function' && _getActiveRemediationRun()); } catch (_) { _lockStillHeld = false; }
+          if (_lockStillHeld) {
+            _batchHandoffStopped = true;
+            setPdfBatchStep('Batch paused safely — the timed-out file is still shutting down. Remaining files stay queued for resume.');
+            warnLog('[Batch] Pausing before file ' + (i + 2) + ': prior remediation still owns the pipeline lock after its cancellation drain.');
+            break;
+          }
+          queue[i] = { ...queue[i], error: (queue[i].error || err.message) + ' (the file was still shutting down when its time ran out; the batch continued)' };
+          setPdfBatchQueue([...queue]);
+          warnLog('[Batch] Drain timed out on ' + _alloDiagnosticDocumentLabel(item.fileName) + ' but nothing owns the pipeline lock — marking it failed and continuing with the remaining ' + Math.max(0, queue.length - i - 1) + ' file(s).');
+          continue;
         }
         // Quota circuit-breaker: once the DAILY cap is hit, every remaining file would
         // re-pay a full primary+fallback backoff only to fail the same way — turning one
@@ -22974,7 +22993,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           const failed = !blocks || blocks.length === 0;
           chunkMeta.push({ index: ci, startPage: startPg, endPage: endPg, blockCount: blocks ? blocks.length : 0, status: failed ? 'failed' : 'success' });
           if (failed) {
-            allBlocks.push({ type: 'rawhtml', html: '<div data-chunk-fail="' + ci + '" role="alert" aria-live="assertive" aria-atomic="true" style="background:#fef2f2;border:2px dashed #ef4444;border-radius:12px;padding:16px;margin:1em 0;text-align:center"><p style="color:#991b1b;font-weight:bold;font-size:0.9em"><span aria-hidden="true">\u26a0\ufe0f </span>Section ' + (ci + 1) + ' (pages ' + startPg + '-' + endPg + ') failed to process</p><button onclick="window.__retryPdfChunk && window.__retryPdfChunk(' + ci + ')" aria-label="Retry processing section ' + (ci + 1) + ', pages ' + startPg + ' through ' + endPg + '" style="margin-top:8px;padding:6px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:bold;font-size:12px;cursor:pointer"><span aria-hidden="true">\ud83d\udd04 </span>Retry This Section</button></div>' });
+            allBlocks.push({ type: 'rawhtml', html: '<div data-chunk-fail="' + ci + '" data-chunk-pages="' + startPg + '-' + endPg + '" role="alert" aria-live="assertive" aria-atomic="true" style="background:#fef2f2;border:2px dashed #ef4444;border-radius:12px;padding:16px;margin:1em 0;text-align:center"><p style="color:#991b1b;font-weight:bold;font-size:0.9em"><span aria-hidden="true">\u26a0\ufe0f </span>Section ' + (ci + 1) + ' (pages ' + startPg + '-' + endPg + ') failed to process</p><p style="color:#991b1b;font-size:0.85em">This section is missing from the document below. Re-run the remediation to try it again \u2014 the sections that succeeded are reused, so a retry is quick.</p></div>' });
           } else {
             allBlocks.push({ type: 'rawhtml', html: '<div data-chunk-start="' + ci + '" style="display:none"></div>' });
             allBlocks = allBlocks.concat(blocks);
@@ -22987,6 +23006,15 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
         warnLog(`[PDF Fix] JSON pipeline (chunked): ${allBlocks.length} blocks rendered`);
 
         // ── Chunk retry function (exposed on window) ──
+        // M11 (audit 2026-07-26): this handler used to re-render the ENTIRE body from `allBlocks` —
+        // the un-polished, un-sanitized, un-imaged Step-2 draft — and splice it over the whole
+        // <body> of the finished document. That discarded the skip link, the <main id="main-content">
+        // landmark, the contentinfo footer, every Step-3/4 axe fix, the grammar corrections and the
+        // restored image data URLs, while the displayed score stayed unchanged. It also had no
+        // document-epoch or run-generation guard, so a retry clicked after the teacher moved on
+        // would rewrite the NEW document. It now replaces only the failed section's node, in a
+        // parsed copy of the CURRENT html, and refuses to publish across a document change.
+        const _retryDocumentEpoch = _runDocumentEpoch;
         window.__retryPdfChunk = async (chunkIdx) => {
           try {
             const meta = chunkMeta[chunkIdx];
@@ -23005,14 +23033,47 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               if (failIdx >= 0) {
                 allBlocks.splice(failIdx, 1, { type: 'rawhtml', html: '<div data-chunk-start="' + chunkIdx + '" style="display:none"></div>' }, ...retryBlocks, { type: 'rawhtml', html: '<div data-chunk-end="' + chunkIdx + '" style="display:none"></div>' });
               }
-              // Re-render full body
-              bodyContent = renderJsonToHtml(allBlocks);
-              // Update the display
-              const previewEl = document.querySelector('[data-pdf-fix-preview]');
-              if (previewEl) previewEl.innerHTML = bodyContent;
+              // M11: refuse to publish across a document change.
+              // Read through the canonical resolver, not the raw global: it normalizes the epoch, so
+              // a string-vs-number difference cannot false-trip this guard (or, worse, satisfy it).
+              const _liveEpochNow = _readCurrentDocumentEpoch();
+              if (_liveEpochNow !== null && _retryDocumentEpoch !== null && _liveEpochNow !== _retryDocumentEpoch) {
+                warnLog('[PDF Fix] Chunk retry finished after the document changed — discarding it rather than rewriting the new document.');
+                if (failDiv) failDiv.innerHTML = '<p style="color:#991b1b;font-weight:bold;font-size:0.9em">This retry finished after you moved to another document, so it was discarded.</p>';
+                return;
+              }
+              // M11: SURGICAL splice — replace only this section's node inside a parsed copy of the
+              // CURRENT html. Re-rendering the whole body from allBlocks threw away everything
+              // Steps 3 and 4 added.
+              const _retryHtmlFragment = renderJsonToHtml(retryBlocks);
               const storedResult = window.__pdfFixResultRef;
-              if (storedResult && storedResult.set) storedResult.set(prev => ({ ...prev, accessibleHtml: prev.accessibleHtml.replace(/<body[^>]*>[\s\S]*<\/body>/, () => '<body>' + bodyContent + '</body>') })); // fn replacer: bodyContent is data, so $&/$1/$$ in document text are NOT treated as replace tokens
-              warnLog('[PDF Fix] Chunk ' + (chunkIdx + 1) + ' retry SUCCESS: ' + retryBlocks.length + ' blocks');
+              const _spliceInto = (html) => {
+                try {
+                  const _doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+                  const _node = _doc.querySelector('[data-chunk-fail="' + chunkIdx + '"]');
+                  if (!_node) return null;
+                  const _wrap = _doc.createElement('div');
+                  _wrap.innerHTML = _retryHtmlFragment;
+                  while (_wrap.firstChild) _node.parentNode.insertBefore(_wrap.firstChild, _node);
+                  _node.parentNode.removeChild(_node);
+                  return '<!DOCTYPE html>' + _doc.documentElement.outerHTML;
+                } catch (_) { return null; }
+              };
+              const previewEl = document.querySelector('[data-pdf-fix-preview]');
+              if (previewEl) {
+                const _pf = previewEl.querySelector('[data-chunk-fail="' + chunkIdx + '"]');
+                if (_pf) _pf.outerHTML = _retryHtmlFragment;
+              }
+              if (storedResult && storedResult.set) {
+                storedResult.set(prev => {
+                  const _next = _spliceInto(prev && prev.accessibleHtml);
+                  if (!_next) { warnLog('[PDF Fix] Chunk retry could not find its placeholder in the current document — leaving it untouched.'); return prev; }
+                  // The score described the document WITHOUT this section; it no longer describes
+                  // what the teacher has. Say so rather than letting a stale number stand.
+                  return Object.assign({}, prev, { accessibleHtml: _next, _scoreStaleAfterChunkRetry: true });
+                });
+              }
+              warnLog('[PDF Fix] Chunk ' + (chunkIdx + 1) + ' retry SUCCESS: ' + retryBlocks.length + ' blocks spliced in place');
             } else {
               if (failDiv) failDiv.innerHTML = '<p style="color:#991b1b;font-weight:bold;font-size:0.9em">\u274c Retry failed. Try running the full remediation again.</p>';
             }

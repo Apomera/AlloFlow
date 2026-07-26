@@ -19264,6 +19264,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     setLargeFileTotalChunks(0);
     setLargeFileStatus('');
     try { if (typeof window !== 'undefined') window.__lastIncompleteProject = null; } catch (_) {}
+    try { if (typeof window !== 'undefined') window.__alloLastIncompleteSaveKey = null; } catch (_) {} // M17: a new document gets its own recovery file
     setPdfWebMode(false);
     lastPdfBytesRef.current = null; // hard reset — drop the preserved original bytes too (new doc)
     setIsExtracting(false);
@@ -25640,6 +25641,24 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const _inc = (typeof window !== 'undefined') ? window.__lastIncompleteProject : null;
       if (!_inc || !_inc.incomplete) return;
       window.__lastIncompleteProject = null; // consume once
+      // M17 (audit 2026-07-26): one recovery file per document, not one per ATTEMPT. The hands-off
+      // wrapper re-runs a failed fix up to 3 more times, and this ran in the catch of EVERY attempt
+      // — so a flaky-network 40-page scan auto-downloaded four near-identical ~40 MB
+      // "<name>-unfinished.alloflow.json" files (each carrying the full base64 of the source PDF)
+      // and toasted "Remediation stopped..." four times while the run was in fact still going. The
+      // teacher was told it had stopped repeatedly and left with four recovery files and no way to
+      // tell which was current. The first save is the one that matters; later attempts of the same
+      // document keep it and say so quietly.
+      const _incDocKey = _inc.docKey || _inc.fileName || null;
+      if (_incDocKey && typeof window !== 'undefined' && window.__alloLastIncompleteSaveKey === _incDocKey) {
+        warnLog('[Recovery] Recovery file for this document was already saved this session — not downloading another copy.');
+        if (typeof addToast === 'function') {
+          addToast(t('toasts.incomplete_project_retrying')
+            || 'That attempt failed and AlloFlow is retrying. Your recovery file for this document is already saved in Downloads.', 'info');
+        }
+        return;
+      }
+      if (_incDocKey && typeof window !== 'undefined') window.__alloLastIncompleteSaveKey = _incDocKey;
       const _saved = saveProjectToFile(false, _inc);
       const _why = _inc.failureReason === 'auth' ? 'the AI service rejected the request (an API key / permission problem)'
         : _inc.failureReason === 'quota' ? 'the AI service hit a usage or quota limit'
@@ -25658,6 +25677,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const fixAndVerifyPdf = async (opts) => {
     try {
       const _r = await _rawFixAndVerifyPdf(opts);
+      // M17: the document made it through — release the once-per-document recovery-save latch so a
+      // LATER failure on the same document can still bank a fresh copy.
+      try { if (typeof window !== 'undefined') window.__alloLastIncompleteSaveKey = null; } catch (_) {}
       _maybeSaveIncompleteProject();
       return _r;
     } catch (err) {

@@ -7414,10 +7414,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         const _aiThrottledClean = !!(r && r._aiVerificationIncomplete && r.axeAudit && r.axeAudit.totalViolations === 0);
         if (_aiThrottledClean) addToast(t("toasts.ai_throttled_shipped") || "\u26A0 The AI service is throttled, so the AI semantic score is incomplete \u2014 but the structural/automated checks are clean. Shipped the structural result; re-run in a few minutes for a full AI-verified score.", "warning");
         while (!_aiThrottledClean && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX && !_stopped() && _oneClickDocumentIsCurrent()) {
+          let _loopOutcome;
           try {
-            await runAutoFixLoop(8);
+            _loopOutcome = await runAutoFixLoop(8);
           } catch (error) {
             addToast("Auto-remediation stopped after an error: " + (error && error.message || error), "error");
+            break;
+          }
+          if (_loopOutcome && _loopOutcome.started === false) {
+            warnLog("[Hands-off] Auto-continue declined to start (" + (_loopOutcome.reason || "unknown") + ") \u2014 not counting this as a retry.");
             break;
           }
           if (!_oneClickDocumentIsCurrent()) return;
