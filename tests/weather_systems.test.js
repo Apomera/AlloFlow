@@ -2364,6 +2364,119 @@ describe('Weather Systems vertical cross-section', () => {
   });
 });
 
+describe('Weather Systems station-model notation', () => {
+  it('builds wind barbs to the WMO convention in knots', () => {
+    const { windBarbSpec } = window.WeatherSystemsKernel;
+    // Half barb 5 kt, full barb 10 kt, pennant 50 kt, speed rounded to the nearest 5 kt.
+    expect(windBarbSpec(0)).toMatchObject({ calm: true, pennants: 0, fullBarbs: 0, halfBarbs: 0 });
+    expect(windBarbSpec(2)).toMatchObject({ calm: true });
+    expect(windBarbSpec(9)).toMatchObject({ rounded: 5, fullBarbs: 0, halfBarbs: 1 });
+    expect(windBarbSpec(19)).toMatchObject({ rounded: 10, fullBarbs: 1, halfBarbs: 0 });
+    expect(windBarbSpec(46)).toMatchObject({ rounded: 25, fullBarbs: 2, halfBarbs: 1 });
+    expect(windBarbSpec(93)).toMatchObject({ rounded: 50, pennants: 1, fullBarbs: 0, halfBarbs: 0 });
+    expect(windBarbSpec(150)).toMatchObject({ rounded: 80, pennants: 1, fullBarbs: 3, halfBarbs: 0 });
+    // km/h is converted, never treated as knots.
+    expect(windBarbSpec(93).knots).toBeCloseTo(50.2, 1);
+  });
+
+  it('reports sky cover in eighths', () => {
+    const { skyCoverOktas } = window.WeatherSystemsKernel;
+    expect(skyCoverOktas(0)).toBe(0);
+    expect(skyCoverOktas(6)).toBe(0);
+    expect(skyCoverOktas(50)).toBe(4);
+    expect(skyCoverOktas(100)).toBe(8);
+    // Never out of range, whatever it is handed.
+    expect(skyCoverOktas(180)).toBe(8);
+    expect(skyCoverOktas(-20)).toBe(0);
+    expect(skyCoverOktas(undefined)).toBe(0);
+  });
+
+  it('draws one barb mark per unit and swaps the staff for a calm ring', () => {
+    const plot = (weatherSystems) => {
+      const html = renderTool('weatherSystems', { weatherSystems }, { gradeLevel: '8th Grade' });
+      return (html.match(/data-weather-station-model-plot[\s\S]*?<\/svg>/) || [''])[0];
+    };
+    const strongState = { tab: 'map', scenario: 'winterStorm', windSpeed: 102, selectedStation: 'central' };
+    expect(plot(strongState)).toContain('<polygon');  // a pennant is drawn
+    // The prose decode names the same marks the plot draws.
+    expect(renderTool('weatherSystems', { weatherSystems: strongState }, { gradeLevel: '8th Grade' }))
+      .toMatch(/1 pennant \(50 kt each\)/);
+
+    const calmState = { tab: 'map', scenario: 'fair', windSpeed: 0, selectedStation: 'central' };
+    expect(plot(calmState)).not.toContain('<polygon');
+    expect(renderTool('weatherSystems', { weatherSystems: calmState }, { gradeLevel: '8th Grade' })).toContain('calm');
+    // The decode table explains the notation rather than restating the raw reading.
+    const html = renderTool('weatherSystems', { weatherSystems: { tab: 'map', scenario: 'coldFront', windSpeed: 46, selectedStation: 'central' } }, { gradeLevel: '8th Grade' });
+    expect(html).toContain('Sky cover in eighths');
+    expect(html).toContain('points into the wind, from');
+    expect(html).toContain('Wind speed in knots');
+  });
+
+  it('stays hidden for the grade bands that do not use the notation', () => {
+    const young = renderTool('weatherSystems', { weatherSystems: { tab: 'map' } }, { gradeLevel: '4th Grade' });
+    expect(young).not.toContain('data-weather-station-model');
+  });
+});
+
+describe('Weather Systems ensemble, verification and storyline visuals', () => {
+  it('ranks the ensemble bars and emphasises the agreeing category', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: { tab: 'forecast', scenario: 'coldFront', simHour: 4 } }, { gradeLevel: '8th Grade' });
+    expect(html).toContain('data-weather-ensemble-bars');
+    const bars = (html.match(/data-weather-ensemble-bars[\s\S]*?data-weather-ensemble-spread/) || [''])[0];
+    const counts = (bars.match(/>(\d)<\/span>/g) || []).map((m) => Number(m.replace(/\D/g, '')));
+    // Ranked, largest first.
+    expect(counts).toEqual(counts.slice().sort((a, b) => b - a));
+  });
+
+  it('plots all nine members on a shared axis rather than printing a bare range', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: { tab: 'forecast', scenario: 'coldFront', simHour: 4 } }, { gradeLevel: '8th Grade' });
+    const spread = (html.match(/data-weather-ensemble-spread[\s\S]*?sensitivity to starting conditions/) || [''])[0];
+    // Two strips, nine dots each.
+    expect((spread.match(/<circle/g) || []).length).toBe(18);
+    expect(spread).toContain('All nine members fall between');
+    // Each strip wears its own measure's hue.
+    expect(spread).toContain('#eb6834');
+    expect(spread).toContain('#4a3aa7');
+  });
+
+  it('gives each forecast error a signed bias bar with a key', () => {
+    const { readFileSync } = require('node:fs');
+    const { resolve } = require('node:path');
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weathersystems.js'), 'utf8');
+    // Bias bars read from a centre line, scaled per metric so a 2-degree miss and a
+    // 20-hectopascal miss are not drawn the same length.
+    expect(source).toContain('function biasBar(metric, definition)');
+    expect(source).toContain("{ id: 'temperature', label: 'Temperature error', scale: 6 }");
+    expect(source).toContain("{ id: 'pressure', label: 'Pressure error', scale: 12 }");
+    expect(source).toContain('data-weather-bias-key');
+    expect(source).toContain('forecast too low');
+    expect(source).toContain('forecast too high');
+  });
+
+  it('draws the storyline chapters on the curve they were sampled from', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: { tab: 'map', scenario: 'coldFront', simHour: 6 } }, { gradeLevel: '8th Grade' });
+    expect(html).toContain('data-weather-storyline-sparklines');
+    const sparks = (html.match(/data-weather-storyline-sparklines[\s\S]*?Evidence cue/) || [''])[0];
+    // One small multiple per measure — never two scales sharing a plot.
+    expect((sparks.match(/<svg/g) || []).length).toBe(3);
+    expect(sparks).toContain('across the 24-hour model window runs from');
+    expect(sparks).toContain('at the current chapter T plus 6 hours');
+  });
+
+  it('never prints raw float noise in the storyline prose', () => {
+    // Subtracting two rounded projections used to surface as "-1.3000000000000007°C".
+    // Attributes are stripped so this pins the words a learner reads, not SVG geometry.
+    [0, 3, 6, 9, 12, 18, 24].forEach((simHour) => {
+      ['coldFront', 'warmFront', 'summerStorm', 'winterStorm', 'fair'].forEach((scenario) => {
+        const html = renderTool('weatherSystems', { weatherSystems: { tab: 'map', scenario, simHour } }, { gradeLevel: '8th Grade' });
+        const story = (html.match(/data-weather-atmosphere-storyline[\s\S]*?Evidence cue/) || [''])[0];
+        const prose = story.replace(/<[^>]*>/g, ' ');
+        expect(prose, scenario + ' at T+' + simHour).not.toMatch(/\d\.\d{3,}/);
+      });
+    });
+  });
+});
+
 describe('Weather Systems geographic map loader resilience', () => {
   const { readFileSync } = require('node:fs');
   const { resolve } = require('node:path');

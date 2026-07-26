@@ -103,6 +103,31 @@
     { id: 'terrain', label: 'Terrain lift', min: 0, max: 100, step: 1, unit: '' }
   ];
 
+  // Station-model wind barbs are a knots notation: half barb 5, full barb 10, pennant 50,
+  // with the speed rounded to the nearest 5 knots before the marks are chosen. The panel
+  // previously drew one barb always and a second past 25 km/h, which is not the convention.
+  function windBarbSpec(speedKmh) {
+    var knots = (Number(speedKmh) || 0) / 1.852;
+    var rounded = Math.round(knots / 5) * 5;
+    var pennants = Math.floor(rounded / 50);
+    var remainder = rounded - pennants * 50;
+    var fullBarbs = Math.floor(remainder / 10);
+    var halfBarbs = remainder - fullBarbs * 10 >= 5 ? 1 : 0;
+    return {
+      knots: round(knots, 1),
+      rounded: rounded,
+      calm: rounded === 0,
+      pennants: pennants,
+      fullBarbs: fullBarbs,
+      halfBarbs: halfBarbs
+    };
+  }
+
+  // Sky cover is reported in eighths of the sky (oktas), not percent.
+  function skyCoverOktas(cloudCoverPercent) {
+    return clamp(Math.round((Number(cloudCoverPercent) || 0) / 12.5), 0, 8);
+  }
+
   function scenarioById(id) {
     for (var i = 0; i < SCENARIOS.length; i += 1) {
       if (SCENARIOS[i].id === id) return SCENARIOS[i];
@@ -1722,6 +1747,8 @@ var GEOGRAPHY_PROFILES = {
     regionalWeatherFieldStatus: regionalWeatherFieldStatus,
     forecastCheckpointStatus: forecastCheckpointStatus,
     mixColor: mixColor,
+    windBarbSpec: windBarbSpec,
+    skyCoverOktas: skyCoverOktas,
     sceneAppearance: sceneAppearance,
     drawWeatherScene: drawWeatherScene,
     resolvedState: resolvedState
@@ -4646,29 +4673,97 @@ var geographyGroup = new THREE.Group();
       function stationModelPanel() {
         if (band === 'K-2' || band === '3-5') return null;
         var cx = 150;
-        var cy = 83;
+        var cy = 86;
         var radians = (observation.windDir - 90) * Math.PI / 180;
-        var windX = cx + Math.cos(radians) * 58;
-        var windY = cy + Math.sin(radians) * 58;
+        var ux = Math.cos(radians);
+        var uy = Math.sin(radians);
         var cover = observation.cloudCover;
         var pressureCode = String(Math.round(observation.seaLevelPressure * 10) % 1000).padStart(3, '0');
+        var inkColor = chartInk;
         var skyFill = dark ? '#e2e8f0' : '#0f172a';
         var baseStroke = dark ? '#cbd5e1' : '#334155';
+
+        var barb = windBarbSpec(observation.windSpeed);
+        var oktas = skyCoverOktas(cover);
+        var RADIUS = 16;
+        var STAFF = 66;
+        var SPACING = 9;
+        var tipX = cx + ux * STAFF;
+        var tipY = cy + uy * STAFF;
+        // Barbs sweep back from the tip toward the station, counterclockwise from the staff —
+        // the Northern Hemisphere convention (a north wind puts them on the west side).
+        var barbAngle = radians - 2.1;
+        var bx = Math.cos(barbAngle);
+        var by = Math.sin(barbAngle);
+        function alongStaff(offset) { return { x: tipX - ux * offset, y: tipY - uy * offset }; }
+        var barbMarks = [];
+        var offset = 0;
+        var index = 0;
+        for (var p = 0; p < barb.pennants; p += 1) {
+          var pTail = alongStaff(offset);
+          var pBase = alongStaff(offset + 9);
+          barbMarks.push(h('polygon', {
+            key: 'pennant-' + index, fill: baseStroke,
+            points: pTail.x + ',' + pTail.y + ' ' + (pTail.x + bx * 19) + ',' + (pTail.y + by * 19) + ' ' + pBase.x + ',' + pBase.y
+          }));
+          offset += SPACING * 1.7;
+          index += 1;
+        }
+        for (var f = 0; f < barb.fullBarbs; f += 1) {
+          var fPos = alongStaff(offset);
+          barbMarks.push(h('line', {
+            key: 'full-' + index, x1: fPos.x, y1: fPos.y, x2: fPos.x + bx * 19, y2: fPos.y + by * 19,
+            stroke: baseStroke, strokeWidth: 3, strokeLinecap: 'round'
+          }));
+          offset += SPACING;
+          index += 1;
+        }
+        if (barb.halfBarbs) {
+          // A lone half barb is set in from the end of the staff rather than sitting on the tip.
+          if (offset === 0) offset = SPACING;
+          var hPos = alongStaff(offset);
+          barbMarks.push(h('line', {
+            key: 'half-' + index, x1: hPos.x, y1: hPos.y, x2: hPos.x + bx * 10, y2: hPos.y + by * 10,
+            stroke: baseStroke, strokeWidth: 3, strokeLinecap: 'round'
+          }));
+        }
+
+        // Sky cover is shaded in eighths, the unit the observation is actually reported in.
+        var oktaPath = null;
+        if (oktas > 0 && oktas < 8) {
+          var fraction = oktas / 8;
+          var endAngle = -Math.PI / 2 + fraction * Math.PI * 2;
+          var ex = cx + Math.cos(endAngle) * RADIUS;
+          var ey = cy + Math.sin(endAngle) * RADIUS;
+          oktaPath = 'M ' + cx + ' ' + cy + ' L ' + cx + ' ' + (cy - RADIUS) + ' A ' + RADIUS + ' ' + RADIUS + ' 0 ' + (fraction > 0.5 ? 1 : 0) + ' 1 ' + ex + ' ' + ey + ' Z';
+        }
+
+        var barbWords = barb.calm
+          ? 'calm'
+          : [
+            barb.pennants ? barb.pennants + ' pennant' + (barb.pennants === 1 ? '' : 's') + ' (50 kt each)' : null,
+            barb.fullBarbs ? barb.fullBarbs + ' full barb' + (barb.fullBarbs === 1 ? '' : 's') + ' (10 kt each)' : null,
+            barb.halfBarbs ? '1 half barb (5 kt)' : null
+          ].filter(Boolean).join(' + ');
+        var modelSummary = observation.name + ' station model: temperature ' + observation.temperature + ' degrees Celsius, dew point ' + observation.dewPoint + ' degrees Celsius, sea-level pressure ' + observation.seaLevelPressure + ' hectopascals coded as ' + pressureCode + ', sky cover ' + oktas + ' eighths, wind from ' + cardinal(observation.windDir) + ' at ' + observation.windSpeed + ' kilometers per hour, about ' + barb.rounded + ' knots, drawn as ' + barbWords + '.';
+
         return h('section', { className: panelClass + ' p-4', 'data-weather-station-model': true, 'aria-labelledby': 'weather-station-model-title' },
           h('div', { className: 'grid gap-4 md:grid-cols-[320px_1fr]' },
             h('div', null,
               h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'Meteorologist notation'),
               h('h3', { id: 'weather-station-model-title', className: 'text-base font-black' }, 'Decode the station model'),
-              h('svg', { viewBox: '0 0 300 165', className: 'mt-2 h-auto w-full', role: 'img', 'aria-label': observation.name + ' station model: temperature ' + observation.temperature + ' degrees Celsius, dew point ' + observation.dewPoint + ' degrees Celsius, sea-level pressure ' + observation.seaLevelPressure + ' hectopascals, cloud cover ' + observation.cloudCover + ' percent, wind from ' + cardinal(observation.windDir) + ' at ' + observation.windSpeed + ' kilometers per hour.' },
-                h('line', { x1: cx, y1: cy, x2: windX, y2: windY, stroke: baseStroke, strokeWidth: 4, strokeLinecap: 'round' }),
-                h('line', { x1: windX, y1: windY, x2: windX - Math.cos(radians - 0.8) * 20, y2: windY - Math.sin(radians - 0.8) * 20, stroke: baseStroke, strokeWidth: 3, strokeLinecap: 'round' }),
-                observation.windSpeed >= 25 && h('line', { x1: windX - Math.cos(radians) * 13, y1: windY - Math.sin(radians) * 13, x2: windX - Math.cos(radians) * 13 - Math.cos(radians - 0.8) * 16, y2: windY - Math.sin(radians) * 13 - Math.sin(radians - 0.8) * 16, stroke: baseStroke, strokeWidth: 3, strokeLinecap: 'round' }),
-                h('circle', { cx: cx, cy: cy, r: 18, fill: cover >= 75 ? skyFill : 'none', stroke: baseStroke, strokeWidth: 3 }),
-                cover >= 30 && cover < 75 && h('path', { d: 'M ' + cx + ' ' + (cy - 18) + ' A 18 18 0 0 1 ' + cx + ' ' + (cy + 18) + ' Z', fill: skyFill }),
-                h('text', { x: 78, y: 58, textAnchor: 'end', fill: baseStroke, fontSize: 18, fontWeight: 700 }, observation.temperature + '\u00B0'),
-                h('text', { x: 78, y: 120, textAnchor: 'end', fill: baseStroke, fontSize: 18, fontWeight: 700 }, observation.dewPoint + '\u00B0'),
-                h('text', { x: 210, y: 58, fill: baseStroke, fontSize: 18, fontWeight: 700 }, pressureCode),
-                h('text', { x: 210, y: 120, fill: baseStroke, fontSize: 14, fontWeight: 700 }, cover + '% clouds')
+              h('svg', { viewBox: '0 0 300 175', className: 'mt-2 h-auto w-full', role: 'img', 'aria-label': modelSummary, 'data-weather-station-model-plot': true },
+                !barb.calm && h('line', { x1: cx + ux * RADIUS, y1: cy + uy * RADIUS, x2: tipX, y2: tipY, stroke: baseStroke, strokeWidth: 3, strokeLinecap: 'round' }),
+                barbMarks,
+                // Calm is its own symbol: a ring around the station circle, no staff at all.
+                barb.calm && h('circle', { cx: cx, cy: cy, r: RADIUS + 7, fill: 'none', stroke: baseStroke, strokeWidth: 2 }),
+                h('circle', { cx: cx, cy: cy, r: RADIUS, fill: oktas >= 8 ? skyFill : 'none', stroke: baseStroke, strokeWidth: 3 }),
+                oktaPath && h('path', { d: oktaPath, fill: skyFill }),
+                h('text', { x: 78, y: 62, textAnchor: 'end', fill: inkColor, fontSize: 18, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums' } }, observation.temperature + '\u00B0'),
+                h('text', { x: 78, y: 124, textAnchor: 'end', fill: inkColor, fontSize: 18, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums' } }, observation.dewPoint + '\u00B0'),
+                h('text', { x: 214, y: 62, fill: inkColor, fontSize: 18, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums' } }, pressureCode),
+                h('text', { x: 214, y: 124, fill: inkColor, fontSize: 14, fontWeight: 700 }, oktas + '/8 sky'),
+                h('text', { x: 150, y: 168, textAnchor: 'middle', fill: chartMutedInk, fontSize: 10 }, barb.calm ? 'calm' : barb.rounded + ' kt \u2248 ' + observation.windSpeed + ' km/h')
               )
             ),
             h('div', { className: 'grid grid-cols-2 gap-2 content-center' },
@@ -4676,7 +4771,9 @@ var geographyGroup = new THREE.Group();
                 ['Upper left', 'Air temperature', observation.temperature + '\u00B0C'],
                 ['Lower left', 'Dew point', observation.dewPoint + '\u00B0C'],
                 ['Upper right', 'Coded pressure', pressureCode + ' = ' + observation.seaLevelPressure + ' hPa'],
-                ['Circle + staff', 'Cloud cover and wind', cover + '% | ' + cardinal(observation.windDir) + ' ' + observation.windSpeed + ' km/h']
+                ['Circle', 'Sky cover in eighths', oktas + '/8 (' + cover + '% cloud)'],
+                ['Staff', 'Wind direction', 'points into the wind, from ' + cardinal(observation.windDir)],
+                ['Barbs', 'Wind speed in knots', barb.calm ? 'calm' : barb.rounded + ' kt = ' + barbWords]
               ].map(function (row) {
                 return h('div', { key: row[0], className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') },
                   h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + skyAccentClass }, row[0]),
@@ -5121,10 +5218,19 @@ var geographyGroup = new THREE.Group();
         var now = projectConditions(state, state.simHour);
         var next = projectConditions(state, nextHour);
         var chapters = [0, 3, 6, 9, 12, 18, 24];
+        var storylinePoints = [];
+        for (var storyHour = 0; storyHour <= 24; storyHour += 1) {
+          storylinePoints.push({ hour: storyHour, point: projectConditions(state, storyHour) });
+        }
         var tempChange = now.temperature - past.temperature;
         var pressureChange = now.pressure - past.pressure;
         var precipChange = next.precipPotential - now.precipPotential;
-        function signed(value, unit) { return (value > 0 ? '+' : '') + value + unit; }
+        // Subtracting two already-rounded projections leaks binary-float noise, which was
+        // reaching learners as "temperature changed -1.3000000000000007°C".
+        function signed(value, unit) {
+          var rounded = round(value, 1);
+          return (rounded > 0 ? '+' : '') + rounded + unit;
+        }
         function conditionsLine(point) {
           return point.temperature + '\u00B0C | ' + point.pressure + ' hPa | ' + point.precipPotential + '% precipitation potential';
         }
@@ -5183,6 +5289,53 @@ var geographyGroup = new THREE.Group();
                 ),
                 h('p', { className: 'mt-3 rounded-lg bg-black/20 p-2 font-mono text-xs leading-relaxed text-cyan-100' }, conditionsLine(card.point)),
                 h('p', { className: 'mt-3 text-xs leading-relaxed text-slate-200' }, card.story)
+              );
+            })),
+            // Three snapshots cannot show an arc. Small multiples over the whole model
+            // window place each chapter on the curve it was sampled from \u2014 one axis per
+            // measure, never two scales sharing a plot.
+            h('div', { className: 'mt-4 grid gap-3 sm:grid-cols-3', 'data-weather-storyline-sparklines': true }, [
+              { id: 'temperature', label: 'Temperature', unit: '\u00B0C', color: '#d95926' },
+              { id: 'pressure', label: 'Pressure', unit: ' hPa', color: '#9085e9' },
+              { id: 'precipPotential', label: 'Precipitation potential', unit: '%', color: '#3987e5' }
+            ].map(function (track) {
+              var values = storylinePoints.map(function (entry) { return entry.point[track.id]; });
+              var low = Math.min.apply(Math, values);
+              var high = Math.max.apply(Math, values);
+              var span = Math.max(0.1, high - low);
+              function sparkX(hour) { return 6 + hour / 24 * 188; }
+              function sparkY(value) { return 40 - (value - low) / span * 30; }
+              var path = storylinePoints.map(function (entry, index) {
+                return (index === 0 ? 'M' : 'L') + round(sparkX(entry.hour), 1) + ' ' + round(sparkY(entry.point[track.id]), 1);
+              }).join(' ');
+              return h('div', { key: track.id, className: 'rounded-xl border border-white/10 bg-black/20 p-2' },
+                h('div', { className: 'flex items-baseline justify-between gap-2' },
+                  h('p', { className: 'flex items-center gap-1.5 text-[11px] font-black' },
+                    h('span', { className: 'inline-block h-2 w-2 rounded-full', style: { backgroundColor: track.color }, 'aria-hidden': 'true' }),
+                    track.label
+                  ),
+                  h('p', { className: 'text-[11px] font-black tabular-nums text-cyan-100' }, now[track.id] + track.unit)
+                ),
+                h('svg', {
+                  viewBox: '0 0 200 48', className: 'mt-1 h-auto w-full', role: 'img',
+                  'aria-label': track.label + ' across the 24-hour model window runs from ' + round(low, 1) + track.unit + ' to ' + round(high, 1) + track.unit + ', and reads ' + now[track.id] + track.unit + ' at the current chapter T plus ' + state.simHour + ' hours.'
+                },
+                  h('line', { x1: 6, y1: 44, x2: 194, y2: 44, stroke: 'rgba(255,255,255,.18)', strokeWidth: 1 }),
+                  h('path', { d: path, fill: 'none', stroke: track.color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                  // The three chapter hours are ticked; the current one carries the dot.
+                  cards.map(function (card) {
+                    return h('line', {
+                      key: card.id, x1: round(sparkX(card.hour), 1), y1: 42, x2: round(sparkX(card.hour), 1), y2: 46,
+                      stroke: card.id === 'now' ? '#67e8f9' : 'rgba(255,255,255,.35)', strokeWidth: card.id === 'now' ? 2 : 1
+                    });
+                  }),
+                  h('circle', { cx: round(sparkX(state.simHour), 1), cy: round(sparkY(now[track.id]), 1), r: 4, fill: track.color, stroke: '#0b1220', strokeWidth: 2 })
+                ),
+                h('div', { className: 'flex justify-between text-[10px] font-bold text-slate-400' },
+                  h('span', null, 'T +0'),
+                  h('span', { className: 'tabular-nums' }, round(low, 1) + ' to ' + round(high, 1) + track.unit),
+                  h('span', null, 'T +24')
+                )
               );
             })),
             h('div', { className: 'mt-4 flex items-start gap-3 rounded-xl border border-amber-300/20 bg-amber-300/10 p-3' },
@@ -5956,18 +6109,55 @@ var geographyGroup = new THREE.Group();
                 h('p', { className: 'text-[11px] font-bold ' + mutedClass }, 'agree on ' + labels[ensemble.dominantPrecip])
               )
             ),
-            h('div', { className: 'mt-4 space-y-2' }, rows.map(function (key) {
+            // Ranked, with the agreeing category emphasised so the bars and the headline
+            // count tell the same story instead of nine identical violet bars.
+            h('div', { className: 'mt-4 space-y-2', 'data-weather-ensemble-bars': true }, rows.slice().sort(function (a, b) {
+              return ensemble.counts[b] - ensemble.counts[a];
+            }).map(function (key) {
               var count = ensemble.counts[key];
+              var leading = key === ensemble.dominantPrecip;
               return h('div', { key: key, className: 'grid grid-cols-[92px_1fr_34px] items-center gap-2' },
-                h('span', { className: 'text-xs font-bold' }, labels[key]),
-                h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-slate-200') }, h('div', { className: 'h-full rounded-full bg-violet-400', style: { width: (count / 9 * 100) + '%' } })),
-                h('span', { className: 'text-right text-xs font-black' }, count)
+                h('span', { className: 'text-xs ' + (leading ? 'font-black' : 'font-bold ' + mutedClass) }, labels[key]),
+                h('div', { className: 'h-2 rounded-full ' + (dark ? 'bg-slate-800' : 'bg-slate-200') },
+                  h('div', { className: 'h-full rounded-full', style: { width: (count / 9 * 100) + '%', backgroundColor: leading ? (dark ? '#a78bfa' : '#6d28d9') : (dark ? '#475569' : '#cbd5e1') } })
+                ),
+                h('span', { className: 'text-right text-xs font-black tabular-nums' }, count)
               );
             })),
-            h('div', { className: 'mt-4 grid grid-cols-2 gap-2 text-xs' },
-              h('div', { className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') }, h('p', { className: mutedClass }, 'Temperature spread'), h('p', { className: 'font-black' }, ensemble.temperatureRange[0] + ' to ' + ensemble.temperatureRange[1] + '\u00B0C')),
-              h('div', { className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') }, h('p', { className: mutedClass }, 'Pressure spread'), h('p', { className: 'font-black' }, ensemble.pressureRange[0] + ' to ' + ensemble.pressureRange[1] + ' hPa'))
-            ),
+            // Nine members on a shared axis: the spread itself is the lesson, and a printed
+            // "18 to 24 degrees" hides whether the members cluster or split.
+            h('div', { className: 'mt-4 space-y-3', 'data-weather-ensemble-spread': true }, [
+              { id: 'temperature', label: 'Temperature spread', unit: '\u00B0C', range: ensemble.temperatureRange, color: seriesColor.temperature },
+              { id: 'pressure', label: 'Pressure spread', unit: ' hPa', range: ensemble.pressureRange, color: seriesColor.seaLevelPressure }
+            ].map(function (axis) {
+              var low = axis.range[0];
+              var high = axis.range[1];
+              var span = Math.max(0.1, high - low);
+              return h('div', { key: axis.id, className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') },
+                h('div', { className: 'flex items-baseline justify-between gap-2' },
+                  h('p', { className: 'text-xs font-bold' }, axis.label),
+                  h('p', { className: 'text-xs font-black tabular-nums' }, round(low, 1) + axis.unit + ' to ' + round(high, 1) + axis.unit)
+                ),
+                h('svg', {
+                  viewBox: '0 0 300 26', className: 'mt-1 h-auto w-full', role: 'img',
+                  'aria-label': 'All nine members fall between ' + round(low, 1) + ' and ' + round(high, 1) + axis.unit + '.'
+                },
+                  h('line', { x1: 8, y1: 13, x2: 292, y2: 13, stroke: chartBaseline, strokeWidth: 1 }),
+                  ensemble.members.map(function (member) {
+                    var value = member[axis.id];
+                    return h('circle', {
+                      key: member.id,
+                      cx: round(8 + (value - low) / span * 284, 1),
+                      cy: 13, r: 4.5,
+                      fill: axis.color,
+                      fillOpacity: 0.75,
+                      stroke: chartSurface,
+                      strokeWidth: 2
+                    });
+                  })
+                )
+              );
+            })),
             h('p', { className: 'mt-3 text-xs leading-relaxed ' + mutedClass }, 'These 9 outcomes demonstrate sensitivity to starting conditions. Their agreement is not an operational weather probability.')
           );
         }
@@ -5981,13 +6171,30 @@ var geographyGroup = new THREE.Group();
             if (!metric) return 'Not available';
             return (metric.error > 0 ? '+' : '') + metric.error + metric.unit;
           }
+          // Full-scale error used to size the bias bar for each metric, so a 2-degree miss and
+          // a 20-hectopascal miss are not drawn the same length.
           var metricDefinitions = [
-            { id: 'temperature', label: 'Temperature error' },
-            { id: 'precipitation', label: 'Precipitation error' },
-            { id: 'pressure', label: 'Pressure error' },
-            { id: 'windSpeed', label: 'Wind-speed error' },
-            { id: 'windDirection', label: 'Wind-direction error' }
+            { id: 'temperature', label: 'Temperature error', scale: 6 },
+            { id: 'precipitation', label: 'Precipitation error', scale: 50 },
+            { id: 'pressure', label: 'Pressure error', scale: 12 },
+            { id: 'windSpeed', label: 'Wind-speed error', scale: 25 },
+            { id: 'windDirection', label: 'Wind-direction error', scale: 90 }
           ];
+          function biasBar(metric, definition) {
+            if (!metric || !isFinite(metric.error)) return null;
+            var magnitude = clamp(Math.abs(metric.error) / definition.scale, 0, 1) * 50;
+            var over = metric.error > 0;
+            return h('div', { className: 'relative mt-1 h-1.5 rounded-full ' + (dark ? 'bg-slate-800' : 'bg-slate-200'), 'aria-hidden': 'true' },
+              h('span', { className: 'absolute inset-y-0 left-1/2 w-px -translate-x-1/2', style: { backgroundColor: chartBaseline } }),
+              Math.abs(metric.error) > 0.001 && h('span', {
+                className: 'absolute inset-y-0 rounded-full',
+                style: Object.assign(
+                  { width: magnitude + '%', backgroundColor: over ? seriesColor.temperature : seriesColor.precipPotential },
+                  over ? { left: '50%' } : { right: '50%' }
+                )
+              })
+            );
+          }
           return h('section', { className: panelClass + ' overflow-hidden', 'data-weather-forecast-verification-studio': true, 'aria-labelledby': 'weather-live-verification-title' },
             h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + (dark ? 'border-slate-700 bg-gradient-to-r from-slate-900 via-fuchsia-950/30 to-sky-950/25' : 'border-fuchsia-200 bg-gradient-to-r from-fuchsia-50 via-white to-sky-50') },
               h('div', { className: 'max-w-2xl' },
@@ -6025,11 +6232,23 @@ var geographyGroup = new THREE.Group();
                       var metric = result.metrics[definition.id];
                       return h('div', { key: definition.id, className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/55' : 'bg-white') },
                         h('p', { className: 'text-[10px] leading-tight ' + mutedClass }, definition.label),
-                        h('p', { className: 'mt-1 text-xs font-black' }, signedMetric(metric)),
+                        h('p', { className: 'mt-1 text-xs font-black tabular-nums' }, signedMetric(metric)),
+                        biasBar(metric, definition),
                         metric && h('p', { className: 'mt-0.5 text-[10px] ' + mutedClass }, 'Forecast ' + metric.forecast + metric.unit + ' | observed ' + metric.observed + metric.unit)
                       );
                     })),
-                    h('p', { className: 'mt-2 text-xs font-bold ' + (result.conditionMatch ? emeraldAccentClass : 'text-amber-500') }, result.conditionMatch ? 'Condition category matched the observation.' : 'Condition category differed from the observation.'),
+                    h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-bold ' + mutedClass, 'data-weather-bias-key': true },
+                      h('span', null, 'Bar reads from the centre:'),
+                      h('span', { className: 'inline-flex items-center gap-1' },
+                        h('span', { className: 'inline-block h-2 w-4 rounded-full', style: { backgroundColor: seriesColor.precipPotential }, 'aria-hidden': 'true' }),
+                        'forecast too low'
+                      ),
+                      h('span', { className: 'inline-flex items-center gap-1' },
+                        h('span', { className: 'inline-block h-2 w-4 rounded-full', style: { backgroundColor: seriesColor.temperature }, 'aria-hidden': 'true' }),
+                        'forecast too high'
+                      )
+                    ),
+                    h('p', { className: 'mt-2 text-xs font-bold ' + (result.conditionMatch ? emeraldAccentClass : 'text-amber-500') }, (result.conditionMatch ? '✓ ' : '⚠ ') + (result.conditionMatch ? 'Condition category matched the observation.' : 'Condition category differed from the observation.')),
                     h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + mutedClass }, 'Use the signed errors to identify bias: a positive temperature error means the forecast was too warm; a negative pressure error means it predicted pressure that was too low.')
                   ),
                   !result.ready && h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, result.detail),
