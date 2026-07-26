@@ -90,4 +90,33 @@ describe('static audit UI heuristics', () => {
     const report = scanFixture(".tool input:focus { outline: none; } .tool :focus:not(:focus-visible) { outline: none; }");
     expect(report).toContain('FOCUS-001');
   });
+
+  it('recognizes a documented arrow-key reorder control inside a draggable group', () => {
+    const report = scanFixture([
+      "h('div', {",
+      "  draggable: true,",
+      "  onDragStart: startDrag,",
+      "  role: 'group'",
+      "}, h('button', {",
+      "  'aria-keyshortcuts': 'Alt+ArrowLeft Alt+ArrowRight',",
+      "  'aria-describedby': 'reorder-help',",
+      "  onKeyDown: function (event) {",
+      "    if (event.altKey && event.key === 'ArrowLeft') moveItem(-1);",
+      '  }',
+      '}));',
+    ].join('\n'));
+    expect(report).not.toContain('DRAGDROP-001');
+  });
+
+  it('still reports drag-only groups without a keyboard movement alternative', () => {
+    const report = scanFixture([
+      "h('div', {",
+      "  draggable: true,",
+      "  onDragStart: startDrag,",
+      "  onDrop: reorderFromPointer,",
+      "  role: 'group'",
+      "}, 'Item');",
+    ].join('\n'));
+    expect(report).toContain('DRAGDROP-001');
+  });
 });

@@ -306,13 +306,23 @@ const CHECKS = [
     description: 'Draggable interaction with no keyboard-based movement alternative',
     test(line, lineNum, lines) {
       if (!/draggable\s*[:=]\s*['"]?true|onDragStart|onMouseDown.*drag/i.test(line)) return false;
-      const context = lines.slice(lineNum - 1, lineNum + 10).join(' ');
+      const localContext = lines.slice(lineNum - 1, lineNum + 10).join(' ');
+      const context = lines.slice(lineNum - 1, lineNum + 120).join(' ');
       // A draggable native button with an onClick handler already provides the
       // same result through keyboard activation and a single tap/click.
       const nativeButtonClickAlternative =
-        /createElement\(\s*['"]button['"]/.test(context) && /onClick/.test(context);
+        /(?:createElement\(\s*['"]button['"]|(?:^|[\s,(])(?:e|h)\(\s*['"]button['"])/.test(localContext) &&
+        /onClick/.test(localContext);
       if (nativeButtonClickAlternative) return false;
-      if (/onKeyDown|ArrowUp|ArrowDown|keyboard/.test(context)) return false;
+      // Reorder controls are sometimes descendants of a draggable group rather
+      // than properties on the draggable node. Recognize only an explicit,
+      // documented arrow-key shortcut wired through a keyboard handler.
+      const documentedKeyboardReorder =
+        /onKeyDown/.test(context) &&
+        /aria-keyshortcuts/.test(context) &&
+        /Arrow(?:Left|Right|Up|Down)/.test(context) &&
+        /(?:move|reorder)/i.test(context);
+      if (documentedKeyboardReorder || /keyboard/.test(localContext)) return false;
       return true;
     },
     fix: 'Provide button-based alternative (Move Up/Down) or arrow key handlers for keyboard users.',

@@ -1,9 +1,9 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders identically 1`] = `
-"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-default">
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="presentation" class="ss-focus-visible ss-modal-root ss-theme-default">
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
 <div style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
@@ -12,7 +12,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders iden
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
@@ -267,9 +267,9 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "board" renders iden
 `;
 
 exports[`Symbol Studio — per-tab renders (snapshot) > tab "books" renders identically 1`] = `
-"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-default">
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="presentation" class="ss-focus-visible ss-modal-root ss-theme-default">
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
 <div style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
@@ -278,7 +278,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "books" renders iden
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
@@ -473,9 +473,9 @@ Create one above and add your saved boards.</div>
 `;
 
 exports[`Symbol Studio — per-tab renders (snapshot) > tab "garden" renders identically 1`] = `
-"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-default">
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="presentation" class="ss-focus-visible ss-modal-root ss-theme-default">
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
 <div style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
@@ -484,7 +484,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "garden" renders ide
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
@@ -1101,9 +1101,9 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "garden" renders ide
 `;
 
 exports[`Symbol Studio — per-tab renders (snapshot) > tab "quest" renders identically 1`] = `
-"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-default">
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="presentation" class="ss-focus-visible ss-modal-root ss-theme-default">
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
 <div style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
@@ -1112,7 +1112,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quest" renders iden
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
@@ -1290,9 +1290,9 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quest" renders iden
 `;
 
 exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" renders identically 1`] = `
-"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-default">
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="presentation" class="ss-focus-visible ss-modal-root ss-theme-default">
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
 <div style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
@@ -1301,7 +1301,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
@@ -1598,9 +1598,9 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "quickboards" render
 `;
 
 exports[`Symbol Studio — per-tab renders (snapshot) > tab "schedule" renders identically 1`] = `
-"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-default">
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="presentation" class="ss-focus-visible ss-modal-root ss-theme-default">
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
 <div style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
@@ -1609,7 +1609,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "schedule" renders i
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
@@ -1824,9 +1824,9 @@ arrive at school" aria-label="Schedule activities, one per line" style="width:10
 `;
 
 exports[`Symbol Studio — per-tab renders (snapshot) > tab "search" renders identically 1`] = `
-"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-default">
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="presentation" class="ss-focus-visible ss-modal-root ss-theme-default">
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
 <div style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
@@ -1835,7 +1835,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "search" renders ide
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
@@ -2013,9 +2013,9 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "search" renders ide
 `;
 
 exports[`Symbol Studio — per-tab renders (snapshot) > tab "stories" renders identically 1`] = `
-"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-default">
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="presentation" class="ss-focus-visible ss-modal-root ss-theme-default">
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
 <div style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
@@ -2024,7 +2024,7 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "stories" renders id
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
@@ -2260,9 +2260,9 @@ exports[`Symbol Studio — per-tab renders (snapshot) > tab "stories" renders id
 `;
 
 exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FERPA environment renders identically 1`] = `
-"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-default">
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="presentation" class="ss-focus-visible ss-modal-root ss-theme-default">
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
 <div style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
@@ -2271,7 +2271,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
@@ -2513,9 +2513,9 @@ exports[`Symbol Studio — render under each host theme (snapshot) > Canvas / FE
 `;
 
 exports[`Symbol Studio — render under each host theme (snapshot) > dark theme renders identically 1`] = `
-"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-dark">
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="presentation" class="ss-focus-visible ss-modal-root ss-theme-dark">
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<div style="background:#0f172a;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div style="background:#0f172a;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
 <div style="background:linear-gradient(135deg, #4c1d95 0%, #312e81 100%);padding:12px 18px;flex-shrink:0">
@@ -2524,7 +2524,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
@@ -2762,9 +2762,9 @@ exports[`Symbol Studio — render under each host theme (snapshot) > dark theme 
 `;
 
 exports[`Symbol Studio — render under each host theme (snapshot) > default (light) theme renders identically 1`] = `
-"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-default">
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="presentation" class="ss-focus-visible ss-modal-root ss-theme-default">
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
 <div style="background:linear-gradient(135deg, #7c3aed 0%, #4338ca 100%);padding:12px 18px;flex-shrink:0">
@@ -2773,7 +2773,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>
@@ -3011,9 +3011,9 @@ exports[`Symbol Studio — render under each host theme (snapshot) > default (li
 `;
 
 exports[`Symbol Studio — render under each host theme (snapshot) > high-contrast theme renders identically 1`] = `
-"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="dialog" aria-modal="true" aria-label="Visual Supports Studio" class="ss-focus-visible ss-modal-root ss-theme-contrast">
+"<div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:stretch;justify-content:center;padding:12px;box-sizing:border-box" role="presentation" class="ss-focus-visible ss-modal-root ss-theme-contrast">
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<div style="background:#0f172a;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1">
+<div style="background:#0f172a;border-radius:14px;width:100%;max-width:1100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.4)" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ss-dialog-title" aria-describedby="ss-dialog-description">
 <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">
 </div>
 <div style="background:linear-gradient(135deg, #4c1d95 0%, #312e81 100%);padding:12px 18px;flex-shrink:0">
@@ -3022,7 +3022,7 @@ exports[`Symbol Studio — render under each host theme (snapshot) > high-contra
 <span style="font-size:22px" aria-hidden="true">🎨</span>
 <div>
 <h2 id="ss-dialog-title" style="color:#fff;font-weight:800;font-size:17px;margin:0">Visual Supports Studio</h2>
-<p style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
+<p id="ss-dialog-description" style="color:rgba(255,255,255,0.9);font-size:11px;margin:2px 0 0">AI-powered symbols • boards • schedules • social stories</p>
 </div>
 </div>
 <button style="color:#fff;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:20px;line-height:1" aria-label="Close Visual Supports Studio">×</button>

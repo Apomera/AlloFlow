@@ -211,8 +211,9 @@
   (function injectPrintStyles() {
     var style = document.createElement('style');
     style.textContent = '@media print{body *{visibility:hidden}#ss-pb,#ss-pb *,#ss-ps,#ss-ps *,#ss-py,#ss-py *,#ss-pq,#ss-pq *,#ss-pq-calming,#ss-pq-calming *,#ss-pq-sensory,#ss-pq-sensory *,#ss-pq-askme,#ss-pq-askme *,#ss-pq-bodycheck,#ss-pq-bodycheck *,#ss-pq-transition,#ss-pq-transition *{visibility:visible}#ss-pb,#ss-ps,#ss-py,#ss-pq,#ss-pq-calming,#ss-pq-sensory,#ss-pq-askme,#ss-pq-bodycheck,#ss-pq-transition{position:absolute;left:0;top:0;width:100%}.ss-no-print{display:none!important}}'
-    + ' .ss-focus-visible *:focus-visible{outline:2px solid #7c3aed!important;outline-offset:2px!important;border-radius:4px!important}'
-    + ' .ss-focus-visible *:focus:not(:focus-visible){outline:none!important}'
+    + ' .ss-focus-visible:focus-visible,.ss-focus-visible *:focus-visible{outline:3px solid #7c3aed!important;outline-offset:2px!important;border-radius:4px!important}'
+    + ' .ss-focus-visible:focus:not(:focus-visible),.ss-focus-visible *:focus:not(:focus-visible){outline:none!important}'
+    + ' @media(forced-colors:active){.ss-focus-visible:focus-visible,.ss-focus-visible *:focus-visible{outline:3px solid CanvasText!important;outline-offset:2px!important;forced-color-adjust:auto!important}}'
     // ── Word Garden animations ──
     + ' @keyframes ss-garden-sway{0%{transform:rotate(-1deg)}50%{transform:rotate(1deg)}100%{transform:rotate(-1deg)}}'
     + ' @keyframes ss-garden-glow{0%{box-shadow:0 0 6px rgba(250,204,21,0.3)}50%{box-shadow:0 0 18px rgba(250,204,21,0.7)}100%{box-shadow:0 0 6px rgba(250,204,21,0.3)}}'
@@ -1035,6 +1036,11 @@
     var _scanSpeed = useState(2000); var scanSpeed = _scanSpeed[0]; var setScanSpeed = _scanSpeed[1];
     var _scanManual = useState(false); var scanManual = _scanManual[0]; var setScanManual = _scanManual[1];
     var scanIntervalRef = useRef(null);
+    var scanOverlayRef = useRef(null);
+    var scanOpenerRef = useRef(null);
+    var modalRef = useRef(null);
+    var ssLiveRef = useRef(null);
+    var dialogOpenerRef = useRef(null);
     var autoLoadedRef = useRef(false);
 
     // Direct-use AAC mode state
@@ -1204,6 +1210,49 @@
       }, scanSpeed);
       return function () { clearInterval(scanIntervalRef.current); };
     }, [scanBoardId, scanPaused, scanManual, scanSpeed, savedBoards]);
+
+    // Move focus into the primary dialog on open and return it to the invoking
+    // control when the studio closes (WCAG 2.4.3 / 2.4.11).
+    useEffect(function () {
+      if (!isOpen) return;
+      dialogOpenerRef.current = (typeof document !== 'undefined') ? document.activeElement : null;
+      var t = setTimeout(function () {
+        try {
+          if (!useBoardId && !scanBoardId && modalRef.current && modalRef.current.focus) modalRef.current.focus();
+        } catch (e) {}
+      }, 0);
+      return function () {
+        clearTimeout(t);
+        try {
+          var opener = dialogOpenerRef.current;
+          if (opener && opener.focus && document.contains(opener)) opener.focus();
+        } catch (e) {}
+      };
+    }, [isOpen]); // The nested AAC/scanning modes manage their own focus.
+
+    // Focus the switch-scanning surface once per opening, not on every render,
+    // and return focus to the Scan button when the nested dialog closes.
+    useEffect(function () {
+      if (!scanBoardId) return;
+      var t = setTimeout(function () {
+        try { if (scanOverlayRef.current && scanOverlayRef.current.focus) scanOverlayRef.current.focus(); } catch (e) {}
+      }, 0);
+      return function () {
+        clearTimeout(t);
+        var openerBoardId = scanOpenerRef.current;
+        setTimeout(function () {
+          try {
+            var candidates = document.querySelectorAll('[data-scan-board-id]');
+            for (var i = 0; i < candidates.length; i++) {
+              if (candidates[i].getAttribute('data-scan-board-id') === String(openerBoardId)) {
+                candidates[i].focus();
+                break;
+              }
+            }
+          } catch (e) {}
+        }, 0);
+      };
+    }, [scanBoardId]);
 
     if (!isOpen) return null;
 
@@ -7534,7 +7583,8 @@
                       style: S.btn('#eff6ff', '#1d4ed8', false)
                     }, '\u25b6 Use'),
                     b.words && b.words.some(function (w) { return w.image; }) && e('button', {
-                      onClick: function () { setScanBoardId(b.id); setScanIndex(0); setScanPaused(false); },
+                      onClick: function () { scanOpenerRef.current = b.id; setScanBoardId(b.id); setScanIndex(0); setScanPaused(false); },
+                      'data-scan-board-id': b.id,
                       title: 'Partner-assisted single-switch scanning mode', 'aria-label': 'Start scanning mode',
                       style: S.btn('#ecfdf5', '#065f46', false)
                     }, '\u267f Scan'),
@@ -8560,29 +8610,55 @@
       };
       var advanceScan = function () { setScanIndex(function (prev) { return (prev + 1) % (scanCells.length || 1); }); };
       var handleScanKeyDown = function (ev) {
-        if (ev.code === 'Space' || ev.code === 'Enter') { ev.preventDefault(); activateCell(); }
-        if (ev.code === 'Escape') exitScan();
-        // Two-switch mode: Tab or ArrowRight to advance
-        if (scanManual && (ev.code === 'Tab' || ev.code === 'ArrowRight' || ev.code === 'ArrowDown')) { ev.preventDefault(); advanceScan(); }
+        if (ev.code === 'Escape') { ev.preventDefault(); ev.stopPropagation(); exitScan(); return; }
+        if (ev.key === 'Tab') {
+          var controls = Array.prototype.filter.call(
+            ev.currentTarget.querySelectorAll('button:not([disabled]), select:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+            function (el) {
+              if (el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
+              var computed = (typeof window !== 'undefined' && window.getComputedStyle) ? window.getComputedStyle(el) : null;
+              return !computed || (computed.display !== 'none' && computed.visibility !== 'hidden');
+            }
+          );
+          if (controls.length) {
+            var firstControl = controls[0];
+            var lastControl = controls[controls.length - 1];
+            if (ev.target === ev.currentTarget || (ev.shiftKey && document.activeElement === firstControl) || (!ev.shiftKey && document.activeElement === lastControl)) {
+              ev.preventDefault();
+              (ev.shiftKey ? lastControl : firstControl).focus();
+            }
+          }
+          return;
+        }
+        // Preserve native button/select behavior. Switch shortcuts apply only
+        // while the scanning surface itself owns focus.
+        if (ev.target !== ev.currentTarget) return;
+        if (ev.code === 'Space' || ev.code === 'Enter') { ev.preventDefault(); activateCell(); return; }
+        if (scanManual && (ev.code === 'ArrowRight' || ev.code === 'ArrowDown')) { ev.preventDefault(); advanceScan(); }
       };
       return e('div', {
-        className: 'ss-modal-root ss-theme-' + ssTheme,
-        style: { position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column', outline: 'none' },
+        className: 'ss-focus-visible ss-modal-root ss-theme-' + ssTheme,
+        style: { position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column', overflow: 'auto' },
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'ss-scan-title',
+        'aria-describedby': 'ss-scan-help',
+        'aria-keyshortcuts': scanManual ? 'Space Enter Escape ArrowRight ArrowDown' : 'Space Enter Escape',
         tabIndex: 0,
-        ref: function (el) { if (el) el.focus(); },
+        ref: scanOverlayRef,
         onKeyDown: handleScanKeyDown
       },
         // Live region: announces the highlighted cell + its position so switch / screen-reader
         // users can track where the scan is (this overlay renders outside the modal's ssLiveRef).
         e('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, scanCells[safeIdx] ? (scanCells[safeIdx].label + ' (' + (safeIdx + 1) + ' of ' + scanCells.length + ')') : ''),
         // Scanning header bar
-        e('div', { style: { background: '#1e293b', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 } },
-          e('span', { style: { color: '#fff', fontWeight: 800, fontSize: '15px' } }, '♿ ' + (scanBoard ? scanBoard.title || 'Board' : 'Board')),
+        e('div', { style: { background: '#1e293b', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0, flexWrap: 'wrap' } },
+          e('h2', { id: 'ss-scan-title', style: { color: '#fff', fontWeight: 800, fontSize: '15px', margin: 0 } }, '♿ ' + (scanBoard ? scanBoard.title || 'Board' : 'Board')),
           e('button', {
             onClick: function () { setScanManual(function (m) { return !m; }); }, 'aria-label': scanManual ? 'Switch to automatic scanning' : 'Switch to manual scanning',
             style: { background: scanManual ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 12px', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }
           }, scanManual ? '2-Switch' : '1-Switch'),
-          e('span', { style: { color: '#94a3b8', fontSize: '12px', marginRight: 'auto' } }, scanManual ? 'Tab to advance, Space to select' : 'Space or tap to speak highlighted cell'),
+          e('span', { id: 'ss-scan-help', style: { color: '#cbd5e1', fontSize: '12px', marginRight: 'auto' } }, scanManual ? 'Use Right or Down Arrow to advance; Space or Enter to select.' : 'Use Space or Enter to speak the highlighted cell.'),
           scanManual && e('button', { onClick: advanceScan, 'aria-label': 'Advance to next cell', style: { background: '#1e40af', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '→ Next'),
           e('label', { style: { color: '#94a3b8', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' } },
             'Speed:',
@@ -8590,7 +8666,7 @@
               value: scanSpeed,
               onChange: function (ev) { setScanSpeed(Number(ev.target.value)); setScanIndex(0); },
               'aria-label': 'Scanning speed',
-              style: { fontSize: '12px', background: '#334155', color: '#fff', border: '1px solid #475569', borderRadius: '5px', padding: '2px 6px', cursor: 'pointer' }
+              style: { fontSize: '12px', background: '#334155', color: '#fff', border: '1px solid #64748b', borderRadius: '5px', padding: '2px 6px', minHeight: '24px', cursor: 'pointer' }
             },
               e('option', { value: 1000 }, '1 s'),
               e('option', { value: 2000 }, '2 s'),
@@ -8609,16 +8685,17 @@
         ),
         // Cell grid
         e('div', {
-          role: 'grid',
+          role: 'group',
           'aria-label': 'Scanning board — ' + scanCells.length + ' cell' + (scanCells.length === 1 ? '' : 's'),
-          style: { flex: 1, display: 'grid', gridTemplateColumns: 'repeat(' + Math.min(scanBoard ? (scanBoard.cols || 4) : 4, scanCells.length) + ', 1fr)', gap: '16px', padding: '20px', overflowY: 'auto', alignContent: 'start' }
+          style: { flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '16px', padding: '20px', overflowY: 'auto', alignContent: 'start' }
         },
           scanCells.map(function (cell, idx) {
             var isHighlighted = idx === safeIdx;
-            return e('div', {
+            return e('button', {
               key: cell.id || idx,
-              role: 'gridcell',
-              'aria-selected': isHighlighted,
+              type: 'button',
+              'aria-label': 'Speak ' + cell.label + ', position ' + (idx + 1) + ' of ' + scanCells.length,
+              'aria-current': isHighlighted ? 'true' : undefined,
               onClick: function () { setScanIndex(idx); activateCell(idx); },
               style: {
                 border: isHighlighted ? '5px solid #facc15' : '3px solid #334155',
@@ -8633,6 +8710,8 @@
                 transform: isHighlighted ? 'scale(1.06)' : 'scale(1)',
                 transition: 'all 0.15s ease',
                 boxShadow: isHighlighted ? '0 0 0 4px rgba(250,204,21,0.3)' : 'none',
+                font: 'inherit',
+                minWidth: 0,
               }
             },
               e('img', { src: cell.image, alt: cell.label, style: { width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px' } }),
@@ -8643,24 +8722,28 @@
       );
     }
 
-    // Focus trap handler for modal — keep Tab within the dialog
-    var modalRef = useRef(null);
-    var ssLiveRef = useRef(null);
-    // Move focus into the dialog on open; restore it to the trigger on close (WCAG 2.4.3 / 2.4.11).
-    useEffect(function () {
-      var prevFocus = (typeof document !== 'undefined') ? document.activeElement : null;
-      var t = setTimeout(function () { try { if (modalRef.current && modalRef.current.focus) modalRef.current.focus(); } catch (e) {} }, 0);
-      return function () { clearTimeout(t); try { if (prevFocus && prevFocus.focus && document.contains(prevFocus)) prevFocus.focus(); } catch (e) {} };
-    }, []);
+    // Focus trap handler for modal — keep Tab within the dialog.
     var handleModalKeyDown = function (ev) {
-      if (ev.key === 'Escape') { onClose && onClose(); return; }
+      if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); onClose && onClose(); return; }
       if (ev.key !== 'Tab') return;
       var modal = modalRef.current;
       if (!modal) return;
-      var focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      var focusable = Array.prototype.filter.call(
+        modal.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+        function (el) {
+          if (el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
+          var computed = (typeof window !== 'undefined' && window.getComputedStyle) ? window.getComputedStyle(el) : null;
+          return !computed || (computed.display !== 'none' && computed.visibility !== 'hidden');
+        }
+      );
       if (!focusable.length) return;
       var first = focusable[0];
       var last = focusable[focusable.length - 1];
+      if (focusable.indexOf(document.activeElement) === -1) {
+        ev.preventDefault();
+        (ev.shiftKey ? last : first).focus();
+        return;
+      }
       if (ev.shiftKey) {
         if (document.activeElement === first) { ev.preventDefault(); last.focus(); }
       } else {
@@ -8671,15 +8754,22 @@
     return e('div', {
       style: S.overlay,
       onClick: function (ev) { if (ev.target === ev.currentTarget) onClose && onClose(); },
-      role: 'dialog',
-      'aria-modal': 'true',
-      'aria-label': 'Visual Supports Studio',
-      className: 'ss-focus-visible ss-modal-root ss-theme-' + ssTheme,
-      onKeyDown: handleModalKeyDown
+      role: 'presentation',
+      className: 'ss-focus-visible ss-modal-root ss-theme-' + ssTheme
     },
       // Spinner keyframes
       e('style', null, '@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}'),
-      e('div', { style: S.modal, onClick: function (ev) { ev.stopPropagation(); }, ref: modalRef, tabIndex: -1 },
+      e('div', {
+        style: S.modal,
+        onClick: function (ev) { ev.stopPropagation(); },
+        ref: modalRef,
+        tabIndex: -1,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'ss-dialog-title',
+        'aria-describedby': 'ss-dialog-description',
+        onKeyDown: handleModalKeyDown
+      },
         e('div', { ref: ssLiveRef, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' } }),
         // Header
         e('div', { style: S.header },
@@ -8688,7 +8778,7 @@
               e('span', { style: { fontSize: '22px' }, 'aria-hidden': 'true' }, '🎨'),
               e('div', null,
                 e('h2', { id: 'ss-dialog-title', style: { color: '#fff', fontWeight: 800, fontSize: '17px', margin: 0 } }, 'Visual Supports Studio'),
-                e('p', { style: { color: 'rgba(255,255,255,0.9)', fontSize: '11px', margin: '2px 0 0' } }, 'AI-powered symbols • boards • schedules • social stories')
+                e('p', { id: 'ss-dialog-description', style: { color: 'rgba(255,255,255,0.9)', fontSize: '11px', margin: '2px 0 0' } }, 'AI-powered symbols • boards • schedules • social stories')
               )
             ),
             e('button', { onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': 'Close Visual Supports Studio' }, '×')
