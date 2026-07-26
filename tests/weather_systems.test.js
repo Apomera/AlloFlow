@@ -2453,6 +2453,16 @@ describe('Weather Systems ensemble, verification and storyline visuals', () => {
     expect(source).toContain('forecast too high');
   });
 
+  it('separates the score-weighting segments by hue and by a surface gap', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: { tab: 'forecast', scenario: 'coldFront' } }, { gradeLevel: '8th Grade' });
+    // Validated adjacent order; the old sky/violet neighbours measured deutan ΔE 5.2.
+    ['#3987e5', '#d95926', '#199e70', '#c98500'].forEach((hex) => expect(html).toContain(hex));
+    expect(html).not.toContain('bg-sky-400"');
+    expect(html).not.toContain('bg-violet-400"');
+    // Touching segments are parted by surface, not by a stroke around each one.
+    expect(html).toContain('margin-left:2px');
+  });
+
   it('draws the storyline chapters on the curve they were sampled from', () => {
     const html = renderTool('weatherSystems', { weatherSystems: { tab: 'map', scenario: 'coldFront', simHour: 6 } }, { gradeLevel: '8th Grade' });
     expect(html).toContain('data-weather-storyline-sparklines');

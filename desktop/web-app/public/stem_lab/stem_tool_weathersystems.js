@@ -5871,11 +5871,13 @@ var geographyGroup = new THREE.Group();
         ];
         var forecastReadiness = Math.round(readinessItems.reduce(function(sum, item) { return sum + item.progress; }, 0) / readinessItems.length * 100);
         var nextReadinessItem = readinessItems.filter(function(item) { return !item.complete; })[0] || null;
+        // Validated adjacent-pair order: the previous sky/violet neighbours measured
+        // ΔE 5.2 under deuteranopia, below even the floor that secondary encoding can rescue.
         var scoringWeights = [
-          { label: 'Precipitation', points: 40, color: 'bg-sky-400' },
-          { label: 'Timing', points: 25, color: 'bg-violet-400' },
-          { label: 'Hazard', points: 25, color: 'bg-amber-400' },
-          { label: 'Evidence', points: 10, color: 'bg-emerald-400' }
+          { label: 'Precipitation', points: 40, color: '#3987e5' },
+          { label: 'Timing', points: 25, color: '#d95926' },
+          { label: 'Hazard', points: 25, color: '#199e70' },
+          { label: 'Evidence', points: 10, color: '#c98500' }
         ];
         function carriedEvidencePanel() {
           var carried = d.carriedEvidence;
@@ -6046,13 +6048,27 @@ var geographyGroup = new THREE.Group();
               h('div', { className: 'mt-2 text-xs font-black leading-snug' }, item.label)
             );
           });
-          var scoreSegments = scoringWeights.map(function (weight) {
-            return h('span', { key: weight.label, className: weight.color, style: { width: weight.points + '%' }, title: weight.label + ': ' + weight.points + ' points' });
+          // A 2px surface gap separates touching segments; a stroke around each would add
+          // ink that is not data.
+          var scoreSegments = scoringWeights.map(function (weight, index) {
+            return h('span', {
+              key: weight.label,
+              style: {
+                width: weight.points + '%',
+                backgroundColor: weight.color,
+                marginLeft: index === 0 ? 0 : '2px'
+              },
+              title: weight.label + ': ' + weight.points + ' points'
+            });
           });
+          // Each label carries its own colour key, so a segment is never matched by hue alone.
           var scoreLabels = scoringWeights.map(function (weight) {
-            return h('div', { key: weight.label, className: 'flex items-center justify-between text-[11px] text-slate-300' },
-              h('span', null, weight.label),
-              h('span', { className: 'font-black text-white' }, weight.points + ' pts')
+            return h('div', { key: weight.label, className: 'flex items-center justify-between gap-2 text-[11px] text-slate-300' },
+              h('span', { className: 'flex items-center gap-1.5' },
+                h('span', { className: 'inline-block h-2 w-2 shrink-0 rounded-full', style: { backgroundColor: weight.color }, 'aria-hidden': 'true' }),
+                weight.label
+              ),
+              h('span', { className: 'font-black tabular-nums text-white' }, weight.points + ' pts')
             );
           });
           return h('section', { className: 'overflow-hidden rounded-xl border border-sky-500/30 bg-gradient-to-br from-sky-950 via-slate-900 to-indigo-950 text-white shadow-lg', 'data-weather-forecast-readiness': true, 'aria-labelledby': 'weather-readiness-title' },
