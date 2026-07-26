@@ -2647,6 +2647,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     return { next: next, event: firedEvent };
   }
 
+  // Deterministic, event-free colony outlook used by the management UI.
+  // This projects only the biological/resource trend in bhStepColony. Weather,
+  // outbreaks, swarms, and future management choices remain unknown.
+  function bhForecastColony(s, cfg, days) {
+    var requested = Number(days);
+    var horizon = Math.max(1, Math.min(30, isFinite(requested) ? Math.round(requested) : 7));
+    var start = Object.assign({}, s);
+    var current = Object.assign({}, s, { activeEvent: { id: 'forecast_hold' } });
+    var noEventCfg = Object.assign({}, cfg, { rand: function() { return 1; } });
+    var timeline = [];
+
+    for (var i = 0; i < horizon; i++) {
+      var result = bhStepColony(current, noEventCfg);
+      current = Object.assign({}, current, result.next, { activeEvent: { id: 'forecast_hold' } });
+      timeline.push({
+        day: result.next.day,
+        workers: result.next.workers,
+        honey: result.next.honey,
+        pollen: result.next.pollen,
+        varroaLevel: result.next.varroaLevel,
+        diseaseRisk: result.next.diseaseRisk,
+        morale: result.next.morale
+      });
+      if (result.next.workers < 500 && result.next.day > 30) break;
+    }
+
+    var end = timeline.length ? timeline[timeline.length - 1] : start;
+    var risks = [];
+    function addRisk(id, level, label, detail, action) {
+      risks.push({ id: id, level: level, label: label, detail: detail, action: action });
+    }
+
+    if (end.workers < 500 && end.day > 30) {
+      addRisk('collapse', 'critical', 'Colony collapse projected',
+        'The worker force falls below the viable-colony threshold.',
+        'Stabilize food, queen health, mites, and disease before advancing.');
+    }
+    if (end.honey <= 10) {
+      addRisk('honey', 'critical', 'Starvation risk',
+        'Honey stores fall to ' + end.honey + ' lb in this event-free projection.',
+        'Feed the colony or improve forage before advancing.');
+    } else if (end.honey < 15 || end.honey < (start.honey || 0) - 5) {
+      addRisk('honey', 'watch', 'Honey stores trending down',
+        'Stores move from ' + (start.honey || 0) + ' to ' + end.honey + ' lb.',
+        'Watch the seasonal forage-to-consumption balance.');
+    }
+    if (end.varroaLevel >= 35) {
+      addRisk('varroa', 'critical', 'High varroa pressure',
+        'Mite pressure reaches ' + end.varroaLevel + '%, increasing mortality and virus transmission.',
+        'Use an appropriate IPM treatment before a long fast-forward.');
+    } else if (end.varroaLevel >= 20) {
+      addRisk('varroa', 'watch', 'Varroa threshold approaching',
+        'Mite pressure reaches ' + end.varroaLevel + '%.',
+        'Inspect brood and plan a season-appropriate treatment.');
+    }
+    if (end.diseaseRisk >= 55) {
+      addRisk('disease', 'critical', 'High disease risk',
+        'Disease risk reaches ' + end.diseaseRisk + '%.',
+        'Improve hygiene and reduce linked stressors such as mites and pesticides.');
+    } else if (end.diseaseRisk >= 35) {
+      addRisk('disease', 'watch', 'Disease risk rising',
+        'Disease risk reaches ' + end.diseaseRisk + '%.',
+        'Use hive hygiene and advance in shorter steps.');
+    }
+    var capacity = typeof s.capacity === 'number' ? s.capacity : 80;
+    var crowdRatio = end.workers / Math.max(1, capacity * 350);
+    if (crowdRatio > 1) {
+      addRisk('crowding', crowdRatio >= 1.2 ? 'critical' : 'watch', 'Swarm pressure',
+        'Projected workers exceed the current comb-capacity guideline.',
+        'Add a honey super before the colony becomes crowded.');
+    }
+    if (end.pollen < 5) {
+      addRisk('pollen', end.pollen < 2 ? 'critical' : 'watch', 'Low pollen stores',
+        'Pollen falls to ' + end.pollen + ' lb, limiting brood nutrition.',
+        'Improve diverse forage and avoid a long fast-forward.');
+    }
+
+    risks.sort(function(a, b) {
+      return (a.level === 'critical' ? 0 : 1) - (b.level === 'critical' ? 0 : 1);
+    });
+
+    return {
+      daysRequested: horizon,
+      daysProjected: timeline.length,
+      start: start,
+      end: end,
+      delta: {
+        workers: (end.workers || 0) - (start.workers || 0),
+        honey: Math.round(((end.honey || 0) - (start.honey || 0)) * 10) / 10,
+        varroaLevel: (end.varroaLevel || 0) - (start.varroaLevel || 0),
+        diseaseRisk: (end.diseaseRisk || 0) - (start.diseaseRisk || 0)
+      },
+      risks: risks,
+      status: risks.some(function(r) { return r.level === 'critical'; })
+        ? 'critical'
+        : (risks.length ? 'watch' : 'stable'),
+      timeline: timeline
+    };
+  }
+
   window.StemLab.registerTool('beehive', {
     icon: '\uD83D\uDC1D',
     label: 'Beehive Simulator',
@@ -3268,7 +3368,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function advanceDay() {
           if (!colonySurvived) return;
-          if (actionPoints <= 0) { if (addToast) addToast('No action points left today. Advance to next day first.', 'info'); return; }
           playSfx(sfxDayChime);
           // One canonical step (shared with advanceDays — no more divergent copy).
           var _r = bhStepColony(bhSnapshot(), bhCfg());
@@ -3300,7 +3399,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // ── Advance Multiple Days (pure-functional, reads from prev state) ──
         function advanceDays(n) {
           if (!colonySurvived) return;
-          if (actionPoints <= 0) { if (addToast) addToast('No action points left today. Advance to next day first.', 'info'); return; }
           setLabToolData(function(prev) {
             var b = Object.assign({}, prev.beehive || {});
             for (var step = 0; step < n; step++) {
@@ -17539,19 +17637,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var queenData = d.queen || {};
         var queenGameActive = queenData.active || false;
         var queenDay = queenData.day || 0;
+        var queenPaused = queenData.paused === true;
+        var queenSpeed = queenData.speed === 2 ? 2 : 1;
+        var queenHiveHealth = typeof queenData.hiveHealth === 'number' ? queenData.hiveHealth : 100;
+        var queenTerritory = typeof queenData.territory === 'number' ? queenData.territory : 50;
+        var queenBuildMode = queenData.buildMode || null;
+        var queenResult = queenData.result || null;
+        var queenFeedback = queenData.feedback || { tone: 'info', text: 'The simulation is live. Build on the left side, scout the rival, and protect your queen.' };
+        var queenRival = queenData.rival || {
+          name: 'Thistle Crown', health: 100, strength: 360, stores: 35,
+          structures: 3, pressure: 10, intel: 0
+        };
         var queenPheromones = queenData.pheromones || { qmp: 100, alarm: 0, nasonov: 50, brood: 40 };
         var queenResources = queenData.resources || { nectar: 30, pollen: 20, wax: 10, royalJelly: 5 };
         var queenPopulation = queenData.population || { nurses: 200, builders: 100, guards: 50, foragers: 300, scouts: 30 };
         var queenStructures = queenData.structures || [
-          { type: 'brood', x: 0.5, y: 0.5, level: 1 },
-          { type: 'honey', x: 0.3, y: 0.4, level: 1 },
-          { type: 'honey', x: 0.7, y: 0.4, level: 1 }
+          { type: 'brood', x: 0.25, y: 0.5, level: 1 },
+          { type: 'honey', x: 0.14, y: 0.35, level: 1 },
+          { type: 'honey', x: 0.38, y: 0.38, level: 1 }
         ];
         var queenThreats = queenData.threats || [];
         var queenEvents = queenData.events || [];
         var queenScore = queenData.score || 0;
         var queenPhase = queenData.phase || 'build'; // build | defend | swarm
-        _queenState.current = { queenDay: queenDay, queenPheromones: queenPheromones, queenResources: queenResources, queenPopulation: queenPopulation, queenStructures: queenStructures, queenThreats: queenThreats, queenScore: queenScore, queenPhase: queenPhase };
+        _queenState.current = { queenDay: queenDay, queenPheromones: queenPheromones, queenResources: queenResources,
+          queenPopulation: queenPopulation, queenStructures: queenStructures, queenThreats: queenThreats,
+          queenScore: queenScore, queenPhase: queenPhase, queenHiveHealth: queenHiveHealth,
+          queenTerritory: queenTerritory, queenRival: queenRival, queenPaused: queenPaused,
+          queenSpeed: queenSpeed, queenBuildMode: queenBuildMode, queenResult: queenResult };
         // queenSelectedAction tracked in queenData for UI state
 
         var QUEEN_STRUCTURE_TYPES = {
@@ -17572,47 +17685,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           { id: 'build_comb', icon: '🏗️', label: __alloT('stem.beehive.order_comb', 'Order Comb'), desc: __alloT('stem.beehive.direct_builders_to_construct_new_comb_', 'Direct builders to construct new comb cells'), cost: { wax: 5 }, pheromone: 'qmp' }
         ];
 
+        var queenCombCommand = QUEEN_ACTIONS.find(function(a) { return a.id === 'build_comb'; });
+        if (queenCombCommand) {
+          queenCombCommand.label = 'Recruit Builders';
+          queenCombCommand.desc = 'Shift workers into wax production and construction support';
+        }
+        QUEEN_ACTIONS.push(
+          { id: 'scout_rival', icon: '\uD83D\uDD2D', label: 'Scout Rival', desc: 'Reveal rival strength and push the forage boundary', cost: { nectar: 3 }, pheromone: 'nasonov' },
+          { id: 'raid_rival', icon: '\u2694\uFE0F', label: 'Launch Raid', desc: 'Send guards and scouts to damage the rival hive', cost: { nectar: 10, pollen: 3 }, pheromone: 'alarm' }
+        );
         function startQueenGame() {
           updAll({ queen: {
-            active: true, day: 0, score: 0, phase: 'build',
+            active: true, paused: false, speed: 1, day: 0, score: 0, phase: 'build',
+            hiveHealth: 100, territory: 50, result: null, buildMode: null,
+            feedback: { tone: 'info', text: 'LIVE: income and rival pressure update automatically. Build your economy before the first raid.' },
+            rival: { name: 'Thistle Crown', health: 100, strength: 360, stores: 35, structures: 3, pressure: 10, intel: 0 },
             pheromones: { qmp: 100, alarm: 0, nasonov: 50, brood: 40 },
             resources: { nectar: 30, pollen: 20, wax: 10, royalJelly: 5 },
             population: { nurses: 200, builders: 100, guards: 50, foragers: 300, scouts: 30 },
             structures: [
-              { type: 'brood', x: 0.5, y: 0.5, level: 1 },
-              { type: 'honey', x: 0.35, y: 0.45, level: 1 },
-              { type: 'honey', x: 0.65, y: 0.45, level: 1 }
+              { type: 'brood', x: 0.25, y: 0.5, level: 1 },
+              { type: 'honey', x: 0.14, y: 0.35, level: 1 },
+              { type: 'honey', x: 0.38, y: 0.38, level: 1 }
             ],
             threats: [], events: [], selectedAction: null
           }});
         }
 
         function queenAction(actionId) {
+          if (queenResult) return;
           var action = QUEEN_ACTIONS.find(function(a) { return a.id === actionId; });
           if (!action) return;
-          // Check costs
           var res = Object.assign({}, queenResources);
-          var canAfford = true;
-          if (action.cost) {
-            Object.keys(action.cost).forEach(function(k) { if ((res[k] || 0) < action.cost[k]) canAfford = false; });
-          }
+          var canAfford = Object.keys(action.cost || {}).every(function(k) { return (res[k] || 0) >= action.cost[k]; });
           if (!canAfford) { if (addToast) addToast('Not enough resources for ' + action.label, 'info'); return; }
-          // Deduct
-          Object.keys(action.cost).forEach(function(k) { res[k] = (res[k] || 0) - action.cost[k]; });
+          Object.keys(action.cost || {}).forEach(function(k) { res[k] = (res[k] || 0) - action.cost[k]; });
 
           var ph = Object.assign({}, queenPheromones);
           var pop = Object.assign({}, queenPopulation);
+          var rival = Object.assign({}, queenRival);
+          var evts = (queenEvents || []).slice();
+          var territory = queenTerritory;
+          var result = queenResult;
+          var paused = queenPaused;
           var sc = queenScore;
+          var feedback = { tone: 'success', text: action.label + ' command received.' };
 
-          if (actionId === 'lay_workers') { pop.nurses += 20; sc += 10; ph.brood = Math.min(100, ph.brood + 5); playSfx(sfxBeeCollect); }
-          else if (actionId === 'lay_drones') { sc += 5; playSfx(sfxBeeCollect); }
-          else if (actionId === 'emit_qmp') { ph.qmp = Math.min(100, ph.qmp + 30); sc += 5; playSfx(sfxBeeWaggle); }
-          else if (actionId === 'alarm_signal') { ph.alarm = Math.min(100, ph.alarm + 50); pop.guards += 20; sc += 5; playSfx(sfxAlert); }
-          else if (actionId === 'nasonov_call') { ph.nasonov = Math.min(100, ph.nasonov + 30); pop.foragers += 15; sc += 5; playSfx(sfxBeeWaggle); }
-          else if (actionId === 'build_comb') { sc += 15; playSfx(sfxBeeBuzz); }
+          if (actionId === 'lay_workers') { pop.nurses += 20; sc += 10; ph.brood = Math.min(100, ph.brood + 5); feedback.text = 'Twenty new nurse workers entered the brood pipeline.'; playSfx(sfxBeeCollect); }
+          else if (actionId === 'lay_drones') { sc += 5; feedback.text = 'Drone brood started; this supports genetics but not defense.'; playSfx(sfxBeeCollect); }
+          else if (actionId === 'emit_qmp') { ph.qmp = Math.min(100, ph.qmp + 30); sc += 5; feedback.text = 'QMP restored colony cohesion and reduced swarm risk.'; playSfx(sfxBeeWaggle); }
+          else if (actionId === 'alarm_signal') { ph.alarm = Math.min(100, ph.alarm + 50); pop.guards += 20; sc += 5; feedback.text = 'Alarm pheromone mobilized 20 guards. Defense is temporarily amplified.'; playSfx(sfxAlert); }
+          else if (actionId === 'nasonov_call') { ph.nasonov = Math.min(100, ph.nasonov + 30); pop.foragers += 15; sc += 5; feedback.text = 'Nasonov scent rallied foragers and strengthened map control.'; playSfx(sfxBeeWaggle); }
+          else if (actionId === 'build_comb') { pop.builders += 12; sc += 15; feedback.text = 'Builders reinforced the comb workforce. Choose a structure to place next.'; playSfx(sfxBeeBuzz); }
+          else if (actionId === 'scout_rival') {
+            var reveal = Math.round(rival.strength);
+            rival.intel = Math.min(100, (rival.intel || 0) + 35);
+            territory = Math.min(80, territory + 2);
+            pop.scouts = Math.max(5, pop.scouts - 2);
+            sc += 12;
+            feedback = { tone: 'info', text: 'Scouts report rival power ' + reveal + ' and ' + rival.structures + ' structures. Forage boundary +2%.' };
+            evts.push({ type: 'intel', text: '\uD83D\uDD2D Cycle ' + queenDay + ': rival scouted; power ' + reveal + '.' });
+          }
+          else if (actionId === 'raid_rival') {
+            var attack = pop.guards * 0.24 + pop.scouts * 0.7 + ph.alarm * 0.18;
+            var damage = Math.max(4, Math.min(28, Math.round(attack / 8 - rival.strength / 120)));
+            rival.health = Math.max(0, rival.health - damage);
+            rival.strength = Math.max(40, rival.strength - damage * 1.2);
+            pop.guards = Math.max(10, pop.guards - Math.ceil(damage * 0.35));
+            territory = Math.min(85, territory + Math.max(2, Math.round(damage / 5)));
+            sc += damage * 4;
+            feedback = { tone: damage >= 12 ? 'success' : 'warning', text: 'Raid dealt ' + damage + ' rival-hive damage. Some guards were lost in the attack.' };
+            evts.push({ type: 'raid', text: '\u2694\uFE0F Cycle ' + queenDay + ': your raid dealt ' + damage + ' damage to ' + rival.name + '.' });
+            playSfx(sfxAlert);
+            if (rival.health <= 0) {
+              result = 'victory'; paused = true;
+              feedback = { tone: 'success', text: 'VICTORY: the rival queen retreated and your colony controls the forage range.' };
+              evts.push({ type: 'victory', text: '\uD83C\uDFC6 Rival hive defeated. Your colony wins the apiary.' });
+            }
+          }
 
-          updAll({ queen: Object.assign({}, queenData, { resources: res, pheromones: ph, population: pop, score: sc, selectedAction: actionId }) });
-          if (addToast) addToast(action.icon + ' ' + action.label, 'success');
+          if (evts.length > 20) evts = evts.slice(-20);
+          updAll({ queen: Object.assign({}, queenData, { resources: res, pheromones: ph, population: pop,
+            rival: rival, territory: territory, score: sc, selectedAction: actionId,
+            feedback: feedback, events: evts, result: result, paused: paused }) });
+          if (addToast) addToast(action.icon + ' ' + feedback.text, feedback.tone === 'warning' ? 'info' : 'success');
         }
 
         function advanceQueenDay() {
@@ -17624,6 +17780,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var structs = (queenStructures || []).slice();
           var newPhase = queenPhase;
           var newDay = queenDay + 1;
+          var rival = Object.assign({}, queenRival);
+          var hiveHealth = queenHiveHealth;
+          var territory = queenTerritory;
+          var result = queenResult;
+          var newPaused = queenPaused;
+          var feedback = { tone: 'info', text: 'Cycle ' + newDay + ': economy updated; rival pressure is ' + Math.round(rival.pressure || 0) + '%.' };
 
           // ── Seasonal modifiers (30-day seasons) ──
           var qSeason = Math.floor((newDay % 120) / 30); // 0=spring 1=summer 2=autumn 3=winter
@@ -17702,11 +17864,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             playSfx(sfxAlert);
           }
 
-          // Supersedure: if QMP stays very low, workers may raise a new queen (game over)
+          // Supersedure remains a defeat condition, but the battlefield stays visible for review.
           if (ph.qmp < 5 && queenDay > 15 && Math.random() < 0.15) {
-            evts.push({ type: 'supersedure', text: '👑❌ SUPERSEDURE — Workers have raised a replacement queen. Your reign is over. Final score: ' + (queenScore + 10) });
-            updAll({ queen: Object.assign({}, queenData, { active: false, events: evts, score: queenScore + 10 }) });
-            return;
+            result = 'defeat'; newPaused = true; hiveHealth = 0;
+            feedback = { tone: 'danger', text: 'DEFEAT: workers superseded you after QMP collapsed.' };
+            evts.push({ type: 'supersedure', text: '\uD83D\uDC51 Supersedure: the rival wins while your colony raises a replacement queen.' });
           }
 
           // Random threats (frequency increases by phase)
@@ -17744,6 +17906,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             pop.nurses = Math.max(0, pop.nurses - Math.floor(th.strength * 0.1));
           });
 
+          // Rival-colony AI: it grows continuously, contests forage, and raids on a visible cadence.
+          rival.stores = Math.round(((rival.stores || 0) + 1.2 + (rival.structures || 0) * 0.18) * 10) / 10;
+          rival.strength = Math.min(1200, Math.round((rival.strength || 300) + 3 + (rival.structures || 0) * 0.7));
+          rival.pressure = Math.min(100, (rival.pressure || 0) + 7 + (newPhase === 'defend' ? 3 : newPhase === 'swarm' ? 5 : 0));
+          if (newDay > 0 && newDay % 5 === 0) {
+            rival.structures = (rival.structures || 0) + 1;
+            rival.strength += 18;
+            evts.push({ type: 'rival_build', text: '\uD83C\uDFDA\uFE0F ' + rival.name + ' completed structure ' + rival.structures + '; rival power increased.' });
+            feedback = { tone: 'warning', text: 'Rival build completed. Scout or raid before its production advantage compounds.' };
+          }
+
+          var guardPosts = structs.filter(function(s) { return s.type === 'guard'; }).length;
+          var defensePower = pop.guards * 0.45 + guardPosts * 18 + (ph.alarm > 30 ? 38 : 0);
+          var playerMapPower = pop.scouts * 0.8 + pop.guards * 0.3 + structs.length * 7 + ph.nasonov * 0.12;
+          var rivalMapPower = rival.strength * 0.22 + rival.structures * 9;
+          territory = Math.max(15, Math.min(85, territory + Math.max(-3, Math.min(3, (playerMapPower - rivalMapPower) / 120))));
+
+          if (!result && (rival.pressure >= 60 || newDay % 4 === 0)) {
+            var raidDamage = Math.max(2, Math.min(22, Math.round(5 + (rival.strength - defensePower) / 80)));
+            var stolen = Math.min(res.nectar, Math.max(1, Math.round(raidDamage * 0.45)));
+            hiveHealth = Math.max(0, hiveHealth - raidDamage);
+            res.nectar = Math.max(0, res.nectar - stolen);
+            rival.stores += stolen;
+            rival.pressure = Math.max(5, rival.pressure - 48);
+            territory = Math.max(15, territory - Math.max(1, Math.round(raidDamage / 6)));
+            evts.push({ type: 'rival_raid', text: '\uD83D\uDEA8 Cycle ' + newDay + ': ' + rival.name + ' raid dealt ' + raidDamage + ' hive damage and stole ' + stolen + ' nectar.' });
+            feedback = { tone: raidDamage >= 10 ? 'danger' : 'warning', text: 'RIVAL RAID: -' + raidDamage + ' hive health, -' + stolen + ' nectar. Alarm pheromone and guard posts reduce the next strike.' };
+            playSfx(sfxAlert);
+          }
+
+          if (hiveHealth <= 0 && !result) {
+            result = 'defeat'; newPaused = true;
+            feedback = { tone: 'danger', text: 'DEFEAT: the rival breached the brood core. Review the event log and restart.' };
+            evts.push({ type: 'defeat', text: '\u274C Your brood core fell to the rival colony.' });
+          } else if (rival.health <= 0 && !result) {
+            result = 'victory'; newPaused = true;
+            feedback = { tone: 'success', text: 'VICTORY: the rival queen retreated. Your hive controls the forage range.' };
+          }
           // Season transition announcement
           if (newDay > 0 && newDay % 30 === 0) {
             evts.push({ type: 'season', text: qSeasonNames[qSeason] + ' has arrived! Adjust your strategy for the new season.' });
@@ -17772,24 +17972,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           updAll({ queen: Object.assign({}, queenData, {
             day: newDay, resources: res, pheromones: ph, population: pop,
             threats: threats, events: evts, score: queenScore + 10,
-            phase: newPhase, structures: structs
+            phase: newPhase, structures: structs, rival: rival,
+            hiveHealth: hiveHealth, territory: Math.round(territory * 10) / 10,
+            feedback: feedback, result: result, paused: newPaused
           })});
         }
 
-        function buildQueenStructure(typeId) {
+        // Continuous simulation clock. One cycle is 2.4s at 1x or 1.2s at 2x.
+        React.useEffect(function() {
+          if (viewMode !== 'queen' || !queenGameActive || queenPaused || queenResult) return;
+          var cycleTimer = setInterval(function() { advanceQueenDay(); }, queenSpeed === 2 ? 1200 : 2400);
+          return function() { clearInterval(cycleTimer); };
+        }, [viewMode, queenGameActive, queenPaused, queenSpeed, queenDay, queenResult]);
+
+        function selectQueenBuild(typeId) {
+          var sType = QUEEN_STRUCTURE_TYPES[typeId];
+          if (!sType) return;
+          if (!hasQueenResources(sType.cost)) { if (addToast) addToast('Need more resources to build ' + sType.label, 'info'); return; }
+          updAll({ queen: Object.assign({}, queenData, {
+            buildMode: typeId,
+            feedback: { tone: 'info', text: 'PLACEMENT MODE: click an open cell on your left half of the comb to build ' + sType.label + '.' }
+          }) });
+        }
+
+        function buildQueenStructure(typeId, placeX, placeY) {
           var sType = QUEEN_STRUCTURE_TYPES[typeId];
           if (!sType) return;
           var res = Object.assign({}, queenResources);
-          var canAfford = true;
-          Object.keys(sType.cost).forEach(function(k) { if ((res[k] || 0) < sType.cost[k]) canAfford = false; });
+          var canAfford = Object.keys(sType.cost).every(function(k) { return (res[k] || 0) >= sType.cost[k]; });
           if (!canAfford) { if (addToast) addToast('Need more resources to build ' + sType.label, 'info'); return; }
           Object.keys(sType.cost).forEach(function(k) { res[k] = (res[k] || 0) - sType.cost[k]; });
 
+          var px = Math.max(0.08, Math.min(0.48, typeof placeX === 'number' ? placeX : 0.25));
+          var py = Math.max(0.14, Math.min(0.86, typeof placeY === 'number' ? placeY : 0.5));
           var newStructures = queenStructures.slice();
-          newStructures.push({ type: typeId, x: 0.2 + Math.random() * 0.6, y: 0.2 + Math.random() * 0.6, level: 1 });
+          newStructures.push({ type: typeId, x: px, y: py, level: 1 });
+          var evts = (queenEvents || []).concat([{ type: 'build', text: '\uD83C\uDFD7\uFE0F Cycle ' + queenDay + ': ' + sType.label + ' completed at the selected comb cell.' }]);
+          if (evts.length > 20) evts = evts.slice(-20);
 
           playSfx(sfxBeeBuzz);
-          updAll({ queen: Object.assign({}, queenData, { resources: res, structures: newStructures, score: queenScore + 20 }) });
+          updAll({ queen: Object.assign({}, queenData, { resources: res, structures: newStructures,
+            score: queenScore + 20, buildMode: null, events: evts,
+            feedback: { tone: 'success', text: sType.label + ' online. ' + sType.desc + '.' } }) });
           if (addToast) addToast(sType.icon + ' Built ' + sType.label + '!', 'success');
         }
 
@@ -17886,6 +18110,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
 
             // ── Draw structures ──
+            // Two-hive battlefield: territory determines the contested forage boundary.
+            var territoryLine = W * (0.2 + Math.max(15, Math.min(85, qs.queenTerritory || 50)) * 0.006);
+            c.fillStyle = 'rgba(126,34,206,0.12)'; c.fillRect(0, 0, territoryLine, H);
+            c.fillStyle = 'rgba(185,28,28,0.12)'; c.fillRect(territoryLine, 0, W - territoryLine, H);
+            c.save(); c.strokeStyle = 'rgba(255,255,255,0.7)'; c.lineWidth = 2; c.setLineDash([7, 7]);
+            c.beginPath(); c.moveTo(territoryLine, 0); c.lineTo(territoryLine, H); c.stroke(); c.setLineDash([]); c.restore();
+            c.font = 'bold 9px system-ui'; c.textAlign = 'center';
+            c.fillStyle = '#f3e8ff'; c.fillText('YOUR HIVE', Math.max(55, territoryLine * 0.45), H - 12);
+            c.fillStyle = '#fee2e2'; c.fillText((qs.queenRival && qs.queenRival.name || 'RIVAL HIVE').toUpperCase(), territoryLine + (W - territoryLine) * 0.55, H - 12);
+
+            // Rival queen and structures are always visible; scouting reveals exact power in the UI.
+            var rivalX = W * 0.78, rivalY = H * 0.5;
+            var rivalPulse = 34 + Math.sin(_qTime * 0.035) * 4;
+            c.save();
+            var rivalGlow = c.createRadialGradient(rivalX, rivalY, 4, rivalX, rivalY, rivalPulse);
+            rivalGlow.addColorStop(0, 'rgba(239,68,68,0.46)'); rivalGlow.addColorStop(1, 'rgba(127,29,29,0)');
+            c.fillStyle = rivalGlow; c.beginPath(); c.arc(rivalX, rivalY, rivalPulse, 0, 6.28); c.fill();
+            c.font = '28px system-ui'; c.textAlign = 'center'; c.fillText('\uD83D\uDC51', rivalX, rivalY + 9);
+            var rivalCount = Math.min(8, (qs.queenRival && qs.queenRival.structures) || 3);
+            for (var ri = 0; ri < rivalCount; ri++) {
+              var ra = ri / rivalCount * 6.28;
+              var rx = rivalX + Math.cos(ra) * (52 + (ri % 2) * 18);
+              var ry = rivalY + Math.sin(ra) * (42 + (ri % 2) * 12);
+              c.fillStyle = 'rgba(127,29,29,0.72)'; c.beginPath(); c.arc(rx, ry, 10, 0, 6.28); c.fill();
+              c.fillStyle = '#fecaca'; c.font = '10px system-ui'; c.fillText('\u2B22', rx, ry + 4);
+            }
+            c.restore();
             (qs.queenStructures || []).forEach(function(st) {
               var sx = st.x * W, sy = st.y * H;
               var sType = QUEEN_STRUCTURE_TYPES[st.type];
@@ -17912,7 +18163,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
 
             // ── Draw threats (animated, moving toward queen) ──
-            var qCenterX = W * 0.5, qCenterY = H * 0.5;
+            var qCenterX = W * 0.25, qCenterY = H * 0.5;
             (qs.queenThreats || []).forEach(function(th, ti) {
               // Threats orbit and approach from edges
               var threatAngle = ti * 1.8 + _qTime * 0.008;
@@ -17954,7 +18205,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
 
             // ── Queen at center ──
-            var qx = W * 0.5, qy = H * 0.5;
+            var qx = W * 0.25, qy = H * 0.5;
             c.save();
             // QMP aura (pulsing)
             var auraR = 30 + qs.queenPheromones.qmp * 0.4;
@@ -18130,7 +18381,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             return 'Day ' + day + ' | Health ' + colonyHealth + '%';
           }
           if (id === 'queen') {
-            if (queenGameActive) return 'Day ' + queenDay + ' | ' + queenPhase.toUpperCase() + ' | Score ' + queenScore;
+            if (queenGameActive) return 'Cycle ' + queenDay + ' | ' + (queenPaused ? 'PAUSED' : 'LIVE') + ' | Rival ' + queenRival.health + '%';
             return 'Command pheromones and comb';
           }
           if (droneFlightActive) return 'In flight | Score ' + ((_droneState.current && _droneState.current.score) || 0);
@@ -18174,8 +18425,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           } else if (viewMode === 'queen') {
             tone = 'purple';
             chips = queenGameActive
-              ? ['Day ' + queenDay, queenPhase.toUpperCase(), queenThreats.length + ' threats']
-              : ['Pheromones', 'Comb economy', 'Threat phases'];
+              ? ['Cycle ' + queenDay, queenPaused ? 'PAUSED' : 'LIVE', 'Rival ' + queenRival.health + '%']
+              : ['Real-time economy', 'Direct building', 'Rival hive'];
             if (!queenGameActive) {
               title = 'Queen RTS briefing';
               body = 'This mode works best as a short survival game: build comb, balance pheromones, and react to threats as phases change.';
@@ -18188,10 +18439,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               title = 'Hold the colony together';
               body = 'QMP is low during swarm phase. Emit QMP before half the workers decide to leave.';
               action = { label: 'Emit QMP', onClick: function() { queenAction('emit_qmp'); } };
+            } else if (queenPaused) {
+              title = 'Battlefield paused';
+              body = 'Place structures or review the rival, then resume when your plan is ready.';
+              action = { label: 'Resume RTS', onClick: function() { updAll({ queen: Object.assign({}, queenData, { paused: false }) }); } };
             } else {
-              title = 'Grow the hive economy';
-              body = 'Use eggs and comb builds while resources are healthy, then advance one day and watch the resource loop.';
-              action = { label: 'Next queen day', onClick: advanceQueenDay };
+              title = 'Contest the forage range';
+              body = 'Cycles advance automatically. Build on your comb, scout Thistle Crown, and raid when alarm pheromone and resources are ready.';
+              action = { label: 'Scout rival', onClick: function() { queenAction('scout_rival'); } };
             }
           } else {
             tone = 'indigo';
@@ -18266,6 +18521,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'mt-3 border-t pt-3 text-[11px] ' + (dk ? 'border-white/10 text-slate-300' : 'border-amber-200 text-slate-600') }, 'Queen ' + queenHealth + '% · Disease risk ' + diseaseRisk + '% · Habitat ' + habitat + '%')
               )
             )
+          );
+        }
+        function renderColonyForecast() {
+          var forecastDays = d.forecastDays === 30 ? 30 : 7;
+          var forecast = bhForecastColony(bhSnapshot(), bhCfg(), forecastDays);
+          var statusLabel = forecast.status === 'critical'
+            ? 'Action needed'
+            : (forecast.status === 'watch' ? 'Watch closely' : 'Stable trend');
+          var shellTone = forecast.status === 'critical'
+            ? (dk ? 'border-rose-700/50 bg-rose-950/25' : 'border-rose-200 bg-rose-50/70')
+            : forecast.status === 'watch'
+              ? (dk ? 'border-amber-700/50 bg-amber-950/25' : 'border-amber-200 bg-amber-50/70')
+              : (dk ? 'border-emerald-700/50 bg-emerald-950/25' : 'border-emerald-200 bg-emerald-50/70');
+          var statusTone = forecast.status === 'critical'
+            ? (dk ? 'bg-rose-900/60 text-rose-200' : 'bg-rose-100 text-rose-800')
+            : forecast.status === 'watch'
+              ? (dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800')
+              : (dk ? 'bg-emerald-900/60 text-emerald-200' : 'bg-emerald-100 text-emerald-800');
+          var bodyTone = dk ? 'text-slate-300' : 'text-slate-600';
+          var cardTone = dk ? 'border-white/10 bg-slate-950/35' : 'border-slate-200 bg-white/80';
+          function signed(value, suffix) {
+            return (value > 0 ? '+' : '') + value + (suffix || '');
+          }
+          var metrics = [
+            { label: 'Workers', value: fmtPop(forecast.end.workers), delta: signed(forecast.delta.workers), good: forecast.delta.workers >= 0 },
+            { label: 'Honey', value: forecast.end.honey + ' lb', delta: signed(forecast.delta.honey, ' lb'), good: forecast.delta.honey >= 0 },
+            { label: 'Varroa', value: forecast.end.varroaLevel + '%', delta: signed(forecast.delta.varroaLevel, ' pt'), good: forecast.delta.varroaLevel <= 0 },
+            { label: 'Disease', value: forecast.end.diseaseRisk + '%', delta: signed(forecast.delta.diseaseRisk, ' pt'), good: forecast.delta.diseaseRisk <= 0 }
+          ];
+          var startSeason = Math.floor(((day || 0) % 120) / 30);
+          var endSeason = Math.floor(((forecast.end.day || 0) % 120) / 30);
+          return h('section', { className: 'rounded-2xl border p-4 ' + shellTone, 'aria-labelledby': 'beehive-forecast-title' },
+            h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between' },
+              h('div', null,
+                h('div', { className: 'flex flex-wrap items-center gap-2' },
+                  h('h3', { id: 'beehive-forecast-title', className: 'text-sm font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Colony outlook'),
+                  h('span', { className: 'rounded-full px-2 py-0.5 text-[10px] font-black ' + statusTone }, statusLabel)),
+                h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + bodyTone },
+                  'Event-free projection from the current colony. Use it to form a hypothesis before advancing.')),
+              h('div', { className: 'flex rounded-lg border p-0.5 ' + cardTone, role: 'group', 'aria-label': 'Forecast horizon' },
+                [7, 30].map(function(daysOption) {
+                  var active = forecastDays === daysOption;
+                  return h('button', { key: daysOption, type: 'button', onClick: function() { upd('forecastDays', daysOption); },
+                    'aria-pressed': active,
+                    className: 'rounded-md px-3 py-1.5 text-[11px] font-black transition-colors ' +
+                      (active ? 'bg-amber-600 text-white' : (dk ? 'text-slate-300 hover:bg-slate-800' : 'text-slate-600 hover:bg-slate-100'))
+                  }, daysOption + ' days');
+                }))),
+            h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': forecastDays + '-day projected colony metrics' },
+              metrics.map(function(metric) {
+                return h('div', { key: metric.label, className: 'rounded-xl border p-3 ' + cardTone, role: 'listitem' },
+                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wide ' + bodyTone }, metric.label),
+                  h('div', { className: 'mt-1 text-base font-black ' + (dk ? 'text-white' : 'text-slate-900') }, metric.value),
+                  h('div', { className: 'text-[10px] font-bold ' + (metric.good ? 'text-emerald-600' : 'text-rose-600') }, metric.delta + ' from now'));
+              })),
+            startSeason !== endSeason && h('p', { className: 'mt-2 text-[11px] font-bold ' + (dk ? 'text-sky-300' : 'text-sky-700') },
+              'Season boundary: this projection enters ' + seasonNames[endSeason] + '.'),
+            forecast.risks.length
+              ? h('ul', { className: 'mt-3 grid gap-2 lg:grid-cols-2', 'aria-label': 'Projected risks' },
+                  forecast.risks.slice(0, 4).map(function(risk) {
+                    var riskTone = risk.level === 'critical'
+                      ? (dk ? 'border-rose-700/40 bg-rose-950/30' : 'border-rose-200 bg-white')
+                      : (dk ? 'border-amber-700/40 bg-amber-950/30' : 'border-amber-200 bg-white');
+                    return h('li', { key: risk.id, className: 'rounded-xl border p-3 ' + riskTone },
+                      h('div', { className: 'text-xs font-black ' + (risk.level === 'critical' ? 'text-rose-600' : 'text-amber-700') },
+                        (risk.level === 'critical' ? 'Action: ' : 'Watch: ') + risk.label),
+                      h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + bodyTone }, risk.detail),
+                      h('p', { className: 'mt-1 text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, risk.action));
+                  }))
+              : h('p', { className: 'mt-3 rounded-xl border p-3 text-xs font-bold ' + cardTone, role: 'status' },
+                  'No threshold risks appear in the baseline trend. Random events can still change the outcome.'),
+            h('p', { className: 'mt-2 text-[10px] italic ' + bodyTone },
+              'Model limit: excludes random weather, outbreaks, swarms, and management actions; it is evidence for planning, not a guaranteed outcome.')
           );
         }
         // DEBUG: Log render-time values that gate the canvas
@@ -18513,7 +18841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'text-5xl mb-2' }, '👑'),
                   h('h3', { className: 'text-lg font-black ' + (dk ? 'text-purple-200' : 'text-purple-900') }, __alloT('stem.beehive.queen_command_hive_rts', 'Queen Command: Hive RTS')),
                   h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-purple-300' : 'text-purple-700') },
-                    __alloT('stem.beehive.you_are_the_queen_control_your_colony_', 'You ARE the queen. Control your colony through pheromones — the chemical language of the hive. Lay eggs, allocate workers, build comb structures, and defend against invaders. You don\'t give orders directly — you emit pheromone signals that influence 50,000 workers.')),
+                    __alloT('stem.beehive.you_are_the_queen_control_your_colony_', 'Command a living colony in real time. Build directly on your comb, tune pheromone signals, contest the forage range, and defeat the rival Thistle Crown hive before it breaches your brood core.')),
                   // Pheromone cards
                   h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-lg mx-auto text-center' },
                     [['💜', 'QMP', 'Suppress rebellion'], ['🚨', 'Alarm', 'Mobilize guards'], ['🏠', 'Nasonov', 'Rally foragers'], ['🥚', 'Brood', 'Stimulate nurses']].map(function(p) {
@@ -18526,9 +18854,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'text-xs font-bold mt-2 ' + (dk ? 'text-purple-300' : 'text-purple-700') }, __alloT('stem.beehive.three_phases_of_your_reign', '📋 Three Phases of Your Reign')),
                   h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2 max-w-lg mx-auto' },
                     [
-                      { icon: '🏗️', phase: 'BUILD', days: 'Days 1-10', desc: __alloT('stem.beehive.establish_your_colony_build_structures', 'Establish your colony. Build structures, lay eggs, stockpile resources. Threats are rare.'), col: 'amber' },
-                      { icon: '⚔️', phase: 'DEFEND', days: 'Days 11-24', desc: __alloT('stem.beehive.threats_double_wasps_robber_bees_horne', 'Threats double. Wasps, robber bees, hornets attack. Build guard posts, keep alarm pheromone ready.'), col: 'red' },
-                      { icon: '🐝', phase: 'SWARM', days: 'Day 25+', desc: __alloT('stem.beehive.colony_wants_to_split_keep_qmp_above_4', 'Colony wants to split! Keep QMP above 40 or half your workers leave. Survive the swarm impulse.'), col: 'purple' }
+                      { icon: '🏗️', phase: 'BUILD', days: 'Cycles 1-9', desc: __alloT('stem.beehive.establish_your_colony_build_structures', 'Establish your colony. Build structures, lay eggs, stockpile resources. Threats are rare.'), col: 'amber' },
+                      { icon: '⚔️', phase: 'DEFEND', days: 'Cycles 10-24', desc: __alloT('stem.beehive.threats_double_wasps_robber_bees_horne', 'Threats double. Wasps, robber bees, hornets attack. Build guard posts, keep alarm pheromone ready.'), col: 'red' },
+                      { icon: '🐝', phase: 'SWARM', days: 'Cycle 25+', desc: __alloT('stem.beehive.colony_wants_to_split_keep_qmp_above_4', 'Colony wants to split! Keep QMP above 40 or half your workers leave. Survive the swarm impulse.'), col: 'purple' }
                     ].map(function(ph) {
                       return h('div', { key: ph.phase, className: 'rounded-lg p-2.5 border text-left ' + queenPhasePreviewStyle(ph.col) },
                         h('div', { className: 'flex items-center gap-1 mb-1' },
@@ -18537,7 +18865,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', { className: 'text-[10px] font-bold mb-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-300') }, ph.days),
                         h('div', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-300') }, ph.desc));
                     })),
-                  h('button', { onClick: startQueenGame,
+                  h('div', { className: 'mx-auto grid max-w-lg grid-cols-1 gap-2 sm:grid-cols-3', 'aria-label': 'Real-time strategy objectives' },
+                    [['LIVE', 'Automatic cycles', 'Income, decay, and raids never wait for Next Day'], ['BUILD', 'Place structures', 'Choose a structure, then click your side of the comb'], ['RIVAL', 'Defeat Thistle Crown', 'Scout, contest forage, and launch raids']].map(function(item) {
+                      return h('div', { key: item[0], className: 'rounded-xl border p-3 text-left ' + (dk ? 'border-purple-700/40 bg-slate-900/60' : 'border-purple-200 bg-white/80') },
+                        h('div', { className: 'text-[10px] font-black tracking-wider ' + (dk ? 'text-amber-300' : 'text-amber-700') }, item[0]),
+                        h('div', { className: 'mt-1 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, item[1]),
+                        h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item[2]));
+                    })),                  h('button', { onClick: startQueenGame,
                     className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500' : 'bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600'),
                     style: { boxShadow: '0 4px 16px rgba(147,51,234,0.4)' }
                   }, __alloT('stem.beehive.begin_your_reign', '👑 Begin Your Reign')))
@@ -18547,12 +18881,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     (queenPhase === 'swarm' ? (dk ? 'bg-purple-900/40 text-purple-300 border border-purple-600/40' : 'bg-purple-50 text-purple-800 border border-purple-300') :
                      queenPhase === 'defend' ? (dk ? 'bg-red-900/30 text-red-300 border border-red-600/40' : 'bg-red-50 text-red-800 border border-red-300') :
                      (dk ? 'bg-amber-900/30 text-amber-300 border border-amber-600/40' : 'bg-amber-50 text-amber-800 border border-amber-300')) },
-                    h('span', null, (queenPhase === 'swarm' ? '🐝 SWARM PHASE' : queenPhase === 'defend' ? '⚔️ DEFEND PHASE' : '🏗️ BUILD PHASE') + ' · Day ' + queenDay),
+                    h('span', null, (queenPhase === 'swarm' ? '🐝 SWARM PHASE' : queenPhase === 'defend' ? '⚔️ DEFEND PHASE' : '🏗️ BUILD PHASE') + ' · Cycle ' + queenDay),
                     h('span', null, ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'][Math.floor(((queenDay || 0) % 120) / 30)] || ''),
                     queenThreats.length > 0 && h('span', { className: dk ? 'text-red-400' : 'text-red-600' }, '⚠ ' + queenThreats.length + ' threat' + (queenThreats.length > 1 ? 's' : ''))),
-                  // Queen canvas
+                  // Live command HUD: health, territory, opponent, clock, and immediate feedback.
+                  h('section', { className: 'rounded-2xl border p-3 ' + (dk ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-white'), 'aria-label': 'Live RTS command status' },
+                    h('div', { className: 'flex flex-wrap items-center gap-2' },
+                      h('span', { className: 'rounded-full bg-rose-600 px-2 py-1 text-[10px] font-black text-white' }, queenPaused ? 'PAUSED' : 'LIVE RTS'),
+                      h('span', { className: 'text-xs font-black ' + (dk ? 'text-purple-200' : 'text-purple-900') }, 'Cycle ' + queenDay),
+                      h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Next cycle: ' + (queenSpeed === 2 ? '1.2s' : '2.4s')),
+                      h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': 'RTS time controls' },
+                        h('button', { onClick: function() { updAll({ queen: Object.assign({}, queenData, { paused: !queenPaused, feedback: { tone: 'info', text: queenPaused ? 'Simulation resumed.' : 'Simulation paused. Commands and building remain available.' } }) }); }, className: 'rounded-lg px-3 py-1.5 text-[11px] font-black ' + (queenPaused ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-white') }, queenPaused ? 'Resume' : 'Pause'),
+                        [1, 2].map(function(speedOption) { return h('button', { key: speedOption, onClick: function() { updAll({ queen: Object.assign({}, queenData, { speed: speedOption }) }); }, 'aria-pressed': queenSpeed === speedOption, className: 'rounded-lg px-2.5 py-1.5 text-[11px] font-black ' + (queenSpeed === speedOption ? 'bg-purple-600 text-white' : (dk ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, speedOption + 'x'); }))
+                    ),
+                    h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4' },
+                      [[queenHiveHealth + '%', 'Your hive', queenHiveHealth > 40], [queenRival.health + '%', 'Rival hive', queenRival.health < 60], [Math.round(queenTerritory) + '%', 'Forage control', queenTerritory >= 50], [Math.round(queenRival.pressure) + '%', 'Raid pressure', queenRival.pressure < 50]].map(function(metric) {
+                        return h('div', { key: metric[1], className: 'rounded-xl border p-2 ' + (dk ? 'border-white/10 bg-slate-950/50' : 'border-slate-200 bg-slate-50') },
+                          h('div', { className: 'text-base font-black ' + (metric[2] ? 'text-emerald-500' : 'text-rose-500') }, metric[0]),
+                          h('div', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, metric[1]));
+                      })),
+                    h('div', { className: 'mt-3 flex h-3 overflow-hidden rounded-full bg-rose-800', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(queenTerritory), 'aria-label': 'Your colony controls ' + Math.round(queenTerritory) + ' percent of the forage range' },
+                      h('div', { className: 'h-full bg-gradient-to-r from-purple-700 to-amber-500 transition-all', style: { width: queenTerritory + '%' } })),
+                    h('p', { className: 'mt-2 text-[11px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') },
+                      (queenRival.intel || 0) > 0
+                        ? 'Rival intel: power ' + Math.round(queenRival.strength) + ' · ' + queenRival.structures + ' structures · stores ' + Math.round(queenRival.stores)
+                        : 'Rival power hidden — use Scout Rival before committing a raid.'),                    h('div', { role: queenFeedback.tone === 'danger' ? 'alert' : 'status', 'aria-live': 'polite', className: 'mt-3 rounded-xl border p-3 text-xs font-bold ' + (queenFeedback.tone === 'danger' ? (dk ? 'border-rose-700 bg-rose-950/50 text-rose-200' : 'border-rose-300 bg-rose-50 text-rose-800') : queenFeedback.tone === 'warning' ? (dk ? 'border-amber-700 bg-amber-950/40 text-amber-200' : 'border-amber-300 bg-amber-50 text-amber-800') : (dk ? 'border-purple-700 bg-purple-950/35 text-purple-200' : 'border-purple-200 bg-purple-50 text-purple-800')) },
+                      queenFeedback.text),
+                    queenResult && h('div', { className: 'mt-3 rounded-xl p-4 text-center text-lg font-black ' + (queenResult === 'victory' ? 'bg-emerald-600 text-white' : 'bg-rose-700 text-white') }, queenResult === 'victory' ? 'VICTORY — Rival queen retreated' : 'DEFEAT — Brood core lost')
+                  ),                  // Queen canvas
                   h('div', { className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-purple-500/60' : 'border-purple-400'), style: { height: 'clamp(380px, 48vw, 470px)', background: dk ? 'radial-gradient(circle at 50% 44%, rgba(168,85,247,0.22), rgba(15,23,42,0.96) 68%)' : 'radial-gradient(circle at 50% 44%, rgba(245,208,254,0.62), rgba(255,251,235,0.95) 70%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(192,132,252,0.22)' : '0 18px 38px rgba(168,85,247,0.18), 0 0 0 1px rgba(192,132,252,0.24)' } },
-                    h('canvas', { tabIndex: 0, ref: _queenCvRef, 'data-beehive-queen-canvas': 'true', role: 'img', 'aria-label': __alloT('stem.beehive.queen_defense_game_release_pheromones_', 'Queen defense game: release pheromones and build structures to protect the colony from threats'), style: { width: '100%', height: '100%', display: 'block' } })),
+                    h('canvas', { tabIndex: 0, ref: _queenCvRef, 'data-beehive-queen-canvas': 'true', role: 'img',
+                      'aria-label': 'Live two-hive RTS battlefield. Your hive health ' + queenHiveHealth + ' percent, rival hive health ' + queenRival.health + ' percent, forage control ' + Math.round(queenTerritory) + ' percent.' + (queenBuildMode ? ' Placement mode active for ' + QUEEN_STRUCTURE_TYPES[queenBuildMode].label + '.' : ''),
+                      onClick: function(e) {
+                        if (!queenBuildMode || queenResult) return;
+                        var rect = e.currentTarget.getBoundingClientRect();
+                        if (!rect.width || !rect.height) return;
+                        var px = (e.clientX - rect.left) / rect.width;
+                        var py = (e.clientY - rect.top) / rect.height;
+                        if (px > 0.52) { if (addToast) addToast('That cell is in rival territory. Build on the left half of the comb.', 'info'); return; }
+                        buildQueenStructure(queenBuildMode, px, py);
+                      },
+                      style: { width: '100%', height: '100%', display: 'block', cursor: queenBuildMode ? 'crosshair' : 'default' } })),
                   // Queen Actions bar
                   h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-purple-900/20 border-purple-700/40' : 'bg-purple-50 border-purple-200') },
                     h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-purple-300' : 'text-purple-800') }, __alloT('stem.beehive.pheromone_commands', '👑 Pheromone Commands')),
@@ -18571,25 +18940,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       }))),
                   // Build structures
                   h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
-                    h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.build_comb_structures', '🏗️ Build Comb Structures')),
+                    h('div', { className: 'text-xs font-bold mb-1 ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.build_comb_structures', '🏗️ Build Comb Structures')),
+                    h('p', { className: 'mb-2 text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, queenBuildMode ? 'Placement mode: click your left side of the battlefield.' : 'Choose a structure, then place it directly on your comb.'),
                     h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-1.5' },
                       Object.keys(QUEEN_STRUCTURE_TYPES).map(function(stId) {
                         var st = QUEEN_STRUCTURE_TYPES[stId];
                         var costStr = queenCostText(st.cost);
                         var canBuild = hasQueenResources(st.cost);
-                        return h('button', { key: stId, onClick: function() { buildQueenStructure(stId); }, disabled: !canBuild, title: st.desc + ' (Cost: ' + costStr + ')',
+                        return h('button', { key: stId, onClick: function() { selectQueenBuild(stId); }, disabled: !canBuild || !!queenResult, 'aria-pressed': queenBuildMode === stId, title: st.desc + ' (Cost: ' + costStr + ')',
                           'aria-label': st.label + ': ' + st.desc + '. Cost: ' + costStr + (canBuild ? '' : '. Not enough resources.'),
-                          className: 'text-left p-2 rounded-lg border transition-all ' + (canBuild ? (dk ? 'bg-slate-800 border-amber-700/30 hover:border-amber-500/50 hover:bg-slate-700' : 'bg-white border-amber-100 hover:border-amber-400 hover:shadow-sm') : (dk ? 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed opacity-65' : 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-70')) },
+                          className: 'text-left p-2 rounded-lg border transition-all ' + (queenBuildMode === stId ? 'ring-2 ring-amber-500 bg-amber-100 text-slate-900 ' : '') + (canBuild ? (dk ? 'bg-slate-800 border-amber-700/30 hover:border-amber-500/50 hover:bg-slate-700' : 'bg-white border-amber-100 hover:border-amber-400 hover:shadow-sm') : (dk ? 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed opacity-65' : 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-70')) },
                           h('div', { className: 'flex items-center gap-1' },
                             h('span', null, st.icon),
                             h('span', { className: 'text-[11px] font-bold ' + (canBuild ? (dk ? 'text-slate-200' : 'text-slate-800') : '') }, st.label)),
                           h('div', { className: 'text-[10px] mt-0.5 ' + (canBuild ? (dk ? 'text-slate-400' : 'text-slate-300') : '') }, st.desc),
                           h('div', { className: 'inline-flex mt-1 rounded-full border px-1.5 py-0.5 text-[10px] font-bold ' + (canBuild ? (dk ? 'border-amber-600/40 text-amber-300 bg-amber-900/20' : 'border-amber-200 text-amber-700 bg-amber-50') : (dk ? 'border-slate-700 text-slate-500 bg-slate-800' : 'border-slate-200 text-slate-400 bg-white')) }, canBuild ? costStr : 'Need ' + costStr));
                       }))),
-                  // Advance day + events
-                  h('div', { className: 'flex gap-2' },
-                    h('button', { onClick: advanceQueenDay,
-                      className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white shadow-sm transition-all hover:shadow-md ' + (dk ? 'bg-gradient-to-r from-purple-700 to-amber-600' : 'bg-gradient-to-r from-purple-600 to-amber-500') }, __alloT('stem.beehive.next_day', '⏩ Next Day')),
+                  // RTS controls replace the old turn-based Next Day button.
+                  h('div', { className: 'flex flex-wrap gap-2' },
+                    h('button', { onClick: function() { updAll({ queen: Object.assign({}, queenData, { paused: !queenPaused }) }); },
+                      className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white shadow-sm ' + (queenPaused ? 'bg-emerald-600' : 'bg-purple-700') }, queenPaused ? 'Resume real-time simulation' : 'Pause simulation'),
                     h('button', { onClick: function() { updAll({ queen: Object.assign({}, queenData, { active: false }) }); },
                       className: 'px-4 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, __alloT('stem.beehive.end_game', 'End Game'))),
                   // Event log (ARIA live region for screen readers)
@@ -18597,9 +18967,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'text-xs font-bold mb-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.beehive.hive_events', '📋 Hive Events')),
                     h('div', { className: 'space-y-1' },
                       queenEvents.slice().reverse().map(function(ev, ei) {
-                        var evColor = ev.type === 'threat' || ev.type === 'rebellion' || ev.type === 'swarm' || ev.type === 'starve' ? (dk ? 'text-red-400' : 'text-red-600') :
-                                     ev.type === 'victory' ? (dk ? 'text-green-400' : 'text-green-600') :
-                                     ev.type === 'phase' || ev.type === 'season' ? (dk ? 'text-amber-400' : 'text-amber-700') :
+                        var evColor = ev.type === 'threat' || ev.type === 'rebellion' || ev.type === 'swarm' || ev.type === 'starve' || ev.type === 'rival_raid' || ev.type === 'defeat' || ev.type === 'supersedure' ? (dk ? 'text-red-400' : 'text-red-600') :
+                                     ev.type === 'victory' || ev.type === 'raid' || ev.type === 'build' ? (dk ? 'text-green-400' : 'text-green-600') :
+                                     ev.type === 'phase' || ev.type === 'season' || ev.type === 'rival_build' || ev.type === 'intel' ? (dk ? 'text-amber-400' : 'text-amber-700') :
                                      (dk ? 'text-slate-400' : 'text-slate-300');
                         return h('div', { key: ei, className: 'text-[11px] py-1 border-b last:border-0 ' + (dk ? 'border-slate-700 ' : 'border-slate-100 ') + evColor }, ev.text);
                       }))))),
@@ -19676,6 +20046,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { style: { width: pesticideExposure + '%' }, className: 'h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all' })))),
 
           // Action buttons — grouped by purpose (beekeeper only)
+          viewMode === 'beekeeper' && colonySurvived && renderColonyForecast(),
+
           viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'space-y-2' },
             // Primary actions row
             h('div', { className: 'flex gap-2 items-center' },
@@ -19894,6 +20266,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   if (typeof window !== 'undefined' && window.__RR_TEST_EXPORTS__) {
     window.__RR_TEST_EXPORTS__.beehive = {
       bhStepColony: bhStepColony,
+      bhForecastColony: bhForecastColony,
       SIMULATION_PARAMS: SIMULATION_PARAMS,
       BEE_SPECIES: BEE_SPECIES, COLONY_ROLES: COLONY_ROLES,
       WAGGLE_DANCE_GUIDE: WAGGLE_DANCE_GUIDE, POLLINATOR_PLANTS: POLLINATOR_PLANTS,

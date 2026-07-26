@@ -254,6 +254,13 @@
 .diss-zoom-bar button { min-width: 2.5rem; min-height: 2.25rem !important; }
 .diss-overlay-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
 .diss-overlay-actions button { min-height: 2.55rem !important; margin-top: .55rem !important; }
+.diss-system-playback { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: .4rem; margin-top: .1rem; padding: .5rem; border: 1px solid #99c7be; border-radius: .7rem; background: linear-gradient(135deg, #f0fdfa, #eff6ff); }
+.diss-system-playback__status { display: grid; min-width: 0; }
+.diss-system-playback__status strong { color: #134e4a; font-size: .7rem; }
+.diss-system-playback__status span { overflow: hidden; color: #496966; font-size: .61rem; text-overflow: ellipsis; white-space: nowrap; }
+.diss-system-playback button { min-height: 2rem !important; margin-top: 0 !important; padding: .35rem .5rem; border: 1px solid #0f766e; border-radius: .5rem; background: #fff; color: #0f766e; font-size: .64rem; font-weight: 850; cursor: pointer; }
+.diss-system-playback button[aria-pressed="true"] { background: #0f766e; color: #fff; }
+.diss-system-playback button:disabled { cursor: not-allowed; opacity: .48; }
 .diss-sidebar { display: grid; width: 100% !important; gap: .8rem; }
 .diss-selection-card { border-color: #9db4cf !important; box-shadow: 0 10px 26px rgba(15,23,42,.07); }
 .diss-selection-summary { margin: .65rem 0; padding: .7rem; border-left: 4px solid #f59e0b; border-radius: .65rem; background: #fff7ed; }
@@ -1178,6 +1185,9 @@ var d = labToolData.dissection || {};
           var visualRealism = d.visualRealism || 'guided';
           var labLight = d.labLight || 'neutral';
           var inspectionLens = !!d.inspectionLens;
+          var lensPinned = !!d.lensPinned;
+          var lensMagnification = [2, 4, 6].indexOf(Number(d.lensMagnification)) >= 0 ? Number(d.lensMagnification) : 2;
+          var lensFocusDepth = ['surface', 'structure', 'deep'].indexOf(d.lensFocusDepth) >= 0 ? d.lensFocusDepth : 'structure';
           var instrumentVisuals = d.instrumentVisuals !== false;
           var macroInset = d.macroInset !== false;
           var sceneDetail = d.sceneDetail !== false;
@@ -1202,6 +1212,8 @@ var d = labToolData.dissection || {};
             inspected: false, incisionStarted: false, incisionExtended: false,
             retracted: false, pins: [], probed: false, errors: 0, history: [], actionLog: [], cautionLog: []
           }, procedureByLayer[activeLayer] || {});
+          var activeFunctionalTraceKey = d.traceCirculation ? 'circulation' : (d.traceDigestion ? 'digestion' : (d.traceRespiration ? 'respiration' : (d.traceExcretory ? 'excretory' : null)));
+          var activeFunctionalTraceLabel = { circulation: 'Circulatory', digestion: 'Digestive', respiration: 'Respiratory', excretory: 'Excretory' }[activeFunctionalTraceKey] || '';
 
           // Nearest-target hit testing also treats laid-out labels as interactive targets.
           function closestVisibleOrganAt(x, y, radius) {
@@ -1220,6 +1232,27 @@ var d = labToolData.dissection || {};
               if (distance <= nearestDistance) { nearestDistance = distance; nearestOrgan = organ; }
             });
             return nearestOrgan;
+          }
+
+          // Contact context separates tissue interaction from tray contact and identifies anatomy under the tip.
+          function specimenContactContext(point) {
+            if (!point) return { onSpecimen: false, organ: null, edgeDistance: 1 };
+            var contactProfile = SPECIMEN_MATERIAL_PROFILES[spec.bodyShape] || SPECIMEN_MATERIAL_PROFILES.frog;
+            var marginX = spec.bodyShape === 'worm' ? 0.055 : (spec.bodyShape === 'eye' || spec.bodyShape === 'heart' ? 0.035 : 0.075);
+            var marginY = spec.bodyShape === 'worm' ? 0.035 : 0.065;
+            var normalizedX = (point.x - contactProfile.cx) / Math.max(0.02, contactProfile.rx + marginX);
+            var normalizedY = (point.y - contactProfile.cy) / Math.max(0.02, contactProfile.ry + marginY);
+            var ellipseDistance = Math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY);
+            var nearbyOrgan = null;
+            var nearbyRadius = spec.bodyShape === 'crayfish' || spec.bodyShape === 'frog' ? 0.105 : 0.082;
+            organs.forEach(function (organ) {
+              if (viewOrganVisibility(organ) !== 'visible') return;
+              var organPoint = variedOrganPoint(organ);
+              var organDX = point.x - organPoint.x, organDY = point.y - organPoint.y;
+              var organDistance = Math.sqrt(organDX * organDX + organDY * organDY);
+              if (organDistance <= nearbyRadius) { nearbyRadius = organDistance; nearbyOrgan = organ; }
+            });
+            return { onSpecimen: ellipseDistance <= 1 || !!nearbyOrgan, organ: nearbyOrgan, edgeDistance: ellipseDistance };
           }
 
           var CURATED_ANATOMY_RELATIONSHIPS = {
@@ -1324,14 +1357,15 @@ var d = labToolData.dissection || {};
             eye: { ventral: { optic_nerve: [0.025, 0], retina: [-0.015, 0.018] }, lateral: { lens: [0.025, 0], retina: [-0.025, 0] }, internal: { lens: [-0.02, 0], retina: [0.025, 0], optic_nerve: [0.03, 0.01] } },
             heart: { ventral: { rv: [0.02, 0.018], lv: [-0.018, 0.018] }, lateral: { ra: [-0.025, 0], la: [0.025, 0], septum: [0, 0.02] }, internal: { tricuspid: [-0.02, 0.015], mitral: [0.02, 0.015], chordae: [0, 0.03] } }
           };
+          // Material response values drive incision width, flap movement, and live tool-contact deformation.
           var SPECIMEN_MATERIAL_PROFILES = {
-            frog: { pattern: 'chromatophores', label: 'moist chromatophore surface', cx: 0.50, cy: 0.49, rx: 0.25, ry: 0.35, density: 34 },
-            worm: { pattern: 'segments', label: 'segmented iridescent cuticle', cx: 0.50, cy: 0.49, rx: 0.095, ry: 0.39, density: 28 },
-            pig: { pattern: 'follicles', label: 'fine follicle and connective surface', cx: 0.50, cy: 0.49, rx: 0.35, ry: 0.23, density: 38 },
-            fish: { pattern: 'scales', label: 'overlapping reflective scales', cx: 0.50, cy: 0.48, rx: 0.37, ry: 0.19, density: 42 },
-            crayfish: { pattern: 'facets', label: 'jointed chitin microfacets', cx: 0.50, cy: 0.48, rx: 0.35, ry: 0.21, density: 32 },
-            eye: { pattern: 'radial', label: 'translucent corneal and scleral layers', cx: 0.50, cy: 0.48, rx: 0.26, ry: 0.25, density: 24 },
-            heart: { pattern: 'fibers', label: 'directional myocardial fibers', cx: 0.50, cy: 0.50, rx: 0.23, ry: 0.28, density: 30 }
+            frog: { pattern: 'chromatophores', label: 'moist chromatophore surface', response: 'elastic skin', compliance: 0.78, moisture: 0.90, accent: '#86efac', cx: 0.50, cy: 0.49, rx: 0.25, ry: 0.35, density: 34 },
+            worm: { pattern: 'segments', label: 'segmented iridescent cuticle', response: 'segment compression', compliance: 0.92, moisture: 0.72, accent: '#f9a8d4', cx: 0.50, cy: 0.49, rx: 0.095, ry: 0.39, density: 28 },
+            pig: { pattern: 'follicles', label: 'fine follicle and connective surface', response: 'dermal tension', compliance: 0.62, moisture: 0.42, accent: '#fecdd3', cx: 0.50, cy: 0.49, rx: 0.35, ry: 0.23, density: 38 },
+            fish: { pattern: 'scales', label: 'overlapping reflective scales', response: 'scale displacement', compliance: 0.38, moisture: 0.65, accent: '#bae6fd', cx: 0.50, cy: 0.48, rx: 0.37, ry: 0.19, density: 42 },
+            crayfish: { pattern: 'facets', label: 'jointed chitin microfacets', response: 'rigid shell contact', compliance: 0.18, moisture: 0.18, accent: '#fdba74', cx: 0.50, cy: 0.48, rx: 0.35, ry: 0.21, density: 32 },
+            eye: { pattern: 'radial', label: 'translucent corneal and scleral layers', response: 'corneal ripple', compliance: 0.58, moisture: 0.96, accent: '#a5f3fc', cx: 0.50, cy: 0.48, rx: 0.26, ry: 0.25, density: 24 },
+            heart: { pattern: 'fibers', label: 'directional myocardial fibers', response: 'fiber compression', compliance: 0.84, moisture: 0.58, accent: '#fda4af', cx: 0.50, cy: 0.50, rx: 0.23, ry: 0.28, density: 30 }
           };          function allSpecimenStructures() {
             return Object.keys(spec.organs || {}).reduce(function (all, layerId) { return all.concat(spec.organs[layerId] || []); }, []);
           }
@@ -1386,6 +1420,40 @@ var d = labToolData.dissection || {};
               : (mode === 'accessible'
                 ? 'Accessible visuals enabled: high contrast, larger visual targets, and slower motion.'
                 : 'Guided visuals enabled: balanced materials and visible technique targets.'));
+          }
+
+          function toggleInspectionPin() {
+            if (d.lensPinned) {
+              updMany({ lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null });
+              setProcedureFeedback('Inspection lens released. It now follows the pointer.');
+              return;
+            }
+            var pinTarget = sel ? variedOrganPoint(sel) : null;
+            var pinOrganId = sel ? sel.id : null;
+            if (!pinTarget) {
+              try {
+                var lensCanvas = document.querySelector('[data-diss-canvas]');
+                if (lensCanvas && lensCanvas._toolPointer) pinTarget = { x: lensCanvas._toolPointer.x, y: lensCanvas._toolPointer.y };
+              } catch (e) {}
+            }
+            if (!pinTarget) {
+              setProcedureFeedback('Move over the specimen or select a structure before pinning the lens.', 'caution');
+              return;
+            }
+            updMany({ inspectionLens: true, lensPinned: true, lensPinnedPoint: pinTarget, lensPinnedOrganId: pinOrganId });
+            setProcedureFeedback('Inspection lens pinned' + (sel ? ' to ' + sel.name : ' at the current field') + '. Press P or use Unpin to release it.');
+          }
+          function cycleLensMagnification() {
+            var levels = [2, 4, 6];
+            var next = levels[(levels.indexOf(lensMagnification) + 1) % levels.length];
+            upd('lensMagnification', next);
+            setProcedureFeedback('Inspection magnification set to ' + next + 'x.');
+          }
+          function cycleLensFocusDepth() {
+            var depths = ['surface', 'structure', 'deep'];
+            var next = depths[(depths.indexOf(lensFocusDepth) + 1) % depths.length];
+            upd('lensFocusDepth', next);
+            setProcedureFeedback('Inspection focus depth set to ' + next + '.');
           }
 
           function procedureActionLabel(action) {
@@ -1863,6 +1931,13 @@ var d = labToolData.dissection || {};
             if (canvas._lastResistanceLevel !== resistanceLevel) {
               procedureTactile(resistanceLevel === 'high' ? 'warning' : 'tick');
               canvas._lastResistanceLevel = resistanceLevel;
+              var resistanceStatus = document.querySelector('[data-diss-tool-status]');
+              if (resistanceStatus) {
+                resistanceStatus.setAttribute('data-tone', resistanceLevel === 'high' ? 'caution' : 'working');
+                resistanceStatus.textContent = (activeInstrument === 'scissors' ? 'Scissors' : 'Scalpel') + ': '
+                  + (resistanceLevel === 'low' ? 'on the teaching path' : (resistanceLevel === 'moderate' ? 'near the corridor edge' : 'drifting outside the safe corridor'))
+                  + '. ' + resistanceLevel + ' resistance; pressure ' + Math.round((canvas._toolPressure || 0) * 100) + '%.';
+              }
             }
             e.preventDefault();
           }
@@ -5082,9 +5157,10 @@ var d = labToolData.dissection || {};
               function drawProcedureOpening(points, extended) {
                 if (!points || points.length < 2) return;
                 var openingMode = d.visualRealism || visualRealism;
+                var openingMaterial = SPECIMEN_MATERIAL_PROFILES[spec.bodyShape] || SPECIMEN_MATERIAL_PROFILES.frog;
                 var openingMetrics = extended ? canvasProcedure.extensionMetrics : canvasProcedure.incisionMetrics;
                 var openingControl = openingMetrics ? Number(openingMetrics.control == null ? openingMetrics.smoothness : openingMetrics.control) / 100 : 0.8;
-                var halfWidth = extended ? 7.5 : 3.8;
+                var halfWidth = (extended ? 7.5 : 3.8) * (0.82 + openingMaterial.compliance * 0.34);
                 var leftEdge = [], rightEdge = [];
                 for (var oi = 0; oi < points.length; oi++) {
                   var previousPoint = points[Math.max(0, oi - 1)], nextPoint = points[Math.min(points.length - 1, oi + 1)];
@@ -5119,11 +5195,32 @@ var d = labToolData.dissection || {};
                 for (var centerIdx = 1; centerIdx < points.length; centerIdx++) ctx.lineTo(points[centerIdx].x * W, points[centerIdx].y * H);
                 ctx.strokeStyle = openingMode === 'accessible' ? '#020617' : 'rgba(15,8,12,0.76)';
                 ctx.lineWidth = extended ? 2.2 : 1.1; ctx.stroke();
+                // Edge microstructure keeps the opening visually tied to the organism instead of reading as a generic slit.
+                ctx.globalAlpha = openingMode === 'accessible' ? 0.76 : 0.38;
+                ctx.strokeStyle = openingMode === 'accessible' ? '#facc15' : openingMaterial.accent;
+                ctx.fillStyle = openingMaterial.accent; ctx.lineWidth = 0.8;
+                for (var openingDetailIdx = 1; openingDetailIdx < points.length - 1; openingDetailIdx += 2) {
+                  var openingDetailPoint = points[openingDetailIdx];
+                  var openingPrevious = points[Math.max(0, openingDetailIdx - 1)], openingNext = points[Math.min(points.length - 1, openingDetailIdx + 1)];
+                  var openingDX = (openingNext.x - openingPrevious.x) * W, openingDY = (openingNext.y - openingPrevious.y) * H;
+                  var openingLength = Math.sqrt(openingDX * openingDX + openingDY * openingDY) || 1;
+                  var openingNX = -openingDY / openingLength, openingNY = openingDX / openingLength;
+                  if (openingMaterial.pattern === 'facets') {
+                    ctx.beginPath(); ctx.arc(openingDetailPoint.x * W, openingDetailPoint.y * H, 1.8, 0, Math.PI * 2); ctx.stroke();
+                  } else {
+                    var detailReach = openingMaterial.pattern === 'segments' ? halfWidth * 1.35 : halfWidth * 0.92;
+                    ctx.beginPath();
+                    ctx.moveTo(openingDetailPoint.x * W - openingNX * detailReach, openingDetailPoint.y * H - openingNY * detailReach);
+                    ctx.lineTo(openingDetailPoint.x * W + openingNX * detailReach, openingDetailPoint.y * H + openingNY * detailReach);
+                    ctx.stroke();
+                  }
+                }
                 ctx.restore();
               }
               function drawTissueFlaps(guide, pins, forcepsPoint) {
                 if (!guide || guide.length < 2) return;
                 var flapMode = d.visualRealism || visualRealism;
+                var flapMaterial = SPECIMEN_MATERIAL_PROFILES[spec.bodyShape] || SPECIMEN_MATERIAL_PROFILES.frog;
                 var start = guide[0], middle = guide[Math.floor((guide.length - 1) / 2)], end = guide[guide.length - 1];
                 var directionX = end.x - start.x, directionY = end.y - start.y;
                 var directionLength = Math.sqrt(directionX * directionX + directionY * directionY) || 1;
@@ -5135,7 +5232,7 @@ var d = labToolData.dissection || {};
                 }, 0) / Math.max(1, (pins || []).length);
                 var forcepsPull = forcepsPoint ? Math.min(0.022, procedurePointDistance(forcepsPoint, midpoint) * 0.1 + 0.008) : 0;
                 var settle = dissMotionReduced ? 0 : Math.sin(dissTick * 0.022) * 0.002;
-                var spread = (flapMode === 'realistic' ? 0.074 : 0.058) + pinPull + forcepsPull + settle;
+                var spread = (flapMode === 'realistic' ? 0.074 : 0.058) * (0.82 + flapMaterial.compliance * 0.32) + pinPull + forcepsPull + settle;
                 var inset = 0.009;
                 var layerColor = ((spec.layers[currentLayerIdx] || {}).color) || '#d89b8f';
                 function offsetFlapPoint(point, amount) { return { x: point.x + normalX * amount, y: point.y + normalY * amount }; }
@@ -5183,6 +5280,11 @@ var d = labToolData.dissection || {};
                   var flapGrad = ctx.createLinearGradient(flap[0].x * W, flap[0].y * H, flap[4].x * W, flap[4].y * H);
                   flapGrad.addColorStop(0, layerColor); flapGrad.addColorStop(0.7, flapMode === 'realistic' ? '#8f5960' : '#a87579'); flapGrad.addColorStop(1, '#5f3b43');
                   ctx.fillStyle = flapGrad; ctx.fill(); ctx.shadowBlur = 0;
+                  if (flapMaterial.moisture > 0.55) {
+                    ctx.globalAlpha = 0.12 + flapMaterial.moisture * 0.12; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.1;
+                    ctx.beginPath(); ctx.moveTo(flap[0].x * W, flap[0].y * H);
+                    ctx.quadraticCurveTo(flap[2].x * W, flap[2].y * H, flap[4].x * W, flap[4].y * H); ctx.stroke(); ctx.globalAlpha = 1;
+                  }
                   ctx.strokeStyle = flapMode === 'accessible' ? '#f8fafc' : 'rgba(254,202,202,0.68)'; ctx.lineWidth = flapMode === 'accessible' ? 2.5 : 1.2; ctx.stroke();
                   if (flapMode === 'realistic') {
                     ctx.globalAlpha = 0.24; ctx.strokeStyle = '#fee2e2'; ctx.lineWidth = 0.8;
@@ -5283,7 +5385,19 @@ var d = labToolData.dissection || {};
               if (canvasProcedure.incisionStarted) drawProcedureOpening(canvasProcedure.incisionPath, false);
               if (canvasProcedure.incisionExtended) drawProcedureOpening(canvasProcedure.extensionPath, true);
               var activeOpeningPath = canvasProcedure.extensionPath || canvasProcedure.incisionPath || overlayGuide;
-              if (canvasProcedure.retracted) drawTissueFlaps(activeOpeningPath, canvasProcedure.pins || [], canvasProcedure.forcepsPoint);
+              if (canvasProcedure.retracted) {
+                drawTissueFlaps(activeOpeningPath, canvasProcedure.pins || [], canvasProcedure.forcepsPoint);
+                if (canvasProcedure.forcepsPoint) {
+                  var liftedX = canvasProcedure.forcepsPoint.x * W, liftedY = canvasProcedure.forcepsPoint.y * H;
+                  ctx.save(); ctx.strokeStyle = '#5eead4'; ctx.fillStyle = 'rgba(15,23,42,0.88)'; ctx.lineWidth = 1.4;
+                  ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.arc(liftedX, liftedY, 12, Math.PI * 0.12, Math.PI * 0.88); ctx.stroke(); ctx.setLineDash([]);
+                  ctx.beginPath(); ctx.moveTo(liftedX - 7, liftedY + 1); ctx.quadraticCurveTo(liftedX, liftedY - 10, liftedX + 7, liftedY + 1); ctx.stroke();
+                  if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(Math.min(W - 62, liftedX + 14), Math.max(7, liftedY - 17), 54, 17, 5); ctx.fill(); }
+                  else ctx.fillRect(Math.min(W - 62, liftedX + 14), Math.max(7, liftedY - 17), 54, 17);
+                  ctx.font = 'bold 8px Inter, system-ui'; ctx.fillStyle = '#99f6e4'; ctx.fillText('LIFTED', Math.min(W - 56, liftedX + 20), Math.max(19, liftedY - 5));
+                  ctx.restore();
+                }
+              }
               if (canvasProcedure.surfaceCleared && canvasProcedure.dropperPoint) {
                 var dropX = canvasProcedure.dropperPoint.x * W, dropY = canvasProcedure.dropperPoint.y * H;
                 var dropRadius = dissMotionReduced ? 22 : 22 + Math.sin(dissTick * 0.08) * 3;
@@ -5291,6 +5405,16 @@ var d = labToolData.dissection || {};
                 dropGrad.addColorStop(0, 'rgba(224,242,254,0.62)'); dropGrad.addColorStop(1, 'rgba(56,189,248,0.06)');
                 ctx.beginPath(); ctx.arc(dropX, dropY, dropRadius, 0, Math.PI * 2); ctx.fillStyle = dropGrad; ctx.fill();
                 ctx.strokeStyle = 'rgba(125,211,252,0.72)'; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.save(); ctx.strokeStyle = 'rgba(224,242,254,0.68)'; ctx.lineWidth = 0.9;
+                for (var clearedArcIdx = 0; clearedArcIdx < 3; clearedArcIdx++) {
+                  ctx.beginPath(); ctx.arc(dropX, dropY, 9 + clearedArcIdx * 5, -1.15, -0.18); ctx.stroke();
+                }
+                var clearLabelX = Math.min(W - 91, dropX + 18), clearLabelY = Math.max(7, dropY - 26);
+                ctx.fillStyle = 'rgba(8,47,73,0.88)';
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(clearLabelX, clearLabelY, 83, 18, 5); ctx.fill(); }
+                else ctx.fillRect(clearLabelX, clearLabelY, 83, 18);
+                ctx.font = 'bold 7px Inter, system-ui'; ctx.fillStyle = '#e0f2fe'; ctx.fillText('OPTICAL FIELD CLEAR', clearLabelX + 5, clearLabelY + 12);
+                ctx.restore();
               }
               // Probe confirmation remains anchored to the traced structure as persistent visual evidence.
               if (canvasProcedure.probed && canvasProcedure.probedOrganId) {
@@ -5310,7 +5434,7 @@ var d = labToolData.dissection || {};
                   ctx.shadowBlur = 0;
                   ctx.beginPath(); ctx.moveTo(probedX - 5, probedY); ctx.lineTo(probedX - 1, probedY + 4); ctx.lineTo(probedX + 7, probedY - 6);
                   ctx.strokeStyle = (d.visualRealism || visualRealism) === 'accessible' ? '#fef08a' : '#99f6e4'; ctx.lineWidth = 2.4; ctx.stroke();
-                  var probeLabel = 'Trace recorded';
+                  var probeLabel = 'Trace: ' + probedStructure.name;
                   ctx.font = 'bold 9px Inter, system-ui';
                   var probeLabelWidth = ctx.measureText(probeLabel).width + 12;
                   var probeLabelX = Math.min(W - probeLabelWidth - 8, probedX + 17);
@@ -5334,6 +5458,19 @@ var d = labToolData.dissection || {};
                 ctx.beginPath(); ctx.arc(pinX, pinY, (d.visualRealism || visualRealism) === 'accessible' ? 8 : 6, 0, Math.PI * 2); ctx.fillStyle = pinGrad; ctx.fill();
                 ctx.restore();
               });
+              if ((canvasProcedure.pins || []).length >= 2) {
+                var stablePinA = canvasProcedure.pins[0], stablePinB = canvasProcedure.pins[1];
+                var stablePinAX = stablePinA.x * W, stablePinAY = stablePinA.y * H;
+                var stablePinBX = stablePinB.x * W, stablePinBY = stablePinB.y * H;
+                var stablePinMidX = (stablePinAX + stablePinBX) / 2, stablePinMidY = (stablePinAY + stablePinBY) / 2;
+                ctx.save(); ctx.setLineDash([4, 3]); ctx.strokeStyle = 'rgba(125,211,252,0.72)'; ctx.lineWidth = 1.2;
+                ctx.beginPath(); ctx.moveTo(stablePinAX, stablePinAY); ctx.lineTo(stablePinBX, stablePinBY); ctx.stroke(); ctx.setLineDash([]);
+                ctx.fillStyle = 'rgba(15,23,42,0.88)';
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(stablePinMidX - 34, stablePinMidY - 10, 68, 18, 5); ctx.fill(); }
+                else ctx.fillRect(stablePinMidX - 34, stablePinMidY - 10, 68, 18);
+                ctx.font = 'bold 7px Inter, system-ui'; ctx.fillStyle = '#bae6fd'; ctx.fillText('STABLE ANCHOR', stablePinMidX - 28, stablePinMidY + 2);
+                ctx.restore();
+              }
               if (canvas._toolStroke && canvas._toolStroke.length > 1) drawProcedurePath(canvas._toolStroke, '#fef08a', 3, true);
               if (canvas._toolResistance && canvas._toolPointer) {
                 var resistance = canvas._toolResistance, resistancePoint = canvas._toolPointer;
@@ -5639,13 +5776,26 @@ var d = labToolData.dissection || {};
 
               }
 
+              // One shared playback clock keeps all functional pathways synchronized and pausable.
+              var activeCanvasTraceKey = d.traceCirculation ? 'circulation' : (d.traceDigestion ? 'digestion' : (d.traceRespiration ? 'respiration' : (d.traceExcretory ? 'excretory' : null)));
+              var systemPlaybackPaused = !!d.systemPlaybackPaused;
+              var systemReplayToken = Number(d.systemTraceReplayToken) || 0;
+              if (canvas._systemTraceReplayToken !== systemReplayToken) {
+                canvas._systemTraceReplayToken = systemReplayToken;
+                canvas._systemTraceStartTick = dissTick;
+                canvas._systemTraceFrozenTick = null;
+              }
+              if (systemPlaybackPaused && canvas._systemTraceFrozenTick == null) canvas._systemTraceFrozenTick = dissTick;
+              if (!systemPlaybackPaused) canvas._systemTraceFrozenTick = null;
+              var systemTraceBaseTick = systemPlaybackPaused ? (canvas._systemTraceFrozenTick == null ? dissTick : canvas._systemTraceFrozenTick) : dissTick;
+              var systemTraceTick = Math.max(0, systemTraceBaseTick - (Number(canvas._systemTraceStartTick) || 0));
               // Excretory flow tracing overlay
 
               if (d.traceExcretory && activeLayer === 'organs') {
 
                 ctx.setLineDash([4, 4]);
 
-                ctx.lineDashOffset = -dissTick * 0.4;
+                ctx.lineDashOffset = -systemTraceTick * 0.4;
 
                 ctx.lineWidth = 2; ctx.globalAlpha = 0.65;
 
@@ -5675,7 +5825,7 @@ var d = labToolData.dissection || {};
 
                   // Filtrate animation
 
-                  var filtT = (dissTick * 0.006) % 1;
+                  var filtT = (systemTraceTick * 0.006) % 1;
 
                   ctx.beginPath(); ctx.arc(cx + Math.cos(filtT * 6) * W * 0.03, cy + H * 0.08 + filtT * H * 0.14, 2, 0, Math.PI * 2);
 
@@ -5765,7 +5915,7 @@ var d = labToolData.dissection || {};
 
                   // Heart â†’ Arteries (red, oxygenated)
 
-                  ctx.lineDashOffset = -dissTick * 0.6;
+                  ctx.lineDashOffset = -systemTraceTick * 0.6;
 
                   ctx.strokeStyle = '#ef4444';
 
@@ -5795,7 +5945,7 @@ var d = labToolData.dissection || {};
 
                   // Veins (blue, deoxygenated) â†’ back to heart
 
-                  ctx.lineDashOffset = dissTick * 0.6;
+                  ctx.lineDashOffset = systemTraceTick * 0.6;
 
                   ctx.strokeStyle = '#3b82f6';
 
@@ -5833,7 +5983,7 @@ var d = labToolData.dissection || {};
 
                   // Blood cell animation
 
-                  var bcT = (dissTick * 0.008) % 1;
+                  var bcT = (systemTraceTick * 0.008) % 1;
 
                   ctx.beginPath(); ctx.arc(cx + bcT * W * 0.15, cy - H * 0.12 + (bcT * H * 0.42), 3, 0, Math.PI * 2);
 
@@ -5843,7 +5993,7 @@ var d = labToolData.dissection || {};
 
                   // Through chambers
 
-                  ctx.lineDashOffset = -dissTick * 0.5;
+                  ctx.lineDashOffset = -systemTraceTick * 0.5;
 
                   ctx.strokeStyle = '#3b82f6'; // deoxygenated
 
@@ -5901,7 +6051,7 @@ var d = labToolData.dissection || {};
 
                 ctx.setLineDash([4, 5]);
 
-                ctx.lineDashOffset = -dissTick * 0.7;
+                ctx.lineDashOffset = -systemTraceTick * 0.7;
 
                 ctx.lineWidth = 2; ctx.globalAlpha = 0.7;
 
@@ -5941,7 +6091,7 @@ var d = labToolData.dissection || {};
 
                   for (var ap = 0; ap < 5; ap++) {
 
-                    var apT = ((dissTick * 0.01 + ap * 0.2) % 1);
+                    var apT = ((systemTraceTick * 0.01 + ap * 0.2) % 1);
 
                     var apY = cy - H * 0.28 + apT * H * 0.22;
 
@@ -6047,7 +6197,7 @@ var d = labToolData.dissection || {};
 
                 ctx.setLineDash([6, 4]);
 
-                ctx.lineDashOffset = -dissTick * 0.6;
+                ctx.lineDashOffset = -systemTraceTick * 0.6;
 
                 ctx.lineWidth = 2.5; ctx.globalAlpha = 0.7;
 
@@ -6073,7 +6223,7 @@ var d = labToolData.dissection || {};
 
                   // Food bolus moving along path
 
-                  var foodT = (dissTick * 0.005) % 1;
+                  var foodT = (systemTraceTick * 0.005) % 1;
 
                   var foodY = cy - H * 0.26 + foodT * H * 0.48;
 
@@ -6119,7 +6269,7 @@ var d = labToolData.dissection || {};
 
                   ctx.stroke();
 
-                  var wFoodT = (dissTick * 0.003) % 1;
+                  var wFoodT = (systemTraceTick * 0.003) % 1;
 
                   var wFoodY = H * 0.06 + wFoodT * H * 0.88;
 
@@ -6621,7 +6771,40 @@ var d = labToolData.dissection || {};
                 }
               }
 
-              var screenPointer = canvas._toolPointer;
+              // Screen-fixed functional pathway HUD pairs color with labels, motion state, and direction arrows.
+              if (activeCanvasTraceKey && activeLayer === 'organs') {
+                var traceHUDConfig = {
+                  circulation: { label: 'Circulatory pathway', color: '#fb7185', secondary: '#60a5fa', icon: '\u2665' },
+                  digestion: { label: 'Digestive pathway', color: '#fbbf24', secondary: '#fdba74', icon: '\u25C9' },
+                  respiration: { label: 'Respiratory pathway', color: '#38bdf8', secondary: '#f87171', icon: '\u2248' },
+                  excretory: { label: 'Excretory pathway', color: '#a3e635', secondary: '#c084fc', icon: '\u25C6' }
+                }[activeCanvasTraceKey];
+                var traceHUDStatus = dissMotionReduced ? 'STATIC \u00B7 reduced motion' : (systemPlaybackPaused ? 'PAUSED \u00B7 directions held' : 'PLAYING \u00B7 directional flow');
+                ctx.save();
+                var traceHUDX = 14, traceHUDY = H - 82, traceHUDW = 184, traceHUDH = 50;
+                ctx.fillStyle = 'rgba(15,23,42,0.92)'; ctx.strokeStyle = traceHUDConfig.color; ctx.lineWidth = 1;
+                if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(traceHUDX, traceHUDY, traceHUDW, traceHUDH, 9); ctx.fill(); ctx.stroke(); }
+                else { ctx.fillRect(traceHUDX, traceHUDY, traceHUDW, traceHUDH); ctx.strokeRect(traceHUDX, traceHUDY, traceHUDW, traceHUDH); }
+                ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#f8fafc'; ctx.fillText(traceHUDConfig.icon + ' ' + traceHUDConfig.label, traceHUDX + 10, traceHUDY + 15);
+                ctx.font = 'bold 7px Inter, system-ui'; ctx.fillStyle = traceHUDConfig.color; ctx.fillText(traceHUDStatus, traceHUDX + 10, traceHUDY + 27);
+                var traceLineY = traceHUDY + 39;
+                var traceMiniGradient = ctx.createLinearGradient(traceHUDX + 10, traceLineY, traceHUDX + traceHUDW - 10, traceLineY);
+                traceMiniGradient.addColorStop(0, traceHUDConfig.secondary); traceMiniGradient.addColorStop(0.48, traceHUDConfig.color); traceMiniGradient.addColorStop(1, traceHUDConfig.secondary);
+                ctx.strokeStyle = traceMiniGradient; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(traceHUDX + 10, traceLineY); ctx.lineTo(traceHUDX + traceHUDW - 12, traceLineY); ctx.stroke();
+                for (var traceHUDMarkerIndex = 0; traceHUDMarkerIndex < 3; traceHUDMarkerIndex++) {
+                  var traceHUDPhase = dissMotionReduced || systemPlaybackPaused ? (traceHUDMarkerIndex + 1) / 4 : (systemTraceTick * 0.012 + traceHUDMarkerIndex / 3) % 1;
+                  var traceHUDMarkerX = traceHUDX + 12 + traceHUDPhase * (traceHUDW - 28);
+                  ctx.fillStyle = traceHUDConfig.color; ctx.beginPath(); ctx.moveTo(traceHUDMarkerX + 5, traceLineY); ctx.lineTo(traceHUDMarkerX - 3, traceLineY - 4); ctx.lineTo(traceHUDMarkerX - 3, traceLineY + 4); ctx.closePath(); ctx.fill();
+                }
+                if (activeCanvasTraceKey === 'circulation') {
+                  ctx.beginPath(); ctx.arc(traceHUDX + traceHUDW - 21, traceHUDY + 13, 3, 0, Math.PI * 2); ctx.fillStyle = traceHUDConfig.secondary; ctx.fill();
+                }
+                ctx.restore();
+              }
+              var liveScreenPointer = canvas._toolPointer;
+              var activeContactPulse = canvas._toolContactPulse && Date.now() - canvas._toolContactPulse.at < 720 ? canvas._toolContactPulse : null;
+              var screenPointer = liveScreenPointer || (d.lensPinned && d.lensPinnedPoint ? d.lensPinnedPoint : null) || activeContactPulse;
+              var pointerIsSynthetic = !liveScreenPointer && !!screenPointer;
               if (screenPointer) {
                 var pointerScale = specimenScaleFactors();
                 var displayedPointerX = (screenPointer.x - 0.5) * pointerScale.x + 0.5;
@@ -6632,27 +6815,226 @@ var d = labToolData.dissection || {};
                 var pointerInFrame = pointerScreenX > 0 && pointerScreenX < W && pointerScreenY > 0 && pointerScreenY < H;
                 var contactPressure = Math.max(0.08, Math.min(1, Number(canvas._toolPressure) || 0.12));
                 var contactResistance = canvas._toolResistance ? canvas._toolResistance.value : 0.1;
-                if (instrumentVisuals && pointerInFrame && !d.quizMode && !d.annotateMode && !d.rulerMode) {
-                  var contactRadius = 10 + contactPressure * 7 + contactResistance * 4;
-                  ctx.save(); ctx.translate(pointerScreenX, pointerScreenY); ctx.scale(1, 0.42);
+                var liveContactContext = specimenContactContext(screenPointer);
+
+                // A pressure-weighted live trail shows both stroke placement and corridor alignment before a cut is committed.
+                if (instrumentVisuals && canvas._toolDrawing && canvas._toolStroke && canvas._toolStroke.length > 1 && (activePointerTool === 'scalpel' || activePointerTool === 'scissors')) {
+                  var liveStrokePoints = canvas._toolStroke.slice(-42);
+                  var liveStrokeSamples = (canvas._toolSamples || []).slice(-42);
+                  var liveStrokeGuide = procedureGuidePoints();
+                  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                  for (var liveStrokeIdx = 1; liveStrokeIdx < liveStrokePoints.length; liveStrokeIdx++) {
+                    var liveStrokeFrom = liveStrokePoints[liveStrokeIdx - 1], liveStrokeTo = liveStrokePoints[liveStrokeIdx];
+                    var liveFromX = ((liveStrokeFrom.x - 0.5) * pointerScale.x + 0.5) * W;
+                    var liveFromY = ((liveStrokeFrom.y - 0.45) * pointerScale.y + 0.45) * H;
+                    var liveToX = ((liveStrokeTo.x - 0.5) * pointerScale.x + 0.5) * W;
+                    var liveToY = ((liveStrokeTo.y - 0.45) * pointerScale.y + 0.45) * H;
+                    liveFromX = (liveFromX + parallaxX - W / 2) * zoom + W / 2 + panX;
+                    liveFromY = (liveFromY + parallaxY - H / 2) * zoom + H / 2 + panY;
+                    liveToX = (liveToX + parallaxX - W / 2) * zoom + W / 2 + panX;
+                    liveToY = (liveToY + parallaxY - H / 2) * zoom + H / 2 + panY;
+                    var liveStrokeDistance = distanceToGuide(liveStrokeTo, liveStrokeGuide);
+                    var liveStrokePressure = Math.max(0.08, Math.min(1, Number((liveStrokeSamples[liveStrokeIdx] || {}).pressure) || contactPressure));
+                    ctx.strokeStyle = liveStrokeDistance <= 0.04 ? '#2dd4bf' : (liveStrokeDistance <= 0.075 ? '#facc15' : '#fb7185');
+                    ctx.globalAlpha = 0.42 + liveStrokePressure * 0.46;
+                    ctx.lineWidth = (activePointerTool === 'scissors' ? 2.4 : 1.6) + liveStrokePressure * 2.2;
+                    ctx.beginPath(); ctx.moveTo(liveFromX, liveFromY); ctx.lineTo(liveToX, liveToY); ctx.stroke();
+                  }
+                  var liveLeadDistance = distanceToGuide(liveStrokePoints[liveStrokePoints.length - 1], liveStrokeGuide);
+                  var liveLeadLabel = liveLeadDistance <= 0.04 ? 'ON PATH' : (liveLeadDistance <= 0.075 ? 'EDGE' : 'DRIFT');
+                  ctx.globalAlpha = 0.9; ctx.font = 'bold 7px Inter, system-ui';
+                  ctx.fillStyle = liveLeadDistance <= 0.04 ? '#99f6e4' : (liveLeadDistance <= 0.075 ? '#fde68a' : '#fecdd3');
+                  ctx.fillText(liveLeadLabel, pointerScreenX + 11, pointerScreenY - 13);
+                  ctx.restore();
+                }
+
+                // Organism-aware contact deformation makes every instrument read as physically connected to the specimen.
+                if (instrumentVisuals && pointerInFrame && (!pointerIsSynthetic || activeContactPulse) && !d.quizMode && !d.annotateMode && !d.rulerMode) {
+                  var toolMaterial = SPECIMEN_MATERIAL_PROFILES[spec.bodyShape] || SPECIMEN_MATERIAL_PROFILES.frog;
+                  var contactOnSpecimen = liveContactContext.onSpecimen;
+                  var underTipOrgan = liveContactContext.organ;
+                  var cuttingAtProtectedStructure = contactOnSpecimen && !!underTipOrgan && (activePointerTool === 'scalpel' || activePointerTool === 'scissors');
+                  var contactAccent = cuttingAtProtectedStructure ? '#fb7185' : (contactOnSpecimen ? toolMaterial.accent : '#94a3b8');
+                  var pulseProgress = activeContactPulse ? Math.max(0, Math.min(1, (Date.now() - activeContactPulse.at) / 720)) : 1;
+                  var pulseStrength = activeContactPulse ? (dissMotionReduced ? 0.52 : Math.sin(pulseProgress * Math.PI)) : 0;
+                  var surfacePressure = Math.max(contactPressure, pulseStrength * 0.78);
+                  var surfaceCompliance = contactOnSpecimen ? Math.max(0.12, Number(toolMaterial.compliance) || 0.5) : 0.08;
+                  var contactRadius = 10 + surfacePressure * (6 + surfaceCompliance * 8) + contactResistance * 4;
+                  var contactOrientation = toolMaterial.rx < toolMaterial.ry ? Math.PI / 2 : 0;
+                  var responseTool = activeContactPulse && pointerIsSynthetic ? activeContactPulse.tool : activePointerTool;
+                  var previewGuide = procedureGuidePoints();
+                  var previewEndpointDistance = Math.min(procedurePointDistance(screenPointer, previewGuide[0]), procedurePointDistance(screenPointer, previewGuide[previewGuide.length - 1]));
+                  var previewGuideDistance = distanceToGuide(screenPointer, previewGuide);
+                  var previewPins = currentProcedure.pins || [];
+                  var previewPinSpacing = previewPins.length ? procedurePointDistance(screenPointer, previewPins[0]) : 1;
+                  var forcepsPreviewValid = currentProcedure.incisionExtended && !currentProcedure.retracted && previewGuideDistance <= 0.11;
+                  var pinPreviewValid = currentProcedure.retracted && previewPins.length < 2 && previewEndpointDistance <= 0.14 && previewPinSpacing >= 0.18;
+                  var probePreviewValid = previewPins.length >= 2 && !!underTipOrgan;
+                  var dropperPreviewValid = spec.bodyShape === 'eye' && contactOnSpecimen;
+                  var interactionPreviewLabel = responseTool === 'forceps'
+                    ? (forcepsPreviewValid ? 'LIFT PREVIEW: READY' : 'MOVE FORCEPS TO OPENING')
+                    : (responseTool === 'pin'
+                      ? (pinPreviewValid ? 'ANCHOR PREVIEW: READY' : (previewPinSpacing < 0.18 ? 'ANCHOR TOO CLOSE' : 'MOVE PIN TO ENDPOINT'))
+                      : (responseTool === 'probe'
+                        ? (probePreviewValid ? 'TRACE: ' + underTipOrgan.name : 'SELECT VISIBLE STRUCTURE')
+                        : (responseTool === 'dropper' ? (dropperPreviewValid ? 'CLEAR OPTICAL FIELD' : 'MOVE DROPPER TO EYE') : '')));
+                  ctx.save(); ctx.translate(pointerScreenX, pointerScreenY); ctx.rotate(contactOrientation);
+                  var indentationScaleY = Math.max(0.24, 0.52 - surfacePressure * surfaceCompliance * 0.18);
+                  ctx.scale(1 + surfaceCompliance * 0.18, indentationScaleY);
                   var contactShadow = ctx.createRadialGradient(-2, -2, 1, 0, 0, contactRadius);
-                  contactShadow.addColorStop(0, 'rgba(2,6,23,' + (0.22 + contactPressure * 0.28).toFixed(2) + ')');
-                  contactShadow.addColorStop(0.55, 'rgba(15,23,42,0.16)');
+                  contactShadow.addColorStop(0, 'rgba(2,6,23,' + (0.20 + surfacePressure * 0.30).toFixed(2) + ')');
+                  contactShadow.addColorStop(0.5, 'rgba(15,23,42,0.15)');
+                  contactShadow.addColorStop(0.78, 'rgba(255,255,255,' + (0.04 + toolMaterial.moisture * 0.09).toFixed(2) + ')');
                   contactShadow.addColorStop(1, 'rgba(15,23,42,0)');
                   ctx.fillStyle = contactShadow; ctx.beginPath(); ctx.arc(0, 0, contactRadius, 0, Math.PI * 2); ctx.fill();
-                  ctx.strokeStyle = canvas._toolDrawing ? 'rgba(250,204,21,0.74)' : 'rgba(226,232,240,0.38)';
-                  ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(0, 0, 5 + contactPressure * 3, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
-                  if (canvas._toolDrawing) {
-                    ctx.save(); ctx.fillStyle = 'rgba(15,23,42,0.82)';
-                    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(pointerScreenX + 12, pointerScreenY + 15, 70, 18, 5); ctx.fill(); }
-                    else ctx.fillRect(pointerScreenX + 12, pointerScreenY + 15, 70, 18);
-                    ctx.font = 'bold 8px Inter, system-ui'; ctx.fillStyle = '#fde68a';
-                    ctx.fillText('Contact ' + Math.round(contactPressure * 100) + '%', pointerScreenX + 17, pointerScreenY + 27); ctx.restore();
+                  ctx.strokeStyle = canvas._toolDrawing ? (cuttingAtProtectedStructure ? '#fb7185' : '#facc15') : contactAccent;
+                  ctx.globalAlpha = 0.44 + surfacePressure * 0.34; ctx.lineWidth = liveVisualMode === 'accessible' ? 2.2 : 1.15;
+                  ctx.beginPath(); ctx.arc(0, 0, 5 + surfacePressure * 4, 0, Math.PI * 2); ctx.stroke();
+                  ctx.restore();
+
+                  // Surface microstructure bends or shifts around the contact point according to the specimen material.
+                  ctx.save(); ctx.translate(pointerScreenX, pointerScreenY); ctx.strokeStyle = contactAccent; ctx.fillStyle = contactAccent;
+                  ctx.globalAlpha = liveVisualMode === 'accessible' ? 0.78 : 0.46; ctx.lineWidth = liveVisualMode === 'accessible' ? 1.8 : 0.9;
+                  if (!contactOnSpecimen) {
+                    ctx.setLineDash([3, 3]);
+                    ctx.beginPath(); ctx.moveTo(-12, -7); ctx.lineTo(-12, -12); ctx.lineTo(-7, -12);
+                    ctx.moveTo(12, -7); ctx.lineTo(12, -12); ctx.lineTo(7, -12);
+                    ctx.moveTo(-12, 7); ctx.lineTo(-12, 12); ctx.lineTo(-7, 12);
+                    ctx.moveTo(12, 7); ctx.lineTo(12, 12); ctx.lineTo(7, 12); ctx.stroke(); ctx.setLineDash([]);
+                  } else if (toolMaterial.pattern === 'segments') {
+                    for (var segmentContactIdx = -1; segmentContactIdx <= 1; segmentContactIdx++) {
+                      var segmentContactY = segmentContactIdx * 6;
+                      ctx.beginPath(); ctx.moveTo(-13, segmentContactY); ctx.quadraticCurveTo(0, segmentContactY + surfacePressure * 4, 13, segmentContactY); ctx.stroke();
+                    }
+                  } else if (toolMaterial.pattern === 'scales') {
+                    for (var scaleContactIdx = -1; scaleContactIdx <= 1; scaleContactIdx++) {
+                      ctx.beginPath(); ctx.arc(scaleContactIdx * 8, 1 + Math.abs(scaleContactIdx) * 2, 7, Math.PI * 1.12, Math.PI * 1.88); ctx.stroke();
+                    }
+                  } else if (toolMaterial.pattern === 'facets') {
+                    ctx.beginPath();
+                    for (var facetContactIdx = 0; facetContactIdx < 6; facetContactIdx++) {
+                      var facetAngle = facetContactIdx * Math.PI / 3;
+                      var facetX = Math.cos(facetAngle) * (9 + contactResistance * 3), facetY = Math.sin(facetAngle) * (9 + contactResistance * 3);
+                      if (!facetContactIdx) ctx.moveTo(facetX, facetY); else ctx.lineTo(facetX, facetY);
+                    }
+                    ctx.closePath(); ctx.stroke();
+                  } else if (toolMaterial.pattern === 'radial') {
+                    for (var radialContactIdx = 0; radialContactIdx < 3; radialContactIdx++) {
+                      ctx.globalAlpha = 0.48 - radialContactIdx * 0.11; ctx.beginPath(); ctx.arc(0, 0, 7 + radialContactIdx * 6 + pulseStrength * 4, 0, Math.PI * 2); ctx.stroke();
+                    }
+                  } else if (toolMaterial.pattern === 'fibers') {
+                    ctx.rotate(-0.42);
+                    for (var fiberContactIdx = -2; fiberContactIdx <= 2; fiberContactIdx++) {
+                      ctx.beginPath(); ctx.moveTo(-13, fiberContactIdx * 4); ctx.quadraticCurveTo(0, fiberContactIdx * 4 + surfacePressure * 3, 13, fiberContactIdx * 4); ctx.stroke();
+                    }
+                  } else if (toolMaterial.pattern === 'follicles') {
+                    for (var follicleContactIdx = 0; follicleContactIdx < 7; follicleContactIdx++) {
+                      var follicleAngle = follicleContactIdx * 2.4;
+                      ctx.beginPath(); ctx.arc(Math.cos(follicleAngle) * (7 + follicleContactIdx), Math.sin(follicleAngle) * (5 + follicleContactIdx * 0.6), 1, 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.beginPath(); ctx.moveTo(-15, 0); ctx.quadraticCurveTo(0, surfacePressure * 5, 15, 0); ctx.stroke();
+                  } else {
+                    for (var pigmentContactIdx = 0; pigmentContactIdx < 6; pigmentContactIdx++) {
+                      var pigmentAngle = pigmentContactIdx * Math.PI / 3;
+                      ctx.beginPath(); ctx.arc(Math.cos(pigmentAngle) * 11, Math.sin(pigmentAngle) * 7, 1.4, 0, Math.PI * 2); ctx.fill();
+                    }
+                  }
+                  ctx.restore();
+
+                  // Each tool adds a recognizable contact cue without relying on color alone.
+                  ctx.save(); ctx.translate(pointerScreenX, pointerScreenY); ctx.strokeStyle = '#f8fafc'; ctx.fillStyle = '#f8fafc'; ctx.globalAlpha = 0.68; ctx.lineWidth = 1.2;
+                  if (responseTool === 'forceps') {
+                    ctx.strokeStyle = forcepsPreviewValid ? '#99f6e4' : '#fbbf24';
+                    ctx.beginPath(); ctx.moveTo(-11, -8); ctx.lineTo(-3, 0); ctx.lineTo(-11, 8); ctx.moveTo(11, -8); ctx.lineTo(3, 0); ctx.lineTo(11, 8); ctx.stroke();
+                    ctx.globalAlpha = 0.30; ctx.fillStyle = forcepsPreviewValid ? '#5eead4' : '#fbbf24';
+                    ctx.beginPath(); ctx.moveTo(-13, 4); ctx.quadraticCurveTo(0, -13 - surfacePressure * 5, 13, 4); ctx.quadraticCurveTo(0, -3, -13, 4); ctx.fill();
+                    ctx.globalAlpha = 0.76; ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(0, -18); ctx.moveTo(-3, -14); ctx.lineTo(0, -18); ctx.lineTo(3, -14); ctx.stroke();
+                  } else if (responseTool === 'pin') {
+                    ctx.strokeStyle = pinPreviewValid ? '#7dd3fc' : '#fbbf24';
+                    ctx.beginPath(); ctx.arc(0, 0, 8 + pulseStrength * 5, 0, Math.PI * 2); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(-13, 0); ctx.lineTo(13, 0); ctx.moveTo(0, -13); ctx.lineTo(0, 13); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-7, 12); ctx.moveTo(0, 0); ctx.lineTo(7, 12); ctx.stroke();
+                  } else if (responseTool === 'dropper') {
+                    for (var dropRippleIdx = 0; dropRippleIdx < 2; dropRippleIdx++) {
+                      ctx.globalAlpha = (0.58 - dropRippleIdx * 0.2) * (1 - pulseProgress * 0.55);
+                      ctx.beginPath(); ctx.ellipse(0, 0, 8 + dropRippleIdx * 7 + pulseProgress * 8, 4 + dropRippleIdx * 4 + pulseProgress * 4, 0, 0, Math.PI * 2); ctx.stroke();
+                    }
+                  } else if (responseTool === 'scalpel' || responseTool === 'scissors') {
+                    var strokeAngle = canvas._toolVector ? Math.atan2(canvas._toolVector.y * H, canvas._toolVector.x * W) : -0.72;
+                    ctx.rotate(strokeAngle); ctx.beginPath(); ctx.moveTo(-13, 0); ctx.lineTo(13, 0); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(9, -3); ctx.lineTo(13, 0); ctx.lineTo(9, 3); ctx.stroke();
+                  } else {
+                    ctx.strokeStyle = responseTool === 'probe' && probePreviewValid ? '#99f6e4' : '#f8fafc';
+                    ctx.beginPath(); ctx.arc(0, 0, 6 + surfacePressure * 4, 0, Math.PI * 2); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(-4, 0); ctx.lineTo(4, 0); ctx.moveTo(0, -4); ctx.lineTo(0, 4); ctx.stroke();
+                    if (responseTool === 'probe' && probePreviewValid) {
+                      for (var probePreviewCorner = 0; probePreviewCorner < 4; probePreviewCorner++) {
+                        var probeCornerAngle = probePreviewCorner * Math.PI / 2;
+                        ctx.beginPath(); ctx.arc(0, 0, 14, probeCornerAngle + 0.12, probeCornerAngle + 0.72); ctx.stroke();
+                      }
+                    }
+                  }
+                  if (activeContactPulse) {
+                    ctx.globalAlpha = Math.max(0, 0.72 * (1 - pulseProgress));
+                    ctx.beginPath(); ctx.arc(0, 0, 10 + pulseProgress * 22, 0, Math.PI * 2); ctx.stroke();
+                  }
+                  if (cuttingAtProtectedStructure) {
+                    ctx.globalAlpha = 0.92; ctx.strokeStyle = '#fb7185'; ctx.lineWidth = 2; ctx.setLineDash([3, 2]);
+                    ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+                    ctx.beginPath(); ctx.moveTo(-5, -5); ctx.lineTo(5, 5); ctx.moveTo(5, -5); ctx.lineTo(-5, 5); ctx.stroke();
+                  }
+                  ctx.restore();
+
+                  if (canvas._toolDrawing || activeContactPulse || ['forceps', 'pin', 'probe', 'dropper'].indexOf(responseTool) >= 0) {
+                    var responseLabelX = pointerScreenX > W - 150 ? pointerScreenX - 138 : pointerScreenX + 14;
+                    var responseLabelY = pointerScreenY > H - 58 ? pointerScreenY - 43 : pointerScreenY + 14;
+                    ctx.save(); ctx.fillStyle = 'rgba(15,23,42,0.90)';
+                    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(responseLabelX, responseLabelY, 132, 43, 6); ctx.fill(); }
+                    else ctx.fillRect(responseLabelX, responseLabelY, 132, 43);
+                    ctx.font = 'bold 8px Inter, system-ui'; ctx.fillStyle = contactAccent;
+                    var materialResponseLabel = contactOnSpecimen ? toolMaterial.response.toUpperCase() : 'TRAY SURFACE';
+                    ctx.fillText(materialResponseLabel, responseLabelX + 7, responseLabelY + 12);
+                    ctx.font = '7px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+                    var resistanceWord = contactResistance < 0.34 ? 'low' : (contactResistance < 0.68 ? 'moderate' : 'high');
+                    ctx.fillText(contactOnSpecimen ? (responseTool + ' | ' + resistanceWord + ' resistance | ' + Math.round(surfacePressure * 100) + '%') : (responseTool + ' | no tissue response'), responseLabelX + 7, responseLabelY + 24);
+                    ctx.fillStyle = cuttingAtProtectedStructure ? '#fecdd3' : '#cbd5e1';
+                    var activeDepthLabel = (d.incisionDepth || 'shallow').toUpperCase();
+                    var contactContextLabel = interactionPreviewLabel || (cuttingAtProtectedStructure
+                      ? activeDepthLabel + ' / PROTECT ' + underTipOrgan.name
+                      : (underTipOrgan ? 'Under tip: ' + underTipOrgan.name : (contactOnSpecimen ? activeDepthLabel + ' / ' + ((spec.layers[currentLayerIdx] || {}).name || activeLayer) : 'Move tip onto specimen')));
+                    ctx.fillText(contactContextLabel.slice(0, 31), responseLabelX + 7, responseLabelY + 36);
+                    ctx.restore();
                   }
                 }
 
+                var lensTargetPoint = d.lensPinned && d.lensPinnedPoint ? d.lensPinnedPoint : screenPointer;
+                var lensTargetStructure = null;
+                if (d.lensPinnedOrganId) {
+                  lensTargetStructure = organs.find(function (organ) { return organ.id === d.lensPinnedOrganId; }) || null;
+                  if (lensTargetStructure) lensTargetPoint = variedOrganPoint(lensTargetStructure);
+                }
+                if (!lensTargetStructure) {
+                  lensTargetStructure = organs.find(function (organ) { return organ.id === d.hoveredOrgan; })
+                    || organs.find(function (organ) { return organ.id === d.selectedOrgan; })
+                    || (lensTargetPoint ? closestVisibleOrganAt(lensTargetPoint.x, lensTargetPoint.y, 0.075) : null);
+                }
+                var lensTargetScreenX = pointerScreenX, lensTargetScreenY = pointerScreenY;
+                if (lensTargetPoint && lensTargetPoint !== screenPointer) {
+                  var lensTargetScale = specimenScaleFactors();
+                  var displayedLensTargetX = (lensTargetPoint.x - 0.5) * lensTargetScale.x + 0.5;
+                  var displayedLensTargetY = (lensTargetPoint.y - 0.45) * lensTargetScale.y + 0.45;
+                  lensTargetScreenX = (displayedLensTargetX * W + parallaxX - W / 2) * zoom + W / 2 + panX;
+                  lensTargetScreenY = (displayedLensTargetY * H + parallaxY - H / 2) * zoom + H / 2 + panY;
+                }
+                var targetEase = dissMotionReduced ? 1 : 0.28;
+                if (!isFinite(Number(canvas._lensDisplayX))) canvas._lensDisplayX = lensTargetScreenX;
+                if (!isFinite(Number(canvas._lensDisplayY))) canvas._lensDisplayY = lensTargetScreenY;
+                canvas._lensDisplayX += (lensTargetScreenX - canvas._lensDisplayX) * targetEase;
+                canvas._lensDisplayY += (lensTargetScreenY - canvas._lensDisplayY) * targetEase;
+                var lensDisplayX = canvas._lensDisplayX, lensDisplayY = canvas._lensDisplayY;
+                var lensTargetInFrame = lensDisplayX > 0 && lensDisplayX < W && lensDisplayY > 0 && lensDisplayY < H;
                 var lensBuffer = null, lensCtx = null;
-                if ((d.inspectionLens || macroInset) && pointerInFrame) {
+                if ((d.inspectionLens || macroInset) && lensTargetInFrame) {
                   lensBuffer = canvas._dissLensBuffer;
                   if (!lensBuffer) { lensBuffer = document.createElement('canvas'); canvas._dissLensBuffer = lensBuffer; }
                   if (lensBuffer.width !== canvas.width || lensBuffer.height !== canvas.height) { lensBuffer.width = canvas.width; lensBuffer.height = canvas.height; }
@@ -6661,46 +7043,73 @@ var d = labToolData.dissection || {};
                     lensCtx.setTransform(1, 0, 0, 1, 0, 0); lensCtx.clearRect(0, 0, lensBuffer.width, lensBuffer.height); lensCtx.drawImage(canvas, 0, 0);
                   }
                 }
-                if (d.inspectionLens && pointerInFrame && lensCtx) {
-                  var lensRadius = liveVisualMode === 'accessible' ? 72 : 58;
-                  var lensMagnification = liveVisualMode === 'realistic' ? 1.9 : 1.65;
-                  var sourceRadius = lensRadius / lensMagnification;
-                  ctx.save(); ctx.beginPath(); ctx.arc(pointerScreenX, pointerScreenY, lensRadius, 0, Math.PI * 2); ctx.clip();
-                  ctx.drawImage(lensBuffer, pointerScreenX - sourceRadius, pointerScreenY - sourceRadius, sourceRadius * 2, sourceRadius * 2, pointerScreenX - lensRadius, pointerScreenY - lensRadius, lensRadius * 2, lensRadius * 2);
-                  var lensShade = ctx.createRadialGradient(pointerScreenX - 15, pointerScreenY - 18, 4, pointerScreenX, pointerScreenY, lensRadius);
-                  lensShade.addColorStop(0, 'rgba(255,255,255,0.17)'); lensShade.addColorStop(0.72, 'rgba(255,255,255,0)'); lensShade.addColorStop(1, 'rgba(2,6,23,0.24)');
-                  ctx.fillStyle = lensShade; ctx.fillRect(pointerScreenX - lensRadius, pointerScreenY - lensRadius, lensRadius * 2, lensRadius * 2); ctx.restore();
-                  ctx.save(); ctx.beginPath(); ctx.arc(pointerScreenX, pointerScreenY, lensRadius, 0, Math.PI * 2);
-                  ctx.strokeStyle = liveVisualMode === 'accessible' ? '#f8fafc' : '#94a3b8'; ctx.lineWidth = liveVisualMode === 'accessible' ? 5 : 3; ctx.shadowColor = 'rgba(2,6,23,0.75)'; ctx.shadowBlur = 8; ctx.stroke();
-                  ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#f8fafc'; ctx.fillText(lensMagnification.toFixed(1) + 'x', pointerScreenX + lensRadius - 25, pointerScreenY + lensRadius - 8); ctx.restore();
+                var inspectionMagnification = [2, 4, 6].indexOf(Number(d.lensMagnification)) >= 0 ? Number(d.lensMagnification) : 2;
+                var inspectionDepth = ['surface', 'structure', 'deep'].indexOf(d.lensFocusDepth) >= 0 ? d.lensFocusDepth : 'structure';
+                var inspectionAccent = inspectionDepth === 'surface' ? '#fbbf24' : (inspectionDepth === 'deep' ? '#a78bfa' : '#22d3ee');
+                var detailByShape = { frog: 'pigment cells', worm: 'annular segments', fish: 'scale margins', crayfish: 'chitin facets', pig: 'follicle texture', eye: 'radial layers', heart: 'muscle fibers' };
+                var inspectionDetail = detailByShape[spec.bodyShape] || 'tissue texture';
+                if (lensTargetInFrame && lensCtx) {
+                  var sourceGuideRadius = Math.max(7, (liveVisualMode === 'accessible' ? 27 : 22) / Math.sqrt(inspectionMagnification / 2));
+                  ctx.save(); ctx.strokeStyle = inspectionAccent; ctx.lineWidth = liveVisualMode === 'accessible' ? 3 : 1.5; ctx.setLineDash(d.lensPinned ? [] : [4, 3]);
+                  ctx.beginPath(); ctx.arc(lensDisplayX, lensDisplayY, sourceGuideRadius, 0, Math.PI * 2); ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(lensDisplayX - sourceGuideRadius - 5, lensDisplayY); ctx.lineTo(lensDisplayX + sourceGuideRadius + 5, lensDisplayY);
+                  ctx.moveTo(lensDisplayX, lensDisplayY - sourceGuideRadius - 5); ctx.lineTo(lensDisplayX, lensDisplayY + sourceGuideRadius + 5); ctx.stroke();
+                  if (d.lensPinned) {
+                    ctx.fillStyle = inspectionAccent; ctx.beginPath(); ctx.arc(lensDisplayX, lensDisplayY, 3.5, 0, Math.PI * 2); ctx.fill();
+                  }
+                  ctx.setLineDash([]); ctx.restore();
                 }
-                if (macroInset && pointerInFrame && lensCtx) {
-                  var macroWidth = liveVisualMode === 'accessible' ? 156 : 136;
-                  var macroHeight = liveVisualMode === 'accessible' ? 116 : 98;
-                  var macroX = W - macroWidth - 12, macroY = 12;
-                  var macroPadding = 5, macroLabelHeight = 19;
-                  var macroMagnification = liveVisualMode === 'realistic' ? 2.45 : 2.15;
-                  var macroSourceWidth = (macroWidth - macroPadding * 2) / macroMagnification;
-                  var macroSourceHeight = (macroHeight - macroPadding * 2 - macroLabelHeight) / macroMagnification;
-                  ctx.save(); ctx.shadowColor = 'rgba(2,6,23,0.72)'; ctx.shadowBlur = 14; ctx.fillStyle = 'rgba(15,23,42,0.92)';
+                if (d.inspectionLens && lensTargetInFrame && lensCtx) {
+                  var lensRadius = liveVisualMode === 'accessible' ? 72 : 58;
+                  var sourceRadius = lensRadius / inspectionMagnification;
+                  ctx.save(); ctx.beginPath(); ctx.arc(lensDisplayX, lensDisplayY, lensRadius, 0, Math.PI * 2); ctx.clip();
+                  ctx.drawImage(lensBuffer, lensDisplayX - sourceRadius, lensDisplayY - sourceRadius, sourceRadius * 2, sourceRadius * 2, lensDisplayX - lensRadius, lensDisplayY - lensRadius, lensRadius * 2, lensRadius * 2);
+                  ctx.fillStyle = inspectionDepth === 'surface' ? 'rgba(251,191,36,0.08)' : (inspectionDepth === 'deep' ? 'rgba(124,58,237,0.12)' : 'rgba(34,211,238,0.035)');
+                  ctx.fillRect(lensDisplayX - lensRadius, lensDisplayY - lensRadius, lensRadius * 2, lensRadius * 2);
+                  var lensShade = ctx.createRadialGradient(lensDisplayX - 15, lensDisplayY - 18, 4, lensDisplayX, lensDisplayY, lensRadius);
+                  lensShade.addColorStop(0, 'rgba(255,255,255,0.17)'); lensShade.addColorStop(0.72, 'rgba(255,255,255,0)'); lensShade.addColorStop(1, 'rgba(2,6,23,0.24)');
+                  ctx.fillStyle = lensShade; ctx.fillRect(lensDisplayX - lensRadius, lensDisplayY - lensRadius, lensRadius * 2, lensRadius * 2); ctx.restore();
+                  ctx.save(); ctx.beginPath(); ctx.arc(lensDisplayX, lensDisplayY, lensRadius, 0, Math.PI * 2);
+                  ctx.strokeStyle = liveVisualMode === 'accessible' ? '#f8fafc' : inspectionAccent; ctx.lineWidth = liveVisualMode === 'accessible' ? 5 : 3; ctx.shadowColor = 'rgba(2,6,23,0.75)'; ctx.shadowBlur = 8; ctx.stroke();
+                  ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#f8fafc';
+                  ctx.fillText(inspectionMagnification + 'x' + (d.lensPinned ? ' PIN' : ''), lensDisplayX + lensRadius - 37, lensDisplayY + lensRadius - 8); ctx.restore();
+                }
+                if (macroInset && lensTargetInFrame && lensCtx) {
+                  var macroWidth = liveVisualMode === 'accessible' ? 176 : 158;
+                  var macroHeight = liveVisualMode === 'accessible' ? 142 : 124;
+                  var macroX = lensDisplayX > W * 0.58 ? 12 : W - macroWidth - 12;
+                  var macroY = 12;
+                  var macroPadding = 5, macroLabelHeight = 34, macroFooterHeight = 17;
+                  var macroSourceWidth = (macroWidth - macroPadding * 2) / inspectionMagnification;
+                  var macroSourceHeight = (macroHeight - macroPadding * 2 - macroLabelHeight - macroFooterHeight) / inspectionMagnification;
+                  ctx.save(); ctx.strokeStyle = 'rgba(148,163,184,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+                  ctx.beginPath(); ctx.moveTo(lensDisplayX, lensDisplayY); ctx.lineTo(macroX + macroWidth / 2, macroY + macroHeight / 2); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+                  ctx.save(); ctx.shadowColor = 'rgba(2,6,23,0.72)'; ctx.shadowBlur = 14; ctx.fillStyle = 'rgba(15,23,42,0.95)';
                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(macroX, macroY, macroWidth, macroHeight, 9); ctx.fill(); }
                   else ctx.fillRect(macroX, macroY, macroWidth, macroHeight);
                   ctx.shadowBlur = 0; ctx.beginPath();
-                  if (ctx.roundRect) ctx.roundRect(macroX + macroPadding, macroY + macroLabelHeight, macroWidth - macroPadding * 2, macroHeight - macroLabelHeight - macroPadding, 5);
-                  else ctx.rect(macroX + macroPadding, macroY + macroLabelHeight, macroWidth - macroPadding * 2, macroHeight - macroLabelHeight - macroPadding);
+                  if (ctx.roundRect) ctx.roundRect(macroX + macroPadding, macroY + macroLabelHeight, macroWidth - macroPadding * 2, macroHeight - macroLabelHeight - macroFooterHeight, 5);
+                  else ctx.rect(macroX + macroPadding, macroY + macroLabelHeight, macroWidth - macroPadding * 2, macroHeight - macroLabelHeight - macroFooterHeight);
                   ctx.clip();
-                  ctx.drawImage(lensBuffer, pointerScreenX - macroSourceWidth / 2, pointerScreenY - macroSourceHeight / 2, macroSourceWidth, macroSourceHeight, macroX + macroPadding, macroY + macroLabelHeight, macroWidth - macroPadding * 2, macroHeight - macroLabelHeight - macroPadding);
+                  ctx.drawImage(lensBuffer, lensDisplayX - macroSourceWidth / 2, lensDisplayY - macroSourceHeight / 2, macroSourceWidth, macroSourceHeight, macroX + macroPadding, macroY + macroLabelHeight, macroWidth - macroPadding * 2, macroHeight - macroLabelHeight - macroFooterHeight);
+                  ctx.fillStyle = inspectionDepth === 'surface' ? 'rgba(251,191,36,0.09)' : (inspectionDepth === 'deep' ? 'rgba(124,58,237,0.13)' : 'rgba(34,211,238,0.04)');
+                  ctx.fillRect(macroX + macroPadding, macroY + macroLabelHeight, macroWidth - macroPadding * 2, macroHeight - macroLabelHeight - macroFooterHeight);
                   ctx.restore();
-                  ctx.save(); ctx.strokeStyle = liveVisualMode === 'accessible' ? '#facc15' : '#94a3b8'; ctx.lineWidth = liveVisualMode === 'accessible' ? 3 : 1.5;
+                  ctx.save(); ctx.strokeStyle = liveVisualMode === 'accessible' ? '#facc15' : inspectionAccent; ctx.lineWidth = liveVisualMode === 'accessible' ? 3 : 1.5;
                   if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(macroX, macroY, macroWidth, macroHeight, 9); ctx.stroke(); }
                   else ctx.strokeRect(macroX, macroY, macroWidth, macroHeight);
-                  var macroCenterX = macroX + macroWidth / 2, macroCenterY = macroY + macroLabelHeight + (macroHeight - macroLabelHeight) / 2;
-                  ctx.beginPath(); ctx.moveTo(macroCenterX - 7, macroCenterY); ctx.lineTo(macroCenterX + 7, macroCenterY); ctx.moveTo(macroCenterX, macroCenterY - 7); ctx.lineTo(macroCenterX, macroCenterY + 7); ctx.stroke();
+                  var macroCenterX = macroX + macroWidth / 2, macroCenterY = macroY + macroLabelHeight + (macroHeight - macroLabelHeight - macroFooterHeight) / 2;
+                  ctx.beginPath(); ctx.moveTo(macroCenterX - 8, macroCenterY); ctx.lineTo(macroCenterX + 8, macroCenterY); ctx.moveTo(macroCenterX, macroCenterY - 8); ctx.lineTo(macroCenterX, macroCenterY + 8); ctx.stroke();
                   ctx.font = 'bold 9px Inter, system-ui'; ctx.fillStyle = '#f8fafc';
-                  ctx.fillText('MACRO ' + macroMagnification.toFixed(1) + 'x · ' + activePointerTool.toUpperCase(), macroX + 8, macroY + 13); ctx.restore();
+                  ctx.fillText('MACRO ' + inspectionMagnification + 'x / ' + inspectionDepth.toUpperCase(), macroX + 8, macroY + 12);
+                  ctx.font = '8px Inter, system-ui'; ctx.fillStyle = '#cbd5e1';
+                  var macroStructureName = lensTargetStructure ? lensTargetStructure.name : 'Unlabeled tissue field';
+                  ctx.fillText((d.lensPinned ? 'PINNED / ' : '') + macroStructureName.slice(0, 24), macroX + 8, macroY + 25);
+                  ctx.fillStyle = inspectionAccent;
+                  ctx.fillText('DETAIL: ' + inspectionDetail.toUpperCase(), macroX + 8, macroY + macroHeight - 6);
+                  ctx.restore();
                 }
-
-                if (instrumentVisuals && !d.quizMode && !d.annotateMode && !d.rulerMode) {
+                if (instrumentVisuals && !pointerIsSynthetic && !d.quizMode && !d.annotateMode && !d.rulerMode) {
                   var cursorTool = activePointerTool;
                   var cursorVector = canvas._toolVector;
                   var desiredCursorAngle = -0.72;
@@ -6712,10 +7121,16 @@ var d = labToolData.dissection || {};
                   var cursorAngleDelta = Math.atan2(Math.sin(desiredCursorAngle - previousCursorAngle), Math.cos(desiredCursorAngle - previousCursorAngle));
                   var cursorAngle = dissMotionReduced ? desiredCursorAngle : previousCursorAngle + cursorAngleDelta * 0.28;
                   canvas._toolAngle = cursorAngle;
-                  var cursorScale = (liveVisualMode === 'accessible' ? 1.28 : 1) * (1 + contactPressure * 0.035);
+                  var cursorMaterial = SPECIMEN_MATERIAL_PROFILES[spec.bodyShape] || SPECIMEN_MATERIAL_PROFILES.frog;
+                  var cursorContactContext = specimenContactContext(screenPointer);
+                  var toolVisuallyEngaged = !!canvas._toolDrawing || !!activeContactPulse;
+                  var cursorScale = (liveVisualMode === 'accessible' ? 1.28 : 1) * (1 + contactPressure * 0.035 + (toolVisuallyEngaged ? 0.018 : 0));
                   var toolTipOffset = cursorTool === 'scissors' ? 29 : (cursorTool === 'forceps' ? 21 : (cursorTool === 'probe' ? 20 : (cursorTool === 'pin' ? 17 : 15)));
                   ctx.save(); ctx.translate(pointerScreenX - Math.cos(cursorAngle) * toolTipOffset * cursorScale, pointerScreenY - Math.sin(cursorAngle) * toolTipOffset * cursorScale); ctx.rotate(cursorAngle); ctx.scale(cursorScale, cursorScale);
-                  ctx.shadowColor = 'rgba(2,6,23,0.76)'; ctx.shadowBlur = 5 + (1 - contactPressure) * 7; ctx.shadowOffsetX = 2 + (1 - contactPressure) * 5; ctx.shadowOffsetY = 3 + (1 - contactPressure) * 6;
+                  ctx.shadowColor = toolVisuallyEngaged ? (cursorContactContext.onSpecimen ? cursorMaterial.accent : '#94a3b8') : 'rgba(2,6,23,0.76)';
+                  ctx.shadowBlur = toolVisuallyEngaged ? 10 : 5 + (1 - contactPressure) * 7;
+                  ctx.shadowOffsetX = toolVisuallyEngaged ? 1 : 2 + (1 - contactPressure) * 5;
+                  ctx.shadowOffsetY = toolVisuallyEngaged ? 2 : 3 + (1 - contactPressure) * 6;
                   var metalGradient = ctx.createLinearGradient(-44, -8, 28, 9);
                   metalGradient.addColorStop(0, '#475569'); metalGradient.addColorStop(0.28, '#f8fafc'); metalGradient.addColorStop(0.52, '#94a3b8'); metalGradient.addColorStop(0.78, '#e2e8f0'); metalGradient.addColorStop(1, '#64748b');
                   if (cursorTool === 'scalpel') {
@@ -6761,6 +7176,12 @@ var d = labToolData.dissection || {};
                     ctx.beginPath(); ctx.arc(20, 0, 3.2, 0, Math.PI * 2); ctx.fillStyle = '#f8fafc'; ctx.fill();
                   }
                   ctx.shadowBlur = 0; ctx.beginPath(); ctx.arc(toolTipOffset, 0, 1.8, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.fill();
+                  if (toolVisuallyEngaged) {
+                    ctx.globalAlpha = dissMotionReduced ? 0.84 : 0.64 + Math.sin(dissTick * 0.12) * 0.18;
+                    ctx.fillStyle = cursorMaterial.accent; ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 0.8;
+                    ctx.beginPath(); ctx.arc(-38, -9, 3.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                    ctx.font = 'bold 6px Inter, system-ui'; ctx.fillStyle = '#f8fafc'; ctx.fillText('ACTIVE', -33, -7);
+                  }
                   ctx.restore();
                 }
               }
@@ -6801,6 +7222,11 @@ var d = labToolData.dissection || {};
               visualRealism: visualRealism,
               labLight: labLight,
               inspectionLens: inspectionLens,
+              lensPinned: lensPinned,
+              lensPinnedPoint: d.lensPinnedPoint || null,
+              lensPinnedOrganId: d.lensPinnedOrganId || null,
+              lensMagnification: lensMagnification,
+              lensFocusDepth: lensFocusDepth,
               instrumentVisuals: instrumentVisuals,
               macroInset: macroInset,
               sceneDetail: sceneDetail,
@@ -6861,6 +7287,11 @@ var d = labToolData.dissection || {};
                 visualRealism: ['guided', 'realistic', 'accessible'].indexOf(data.visualRealism) >= 0 ? data.visualRealism : 'guided',
                 labLight: ['neutral', 'warm', 'cool'].indexOf(data.labLight) >= 0 ? data.labLight : 'neutral',
                 inspectionLens: !!data.inspectionLens,
+                lensPinned: !!data.lensPinned,
+                lensPinnedPoint: data.lensPinnedPoint && isFinite(Number(data.lensPinnedPoint.x)) && isFinite(Number(data.lensPinnedPoint.y)) ? { x: Number(data.lensPinnedPoint.x), y: Number(data.lensPinnedPoint.y) } : null,
+                lensPinnedOrganId: data.lensPinnedOrganId || null,
+                lensMagnification: [2, 4, 6].indexOf(Number(data.lensMagnification)) >= 0 ? Number(data.lensMagnification) : 2,
+                lensFocusDepth: ['surface', 'structure', 'deep'].indexOf(data.lensFocusDepth) >= 0 ? data.lensFocusDepth : 'structure',
                 instrumentVisuals: data.instrumentVisuals !== false,
                 macroInset: data.macroInset !== false,
                 sceneDetail: data.sceneDetail !== false,
@@ -6917,6 +7348,12 @@ var d = labToolData.dissection || {};
               upd('anatomicalView', keyboardViews[(keyboardViews.indexOf(d.anatomicalView || 'dorsal') + 1) % keyboardViews.length]);
             } else if (e.key === 'x' || e.key === 'X') {
               e.preventDefault(); upd('crossSectionMode', !d.crossSectionMode);
+            } else if (e.key === 'm' || e.key === 'M') {
+              e.preventDefault(); cycleLensMagnification();
+            } else if (e.key === 'p' || e.key === 'P') {
+              e.preventDefault(); toggleInspectionPin();
+            } else if (e.key === 'f' || e.key === 'F') {
+              e.preventDefault(); cycleLensFocusDepth();
             } else if (/^[1-6]$/.test(e.key)) {
               var keyboardTool = PROCEDURE_INSTRUMENTS[Number(e.key) - 1];
               if (keyboardTool) { e.preventDefault(); updMany({ activeInstrument: keyboardTool.id, annotateMode: false, rulerMode: false }); setProcedureFeedback(keyboardTool.label + ' selected with keyboard shortcut ' + e.key + '.'); }
@@ -6982,6 +7419,9 @@ var d = labToolData.dissection || {};
             my -= (Number(canvas._parallaxY) || 0) / (canvas.height || 600);
             var mappedPoint = inverseSpecimenVariation({ x: mx, y: my });
             mx = mappedPoint.x; my = mappedPoint.y;
+            if (!d.quizMode && !d.annotateMode && !d.rulerMode) {
+              canvas._toolContactPulse = { x: mx, y: my, tool: activeInstrument, at: Date.now() };
+            }
 
             if (!d.quizMode && !d.annotateMode && !d.rulerMode) {
               if (activeInstrument === 'forceps') { performProcedureAction('forceps', { point: { x: mx, y: my } }); return; }
@@ -7127,6 +7567,45 @@ var d = labToolData.dissection || {};
             var hit = closestVisibleOrganAt(mx, my, hoverHitRadius);
             upd('hoveredOrgan', hit ? hit.id : null);
 
+            // Non-cutting tools announce preview validity only when it changes, matching the visual affordance.
+            if (!canvas._toolDrawing && !d.quizMode && !d.annotateMode && !d.rulerMode && ['forceps', 'pin', 'probe', 'dropper'].indexOf(activeInstrument) >= 0) {
+              var hoverGuide = procedureGuidePoints();
+              var hoverPins = currentProcedure.pins || [];
+              var hoverEndpointDistance = Math.min(procedurePointDistance({ x: mx, y: my }, hoverGuide[0]), procedurePointDistance({ x: mx, y: my }, hoverGuide[hoverGuide.length - 1]));
+              var hoverPinSpacing = hoverPins.length ? procedurePointDistance({ x: mx, y: my }, hoverPins[0]) : 1;
+              var hoverContact = specimenContactContext({ x: mx, y: my });
+              var previewValid = false, previewMessage = '';
+              if (activeInstrument === 'forceps') {
+                previewValid = currentProcedure.incisionExtended && !currentProcedure.retracted && distanceToGuide({ x: mx, y: my }, hoverGuide) <= 0.11;
+                previewMessage = !currentProcedure.incisionExtended ? 'Forceps waiting: extend the opening first.'
+                  : (currentProcedure.retracted ? 'Forceps complete: the tissue layer is already lifted.'
+                    : (previewValid ? 'Forceps lift preview ready. Select to retract the opened layer.' : 'Move the forceps toward the opened corridor.'));
+              } else if (activeInstrument === 'pin') {
+                previewValid = currentProcedure.retracted && hoverPins.length < 2 && hoverEndpointDistance <= 0.14 && hoverPinSpacing >= 0.18;
+                previewMessage = !currentProcedure.retracted ? 'Pins waiting: retract the tissue layer first.'
+                  : (hoverPins.length >= 2 ? 'Pin placement complete: the tissue layer is stable.'
+                    : (hoverPinSpacing < 0.18 ? 'Pin preview invalid: move farther from the first anchor.'
+                      : (previewValid ? 'Pin anchor preview ready. Select to secure this endpoint.' : 'Move the pin toward an open-corridor endpoint.')));
+              } else if (activeInstrument === 'probe') {
+                previewValid = hoverPins.length >= 2 && !!hit;
+                previewMessage = hoverPins.length < 2 ? 'Probe waiting: place two anchors first.'
+                  : (hit ? 'Probe target ready: ' + hit.name + '. Select to record the trace.' : 'Move the probe over a visible structure.');
+              } else if (activeInstrument === 'dropper') {
+                previewValid = spec.bodyShape === 'eye' && hoverContact.onSpecimen;
+                previewMessage = spec.bodyShape !== 'eye' ? 'The dropper is available only for the eye specimen.'
+                  : (previewValid ? 'Dropper target ready. Select to clear the optical field.' : 'Move the dropper over the eye surface.');
+              }
+              var previewStateKey = activeInstrument + '|' + (previewValid ? 'ready' : 'waiting') + '|' + (hit ? hit.id : '') + '|' + hoverPins.length;
+              if (canvas._toolPreviewState !== previewStateKey) {
+                canvas._toolPreviewState = previewStateKey;
+                var previewStatus = document.querySelector('[data-diss-tool-status]');
+                if (previewStatus) {
+                  previewStatus.setAttribute('data-tone', previewValid ? 'working' : 'caution');
+                  previewStatus.textContent = previewMessage;
+                }
+              }
+            }
+
             var toolCursor = (activeInstrument === 'scalpel' || activeInstrument === 'scissors') ? 'crosshair' : (activeInstrument === 'forceps' ? 'grab' : 'pointer');
             canvas.style.cursor = visualRealism === 'accessible' || !instrumentVisuals
               ? (hit ? 'pointer' : (canvas._isPanning ? 'grabbing' : ((d.canvasZoom || 1) > 1 && activeInstrument === 'probe' ? 'grab' : toolCursor)))
@@ -7267,7 +7746,7 @@ var d = labToolData.dissection || {};
             closeTimedPractical();
             var viewed = Object.assign({}, d.specimensViewed || {});
             viewed[sk] = true;
-            updMany({ specimen: sk, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, guidedStep: 0, organSearch: '', exploredOrgans: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFeedback: null, completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, activeInstrument: 'probe', incisionDepth: 'shallow', specimensViewed: viewed, _dissLoadedSpec: null });
+            updMany({ specimen: sk, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, organSearch: '', exploredOrgans: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFeedback: null, completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, activeInstrument: 'probe', incisionDepth: 'shallow', specimensViewed: viewed, _dissLoadedSpec: null });
             if (typeof announceToSR === 'function') announceToSR('Selected ' + sp.name + '. Loading saved progress for the ' + ((sp.layers[0] || {}).name || 'first') + ' layer.');
             if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
           }
@@ -7510,6 +7989,9 @@ var d = labToolData.dissection || {};
               React.createElement("button", { "aria-label": "Toggle curated anatomical relationships", "aria-pressed": relationshipMode, onClick: function () { upd('relationshipMode', !relationshipMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (relationshipMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2194 Relationships ' + (relationshipMode ? 'on' : 'off')),
               React.createElement("button", { "aria-label": "Rendering quality: cycle auto, high, and balanced", onClick: function () { var qualities = ['auto', 'high', 'balanced']; upd('renderQuality', qualities[(qualities.indexOf(renderQuality) + 1) % qualities.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2699 Quality: ' + renderQuality),
               React.createElement("button", { "aria-label": "Toggle movable inspection lens", "aria-pressed": inspectionLens, onClick: function () { upd('inspectionLens', !inspectionLens); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (inspectionLens ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83D\uDD0D Lens ' + (inspectionLens ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": lensPinned ? "Release pinned inspection target" : "Pin inspection lens to selected structure or current pointer", "aria-pressed": lensPinned, onClick: toggleInspectionPin, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (lensPinned ? 'bg-cyan-700 text-white' : 'bg-white text-blue-700 border border-blue-200') }, lensPinned ? '\u2316 Unpin lens' : '\u2316 Pin lens'),
+              React.createElement("button", { "aria-label": "Cycle inspection magnification: 2, 4, or 6 times", onClick: cycleLensMagnification, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2295 Magnify ' + lensMagnification + 'x'),
+              React.createElement("button", { "aria-label": "Cycle inspection focus depth: surface, structure, or deep", onClick: cycleLensFocusDepth, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Focus: ' + lensFocusDepth),
               React.createElement("button", { "aria-label": "Toggle detailed pointer-following instrument visuals and contact response", "aria-pressed": instrumentVisuals, onClick: function () { upd('instrumentVisuals', !instrumentVisuals); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (instrumentVisuals ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2692 Visual tools ' + (instrumentVisuals ? 'on' : 'off')),
               React.createElement("button", { "aria-label": "Toggle docked macro inspection view", "aria-pressed": macroInset, onClick: function () { upd('macroInset', !macroInset); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (macroInset ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A3 Macro view ' + (macroInset ? 'on' : 'off')),
               React.createElement("button", { "aria-label": "Toggle specimen-specific surface and tray depth details", "aria-pressed": sceneDetail, onClick: function () { upd('sceneDetail', !sceneDetail); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (sceneDetail ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2726 Scene detail ' + (sceneDetail ? 'on' : 'off')),
@@ -7586,7 +8068,7 @@ var d = labToolData.dissection || {};
                   report += 'Caution history: ' + ((currentProcedure.cautionLog || []).map(function (entry) { return entry.message; }).join(' | ') || 'None') + '\n';
                   report += 'Technique timeline: ' + ((currentProcedure.actionLog || []).map(function (entry) { return entry.label || procedureActionLabel(entry.action); }).join(' > ') || 'Not started') + '\n';
                   report += 'Visual presentation: ' + visualRealism + '; lab light: ' + labLight + '; light direction: ' + lightDirection + '; inspection lens: ' + (inspectionLens ? 'on' : 'off') + '; visual tools: ' + (instrumentVisuals ? 'on' : 'off') + '; macro view: ' + (macroInset ? 'on' : 'off') + '; scene detail: ' + (sceneDetail ? 'on' : 'off') + '; relationship motion: ' + (relationshipMotion ? 'on' : 'off') + '; focus isolation: ' + (focusMode ? 'on' : 'off') + '; depth motion: ' + (parallaxDepth ? 'on' : 'off') + '; evidence frames: ' + visualEvidence.length + '; split comparison: ' + (splitComparison && referenceEvidence ? 'on' : 'off') + '; tactile feedback: ' + (d.tactileFeedback !== false ? 'on' : 'off') + '\n';
-                  report += 'Specimen material model: ' + activeMaterialProfile.label + '\n';
+                  report += 'Specimen material model: ' + activeMaterialProfile.label + '; contact response: ' + activeMaterialProfile.response + '\n';
                   report += 'Specimen variation: ' + variationSeed + '\n';
                   report += 'Anatomical view: ' + anatomicalView + '; cross-section: ' + (crossSectionMode ? 'on' : 'off') + '; condition: ' + specimenCondition + '\n';
                   report += 'Scenario: ' + scenarioDefinition.label + '; status: ' + (scenarioStatus.complete ? 'complete' : 'in progress') + ' (' + scenarioStatus.progress + '%)\n';
@@ -7623,7 +8105,7 @@ var d = labToolData.dissection || {};
               }, '\uD83D\uDCCB Lab Report'),
               React.createElement("button", { "aria-label": "Reset progress for this specimen",
                 onClick: function () {
-                  updMany({ activeLayer: (spec.layers[0] || {}).id || 'skin', selectedOrgan: null, exploredOrgans: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFeedback: null, completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, activeInstrument: 'probe', incisionDepth: 'shallow', canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', highContrast: false });
+                  updMany({ activeLayer: (spec.layers[0] || {}).id || 'skin', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, exploredOrgans: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFeedback: null, completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, activeInstrument: 'probe', incisionDepth: 'shallow', canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', highContrast: false });
                   try { localStorage.removeItem('dissection_progress_' + specimen); } catch (e) {}
                   if (addToast) addToast('\u21BA Progress reset for ' + spec.name, 'info');
                 },
@@ -7702,7 +8184,7 @@ var d = labToolData.dissection || {};
                       tabIndex: 0,
                       'aria-label': d.quizMode
                         ? spec.name + ' practice assessment, ' + currentLayerDef.name + ' layer. ' + (d.quizAnswerMode === 'hotspot' ? 'Select a structure on the specimen, or switch to the keyboard-accessible multiple-choice answers.' : 'Answer with the keyboard-accessible choices in the assessment panel.')
-                        : spec.name + ' virtual dissection, ' + anatomicalView + ' view, ' + specimenCondition + ' condition, ' + currentLayerDef.name + ' layer. Surface model: ' + activeMaterialProfile.label + '. Light direction: ' + lightDirection + '. Focus isolation ' + (focusMode ? 'on' : 'off') + '. Depth motion ' + (parallaxDepth ? 'on' : 'off') + '. ' + visibleOrgansInView.length + ' directly visible structures. Active instrument: ' + activeInstrument + '. ' + ((activeInstrument === 'scalpel' || activeInstrument === 'scissors') ? 'Drag on the canvas to practice a stroke, or use the equivalent technique action button.' : 'Select on the canvas or use the equivalent technique action button.') + ' Occluded structures remain available in the structure directory.',
+                        : spec.name + ' virtual dissection, ' + anatomicalView + ' view, ' + specimenCondition + ' condition, ' + currentLayerDef.name + ' layer. Surface model: ' + activeMaterialProfile.label + '. Tool contact response: ' + activeMaterialProfile.response + '. Light direction: ' + lightDirection + '. Focus isolation ' + (focusMode ? 'on' : 'off') + '. Depth motion ' + (parallaxDepth ? 'on' : 'off') + '. ' + visibleOrgansInView.length + ' directly visible structures. Active instrument: ' + activeInstrument + '. ' + ((activeInstrument === 'scalpel' || activeInstrument === 'scissors') ? 'Drag on the canvas to practice a stroke, or use the equivalent technique action button.' : 'Select on the canvas or use the equivalent technique action button.') + ' Occluded structures remain available in the structure directory.',
                       'aria-describedby': 'diss-canvas-status',
 
                   onPointerMove: function (e) {
@@ -7918,7 +8400,7 @@ var d = labToolData.dissection || {};
                       ),
                       React.createElement("div", { className: "diss-advanced-card" },
                         React.createElement("strong", null, anatomicalView + ' view \u00B7 ' + specimenCondition),
-                        React.createElement("p", null, specimenConditionDescription() + '. ' + visibleOrgansInView.length + '/' + organs.length + ' structures directly visible in this orientation. Material model: ' + activeMaterialProfile.label + '. Light: ' + lightDirection + '; focus isolation ' + (focusMode ? 'on' : 'off') + '.')
+                        React.createElement("p", null, specimenConditionDescription() + '. ' + visibleOrgansInView.length + '/' + organs.length + ' structures directly visible in this orientation. Material model: ' + activeMaterialProfile.label + '. Contact response: ' + activeMaterialProfile.response + '. Light: ' + lightDirection + '; focus isolation ' + (focusMode ? 'on' : 'off') + '.')
                       ),
                       d.adaptiveGuidance !== false && React.createElement("div", { className: "diss-advanced-card" },
                         React.createElement("strong", null, 'Adaptive focus: ' + adaptiveCoach.focus),
@@ -7993,36 +8475,34 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "diss-overlay-actions", "data-dissection-overlays": true, role: "group", "aria-label": "System overlays" },
                     [
-                      { key: 'traceNervous', label: 'Nervous', icon: '⚡', active: !!d.traceNervous, tone: 'purple' },
-                      { key: 'traceCirculation', label: 'Circulatory', icon: '♥', active: !!d.traceCirculation, tone: 'red' },
-                      { key: 'traceDigestion', label: 'Digestive', icon: '◉', active: !!d.traceDigestion, tone: 'amber' },
-                      { key: 'traceRespiration', label: 'Respiratory', icon: '≈', active: !!d.traceRespiration, tone: 'blue' },
-                      { key: 'traceExcretory', label: 'Excretory', icon: '◆', active: !!d.traceExcretory, tone: 'lime' },
-                      { key: 'showEndocrine', label: 'Endocrine', icon: '✦', active: !!d.showEndocrine, tone: 'pink' }
+                      { key: 'traceNervous', label: 'Nervous', icon: '\u26A1', active: !!d.traceNervous, tone: 'purple' },
+                      { key: 'traceCirculation', label: 'Circulatory', icon: '\u2665', active: !!d.traceCirculation, tone: 'red' },
+                      { key: 'traceDigestion', label: 'Digestive', icon: '\u25C9', active: !!d.traceDigestion, tone: 'amber' },
+                      { key: 'traceRespiration', label: 'Respiratory', icon: '\u2248', active: !!d.traceRespiration, tone: 'blue' },
+                      { key: 'traceExcretory', label: 'Excretory', icon: '\u25C6', active: !!d.traceExcretory, tone: 'lime' },
+                      { key: 'showEndocrine', label: 'Endocrine', icon: '\u2726', active: !!d.showEndocrine, tone: 'pink' }
                     ].map(function (overlay) {
-                      var activeTone = {
-                        purple: 'bg-purple-700 text-white border-purple-700',
-                        red: 'bg-red-700 text-white border-red-700',
-                        amber: 'bg-amber-700 text-white border-amber-700',
-                        blue: 'bg-blue-700 text-white border-blue-700',
-                        lime: 'bg-lime-700 text-white border-lime-700',
-                        pink: 'bg-pink-700 text-white border-pink-700'
-                      }[overlay.tone];
+                      var activeTone = { purple: 'bg-purple-700 text-white border-purple-700', red: 'bg-red-700 text-white border-red-700', amber: 'bg-amber-700 text-white border-amber-700', blue: 'bg-blue-700 text-white border-blue-700', lime: 'bg-lime-700 text-white border-lime-700', pink: 'bg-pink-700 text-white border-pink-700' }[overlay.tone];
                       return React.createElement("button", {
-                        type: "button",
-                        key: overlay.key,
-                        "aria-label": "Toggle " + overlay.label + " system overlay",
-                        "aria-pressed": overlay.active,
+                        type: "button", key: overlay.key, "aria-label": "Toggle " + overlay.label + " system overlay", "aria-pressed": overlay.active,
                         onClick: function () {
-                          ['traceNervous', 'traceCirculation', 'traceDigestion', 'traceRespiration', 'traceExcretory', 'showEndocrine'].forEach(function (key) { upd(key, false); });
-                          upd(overlay.key, !overlay.active);
+                          var overlayPatch = { traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, systemPlaybackPaused: false, systemTraceReplayToken: Date.now() };
+                          overlayPatch[overlay.key] = !overlay.active; updMany(overlayPatch);
+                          setProcedureFeedback(!overlay.active ? overlay.label + ' overlay selected. ' + (activeLayer === 'organs' ? 'Directional playback started.' : 'Open the Internal Organs layer to view the pathway.') : overlay.label + ' overlay hidden.', !overlay.active && activeLayer !== 'organs' ? 'working' : 'success');
                         },
                         className: "w-full rounded-xl text-xs font-bold border transition-colors " + (overlay.active ? activeTone : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
                       }, overlay.icon + ' ' + (overlay.active ? 'Hide ' : '') + overlay.label);
-                    })
+                    }),
+                    activeFunctionalTraceKey && React.createElement("div", { className: "diss-system-playback", role: "group", "aria-label": activeFunctionalTraceLabel + " pathway playback" },
+                      React.createElement("div", { className: "diss-system-playback__status", role: "status", "aria-live": "polite" },
+                        React.createElement("strong", null, activeFunctionalTraceLabel + ' playback'),
+                        React.createElement("span", null, activeLayer !== 'organs' ? 'Waiting for Internal Organs layer' : (d.systemPlaybackPaused ? 'Paused on the current directional frame' : 'Playing directional flow'))
+                      ),
+                      React.createElement("button", { type: "button", disabled: activeLayer !== 'organs', "aria-pressed": !!d.systemPlaybackPaused, onClick: function () { upd('systemPlaybackPaused', !d.systemPlaybackPaused); setProcedureFeedback(activeFunctionalTraceLabel + (d.systemPlaybackPaused ? ' playback resumed.' : ' playback paused on the current directional frame.')); } }, d.systemPlaybackPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+                      React.createElement("button", { type: "button", disabled: activeLayer !== 'organs', onClick: function () { updMany({ systemPlaybackPaused: false, systemTraceReplayToken: Date.now() }); setProcedureFeedback(activeFunctionalTraceLabel + ' pathway replayed from the beginning.'); } }, '\u21BB Replay')
+                    )
                   )
                 ),
-
               // Flashcard panel
               d.flashcardMode && React.createElement("section", {
                 className: "diss-study-card bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-4",

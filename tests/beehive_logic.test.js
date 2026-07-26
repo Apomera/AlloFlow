@@ -165,6 +165,47 @@ describe('bhStepColony — events', () => {
   });
 });
 
+describe('bhForecastColony - management outlook', () => {
+  it('is deterministic, event-free, and does not mutate the live state', () => {
+    const live = state({ workers: 200000, capacity: 80 });
+    const before = structuredClone(live);
+    const forecastCfg = cfg({ rand: seq([0, 0, 0]) });
+    const a = BH.bhForecastColony(live, forecastCfg, 7);
+    const b = BH.bhForecastColony(live, forecastCfg, 7);
+
+    expect(a).toEqual(b);
+    expect(live).toEqual(before);
+    expect(a.daysProjected).toBe(7);
+    expect(a.timeline).toHaveLength(7);
+  });
+
+  it('projects winter honey consumption using the canonical colony stepper', () => {
+    const outlook = BH.bhForecastColony(
+      state({ day: 100, honey: 60, workers: 15000, brood: 4000 }),
+      cfg(),
+      7
+    );
+
+    expect(outlook.end.honey).toBeLessThan(60);
+    expect(outlook.delta.honey).toBeLessThan(0);
+  });
+
+  it('surfaces management thresholds and caps the horizon at 30 days', () => {
+    const outlook = BH.bhForecastColony(
+      state({ varroaLevel: 34, diseaseRisk: 54, honey: 9 }),
+      cfg(),
+      90
+    );
+    const riskIds = outlook.risks.map((risk) => risk.id);
+
+    expect(outlook.daysRequested).toBe(30);
+    expect(outlook.status).toBe('critical');
+    expect(riskIds).toContain('honey');
+    expect(riskIds).toContain('varroa');
+    expect(riskIds).toContain('disease');
+  });
+});
+
 describe('curriculum data — shape + accuracy regression guards', () => {
   it('SIMULATION_PARAMS carries the expected tuning knobs', () => {
     expect(BH.SIMULATION_PARAMS.foragerRatio).toBe(0.4);

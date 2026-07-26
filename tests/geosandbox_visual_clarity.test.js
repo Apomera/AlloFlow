@@ -68,6 +68,50 @@ describe('Geometry Sandbox visual clarity', () => {
     expect(source).toContain('disposeGeoObject3D(window._geoScene.constructionGroup)');
     expect(source).toContain('disposeGeoObject3D(window._geoScene.sculptGroup)');
   });
+  it('keeps solids visible from every camera angle', () => {
+    const source = read(SOURCE_FILE);
+
+    // ShadowMaterial is transparent but inherits depthWrite=true, so the invisible
+    // 40x40 catcher wrote depth across the floor and depth-rejected every solid
+    // above it once the camera orbited below the grid. There is no polar clamp.
+    expect(source).toContain('new THREE.ShadowMaterial({ opacity: isDarkBg ? 0.32 : 0.22, depthWrite: false })');
+
+    // Face winding: the base triangulates to u x v, which points UP into the solid.
+    // Reversed, it points along -w and survives back-face culling.
+    expect(source).toContain('[0, 3, 2, 1], // bottom');
+    expect(source).not.toContain('[0, 1, 2, 3], // bottom');
+    expect(source).toContain('var facesPy = [[0, 3, 2, 1]');
+
+    // The prism is the only solid that shipped without DoubleSide.
+    expect(source).toContain('opacity: 0.7, side: THREE.DoubleSide');
+
+    // Geometry is authored in world coords with the mesh at the origin, so every
+    // transparent object shared one sort key and draw order fell back to creation
+    // order — solids punched depth holes through each other as the camera moved.
+    expect(source).toContain('function recentreForSort(THREE, node)');
+    expect(source).toContain('recentreForSort(THREE, mesh);');
+
+    // The cross-section slice lives inside the solid it slices; with depth testing
+    // on it was rejected by that solid's own front face.
+    expect(source).toContain('depthWrite: false, depthTest: false');
+    expect(source).toContain('sliceFill.renderOrder = 4000');
+  });
+
+  it('lets points be placed at a height, not only on the floor', () => {
+    const source = read(SOURCE_FILE);
+
+    expect(source).toContain('var placeY = gd.placeY != null ? gd.placeY : 0;');
+    expect(source).toContain('function placePoint(x, z, y)');
+    expect(source).toContain('addPoint([sn(x), Math.max(0, sn(y == null ? placeY : y)), sn(z)]);');   // never below the grid
+    expect(source).toContain("t('stem.geosandbox.place_y'");
+    expect(source).toContain('placePoint(placeX, placeZ, placeY)');
+
+    // Click-to-place raycasts a horizontal plane that rides at the chosen height.
+    expect(source).toContain('_groundPlane.constant = -_ph;');
+    expect(source).toContain('window._geoPlaceY = placeY;');
+    expect(source).toContain('window._geoPlacePoint(_gpHit.x, _gpHit.z, _gpHit.y)');
+  });
+
   it('keeps the 3D canvas and supporting graphics keyboard and screen-reader accessible', () => {
     const source = read(SOURCE_FILE);
 

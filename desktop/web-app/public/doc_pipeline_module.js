@@ -1984,6 +1984,58 @@ function readingOrderSequenceRatio(textA, textB) {
   return _r;
 }
 
+// ── Completion-toast selection (audit finding H3, 2026-07-26) ───────────────
+// The last toast a teacher sees is the one they act on, so this ladder is a disclosure, not
+// cosmetics. It used to be an inline if/else chain whose only test was a hand-written mirror of
+// itself in tests/honesty_disclosure_gating.test.js — and the pin that was supposed to guard the
+// victory branch asserted a string (`finalAfterScore >= 80 && !needsExpertReview`) that no longer
+// appears anywhere in this file, so it had been dead for some time.
+//
+// The bug it stopped catching: `_alloRemediationOutcome` never reads needsExpertReview or the
+// fidelity notes — it is fed only ai/axe/EqualAccess evidence. So a document that lost a hyperlink
+// or a table, or whose alt text is information-free, or that originally carried embedded
+// JavaScript, sets needsExpertReview WITHOUT setting integrityWarning; the structural audits are
+// clean, the score clears target, and the ladder played "✅ PDF remediated and fully verified!"
+// plus the victory chord over known fidelity damage. The branch written for exactly that case sat
+// one rung BELOW the success branch and was unreachable.
+//
+// Pure (state in → branch key out) so the six shapes can be tested against the real selector
+// instead of a mirror.
+function _alloSelectCompletionToast(state) {
+  var s = state || {};
+  var scored = s.finalAfterScore !== null && s.finalAfterScore !== undefined && Number.isFinite(Number(s.finalAfterScore));
+  if (s.integrityWarning && scored) return 'integrity';
+  if (s.aiVerificationIncomplete && scored) return 'ai-incomplete';
+  if (s.slicedAudit && scored) return 'sliced-baseline';
+  // H3: a document needing expert review is never "fully verified", whatever the score says.
+  if (s.outcomeState === 'success' && !s.needsExpertReview) return 'success';
+  if (scored && Number(s.finalAfterScore) >= 80 && s.needsExpertReview) return 'expert-review';
+  if (scored) return 'improved';
+  return 'transformed';
+}
+
+// ── Extraction page-count resolution (audit finding M13, 2026-07-26) ────────
+// The Vision extraction fan-out is sized from a page count that may be a pure GUESS: when pdf.js
+// cannot open a file (encrypted, corrupt), the pipeline keeps a "~3KB base64 per page" estimate,
+// which is two orders of magnitude off for a scanned page. An 8 MB scanned IEP estimated ~2700
+// pages → ~1366 Vision chunks, every one out of range, each falling back to re-uploading the
+// whole 8 MB file: tens of minutes of a teacher's quota on a document with a few dozen real
+// pages, plus hallucinated pseudo-pages in the ground truth from any chunk that did answer.
+//
+// Precedence: a real count from a reader that COULD open the file always wins; failing that, an
+// unverifiable estimate is capped. Under-extracting is the safer failure — the <20-char abort and
+// the partial-extraction banner both still fire, so a short document cannot ship silently.
+// Pure (numbers in → verdict out) so the precedence is unit-testable.
+function _alloResolveExtractionPageCount(pageCount, isEstimate, probedPageCount, maxEstimate) {
+  var count = Number(pageCount) || 0;
+  var probed = Number(probedPageCount) || 0;
+  var cap = Number(maxEstimate) || 0;
+  if (!isEstimate) return { pageCount: count, isEstimate: false, source: 'known' };
+  if (probed > 0) return { pageCount: probed, isEstimate: false, source: 'probed' };
+  if (cap > 0 && count > cap) return { pageCount: cap, isEstimate: true, source: 'capped' };
+  return { pageCount: count, isEstimate: true, source: 'estimated' };
+}
+
 // ── Multi-column reading-order REPAIR (H-5's harder half, 2026-07-01) ──
 // readingOrderSequenceRatio (above) DETECTS a scrambled order; this REPAIRS it at the
 // extraction root. pdf.js returns text items in content-stream order, and the extractor's
@@ -2010,16 +2062,39 @@ function _alloOrderTextItems(items, opts) {
     var scale = (it && it.transform && isFinite(it.transform[0]) && Math.abs(it.transform[0]) > 0.01) ? Math.abs(it.transform[0]) : 10;
     return String((it && it.str) || '').length * scale * 0.5;
   };
-  var _legacy = function (arr) {
+  // H12 (audit 2026-07-26): the within-line sort is direction-aware. pdf.js emits a line's text
+  // items in LOGICAL order, which for RTL script runs right-to-left — descending x. Sorting them
+  // ascending-x, as this did unconditionally, reverses the phrases inside every multi-run line of
+  // an Arabic/Hebrew/Farsi/Urdu handout. Nothing downstream could see it: the character count,
+  // _numericFidelityLosses and the autoRestore word-set comparison are all count/set based, so a
+  // pure reordering scores 100% fidelity, and readingOrderSequenceRatio compares two texts that
+  // both came through this helper — a consistently reversed source scores ~1.
+  var _legacy = function (arr, rtl) {
     return arr.slice().sort(function (a, b) {
       var ay = _y(a), by = _y(b);
       if (Math.abs(ay - by) > 2) return by - ay;
-      return _x(a) - _x(b);
+      return rtl ? _x(b) - _x(a) : _x(a) - _x(b);
     });
   };
   var real = [];
   for (var i = 0; i < (items || []).length; i++) { var it = items[i]; if (it && String(it.str || '').trim()) real.push(it); }
   var keepEmpties = (items || []).length - real.length; // empties re-dropped by the caller's join; order among them is irrelevant
+  // RTL auto-detection (2026-07-01): when opts.rtl is not explicitly set, detect a
+  // right-to-left document from the items' OWN characters (Hebrew, Arabic, Syriac,
+  // Thaana, Arabic Supplement/Extended + presentation forms). An RTL two-column page
+  // reads its RIGHT column first — left-first order would be exactly as scrambled as
+  // the interleave this function exists to fix. Threshold: RTL letters must outnumber
+  // Latin letters (a mixed English worksheet with sprinkled Arabic terms stays LTR).
+  // H12: hoisted ABOVE the single-column early return. It used to sit below it, so on a
+  // single-column RTL page — the common case for a handout — the detector never ran at all.
+  var _rtl = opts.rtl;
+  if (_rtl === undefined) {
+    var _allStr = '';
+    for (var iR = 0; iR < real.length; iR++) _allStr += String(real[iR].str || '');
+    var _rtlCount = (_allStr.match(/[֐-޿ࢠ-ࣿיִ-﷿ﹰ-﻿]/g) || []).length;
+    var _latCount = (_allStr.match(/[A-Za-z]/g) || []).length;
+    _rtl = _rtlCount > 20 && _rtlCount > _latCount;
+  }
   var MAX_DEPTH = 2;
   var split = function (arr, depth) {
     if (arr.length < 20 || depth > MAX_DEPTH) return { cols: [arr], gutters: [] };
@@ -2073,22 +2148,8 @@ function _alloOrderTextItems(items, opts) {
   };
   var res = split(real, 0);
   if (res.cols.length <= 1) {
-    var _single = { items: _legacy(items || []), columns: 1, gutters: [], applied: false };
+    var _single = { items: _legacy(items || [], _rtl), columns: 1, gutters: [], applied: false, rtl: !!_rtl };
     return _single;
-  }
-  // RTL auto-detection (2026-07-01): when opts.rtl is not explicitly set, detect a
-  // right-to-left document from the items' OWN characters (Hebrew, Arabic, Syriac,
-  // Thaana, Arabic Supplement/Extended + presentation forms). An RTL two-column page
-  // reads its RIGHT column first — left-first order would be exactly as scrambled as
-  // the interleave this function exists to fix. Threshold: RTL letters must outnumber
-  // Latin letters (a mixed English worksheet with sprinkled Arabic terms stays LTR).
-  var _rtl = opts.rtl;
-  if (_rtl === undefined) {
-    var _allStr = '';
-    for (var iR = 0; iR < real.length; iR++) _allStr += String(real[iR].str || '');
-    var _rtlCount = (_allStr.match(/[֐-޿ࢠ-ࣿיִ-﷿ﹰ-﻿]/g) || []).length;
-    var _latCount = (_allStr.match(/[A-Za-z]/g) || []).length;
-    _rtl = _rtlCount > 20 && _rtlCount > _latCount;
   }
   // Column order: left→right (or right→left for RTL); items legacy-sorted within each column.
   var colsOrdered = res.cols.slice().sort(function (A, B) {
@@ -2098,9 +2159,9 @@ function _alloOrderTextItems(items, opts) {
     return _rtl ? bx - ax : ax - bx;
   });
   var out = [];
-  for (var c = 0; c < colsOrdered.length; c++) out = out.concat(_legacy(colsOrdered[c]));
+  for (var c = 0; c < colsOrdered.length; c++) out = out.concat(_legacy(colsOrdered[c], _rtl));
   if (keepEmpties > 0) { for (var i7 = 0; i7 < (items || []).length; i7++) { var e = items[i7]; if (!(e && String(e.str || '').trim())) out.push(e); } }
-  var _multi = { items: out, columns: res.cols.length, gutters: res.gutters, applied: true };
+  var _multi = { items: out, columns: res.cols.length, gutters: res.gutters, applied: true, rtl: !!_rtl };
   return _multi;
 }
 
@@ -2947,12 +3008,29 @@ function _detectRefusalText(html) {
 // remediated output HTML for dropped hyperlinks (#4), collapsed/lost tables (#3), and leaked
 // refusal text (#2). Returns an array of { kind, msg }. Heuristic + conservative (slack before it
 // fires) so it surfaces a real-loss signal without crying wolf.
-function _computeStructuralFidelityNotes(srcText, outHtml) {
+// M12 (audit 2026-07-26): `srcCounts` is an OPTIONAL structural baseline measured at extraction
+// time — `{ links }` today. The markdown counts below only exist for input that arrives AS
+// markdown: the Vision-OCR prompts explicitly ask for `[text](url)` and `|---|` rows, so the nets
+// work on scanned documents. The deterministic pdf.js path joins raw text items and produces
+// neither, so on a born-digital PDF — a large share of runs — `_srcLinks` was always 0 and the
+// dropped-hyperlink net could not fire however many links the remediation lost. A real count
+// (pdf.js Link annotations) overrides the markdown guess when one was measured.
+//
+// KNOWN GAP, deliberately not faked: there is no equivalent table baseline for the text-layer
+// path. A PDF has no "table" object to count — recovering one needs layout analysis this
+// function does not do. Both table nets below therefore remain inert on born-digital input.
+// Inventing a count we cannot actually measure would be worse than a net that is honestly silent.
+function _computeStructuralFidelityNotes(srcText, outHtml, srcCounts) {
   const notes = [];
   const _src = String(srcText || '');
   const _out = String(outHtml || '');
-  // (#4) Links — markdown source links [text](url) (excluding ![images]) vs output <a href>.
-  const _srcLinks = (_src.match(/(?:^|[^!])\[[^\]\n]{1,200}\]\([^)\s]+\)/g) || []).length;
+  const _counts = srcCounts || {};
+  // (#4) Links — source links vs output <a href>. Preference order: a measured structural count,
+  // then markdown source links [text](url) (excluding ![images]).
+  const _measuredLinks = Number(_counts.links);
+  const _srcLinks = Number.isFinite(_measuredLinks) && _measuredLinks > 0
+    ? _measuredLinks
+    : (_src.match(/(?:^|[^!])\[[^\]\n]{1,200}\]\([^)\s]+\)/g) || []).length;
   const _outLinks = (_out.match(/<a\s[^>]*\bhref\s*=/gi) || []).length;
   if (_srcLinks >= 2 && _outLinks < _srcLinks && (_srcLinks - _outLinks) >= Math.max(2, Math.ceil(_srcLinks * 0.2))) {
     notes.push({ kind: 'links', msg: 'Links: the source had ~' + _srcLinks + ' hyperlink(s) but the output has ' + _outLinks + ' — ' + (_srcLinks - _outLinks) + ' may have been dropped. Check the Diff.' });
@@ -3061,6 +3139,9 @@ function _alloDistributionVerdict(r, opts) {
   // order, and no reading-order check runs against the source — so "preserved in reading order"
   // claimed more than the measurement supports. State what was actually measured.
   if (cov != null && cov < 90) review.push('only ' + cov + '% of the source characters are present in the output — check the Diff for missing content');
+  // L5 part 2: the verdict can now cite a REAL order measurement instead of implying one from the
+  // character count. Content that is all present and in the wrong order is still unreadable.
+  if (kinds.sourceReadingOrder) review.push('the output text runs in a noticeably different order from the source — content can be present and still be unreadable in the wrong order; read the Diff');
   if (kinds.numeric) review.push('numbers may have changed between source and output — verify scores, dates, and percentages before anyone reads this');
   if (kinds.refusal) review.push('AI meta/refusal text leaked into the output — it should not ship; re-run the remediation');
   if (kinds.tables) review.push('one or more tables may have been collapsed or lost — check the Diff');
@@ -4210,6 +4291,12 @@ var createDocPipeline = function(deps) {
   // Canvas-visible sink: in canvas/embedded runtimes, warnLog/console.warn aren't shown. We keep
   // a rolling window-level array AND dispatch a CustomEvent so a host listener (panel, toast,
   // diagnostic overlay) can surface pipeline telemetry without touching each call site.
+  //
+  // L2 (audit 2026-07-26) — be accurate about who reads what, because the previous wording sent
+  // people looking in the wrong place. The ARRAY below has no in-app reader: it is a
+  // DevTools/debugger aid only. The CustomEvent does have listeners (the view's progress + warn
+  // hooks). The log a teacher can actually copy is window.__alloDiagLog, fed by warnLog from the
+  // flattened prefix built in _pipeLog — which is why the run identity has to live in that string.
   if (typeof window !== 'undefined' && !window._alloflowPipelineWarnings) {
     window._alloflowPipelineWarnings = [];
   }
@@ -4222,7 +4309,17 @@ var createDocPipeline = function(deps) {
         ? _activeRemediationProgress.documentEpoch
         : (Object.prototype.hasOwnProperty.call(_logStats, 'documentEpoch') ? _logStats.documentEpoch : null));
     var elapsed = _logStats.startTime ? '+' + ((performance.now() - _logStats.startTime) / 1000).toFixed(1) + 's' : '';
-    var prefix = '[DocPipe][' + tag + '] ' + elapsed + ' — ';
+    // L2 (audit 2026-07-26): put the run identity in the string that actually TRAVELS. runId and
+    // documentEpoch were computed here and pushed to window._alloflowPipelineWarnings — which
+    // nothing in the app reads. The panel a teacher copies from renders window.__alloDiagLog, which
+    // received only the flattened prefix, so a pasted field log was one interleaved stream with no
+    // way to tell which run, which document or which batch file a line belonged to. The `+12.4s`
+    // elapsed prefix restarts at zero every run, so it even reads as time travel. Diagnosing the
+    // exact bug class this audit was opened for — two runs disagreeing about ownership — was
+    // impossible from that artifact.
+    var _runTag = String(_logRunId || '-').slice(-6);
+    var _epochTag = (_logDocumentEpoch === null || _logDocumentEpoch === undefined) ? '-' : String(_logDocumentEpoch);
+    var prefix = '[DocPipe][' + tag + '][' + _runTag + '/e' + _epochTag + '] ' + elapsed + ' — ';
     // warnLog is the canonical sink: besides DevTools it feeds the capped
     // window.__alloDiagLog ring used by the in-app diagnostics panel. The old
     // data-bearing branch wrote only to console.group(), so the most useful
@@ -4427,6 +4524,8 @@ var createDocPipeline = function(deps) {
   var _geminiAuthStreak = 0;        // consecutive canvas-auth failures
   var _geminiTransientStreak = 0;   // (2026-06-20) consecutive empty-body/timeout failures (the throttle manifestation that ISN'T a 401)
   var _geminiOkStreak = 0;          // consecutive successes (drives recovery)
+  var _geminiLastStormTripAt = 0;   // L7 (2026-07-26): when the breaker last actually tripped — see recentlyThrottled
+  var _geminiOffRouteOkStreak = 0;  // M16 (2026-07-26): consecutive successes on a DIFFERENT route than the one that failed — a run that has moved on can never produce the failed route's evidence, so enough of these clear the wave on their own
   var _geminiCooldownUntil = 0;     // epoch ms; no NEW call starts before this
   var _geminiCooldownTimer = null;
   var _geminiStormAnnounced = false; // user-facing "Canvas is rate-limiting" message emitted once per sustained storm
@@ -4528,6 +4627,7 @@ var createDocPipeline = function(deps) {
       var _cd = Math.min(25000, _GEMINI_COOLDOWN_MS * (_geminiAuthStreak - _GEMINI_STORM_TRIP + 1)); // cap 25s (was 90s) — with time-decay recovery + catch-up drain, a long serializing cooldown only stretches the run
       if (_geminiCap !== _GEMINI_STORM_MIN || _cd > _GEMINI_COOLDOWN_MS) warnLog('[GeminiGate] Canvas-auth storm (' + _geminiAuthStreak + ' in a row) — throttling to ' + _GEMINI_STORM_MIN + ' concurrent + ' + Math.round(_cd / 1000) + 's cooldown');
       _geminiCap = _GEMINI_STORM_MIN;
+      _geminiLastStormTripAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0); // L7 (2026-07-26): a REDUCED CAP alone is not a throttle claim — only a recent trip is
       _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
       var _stats = stats || _pipelineStats;
       _stats.authThrottles = (_stats.authThrottles || 0) + 1;
@@ -4553,6 +4653,7 @@ var createDocPipeline = function(deps) {
       var _cd = Math.min(25000, _GEMINI_COOLDOWN_MS * (_geminiTransientStreak - _GEMINI_TRANSIENT_TRIP + 1)); // cap 25s (was 90s)
       if (_geminiCap !== _GEMINI_STORM_MIN || _cd > _GEMINI_COOLDOWN_MS) warnLog('[GeminiGate] Empty-body/timeout storm (' + _geminiTransientStreak + ' in a row) — throttling to ' + _GEMINI_STORM_MIN + ' concurrent + ' + Math.round(_cd / 1000) + 's cooldown (likely a Canvas rate-limit surfacing as empty responses)');
       _geminiCap = _GEMINI_STORM_MIN;
+      _geminiLastStormTripAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0); // L7 (2026-07-26): a REDUCED CAP alone is not a throttle claim — only a recent trip is
       _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
       var _stats = stats || _pipelineStats;
       _stats.authThrottles = (_stats.authThrottles || 0) + 1;
@@ -4566,9 +4667,34 @@ var createDocPipeline = function(deps) {
   // route at a comparable payload volume. Otherwise a tiny caption/text request
   // could clear a document-sized or Vision throttle before the representative
   // wait-not-stop probes and the real failed route have recovered.
+  // M16 (audit 2026-07-26): the wave EXPIRES. Without this the veto was permanent — the profile
+  // was only ever cleared by a representative success or by _resetGeminiBreaker (run entry, and
+  // only when the gate is idle), so a wave that tripped on the last of Step 2's whole-document
+  // Vision calls could never be disproved: Steps 3 and 4 are text-only, and `kind !== failure.kind`
+  // short-circuits every one of them. On a perfectly healthy service the rest of the run then ran
+  // serialized at cap 1 (the auto-fix loop is the longest phase), every later transient text error
+  // was marked geminiStormDeferred and lost its inline retry, the final circle-back's
+  // stop-improving guard could never fire so a malformed-JSON partial ground to the 10-minute cap
+  // under a status line blaming a rate limit that had long since eased, and in a batch the pinned
+  // cap-1 run then blew the per-file wall.
+  //
+  // 50s is comfortably past the longest escalated cooldown (25s), so a wave can never be declared
+  // stale while its own cooldown is still running — and `storming` keys on the live cooldown
+  // independently, so an ACTIVE throttle is unaffected by this bound.
+  var _GEMINI_WAVE_STALE_MS = 50000;
+  var _GEMINI_RECENT_THROTTLE_MS = 120000; // L7: how long a real breaker trip may still be blamed for a coverage shortfall
+  var _geminiWaveIsStale = function () {
+    var f = _geminiLastFailureProfile;
+    if (!f || !f.at) return false;
+    var now = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
+    return (now - f.at) > _GEMINI_WAVE_STALE_MS;
+  };
   var _geminiSuccessRepresentsFailure = function(successProfile) {
     var failure = _geminiLastFailureProfile;
     if (!failure) return true;
+    // A route profile with no failure behind it for 50 seconds is evidence about a service state
+    // that no longer exists; it must not veto recovery forever.
+    if (_geminiWaveIsStale()) return true;
     if (!successProfile || successProfile.kind !== failure.kind) return false;
     var failedVolume = Math.max(0, Number(failure.promptChars) || 0)
       + Math.max(0, Number(failure.attachmentChars) || 0);
@@ -4578,7 +4704,18 @@ var createDocPipeline = function(deps) {
   };
   var _geminiNoteSuccess = function(requestProfile) {
     var _failureWaveActive = (_geminiAuthStreak > 0 || _geminiTransientStreak > 0) && !!_geminiLastFailureProfile;
-    if (_failureWaveActive && !_geminiSuccessRepresentsFailure(requestProfile)) return;
+    if (_failureWaveActive && !_geminiSuccessRepresentsFailure(requestProfile)) {
+      // M16: a run that has MOVED ON to a different route has no way to produce the old route's
+      // evidence, so "wait for a representative success" would wait forever. Count the
+      // non-representative ones instead: _GEMINI_RECOVER_HITS of them in a row is its own evidence
+      // that the service is answering. Any failure resets the counter (below), so this can only
+      // clear a wave that has genuinely stopped failing.
+      _geminiOffRouteOkStreak++;
+      if (_geminiOffRouteOkStreak < _GEMINI_RECOVER_HITS) return;
+      warnLog('[GeminiGate] ' + _geminiOffRouteOkStreak + ' consecutive successes on a different route — clearing the stale failure wave (the failed route is not being exercised again this run).');
+      _geminiOffRouteOkStreak = 0;
+    }
+    _geminiOffRouteOkStreak = 0;
     _geminiAuthStreak = 0;
     _geminiTransientStreak = 0;
     _geminiLastFailureProfile = null;
@@ -4664,21 +4801,42 @@ var createDocPipeline = function(deps) {
   var _geminiThrottleInfo = function () {
     var now = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
     var cooldownRemainingMs = Math.max(0, _geminiCooldownUntil - now);
+    // M16: a tripped streak with no failure behind it for 50s is not a live storm. An ACTIVE
+    // cooldown still reads as storming regardless — that is a real, time-bounded brake — so this
+    // only stops a stale streak from claiming a rate limit that has long since eased. Without it
+    // `storming` stayed true for the rest of the run: every later transient error lost its inline
+    // retry, the circle-back's stop-improving guard could never fire, and the teacher-facing
+    // status line kept blaming a throttle.
+    var _staleWave = _geminiWaveIsStale();
     var _r = {
       cooldownRemainingMs: cooldownRemainingMs,
       authStreak: _geminiAuthStreak,
       transientStreak: _geminiTransientStreak,
       capped: _geminiCap < _geminiEffectiveMax,
-      storming: cooldownRemainingMs > 0 || _geminiAuthStreak >= _GEMINI_STORM_TRIP || _geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP,
+      storming: cooldownRemainingMs > 0
+        || (!_staleWave && (_geminiAuthStreak >= _GEMINI_STORM_TRIP || _geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP)),
+      // L7 (audit 2026-07-26): "a throttle happened recently enough to still explain this run's
+      // shortfall". Four sites re-derived that fact by hand as `cooldown || cap < ceiling`, which
+      // is true for the WHOLE run once anything trips — recovery needs four consecutive
+      // representative successes and may never get them. So a final audit that came back partial
+      // because one section returned malformed JSON, with no throttle involved, published
+      // "the rest were throttled by a temporary Canvas rate-limit" — the exact false attribution
+      // R3 wrote that branch to avoid. The teacher then waits and re-runs a document whose
+      // malformed section will fail identically every time. Time-bounded, so it keeps the R7
+      // intent (a cap forced down right after a storm still counts) without the permanence.
+      recentlyThrottled: cooldownRemainingMs > 0
+        || (_geminiLastStormTripAt > 0 && (now - _geminiLastStormTripAt) < _GEMINI_RECENT_THROTTLE_MS),
     };
     return _r;
   };
   var _rememberGeminiFailure = function (profile) {
     if (!profile || (profile.kind !== 'text' && profile.kind !== 'vision')) return;
+    _geminiOffRouteOkStreak = 0; // M16: a real failure invalidates any off-route recovery run
     var next = {
       kind: profile.kind,
       promptChars: Math.max(0, Number(profile.promptChars) || 0),
       attachmentChars: Math.max(0, Number(profile.attachmentChars) || 0),
+      at: ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0), // M16: waves expire
     };
     // Preserve the most demanding route across one consecutive failure wave.
     // A text failure must not overwrite a Vision/PDF failure and let a text-only
@@ -4731,19 +4889,43 @@ var createDocPipeline = function(deps) {
     var _sig = o.signal || ((typeof window !== 'undefined' && window.__alloPdfAbortSignal) ? window.__alloPdfAbortSignal : null);
     var _prompt = _geminiProbePrompt(o.promptChars);
     var _timeoutMs = Math.max(1, Math.min(30000, Number(o.timeoutMs) || 30000));
+    // L6 (audit 2026-07-26): probe traffic goes straight to _rawCallGemini, so it bypassed
+    // callGemini's accounting entirely — its calls, its payload and its latency appeared in no run
+    // telemetry and in no log the teacher can read. A run that paused for minutes waiting for
+    // representative probes to clear looked, from the Log panel, like a run doing nothing at all.
+    // Accounting only: this stays OUT of _geminiNoteSuccess/_geminiNoteTransientFail, so the
+    // 2026-07-24 breaker-neutrality guarantee is untouched — probes must never rewrite the real
+    // auth/transient streaks.
+    var _probeStats = (o.owner && o.owner.stats) || _pipelineStats;
+    var _probeStartedAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
+    var _noteProbe = function (ok, err) {
+      try {
+        _probeStats.probeCalls = (_probeStats.probeCalls || 0) + 1;
+        _probeStats.probeChars = (_probeStats.probeChars || 0) + _prompt.length;
+        _probeStats.probeMs = (_probeStats.probeMs || 0)
+          + Math.max(0, (((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) - _probeStartedAt));
+      } catch (_) {}
+      try {
+        _pipeLog('Throttle', 'Recovery probe ' + (_probeStats.probeCalls || 1) + ' ('
+          + Math.max(1, Math.round(_prompt.length / 1024)) + 'KB) → ' + (ok ? 'service answered' : 'still throttled')
+          + (err && err.message ? ' (' + String(err.message).slice(0, 80) + ')' : ''), null, o.owner);
+      } catch (_) {}
+    };
     return _geminiGate(function () {
       var _u = Promise.resolve().then(function () { return _rawCallGemini(_prompt, false, false, null, null, _sig); });
       var _timed = _withTimeout(_u, _timeoutMs, 'gemini-probe');
       var _outcome = _timed.then(function (r) {
         if (_sig && _sig.aborted) throw _mkGateAbortErr('gemini-probe');
         var ok = /^OK[.!]?$/.test(String(r || '').trim().toUpperCase());
+        _noteProbe(ok, null);
         if (!ok && typeof o.onFailure === 'function') o.onFailure();
         return ok;
       }, function (err) {
         if ((err && err.isAbort) || (_sig && _sig.aborted)) {
           if (err && err.isAbort) throw err;
-          throw _mkGateAbortErr('gemini-probe');
+          throw _mkGateAbortErr('gemini-probe'); // a cancelled run's probe is not evidence about the service
         }
+        _noteProbe(false, err);
         if (typeof o.onFailure === 'function') o.onFailure(err);
         return false;
       });
@@ -4776,6 +4958,29 @@ var createDocPipeline = function(deps) {
   // turns true (user pressed Stop / the run generation went stale) the wait exits IMMEDIATELY with
   // {calm:false, aborted:true} instead of holding the caller for up to maxWaitMs. Without it a Stop
   // pressed during the wait was invisible until the wait's own bound expired.
+  // H15 (audit 2026-07-26): a throttle wait inside a BATCH file's fix pass has to fit inside that
+  // file's wall. The pass loop reserved 90s at pass ENTRY and then handed control to machinery
+  // that had no idea a wall existed: aiFixChunked could spend 2x90s of calm waits in the
+  // single-chunk path plus 2x90s in the catch-up drain, the drain then re-fixed each deferred
+  // chunk serially at a 180s per-call timeout, and the loop's verify wait added another 120s. One
+  // pass entered at deadline-91s could run minutes past the wall — at which point _withTimeout
+  // rejected, the file was marked FAILED, and every completed pass's keep-best HTML was discarded,
+  // defeating the whole point of ending the loop early. The retry then paid the full 8 minutes
+  // again against the same rate limit.
+  //
+  // Returns the wait budget actually available: the full default for an interactive run (no wall),
+  // otherwise whatever is left before the wall minus a reserve for the finalize tail. 0 means
+  // "there is no time to wait" — waitForGeminiCalm returns immediately and the caller proceeds
+  // slower rather than stopping, which is the gate's documented wait-not-stop stance.
+  var _CALM_WALL_RESERVE_MS = 30000;
+  var _alloCalmBudgetMs = function (defaultMs, deadlineTs, reserveMs) {
+    var d = Math.max(0, Number(defaultMs) || 0);
+    if (!deadlineTs) return d; // interactive run — no per-file wall to fit inside
+    var now = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
+    var left = deadlineTs - now - (Number(reserveMs) === 0 ? 0 : (Number(reserveMs) || _CALM_WALL_RESERVE_MS));
+    if (!(left > 0)) return 0;
+    return Math.min(d, left);
+  };
   var waitForGeminiCalm = async function (opts) {
     var o = opts || {};
     var maxWaitMs = (typeof o.maxWaitMs === 'number') ? Math.max(0, o.maxWaitMs) : 240000;
@@ -4958,6 +5163,48 @@ var createDocPipeline = function(deps) {
     var _attempt = function(n) {
       var timeoutMs = n === 0 ? initialMs : (retryMs || initialMs);
       var _attemptQueuedAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
+      // ── M15 (audit 2026-07-26): record the breaker outcome BEFORE the slot is released ──────
+      // _geminiGate released the slot one `.then` link off the transport hold and pumped the queue
+      // immediately, while the breaker note sat two-plus links further downstream in the handlers
+      // below. On a fast-settling failure — an empty-200 body or a quick canvasTransientAuth
+      // rejection, which this file's own comments call the dominant Canvas throttle shape — _free
+      // always won, so _geminiPump admitted fresh full-size calls under the PRE-TRIP cap with no
+      // cooldown: up to _geminiCap extra document-sized calls fired into a proxy that had just
+      // started refusing, which is the exact re-fan-out the breaker exists to prevent, and each one
+      // burns another 120-180s timeout out of a batch file's budget.
+      //
+      // The classification lives HERE, in one place, and the handlers below call the same function.
+      // A once-flag makes the second call a no-op, so there is no second lane to drift: whichever
+      // reaches it first records, and the slot release waits for it.
+      var _outcomeNoted = false;
+      var _noteGeminiOutcome = function (res, err) {
+        if (_outcomeNoted) return;
+        _outcomeNoted = true;
+        // An aborted run neither retries nor feeds the breaker — its failure IS the cancellation.
+        if (_gateSignal && _gateSignal.aborted) return;
+        if (err) {
+          if (err.isAbort || err.name === 'AbortError') return;
+          if (err.message && /RECITATION/i.test(err.message)) return; // deterministic content filter, not a rate limit
+          var _perm = !!(err.isAuth || err.isQuota || err.isConfig ||
+            (err.message && /API_(AUTH_FAILED|QUOTA_EXHAUSTED|MODEL_NOT_FOUND)/.test(err.message)));
+          var _canvasAuth = !!(err.canvasTransientAuth && !err.isQuota && !err.isConfig);
+          if (_perm && _isBurstQuotaErr(err)) { _perm = false; _canvasAuth = true; }
+          if (_perm) return; // real auth/quota/config: permanent, and never fed the breaker
+          _rememberGeminiFailure(requestProfile);
+          if (_canvasAuth) _geminiNoteAuthFail(_callStats, owner);
+          else _geminiNoteTransientFail(_callStats, owner);
+          return;
+        }
+        // Some Vision proxy paths resolve an empty 200 body instead of throwing. That is a
+        // throttle signal, not a success — counting it as one reset the live storm streak and
+        // prematurely reopened concurrency.
+        if (res == null || (typeof res === 'string' && !res.trim())) {
+          _rememberGeminiFailure(requestProfile);
+          _geminiNoteTransientFail(_callStats, owner);
+        } else {
+          _geminiNoteSuccess(requestProfile);
+        }
+      };
       return _geminiGate(function() {
         if (typeof onTransportStart === 'function') {
           try { onTransportStart({ attempt: n, queuedMs: Math.max(0, (((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) - _attemptQueuedAt)) }); } catch (_) {}
@@ -4967,12 +5214,21 @@ var createDocPipeline = function(deps) {
         // Hold the slot until the UNDERLYING call settles: when the timer wins the race the fetch
         // is still consuming a real connection. Ceiling: 45s past the timeout, so a wedged
         // transport cannot wedge the whole gate.
-        var _slotUntil = new Promise(function (resolveHold) {
+        var _transportHold = new Promise(function (resolveHold) {
           var _done = false, _capTimer = null;
           var _fin = function () { if (_done) return; _done = true; if (_capTimer) clearTimeout(_capTimer); resolveHold(); };
           _underlying.then(_fin, _fin);
           _raced.then(null, function () {}).then(function () { if (!_done && !_capTimer) _capTimer = setTimeout(_fin, 45000); });
         });
+        // M15: the slot is held until the transport has settled AND the outcome has been recorded,
+        // so _geminiPump can never admit a queued waiter under a cap the breaker is about to drop.
+        // Bounded by _raced, which the timeout already bounds — this cannot extend the hold past
+        // the existing 45s ceiling.
+        var _outcomeRecorded = _raced.then(
+          function (res) { _noteGeminiOutcome(res, null); },
+          function (err) { _noteGeminiOutcome(null, err); }
+        );
+        var _slotUntil = Promise.all([_transportHold, _outcomeRecorded]);
         return { result: _raced, slotUntil: _slotUntil };
       }, _gateSignal, label).then(function(res) {
         // A transport that ignores AbortSignal may still resolve after ownership was revoked.
@@ -4983,13 +5239,12 @@ var createDocPipeline = function(deps) {
         // recovery success: counting it as one reset the live storm streak and prematurely reopened
         // concurrency. Record the signal without adding another retry; callers retain their existing
         // empty-result fallback behavior.
-        if (res == null || (typeof res === 'string' && !res.trim())) {
-          _rememberGeminiFailure(requestProfile);
-          _geminiNoteTransientFail(_callStats, owner);
-        }
-        else {
+        // M15: normally already recorded inside the gate body (before the slot was released);
+        // this is the same call, and the once-flag makes it a no-op. Kept so the accounting still
+        // happens if the gate path is ever bypassed.
+        _noteGeminiOutcome(res, null);
+        if (!(res == null || (typeof res === 'string' && !res.trim()))) {
           if (n > 0) _callStats.recoveredRetries = (_callStats.recoveredRetries || 0) + 1;
-          _geminiNoteSuccess(requestProfile);
         }
         return res;
       }).catch(function(err) {
@@ -5014,8 +5269,7 @@ var createDocPipeline = function(deps) {
         if (isPermanent) { warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (err.message || 'permanent error') + ') — skipping retry (auth/quota/config errors do not change between calls)'); throw err; }
         if (_canvasAuthRetry) {
           var _throttleKind = _burstQuota ? 'Rate-limit (429/quota burst)' : 'Canvas throttle';
-          _rememberGeminiFailure(requestProfile);
-          _geminiNoteAuthFail(_callStats, owner); // trip/escalate the breaker so this AND subsequent calls back off
+          _noteGeminiOutcome(null, err); // M15: same note, already made before the slot was released
           if (n >= _GEMINI_AUTH_RETRIES) { warnLog('[Retry] ' + (label || 'API call') + ' — ' + _throttleKind + ' persisted through ' + _GEMINI_AUTH_RETRIES + ' retries; giving up this call'); throw err; }
           // Jittered backoff (2026-06-21): ±30% randomization so a batch of calls that all 401 at once
           // don't retry in lockstep and re-storm the proxy on the same tick.
@@ -5027,8 +5281,9 @@ var createDocPipeline = function(deps) {
         }
         // Count EVERY failed transport immediately, including the first attempt. Previously a
         // 3-call wave could launch three retries before the breaker saw even one failure.
-        _rememberGeminiFailure(requestProfile);
-        _geminiNoteTransientFail(_callStats, owner);
+        // M15: this now normally happened before the slot was released; the once-flag keeps it
+        // from double-counting, and the call stays here so the accounting cannot be lost.
+        _noteGeminiOutcome(null, err);
         if (n >= 1) throw err;
         // (2026-07-24) During an ACTIVE storm the single inline retry just burns a SECOND full
         // transport timeout into a throttled window — doubling every call's dwell (the 3–6 min
@@ -5700,7 +5955,13 @@ var createDocPipeline = function(deps) {
           out.numericWarn = lostVals.length + ' source numeric value(s) not found unchanged in the output (' + vsample + '). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.';
         }
       } catch (_) {}
-      try { out.structuralNotes = _computeStructuralFidelityNotes(sourceText, html) || []; } catch (_) { out.structuralNotes = []; }
+      // M12: the re-fix lane must measure links against the SAME baseline the primary pass used.
+      // 'links' is a RECOMPUTABLE note kind, so a recompute that fell back to counting markdown in
+      // a pdf.js source text would read 0 source links and silently CLEAR a real dropped-link
+      // warning the primary pass had raised — the two-lane drift this audit keeps finding.
+      let _srcCounts = null;
+      try { const _n = (typeof window !== 'undefined') ? window.__alloSourceLinkCount : null; if (Number.isFinite(_n) && _n > 0) _srcCounts = { links: _n }; } catch (_) {}
+      try { out.structuralNotes = _computeStructuralFidelityNotes(sourceText, html, _srcCounts) || []; } catch (_) { out.structuralNotes = []; }
       out.fidelityNotes = (out.structuralNotes || []).slice();
       if (out.placementWarn) out.fidelityNotes.push({ kind: 'placement', msg: out.placementWarn });
       if (out.numericWarn) out.fidelityNotes.push({ kind: 'numeric', msg: out.numericWarn });
@@ -5866,20 +6127,26 @@ var createDocPipeline = function(deps) {
     //     fixed, permanently suppressing the success toast.
     // The fresh audits were already in hand (_freshAxe/_freshEa) and simply were not consulted. This
     // is the same predicate the two view lanes use, so all three agree.
-    // DELIBERATELY ONE-WAY. Fresh evidence can only ADD the warning, never clear it.
-    //   * The under-warning half is a safety defect and is fixed here: a round that introduces a
-    //     confirmed critical now raises the flag regardless of what the previous round concluded.
-    //   * The over-warning half (a stale 'accessibility' reason surviving after the criticals are
-    //     fixed) is left alone ON PURPOSE. Clearing an expert-review warning from an automated
-    //     signal is a product decision about how much evidence is enough to tell a teacher a
-    //     document no longer needs human review — Aaron's call, not a mechanical fix. Making it
-    //     one-way also keeps the frozen-reference parity suite meaningful.
+    // TWO-WAY, gated on evidence (Aaron, 2026-07-26). The predicate below is the SAME one the main
+    // pipeline uses to raise the flag in the first place (~24622: axe criticals, Equal Access
+    // confirmed failures, or a genuinely rough score), so the evidence that can raise it is exactly
+    // the evidence that can clear it — the alternative was a document that had been fully fixed
+    // still telling the teacher it needed a human, forever.
+    //   * raising  — a round that introduces a confirmed critical flags it regardless of what the
+    //     previous round concluded (the under-warning safety defect);
+    //   * clearing — ONLY when this round actually produced a scored deterministic audit. A missing
+    //     or errored audit is not evidence of a clean document, so with no fresh audit in hand the
+    //     inherited warning stands. `_scored` already rejects empty/error audit objects, so a
+    //     crashed axe run cannot masquerade as "no criticals found".
     const _freshAccessibilityReview = !!(
       (_freshAxe && Array.isArray(_freshAxe.critical) && _freshAxe.critical.length > 0)
       || (_freshEa && Number.isFinite(_freshEa.failViolations) && _freshEa.failViolations > 0)
       || (Number.isFinite(afterScore) && afterScore < 50)
     );
-    const _baseAccessibilityReview = _inheritedAccessibilityReview || _freshAccessibilityReview;
+    const _haveFreshAccessibilityEvidence = !!(_freshAxe || _freshEa);
+    const _baseAccessibilityReview = _haveFreshAccessibilityEvidence
+      ? _freshAccessibilityReview
+      : (_inheritedAccessibilityReview || _freshAccessibilityReview);
     const _freshContentFidelityReview = !!_nextFidelityLimited;
     const _expertBaseReason = _baseAccessibilityReview
       ? (_freshContentFidelityReview ? 'both' : 'accessibility')
@@ -6752,7 +7019,7 @@ var createDocPipeline = function(deps) {
           warnLog(`[aiFixChunked:${label}] single-chunk throttle deferred — recovery round ${_singleRecoveryRound}/2 after a quiet-window check`);
           _pulsePipelineWatchdog(_control && _control.owner);
           let calm = null;
-          try { calm = await waitForGeminiCalm({ maxWaitMs: 90000, shouldAbort: _control && _control.shouldAbort, signal: _control && _control.signal, owner: _control && _control.owner }); } catch (_) {}
+          try { calm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(90000, _control && _control.perFileDeadlineTs), shouldAbort: _control && _control.shouldAbort, signal: _control && _control.signal, owner: _control && _control.owner }); } catch (_) {}
           if ((calm && calm.aborted) || _controlAborted()) _throwIfControlAborted(true);
           continue;
         }
@@ -6902,21 +7169,46 @@ var createDocPipeline = function(deps) {
     // handle it, don't spin).
     if (_deferredIdx.length) {
       let _todo = _deferredIdx.slice();
+      // H15: the drain is the single most expensive thing that can happen after the pass loop has
+      // already decided it has time for another pass — a calm wait plus one 180s-timeout call per
+      // deferred chunk, serially. Reserve enough of the file's wall to finish and SHIP: overshooting
+      // it means _withTimeout rejects and every completed pass's work is discarded, which is
+      // strictly worse than shipping these chunks as their originals (they are re-attempted next
+      // pass / on resume anyway).
+      const _drainWall = (_control && _control.perFileDeadlineTs) || 0;
+      const _DRAIN_RESERVE_MS = 60000;
+      const _drainOutOfTime = () => _drainWall > 0 && Date.now() > _drainWall - _DRAIN_RESERVE_MS;
       for (let _round = 0; _round < 2 && _todo.length; _round++) {
         _throwIfControlAborted();
+        if (_drainOutOfTime()) {
+          warnLog(`[aiFixChunked:${label}] catch-up skipped — the per-file batch wall is too close to revisit ${_todo.length} deferred chunk(s); shipping them as originals so the completed passes survive.`);
+          break;
+        }
         warnLog(`[aiFixChunked:${label}] catch-up round ${_round + 1}: revisiting ${_todo.length} throttle-deferred chunk(s) after a pause`);
         _pulsePipelineWatchdog(_control && _control.owner); // a deliberate catch-up pause is activity, not a stall
         // Do not guess that an 8-second sleep cleared a rolling quota. Wait through the live
         // cooldown and require two representative confirmations before revisiting document-sized prompts.
         let _calm = null;
-        try { _calm = await waitForGeminiCalm({ maxWaitMs: 90000, shouldAbort: _control && _control.shouldAbort, signal: _control && _control.signal, owner: _control && _control.owner }); } catch (_) {}
+        try { _calm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(90000, _control && _control.perFileDeadlineTs), shouldAbort: _control && _control.shouldAbort, signal: _control && _control.signal, owner: _control && _control.owner }); } catch (_) {}
         if ((_calm && _calm.aborted) || _controlAborted()) _throwIfControlAborted(true);
         _deferredIdx.length = 0; // re-collect any chunk STILL throttled this round
         // Recovery stays serial even for the cloud backend. Parallel catch-up was the exact
         // re-fan-out visible in the throttled run (#17/#18, then #19/#20).
         let _again = [];
-        for (const ci of _todo) {
+        for (let _ti = 0; _ti < _todo.length; _ti++) {
+          const ci = _todo[_ti];
           _throwIfControlAborted();
+          // H15: re-check between chunks. Each revisit is a full document-sized call with a 180s
+          // timeout, so a drain that fitted when it started may not fit by chunk 5. Whatever has
+          // already been spliced back is kept; the chunks we never reached go back on the deferred
+          // list so the "still rate-limited" report below counts them honestly rather than
+          // implying they were revisited and found fine.
+          if (_drainOutOfTime()) {
+            const _unreached = _todo.slice(_ti);
+            for (const _u of _unreached) if (_deferredIdx.indexOf(_u) === -1) _deferredIdx.push(_u);
+            warnLog(`[aiFixChunked:${label}] catch-up stopped mid-round at the per-file batch wall — ${_unreached.length} chunk(s) shipped as originals.`);
+            break;
+          }
           if (_localTextMode) _emitLocalRemediationProgress(ci, chunks.length, `Retrying chunk ${ci + 1} of ${chunks.length}`, 'fix-retry');
           _again.push({ ci: ci, out: await _fixOneChunk(chunks[ci], ci) });
           _throwIfControlAborted();
@@ -9548,9 +9840,25 @@ var createDocPipeline = function(deps) {
       // denominator below uses non-blank page count so one broken page doesn't
       // trip the isScanned heuristic on a 20-page document.
       const pageErrors = [];
+      let _rtlOrderLogged = false; // H12: announce the direction repair ONCE, not per page
+      // M12 (audit 2026-07-26): the lost-hyperlink fidelity net counted markdown `[text](url)` in
+      // the source, which this extractor NEVER produces — it joins raw pdf.js text items. So the
+      // net read 0 source links on every born-digital PDF and could not fire, no matter how many
+      // hyperlinks the remediation dropped. A PDF's links are annotations, not text: ask for them
+      // directly and give the net a baseline that actually exists for this input.
+      let _srcLinkAnnotations = 0;
       for (let p = 1; p <= pdf.numPages; p++) {
         try {
           const page = await _withTimeout(pdf.getPage(p), 30000, 'getPage (text layer) p' + p);
+          try {
+            const _annots = await _withTimeout(page.getAnnotations(), 15000, 'getAnnotations (text layer) p' + p);
+            for (let ai = 0; ai < (_annots || []).length; ai++) {
+              const _a = _annots[ai];
+              // A Link annotation with no destination at all is decorative chrome, not a link the
+              // output owes an <a> for.
+              if (_a && _a.subtype === 'Link' && (_a.url || _a.unsafeUrl || _a.dest || _a.action)) _srcLinkAnnotations++;
+            }
+          } catch (_) { /* annotations are a bonus signal — never fail a page over them */ }
           const tc = await _withTimeout(page.getTextContent(), 30000, 'getTextContent (text layer) p' + p);
           // Column-aware reading order (H-5 repair, 2026-07-01). _alloOrderTextItems detects a
           // high-confidence column gutter and reads column-by-column; on ANY ambiguity (single
@@ -9561,6 +9869,9 @@ var createDocPipeline = function(deps) {
           const _ordered = _alloOrderTextItems(tc.items || [], {});
           const items = _ordered.items;
           if (_ordered.applied) { try { warnLog('[PDF Det] p' + p + ': multi-column layout detected (' + _ordered.columns + ' columns) — reading order repaired column-by-column'); } catch (_) {} }
+          // H12: a reversed RTL line reads as perfect fidelity to every net in the pipeline
+          // (they are all count/set based), so the only way anyone finds out is this line.
+          if (_ordered.rtl && !_rtlOrderLogged) { _rtlOrderLogged = true; try { warnLog('[PDF Det] right-to-left script detected — reading each line right-to-left (logical order)'); } catch (_) {} }
           const pageText = items.map(i => i.str || '').join(' ').replace(/\s+/g, ' ').trim();
           pages.push({ pageNum: p, text: pageText, columns: _ordered.applied ? _ordered.columns : 1 });
         } catch (pageErr) {
@@ -9570,6 +9881,10 @@ var createDocPipeline = function(deps) {
           try { warnLog('[PDF Det] page ' + p + ' failed (' + (pdf.numPages - 1) + ' other pages still attempted): ' + _pmsg); } catch (_) {}
         }
       }
+      // M12: park the real source-link count for the structural fidelity net. Same idiom as H14 —
+      // the net runs thousands of lines away, long after this function has returned.
+      try { if (typeof window !== 'undefined') window.__alloSourceLinkCount = _srcLinkAnnotations; } catch (_) {}
+      if (_srcLinkAnnotations > 0) { try { warnLog('[PDF Det] ' + _srcLinkAnnotations + ' hyperlink annotation(s) in the source — the output is expected to carry them'); } catch (_) {} }
       const fullText = pages.map(p => p.text).filter(Boolean).join('\n\n');
       // Denominator fix: average against pages that ACTUALLY produced text. A
       // 20-page doc where 1 page failed and 19 produced text shouldn't get
@@ -10906,7 +11221,13 @@ var createDocPipeline = function(deps) {
     throw lastErr || new Error('Tesseract.recognize failed (all attempts exhausted)');
   };
 
-  const extractPdfTextTesseract = async (base64, onProgress, lang) => {
+  // M14 (audit 2026-07-26): pageRange is [start, end], 1-based inclusive, either element optional.
+  // Without it this OCR'd the WHOLE document and the caller threw the out-of-scope pages away —
+  // 200 pages rendered and recognised for a 20-page job, a progress label reading "page 137/200"
+  // during it, and (worse) every out-of-range render failure landing in window.__lastOcrPageErrors,
+  // where it named untouched pages in the Stage-1 banner and permanently blocked OCR-evidence
+  // banking, since _ocrEvidenceCompatible refuses any record carrying page errors.
+  const extractPdfTextTesseract = async (base64, onProgress, lang, pageRange) => {
     let pdf = null; // (2026-06-20) freed in finally to release the pdf.js worker doc (batch memory leak)
     try {
       await ensurePdfJsLoaded();
@@ -10927,17 +11248,24 @@ var createDocPipeline = function(deps) {
       // render at all. Vision OCR runs alongside this pass and remains the content fallback.
       let _renderFailureStreak = 0;
       let _renderCircuitOpen = false;
-      for (let p = 1; p <= pdf.numPages; p++) {
+      // M14: OCR only the selected pages. Clamped to the real document bounds, so a teacher who
+      // typed "1-500" on a 30-page file still gets 30 pages rather than 470 render failures.
+      const _ocrFirstPage = Math.max(1, Math.min(pdf.numPages, (pageRange && pageRange[0]) || 1));
+      const _ocrLastPage = Math.max(_ocrFirstPage, Math.min(pdf.numPages, (pageRange && pageRange[1]) || pdf.numPages));
+      if (_ocrFirstPage > 1 || _ocrLastPage < pdf.numPages) {
+        warnLog(`[Tesseract] OCR limited to pages ${_ocrFirstPage}-${_ocrLastPage} of ${pdf.numPages} (selected range)`);
+      }
+      for (let p = _ocrFirstPage; p <= _ocrLastPage; p++) {
         let canvas = null, renderScale = 2.0, renderViewport = null; // hoisted so the finally can free it on BOTH success and failure
         if (_renderCircuitOpen) {
           const _skipMsg = 'Tesseract render circuit open after repeated page-render timeouts; Vision OCR companion remains active';
           pages.push({ pageNum: p, text: '', words: null, error: _skipMsg });
           pageErrors.push({ pageNum: p, error: _skipMsg });
-          if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'vision-fallback' });
+          if (typeof onProgress === 'function') onProgress({ page: p, total: _ocrLastPage, phase: 'vision-fallback' });
           continue;
         }
         try {
-          if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'render' });
+          if (typeof onProgress === 'function') onProgress({ page: p, total: _ocrLastPage, phase: 'render' });
           const page = await _withTimeout(pdf.getPage(p), 30000, 'pdf.getPage (OCR p' + p + ')'); // bound getPage too — pdf.js worker can stall
           // Render at 2x for OCR accuracy, bounded so a hung/slow render can't stall the pipeline.
           // #4 fix (2026-06-17): the 45s timeout here used to SILENTLY BLANK a slow/large page (no
@@ -10975,7 +11303,7 @@ var createDocPipeline = function(deps) {
             }
           }
           _renderFailureStreak = 0; // this page rendered; restore the full quality ladder next page
-          if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'ocr' });
+          if (typeof onProgress === 'function') onProgress({ page: p, total: _ocrLastPage, phase: 'ocr' });
           // Bounded, self-healing OCR (see _ocrRecognize): timeout per attempt + transient
           // retry + English fallback. v5 returns ONLY text by default; {blocks:true} opts into
           // the word hierarchy that places each word's invisible glyphs at its real position.
@@ -14023,7 +14351,22 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       }
       _activeBatchRun.invalidated = true;
       try { if (typeof window !== 'undefined' && window.__alloPdfBatchAbortCtrl) window.__alloPdfBatchAbortCtrl.abort(); } catch (_) {}
+      // H16: hand the remediation lock over with the batch. The superseded run has been aborted
+      // but unwinds asynchronously, so without this the NEW batch would be refused the lock its
+      // own predecessor still nominally holds.
+      try { _releaseRemediationLockForBatch(_activeBatchRun.lockToken); } catch (_) {}
       _activeBatchRun = null;
+    }
+    // H16: claim the single-file lock for the whole batch, before any owner state is published —
+    // a failed claim must leave nothing behind.
+    const _batchLockToken = _claimRemediationLockForBatch();
+    if (!_batchLockToken) {
+      const _busyError = new Error('A remediation run is already in progress.');
+      _busyError.name = 'RemediationAlreadyRunningError';
+      _busyError.isAlreadyRunning = true;
+      warnLog('[Batch] Start refused: a single-file remediation still owns the pipeline. Running both would cross-stamp their run identities and let either one abort the other\'s API calls.');
+      try { if (typeof addToast === 'function') addToast('A remediation is already running. Wait for it to finish before starting a batch.', 'info'); } catch (_) {}
+      throw _busyError;
     }
     const owner = {
       generation: ++_batchRunGeneration,
@@ -14041,8 +14384,10 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       setPdfBatchCurrentIndex: (...args) => _batchPublish(owner, () => setPdfBatchCurrentIndex(...args)),
       addToast: (...args) => _batchPublish(owner, () => { if (typeof addToast === 'function') addToast(...args); }),
     };
+    owner.lockToken = _batchLockToken; // H16: so a superseding batch can take the lock over
     const raw = _runPdfBatchRemediationOwned(opts, owner, publishers);
     owner.promise = raw.finally(() => {
+      _releaseRemediationLockForBatch(_batchLockToken); // H16: no-op if a superseding batch already took it
       if (_activeBatchRun === owner) _activeBatchRun = null;
     });
     return owner.promise;
@@ -14290,6 +14635,41 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
 
     let _quotaStopped = false;
     let _batchHandoffStopped = false;
+    // ── M4 (audit 2026-07-26): make the BATCH lane visible to the reliability record ──────────
+    // Batch successes never set pdfFixResult (silent mode returns early), and batch failures never
+    // reach the host's fixAndVerifyPdf wrapper, because the runner calls the pipeline-internal
+    // closure directly rather than the wrapped export. So the highest-volume path — the one where
+    // per-file 8-minute wall timeouts and quota stops actually happen — left nothing in
+    // pdfRunHistory, nothing in the project file's runHistory, and nothing in the CSV. The
+    // pdfBatchSummary is in-memory only and is discarded on Start New Audit. The reliability record
+    // therefore described hand-run single files only, while a comment asserted it covered both.
+    //
+    // One event per file, carrying the same fields the single-file rows use. FERPA: fileName is
+    // already what the host records for single files and never leaves the browser from here.
+    const _emitBatchFileOutcome = (item, result, err) => {
+      try {
+        if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function' || typeof CustomEvent !== 'function') return;
+        const _stats = (err && err.pipelineStats && typeof err.pipelineStats === 'object')
+          ? err.pipelineStats
+          : ((result && result.pipelineStats) || null);
+        const _cancelled = !!((_stats && _stats.outcome === 'cancelled')
+          || (err && (err.name === 'AbortError' || err.isAbort || err.code === 'ALLO_REMEDIATION_CANCELLED'))
+          || (!err && !result));
+        window.dispatchEvent(new CustomEvent('alloflow:batch-file-outcome', {
+          detail: {
+            batchGeneration: owner.generation,
+            documentEpoch: owner.documentEpoch,
+            fileName: (item && item.fileName) || 'document',
+            runId: (_stats && _stats.runId) || (result && result.runId) || null,
+            outcome: err ? (_cancelled ? 'cancelled' : 'failed') : 'completed',
+            failStage: (_stats && _stats.lastOpenStepLabel) || null,
+            failReason: err ? String((err && err.message) || err).slice(0, 200) : null,
+            result: result || null,
+            pipelineStats: _stats,
+          },
+        }));
+      } catch (_) { /* telemetry must never break the batch */ }
+    };
     for (let i = 0; i < queue.length; i++) {
       if (_batchAbortCtrl.signal.aborted) {
         setPdfBatchStep('Stopped by user · ' + i + '/' + queue.length + ' processed');
@@ -14310,7 +14690,9 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         const result = await _processOne(item, i, false);
         queue[i] = { ...item, status: 'done', result };
         setPdfBatchQueue([...queue]);
+        _emitBatchFileOutcome(item, result, null);
       } catch (err) {
+        _emitBatchFileOutcome(item, null, err);
         if (_batchAbortCtrl.signal.aborted) {
           queue[i] = { ...item, status: 'pending', error: null, interrupted: true };
           setPdfBatchQueue([...queue]);
@@ -14321,10 +14703,29 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         queue[i] = { ...item, status: 'failed', error: err.message };
         setPdfBatchQueue([...queue]);
         if (err && err.code === 'ALLO_BATCH_REMEDIATION_DRAIN_TIMEOUT') {
-          _batchHandoffStopped = true;
-          setPdfBatchStep('Batch paused safely — the timed-out file is still shutting down. Remaining files stay queued for resume.');
-          warnLog('[Batch] Pausing before file ' + (i + 2) + ': prior remediation still owns the pipeline lock after its cancellation drain.');
-          break;
+          // L10 (audit 2026-07-26): only stop the batch if a lock is GENUINELY still held. The
+          // stated reason for stopping — "advancing would make every later file fail spuriously
+          // with RemediationAlreadyRunningError" — described a hazard that did not exist on this
+          // path: the batch calls the unwrapped fixAndVerifyPdf per file, so a drained file holds
+          // no per-file lock. Meanwhile the cost was real: a wedged Gemini transport can easily
+          // outlast the 30s drain (a gate slot is held up to 45s past a 120-180s timeout), so one
+          // slow scan could lose files 11-50 of an overnight batch of 50 IEPs.
+          //
+          // Ask the pipeline instead of assuming. A single-file run that really does own the lock
+          // is still a reason to pause; anything else means the aborted file holds nothing the
+          // next file needs, so mark it failed and move on.
+          let _lockStillHeld = false;
+          try { _lockStillHeld = !!(typeof _getActiveRemediationRun === 'function' && _getActiveRemediationRun()); } catch (_) { _lockStillHeld = false; }
+          if (_lockStillHeld) {
+            _batchHandoffStopped = true;
+            setPdfBatchStep('Batch paused safely — the timed-out file is still shutting down. Remaining files stay queued for resume.');
+            warnLog('[Batch] Pausing before file ' + (i + 2) + ': prior remediation still owns the pipeline lock after its cancellation drain.');
+            break;
+          }
+          queue[i] = { ...queue[i], error: (queue[i].error || err.message) + ' (the file was still shutting down when its time ran out; the batch continued)' };
+          setPdfBatchQueue([...queue]);
+          warnLog('[Batch] Drain timed out on ' + _alloDiagnosticDocumentLabel(item.fileName) + ' but nothing owns the pipeline lock — marking it failed and continuing with the remaining ' + Math.max(0, queue.length - i - 1) + ' file(s).');
+          continue;
         }
         // Quota circuit-breaker: once the DAILY cap is hit, every remaining file would
         // re-pay a full primary+fallback backoff only to fail the same way — turning one
@@ -19726,6 +20127,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       let autoFixPasses = 0;
       const maxFixPasses = loopCtx.maxFixPasses; // S1: run-entry snapshot, not the live bound var
       let bestHtml = accessibleHtml;
+      // M8 (audit 2026-07-26): the audit that describes bestHtml. Seeded with the incoming audit,
+      // which does describe the incoming html; every promotion below replaces both together.
+      let bestVerification = verification || null;
       const _initialAiUsable = _alloUsableCompleteAiAudit(verification);
       const _initialAxeUsable = _alloUsableAxeAudit(axeResults);
       let _bestEvidenceComplete = _initialAiUsable && _initialAxeUsable;
@@ -19831,6 +20235,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               shouldAbort: _shouldAbort,
               signal: _controlSignal,
               owner: _controlOwner,
+              // H15: the batch file's absolute wall. Without it aiFixChunked's throttle waits and
+              // catch-up drain are unbounded relative to the budget the caller is enforcing.
+              perFileDeadlineTs: loopCtx.perFileDeadlineTs || 0,
               onThrottleDeferred: () => { _fixThrottleDeferred = true; },
             });
             if (fixedHtml && fixedHtml !== accessibleHtml) {
@@ -19888,7 +20295,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               }
               warnLog(`[Auto-fix] Pass ${fixPass + 1}: unchanged because AI work was throttle-deferred — waiting and continuing without counting a semantic plateau.`);
               let _throttleCalm = null;
-              try { _throttleCalm = await waitForGeminiCalm({ maxWaitMs: 120000, shouldAbort: _shouldAbort, signal: _controlSignal, owner: _controlOwner }); } catch (_) {}
+              try { _throttleCalm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(120000, loopCtx.perFileDeadlineTs), shouldAbort: _shouldAbort, signal: _controlSignal, owner: _controlOwner }); } catch (_) {}
               if ((_throttleCalm && _throttleCalm.aborted) || _shouldAbort()) break;
               _throttleRecoveryRetriesRemaining--;
               fixPass--;
@@ -19917,7 +20324,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // wave into that same storm; wait for representative recovery confirmation first.
           _throttleRecoveryRetriesRemaining = 2;
           let _verifyCalm = null;
-          try { _verifyCalm = await waitForGeminiCalm({ maxWaitMs: 120000, shouldAbort: _shouldAbort, signal: _controlSignal, owner: _controlOwner }); } catch (_) {}
+          try { _verifyCalm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(120000, loopCtx.perFileDeadlineTs), shouldAbort: _shouldAbort, signal: _controlSignal, owner: _controlOwner }); } catch (_) {}
           if ((_verifyCalm && _verifyCalm.aborted) || _shouldAbort()) break;
           const [reVerify1, reAxe] = await Promise.all([
             auditOutputAccessibility(accessibleHtml, { signal: _controlSignal }),
@@ -19999,6 +20406,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             bestAiScore = newAiScore;
             bestAxeViolations = newAxeViolations;
             _bestEvidenceComplete = true;
+            // M8 (audit 2026-07-26): the AUDIT that describes those bytes, kept with them. The loop
+            // returned `verification` — the LAST pass's audit — while shipping bestHtml, a pass that
+            // was deliberately NOT promoted. The final authoritative audit normally erases the
+            // mismatch by re-auditing the shipped bytes, but when it returns null/throws AND the
+            // deferred re-audit also fails (both the common throttle-storm outcome the deferred loop
+            // exists for), the last-pass audit survives and is published verbatim as
+            // verificationAudit, as "Remaining Issues (N)", and as the resolved/persisted/introduced
+            // diff. The teacher then works through a list of issues computed on a different version
+            // of the document than the one in their download.
+            bestVerification = reVerify || null;
           }
 
           warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
@@ -20049,8 +20466,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // the axe-clean best now; the final audit + its deferred re-audit (fix B) complete the AI
           // coverage once the rate-limit eases. Exact no-op without a storm (_geminiCap ===
           // _geminiEffectiveMax and _geminiCooldownUntil 0), so the common path is unchanged.
-          const _stormActive = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
-            || (_geminiCap < _geminiEffectiveMax); // R7: cap forced BELOW the run ceiling = a storm (robust vs pacing-to-1)
+          const _stormActive = _geminiThrottleInfo().recentlyThrottled; // L7 (2026-07-26): ONE definition of "a throttle happened recently" (was a hand-rolled cooldown||cap that stayed true for the rest of the run)
           if (_stormActive && _reAxeUsable && newAxeViolations === 0 && _rePartial) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: Canvas rate-limit storm active + axe clean + AI audit partial — the deterministic layer already governs the headline and more passes would only deepen the storm; stopping early (AI coverage completes in the final audit once the rate-limit eases).`);
             break;
@@ -20087,6 +20503,15 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       if (bestHtml && bestHtml !== accessibleHtml) {
         warnLog('[Auto-fix] Shipping best verified version (AI ' + bestAiScore + ', axe ' + bestAxeViolations + ') instead of the loop\'s last working state.');
         accessibleHtml = bestHtml;
+        // M8: the audit has to travel with the bytes it describes. If the promoted version has no
+        // audit of its own, return NULL rather than the last pass's — fixAndVerifyPdf already fails
+        // closed on a null verification (_aiDegraded → deterministic headline), which is the honest
+        // outcome. A mismatched issue list is worse than no issue list: the teacher acts on it.
+        if (verification !== bestVerification) {
+          warnLog('[Auto-fix] Returning the audit that describes the shipped version'
+            + (bestVerification ? '' : ' (none — the promoted version was never re-audited; the final audit governs)') + '.');
+          verification = bestVerification;
+        }
       }
     return { accessibleHtml, verification, axeResults, autoFixPasses, bestAiScore, bestAxeViolations, lastFullCoverageAiScore: _lastFullCoverageAiScore };
   };
@@ -20830,6 +21255,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
   };
 
   const fixAndVerifyPdf = async (batchOverrides = null) => {
+    // M18 (audit 2026-07-26): the "Continue a previous session" OCR seed this run consumed. Declared
+    // at RUN scope, not inside the extraction helper, so the failure path below can hand it back — a
+    // failed attempt must not cost the next one a full re-OCR. (The first placement was one function
+    // out and check_free_vars caught it as three ReferenceErrors-in-waiting.)
+    let _consumedResumeSeed = null;
     // ── Unified pipeline: supports both single-file UI and batch mode ──
     // S1 step 5: run-entry snapshot. batchOverrides win (the batch runner pins a whole batch
     // to one configuration); otherwise the ctx captured HERE governs every read for the rest
@@ -21153,6 +21583,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__lastGroundTruthPageMap = null;
       window.__lastGroundTruthMethod = null;
       window.__lastOcrPageErrors = []; // audit #17: per-page extraction failures, fresh each run
+      window.__alloSourceLinkCount = 0; // M12: source hyperlink annotations, fresh each run (a prior document's count must never become this one's baseline)
       window.__alloImagePairingUncertain = null; // H14: image/caption pairing doubt, fresh each run
       window.__lastOcrLowConfidencePages = []; // B5 (2026-06-20): per-page low OCR confidence, fresh each run
       // Cross-document guard (review F1/F5, 2026-07-01): stamp this run's OCR globals with
@@ -21263,10 +21694,15 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // Determine chunk strategy based on page count
       // If audit didn't return pageCount, estimate from base64 size (rough: ~3KB base64 per page)
       let effectivePageCount = pageCount;
+      // M13 (audit 2026-07-26): remember that this number is a GUESS. It survives all the way to
+      // the Vision fan-out whenever pdf.js could not open the file at all, and ~3KB/page is two
+      // orders of magnitude off for a scanned page — see the clamp below.
+      let _pageCountIsSizeEstimate = false;
       if (effectivePageCount <= 1 && _base64) {
         const estimatedFromSize = Math.max(1, Math.round(_base64.length * 0.75 / 1024 / 3));
         if (estimatedFromSize > 3) {
           effectivePageCount = estimatedFromSize;
+          _pageCountIsSizeEstimate = true;
           warnLog(`[PDF Fix] pageCount unknown — estimated ${effectivePageCount} pages from ${Math.round(_base64.length * 0.75 / 1024)}KB file size`);
         }
       }
@@ -21274,6 +21710,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // ── Step 0 (S2-extracted → _runExtractionPhase) ──
       const _extOut = await _runExtractionPhase({ base64: _base64, fileName: _fileName, pageRange: _pageRange, forceOcrPages: _forceOcrPages, forceFullOcr: _forceFullOcr, effectivePageCount, updateProgress });
       extractedText = _extOut.extractedText;                 // '' when the doc is scanned → the OCR path below runs
+      if (_extOut.effectivePageCount !== effectivePageCount) _pageCountIsSizeEstimate = false; // pdf.js adopted a real count (M13)
       effectivePageCount = _extOut.effectivePageCount;       // real pdf.js page count when the text branch adopted it
       _forceFullOcr = _extOut.forceFullOcr;                  // garbled-layer detector can force the OCR path
       _garbledFallbackText = _extOut.garbledFallbackText;    // discarded layer kept as the junk-ratio fallback
@@ -21309,6 +21746,48 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         }
       }
 
+      // ── M13: never fan out Vision against a guessed page count ──────────────────────────────
+      // When pdf.js cannot open the file — an encrypted or corrupt PDF, where
+      // extractPdfTextDeterministic returns pageCount:0 WITH an error and the 0-page abort is
+      // deliberately skipped so Vision can still rescue the document — effectivePageCount is
+      // still the ~3KB/page size estimate. An 8 MB scanned IEP estimates ~2700 pages, which
+      // becomes ~1366 chunks; every one of them is out of range, so each throws 'slice out of
+      // range' and falls back to re-uploading the whole 8 MB file. That is tens of minutes of a
+      // teacher's quota spent on a document with a few dozen real pages, and any out-of-range
+      // chunk that DOES return text contributes hallucinated pseudo-pages to the ground truth.
+      //
+      // pdf-lib opens plenty of files pdf.js refuses (it is far more permissive, and
+      // ignoreEncryption reads owner-password documents), so ask it for the true count first.
+      // The loaded document is kept for the slice source below rather than parsed twice.
+      let _pageCountProbeDoc = null;
+      let _probedPageCount = 0;
+      const M13_MAX_ESTIMATED_PAGES = 200;
+      if (_pageCountIsSizeEstimate && _base64) {
+        try {
+          let _probeLib = (typeof window !== 'undefined' && window.PDFLib) || null;
+          if (!_probeLib || !_probeLib.PDFDocument) {
+            try { await ensurePdfLibLoaded(); } catch (_) {}
+            _probeLib = (typeof window !== 'undefined' && window.PDFLib) || null;
+          }
+          if (_probeLib && _probeLib.PDFDocument) {
+            _pageCountProbeDoc = await _probeLib.PDFDocument.load(_b64ToBytes(_base64), { ignoreEncryption: true, updateMetadata: false });
+            _probedPageCount = _pageCountProbeDoc.getPageCount();
+          }
+        } catch (e) {
+          // Both readers refused the file. The bounded estimate is then the only guard left.
+          warnLog('[PDF Fix] page-count probe failed (' + ((e && e.message) || e) + ') — falling back to a capped size estimate');
+          _pageCountProbeDoc = null;
+        }
+      }
+      const _pageCountVerdict = _alloResolveExtractionPageCount(effectivePageCount, _pageCountIsSizeEstimate, _probedPageCount, M13_MAX_ESTIMATED_PAGES);
+      if (_pageCountVerdict.pageCount !== effectivePageCount) {
+        warnLog(_pageCountVerdict.source === 'probed'
+          ? `[PDF Fix] size estimate ${effectivePageCount} pages replaced with the real page count ${_pageCountVerdict.pageCount} (pdf.js could not open this file; pdf-lib could)`
+          : `[PDF Fix] page-count estimate ${effectivePageCount} is unverifiable (neither pdf.js nor pdf-lib could open this file) — capping the extraction fan-out at ${_pageCountVerdict.pageCount} pages`);
+      }
+      effectivePageCount = _pageCountVerdict.pageCount;
+      _pageCountIsSizeEstimate = _pageCountVerdict.isEstimate;
+
       const PAGES_PER_CHUNK = 2; // Tight: 2 pages per chunk — safely fits in 8192 output tokens
       const numChunks = Math.max(1, Math.ceil(effectivePageCount / PAGES_PER_CHUNK));
 
@@ -21330,6 +21809,15 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // same name could pick it up and inject the prior doc's text. (multisession-resume-3, 2026-06-21)
           const _seed = window.__resumeExtractedText;
           window.__resumeExtractedText = null;
+          // M18 (audit 2026-07-26): single-use WITHIN a run, not once per document. The seed was
+          // deleted on the first attempt and never re-armed, so when that attempt died on the very
+          // throttle it was loaded to survive, the hands-off wrapper's up-to-3 automatic retries
+          // each re-ran the FULL Tesseract + Vision extraction on a 40-page scan — burning exactly
+          // the quota the resume feature exists to avoid, into a proxy that was already throttling,
+          // and the teacher was never told the shortcut had been lost. (The seeded run also banks
+          // nothing in the session OCR cache: that write gate requires window.__lastOcrMethod, which
+          // only the real dual-OCR path sets.) Held here and restored on the failure path below.
+          _consumedResumeSeed = _seed || null;
           if ((!extractedText || extractedText.length <= 100) && !_forceFullOcr && _seed && _seed.fileName === _fileName && typeof _seed.text === 'string' && _seed.text.trim().length >= 50) {
             // H2 (deep dive 2026-07-02): content identity, not just the name. Filename-only
             // matching meant a DIFFERENT "scan.pdf" re-uploaded at the resume prompt shipped the
@@ -21429,7 +21917,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               try { await ensurePdfLibLoaded(); } catch (_) {}
               _NSlib = (typeof window !== 'undefined' && window.PDFLib) || null;
             }
-            if (_NSlib && _NSlib.PDFDocument) {
+            if (_pageCountProbeDoc) {
+              _sliceSrcDoc = _pageCountProbeDoc; // M13: already parsed for the page-count probe
+            } else if (_NSlib && _NSlib.PDFDocument) {
               try { _sliceSrcDoc = await _NSlib.PDFDocument.load(_b64ToBytes(_base64), { ignoreEncryption: true, updateMetadata: false }); }
               catch (e) { warnLog('[Vision] slice-source load failed — falling back to full-doc uploads: ' + (e && e.message)); _sliceSrcDoc = null; }
             } else {
@@ -21594,7 +22084,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
         const _tesseractExtract = async () => extractPdfTextTesseract(_base64, (ev) => {
           updateProgress(1, `Tesseract OCR page ${ev.page}/${ev.total} (${ev.phase})…`);
-        }, _ocrTessLang);
+        }, _ocrTessLang, _pageRange); // M14: OCR the selected range only, like Vision already does
 
         let tessResult = { fullText: '', pages: [] };
         let visionResult = { fullText: '', pages: [] };
@@ -21629,6 +22119,20 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const _rs = Math.max(1, _pageRange[0] || 1);
           const _re = _pageRange[1] || Infinity;
           _tessPagesForRec = _tessPagesForRec.filter(p => p && typeof p.pageNum === 'number' && p.pageNum >= _rs && p.pageNum <= _re);
+          // M14: the SAME filter has to reach the errors. It used to apply to pages only, so a
+          // failure on an out-of-scope page still reached window.__lastOcrPageErrors — naming
+          // pages this run never touched in the Stage-1 banner, and (because
+          // _ocrEvidenceCompatible rejects any record with page errors) permanently blocking the
+          // session from banking its OCR evidence, forcing a full re-OCR on every retry. Belt and
+          // braces now that the loop itself is bounded: an engine-level synthesized record, or a
+          // stale result from before the range narrowed, can still carry out-of-range entries.
+          if (Array.isArray(tessResult.pageErrors) && tessResult.pageErrors.length) {
+            const _keptErrors = tessResult.pageErrors.filter(e => !(e && typeof e.pageNum === 'number') || (e.pageNum >= _rs && e.pageNum <= _re));
+            if (_keptErrors.length !== tessResult.pageErrors.length) {
+              warnLog(`[OCR reconcile] dropped ${tessResult.pageErrors.length - _keptErrors.length} Tesseract page error(s) outside the selected range ${_rs}-${_re === Infinity ? 'end' : _re}`);
+              tessResult = Object.assign({}, tessResult, { pageErrors: _keptErrors });
+            }
+          }
         }
         const rec = reconcileOcrPages(_tessPagesForRec, visionResult.pages || []);
         // #F (2026-07-05): remember the running-head/folio numbers the page-edge strip detected, so the
@@ -22526,7 +23030,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           const failed = !blocks || blocks.length === 0;
           chunkMeta.push({ index: ci, startPage: startPg, endPage: endPg, blockCount: blocks ? blocks.length : 0, status: failed ? 'failed' : 'success' });
           if (failed) {
-            allBlocks.push({ type: 'rawhtml', html: '<div data-chunk-fail="' + ci + '" role="alert" aria-live="assertive" aria-atomic="true" style="background:#fef2f2;border:2px dashed #ef4444;border-radius:12px;padding:16px;margin:1em 0;text-align:center"><p style="color:#991b1b;font-weight:bold;font-size:0.9em"><span aria-hidden="true">\u26a0\ufe0f </span>Section ' + (ci + 1) + ' (pages ' + startPg + '-' + endPg + ') failed to process</p><button onclick="window.__retryPdfChunk && window.__retryPdfChunk(' + ci + ')" aria-label="Retry processing section ' + (ci + 1) + ', pages ' + startPg + ' through ' + endPg + '" style="margin-top:8px;padding:6px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:bold;font-size:12px;cursor:pointer"><span aria-hidden="true">\ud83d\udd04 </span>Retry This Section</button></div>' });
+            allBlocks.push({ type: 'rawhtml', html: '<div data-chunk-fail="' + ci + '" data-chunk-pages="' + startPg + '-' + endPg + '" role="alert" aria-live="assertive" aria-atomic="true" style="background:#fef2f2;border:2px dashed #ef4444;border-radius:12px;padding:16px;margin:1em 0;text-align:center"><p style="color:#991b1b;font-weight:bold;font-size:0.9em"><span aria-hidden="true">\u26a0\ufe0f </span>Section ' + (ci + 1) + ' (pages ' + startPg + '-' + endPg + ') failed to process</p><p style="color:#991b1b;font-size:0.85em">This section is missing from the document below. Re-run the remediation to try it again \u2014 the sections that succeeded are reused, so a retry is quick.</p></div>' });
           } else {
             allBlocks.push({ type: 'rawhtml', html: '<div data-chunk-start="' + ci + '" style="display:none"></div>' });
             allBlocks = allBlocks.concat(blocks);
@@ -22539,6 +23043,15 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
         warnLog(`[PDF Fix] JSON pipeline (chunked): ${allBlocks.length} blocks rendered`);
 
         // ── Chunk retry function (exposed on window) ──
+        // M11 (audit 2026-07-26): this handler used to re-render the ENTIRE body from `allBlocks` —
+        // the un-polished, un-sanitized, un-imaged Step-2 draft — and splice it over the whole
+        // <body> of the finished document. That discarded the skip link, the <main id="main-content">
+        // landmark, the contentinfo footer, every Step-3/4 axe fix, the grammar corrections and the
+        // restored image data URLs, while the displayed score stayed unchanged. It also had no
+        // document-epoch or run-generation guard, so a retry clicked after the teacher moved on
+        // would rewrite the NEW document. It now replaces only the failed section's node, in a
+        // parsed copy of the CURRENT html, and refuses to publish across a document change.
+        const _retryDocumentEpoch = _runDocumentEpoch;
         window.__retryPdfChunk = async (chunkIdx) => {
           try {
             const meta = chunkMeta[chunkIdx];
@@ -22557,14 +23070,47 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               if (failIdx >= 0) {
                 allBlocks.splice(failIdx, 1, { type: 'rawhtml', html: '<div data-chunk-start="' + chunkIdx + '" style="display:none"></div>' }, ...retryBlocks, { type: 'rawhtml', html: '<div data-chunk-end="' + chunkIdx + '" style="display:none"></div>' });
               }
-              // Re-render full body
-              bodyContent = renderJsonToHtml(allBlocks);
-              // Update the display
-              const previewEl = document.querySelector('[data-pdf-fix-preview]');
-              if (previewEl) previewEl.innerHTML = bodyContent;
+              // M11: refuse to publish across a document change.
+              // Read through the canonical resolver, not the raw global: it normalizes the epoch, so
+              // a string-vs-number difference cannot false-trip this guard (or, worse, satisfy it).
+              const _liveEpochNow = _readCurrentDocumentEpoch();
+              if (_liveEpochNow !== null && _retryDocumentEpoch !== null && _liveEpochNow !== _retryDocumentEpoch) {
+                warnLog('[PDF Fix] Chunk retry finished after the document changed — discarding it rather than rewriting the new document.');
+                if (failDiv) failDiv.innerHTML = '<p style="color:#991b1b;font-weight:bold;font-size:0.9em">This retry finished after you moved to another document, so it was discarded.</p>';
+                return;
+              }
+              // M11: SURGICAL splice — replace only this section's node inside a parsed copy of the
+              // CURRENT html. Re-rendering the whole body from allBlocks threw away everything
+              // Steps 3 and 4 added.
+              const _retryHtmlFragment = renderJsonToHtml(retryBlocks);
               const storedResult = window.__pdfFixResultRef;
-              if (storedResult && storedResult.set) storedResult.set(prev => ({ ...prev, accessibleHtml: prev.accessibleHtml.replace(/<body[^>]*>[\s\S]*<\/body>/, () => '<body>' + bodyContent + '</body>') })); // fn replacer: bodyContent is data, so $&/$1/$$ in document text are NOT treated as replace tokens
-              warnLog('[PDF Fix] Chunk ' + (chunkIdx + 1) + ' retry SUCCESS: ' + retryBlocks.length + ' blocks');
+              const _spliceInto = (html) => {
+                try {
+                  const _doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+                  const _node = _doc.querySelector('[data-chunk-fail="' + chunkIdx + '"]');
+                  if (!_node) return null;
+                  const _wrap = _doc.createElement('div');
+                  _wrap.innerHTML = _retryHtmlFragment;
+                  while (_wrap.firstChild) _node.parentNode.insertBefore(_wrap.firstChild, _node);
+                  _node.parentNode.removeChild(_node);
+                  return '<!DOCTYPE html>' + _doc.documentElement.outerHTML;
+                } catch (_) { return null; }
+              };
+              const previewEl = document.querySelector('[data-pdf-fix-preview]');
+              if (previewEl) {
+                const _pf = previewEl.querySelector('[data-chunk-fail="' + chunkIdx + '"]');
+                if (_pf) _pf.outerHTML = _retryHtmlFragment;
+              }
+              if (storedResult && storedResult.set) {
+                storedResult.set(prev => {
+                  const _next = _spliceInto(prev && prev.accessibleHtml);
+                  if (!_next) { warnLog('[PDF Fix] Chunk retry could not find its placeholder in the current document — leaving it untouched.'); return prev; }
+                  // The score described the document WITHOUT this section; it no longer describes
+                  // what the teacher has. Say so rather than letting a stale number stand.
+                  return Object.assign({}, prev, { accessibleHtml: _next, _scoreStaleAfterChunkRetry: true });
+                });
+              }
+              warnLog('[PDF Fix] Chunk ' + (chunkIdx + 1) + ' retry SUCCESS: ' + retryBlocks.length + ' blocks spliced in place');
             } else {
               if (failDiv) failDiv.innerHTML = '<p style="color:#991b1b;font-weight:bold;font-size:0.9em">\u274c Retry failed. Try running the full remediation again.</p>';
             }
@@ -23882,15 +24428,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           warnLog(`[PDF Fix] Final audit: score ${finalAudit.score}, ${(finalAudit.issues || []).length} remaining issues, ${(finalAudit.passes || []).length} passes` + (finalAudit._partialAudit ? ` — ⚠ PARTIAL (${finalAudit.chunksAudited}/${finalAudit.chunksRequested} sections audited under Canvas throttle; headline score covers audited content only — re-run for a full-coverage score)` : ''));
         } else {
           _finalAuditIncompleteReason = 'final-audit-empty';
-          _finalAuditThrottled = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
-            || (_geminiCap < _geminiEffectiveMax);
+          _finalAuditThrottled = _geminiThrottleInfo().recentlyThrottled; // L7
         }
       } catch(finalAuditErr) {
         if (_runGenStale() || (finalAuditErr && (finalAuditErr.name === 'AbortError' || finalAuditErr.isAbort))) _throwIfRunCancelled();
         warnLog('[PDF Fix] Final audit failed (using loop result):', finalAuditErr);
         _finalAuditIncompleteReason = 'final-audit-error';
-        _finalAuditThrottled = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
-          || (_geminiCap < _geminiEffectiveMax);
+        _finalAuditThrottled = _geminiThrottleInfo().recentlyThrottled; // L7
       }
       // ── B (throttle resilience 2026-07-03): cooldown-aware deferred final re-audit ──
       // The final audit can come back PARTIAL when a Canvas rate-limit storm is active — its 3-round
@@ -23913,9 +24457,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const _reAuditNeeded = (verification && verification._partialAudit)
         || (_finalAuditThrottled && !_finalAuditHadUsableScore);
       if (_reAuditNeeded) {
-        const _throttleCaused = _finalAuditThrottled
-          || (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
-          || (_geminiCap < _geminiEffectiveMax); // R7: cap forced BELOW the run ceiling = a storm (robust vs pacing-to-1)
+        const _throttleCaused = _finalAuditThrottled || _geminiThrottleInfo().recentlyThrottled; // L7
         if (_throttleCaused) {
           _finalAuditThrottled = true;
           // R5 (2026-07-03): in BATCH mode fixAndVerifyPdf races an 8-min per-file wall (_withTimeout). The
@@ -24149,28 +24691,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           }
         }
         finalAfterScore = governingFinal;
-        // ── D (throttle resilience 2026-07-03): honest reframe of a residual throttled partial ──
-        // If B could not fully close a throttle-caused partial, the coverage summary still reads as an
-        // alarming "score covers audited sections only". But the automated engines (axe + Equal Access)
-        // DID audit the FULL document and GOVERN this headline — only the AI SEMANTIC re-check was
-        // throttled on the failed section(s). Reframe the summary so the disclosure is honest and
-        // non-alarming. Messaging ONLY — the min-blend score above is untouched (do NOT null/re-weight).
-        if (verification && verification._partialAudit) {
-          verification._aiReCheckThrottled = _finalAuditThrottled;
-          const _didSec = verification.chunksAudited, _reqSec = verification.chunksRequested;
-          // R3: name only the engine(s) that ACTUALLY ran (EA is optional — axe alone satisfies this
-          // branch, so claiming "IBM Equal Access" verified it when eaResults was null is an overclaim),
-          // and attribute the shortfall to a rate-limit ONLY when the partial was throttle-caused.
-          const _enginesRan = [axeScoreAvailable ? 'axe-core' : null, eaScoreAvailable ? 'IBM Equal Access' : null].filter(Boolean);
-          const _engineList = _enginesRan.join(' + ') || 'an automated engine';
-          const _engineNoun = _enginesRan.length > 1 ? 'engines' : 'engine';
-          const _reason = _finalAuditThrottled
-            ? 'the rest were throttled by a temporary Canvas rate-limit'
-            : 'the rest could not be re-checked (the response was empty or malformed)';
-          verification.summary = String(verification.summary || '')
-            .replace(/\s*\(\s*\d+\s*\/\s*\d+\s+sections audited[^)]*\)\s*$/i, '')
-            + ` (The AI semantic re-check reached ${_didSec} of ${_reqSec} section${_reqSec === 1 ? '' : 's'} — ${_reason}. The full document was still verified by the automated ${_engineNoun} (${_engineList}), and this headline reflects that complete structural coverage.)`;
-        }
+        // L4 (audit 2026-07-26): block D (the partial-coverage reframe) used to live RIGHT HERE,
+        // inside the `!_aiDegraded` arm, where it could never run. `_aiDegraded`
+        // is `!_alloUsableCompleteAiAudit(verification) || …`, and that predicate returns false for
+        // any audit with `_partialAudit === true`, so `verification._partialAudit` was provably
+        // false at this point and `_aiReCheckThrottled` was a field nothing could ever write. It now
+        // runs after the whole headline ladder, which is the only place a partial audit arrives.
       } else if (_aiDegraded && deterministicScore !== null) {
         // AI semantic audit incomplete but a deterministic engine DID run → headline = the reliable
         // structural score (min of axe/EA, or whichever ran), flagged so the UI labels it honestly.
@@ -24197,6 +24723,39 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         axeCoreFailed = true;
         if (_aiDegraded) finalAfterScore = null;
         warnLog(`[PDF Fix] WARNING: no deterministic engine score available (axe + Equal Access both failed) — final score is AI-only (${finalAfterScore}). Results may be less reliable.`);
+      }
+
+      // ── D (throttle resilience 2026-07-03): honest reframe of a residual throttled partial ──
+      // Made REACHABLE by L4 (audit 2026-07-26) — it used to sit inside a branch that could not
+      // contain a partial audit, so it never ran.
+      // If the deferred re-audit could not fully close a partial, the coverage summary reads as an
+      // alarming "score covers audited sections only". But when the automated engines audited the
+      // FULL document, the shortfall is confined to the AI SEMANTIC re-check on a few sections.
+      // Say exactly that, naming only the engines that actually ran and attributing the shortfall
+      // to a rate-limit only when one was actually involved.
+      //
+      // Deliberately MESSAGING ONLY: the headline chosen above, and whether _aiVerificationIncomplete
+      // suppresses it, are untouched. Whether a 29-of-30-section partial should be allowed to show a
+      // score at all is a product judgement about how much coverage is enough, not a mechanical fix —
+      // it stays with the existing conservative behaviour until someone decides otherwise.
+      if (verification && verification._partialAudit) {
+        verification._aiReCheckThrottled = _finalAuditThrottled;
+        const _didSec = verification.chunksAudited, _reqSec = verification.chunksRequested;
+        if (Number.isFinite(_didSec) && Number.isFinite(_reqSec) && _reqSec > 0 && deterministicScore !== null) {
+          // R3: name only the engine(s) that ACTUALLY ran (EA is optional — axe alone satisfies this
+          // branch, so claiming "IBM Equal Access" verified it when eaResults was null is an overclaim),
+          // and attribute the shortfall to a rate-limit ONLY when the partial was throttle-caused.
+          const _enginesRan = [axeScoreAvailable ? 'axe-core' : null, eaScoreAvailable ? 'IBM Equal Access' : null].filter(Boolean);
+          const _engineList = _enginesRan.join(' + ') || 'an automated engine';
+          const _engineNoun = _enginesRan.length > 1 ? 'engines' : 'engine';
+          const _reason = _finalAuditThrottled
+            ? 'the rest were throttled by a temporary Canvas rate-limit'
+            : 'the rest could not be re-checked (the response was empty or malformed)';
+          verification.summary = String(verification.summary || '')
+            .replace(/\s*\(\s*\d+\s*\/\s*\d+\s+sections audited[^)]*\)\s*$/i, '')
+            + ` (The AI semantic re-check reached ${_didSec} of ${_reqSec} section${_reqSec === 1 ? '' : 's'} — ${_reason}. The full document was still verified by the automated ${_engineNoun} (${_engineList}).)`;
+          warnLog('[PDF Fix] Partial AI re-check reframed: ' + _didSec + '/' + _reqSec + ' sections, deterministic coverage complete via ' + _engineList + '.');
+        }
       }
 
       // Score divergence check
@@ -24322,6 +24881,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       let integrityCoverage = null;
       let integrityWarning = null;
       let _folioLeakWarn = null; // #F (2026-07-05): a detected page folio leaked inline into the body
+      // L5 (audit 2026-07-26): declared HERE, above the integrity block that assigns it, on purpose.
+      // A `let` declared after the assignment site is a TDZ ReferenceError that the surrounding
+      // try/catch swallows, so the disclosure would vanish with nothing in the log — the exact trap
+      // an earlier fix in this audit hit.
+      let _readingOrderWarn = null;
       let _placementWarn = null; // H6 (2026-07-09): placement/reading-order warning — carried into the
       // persistent fidelity panel like the numeric one below. It used to live ONLY in integrityWarning
       // (a 3-second toast + the downloadable report), so during an unattended run the teacher never saw
@@ -24442,6 +25006,27 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             }
           }
         } catch (_) {}
+        // L5 (audit 2026-07-26): an actual READING-ORDER signal against the source. integrityCoverage
+        // is a character-count ratio and is completely order-blind — a document whose sections were
+        // re-ordered, or whose columns were interleaved, scores 100% — yet the distribution verdict
+        // was turning that number into a reading-order claim. readingOrderSequenceRatio exists and is
+        // exported, but Step 2 never ran it against the deterministic source: the only calls compared
+        // HTML to HTML inside a single fix pass, so a Step-2 transform that scrambled the whole
+        // document produced a green verdict. Threshold 0.80 leaves generous room for the legitimate
+        // reflow a remediation performs (headings promoted, captions moved next to their figure, a
+        // preserved-content box appended); WARN only.
+        try {
+          const _outPlainOrder = htmlToPlainText(_finalForIntegrity);
+          if (_srcRaw && _srcRaw.length > 400 && _outPlainOrder && _outPlainOrder.length > 400) {
+            const _orderRatio = readingOrderSequenceRatio(_srcRaw, _outPlainOrder);
+            if (Number.isFinite(_orderRatio) && _orderRatio < 0.80) {
+              _readingOrderWarn = 'The output text runs in a noticeably different order from the source (about '
+                + Math.round(_orderRatio * 100) + '% of the source wording is still in its original sequence). '
+                + 'Content can be present and still be unreadable in the wrong order — read the Diff before distributing.';
+              warnLog('[Integrity] READING-ORDER — ratio ' + _orderRatio.toFixed(2) + ' — ' + _readingOrderWarn);
+            }
+          }
+        } catch (_orderErr) { warnLog('[Integrity] reading-order check failed (non-critical): ' + (_orderErr && _orderErr.message)); }
       } catch (integrityErr) {
         warnLog('[Integrity] check failed (non-critical):', integrityErr?.message);
       }
@@ -24452,7 +25037,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // fidelity concern (review banner) + the diagnostics log, never block.
       let _structuralFidelityNotes = [];
       try {
-        _structuralFidelityNotes = _computeStructuralFidelityNotes((extractedText || '').replace(_ALLO_MARKER_RE, ''), accessibleHtml);
+        // M12: pdf.js Link annotations counted at extraction time, when the deterministic path
+        // produces no markdown for the link net to count. Null on the OCR path, where the Vision
+        // prompt does ask for `[text](url)` and the markdown count is the right baseline.
+        let _srcStructCounts = null;
+        try { const _lc = (typeof window !== 'undefined') ? window.__alloSourceLinkCount : null; if (Number.isFinite(_lc) && _lc > 0) _srcStructCounts = { links: _lc }; } catch (_) {}
+        _structuralFidelityNotes = _computeStructuralFidelityNotes((extractedText || '').replace(_ALLO_MARKER_RE, ''), accessibleHtml, _srcStructCounts);
         // H14 (audit 2026-07-26): the image/caption pairing check runs back in Step 2, long before
         // this array exists, so it parks its finding on a run-scoped signal. Consume it here — a
         // picture sitting under the wrong caption is a content-fidelity loss like any other, and it
@@ -24470,6 +25060,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       if (_placementWarn) _structuralFidelityNotes.push({ kind: 'placement', msg: _placementWarn }); // H6: rides the panel + fidelityLimited
       if (_numericLossWarn) _structuralFidelityNotes.push({ kind: 'numeric', msg: _numericLossWarn });
       if (_folioLeakWarn) _structuralFidelityNotes.push({ kind: 'folioLeak', msg: _folioLeakWarn }); // #F: leaked page number inline in the body
+      if (_readingOrderWarn) _structuralFidelityNotes.push({ kind: 'sourceReadingOrder', msg: _readingOrderWarn }); // L5: a DISTINCT kind from the view's 'reading-order' note, which compares a re-fix against the PREVIOUS version. This one compares the output against the SOURCE DOCUMENT, so a re-fix lane must not clobber it; only a re-extraction can change it, which is why it lives with the durable kinds.
       // #G (2026-07-05): disclose reconcile-time echo collapses in the same persistent panel. Gated on
       // _heavyScanned so a stale stash from a previous scanned run can't annotate a born-digital doc
       // (the stash is only written when reconciliation actually runs).
@@ -25119,14 +25710,24 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const gainNote = Number.isFinite(scoreGain) ? ` (+${scoreGain})` : '';
       const beforeDisplay = Number.isFinite(beforeScore) ? beforeScore : 'not measured';
       const fixNote = autoFixPasses > 0 ? ` (${autoFixPasses} auto-fix pass${autoFixPasses > 1 ? 'es' : ''})` : '';
-      if (integrityWarning && finalAfterScore !== null) {
+      // H3 (audit 2026-07-26): the branch is chosen by the pure selector above, so the six
+      // shapes can be tested against the real decision instead of a mirror of it.
+      const _toastBranch = _alloSelectCompletionToast({
+        outcomeState: _remediationOutcome.state,
+        integrityWarning: integrityWarning,
+        aiVerificationIncomplete: _aiVerificationIncomplete,
+        slicedAudit: !!(_auditResult && _auditResult._slicedAudit),
+        needsExpertReview: needsExpertReview,
+        finalAfterScore: finalAfterScore,
+      });
+      if (_toastBranch === 'integrity') {
         // The content-integrity gate flagged missing source text — NEVER show a green
         // "remediated" headline that contradicts the red integrity error + the failure sound
         // (the audio already distinguishes this case; the visible toast must too). This is the
         // literal "doesn't work every time" trap: the teacher acts on the last/loudest message.
         addToast(`⚠️ Score ${beforeScore} → ${finalAfterScore}${fixNote}, but some source text may be missing — review the Diff before distributing.`, 'warning');
         try { window.remediationAudio && window.remediationAudio.error(); } catch(e) {}
-      } else if (_aiVerificationIncomplete && finalAfterScore !== null) {
+      } else if (_toastBranch === 'ai-incomplete') {
         // The AI semantic audit was throttle-degraded → finalAfterScore is a deterministic structural-only
         // number, not a verified content score, and beforeScore (a blend) vs finalAfterScore
         // (deterministic-only) is not the same methodology, so the +gain is not meaningful. Mirror the
@@ -25134,24 +25735,24 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         const _estNote = Number.isFinite(_estimatedMinimumScore) ? ` Estimated minimum from the last successful AI audit: ${_estimatedMinimumScore}/100.` : '';
         addToast(`⚠️ Structural/automated checks: ${finalAfterScore}/100 — but the AI semantic audit was throttled and didn't finish${fixNote}.${_estNote} Re-run for a full verified score.`, 'warning');
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
-      } else if (_auditResult && _auditResult._slicedAudit && finalAfterScore !== null) {
+      } else if (_toastBranch === 'sliced-baseline') {
         // The BEFORE audit was a page-slice approximation (the whole-document audit failed), so
         // beforeScore and the whole-document finalAfterScore are NOT the same methodology — the
         // +gain is not a clean apples-to-apples delta. Report it neutrally; no "remediated!" claim
         // and no success chord. (sliced-baseline-delta, 2026-06-29)
         addToast(`PDF processed: ${beforeScore} → ${finalAfterScore}${fixNote}. The 'before' score was a page-slice approximation, so this change is approximate — review the Diff before distributing.`, 'info');
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
-      } else if (_remediationOutcome.state === 'success') {
+      } else if (_toastBranch === 'success') {
         addToast(`✅ PDF remediated and fully verified! Score: ${beforeDisplay} → ${finalAfterScore}${gainNote}${fixNote}`, 'success');
         try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
-      } else if (finalAfterScore !== null && finalAfterScore >= 80 && needsExpertReview) {
+      } else if (_toastBranch === 'expert-review') {
         // M4 (2026-07-03): score is high but a fidelity concern (garbled OCR, low alt quality, a dropped
         // link/table, a changed number) set needsExpertReview WITHOUT an integrityWarning, so the branches
         // above missed it. Don't play the victory chord or a green "remediated!" the teacher acts on as
         // done — route to the neutral/actionable toast + non-triumphant sound, like the integrity branch.
         addToast(`Score ${beforeScore} → ${finalAfterScore}${fixNote} — but this document needs an expert review before distributing (see the fidelity notes).`, 'warning');
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
-      } else if (finalAfterScore !== null) {
+      } else if (_toastBranch === 'improved') {
         addToast(`⚠️ PDF improved: ${beforeScore} → ${finalAfterScore}${fixNote}. Some issues may need manual review.`, 'info');
         // Audio: partial-success plays the complete chord (the integrityWarning case is handled
         // by the first branch above, so this path is always the clean one).
@@ -25209,6 +25810,15 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const _runWasCancelled = !!((err && (err.name === 'AbortError' || err.isAbort || err.code === 'ALLO_REMEDIATION_CANCELLED')) || _runGenStale());
       if (_runWasCancelled) warnLog('[PDF Fix] Cancelled:', err && err.message ? err.message : err);
       else warnLog('[PDF Fix] Error:', err);
+      // M18: hand the resume seed back so a retry does not re-OCR the whole document. Only if the
+      // slot is still empty — a newer run may already have armed its own, and this run's seed must
+      // never overwrite it.
+      try {
+        if (_consumedResumeSeed && typeof window !== 'undefined' && !window.__resumeExtractedText) {
+          window.__resumeExtractedText = _consumedResumeSeed;
+          warnLog('[Resume] Attempt failed — restored the saved-session text so a retry can reuse it instead of re-running the full OCR.');
+        }
+      } catch (_) {}
       const _failurePipelineStats = {
         runId: _runId, runSequence: _runSequence, documentEpoch: _runDocumentEpoch, outcome: _runWasCancelled ? 'cancelled' : 'failed',
         apiCalls: _runStats.apiCalls, visionCalls: _runStats.visionCalls,
@@ -25344,6 +25954,18 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         && window.__alloActivePdfRemediation.runId === _runId) {
         window.__alloActivePdfRemediation = null;
       }
+      // M20 (audit 2026-07-26): retire the PUBLISHED snapshot too. The auto-continue watchdog takes
+      // its "live owner" from `__alloActivePdfRemediation || __alloRemediationProgress`, and the
+      // second half was never cleared — so after a run finished, a watchdog could adopt a COMPLETED
+      // run as proof that something was live. An ownership proof has to be a live fact, not a
+      // leftover one. The view re-reads this on mount for hydration, so it is cleared only by its
+      // own run and only once that run is genuinely over.
+      try {
+        if (typeof window !== 'undefined' && window.__alloRemediationProgress
+          && window.__alloRemediationProgress.runId === _runId) {
+          window.__alloRemediationProgress = null;
+        }
+      } catch (_) {}
     }
   };
 
@@ -38102,6 +38724,49 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     if (documentEpoch === undefined || documentEpoch === null) return true;
     return run.documentEpoch === null || run.documentEpoch === documentEpoch;
   };
+  // ── H16 (audit 2026-07-26): a batch must hold the single-file lock too ─────────────────────
+  // The batch runner resolves the closure-local `fixAndVerifyPdf` directly, so it never took
+  // _activeSingleFixPromise — only the EXPORT is wrapped. A teacher could therefore start a
+  // single-file "Fix & Verify" over a live batch (the button stays armed, correctly, because a
+  // managed batch owns its own progress UI), and the two runs then shared mutable state:
+  // _pipelineStats is a module-level global re-pointed at run entry and read at CALL time, so the
+  // single-file run's API calls, retries and every _pipeLog/watchdog heartbeat got stamped with
+  // the batch file's runId and documentEpoch — and the single-file watchdog drops heartbeats
+  // whose runId does not match, so it can fire on a run that is demonstrably alive. Worse, the
+  // second run overwrites window.__alloPdfAbortSignal and its finally aborts that controller, so
+  // a batch file's in-flight Gemini calls can be cancelled by an unrelated run.
+  //
+  // The claim is MANAGED: _getActiveRemediationRun keeps returning null for it, so the probe and
+  // the single-file controls behave exactly as before — the lock's only job here is to reject a
+  // concurrent start. (The deeper fix, a per-run stats object instead of the shared global,
+  // remains open; this closes the reachable path to it.)
+  var _claimRemediationLockForBatch = function() {
+    var liveGeneration = (typeof window !== 'undefined') ? (window.__alloPdfRunGen || 0) : 0;
+    // Same stale-lock release _wrapFixAndVerify performs: a single-file run whose generation was
+    // invalidated is not a live owner.
+    if (_activeSingleFixPromise && !_activeRemediationManaged && !_activeSingleFixStarting && liveGeneration !== _activeSingleFixGeneration) {
+      warnLog('[Batch] Releasing stale single-file run lock after generation invalidation.');
+      _activeSingleFixPromise = null;
+      _activeSingleFixGeneration = 0;
+      _activeRemediationManaged = false;
+      _activeSingleFixStarting = false;
+    }
+    if (_activeSingleFixPromise) return null;
+    var token = { batch: true };
+    _activeSingleFixPromise = token;
+    _activeSingleFixGeneration = liveGeneration;
+    _activeRemediationManaged = true;
+    _activeSingleFixStarting = false;
+    return token;
+  };
+  var _releaseRemediationLockForBatch = function(token) {
+    if (token && _activeSingleFixPromise === token) {
+      _activeSingleFixPromise = null;
+      _activeSingleFixGeneration = 0;
+      _activeRemediationManaged = false;
+      _activeSingleFixStarting = false;
+    }
+  };
   var _wrapFixAndVerify = function(fn) { return function() {
     _bindState();
     var self = this;
@@ -38181,6 +38846,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     // integrity sweep the main path runs (~17270/17290) over THIS run's output, instead of carrying the
     // prior run's fidelity state onto the panel/amber-asterisk. Pure functions, no state binding.
     computeStructuralFidelityNotes: _computeStructuralFidelityNotes,
+    calmBudgetMs: _alloCalmBudgetMs, // H15 (2026-07-26): throttle waits clamped to the batch per-file wall
     numericFidelityLosses: _numericFidelityLosses,
     // C1: re-fix lanes MUST merge through this instead of assigning their fresh notes over the
     // whole array — durable extraction-time disclosures are not theirs to drop.
@@ -38330,6 +38996,9 @@ window.AlloModules.createDocPipeline.altQuality = _alloAltQuality; // static: al
 window.AlloModules.createDocPipeline.scanAltQuality = _alloScanAltQuality; // static: whole-document alt scan (DOMParser envs only)
 window.AlloModules.createDocPipeline.scanActiveContent = _alloScanActiveContent; // static: A1 Document Safety walk (needs a pdf-lib doc — exercised by the Playwright corpus)
 window.AlloModules.createDocPipeline.latexToSpeakable = _alloLatexToSpeakable; // static: LaTeX→spoken English (2026-07-02, Item E), unit-tested
+window.AlloModules.createDocPipeline.orderTextItems = _alloOrderTextItems; // static: H12 (2026-07-26) — column + RTL reading-order repair; pure, so the direction fix is unit-testable without pdf.js
+window.AlloModules.createDocPipeline.resolveExtractionPageCount = _alloResolveExtractionPageCount; // static: M13 (2026-07-26) — guessed-page-count precedence + cap for the Vision fan-out
+window.AlloModules.createDocPipeline.selectCompletionToast = _alloSelectCompletionToast; // static: H3 (2026-07-26) — the completion-toast ladder, testable against the real decision
 window.AlloModules.createDocPipeline.cleanScannedOcrText = _cleanScannedOcrText; // static: P2-a folio-strip + hyphen-rejoin (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.stripRestoreMarkdown = _stripRestoreMarkdown; // static: P2-b restore markdown-strip (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.stripPageEdgeArtifacts = _stripPageEdgeArtifacts; // static: #F page-edge running-head/folio strip (2026-07-05), unit-tested

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Galaxy Explorer — visual preview</title>
+<!--
+  Standalone visual harness for stem_lab/stem_tool_galaxy.js.
+
+  Why: the automated tests prove the scene BUILDS, not that it looks good — there
+  is no GPU and no three.js in the vitest environment. Tuning the look needs eyes
+  on a real render.
+
+  THIS IS THE QUICK LOOP, NOT THE AUTHORITATIVE ONE.
+
+  For a faithful render use the real dev server, which is how this repo has
+  previewed tools before (see skatelab-preview.log):
+
+      cd desktop/web-app && npm start        # react-scripts, localhost:3108
+
+  That gives you the true host context, the real lang packs and the project's
+  actual Tailwind build. Remember it serves from desktop/web-app/public/, so run
+  `node build.js` (or copy stem_lab/*.js across) after editing the tool.
+
+  This file trades that fidelity for speed: open it directly in Chrome
+  (double-click, or drag into a tab), no build step, and it carries live sliders
+  for the values worth sweeping. It loads the real tool from ../stem_lab/, so the
+  SCENE is genuine; only the surrounding host is faked. Judge the 3-D look here,
+  then confirm anything layout- or translation-related on the dev server.
+
+  Needs an internet connection: React, Tailwind and three.js come from CDNs.
+-->
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<style>
+  body { background: #0b1020; color: #e2e8f0; font-family: Inter, system-ui, sans-serif; margin: 0; }
+  #tuning { position: fixed; right: 12px; bottom: 12px; z-index: 9999; width: 300px;
+            background: rgba(2,6,23,0.92); border: 1px solid rgba(129,140,248,0.35);
+            border-radius: 12px; padding: 12px; font-size: 12px; line-height: 1.5;
+            backdrop-filter: blur(8px); max-height: 70vh; overflow-y: auto; }
+  #tuning h2 { font-size: 12px; font-weight: 900; margin: 0 0 6px; letter-spacing: .08em; text-transform: uppercase; color: #a5b4fc; }
+  #tuning label { display: block; margin-top: 8px; font-weight: 700; color: #cbd5e1; }
+  #tuning input[type=range] { width: 100%; }
+  #tuning code { color: #7dd3fc; }
+  #tuning .note { color: #94a3b8; font-size: 11px; margin-top: 10px; }
+  #mount { padding: 16px; }
+  #boot-error { display: none; margin: 24px; padding: 16px; border-radius: 12px;
+                border: 1px solid #f87171; background: rgba(127,29,29,.4); }
+</style>
+</head>
+<body>
+<div id="boot-error"></div>
+<div id="mount"></div>
+
+<aside id="tuning" hidden>
+  <h2>Live tuning</h2>
+  <div>These edit the running scene. Shader constants
+    (<code>CORE_TIGHTNESS</code>, <code>CORE_GAIN</code>, <code>HALO_GAIN</code>)
+    are compiled in — change them in the tool file and reload.</div>
+
+  <label>Bloom strength <span id="v-bs"></span></label>
+  <input id="bs" type="range" min="0" max="3" step="0.02">
+
+  <label>Bloom radius <span id="v-br"></span></label>
+  <input id="br" type="range" min="0" max="1" step="0.01">
+
+  <label>Bloom threshold <span id="v-bt"></span></label>
+  <input id="bt" type="range" min="0" max="1" step="0.01">
+
+  <label>Dust lane opacity <span id="v-du"></span></label>
+  <input id="du" type="range" min="0" max="0.6" step="0.005">
+
+  <div class="note">
+    Console handles:<br>
+    <code>G = document.querySelector('[data-galaxy-canvas]')</code><br>
+    <code>G._layers</code> · <code>G._bloomPass</code> · <code>G._setObserveMode('infrared')</code>
+  </div>
+</aside>
+
+<script>
+// ── Host contract ──
+// The tool opens with `window.StemLab = window.StemLab || {…defensive guard…}`.
+// Creating a bare object here would satisfy that `||` and suppress the guard, so
+// registerTool would not exist and registration would throw. Provide the full
+// shape the tool expects, plus ensureThree, which the guard does NOT include.
+window.StemLab = window.StemLab || {
+  _registry: {},
+  _order: [],
+  registerTool: function (id, config) {
+    config.id = id;
+    config.ready = config.ready !== false;
+    this._registry[id] = config;
+    if (this._order.indexOf(id) === -1) this._order.push(id);
+    console.log('[preview] registered tool: ' + id);
+  },
+  getRegisteredTools: function () {
+    var self = this;
+    return this._order.map(function (id) { return self._registry[id]; }).filter(Boolean);
+  },
+  isRegistered: function (id) { return !!this._registry[id]; },
+  renderTool: function (id, ctx) {
+    var tool = this._registry[id];
+    if (!tool || !tool.render) return null;
+    return tool.render(ctx);
+  }
+};
+window.StemLab.ensureThree = function () {
+  if (window.__threePromise) return window.__threePromise;
+  var urls = ['https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'];
+  window.__threePromise = urls.reduce(function (chain, url) {
+    return chain.then(function () {
+      return new Promise(function (resolve, reject) {
+        var s = document.createElement('script');
+        s.src = url; s.onload = resolve; s.onerror = function () { reject(new Error('failed: ' + url)); };
+        document.head.appendChild(s);
+      });
+    });
+  }, Promise.resolve());
+  return window.__threePromise;
+};
+</script>
+
+<script src="../stem_lab/stem_tool_galaxy.js"></script>
+
+<script>
+(function () {
+  var fail = function (msg) {
+    var el = document.getElementById('boot-error');
+    el.style.display = 'block';
+    el.textContent = msg;
+    console.error(msg);
+  };
+  if (!window.React || !window.ReactDOM) return fail('React failed to load from the CDN — check your connection.');
+  if (!window.StemLab || !window.StemLab.isRegistered || !window.StemLab.isRegistered('galaxy')) {
+    return fail('stem_tool_galaxy.js did not register. Open the console: a syntax error in the tool would show there.');
+  }
+
+  var h = React.createElement;
+  var noop = function () {};
+  // Minimal stand-ins for the host context. Anything the tool guards with
+  // `typeof x === 'function'` is still provided so those paths get exercised too.
+  function icon(label) {
+    return function (props) { return h('span', { 'aria-hidden': true, style: { fontSize: (props && props.size) || 16 } }, label); };
+  }
+
+  function Harness() {
+    var s = React.useState({ galaxy: {} });
+    var toolData = s[0], setToolData = s[1];
+    var snaps = React.useState([]);
+    var cfg = window.StemLab._registry.galaxy;
+    return cfg.render({
+      React: React,
+      toolData: toolData,
+      setToolData: setToolData,
+      toolSnapshots: snaps[0],
+      setToolSnapshots: snaps[1],
+      stemLabTab: 'explore',
+      stemLabTool: 'galaxy',
+      setStemLabTool: function (id) { console.log('[preview] setStemLabTool', id); },
+      setStemLabTab: noop,
+      addToast: function (m) { console.log('[preview] toast:', m); },
+      // Mirrors the app: t(key, fallback) resolves to the English fallback.
+      t: function (key, fallback) { return fallback || key; },
+      icons: {
+        ArrowLeft: icon('←'), Calculator: icon('∑'),
+        Sparkles: icon('✨'), X: icon('✕'), GripVertical: icon('⋮'),
+      },
+      announceToSR: noop,
+      awardXP: function (id, n, why) { console.log('[preview] XP', n, why); },
+      getXP: function () { return 0; },
+      celebrate: noop,
+      beep: noop,
+      callGemini: function (p, cb) { console.log('[preview] callGemini stubbed'); cb && cb(null); },
+      callTTS: noop, callImagen: noop, callGeminiVision: noop,
+      gradeLevel: 6,
+      srOnly: 'sr-only',
+      a11yClick: function (fn) { return { onClick: fn }; },
+      canvasA11yDesc: noop,
+      canvasNarrate: noop,
+      renderTutorial: function () { return null; },
+      _tutGalaxy: [],
+      props: {},
+    });
+  }
+
+  try {
+    ReactDOM.createRoot(document.getElementById('mount')).render(h(Harness));
+  } catch (e) {
+    return fail('Mounting the tool threw: ' + (e && e.message));
+  }
+
+  // ── Wire the tuning panel once the scene exists ──
+  var panel = document.getElementById('tuning');
+  var bind = function (inputId, valueId, read, write) {
+    var input = document.getElementById(inputId), out = document.getElementById(valueId);
+    var initial = read();
+    if (initial === undefined || initial === null) return false;
+    input.value = initial;
+    out.textContent = Number(initial).toFixed(2);
+    input.addEventListener('input', function () {
+      write(parseFloat(input.value));
+      out.textContent = parseFloat(input.value).toFixed(2);
+    });
+    return true;
+  };
+
+  var tries = 0;
+  var wire = setInterval(function () {
+    var g = document.querySelector('[data-galaxy-canvas]');
+    if (++tries > 200) { clearInterval(wire); return; }
+    if (!g || !g._layers || !g._bloomPass) return;
+    clearInterval(wire);
+    window.G = g; // console convenience
+    var bloom = g._bloomPass;
+    var dustMat = g._layers.dust && g._layers.dust.children[0] && g._layers.dust.children[0].material;
+    bind('bs', 'v-bs', function () { return bloom.strength; }, function (v) { bloom.strength = v; });
+    bind('br', 'v-br', function () { return bloom.radius; }, function (v) { bloom.radius = v; });
+    bind('bt', 'v-bt', function () { return bloom.threshold; }, function (v) { bloom.threshold = v; });
+    if (dustMat) bind('du', 'v-du', function () { return dustMat.opacity; }, function (v) { dustMat.opacity = v; });
+    panel.hidden = false;
+    console.log('[preview] scene ready — quality tier:', g.getAttribute('data-resolved-quality'),
+                '· render resolution:', g.getAttribute('data-render-resolution'));
+  }, 100);
+})();
+</script>
+</body>
+</html>

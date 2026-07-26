@@ -206,10 +206,17 @@ window.StemLab = window.StemLab || {
     scene.add(rim);
     // Ground
     scene.add(new THREE.GridHelper(20, 20, isDarkBg ? 0x64748b : 0x475569, isDarkBg ? 0x334155 : 0xcbd5e1));
-    // Shadow catcher — invisible plane that only shows the soft shadow
+    // Shadow catcher — invisible plane that only shows the soft shadow.
+    // depthWrite:false is load-bearing. ShadowMaterial sets transparent=true but
+    // inherits depthWrite=true, so this 40x40 catcher wrote depth across the whole
+    // floor while rendering nothing visible. OrbitControls has no polar clamp here
+    // (looking up at the base of a solid is a legitimate thing to want), so as soon
+    // as the camera dipped below the grid the plane sorted in front of the model and
+    // silently depth-rejected every solid above it — the construction vanished until
+    // the camera came back up. Writing no depth makes the catcher purely additive.
     var shadowPlane = new THREE.Mesh(
       new THREE.PlaneGeometry(40, 40),
-      new THREE.ShadowMaterial({ opacity: isDarkBg ? 0.32 : 0.22 })
+      new THREE.ShadowMaterial({ opacity: isDarkBg ? 0.32 : 0.22, depthWrite: false })
     );
     shadowPlane.rotation.x = -Math.PI / 2;
     shadowPlane.position.y = 0.001;
@@ -244,8 +251,11 @@ window.StemLab = window.StemLab || {
     var _pickRay = new THREE.Raycaster();
     try { if (_pickRay.params && _pickRay.params.Line) _pickRay.params.Line.threshold = 0.25; } catch (e) {}
     var _pickV2 = new THREE.Vector2();
-    // Ground plane (y=0) for click-to-place: when placement is armed, a tap on empty
-    // space drops a point where the ray meets the floor — no headset needed.
+    // Placement plane for click-to-place: when placement is armed, a tap on empty
+    // space drops a point where the ray meets it — no headset needed. The plane is
+    // horizontal and RIDES AT THE CURRENT PLACEMENT HEIGHT (window._geoPlaceY), so
+    // a tap lands on the floor at height 0 and on a raised level above it. A
+    // three.js Plane satisfies normal·p + constant = 0, so height h → constant -h.
     var _groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     var _gpHit = new THREE.Vector3();
     function _geoPickDown(e) { _pick.down = true; _pick.moved = false; _pick.x = e.clientX; _pick.y = e.clientY; }
@@ -273,8 +283,10 @@ window.StemLab = window.StemLab || {
       // 2) Otherwise, if click-to-place is armed, drop a point on the ground plane.
       try {
         if (window._geoPlaceArmed && window._geoPlacePoint) {
+          var _ph = +window._geoPlaceY || 0;
+          _groundPlane.constant = -_ph;                          // ride the plane at the chosen height
           var hit = _pickRay.ray.intersectPlane(_groundPlane, _gpHit);
-          if (hit) window._geoPlacePoint(_gpHit.x, _gpHit.z);   // placePoint() applies snap
+          if (hit) window._geoPlacePoint(_gpHit.x, _gpHit.z, _gpHit.y);   // placePoint() applies snap
         }
       } catch (err) {}
     }
@@ -1779,6 +1791,28 @@ window.StemLab = window.StemLab || {
     group.add(label);
   }
 
+  // ── Transparent-sort fix (PURE transform, world position unchanged) ──────────
+  // Construction geometry is authored in WORLD coordinates with the mesh left at
+  // the origin. three.js keys the transparent-pass sort on the projected origin of
+  // matrixWorld, so every construction object came out with an IDENTICAL sort key.
+  // Equal keys fall back to object id — creation order — and since these materials
+  // write depth, the object built FIRST drew first and punched a depth hole through
+  // later ones wherever they overlapped on screen, regardless of which was actually
+  // nearer the camera. Orbiting changed the overlap, so solids winked out and back
+  // (worst on the two-solid challenges: Cavalieri twins, the square-cube copy).
+  // Pushing the centroid into the group's transform, with children compensating,
+  // gives each object a sort key at its real position. Meshes that already carry a
+  // position (the point sphere) are left alone — they never tied.
+  function recentreForSort(THREE, node) {
+    if (!node || !node.isGroup || !node.children || !node.children.length) return;
+    var box = new THREE.Box3().setFromObject(node);
+    if (box.isEmpty()) return;
+    var c = box.getCenter(new THREE.Vector3());
+    if (!isFinite(c.x) || !isFinite(c.y) || !isFinite(c.z)) return;
+    node.children.forEach(function(child) { child.position.sub(c); });
+    node.position.copy(c);
+  }
+
   // Render construction objects into a Three.js scene group, returns the group.
   function buildConstructionGroup(THREE, objects, selectedId, showLabels, unitShort) {
     var group = new THREE.Group();
@@ -1839,8 +1873,12 @@ window.StemLab = window.StemLab || {
         var p6 = vec3Add(p2, o.w);
         var p7 = vec3Add(p3, o.w);
         var pts = [p0, p1, p2, p3, p4, p5, p6, p7];
+        // Winding matters: every face must wind counter-clockwise seen from OUTSIDE
+        // or its normal points into the solid and it gets back-face culled. The base
+        // is the one that reverses — [0,1,2,3] triangulates to a normal of u x v,
+        // which points along +w, i.e. up into the prism. [0,3,2,1] gives -w.
         var faces = [
-          [0, 1, 2, 3], // bottom
+          [0, 3, 2, 1], // bottom
           [4, 5, 6, 7], // top
           [0, 1, 5, 4], // front
           [1, 2, 6, 5], // right
@@ -1856,7 +1894,9 @@ window.StemLab = window.StemLab || {
         var prismGeo = new THREE.BufferGeometry();
         prismGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(verts2), 3));
         prismGeo.computeVertexNormals();
-        mesh = new THREE.Mesh(prismGeo, new THREE.MeshStandardMaterial({ color: color, transparent: true, opacity: 0.7 }));
+        // side: DoubleSide to match every other solid here — a student looking up at
+        // the base from under the grid should see a face, not straight through it.
+        mesh = new THREE.Mesh(prismGeo, new THREE.MeshStandardMaterial({ color: color, transparent: true, opacity: 0.7, side: THREE.DoubleSide }));
         var prismEdges = new THREE.EdgesGeometry(prismGeo);
         var prismEdgeLines = new THREE.LineSegments(prismEdges, new THREE.LineBasicMaterial({ color: 0x0f172a }));
         var prismGroup = new THREE.Group();
@@ -1866,7 +1906,7 @@ window.StemLab = window.StemLab || {
         // Tapered solid (pyramid / frustum): base + scaled top via taperCorners.
         var C = taperCorners(o);
         var ptsPy = C.base.concat(C.top);   // [b0,b1,b2,b3, t0,t1,t2,t3]
-        var facesPy = [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [3, 0, 4, 7]];
+        var facesPy = [[0, 3, 2, 1], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [3, 0, 4, 7]];   // base reversed — see the prism note above
         var vertsPy = [];
         facesPy.forEach(function(f) {
           var v0 = ptsPy[f[0]], v1 = ptsPy[f[1]], v2 = ptsPy[f[2]], v3 = ptsPy[f[3]];
@@ -1894,6 +1934,7 @@ window.StemLab = window.StemLab || {
         mesh = rvGroup;
       }
       if (mesh) {
+        recentreForSort(THREE, mesh);
         mesh.userData.objId = o.id;
         mesh.userData.objType = o.type;
         group.add(mesh);
@@ -1928,10 +1969,19 @@ window.StemLab = window.StemLab || {
       c0[0], c0[1], c0[2], c2[0], c2[1], c2[2], c3[0], c3[1], c3[2]
     ]), 3));
     geo.computeVertexNormals();
-    group.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false })));
+    // depthTest:false + renderOrder — same convention as the measurement sprites.
+    // The slice lives INSIDE the solid it slices, so with depth testing on it was
+    // rejected by the prism's own front face whenever the prism happened to draw
+    // first, and the cross-section simply didn't appear. Reading it THROUGH the
+    // translucent solid is the whole point of the visual, so it draws on top.
+    var sliceFill = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false, depthTest: false }));
+    sliceFill.renderOrder = 4000;
+    group.add(sliceFill);
     // bright outline loop
     var loop = new THREE.BufferGeometry().setFromPoints([V(c0), V(c1), V(c2), V(c3), V(c0)]);
-    group.add(new THREE.Line(loop, new THREE.LineBasicMaterial({ color: 0xfde047 })));
+    var sliceLine = new THREE.Line(loop, new THREE.LineBasicMaterial({ color: 0xfde047, transparent: true, depthTest: false }));
+    sliceLine.renderOrder = 4001;
+    group.add(sliceLine);
     return group;
   }
 
@@ -2082,6 +2132,7 @@ window.StemLab = window.StemLab || {
       var snap = gd.snap != null ? gd.snap : 1;            // 0 = off, else grid size
       var placeX = gd.placeX != null ? gd.placeX : 0;
       var placeZ = gd.placeZ != null ? gd.placeZ : 0;
+      var placeY = gd.placeY != null ? gd.placeY : 0;       // height above the grid; 0 = on the floor
       var resizeSnapRef = React.useRef(false);              // one undo snapshot per slider drag
       // ── AI Sculpt (v3, reuses window.AlloModules.Prim3D) ──
       var sculptRecipe = gd.sculptRecipe || null;
@@ -2282,13 +2333,15 @@ window.StemLab = window.StemLab || {
         var mm = geoStretchMeasure(objs[nextIdx]);
         if (announceToSR && mm) announceToSR('Selected ' + mm.label.toLowerCase() + (mm.dim > 0 ? ' ' + (Math.round(mm.value * 100) / 100) : ''));
       }
-      // ── Free placement (Foundation wave) — drop a point at a snapped x/z on the
-      //    ground plane. Called by the numeric "Place" button and by the canvas
-      //    raycaster (window._geoPlacePoint) when click-to-place is armed. ──
-      function placePoint(x, z) {
-        var sx = snap ? Math.round(x / snap) * snap : Math.round(x * 100) / 100;
-        var sz = snap ? Math.round(z / snap) * snap : Math.round(z * 100) / 100;
-        addPoint([sx, 0, sz]);
+      // ── Free placement (Foundation wave) — drop a point at a snapped x/z/y.
+      //    Called by the numeric "Place" button and by the canvas raycaster
+      //    (window._geoPlacePoint) when click-to-place is armed. Height defaults to
+      //    the current placeY, so the floor stays the default landing surface and a
+      //    raised point is a deliberate move. Never below the grid: the floor is the
+      //    shared reference the shadow and the 0D→3D story both lean on. ──
+      function placePoint(x, z, y) {
+        var sn = function(n) { return snap ? Math.round(n / snap) * snap : Math.round(n * 100) / 100; };
+        addPoint([sn(x), Math.max(0, sn(y == null ? placeY : y)), sn(z)]);
       }
       // Delete a single object (stretch mode had only Undo / Clear-all before).
       function deleteObject(id) {
@@ -2812,13 +2865,15 @@ window.StemLab = window.StemLab || {
         // On-screen click-to-select: the canvas raycaster (initScene) calls this
         // when a construction object is tapped — same selectObject as the list.
         window._geoSelectObj = function(id) { selectObject(id); };
-        // Click-to-place: armed only in stretch mode; the raycaster drops a point
-        // on the ground plane where the student taps (placePoint applies the snap).
-        window._geoPlacePoint = function(x, z) { placePoint(x, z); };
+        // Click-to-place: armed only in stretch mode; the raycaster drops a point on
+        // the placement plane where the student taps (placePoint applies the snap).
+        // _geoPlaceY tells the raycaster what height to put that plane at.
+        window._geoPlacePoint = function(x, z, y) { placePoint(x, z, y); };
         window._geoPlaceArmed = (mode === 'stretch') && placeArmed;
-        return function() { try { window._geoXrPrimary = null; window._geoXrAxis = null; window._geoXrLen = null; window._geoSelectObj = null; window._geoPlacePoint = null; window._geoPlaceArmed = false; } catch (e) {} };
+        window._geoPlaceY = placeY;
+        return function() { try { window._geoXrPrimary = null; window._geoXrAxis = null; window._geoXrLen = null; window._geoSelectObj = null; window._geoPlacePoint = null; window._geoPlaceArmed = false; window._geoPlaceY = 0; } catch (e) {} };
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [mode, construction, stretchAxis, stretchLength, placeArmed, snap]);
+      }, [mode, construction, stretchAxis, stretchLength, placeArmed, snap, placeY]);
 
       // ── VR math HUD: while a headset session is presenting, pin a compact line
       //    (axis · length · current measurement · challenge target) in view so the
@@ -3459,7 +3514,9 @@ window.StemLab = window.StemLab || {
                 }, voiceListening ? ('🔴 ' + t('stem.geosandbox.voice_listening', 'Listening… tap to stop')) : ('🎤 ' + t('stem.geosandbox.voice_build', 'Voice build'))),
                 voiceHeard && h('p', { className: 'text-[11px] text-purple-200/70 italic', 'aria-live': 'polite' }, '“' + voiceHeard + '”')
               ),
-              // Step 1: Place a point — at the origin, by tapping the 3D view, or at exact x/z.
+              // Step 1: Place a point — at the origin, by tapping the 3D view, or at
+              // exact x/z/y. Y is HEIGHT above the grid (x and z are the floor pair),
+              // and it defaults to 0 so the floor stays the normal landing surface.
               h('div', { className: 'space-y-1.5' },
                 h('div', { className: 'flex gap-1.5' },
                   h('button', {
@@ -3477,6 +3534,9 @@ window.StemLab = window.StemLab || {
                 ),
                 placeArmed && h('p', { className: 'text-[10px] text-emerald-300/80' },
                   t('stem.geosandbox.click_place_hint', 'Click empty space in the 3D view to drop a point (snaps to the grid).')),
+                placeArmed && placeY > 0 && h('p', { className: 'text-[10px] text-amber-300/90' },
+                  t('stem.geosandbox.click_place_hint_raised', 'Taps land at height') + ' ' + placeY + ' ' + unitDef.short + ' — ' +
+                  t('stem.geosandbox.click_place_hint_floor', 'set Y back to 0 to drop points on the floor.')),
                 // Exact placement + snap grid (keyboard-friendly path)
                 h('div', { className: 'flex items-end gap-1.5' },
                   h('label', { className: 'flex-1' },
@@ -3495,9 +3555,20 @@ window.StemLab = window.StemLab || {
                       'aria-label': t('stem.geosandbox.place_z_aria', 'Point Z position'),
                       className: 'w-full px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[11px] font-mono text-right'
                     })),
+                  // Y = height above the grid. Clamped at 0 so a point can never sit
+                  // under the floor, which would strand it away from the shadow and
+                  // the grid — the two references students read position against.
+                  h('label', { className: 'flex-1' },
+                    h('span', { className: 'block text-[10px] font-bold text-purple-200 mb-0.5' }, t('stem.geosandbox.place_y', 'Y ↑')),
+                    h('input', {
+                      type: 'number', step: (snap || 0.5), min: '0', value: placeY,
+                      onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) upd('placeY', Math.max(0, v)); },
+                      'aria-label': t('stem.geosandbox.place_y_aria', 'Point height above the grid'),
+                      className: 'w-full px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[11px] font-mono text-right'
+                    })),
                   h('button', {
-                    onClick: function() { placePoint(placeX, placeZ); },
-                    'aria-label': t('stem.geosandbox.place_at_xz', 'Place a point at the entered X and Z'),
+                    onClick: function() { placePoint(placeX, placeZ, placeY); },
+                    'aria-label': t('stem.geosandbox.place_at_xyz', 'Place a point at the entered X, Z and height Y'),
                     className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 transition-all'
                   }, t('stem.geosandbox.place', 'Place'))
                 ),

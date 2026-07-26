@@ -56,6 +56,26 @@ describe('Companion Planting refinements', () => {
     expect(source).toContain('harvestBatches: nextHarvestBatches');
     expect(source).toContain('data-community-season-atmosphere');
     expect(source).toContain('data-garden-season-atmosphere');
+    expect(source).toContain('data-community-relationship-pathways');
+    expect(source).toContain('data-relationship-pathway-option');
+    expect(source).toContain('data-relationship-pathway');
+    expect(source).toContain('data-focused-relationship-pathway');
+    expect(source).toContain('data-community-succession-calendar');
+    expect(source).toContain('data-succession-season-summary');
+    expect(source).toContain('data-succession-filter-option');
+    expect(source).toContain('data-succession-plant');
+    expect(source).toContain('data-succession-focus');
+    expect(source).toContain('data-community-planting-dock');
+    expect(source).toContain('data-planting-target');
+    expect(source).toContain('data-planting-candidate');
+    expect(source).toContain('data-candidate-fit');
+    expect(source).toContain('data-clear-focused-plot');
+    expect(source).toContain('data-best-fit-candidate');
+    expect(source).toContain('data-repeat-last-crop');
+    expect(source).toContain('data-undo-last-placement');
+    expect(source).toContain('skipNextPlantXPPlot');
+    expect(source).toContain('cgPlantCell(activePlantingTarget, candidate.key, { clearSelection: true })');
+    expect(source).not.toContain('else if (cgGrid[cellIdx].plantId && !cgSelectedPlant) { cgRemoveCell(cellIdx); }');
   });
 
   it('renders the default Three Sisters workspace without list-key warnings', () => {
@@ -145,7 +165,7 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('Search plants, families, or traits');
     expect(html).toContain('data-community-selected-plant="true"');
     expect(html).toContain('Ready to place');
-    expect(html).toContain('Choose any open plot below to plant it.');
+    expect(html).toContain('Choose any open plot in either garden view.');
     expect(html).toContain('aria-label="Cancel selected plant"');
     expect(html).toContain('Tomato (selected)');
     expect(html).toContain('data-community-plant-field-guide="true"');
@@ -260,6 +280,8 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('data-relationship-edge="southeast"');
     expect(html).toContain('data-relationship-kind="helpful"');
     expect(html).toContain('data-relationship-kind="conflict"');
+    expect(html).toContain('data-relationship-pathway="pest"');
+    expect(html).toContain('data-relationship-pathway="conflict"');
     expect(html).toContain('Tomato · Plot 1');
     expect(html).toContain('East · Plot 2');
     expect(html).toContain('South · Plot 5');
@@ -531,6 +553,158 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('38%');
     expect(html).toContain('60.5%');
     expect(html).toContain('Change today');
+  });
+
+  it('filters the true neighborhood network by ecological pathway and explains the active mechanism', () => {
+    const plants = [
+      { plantId: 'corn', growthDay: 30, health: 100, watered: false, pests: 0 },
+      { plantId: 'beans', growthDay: 25, health: 100, watered: false, pests: 0 },
+      null,
+      null,
+      { plantId: 'tomato', growthDay: 35, health: 100, watered: false, pests: 0 },
+      { plantId: 'basil', growthDay: 20, health: 100, watered: false, pests: 0 },
+      null,
+      null,
+      { plantId: 'cucumber', growthDay: 25, health: 100, watered: false, pests: 0 },
+      { plantId: 'sunflower', growthDay: 35, health: 100, watered: false, pests: 0 },
+      null,
+      null,
+      { plantId: 'lettuce', growthDay: 15, health: 100, watered: false, pests: 0 },
+      { plantId: 'radish', growthDay: 14, health: 100, watered: false, pests: 0 },
+      null,
+      null,
+    ];
+    const grid = plants.map((plant) => plant || { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 });
+    const html = renderCompanionPlanting({
+      companionPlanting: { gardenMode: 'community', communityGarden: { phase: 'plan', grid, relationshipLens: true, relationshipFocus: 0, relationshipFilter: 'nitrogen' } },
+    });
+
+    expect(html).toContain('data-community-relationship-pathways="true"');
+    expect(html).toContain('Ecosystem Pathways');
+    expect(html).toContain('Filter the network by ecological job');
+    expect(html).toContain('aria-label="Filter companion relationships by ecological pathway"');
+    expect(html).toContain('data-relationship-pathway-option="all"');
+    expect(html).toContain('data-relationship-pathway-option="pollination"');
+    expect(html).toContain('data-relationship-pathway-option="nitrogen"');
+    expect(html).toContain('data-relationship-pathway-option="pest"');
+    expect(html).toContain('data-relationship-pathway-option="space"');
+    expect(html).toContain('data-relationship-pathway-option="support"');
+    expect(html).toContain('data-relationship-pathway-option="conflict"');
+    expect(html).toContain('data-relationship-pathway-explanation="nitrogen"');
+    expect(html).toContain('Nitrogen sharing');
+    expect(html).toContain('Legumes and root bacteria add plant-available nitrogen');
+    expect(html).toContain('data-relationship-pathway="nitrogen"');
+    expect(html).toContain('data-focused-relationship-pathway="nitrogen"');
+    expect(html).not.toContain('data-relationship-pathway="pest"');
+    expect(html).toContain('Beans fix nitrogen; corn provides a trellis');
+    expect(html).toContain('1 of 1 link visible');
+    expect(html).toContain('Color + labels identify the active pathway');
+  });
+
+  it('integrates plot-first planting and neighbor-aware crop choices into both garden views', () => {
+    const grid = Array.from({ length: 16 }, (_, index) => {
+      if (index === 0) return { plantId: 'corn', growthDay: 18, health: 100, watered: false, pests: 0 };
+      if (index === 1) return { plantId: 'squash', growthDay: 12, health: 100, watered: false, pests: 0 };
+      return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 };
+    });
+    const html = renderCompanionPlanting({
+      companionPlanting: { gardenMode: 'community', communityGarden: { phase: 'plan', grid, plantingTarget: 4, plantingDockFilter: 'all', relationshipLens: true, relationshipFocus: 0 } },
+    });
+
+    expect(html).toContain('data-community-planting-dock="true"');
+    expect(html).toContain('data-planting-dock-surface="simulation"');
+    expect(html).toContain('data-planting-dock-surface="map"');
+    expect(html).toContain('Plant inside the garden');
+    expect(html).toContain('Plot 5: choose its crop');
+    expect(html).toContain('Three-step planting workflow');
+    expect(html).toContain('1 Plot ✓');
+    expect(html).toContain('Suggestions are ranked using the plants in the eight neighboring plots.');
+    expect(html).toContain('data-planting-target="5"');
+    expect(html).toContain('aria-label="Filter in-garden plant choices"');
+    expect(html).toContain('aria-label="Plants available for selected plot"');
+    expect(html).toContain('data-planting-candidate="beans"');
+    expect(html).toContain('data-best-fit-candidate="beans"');
+    expect(html).toContain('Recommended first');
+    expect(html).toContain('BEST FIT');
+    expect(html).toContain('modeled ally link');
+    expect(html).toContain('data-candidate-fit="ally"');
+    expect(html).toContain('Plant Beans in Plot 5');
+    expect(html).toContain('Choose another plot');
+    expect(html).toContain('data-clear-focused-plot="true"');
+    expect(html).toContain('Clear this plot');
+  });
+
+  it('offers repeat and immediate undo after a new placement', () => {
+    const grid = Array.from({ length: 16 }, (_, index) => index === 3
+      ? { plantId: 'beans', growthDay: 0, health: 100, watered: false, pests: 0 }
+      : { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 });
+    const html = renderCompanionPlanting({
+      companionPlanting: { gardenMode: 'community', communityGarden: { phase: 'plan', grid, budget: 49.6, expenses: 0.4, lastPlacement: { plot: 3, plantId: 'beans', seedCost: 0.4 } } },
+    });
+
+    expect(html).toContain('data-planting-last-placement="true"');
+    expect(html).toContain('Beans planted in Plot 4');
+    expect(html).toContain('data-repeat-last-crop="true"');
+    expect(html).toContain('Plant another');
+    expect(html).toContain('data-undo-last-placement="true"');
+    expect(html).toContain('↩ Undo');
+  });
+
+  it('shows a defined community-impact value and a readable season separator', () => {
+    const html = renderCompanionPlanting({
+      companionPlanting: { gardenMode: 'community', communityGarden: { phase: 'plan' } },
+    });
+
+    expect(html).toContain('0% community impact');
+    expect(html).not.toContain('undefined% community impact');
+    expect(html).toContain('Year 1 • Planning season');
+  });
+
+  it('makes an empty plot actionable before a crop is selected', () => {
+    const grid = Array.from({ length: 16 }, () => ({ plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }));
+    const html = renderCompanionPlanting({
+      companionPlanting: { gardenMode: 'community', communityGarden: { phase: 'plan', grid, selectedPlant: null, relationshipLens: false } },
+    });
+
+    expect(html).toContain('Choose an open plot to begin');
+    expect(html).toContain('Both the isometric garden and the true 4×4 map support plot-first planting.');
+    expect(html).toContain('Empty. Choose this plot to open the in-garden plant tray.');
+    expect(html).toContain('CHOOSE PLOT');
+    expect(html).toContain('Choose this plot');
+  });
+
+  it('projects live crop growth across a four-season succession calendar', () => {
+    const plants = [
+      { plantId: 'tomato', growthDay: 0, health: 92, watered: false, pests: 0 },
+      { plantId: 'radish', growthDay: 25, health: 98, watered: false, pests: 0 },
+      { plantId: 'strawberry', growthDay: 20, health: 95, watered: false, pests: 0 },
+    ];
+    const grid = Array.from({ length: 16 }, (_, index) => plants[index] || { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 });
+    const html = renderCompanionPlanting({
+      companionPlanting: { gardenMode: 'community', communityGarden: { phase: 'grow', day: 100, grid, successionFilter: 'risk', successionFocus: 'tomato' } },
+    });
+
+    expect(html).toContain('data-community-succession-calendar="true"');
+    expect(html).toContain('Year-round Harvest Map');
+    expect(html).toContain('Follow each crop from its live growth stage');
+    expect(html).toContain('data-succession-season-summary="true"');
+    expect(html).toContain('data-succession-season="Spring"');
+    expect(html).toContain('data-succession-season="Summer"');
+    expect(html).toContain('data-succession-season="Autumn"');
+    expect(html).toContain('data-succession-season="Winter"');
+    expect(html).toContain('aria-label="Filter seasonal succession view"');
+    expect(html).toContain('data-succession-filter-option="soon"');
+    expect(html).toContain('data-succession-filter-option="ready"');
+    expect(html).toContain('data-succession-filter-option="perennial"');
+    expect(html).toContain('data-succession-filter-option="risk"');
+    expect(html).toContain('data-succession-plant="tomato"');
+    expect(html).toContain('data-succession-status="risk"');
+    expect(html).toContain('Year-end risk');
+    expect(html).toContain('data-succession-focus="tomato"');
+    expect(html).toContain('Four-stage crop lifecycle');
+    expect(html).toContain('The simulation clears annual crops at the 120-day year boundary');
+    expect(html).toContain('Show growth overlay');
+    expect(html).not.toContain('data-succession-plant="strawberry"');
   });
 
   it('renders persistent garden structures as active ecosystem tools instead of harvestable crops', () => {

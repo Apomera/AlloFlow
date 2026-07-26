@@ -266,6 +266,10 @@ describe('Math Fluency Accuracy Focus mode', () => {
 
     const timerSelect = host.querySelector('select[aria-label="Time limit"]');
     await change(timerSelect, '0');
+    const goalSelect = host.querySelector('select[aria-label="Session goal"]');
+    expect(goalSelect.value).toBe('accuracy-90');
+    expect(goalSelect.querySelector('option[value="personal-best"]').disabled).toBe(true);
+    expect(host.textContent).toContain('Accuracy Focus supports accuracy goals only.');
     expect(host.textContent).toContain('Accuracy Focus removes the countdown');
     await click(host.querySelector('button[aria-label="Practice my focus facts"]'));
 
@@ -286,11 +290,14 @@ describe('Math Fluency Accuracy Focus mode', () => {
       mode: 'practice', difficulty: 'focus', untimed: true,
       completionStatus: 'complete', validForComparison: false,
       dcpm: null, totalCorrect: 10, accuracy: 100,
+      goal: { id: 'accuracy-90', metric: 'accuracy', target: 90 },
+      goalResult: { met: true, status: 'met' },
     });
     expect(scoreUpdates).toHaveLength(1);
     expect(scoreUpdates[0][0]).toBe(2);
     expect(host.textContent).toContain('Accuracy Focus Practice');
     expect(host.textContent).toContain('Not scored in Accuracy Focus');
+    expect(host.querySelector('.mf-goal-result').textContent).toContain('Goal Met');
     expect(host.querySelector('.mf-results-metrics')).toBeTruthy();
   });
 });
@@ -340,5 +347,61 @@ describe('Math Fluency Strategy Coach and mastery map', () => {
     expect(completed[0].data.factInsights[0]).toMatchObject({ attempts: 4, correct: 1, accuracy: 25 });
     const stored = JSON.parse(localStorage.getItem('allo_fluency_fact_mastery_v1'))['add|2|3'];
     expect(stored).toMatchObject({ attempts: 5, correct: 1 });
+  });
+});
+
+
+describe('Math Fluency Smart Review and Teacher Report Center', () => {
+  it('shows due review work and filters teacher-facing session evidence', async () => {
+    const now = Date.now();
+    localStorage.setItem('allo_fluency_fact_mastery_v1', JSON.stringify({
+      'add|2|3': { key: 'add|2|3', a: 2, b: 3, op: 'add', symbol: '+', answer: 5, attempts: 4, correct: 1, responseMsTotal: 5000, timedAttempts: 4, lastSeen: new Date(now).toISOString() },
+      'sub|9|4': { key: 'sub|9|4', a: 9, b: 4, op: 'sub', symbol: '-', answer: 5, attempts: 2, correct: 2, responseMsTotal: 3000, timedAttempts: 2, lastSeen: new Date(now - 2 * 86400000).toISOString() },
+      'mul|3|4': { key: 'mul|3|4', a: 3, b: 4, op: 'mul', symbol: 'x', answer: 12, attempts: 4, correct: 4, responseMsTotal: 12000, timedAttempts: 4, lastSeen: new Date(now - 10 * 86400000).toISOString() },
+    }));
+    localStorage.setItem('fluency_maze_lifetime', JSON.stringify({ gatesUnlocked: 18, mazesCompleted: 2, longestStreak: 6, totalSeconds: 600 }));
+    const history = [
+      { date: new Date(now - 86400000).toISOString(), mode: 'practice', untimed: true, operation: 'add', accuracy: 80, dcpm: null, totalCorrect: 8, totalAttempted: 10, completionStatus: 'complete', validForComparison: false, goal: { label: '80% accuracy' }, goalResult: { met: true, status: 'met' } },
+      { date: new Date(now - 2 * 86400000).toISOString(), mode: 'practice', untimed: false, operation: 'add', accuracy: 90, dcpm: 31, totalCorrect: 9, totalAttempted: 10, completionStatus: 'complete', validForComparison: true },
+      { date: new Date(now - 3 * 86400000).toISOString(), mode: 'benchmark', untimed: false, operation: 'mul', accuracy: 70, dcpm: 22, totalCorrect: 7, totalAttempted: 10, completionStatus: 'complete', validForComparison: true },
+    ];
+    const storageDB = {
+      get: async (key) => key === 'allo_fluency_history' ? history : null,
+      set: async () => {},
+    };
+    await mount({ storageDB });
+    await act(async () => { await Promise.resolve(); });
+
+    const smartReview = host.querySelector('button[aria-label^="Start Smart Review"]');
+    expect(smartReview).toBeTruthy();
+    expect(smartReview.textContent).toContain('3 due');
+    const nextStep = host.querySelector('.mf-next-best-step');
+    expect(nextStep).toBeTruthy();
+    expect(nextStep.textContent).toContain('Addition: Build accuracy');
+    expect(nextStep.querySelector('button').getAttribute('aria-label')).toContain('recommended Addition practice');
+
+    const toggle = host.querySelector('button[aria-controls="mf-teacher-report"]');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    await click(toggle);
+    const report = host.querySelector('#mf-teacher-report');
+    expect(report).toBeTruthy();
+    expect(report.textContent).toContain('Teacher Report Center');
+    expect(report.textContent).toContain('18 gates');
+    const reportTables = report.querySelectorAll('.mf-teacher-report-table');
+    expect(report.querySelectorAll('.mf-operation-growth-table tbody tr')).toHaveLength(4);
+    expect(reportTables[0].textContent).toContain('Operation Growth and Next Steps');
+    expect(reportTables[1].querySelectorAll('tbody tr')).toHaveLength(3);
+    expect(report.textContent).toContain('Latest DCPM');
+    expect(report.textContent).toContain('Goals Met');
+    expect(report.textContent).toContain('100%');
+    expect(report.querySelector('.mf-teacher-report-actions').textContent).toContain('CSV');
+
+    const filters = report.querySelectorAll('.mf-teacher-report-filters select');
+    await change(filters[1], 'accuracy-focus');
+    const filteredReport = host.querySelector('#mf-teacher-report');
+    const filteredSessions = filteredReport.querySelectorAll('.mf-teacher-report-table')[1].querySelector('tbody');
+    expect(filteredSessions.querySelectorAll('tr')).toHaveLength(1);
+    expect(filteredSessions.textContent).toContain('Accuracy Focus');
+    expect(filteredSessions.textContent).not.toContain('Timed Practice');
   });
 });

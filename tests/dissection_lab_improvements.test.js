@@ -106,8 +106,19 @@ describe('dissection improvement contracts', () => {
       expect(source).toContain('var leftEdge = [], rightEdge = []');
       expect(source).toContain('var normalX = -tangentY / tangentLength');
       expect(source).toContain('var contactPressure = Math.max');
-      expect(source).toContain("ctx.fillText('Contact '");
+      expect(source).toContain("ctx.fillText(materialResponseLabel");
       expect(source).toContain("ctx.fillText('MACRO '");
+      expect(source).toContain('function toggleInspectionPin()');
+      expect(source).toContain('function cycleLensMagnification()');
+      expect(source).toContain('function cycleLensFocusDepth()');
+      expect(source).toContain('lensPinned: lensPinned');
+      expect(source).toContain('lensMagnification: lensMagnification');
+      expect(source).toContain('lensFocusDepth: lensFocusDepth');
+      expect(source).toContain("var inspectionAccent = inspectionDepth === 'surface'");
+      expect(source).toContain("ctx.fillText('DETAIL: ' + inspectionDetail.toUpperCase()");
+      expect(source).toContain("e.key === 'p' || e.key === 'P'");
+      expect(source).toContain("e.key === 'm' || e.key === 'M'");
+      expect(source).toContain("e.key === 'f' || e.key === 'F'");
       expect(source).toContain('var cursorAngleDelta = Math.atan2');
       expect(source).toContain('instrumentVisuals: instrumentVisuals');
       expect(source).toContain('macroInset: macroInset');
@@ -121,13 +132,67 @@ describe('dissection improvement contracts', () => {
       expect(source).toContain("pattern: 'facets'");
       expect(source).toContain("pattern: 'radial'");
       expect(source).toContain("pattern: 'fibers'");
+      expect(source).toContain('Material response values drive incision width, flap movement, and live tool-contact deformation.');
+      expect(source).toContain("response: 'elastic skin'");
+      expect(source).toContain("response: 'segment compression'");
+      expect(source).toContain("response: 'dermal tension'");
+      expect(source).toContain("response: 'scale displacement'");
+      expect(source).toContain("response: 'rigid shell contact'");
+      expect(source).toContain("response: 'corneal ripple'");
+      expect(source).toContain("response: 'fiber compression'");
+      expect(source).toContain('openingMaterial.compliance');
+      expect(source).toContain('Edge microstructure keeps the opening visually tied to the organism');
+      expect(source).toContain('flapMaterial.compliance');
+      expect(source).toContain('flapMaterial.moisture');
+      expect(source).toContain('canvas._toolContactPulse');
+      expect(source).toContain('function specimenContactContext(point)');
+      expect(source).toContain('Contact context separates tissue interaction from tray contact');
+      expect(source).toContain('A pressure-weighted live trail shows both stroke placement and corridor alignment');
+      expect(source).toContain('var liveStrokeDistance = distanceToGuide');
+      expect(source).toContain("'ON PATH'");
+      expect(source).toContain("'EDGE'");
+      expect(source).toContain("'DRIFT'");
+      expect(source).toContain("resistanceStatus.textContent = (activeInstrument === 'scissors'");
+      expect(source).toContain("'TRAY SURFACE'");
+      expect(source).toContain('no tissue response');
+      expect(source).toContain("activeDepthLabel + ' / PROTECT '");
+      expect(source).toContain('Organism-aware contact deformation makes every instrument read as physically connected');
+      expect(source).toContain("toolMaterial.pattern === 'segments'");
+      expect(source).toContain("toolMaterial.pattern === 'scales'");
+      expect(source).toContain("toolMaterial.pattern === 'facets'");
+      expect(source).toContain("toolMaterial.pattern === 'radial'");
+      expect(source).toContain("toolMaterial.pattern === 'fibers'");
+      expect(source).toContain("toolMaterial.pattern === 'follicles'");
+      expect(source).toContain("ctx.fillText('ACTIVE'");
+      expect(source).toContain("ctx.fillText('LIFTED'");
+      expect(source).toContain("ctx.fillText('OPTICAL FIELD CLEAR'");
+      expect(source).toContain("var probeLabel = 'Trace: ' + probedStructure.name");
+      expect(source).toContain("ctx.fillText('STABLE ANCHOR'");
+      expect(source).toContain("forcepsPreviewValid ? 'LIFT PREVIEW: READY'");
+      expect(source).toContain("pinPreviewValid ? 'ANCHOR PREVIEW: READY'");
+      expect(source).toContain("probePreviewValid ? 'TRACE: ' + underTipOrgan.name");
+      expect(source).toContain("dropperPreviewValid ? 'CLEAR OPTICAL FIELD'");
+      expect(source).toContain('Non-cutting tools announce preview validity only when it changes');
+      expect(source).toContain("previewStatus.textContent = previewMessage");
+      expect(source).toContain("['forceps', 'pin', 'probe', 'dropper'].indexOf(responseTool) >= 0");
       expect(source).toContain('sceneDetail: sceneDetail');
       expect(source).toContain('relationshipMotion: relationshipMotion');
       expect(source).toContain('sceneDetail: data.sceneDetail !== false');
       expect(source).toContain('relationshipMotion: data.relationshipMotion !== false');
       expect(source).toContain('var relationshipColor =');
       expect(source).toContain('var flowT = relationshipMotion && !dissMotionReduced');
-      expect(source).toContain('var focusRadius = 12 + (1 - focusEntryProgress)');
+      expect(source).toContain("var activeFunctionalTraceKey = d.traceCirculation ? 'circulation'");
+      expect(source).toContain('One shared playback clock keeps all functional pathways synchronized and pausable.');
+      expect(source).toContain('canvas._systemTraceReplayToken !== systemReplayToken');
+      expect(source).toContain('var systemTraceTick = Math.max(0, systemTraceBaseTick');
+      expect(source).toContain('Screen-fixed functional pathway HUD pairs color with labels, motion state, and direction arrows.');
+      expect(source).toContain("'STATIC \\u00B7 reduced motion'");
+      expect(source).toContain("'PAUSED \\u00B7 directions held'");
+      expect(source).toContain('className: "diss-system-playback"');
+      expect(source).toContain('Waiting for Internal Organs layer');
+      expect(source).toContain("pathway replayed from the beginning.");
+      expect(source).toContain('systemTraceReplayToken: Date.now()');
+      expect(source).toContain('.diss-system-playback button[aria-pressed="true"]');      expect(source).toContain('var focusRadius = 12 + (1 - focusEntryProgress)');
       expect(source).toContain('var focusMuted = (focusMode || (denseHotspotView && d.selectedOrgan))');
       expect(source).toContain('focusEntryProgress = 1 - Math.pow');
       expect(source).toContain('Nearest-target hit testing also treats laid-out labels as interactive targets.');
@@ -176,7 +241,7 @@ describe('dissection improvement contracts', () => {
       expect(source).toContain('var nextTissueLayer = spec.layers[Math.min(spec.layers.length - 1, currentLayerIdx + 1)]');
       expect(source).toContain('Probe confirmation remains anchored to the traced structure as persistent visual evidence.');
       expect(source).toContain('canvasProcedure.probed && canvasProcedure.probedOrganId');
-      expect(source).toContain("var probeLabel = 'Trace recorded';");      expect(source).toContain('ann.prevX * W');
+      expect(source).toContain("var probeLabel = 'Trace: ' + probedStructure.name;");      expect(source).toContain('ann.prevX * W');
       expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
       expect(source).toContain('var transitionDuration = prefersReducedLayerMotion ? 650 : 1150');
       expect(source).toContain('_layerTransition: layerTransition');
@@ -510,6 +575,11 @@ describe('dissection improved UI render', () => {
         visualRealism: 'guided',
         labLight: 'neutral',
         inspectionLens: false,
+        lensPinned: true,
+        lensPinnedPoint: { x: 0.42, y: 0.36 },
+        lensPinnedOrganId: 'sclera',
+        lensMagnification: 6,
+        lensFocusDepth: 'deep',
         instrumentVisuals: true,
         macroInset: true,
         sceneDetail: true,
@@ -537,6 +607,9 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Quality: balanced');
     expect(html).toContain('Tactile on');
     expect(html).toContain('Lens off');
+    expect(html).toContain('Unpin lens');
+    expect(html).toContain('Magnify 6x');
+    expect(html).toContain('Focus: deep');
     expect(html).toContain('Visual tools on');
     expect(html).toContain('Macro view on');
     expect(html).toContain('Scene detail on');
@@ -544,7 +617,9 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Focus mode on');
     expect(html).toContain('Light angle: raking');
     expect(html).toContain('Material model: translucent corneal and scleral layers');
+    expect(html).toContain('Contact response: corneal ripple');
     expect(html).toContain('Surface model: translucent corneal and scleral layers');
+    expect(html).toContain('Tool contact response: corneal ripple');
     expect(html).toContain('Light direction: raking');
     expect(html).toContain('Focus isolation on');
     expect(html).toContain('neutral light');

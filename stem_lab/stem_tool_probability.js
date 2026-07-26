@@ -722,17 +722,54 @@ var d = (labToolData.probability) || {};
           // Dice face SVG
 
           // Multi-sided die SVG renderer. For d6 we keep the iconic pip layout.
-          // For other shapes (d4/d8/d10/d12/d20) we render the canonical face polygon
-          // for the corresponding Platonic solid (tetrahedron/octahedron/etc.) with
-          // the number centered inside. Each die-type gets its own color so the
-          // student can tell a d8 from a d20 at a glance even with the same number.
+          // Every other die draws the polygon of the face you actually READ on the
+          // physical solid, so the glyph teaches the die as well as the number:
+          //   d4  tetrahedron  - equilateral triangle, apex UP
+          //   d8  octahedron   - equilateral triangle, apex DOWN (mirror of the d4)
+          //   d10 pentagonal   - a KITE. A d10 is a trapezohedron, NOT a Platonic
+          //       trapezohedron  solid, and its faces are kites, not rhombuses.
+          //   d12 dodecahedron - regular pentagon
+          //   d20 icosahedron  - equilateral triangle, apex UP, ringed by the
+          //                      flat-top hexagon the six neighbouring faces form
+          //                      when a d20 rests flat. Without that ring a d20 is
+          //                      the same silhouette as a d4 and only colour tells
+          //                      them apart — which fails any colour-blind student.
+          // Colours are the shared per-die palette (the die-type buttons reuse the
+          // fill). All six clear 4.5:1 against white, so the white numeral on the
+          // face and the coloured label on the button are both legible.
+          //
+          // Regular n-gon helper: n vertices on a circle of radius r (fraction of
+          // the box), first vertex at startDeg (0 = east, -90 = north). Face
+          // polygons stay actually regular instead of hand-typed near-misses.
+          var polyPts = function (s, n, cx, cy, r, startDeg) {
+            var out = [];
+            for (var vi = 0; vi < n; vi++) {
+              var a = (startDeg + vi * (360 / n)) * Math.PI / 180;
+              out.push(s * (cx + r * Math.cos(a)), s * (cy + r * Math.sin(a)));
+            }
+            return out;
+          };
+          // textCY = visual centre of the face as a fraction of the box. The
+          // baseline is derived from it and the font size, so a 1-digit and a
+          // 2-digit value both sit centred instead of drifting as the font shrinks.
           var DIE_SHAPES = {
-            4:  { fill: '#3b82f6', stroke: '#1e3a8a', points: function(s){ return [s*0.5,s*0.08, s*0.92,s*0.85, s*0.08,s*0.85]; }, textY: function(s){ return s*0.72; } },
-            6:  { fill: '#ef4444', stroke: '#991b1b' },  // special-cased to pips below
-            8:  { fill: '#10b981', stroke: '#065f46', points: function(s){ return [s*0.08,s*0.18, s*0.92,s*0.18, s*0.5,s*0.92]; }, textY: function(s){ return s*0.56; } },
-            10: { fill: '#8b5cf6', stroke: '#5b21b6', points: function(s){ return [s*0.5,s*0.08, s*0.9,s*0.5, s*0.5,s*0.92, s*0.1,s*0.5]; }, textY: function(s){ return s*0.6; } },
-            12: { fill: '#f59e0b', stroke: '#92400e', points: function(s){ return [s*0.5,s*0.08, s*0.92,s*0.38, s*0.78,s*0.88, s*0.22,s*0.88, s*0.08,s*0.38]; }, textY: function(s){ return s*0.62; } },
-            20: { fill: '#0d9488', stroke: '#134e4a', points: function(s){ return [s*0.5,s*0.05, s*0.95,s*0.88, s*0.05,s*0.88]; }, textY: function(s){ return s*0.72; } }
+            4:  { fill: '#2563eb', stroke: '#1e3a8a', textCY: 0.62,
+                  points: function (s) { return polyPts(s, 3, 0.5, 0.58, 0.48, -90); } },
+            6:  { fill: '#dc2626', stroke: '#991b1b' },  // special-cased to pips below
+            8:  { fill: '#047857', stroke: '#064e3b', textCY: 0.40,
+                  points: function (s) { return polyPts(s, 3, 0.5, 0.42, 0.48, 90); } },
+            10: { fill: '#7c3aed', stroke: '#5b21b6', textCY: 0.50,
+                  // kite: short point up, shoulders above centre, long point down
+                  points: function (s) { return [s * 0.5, s * 0.05, s * 0.90, s * 0.42, s * 0.5, s * 0.95, s * 0.10, s * 0.42]; } },
+            12: { fill: '#b45309', stroke: '#78350f', textCY: 0.55,
+                  points: function (s) { return polyPts(s, 5, 0.5, 0.53, 0.45, -90); } },
+            20: { fill: '#0f766e', stroke: '#134e4a', textCY: 0.58, fontScale: 0.78,
+                  ring:   function (s) { return polyPts(s, 6, 0.5, 0.52, 0.46, 0); },
+                  points: function (s) { return polyPts(s, 3, 0.5, 0.56, 0.34, -90); } },
+            // Neutral fallback for a die size the selector does not offer, so an
+            // unexpected N is never drawn wearing the d20's face.
+            _:  { fill: '#475569', stroke: '#1e293b', textCY: 0.55,
+                  points: function (s) { return polyPts(s, 6, 0.5, 0.52, 0.45, -90); } }
           };
           var diceFace = function (val, size, sides) {
             var s = size || 60;
@@ -755,15 +792,19 @@ var d = (labToolData.probability) || {};
                 })
               );
             }
-            // Polyhedral shape with number for d4/d8/d10/d12/d20 (and fallback for unusual values)
-            var shape = DIE_SHAPES[dSides] || DIE_SHAPES[20];
-            var pts = shape.points(s);
-            var pointsStr = '';
-            for (var pi = 0; pi < pts.length; pi += 2) pointsStr += pts[pi].toFixed(1) + ',' + pts[pi+1].toFixed(1) + ' ';
-            var fontSize = (s * (val >= 10 ? 0.32 : 0.42));
+            // Polyhedral face for d4/d8/d10/d12/d20 (neutral hexagon for anything else)
+            var shape = DIE_SHAPES[dSides] || DIE_SHAPES._;
+            var ptsStr = function (pts) {
+              var out = '';
+              for (var pi = 0; pi < pts.length; pi += 2) out += pts[pi].toFixed(1) + ',' + pts[pi + 1].toFixed(1) + ' ';
+              return out;
+            };
+            var fontSize = s * (val >= 10 ? 0.32 : 0.42) * (shape.fontScale || 1);
+            var textY = s * shape.textCY + fontSize * 0.36;
             return React.createElement("svg", { role: "img", viewBox: "0 0 " + s + " " + s, width: s, height: s, 'aria-label': 'd' + dSides + ' showing ' + val },
-              React.createElement("polygon", { points: pointsStr, fill: shape.fill, stroke: shape.stroke, strokeWidth: 2.5, strokeLinejoin: 'round' }),
-              React.createElement("text", { x: s/2, y: shape.textY(s), textAnchor: 'middle', fontSize: fontSize, fontWeight: 900, fill: 'white', style: { paintOrder: 'stroke', stroke: shape.stroke, strokeWidth: 0.5 } }, val)
+              shape.ring && React.createElement("polygon", { points: ptsStr(shape.ring(s)), fill: shape.fill, fillOpacity: 0.4, stroke: shape.stroke, strokeWidth: 2, strokeLinejoin: 'round' }),
+              React.createElement("polygon", { points: ptsStr(shape.points(s)), fill: shape.fill, stroke: shape.stroke, strokeWidth: 2.5, strokeLinejoin: 'round' }),
+              React.createElement("text", { x: s/2, y: textY, textAnchor: 'middle', fontSize: fontSize, fontWeight: 900, fill: 'white', style: { paintOrder: 'stroke', stroke: shape.stroke, strokeWidth: 0.5 } }, val)
             );
           };
           var DICE_TYPES = [4, 6, 8, 10, 12, 20];
@@ -3200,7 +3241,7 @@ var d = (labToolData.probability) || {};
               // === H7b'' inquiry widget: distribution skewer ===
               (function() {
                 var h = React.createElement;
-                var iq = d.distribHunt || { pLow: 33, pMid: 34, pHigh: 33, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+                var iq = d.distribHunt || { pLow: 33, pMid: 34, pHigh: 33, sampleNonce: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
                 function setIQ(patch) { upd('distribHunt', Object.assign({}, iq, patch)); }
                 var total = iq.pLow + iq.pMid + iq.pHigh;
                 var normLow = total > 0 ? iq.pLow / total : 0.33;
@@ -3221,8 +3262,48 @@ var d = (labToolData.probability) || {};
                   skewed:  { label: t('stem.probability.skewed', '\u2197\uFE0F Skewed'),          color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: '#fcd34d', desc: t('stem.probability.one_tail_much_heavier_than_the_other_a', 'One tail much heavier than the other. Asymmetric distribution.') },
                   mixed:   { label: t('stem.probability.mixed', '\uD83D\uDD00 Mixed'),           color: '#64748b', bg: 'rgba(100,116,139,0.08)', border: '#cbd5e1', desc: t('stem.probability.two_outcomes_share_roughly_equal_proba', 'Two outcomes share roughly equal probability with the third much lower or higher.') }
                 }[shape];
+                // ── Live sample dataset ──────────────────────────────────────
+                // The sliders used to move nothing but a text label, so "sweep and
+                // notice" had nothing to notice. Every slider change now redraws
+                // both the expected bars and an actual 60-draw sample, and the
+                // classification chip becomes a caption for a picture rather than
+                // the entire feedback loop.
+                //
+                // The sample is seeded on the slider values (plus a nonce the
+                // student can bump) instead of Math.random, so one setting always
+                // redraws the same dataset: the picture moves because the
+                // DISTRIBUTION changed, not because the RNG wandered. "New sample"
+                // re-rolls at fixed weights — the separate second lesson that the
+                // same distribution still gives a different sample every time.
+                var SAMPLE_N = 60;
+                var _seed = (((iq.pLow + 1) * 73856093) ^ ((iq.pMid + 1) * 19349663) ^ ((iq.pHigh + 1) * 83492791) ^ (((iq.sampleNonce || 0) + 1) * 2654435761)) >>> 0;
+                var _rnd = _seed || 1;
+                var sampleDraws = [];
+                var sampleCounts = [0, 0, 0];
+                for (var _si = 0; _si < SAMPLE_N; _si++) {
+                  _rnd = (_rnd * 1664525 + 1013904223) >>> 0;
+                  var _rv = _rnd / 4294967296;
+                  var _bk = _rv < normLow ? 0 : _rv < normLow + normMid ? 1 : 2;
+                  sampleDraws.push(_bk);
+                  sampleCounts[_bk]++;
+                }
+                var BUCKETS = [
+                  { key: 'low',  label: t('stem.probability.bucket_low', 'low'),   color: '#0e7490', exp: normLow },
+                  { key: 'mid',  label: t('stem.probability.bucket_mid', 'mid'),   color: '#7c3aed', exp: normMid },
+                  { key: 'high', label: t('stem.probability.bucket_high', 'high'), color: '#b45309', exp: normHigh }
+                ];
+                // Shared vertical scale for expected and observed, floored at 34%
+                // so a near-uniform setting doesn't render three full-height bars.
+                var plotMax = Math.max(0.34, normLow, normMid, normHigh,
+                  sampleCounts[0] / SAMPLE_N, sampleCounts[1] / SAMPLE_N, sampleCounts[2] / SAMPLE_N);
+                var PLOT_H = 72;
+                var sampleSummary = BUCKETS.map(function (b, bi) {
+                  return b.label + ' ' + sampleCounts[bi] + ' of ' + SAMPLE_N +
+                    ', ' + Math.round(sampleCounts[bi] / SAMPLE_N * 100) + ' percent observed versus ' +
+                    Math.round(b.exp * 100) + ' percent expected';
+                }).join('; ');
                 function logObs() {
-                  setIQ({ log: (iq.log || []).concat([{ l: iq.pLow, m: iq.pMid, hi: iq.pHigh, sh: shape }]).slice(-8) });
+                  setIQ({ log: (iq.log || []).concat([{ l: iq.pLow, m: iq.pMid, hi: iq.pHigh, sh: shape, obs: sampleCounts.join('/') }]).slice(-8) });
                 }
                 return h('div', { className: 'rounded-xl border p-3 mt-3', style: { background: isDark||isContrast?'rgba(8,145,178,0.06)':'#f0fdfa', borderColor: isDark||isContrast?'rgba(8,145,178,0.3)':'#a5f3fc' } },
                   h('p', { className: 'text-[11px] font-bold uppercase tracking-wider mb-1', style: { color: isDark||isContrast?'#67e8f9':'#0891b2' } }, t('stem.probability.distribution_shape_discovery', '\u2754 Distribution shape discovery')),
@@ -3232,6 +3313,38 @@ var d = (labToolData.probability) || {};
                     h('div', { className: 'text-sm font-black', style: { color: shapeMeta.color } }, shapeMeta.label),
                     h('div', { className: 'text-[10px] mt-1', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } }, shapeMeta.desc),
                     h('div', { className: 'text-[10px] mt-1 font-mono', style: { color: isDark||isContrast?'#94a3b8':'#64748b' } }, 'P(low)=' + (normLow*100).toFixed(0) + '%  P(mid)=' + (normMid*100).toFixed(0) + '%  P(high)=' + (normHigh*100).toFixed(0) + '%')
+                  ),
+                  // Expected (dashed rule) vs observed (solid bar) + the raw 60 draws.
+                  h('div', { className: 'mb-2 p-2 rounded', style: { background: isDark||isContrast?'rgba(15,23,42,0.55)':'#ffffff', border: '1px solid ' + (isDark||isContrast?'rgba(100,116,139,0.4)':'#cbd5e1') } },
+                    h('div', { className: 'flex items-center justify-between gap-2 mb-1' },
+                      h('span', { className: 'text-[10px] font-bold uppercase tracking-wider', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } },
+                        t('stem.probability.sample_of_draws', 'Sample of ') + SAMPLE_N + t('stem.probability.sample_of_draws_suffix', ' draws')),
+                      h('button', { onClick: function() { setIQ({ sampleNonce: ((iq.sampleNonce || 0) + 1) % 997 }); },
+                        className: 'px-2 py-0.5 rounded text-[10px] font-bold',
+                        style: { background: isDark||isContrast?'rgba(8,145,178,0.2)':'#cffafe', color: isDark||isContrast?'#67e8f9':'#155e75' } },
+                        t('stem.probability.new_sample', '🎲 New sample'))
+                    ),
+                    h('div', { role: 'img', 'aria-label': t('stem.probability.expected_vs_observed_label', 'Expected versus observed: ') + sampleSummary, className: 'flex items-end gap-2' },
+                      BUCKETS.map(function(b, bi) {
+                        var obsH = Math.round((sampleCounts[bi] / SAMPLE_N) / plotMax * PLOT_H);
+                        var expTop = Math.round((1 - b.exp / plotMax) * PLOT_H);
+                        return h('div', { key: 'bk' + b.key, className: 'flex-1 flex flex-col items-center' },
+                          h('div', { className: 'relative w-full', style: { height: PLOT_H, background: isDark||isContrast?'rgba(148,163,184,0.10)':'#f1f5f9', borderRadius: 3 } },
+                            h('div', { style: { position: 'absolute', left: 0, right: 0, top: expTop, borderTop: '2px dashed ' + b.color } }),
+                            h('div', { style: { position: 'absolute', left: '20%', right: '20%', bottom: 0, height: obsH, background: b.color, borderRadius: '3px 3px 0 0', transition: 'height 140ms ease-out' } })
+                          ),
+                          h('div', { className: 'text-[9px] font-mono mt-0.5', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } }, sampleCounts[bi] + '/' + SAMPLE_N),
+                          h('div', { className: 'text-[10px] font-bold', style: { color: isDark||isContrast?'#e2e8f0':b.color } }, b.label)
+                        );
+                      })
+                    ),
+                    h('div', { className: 'flex flex-wrap mt-1.5', style: { gap: 2 }, 'aria-hidden': 'true' },
+                      sampleDraws.map(function(bk, di) {
+                        return h('span', { key: 'dw' + di, style: { display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: BUCKETS[bk].color } });
+                      })
+                    ),
+                    h('p', { className: 'text-[9px] leading-snug mt-1', style: { color: isDark||isContrast?'#94a3b8':'#64748b' } },
+                      t('stem.probability.dashed_expected_bar_observed', 'Dashed rule = expected. Bar = what these draws actually gave. Each square is one draw. Move a slider and both change together.'))
                   ),
                   h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
                     [
@@ -3249,19 +3362,20 @@ var d = (labToolData.probability) || {};
                   ),
                   h('div', { className: 'flex gap-2 items-center mb-2 flex-wrap' },
                     h('button', { onClick: logObs, className: 'px-2 py-0.5 rounded text-[10px] font-bold', style: { background: isDark||isContrast?'rgba(8,145,178,0.2)':'#cffafe', color: isDark||isContrast?'#67e8f9':'#155e75' } }, t('stem.probability.log', '\uD83D\uDCCB Log')),
-                    h('button', { onClick: function() { setIQ({ pLow: 33, pMid: 34, pHigh: 33, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                    h('button', { onClick: function() { setIQ({ pLow: 33, pMid: 34, pHigh: 33, sampleNonce: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
                       className: 'px-2 py-0.5 rounded text-[10px] font-semibold border', style: { color: isDark||isContrast?'#94a3b8':'#64748b', borderColor: isDark||isContrast?'rgba(100,116,139,0.4)':'#cbd5e1' } }, t('stem.probability.reset_3', '\u21BA Reset')),
                     (iq.log || []).length > 0 && h('span', { className: 'text-[10px] italic', style: { color: isDark||isContrast?'#94a3b8':'#64748b' } }, (iq.log || []).length + ' logged')
                   ),
                   (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse mb-2', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } },
                     h('thead', null, h('tr', { style: { background: isDark||isContrast?'rgba(8,145,178,0.15)':'#cffafe' } },
-                      ['low', 'mid', 'high', 'shape'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border text-left', style: { borderColor: isDark||isContrast?'rgba(100,116,139,0.3)':'#cbd5e1' } }, c); }))),
+                      ['low', 'mid', 'high', 'shape', 'sample'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border text-left', style: { borderColor: isDark||isContrast?'rgba(100,116,139,0.3)':'#cbd5e1' } }, c); }))),
                     h('tbody', null, iq.log.map(function(o, idx) {
                       return h('tr', { key: 'lr' + idx },
                         h('td', { className: 'px-1 border font-mono', style: { borderColor: isDark||isContrast?'rgba(100,116,139,0.3)':'#cbd5e1' } }, o.l),
                         h('td', { className: 'px-1 border font-mono', style: { borderColor: isDark||isContrast?'rgba(100,116,139,0.3)':'#cbd5e1' } }, o.m),
                         h('td', { className: 'px-1 border font-mono', style: { borderColor: isDark||isContrast?'rgba(100,116,139,0.3)':'#cbd5e1' } }, o.hi),
-                        h('td', { className: 'px-1 border', style: { borderColor: isDark||isContrast?'rgba(100,116,139,0.3)':'#cbd5e1' } }, o.sh));
+                        h('td', { className: 'px-1 border', style: { borderColor: isDark||isContrast?'rgba(100,116,139,0.3)':'#cbd5e1' } }, o.sh),
+                        h('td', { className: 'px-1 border font-mono', style: { borderColor: isDark||isContrast?'rgba(100,116,139,0.3)':'#cbd5e1' } }, o.obs || '—'));
                     }))
                   ),
                   h('textarea', { 'aria-label': t('stem.probability.hypothesis_label', 'Probability distribution hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },

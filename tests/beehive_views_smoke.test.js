@@ -42,6 +42,30 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(html).toContain('Simulation perspective');
     expect(html).toContain('<canvas');
   });
+  it('beekeeper mode includes the deterministic colony outlook at both horizons', () => {
+    const sevenDay = render({ viewMode: 'beekeeper', forecastDays: 7 });
+    const thirtyDay = render({ viewMode: 'beekeeper', forecastDays: 30 });
+
+    expect(sevenDay).toContain('Colony outlook');
+    expect(sevenDay).toContain('7-day projected colony metrics');
+    expect(thirtyDay).toContain('30-day projected colony metrics');
+    expect(thirtyDay).toContain('excludes random weather');
+  });
+
+  it('Queen RTS explains and renders the live rival-hive loop', () => {
+    const briefing = render({ viewMode: 'queen' });
+    const active = render({ viewMode: 'queen', queen: { active: true, paused: true, buildMode: 'guard' } });
+
+    expect(briefing).toContain('Automatic cycles');
+    expect(briefing).toContain('Defeat Thistle Crown');
+    expect(active).toContain('Live RTS command status');
+    expect(active).toContain('Rival hive');
+    expect(active).toContain('Scout Rival');
+    expect(active).toContain('Launch Raid');
+    expect(active).toContain('Placement mode');
+    expect(active).toContain('Placement mode active for Guard Post');
+    expect(active).not.toContain('Next Day');
+  });
 });
 
 describe('beehive — every educational canvas view renders (beekeeper mode)', () => {

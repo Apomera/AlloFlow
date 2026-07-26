@@ -66,3 +66,39 @@ describe('Fluency Maze setup UX', () => {
     expect(customPanel.querySelectorAll('button').length).toBeGreaterThan(5);
   });
 });
+
+
+describe('Fluency Maze playing UX', () => {
+  it('renders a clear quest path, compact HUD groups, distance cue, and labeled touch controls', async () => {
+    localStorage.setItem('fluency_maze_tutorial_seen', '1');
+    localStorage.setItem('fluency_maze_prefs', JSON.stringify({ performance2D: true, mazeSize: 'small' }));
+    await mount();
+    const start = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Light the Torches'));
+    expect(start).toBeTruthy();
+    await click(start);
+
+    const hud = host.querySelector('.mf-maze-hud');
+    expect(hud).toBeTruthy();
+    expect(hud.querySelector('.mf-maze-hud-stats')).toBeTruthy();
+    expect(hud.querySelectorAll('.mf-maze-action-button')).toHaveLength(5);
+
+    const quest = host.querySelector('.mf-maze-quest');
+    expect(quest).toBeTruthy();
+    expect(quest.querySelectorAll('.mf-maze-quest-step')).toHaveLength(2);
+    expect(quest.textContent).toContain('Find the golden key');
+    expect(quest.textContent).toContain('Exit locked');
+    expect(quest.querySelector('.mf-maze-distance').textContent).toMatch(/\d+ gates? away/);
+
+    const moves = host.querySelectorAll('.mf-maze-move-button');
+    expect(moves).toHaveLength(4);
+    expect(Array.from(moves).map((button) => button.textContent).join('')).toContain('W');
+    expect(Array.from(moves).map((button) => button.textContent).join('')).toContain('A');
+    expect(Array.from(moves).map((button) => button.textContent).join('')).toContain('S');
+    expect(Array.from(moves).map((button) => button.textContent).join('')).toContain('D');
+
+    const canvas = host.querySelector('.mf-maze-viewport');
+    expect(canvas.getAttribute('role')).toBe('application');
+    expect(canvas.getAttribute('tabindex')).toBe('0');
+    expect(canvas.getAttribute('aria-label')).toContain('find the golden key');
+  });
+});

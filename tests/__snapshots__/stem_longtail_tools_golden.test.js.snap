@@ -2,10 +2,10 @@
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for autoRepair 1`] = `
 {
-  "buttons": 38,
+  "buttons": 41,
   "inputs": 0,
-  "lengthBucket": 119,
-  "sha": "b895b2d37ec04cd8",
+  "lengthBucket": 128,
+  "sha": "00858c052b1a4cac",
   "svgs": 0,
 }
 `;

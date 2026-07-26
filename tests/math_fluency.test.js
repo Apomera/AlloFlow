@@ -46,6 +46,15 @@ it('exposes the scoring internals via the test seam', () => {
   expect(typeof M.generateProblems).toBe('function');
   expect(typeof M.generatePracticeProblems).toBe('function');
   expect(typeof M.buildFocusedProblems).toBe('function');
+  expect(typeof M.buildReviewSchedule).toBe('function');
+  expect(typeof M.buildSmartReviewProblems).toBe('function');
+  expect(typeof M.buildTeacherReport).toBe('function');
+  expect(typeof M.buildTeacherReportCsv).toBe('function');
+  expect(typeof M.buildOperationGrowth).toBe('function');
+  expect(typeof M.buildNextPracticeRecommendation).toBe('function');
+  expect(typeof M.buildSessionGoal).toBe('function');
+  expect(typeof M.evaluateSessionGoal).toBe('function');
+  expect(typeof M.findMazePathDistance).toBe('function');
   expect(typeof M.updateFactMastery).toBe('function');
   expect(typeof M.parseStudentAnswer).toBe('function');
   expect(typeof M.countCorrectDigits).toBe('function');
@@ -341,6 +350,9 @@ describe('fluency maze integrity helpers', () => {
     ];
     expect(M.findMazePathStep(maze, { r: 0, c: 0 }, { r: 0, c: 1 })).toEqual({ direction: 'down', r: 1, c: 0 });
     expect(M.findMazePathStep(maze, { r: 0, c: 0 }, { r: 0, c: 0 })).toBeNull();
+    expect(M.findMazePathDistance(maze, { r: 0, c: 0 }, { r: 0, c: 1 })).toBe(3);
+    expect(M.findMazePathDistance(maze, { r: 0, c: 0 }, { r: 0, c: 0 })).toBe(0);
+    expect(M.findMazePathDistance(maze, { r: -1, c: 0 }, { r: 0, c: 0 })).toBeNull();
   });
 
   it('segments personal bests by control and chase mode', () => {
@@ -378,6 +390,11 @@ describe('fluency maze UX contract', () => {
     expect(source).toContain('math_fluency.objective_find_key');
     expect(source).toContain("'aria-current': hintDir === 'up' ? 'step' : undefined");
     expect(source).toContain('eng.renderer.dispose');
+    expect(source).toContain("className: 'mf-maze-quest'");
+    expect(source).toContain("className: 'mf-maze-hud'");
+    expect(source).toContain("className: 'mf-maze-minimap'");
+    expect(source).toContain('objectiveDistanceLabel');
+    expect(source).toContain('.mf-maze-action-label { display: none; }');
   });
 });
 
@@ -405,5 +422,159 @@ describe('3D math maze canvas accessibility contract', () => {
     expect(source).toContain('[data-math-maze-canvas]:focus-visible');
     expect(source).toContain('try { cnv.focus(); }');
     expect(source).toContain('Nearby movement buttons provide an alternative.');
+  });
+});
+
+
+describe('Smart Review scheduling and teacher reporting', () => {
+  const fact = (op, a, b, answer, attempts, correct, responseMsTotal, timedAttempts, lastSeen) => ({
+    key: op + '|' + a + '|' + b, op, a, b, answer,
+    symbol: op === 'add' ? '+' : op === 'sub' ? '-' : op === 'mul' ? 'x' : '/',
+    attempts, correct, responseMsTotal, timedAttempts, lastSeen,
+  });
+
+  it('marks facts due using status-specific review intervals', () => {
+    const now = new Date('2026-07-26T12:00:00.000Z');
+    const rows = [
+      fact('add', 1, 1, 2, 4, 1, 4000, 4, '2026-07-26T10:00:00.000Z'),
+      fact('add', 2, 2, 4, 2, 2, 3000, 2, '2026-07-24T12:00:00.000Z'),
+      fact('mul', 3, 3, 9, 4, 4, 12000, 4, '2026-07-18T12:00:00.000Z'),
+      fact('mul', 4, 4, 16, 4, 4, 12000, 4, '2026-07-25T12:00:00.000Z'),
+    ];
+    const mastery = Object.fromEntries(rows.map((row) => [row.key, row]));
+    const schedule = M.buildReviewSchedule(mastery, now);
+    expect(schedule.dueCount).toBe(3);
+    expect(schedule.byStatus).toMatchObject({ focus: 1, developing: 1, secure: 1 });
+    expect(schedule.dueFacts.map((row) => row.key)).toEqual(expect.arrayContaining(['add|1|1', 'add|2|2', 'mul|3|3']));
+    expect(schedule.nextDueDays).toBe(6);
+  });
+
+  it('builds a 20-item 60/25/15 Smart Review mix without adjacent duplicates when pools allow it', () => {
+    const mastery = {};
+    for (let i = 1; i <= 12; i += 1) {
+      const row = fact('add', i, 1, i + 1, 4, 1, 4000, 4, '2026-07-26T10:00:00.000Z');
+      mastery[row.key] = row;
+    }
+    for (let i = 1; i <= 5; i += 1) {
+      const row = fact('sub', 20 + i, i, 20, 2, 2, 3000, 2, '2026-07-24T12:00:00.000Z');
+      mastery[row.key] = row;
+    }
+    for (let i = 1; i <= 3; i += 1) {
+      const row = fact('mul', i, 5, i * 5, 4, 4, 12000, 4, '2026-07-18T12:00:00.000Z');
+      mastery[row.key] = row;
+    }
+    const problems = M.buildSmartReviewProblems(mastery, 20, new Date('2026-07-26T12:00:00.000Z'));
+    expect(problems).toHaveLength(20);
+    expect(problems.filter((row) => row.reviewBand === 'needs')).toHaveLength(12);
+    expect(problems.filter((row) => row.reviewBand === 'developing')).toHaveLength(5);
+    expect(problems.filter((row) => row.reviewBand === 'review')).toHaveLength(3);
+    for (let i = 1; i < problems.length; i += 1) {
+      expect(M.getFactKey(problems[i])).not.toBe(M.getFactKey(problems[i - 1]));
+    }
+  });
+
+  it('redistributes missing Smart Review pools without mislabeling fact bands', () => {
+    const secure = fact('mul', 6, 7, 42, 4, 4, 12000, 4, '2026-07-18T12:00:00.000Z');
+    const problems = M.buildSmartReviewProblems({ [secure.key]: secure }, 6, new Date('2026-07-26T12:00:00.000Z'));
+    expect(problems).toHaveLength(6);
+    expect(problems.every((row) => row.reviewBand === 'review')).toBe(true);
+  });
+
+  it('filters teacher metrics without mixing Accuracy Focus into DCPM comparisons', () => {
+    const masteryRow = fact('add', 2, 3, 5, 4, 1, 5000, 4, '2026-07-26T10:00:00.000Z');
+    const history = [
+      { date: '2026-07-25T12:00:00.000Z', mode: 'practice', untimed: true, operation: 'add', accuracy: 80, dcpm: null, totalCorrect: 8, totalAttempted: 10, difficulty: 'focus', completionStatus: 'complete', validForComparison: false },
+      { date: '2026-07-20T12:00:00.000Z', mode: 'practice', untimed: false, operation: 'add', accuracy: 90, dcpm: 30, totalCorrect: 9, totalAttempted: 10, difficulty: 'within20', completionStatus: 'complete', validForComparison: true },
+      { date: '2026-07-15T12:00:00.000Z', mode: 'benchmark', untimed: false, operation: 'mul', accuracy: 70, dcpm: 22, totalCorrect: 7, totalAttempted: 10, difficulty: 'fixed-form', completionStatus: 'complete', validForComparison: true },
+      { date: '2026-01-01T12:00:00.000Z', mode: 'practice', untimed: true, operation: 'add', accuracy: 10, dcpm: null, totalCorrect: 1, totalAttempted: 10 },
+    ];
+    const report = M.buildTeacherReport(history, { [masteryRow.key]: masteryRow }, { days: 30, mode: 'accuracy-focus', operation: 'add' }, '3', { gatesUnlocked: 12 }, new Date('2026-07-26T12:00:00.000Z'));
+    expect(report).toMatchObject({ sessionCount: 1, avgAccuracy: 80, latestDcpm: null, totalCorrect: 8, totalAttempted: 10, grade: '3' });
+    expect(report.suggestedTargets.map((row) => row.key)).toContain('add|2|3');
+    expect(report.mazeLifetime.gatesUnlocked).toBe(12);
+  });
+
+  it('exports report sessions as escaped CSV', () => {
+    const csv = M.buildTeacherReportCsv({ sessions: [{
+      date: '2026-07-25T12:00:00.000Z', mode: 'practice', untimed: false, operation: 'add',
+      difficulty: 'Within 20, custom', accuracy: 90, dcpm: 30, totalCorrect: 9, totalAttempted: 10, completionStatus: 'complete', timeLimit: 60,
+    }] });
+    expect(csv).toContain('Date,Mode,Operation,Practice Set');
+    expect(csv).toContain('"Within 20, custom"');
+    expect(csv).toContain('Timed Practice');
+    expect(csv).toContain('Completion,Goal,Goal Result');
+  });
+});
+
+
+describe('operation growth synthesis and Next Best Step', () => {
+  const makeFact = (op, a, b, answer, attempts, correct, totalMs, timedAttempts, lastSeen) => ({
+    key: op + '|' + a + '|' + b, op, a, b, answer, symbol: op === 'add' ? '+' : op === 'sub' ? '-' : op === 'mul' ? 'x' : '/',
+    attempts, correct, responseMsTotal: totalMs, timedAttempts, lastSeen,
+  });
+
+  it('keeps recent accuracy broad while calculating DCPM trend only from a comparable series', () => {
+    const masteryRows = [
+      makeFact('add', 2, 3, 5, 4, 1, 4000, 4, '2026-07-26T10:00:00.000Z'),
+      makeFact('mul', 3, 4, 12, 4, 4, 28000, 4, '2026-07-23T10:00:00.000Z'),
+      makeFact('sub', 9, 4, 5, 4, 4, 12000, 4, '2026-07-25T10:00:00.000Z'),
+    ];
+    const mastery = Object.fromEntries(masteryRows.map((row) => [row.key, row]));
+    const history = [
+      { date: '2026-07-25T12:00:00.000Z', operation: 'add', accuracy: 80, dcpm: 25, validForComparison: true, comparisonKey: 'add-series', completionStatus: 'complete' },
+      { date: '2026-07-22T12:00:00.000Z', operation: 'add', accuracy: 70, dcpm: 20, validForComparison: true, comparisonKey: 'add-series', completionStatus: 'complete' },
+      { date: '2026-07-20T12:00:00.000Z', operation: 'add', accuracy: 60, dcpm: null, validForComparison: false, untimed: true, completionStatus: 'complete' },
+      { date: '2026-07-24T12:00:00.000Z', operation: 'mul', accuracy: 95, dcpm: 30, validForComparison: true, comparisonKey: 'mul-series', completionStatus: 'complete' },
+    ];
+    const rows = M.buildOperationGrowth(history, mastery, new Date('2026-07-26T12:00:00.000Z'));
+    const addition = rows.find((row) => row.op === 'add');
+    expect(addition).toMatchObject({ focusFacts: 1, recentSessions: 3, recentAccuracy: 70, latestDcpm: 25, trendDelta: 5, recommendation: 'Build accuracy' });
+    const multiplication = rows.find((row) => row.op === 'mul');
+    expect(multiplication).toMatchObject({ slowFacts: 1, latestDcpm: 30, trendDelta: null, recommendation: 'Build efficient recall' });
+  });
+
+  it('recommends the highest-priority operation with ready-to-launch facts', () => {
+    const add = makeFact('add', 2, 3, 5, 4, 1, 4000, 4, '2026-07-26T10:00:00.000Z');
+    const mul = makeFact('mul', 3, 4, 12, 4, 4, 28000, 4, '2026-07-23T10:00:00.000Z');
+    const recommendation = M.buildNextPracticeRecommendation({ [add.key]: add, [mul.key]: mul }, [], new Date('2026-07-26T12:00:00.000Z'));
+    expect(recommendation).toMatchObject({ op: 'add', label: 'Addition', title: 'Addition: Build accuracy', action: 'focus' });
+    expect(recommendation.facts.map((row) => row.key)).toContain('add|2|3');
+  });
+});
+
+
+describe('session goal integrity', () => {
+  it('resolves accuracy goals and evaluates them from recorded accuracy', () => {
+    const goal = M.buildSessionGoal('accuracy-90', [], { comparisonKey: 'series', grade: '3', operation: 'add', untimed: true });
+    expect(goal).toMatchObject({ metric: 'accuracy', target: 90, available: true });
+    expect(M.evaluateSessionGoal(goal, { accuracy: 92, dcpm: null, completionStatus: 'complete', validForComparison: false })).toMatchObject({ met: true, status: 'met', value: 92, progress: 100 });
+    expect(M.evaluateSessionGoal(goal, { accuracy: 84, dcpm: null, completionStatus: 'complete', validForComparison: false })).toMatchObject({ met: false, status: 'building', gap: 6 });
+  });
+
+  it('sets personal-best targets from matching comparable sessions only', () => {
+    const history = [
+      { comparisonKey: 'same', validForComparison: true, dcpm: 31 },
+      { comparisonKey: 'same', validForComparison: true, dcpm: 28 },
+      { comparisonKey: 'other', validForComparison: true, dcpm: 99 },
+      { comparisonKey: 'same', validForComparison: false, dcpm: 80 },
+    ];
+    const goal = M.buildSessionGoal('personal-best', history, { comparisonKey: 'same', grade: '3', operation: 'add', untimed: false });
+    expect(goal).toMatchObject({ metric: 'dcpm', previousBest: 31, target: 32, available: true });
+    expect(M.evaluateSessionGoal(goal, { accuracy: 90, dcpm: 33, completionStatus: 'complete', validForComparison: true })).toMatchObject({ met: true, status: 'met' });
+  });
+
+  it('never evaluates a speed goal from untimed or incomplete evidence', () => {
+    const goal = { id: 'personal-best', metric: 'dcpm', target: 30, available: true, label: 'Beat 29 DCPM' };
+    expect(M.evaluateSessionGoal(goal, { accuracy: 100, dcpm: null, completionStatus: 'complete', validForComparison: false })).toMatchObject({ met: false, status: 'not-comparable' });
+    expect(M.evaluateSessionGoal(goal, { accuracy: 100, dcpm: 40, completionStatus: 'incomplete', validForComparison: false })).toMatchObject({ met: false, status: 'incomplete' });
+  });
+
+  it('summarizes goal attainment in filtered teacher evidence', () => {
+    const report = M.buildTeacherReport([
+      { date: '2026-07-25T12:00:00.000Z', mode: 'practice', operation: 'add', accuracy: 95, totalCorrect: 9, totalAttempted: 10, goalResult: { met: true, status: 'met' } },
+      { date: '2026-07-24T12:00:00.000Z', mode: 'practice', operation: 'add', accuracy: 85, totalCorrect: 8, totalAttempted: 10, goalResult: { met: false, status: 'building' } },
+      { date: '2026-07-23T12:00:00.000Z', mode: 'practice', operation: 'add', accuracy: 70, totalCorrect: 7, totalAttempted: 10, goalResult: { met: false, status: 'incomplete' } },
+    ], {}, { days: 30, mode: 'all', operation: 'all' }, '3', {}, new Date('2026-07-26T12:00:00.000Z'));
+    expect(report).toMatchObject({ goalsMet: 1, goalSessions: 2, goalRate: 50 });
   });
 });

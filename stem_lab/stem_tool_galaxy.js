@@ -154,6 +154,18 @@ if (!window._galaxyHasLoadedOnce) {
           var patchGalaxy = function (patch) { setLabToolData(function (prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, patch) }); }); };
           var upd = function (key, val) { patchGalaxy((function () { var o = {}; o[key] = val; return o; })()); };
 
+          // Range inputs fire on every pointer move. Rebuilding up to 100,000 star
+          // vertices (or recolouring them) per event stalls the drag, so the expensive
+          // scene work is coalesced onto the canvas element, which outlives re-renders.
+          var scheduleOnCanvas = function (cv, timerKey, delay, work) {
+            if (!cv) return;
+            if (cv[timerKey]) clearTimeout(cv[timerKey]);
+            cv[timerKey] = setTimeout(function () {
+              cv[timerKey] = null;
+              if (cv.isConnected) work(cv);
+            }, delay);
+          };
+
 
 
           // ── Layer toggle defaults ──
@@ -236,6 +248,14 @@ if (!window._galaxyHasLoadedOnce) {
           function spectralTypeForMass(mass) {
             if (mass < HYDROGEN_FUSION_LIMIT) return null;
             return mass < M_DWARF_LIMIT ? 'M' : mass < 0.8 ? 'K' : mass < 1.04 ? 'G' : mass < 1.4 ? 'F' : mass < 2.1 ? 'A' : mass < 16 ? 'B' : 'O';
+          }
+
+          // Main-sequence radius in solar radii. Piecewise because the mass-radius
+          // relation steepens either side of ~1 M☉. Shared by the Star Life canvas
+          // read-out and the Size Comparison panel so the two cannot disagree.
+          function mainSequenceRadius(mass) {
+            var m = Math.max(0.01, mass);
+            return m < 0.8 ? Math.pow(m, 0.8) : m < 2 ? Math.pow(m, 0.57) : Math.pow(m, 0.78);
           }
 
           function lifecycleMassCategory(mass) {
@@ -479,6 +499,33 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
+          // AI-generated questions are untrusted input: the render path indexes
+          // `options` and compares against `a`, so anything malformed is discarded
+          // here rather than thrown at React.
+          function sanitizeGeneratedQuiz(list) {
+            if (!Array.isArray(list)) return [];
+            return list.map(function (item) {
+              if (!item || typeof item !== 'object') return null;
+              var q = typeof item.q === 'string' ? item.q.trim() : '';
+              var a = typeof item.a === 'string' ? item.a.trim() : '';
+              if (!q || !a || !Array.isArray(item.options)) return null;
+              var seen = {}, options = [];
+              item.options.forEach(function (opt) {
+                if (typeof opt !== 'string') return;
+                var text = opt.trim();
+                if (!text || seen[text]) return;
+                seen[text] = true;
+                options.push(text);
+              });
+              // The answer must actually be selectable, and a single-option item is
+              // not a multiple-choice question.
+              if (options.indexOf(a) === -1 || options.length < 2) return null;
+              return { q: q, a: a, options: options };
+            }).filter(Boolean);
+          }
+
+
+
           // ── Scale data ──
 
           var SCALE_INFO = [
@@ -604,6 +651,18 @@ if (!window._galaxyHasLoadedOnce) {
             return stages;
           }
 
+          // The stage list depends on mass, so a stage chosen at one mass can become
+          // impossible at another (e.g. picking Black Hole at 30 M☉, then sliding the
+          // mass down to 1 M☉ left a Sun-like star rendered as a black hole). Fall back
+          // to the main sequence whenever the remembered stage is not on the new path.
+          (function () {
+            var reachableStages = getStagesForMass(lifecycleMass);
+            for (var rsi = 0; rsi < reachableStages.length; rsi++) {
+              if (reachableStages[rsi].id === activeStage) return;
+            }
+            activeStage = 'main_sequence';
+          })();
+
 
 
           // ── Three.js init with layer groups ──
@@ -671,6 +730,12 @@ if (!window._galaxyHasLoadedOnce) {
           // changes. Keep this ref stable so ordinary state renders do not tear down
           // and recreate the complete Three.js scene.
           var galaxyCanvasActive = React.useRef(null);
+          // Three.js comes off a CDN, so on school wi-fi the canvas can sit empty for
+          // seconds. This is deliberately local state, not toolData: a saved session
+          // must not reopen claiming the scene is already built.
+          var _galaxySceneReady = React.useState(false);
+          var galaxySceneReady = _galaxySceneReady[0];
+          var setGalaxySceneReady = _galaxySceneReady[1];
           var galaxyRuntimeRef = React.useRef(null);
           galaxyRuntimeRef.current = {
             canvasNarrate: canvasNarrate,
@@ -678,7 +743,10 @@ if (!window._galaxyHasLoadedOnce) {
             galaxyQuality: galaxyQuality,
             initGalaxy: initGalaxy,
             loadGalaxyPP: loadGalaxyPP,
-            starCount: starCount
+            starCount: starCount,
+            // Shows the "3-D mode unavailable / retry" card instead of a black canvas.
+            reportInitFailure: function () { setTimeout(function () { upd('webglError', true); setGalaxySceneReady(false); }, 0); },
+            reportSceneReady: function () { setTimeout(function () { setGalaxySceneReady(true); }, 0); }
           };
 
           var canvasRefCb = React.useCallback(function (canvasEl) {
@@ -691,6 +759,7 @@ if (!window._galaxyHasLoadedOnce) {
                 if (prev._galaxyCleanup) prev._galaxyCleanup();
                 prev._galaxyInit = false;
               }
+              setGalaxySceneReady(false);
 
               return;
 
@@ -725,7 +794,15 @@ if (!window._galaxyHasLoadedOnce) {
                 if (!isCurrentCanvas()) return;
                 runtime = galaxyRuntimeRef.current;
                 canvasEl._galaxyRenderedType = runtime.galaxyType;
-                runtime.initGalaxy(canvasEl);
+                // loadGalaxyPP swallows callback exceptions, so an init failure here
+                // would otherwise leave a silent black canvas with no way back.
+                try {
+                  runtime.initGalaxy(canvasEl);
+                } catch (initError) {
+                  console.error('[Galaxy] Scene initialization failed:', initError);
+                  canvasEl._galaxyInit = false;
+                  if (runtime.reportInitFailure) runtime.reportInitFailure();
+                }
               });
             };
 
@@ -735,6 +812,8 @@ if (!window._galaxyHasLoadedOnce) {
                 if (isCurrentCanvas()) {
                   canvasEl._galaxyInit = false;
                   console.error('[Galaxy] Three.js failed to load');
+                  var runtime = galaxyRuntimeRef.current;
+                  if (runtime && runtime.reportInitFailure) runtime.reportInitFailure();
                 }
               });
 
@@ -749,8 +828,13 @@ if (!window._galaxyHasLoadedOnce) {
             if (!canvasEl || !canvasEl.isConnected || !canvasEl._galaxyInit) return;
             if (canvasEl._galaxyRequestedType === galaxyType && canvasEl._galaxyRequestedQuality === galaxyQuality) return;
             canvasEl._galaxyInitToken = (canvasEl._galaxyInitToken || 0) + 1;
-            if (canvasEl._galaxyCleanup) canvasEl._galaxyCleanup();
+            // This rebuild keeps the same canvas. Dispose the old scene and bloom
+            // targets, but keep its WebGL context alive for the replacement renderer.
+            if (canvasEl._galaxyCleanup) canvasEl._galaxyCleanup(true);
             canvasEl._galaxyInit = false;
+            // Switching morphology or quality tears the whole scene down and rebuilds
+            // it, so the overlay must come back for that wait too.
+            setGalaxySceneReady(false);
             canvasRefCb(canvasEl);
           }, [galaxyType, galaxyQuality, canvasRefCb]);
 
@@ -771,6 +855,10 @@ if (!window._galaxyHasLoadedOnce) {
 
 
           var blackHoleCanvasActive = React.useRef(null);
+          // Holds the Real Sky container across renders so its Aladin Lite instance
+          // can be disposed when the node genuinely unmounts. Declared here, with the
+          // other refs, to keep the hook budget fixed and unconditional.
+          var realSkyElementRef = React.useRef(null);
           var blackHoleRefCb = React.useCallback(function(canvas) {
             if (!canvas) { if (blackHoleCanvasActive.current && blackHoleCanvasActive.current._blackHoleCleanup) blackHoleCanvasActive.current._blackHoleCleanup(); blackHoleCanvasActive.current = null; return; }
             if (canvas._blackHoleInit) return;
@@ -889,12 +977,18 @@ if (!window._galaxyHasLoadedOnce) {
             function resize() { if (!renderer) return; var w = canvas.clientWidth || 800, h = canvas.clientHeight || 540; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
             function updateCamera() { pitch = Math.max(-1.05, Math.min(1.05, pitch)); camera.position.set(Math.sin(yaw)*Math.cos(pitch)*distance, Math.sin(pitch)*distance, Math.cos(yaw)*Math.cos(pitch)*distance); camera.lookAt(0,0,0); if(lensArcA){lensArcA.quaternion.copy(camera.quaternion);lensArcA.rotateZ(-.52);} if(lensArcB){lensArcB.quaternion.copy(camera.quaternion);lensArcB.rotateZ(2.42);} if(coreGlow)coreGlow.position.copy(camera.position).normalize().multiplyScalar(-.16); }
             function animate(t) { if (stopped) return; frame = requestAnimationFrame(animate); if (!renderer || !inView) return; var delta=lastFrameTime?Math.min(.04,((t||0)-lastFrameTime)/1000):0; lastFrameTime=t||0; if (!paused && !pageHidden) { updateFalling(delta); disk.material.uniforms.uTime.value = (t || 0) * .001; stars.rotation.y += .00012; photonRing.rotation.z += .001 + spin*.002; if(corona)corona.rotation.z += .0015 + spin*.003; if(lensArcA)lensArcA.material.opacity=.38+Math.sin((t||0)*.0017)*.08; if(lensArcB)lensArcB.material.opacity=.23+Math.cos((t||0)*.0013)*.05; if(coreGlow)coreGlow.material.opacity=.64+Math.sin((t||0)*.002)*.06; } updateCamera(); renderer.render(scene,camera); }
-            canvas.addEventListener('pointerdown', function(e){ drag=true; lastX=e.clientX; lastY=e.clientY; canvas.setPointerCapture(e.pointerId); });
-            canvas.addEventListener('pointermove', function(e){ if(!drag)return; yaw-=(e.clientX-lastX)*.006; pitch+=(e.clientY-lastY)*.006; lastX=e.clientX; lastY=e.clientY; });
-            canvas.addEventListener('pointerup', function(){drag=false;});
-            canvas.addEventListener('pointercancel', function(){drag=false;});
-            canvas.addEventListener('wheel', function(e){e.preventDefault(); distance=Math.max(1.6,Math.min(6,distance+e.deltaY*.002));},{passive:false});
-            canvas.addEventListener('keydown', function(e){ var handled=true; if(e.key==='ArrowLeft')yaw-=.1; else if(e.key==='ArrowRight')yaw+=.1; else if(e.key==='ArrowUp')pitch+=.1; else if(e.key==='ArrowDown')pitch-=.1; else if(e.key==='+'||e.key==='=')distance=Math.max(1.6,distance-.2); else if(e.key==='-')distance=Math.min(6,distance+.2); else if(e.key==='Home'){yaw=.28;pitch=.28;distance=3.25; var status=document.getElementById('black-hole-status'); if(status)status.textContent='Camera reset to the starting view.';} else handled=false; if(handled)e.preventDefault(); });
+            // Named so cleanup can detach them (anonymous listeners could never be removed).
+            function onBhDown(e){ drag=true; lastX=e.clientX; lastY=e.clientY; try { canvas.setPointerCapture(e.pointerId); } catch(captureError) {} }
+            function onBhMove(e){ if(!drag)return; yaw-=(e.clientX-lastX)*.006; pitch+=(e.clientY-lastY)*.006; lastX=e.clientX; lastY=e.clientY; }
+            function onBhUp(){ drag=false; }
+            function onBhWheel(e){ e.preventDefault(); distance=Math.max(1.6,Math.min(6,distance+e.deltaY*.002)); }
+            function onBhKey(e){ var handled=true; if(e.key==='ArrowLeft')yaw-=.1; else if(e.key==='ArrowRight')yaw+=.1; else if(e.key==='ArrowUp')pitch+=.1; else if(e.key==='ArrowDown')pitch-=.1; else if(e.key==='+'||e.key==='=')distance=Math.max(1.6,distance-.2); else if(e.key==='-')distance=Math.min(6,distance+.2); else if(e.key==='Home'){yaw=.28;pitch=.28;distance=3.25; var status=document.getElementById('black-hole-status'); if(status)status.textContent=__alloT('stem.galaxy.bh_status_camera_reset', 'Camera reset to the starting view.');} else handled=false; if(handled)e.preventDefault(); }
+            canvas.addEventListener('pointerdown', onBhDown);
+            canvas.addEventListener('pointermove', onBhMove);
+            canvas.addEventListener('pointerup', onBhUp);
+            canvas.addEventListener('pointercancel', onBhUp);
+            canvas.addEventListener('wheel', onBhWheel, {passive:false});
+            canvas.addEventListener('keydown', onBhKey);
             function onContextLost(e){ e.preventDefault(); paused=true; var status=document.getElementById('black-hole-status'); if(status)status.textContent='The 3-D graphics context was interrupted. The simulation is paused while it recovers.'; }
             function onContextRestored(){ paused=canvas.getAttribute('data-paused')==='true'; var status=document.getElementById('black-hole-status'); if(status)status.textContent=paused?'The 3-D view recovered and remains paused.':'The 3-D view recovered and is running.'; }
             canvas.addEventListener('webglcontextlost',onContextLost,false);
@@ -903,7 +997,46 @@ if (!window._galaxyHasLoadedOnce) {
             document.addEventListener('visibilitychange', onVisibilityChange);
             if (window.IntersectionObserver) { observer=new IntersectionObserver(function(entries){ inView=!!(entries[0]&&entries[0].isIntersecting); },{rootMargin:'100px'}); observer.observe(canvas); }
             window.addEventListener('resize', resize);
-            canvas._blackHoleCleanup = function(){ stopped=true; cancelAnimationFrame(frame); window.removeEventListener('resize',resize); document.removeEventListener('visibilitychange',onVisibilityChange); canvas.removeEventListener('webglcontextlost',onContextLost); canvas.removeEventListener('webglcontextrestored',onContextRestored); if(observer)observer.disconnect(); while(fallingObjects.length)disposeFalling(fallingObjects.pop()); if(renderer)renderer.dispose(); };
+            var blackHoleCleanedUp = false;
+            canvas._blackHoleCleanup = function(){
+              if(blackHoleCleanedUp)return;
+              blackHoleCleanedUp=true;
+              stopped=true;
+              cancelAnimationFrame(frame);
+              window.removeEventListener('resize',resize);
+              document.removeEventListener('visibilitychange',onVisibilityChange);
+              canvas.removeEventListener('webglcontextlost',onContextLost);
+              canvas.removeEventListener('webglcontextrestored',onContextRestored);
+              canvas.removeEventListener('pointerdown',onBhDown);
+              canvas.removeEventListener('pointermove',onBhMove);
+              canvas.removeEventListener('pointerup',onBhUp);
+              canvas.removeEventListener('pointercancel',onBhUp);
+              canvas.removeEventListener('wheel',onBhWheel);
+              canvas.removeEventListener('keydown',onBhKey);
+              if(observer)observer.disconnect();
+              while(fallingObjects.length)disposeFalling(fallingObjects.pop());
+              if(scene){
+                var blackHoleGeometries=new Set(),blackHoleMaterials=new Set(),blackHoleTextures=new Set();
+                scene.traverse(function(node){
+                  if(node.geometry&&node.geometry.dispose&&!blackHoleGeometries.has(node.geometry)){blackHoleGeometries.add(node.geometry);node.geometry.dispose();}
+                  var nodeMaterials=node.material?(Array.isArray(node.material)?node.material:[node.material]):[];
+                  nodeMaterials.forEach(function(material){
+                    if(!material||blackHoleMaterials.has(material))return;
+                    blackHoleMaterials.add(material);
+                    Object.keys(material).forEach(function(key){var texture=material[key];if(texture&&texture.isTexture&&texture.dispose&&!blackHoleTextures.has(texture)){blackHoleTextures.add(texture);texture.dispose();}});
+                    if(material.dispose)material.dispose();
+                  });
+                });
+              }
+              if(renderer){
+                if(renderer.renderLists&&renderer.renderLists.dispose)renderer.renderLists.dispose();
+                renderer.dispose();
+                // The black-hole canvas is being removed, so release its GPU context
+                // immediately instead of waiting for browser garbage collection.
+                if(renderer.forceContextLoss)renderer.forceContextLoss();
+              }
+              canvas._blackHoleInit=false;
+            };
             if (window.THREE) init(); else { window.StemLab.ensureThree({ orbit: false }).then(init).catch(function(){ var fallback=document.getElementById('black-hole-status'); if(fallback)fallback.textContent='The 3-D library could not load. The labeled black-hole explanation remains available.'; }); }
           }, []);
           function generateStars(THREE, count, gType, galaxyType, ageDist) {
@@ -913,6 +1046,14 @@ if (!window._galaxyHasLoadedOnce) {
             var starPos = new Float32Array(count * 3), starColors = new Float32Array(count * 3), starData = [];
 
             var starTypeArr = new Float32Array(count), starPhaseArr = new Float32Array(count), starLuminosityArr = new Float32Array(count);
+
+            // Hoisted out of the per-star loop: with 100,000 stars the old code
+            // allocated an array and re-ran reduce() once per star.
+            var pcts = ageDist || [0.003, 0.13, 0.6, 3, 7.6, 12.1, 76.5];
+
+            var pctTotal = pcts.reduce(function (a, b) { return a + b; }, 0);
+
+            var typeColors = STAR_TYPES.map(function (st) { return new THREE.Color(st.color); });
 
             for (var i = 0; i < count; i++) {
 
@@ -984,15 +1125,11 @@ if (!window._galaxyHasLoadedOnce) {
 
               starPos[i * 3] = x; starPos[i * 3 + 1] = y; starPos[i * 3 + 2] = z;
 
-              var pcts = ageDist || [0.003, 0.13, 0.6, 3, 7.6, 12.1, 76.5];
-
-              var pctTotal = pcts.reduce(function (a, b) { return a + b; }, 0);
-
               var cum = 0, roll = Math.random() * pctTotal, typeIdx = 6;
 
               for (var ti = 0; ti < pcts.length; ti++) { cum += pcts[ti]; if (roll < cum) { typeIdx = ti; break; } }
 
-              var st = STAR_TYPES[typeIdx], c = new THREE.Color(st.color);
+              var st = STAR_TYPES[typeIdx], c = typeColors[typeIdx];
 
               starColors[i * 3] = c.r; starColors[i * 3 + 1] = c.g; starColors[i * 3 + 2] = c.b;
 
@@ -1064,13 +1201,20 @@ if (!window._galaxyHasLoadedOnce) {
             canvasEl.setAttribute('data-render-resolution', Math.round(W * renderer.getPixelRatio()) + 'x' + Math.round(H * renderer.getPixelRatio()));
             var galaxyMaxAnisotropy = renderer.capabilities && renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
             var galaxyTextureAnisotropy = Math.min(galaxyMaxAnisotropy, resolvedQuality === 'cinematic' ? 16 : resolvedQuality === 'high' ? 8 : 4);
+            // Enlarge a texture-source canvas, then scale its 2-D context so every
+            // caller can keep drawing in the original (logical) coordinate space.
+            // Setting canvas.width resets the context transform, so the scale() must
+            // come after the resize. `_galaxyUpscaled` makes this idempotent — a second
+            // call on the same canvas would otherwise compound the resize.
             function upscaleGalaxyCanvas(canvas, context) {
               if (!canvas || textureResolutionScale <= 1) return context;
+              if (canvas._galaxyUpscaled) return context;
               var logicalWidth = canvas.width, logicalHeight = canvas.height;
               canvas.width = Math.max(1, Math.round(logicalWidth * textureResolutionScale));
               canvas.height = Math.max(1, Math.round(logicalHeight * textureResolutionScale));
+              canvas._galaxyUpscaled = true;
               var detailedContext = canvas.getContext('2d');
-              detailedContext = upscaleGalaxyCanvas(canvas, detailedContext);
+              if (!detailedContext) return context;
               detailedContext.scale(canvas.width / logicalWidth, canvas.height / logicalHeight);
               return detailedContext;
             }
@@ -1335,7 +1479,9 @@ if (!window._galaxyHasLoadedOnce) {
 
             // Spiral galaxy stars
 
-            var starResult = generateStars(THREE, starCount, gType, galaxyType);
+            // Seed the population from the restored cosmic age so a session reopened
+            // at (say) 0.4 Gyr does not start with present-day star colours.
+            var starResult = generateStars(THREE, starCount, gType, galaxyType, getAgeDistribution(cosmicAge));
 
             var starShaderMat = new THREE.ShaderMaterial({
 
@@ -1427,6 +1573,25 @@ if (!window._galaxyHasLoadedOnce) {
 
                 'uniform float uObserve;',
 
+                // ── Star profile tuning ───────────────────────────────────────
+                // These three control how a single star reads. The old profile used
+                // a plain smoothstep, i.e. a broad soft disc filling the whole point
+                // sprite: at half-radius it was still at 50% alpha. Stacking 25,000+
+                // of those additively turned the disk into a milky wash instead of
+                // resolved stars, and it fed the bloom threshold a flat grey rather
+                // than bright cores.
+                //
+                // Concentrating the same energy into a tight core with a faint
+                // extended halo is the astrophotography profile: crisper stars, more
+                // apparent resolution, and bloom that picks out genuinely bright
+                // stars instead of blooming everything uniformly.
+                //   CORE_TIGHTNESS  higher = smaller, sharper core (was effectively 1.0)
+                //   CORE_GAIN       peak brightness, compensates for the tighter core
+                //   HALO_GAIN       how much of the wide falloff survives around it
+                'const float CORE_TIGHTNESS = 2.6;',
+                'const float CORE_GAIN = 1.05;',
+                'const float HALO_GAIN = 0.10;',
+
                 'void main() {',
 
                 '  float d = length(gl_PointCoord - 0.5) * 2.0;',
@@ -1435,7 +1600,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  float glow = exp(-d * d * 7.2);',
 
-                '  float core = smoothstep(1.0, 0.0, d);',
+                '  float core = pow(smoothstep(1.0, 0.0, d), CORE_TIGHTNESS);',
 
                 '  vec2 q = abs(gl_PointCoord - 0.5);',
 
@@ -1451,7 +1616,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  col += mix(vec3(0.52, 0.72, 1.0), vec3(1.0, 0.82, 0.58), vType / 6.0) * (diffraction * 0.55 + airyRing * 0.24 + microCore * 0.4);',
 
-                '  float alpha = min(1.0, core * vA * 0.75 + diffraction * 0.34 + airyRing * 0.12 + microCore * 0.22);',
+                '  float alpha = min(1.0, core * vA * CORE_GAIN + glow * HALO_GAIN * vA + diffraction * 0.34 + airyRing * 0.12 + microCore * 0.22);',
 
                 '  if (uObserve > 0.5 && uObserve < 1.5) {',
 
@@ -1854,9 +2019,38 @@ if (!window._galaxyHasLoadedOnce) {
 
               dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
 
-              var dustMat = new THREE.PointsMaterial({ color: 0x030305, size: 0.025, transparent: true, opacity: 0.12 });
+              // A PointsMaterial with no map draws a hard-edged SQUARE. Twelve thousand
+              // black squares read as digital noise up close rather than as dust; a soft
+              // radial alpha turns each one into a grain that blends into a lane.
+              var dustGrainCv = document.createElement('canvas'); dustGrainCv.width = 32; dustGrainCv.height = 32;
+              var dustGrainCtx = upscaleGalaxyCanvas(dustGrainCv, dustGrainCv.getContext('2d'));
+              var dustGrainGrad = dustGrainCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+              dustGrainGrad.addColorStop(0, 'rgba(255,255,255,1)');
+              dustGrainGrad.addColorStop(0.45, 'rgba(255,255,255,0.5)');
+              dustGrainGrad.addColorStop(1, 'rgba(255,255,255,0)');
+              dustGrainCtx.fillStyle = dustGrainGrad; dustGrainCtx.fillRect(0, 0, 32, 32);
+              var dustGrainTex = tuneGalaxyTexture(new THREE.CanvasTexture(dustGrainCv));
 
-              dustGroup.add(new THREE.Points(dustGeo, dustMat));
+              var dustMat = new THREE.PointsMaterial({ color: 0x050409, map: dustGrainTex, size: 0.032, transparent: true, opacity: 0.16, depthWrite: false });
+
+              var dustPoints = new THREE.Points(dustGeo, dustMat);
+              // Dark lanes cutting across the arms are the single most recognisable
+              // feature of a spiral galaxy, and this layer could not produce them: it
+              // drew at renderOrder 0, BEFORE the additive star field at 2, so the
+              // stars simply added straight over the top of it. Drawing it after the
+              // stars (but before the labels at 12+) lets the grains actually subtract
+              // light, which is what dust does.
+              //
+              // The inter-arm feather lines and molecular filaments in this same scene
+              // already rely on that ordering (renderOrder 4-6), so this is the
+              // established approach here rather than a new trick.
+              //
+              // Approximation worth knowing: nothing in this scene writes depth, so
+              // dust on the FAR side of the disk darkens near-side stars too. The dust
+              // layer is thin (y within +/-0.005 against a +/-0.03 star scale height),
+              // so the error is small face-on and only slightly muddies edge-on views.
+              dustPoints.renderOrder = 8;
+              dustGroup.add(dustPoints);
 
             })();
 
@@ -2272,42 +2466,96 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
-            // Scale grid
+            // Scale grid — the old version was 0x223366/0x112244 lines on a #020208
+            // sky, so switching the layer on looked like nothing happened, and the
+            // lone unlabelled ring conveyed no scale at all. Brighter lines plus two
+            // labelled radii make the layer actually report distances.
 
-            var gridHelper = new THREE.GridHelper(2, 20, 0x223366, 0x112244);
+            var gridHelper = new THREE.GridHelper(2, 20, 0x4f7fd4, 0x2a4a86);
 
             gridHelper.position.y = -0.03;
+            if (gridHelper.material) {
+              var gridMaterials = Array.isArray(gridHelper.material) ? gridHelper.material : [gridHelper.material];
+              gridMaterials.forEach(function (m) { m.transparent = true; m.opacity = 0.42; m.depthWrite = false; });
+            }
 
             gridGroup.add(gridHelper);
 
-            var ringScale = new THREE.Mesh(new THREE.RingGeometry(0.49, 0.5, 64), new THREE.MeshBasicMaterial({ color: 0x4488ff, side: THREE.DoubleSide, transparent: true, opacity: 0.2 }));
+            // World radius ~0.9 spans the modelled disk, and SCALE_INFO puts the disk
+            // at ~50,000 ly in radius — so ~0.5 lands on the Sun's ~26,000 ly orbit.
+            var scaleRings = [
+              { radius: 0.5, color: 0x67e8f9, opacity: 0.42, label: __alloT('stem.galaxy.grid_ring_sun', 'Sun’s orbit · ~26,000 ly') },
+              { radius: 0.9, color: 0x818cf8, opacity: 0.3, label: __alloT('stem.galaxy.grid_ring_edge', 'Disk edge · ~50,000 ly') }
+            ];
+            scaleRings.forEach(function (ring) {
+              var ringMesh = new THREE.Mesh(new THREE.RingGeometry(ring.radius - 0.006, ring.radius, 128), new THREE.MeshBasicMaterial({ color: ring.color, side: THREE.DoubleSide, transparent: true, opacity: ring.opacity, depthWrite: false }));
+              ringMesh.rotation.x = Math.PI * 0.5; ringMesh.position.y = -0.02;
+              gridGroup.add(ringMesh);
 
-            ringScale.rotation.x = Math.PI * 0.5; ringScale.position.y = -0.02;
-
-            gridGroup.add(ringScale);
+              var ringCv = document.createElement('canvas'); ringCv.width = 320; ringCv.height = 44;
+              var ringCtx = upscaleGalaxyCanvas(ringCv, ringCv.getContext('2d'));
+              ringCtx.font = 'bold 19px Inter, system-ui, sans-serif';
+              ringCtx.textAlign = 'center'; ringCtx.textBaseline = 'middle';
+              // Stroke first so the text stays readable over bright arms as well as sky.
+              ringCtx.lineWidth = 4; ringCtx.strokeStyle = 'rgba(2,6,23,0.92)';
+              ringCtx.strokeText(ring.label, 160, 24);
+              ringCtx.fillStyle = '#' + ring.color.toString(16).padStart(6, '0');
+              ringCtx.fillText(ring.label, 160, 24);
+              var ringLabel = new THREE.Sprite(new THREE.SpriteMaterial({ map: tuneGalaxyTexture(new THREE.CanvasTexture(ringCv)), transparent: true, depthWrite: false, depthTest: false, opacity: 0.92 }));
+              ringLabel.position.set(0, -0.012, ring.radius);
+              ringLabel.scale.set(0.34, 0.047, 1);
+              ringLabel.renderOrder = 12;
+              gridGroup.add(ringLabel);
+            });
 
 
 
             // Nebulae as sprites
 
-            var nebCanvas = document.createElement('canvas'); nebCanvas.width = 64; nebCanvas.height = 64;
-
-            var nCtx = nebCanvas.getContext('2d'), nebulaSprites = [], nebulaWispSprites = [];
-            nCtx = upscaleGalaxyCanvas(nebCanvas, nCtx);
+            // Every nebula gets its OWN canvas. Sharing one canvas and cloning the
+            // CanvasTexture shares the image reference too, so all eight sprites
+            // uploaded whatever the canvas held after the loop finished — the last
+            // nebula's colour. Orion's pink, the Crab's teal and the Ring's magenta
+            // all rendered as the Lagoon's red.
+            var nebulaSprites = [], nebulaWispSprites = [];
 
             NEBULAE.forEach(function (neb) {
 
-              nCtx.clearRect(0, 0, 64, 64);
+              var nebCanvas = document.createElement('canvas'); nebCanvas.width = 96; nebCanvas.height = 96;
 
-              var grad = nCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+              var nCtx = upscaleGalaxyCanvas(nebCanvas, nebCanvas.getContext('2d'));
 
-              grad.addColorStop(0, neb.color + 'aa'); grad.addColorStop(0.5, neb.color + '44'); grad.addColorStop(1, neb.color + '00');
+              var grad = nCtx.createRadialGradient(48, 48, 0, 48, 48, 48);
 
-              nCtx.fillStyle = grad; nCtx.fillRect(0, 0, 64, 64);
+              grad.addColorStop(0, neb.color + 'cc'); grad.addColorStop(0.28, neb.color + '7a'); grad.addColorStop(0.62, neb.color + '2e'); grad.addColorStop(1, neb.color + '00');
 
-              var tex = tuneGalaxyTexture(new THREE.CanvasTexture(nebCanvas)); tex.needsUpdate = true;
+              nCtx.fillStyle = grad; nCtx.fillRect(0, 0, 96, 96);
 
-              var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex.clone(), transparent: true, opacity: 0.5 }));
+              // A few offset lobes stop the sprite reading as a perfect circle —
+              // emission nebulae are clumpy, and a plain radial blob looked synthetic.
+              for (var lobe = 0; lobe < 5; lobe++) {
+                var lobeAngle = lobe * 1.27 + neb.x * 3;
+                var lobeDist = 12 + (lobe % 3) * 7;
+                var lobeX = 48 + Math.cos(lobeAngle) * lobeDist, lobeY = 48 + Math.sin(lobeAngle) * lobeDist * 0.78;
+                var lobeRadius = 15 + (lobe % 4) * 5;
+                var lobeGrad = nCtx.createRadialGradient(lobeX, lobeY, 0, lobeX, lobeY, lobeRadius);
+                lobeGrad.addColorStop(0, neb.color + '3a'); lobeGrad.addColorStop(1, neb.color + '00');
+                nCtx.fillStyle = lobeGrad;
+                nCtx.beginPath(); nCtx.arc(lobeX, lobeY, lobeRadius, 0, Math.PI * 2); nCtx.fill();
+              }
+
+              // Dark nebulae absorb rather than emit, so they read as a silhouette.
+              if (neb.type === 'Dark') {
+                nCtx.globalCompositeOperation = 'multiply';
+                var darkGrad = nCtx.createRadialGradient(48, 48, 0, 48, 48, 40);
+                darkGrad.addColorStop(0, 'rgba(8,6,14,0.86)'); darkGrad.addColorStop(1, 'rgba(8,6,14,0)');
+                nCtx.fillStyle = darkGrad; nCtx.fillRect(0, 0, 96, 96);
+                nCtx.globalCompositeOperation = 'source-over';
+              }
+
+              var tex = tuneGalaxyTexture(new THREE.CanvasTexture(nebCanvas));
+
+              var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0.5, depthWrite: false, blending: neb.type === 'Dark' ? THREE.NormalBlending : THREE.AdditiveBlending }));
 
               sprite.position.set(neb.x, neb.y, neb.z); sprite.scale.set(neb.r * 2, neb.r * 2, 1);
 
@@ -2349,22 +2597,48 @@ if (!window._galaxyHasLoadedOnce) {
 
             NEBULAE.forEach(function (neb) {
 
-              var labelCanvas = document.createElement('canvas'); labelCanvas.width = 256; labelCanvas.height = 48;
+              var labelCanvas = document.createElement('canvas'); labelCanvas.width = 288; labelCanvas.height = 52;
 
-              var lCtx = labelCanvas.getContext('2d');
-              lCtx = upscaleGalaxyCanvas(labelCanvas, lCtx);
+              var lCtx = upscaleGalaxyCanvas(labelCanvas, labelCanvas.getContext('2d'));
 
-              lCtx.fillStyle = 'rgba(0,0,0,0.5)'; lCtx.fillRect(0, 0, 256, 48);
+              // A full-bleed 50%-black rectangle left hard edges floating in space and
+              // still failed the darker nebulae — the Horsehead's #8d6e63 on it is
+              // about 2.5:1. A rounded pill, a colour chip, and white text with a dark
+              // stroke keep every label legible without a boxy black slab.
+              var pillX = 6, pillY = 8, pillW = 276, pillH = 34, pillR = 17;
+              lCtx.beginPath();
+              lCtx.moveTo(pillX + pillR, pillY);
+              lCtx.lineTo(pillX + pillW - pillR, pillY);
+              lCtx.quadraticCurveTo(pillX + pillW, pillY, pillX + pillW, pillY + pillR);
+              lCtx.lineTo(pillX + pillW, pillY + pillH - pillR);
+              lCtx.quadraticCurveTo(pillX + pillW, pillY + pillH, pillX + pillW - pillR, pillY + pillH);
+              lCtx.lineTo(pillX + pillR, pillY + pillH);
+              lCtx.quadraticCurveTo(pillX, pillY + pillH, pillX, pillY + pillH - pillR);
+              lCtx.lineTo(pillX, pillY + pillR);
+              lCtx.quadraticCurveTo(pillX, pillY, pillX + pillR, pillY);
+              lCtx.closePath();
+              lCtx.fillStyle = 'rgba(2,6,23,0.82)'; lCtx.fill();
+              lCtx.lineWidth = 1.5; lCtx.strokeStyle = neb.color + 'aa'; lCtx.stroke();
 
-              lCtx.font = '18px sans-serif'; lCtx.fillStyle = neb.color; lCtx.textAlign = 'center'; lCtx.fillText(neb.name, 128, 32);
+              // Colour chip ties the label back to its sprite without tinting the text.
+              lCtx.beginPath(); lCtx.arc(pillX + 20, pillY + pillH / 2, 6, 0, Math.PI * 2);
+              lCtx.fillStyle = neb.color; lCtx.fill();
+
+              lCtx.font = 'bold 19px Inter, system-ui, sans-serif';
+              lCtx.textAlign = 'center'; lCtx.textBaseline = 'middle';
+              lCtx.lineWidth = 3.5; lCtx.strokeStyle = 'rgba(2,6,23,0.95)';
+              lCtx.strokeText(neb.name, pillX + pillW / 2 + 10, pillY + pillH / 2 + 1);
+              lCtx.fillStyle = '#f8fafc';
+              lCtx.fillText(neb.name, pillX + pillW / 2 + 10, pillY + pillH / 2 + 1);
 
               var labelTex = tuneGalaxyTexture(new THREE.CanvasTexture(labelCanvas));
 
-              var labelSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex, transparent: true }));
+              var labelSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex, transparent: true, depthWrite: false, depthTest: false }));
 
-              labelSprite.position.set(neb.x, neb.y + neb.r + 0.03, neb.z);
+              labelSprite.position.set(neb.x, neb.y + neb.r + 0.035, neb.z);
 
-              labelSprite.scale.set(0.15, 0.03, 1);
+              labelSprite.scale.set(0.17, 0.031, 1);
+              labelSprite.renderOrder = 14;
 
               labelGroup.add(labelSprite);
 
@@ -2387,13 +2661,17 @@ if (!window._galaxyHasLoadedOnce) {
 
             // Function to regenerate stars with new count
 
+            // Tracks the age distribution the star field currently reflects, so a
+            // star-count change does not silently snap the palette back to today.
+            var activeAgeDistribution = getAgeDistribution(cosmicAge);
+
             canvasEl._setStarCount = function (count) {
 
               armGroup.remove(starPoints);
 
               starPoints.geometry.dispose();
 
-              var result = generateStars(THREE, count, gType, galaxyType);
+              var result = generateStars(THREE, count, gType, galaxyType, activeAgeDistribution);
 
               starPoints = new THREE.Points(result.geo, starShaderMat);
               starPoints.renderOrder = 2;
@@ -2427,9 +2705,15 @@ if (!window._galaxyHasLoadedOnce) {
 
               composer.addPass(new THREE.RenderPass(scene, camera));
 
-              var bloomStrength = resolvedQuality === 'cinematic' ? 1.42 : resolvedQuality === 'high' ? 1.34 : 1.18;
-              var bloomRadius = resolvedQuality === 'cinematic' ? 0.42 : resolvedQuality === 'high' ? 0.34 : 0.24;
-              var bloomThreshold = resolvedQuality === 'cinematic' ? 0.78 : resolvedQuality === 'high' ? 0.82 : 0.88;
+              // Bloom pairs with the star profile above. Now that each star's energy
+              // is concentrated into a tight core rather than spread across a soft
+              // disc, a LOWER threshold would bloom the whole disk into haze — so the
+              // threshold rises slightly and the strength eases back, letting bloom
+              // pick out genuinely bright stars and the core instead of everything.
+              // Tune these together with CORE_TIGHTNESS / CORE_GAIN.
+              var bloomStrength = resolvedQuality === 'cinematic' ? 1.32 : resolvedQuality === 'high' ? 1.24 : 1.12;
+              var bloomRadius = resolvedQuality === 'cinematic' ? 0.46 : resolvedQuality === 'high' ? 0.36 : 0.26;
+              var bloomThreshold = resolvedQuality === 'cinematic' ? 0.84 : resolvedQuality === 'high' ? 0.87 : 0.9;
               var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W * renderer.getPixelRatio(), H * renderer.getPixelRatio()), bloomStrength, bloomRadius, bloomThreshold);
 
               composer.addPass(bloomPass);
@@ -2460,7 +2744,9 @@ if (!window._galaxyHasLoadedOnce) {
               xrayGroup.visible = currentObserveMode === 'xray';
               darkHaloGroup.visible = currentObserveMode === 'gravity';
               if (gasGroup.children[0] && gasGroup.children[0].material) gasGroup.children[0].material.opacity = currentObserveMode === 'radio' ? 0.18 : currentObserveMode === 'infrared' ? 0.1 : 0.06;
-              if (dustGroup.children[0] && dustGroup.children[0].material) dustGroup.children[0].material.opacity = currentObserveMode === 'infrared' ? 0.04 : currentObserveMode === 'visible' ? 0.12 : 0.07;
+              // Tuned up alongside the softer dust grain: infrared sees THROUGH dust,
+              // so it stays the most transparent of the filters.
+              if (dustGroup.children[0] && dustGroup.children[0].material) dustGroup.children[0].material.opacity = currentObserveMode === 'infrared' ? 0.05 : currentObserveMode === 'visible' ? 0.17 : 0.09;
               if (bulgeGlow && bulgeGlow.material) bulgeGlow.material.opacity = currentObserveMode === 'xray' ? 0.35 : currentObserveMode === 'gravity' ? 0.2 : 1;
               if (bhGlow && bhGlow.material) bhGlow.material.opacity = currentObserveMode === 'xray' ? 0.95 : currentObserveMode === 'gravity' ? 0.45 : 0.7;
               visualGlow.disk = currentObserveMode === 'infrared' ? 0.24 : currentObserveMode === 'radio' ? 0.08 : currentObserveMode === 'xray' ? 0.05 : currentObserveMode === 'gravity' ? 0.07 : 0.16;
@@ -2599,6 +2885,8 @@ if (!window._galaxyHasLoadedOnce) {
 
               var dist = getAgeDistribution(age);
 
+              activeAgeDistribution = dist;
+
               var cumul = [], cum2 = 0, tot = dist.reduce(function (a, b) { return a + b; }, 0);
 
               for (var t2 = 0; t2 < dist.length; t2++) { cum2 += dist[t2]; cumul.push(cum2 / tot * 100); }
@@ -2606,6 +2894,10 @@ if (!window._galaxyHasLoadedOnce) {
               var colors = starPoints.geometry.attributes.color.array;
 
               var types = starPoints.geometry.attributes.aStarType.array;
+
+              // Seven colours, resolved once — not one THREE.Color per star per call
+              // (this runs on every time-lapse tick with up to 100,000 stars).
+              var ageColors = STAR_TYPES.map(function (stt) { return new THREE.Color(stt.color); });
 
               for (var si = 0; si < starData.length; si++) {
 
@@ -2615,7 +2907,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 for (var tt = 0; tt < cumul.length; tt++) { if (roll2 < cumul[tt]) { ti2 = tt; break; } }
 
-                var stc = new THREE.Color(STAR_TYPES[ti2].color);
+                var stc = ageColors[ti2];
 
                 colors[si * 3] = stc.r; colors[si * 3 + 1] = stc.g; colors[si * 3 + 2] = stc.b;
 
@@ -2867,6 +3159,21 @@ if (!window._galaxyHasLoadedOnce) {
 
             var animId, startT = Date.now();
 
+            // rAF is throttled by the browser when the TAB is hidden, but not when the
+            // canvas is merely scrolled out of view — and this scene drives a bloom
+            // composer over a six-figure particle count every frame. The black-hole
+            // canvas in this same file already gates on intersection; the galaxy did
+            // not, so it kept rendering at full rate while the learner read the panels
+            // below it. Rendering resumes on the first frame after it reappears.
+            var galaxyInView = true;
+            var galaxyViewObserver = null;
+            if (window.IntersectionObserver) {
+              galaxyViewObserver = new IntersectionObserver(function (entries) {
+                galaxyInView = !!(entries[0] && entries[0].isIntersecting);
+              }, { rootMargin: '120px' });
+              galaxyViewObserver.observe(canvasEl);
+            }
+
             function animate() {
 
               // Guard against RAF leak after React unmounts the canvas — without this,
@@ -2874,6 +3181,10 @@ if (!window._galaxyHasLoadedOnce) {
               if (!canvasEl.isConnected) { if (animId) cancelAnimationFrame(animId); return; }
 
               animId = requestAnimationFrame(animate);
+
+              // Stay scheduled (so the view is live the moment it scrolls back) but do
+              // no per-frame work while off-screen.
+              if (!galaxyInView) return;
 
               var elapsed = prefersReducedMotion ? 0 : (Date.now() - startT) * 0.001;
               var motionStep = prefersReducedMotion ? 0 : 1;
@@ -3201,6 +3512,13 @@ if (!window._galaxyHasLoadedOnce) {
 
             animate();
 
+            // The scene now exists — clear the "building" overlay. Deferred a tick so
+            // this never sets state inside React's commit phase.
+            (function () {
+              var readyRuntime = galaxyRuntimeRef.current;
+              if (readyRuntime && readyRuntime.reportSceneReady) readyRuntime.reportSceneReady();
+            })();
+
             // ── WebXR (optional): fly THROUGH the galaxy at room scale (thumbstick
             //    glide + teleport across the disk + comfort vignette). Loads AlloVR
             //    only when a headset is present; presenting-only, so 2D is untouched.
@@ -3240,13 +3558,15 @@ if (!window._galaxyHasLoadedOnce) {
             ro.observe(canvasEl);
 
             var galaxyCleanedUp = false;
-            canvasEl._galaxyCleanup = function () {
+            canvasEl._galaxyCleanup = function (preserveContext) {
 
               if (galaxyCleanedUp) return;
               galaxyCleanedUp = true;
 
               try { if (window._galaxyVR && window._galaxyVR.destroy) window._galaxyVR.destroy(); window._galaxyVR = null; } catch(e){}
               if (animId) { cancelAnimationFrame(animId); animId = null; }
+              if (canvasEl._galaxyStarCountTimer) { clearTimeout(canvasEl._galaxyStarCountTimer); canvasEl._galaxyStarCountTimer = null; }
+              if (canvasEl._galaxyAgeTimer) { clearTimeout(canvasEl._galaxyAgeTimer); canvasEl._galaxyAgeTimer = null; }
 
               canvasEl.removeEventListener('pointerdown', onGalDown);
 
@@ -3261,9 +3581,26 @@ if (!window._galaxyHasLoadedOnce) {
               canvasEl.removeEventListener('click', onGalClick);
 
               ro.disconnect();
+              if (galaxyViewObserver) { galaxyViewObserver.disconnect(); galaxyViewObserver = null; }
               if (canvasEl._galaxyFullscreenRestore) { document.removeEventListener('fullscreenchange', canvasEl._galaxyFullscreenRestore); canvasEl._galaxyFullscreenRestore = null; }
 
-              if (composer) { composer.passes.forEach(function (p) { if (p.dispose) p.dispose(); }); }
+              if (composer) {
+                composer.passes.forEach(function (p) { if (p.dispose) p.dispose(); });
+                if (composer.dispose) {
+                  composer.dispose();
+                } else {
+                  // EffectComposer r128 has no dispose(). Its two full-resolution
+                  // targets otherwise survive scene rebuilds until GC, quickly
+                  // exhausting GPU memory and making later programs fail to link.
+                  var disposedComposerTargets = new Set();
+                  [composer.renderTarget1, composer.renderTarget2, composer.readBuffer, composer.writeBuffer].forEach(function (target) {
+                    if (target && target.dispose && !disposedComposerTargets.has(target)) {
+                      disposedComposerTargets.add(target);
+                      target.dispose();
+                    }
+                  });
+                }
+              }
 
               supernovae.forEach(function (sn) { disposeSNPart(sn.sprite); disposeSNPart(sn.ring); disposeSNPart(sn.label); if (sn.light) scene.remove(sn.light); });
               var disposedGalaxyTextures = new Set(), disposedGalaxyMaterials = new Set(), disposedGalaxyGeometries = new Set();
@@ -3278,7 +3615,9 @@ if (!window._galaxyHasLoadedOnce) {
                 });
               });
 
+              if (renderer.renderLists && renderer.renderLists.dispose) renderer.renderLists.dispose();
               renderer.dispose();
+              if (!preserveContext && renderer.forceContextLoss) renderer.forceContextLoss();
               canvasEl._galaxyCleanup = null;
 
             };
@@ -3291,7 +3630,12 @@ if (!window._galaxyHasLoadedOnce) {
 
           var selNeb = d.selectedNebula ? NEBULAE.find(function (n) { return n.name === d.selectedNebula; }) : null;
 
-          var ACTIVE_BANK = d.dynamicQuiz || QUIZ_BANK; var quizQ = d.quizMode && ACTIVE_BANK[d.quizIdx || 0] ? ACTIVE_BANK[d.quizIdx || 0] : null;
+          // Re-validate on read as well as on write: a bank persisted by an older
+          // build (or restored from a snapshot) may predate the sanitizer.
+          var generatedBank = sanitizeGeneratedQuiz(d.dynamicQuiz);
+          var ACTIVE_BANK = generatedBank.length > 0 ? generatedBank : QUIZ_BANK;
+          var quizIndex = Math.min(Math.max(0, d.quizIdx || 0), ACTIVE_BANK.length - 1);
+          var quizQ = d.quizMode ? (ACTIVE_BANK[quizIndex] || null) : null;
 
           var inspectLog = d.inspectLog || {};
           var addInspectKey = function (key) {
@@ -3328,7 +3672,8 @@ if (!window._galaxyHasLoadedOnce) {
               type: __alloT('stem.galaxy.inspect_galaxytype_type', 'Galaxy shape'),
               color: '#6366f1',
               desc: gType.desc,
-              facts: ['Example: ' + gType.example, (gType.arms ? gType.arms + ' visible arm pattern' : 'No spiral arm pattern'), gType.barLength ? 'Central stellar bar present' : 'No central bar'],
+              facts: [gType.example, (gType.arms ? gType.arms + ' ' + __alloT('stem.galaxy.fact_arm_pattern', 'arm pattern') : __alloT('stem.galaxy.fact_no_arms', 'None')), gType.barLength ? __alloT('stem.galaxy.fact_bar_present', 'Central bar present') : __alloT('stem.galaxy.fact_bar_absent', 'No central bar')],
+              factLabels: [__alloT('stem.galaxy.fact_example', 'Example'), __alloT('stem.galaxy.fact_arms', 'Arms'), __alloT('stem.galaxy.fact_bar', 'Bar')],
               evidence: __alloT('stem.galaxy.inspect_galaxytype_evidence', 'Astronomers classify galaxies by wide-field images, color, gas content, and the motion of stars and dust.'),
               question: __alloT('stem.galaxy.inspect_galaxytype_question', 'Which visible features helped you classify this galaxy?')
             },
@@ -3393,6 +3738,10 @@ if (!window._galaxyHasLoadedOnce) {
                 color: selStar.color,
                 desc: selStar.desc,
                 facts: [selStar.temp + ' K', selStar.mass || __alloT('stem.galaxy.inspect_mass_varies', 'Mass varies'), selStar.lifetime || __alloT('stem.galaxy.inspect_lifetime_varies', 'Lifetime varies')],
+                // Naming the quantity beats a generic "Signal 1": these tiles hold a
+                // temperature, a mass range, and a lifetime, and the reader could not
+                // tell which was which.
+                factLabels: [__alloT('stem.galaxy.fact_temperature', 'Temperature'), __alloT('stem.galaxy.fact_mass', 'Mass'), __alloT('stem.galaxy.fact_lifetime', 'Lifetime')],
                 evidence: __alloT('stem.galaxy.inspect_star_evidence', 'A spectrum reveals temperature, composition, motion, and class from the pattern of absorption lines.'),
                 question: __alloT('stem.galaxy.inspect_star_question', 'How would this star change the galaxy if many formed at once?')
               };
@@ -3406,6 +3755,7 @@ if (!window._galaxyHasLoadedOnce) {
                 color: selNeb.color,
                 desc: selNeb.desc,
                 facts: [selNeb.dist || __alloT('stem.galaxy.inspect_distance_varies', 'Distance varies'), __alloT('stem.galaxy.inspect_gas_dust_cloud', 'Gas and dust cloud'), selNeb.type || __alloT('stem.galaxy.inspect_deepsky_object', 'Deep-sky object')],
+                factLabels: [__alloT('stem.galaxy.fact_distance', 'Distance'), __alloT('stem.galaxy.fact_made_of', 'Made of'), __alloT('stem.galaxy.fact_type', 'Type')],
                 evidence: __alloT('stem.galaxy.inspect_nebula_evidence', 'Color, emission lines, shape, and nearby stars tell whether this is a nursery, remnant, or dying-star shell.'),
                 question: __alloT('stem.galaxy.inspect_nebula_question', 'Is this object making stars, showing a dead star, or blocking light?')
               };
@@ -3538,8 +3888,41 @@ if (!window._galaxyHasLoadedOnce) {
             setRealSkyStatus('ready', activeRealSkyTarget.name + ' loaded from real sky survey data.');
           };
 
+          // The Real Sky container is keyed on target+survey+catalog, so every target
+          // click REMOUNTS it and builds a fresh Aladin Lite instance. Nothing ever
+          // disposed the old one, so a learner working through the twelve targets left
+          // twelve live instances behind, each holding canvases, tile caches and
+          // listeners. React also calls a ref with null on every re-render (this
+          // callback is a new identity each time), so disposal is deferred by a tick
+          // and cancelled if the same element comes straight back.
+          var disposeRealSkyAladin = function (el) {
+            if (!el || !el._galaxyAladin) return;
+            var instance = el._galaxyAladin;
+            el._galaxyAladin = null;
+            el._galaxyAladinSignature = '';
+            try { if (instance.destroy) instance.destroy(); } catch (destroyError) {}
+            try { if (typeof el.replaceChildren === 'function') el.replaceChildren(); else el.innerHTML = ''; } catch (clearError) {}
+          };
+
           var realSkyRefCb = function (el) {
-            if (!el) return;
+            if (!el) {
+              // React hands us null both on a real unmount AND on every re-render
+              // (this callback is a fresh identity each time). Defer a tick and only
+              // dispose if the node really did leave the document.
+              var detached = realSkyElementRef.current;
+              if (!detached) return;
+              if (detached._galaxyAladinDisposeTimer) clearTimeout(detached._galaxyAladinDisposeTimer);
+              detached._galaxyAladinDisposeTimer = setTimeout(function () {
+                detached._galaxyAladinDisposeTimer = null;
+                if (!detached.isConnected) {
+                  disposeRealSkyAladin(detached);
+                  if (realSkyElementRef.current === detached) realSkyElementRef.current = null;
+                }
+              }, 0);
+              return;
+            }
+            if (el._galaxyAladinDisposeTimer) { clearTimeout(el._galaxyAladinDisposeTimer); el._galaxyAladinDisposeTimer = null; }
+            realSkyElementRef.current = el;
             if (!el.id) el.id = 'galaxy-real-sky-aladin';
             if (el._galaxyAladin) { syncRealSkyAladin(el); return; }
             setRealSkyStatus('loading', 'Loading Aladin Lite real-sky atlas...');
@@ -3592,7 +3975,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             upd("layersToggled", seenLayers);
 
-            var cv = document.querySelector('[data-galaxy-canvas]');
+            var cv = galaxyCanvasActive.current;
 
             if (cv && cv._layers && cv._layers[key]) cv._layers[key].visible = newLayers[key];
             if (cv && cv._setDetailLayer) cv._setDetailLayer(key, newLayers[key]);
@@ -3633,7 +4016,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "flex h-11 w-11 items-center justify-center rounded-xl hover:bg-slate-100", 'aria-label': __alloT('stem.galaxy.aria_back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "flex h-11 w-11 items-center justify-center rounded-xl hover:bg-slate-100", 'aria-label': __alloT('stem.galaxy.aria_back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-xl font-black text-slate-900" }, "\uD83C\uDF0C " + __alloT('stem.galaxy.header_title', 'Galaxy Explorer')),
 
@@ -3643,14 +4026,12 @@ if (!window._galaxyHasLoadedOnce) {
 
                   var isActive = m.key === 'quiz' ? d.quizMode : (!d.quizMode && simMode === m.key);
 
-                  return React.createElement("button", { "aria-label": "Switch to " + m.label + " mode",
+                  return React.createElement("button", { "aria-label": "Switch to " + m.label + " mode", "aria-pressed": isActive ? "true" : "false", type: "button",
 
                     key: m.key, onClick: function () {
 
                       if (m.key === 'quiz') { 
-                        upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); 
-                        upd("isGeneratingQuiz", true);
-                        upd("dynamicQuiz", null);
+                        patchGalaxy({ quizMode: true, quizIdx: 0, quizScore: 0, quizStreak: 0, quizFeedback: null, quizDone: false, isGeneratingQuiz: true, dynamicQuiz: null });
                         var prompt = "Generate 5 challenging multiple-choice questions about stars, galaxies, and astrophysics. Return ONLY valid JSON format exactly like this: [{\"q\": \"Question...\", \"a\": \"Correct Answer\", \"options\": [\"Correct Answer\", \"Opt2\", \"Opt3\", \"Opt4\"]}]. Ensure no markdown backticks wrap the output.";
                         if (typeof callGemini === 'function') {
                             callGemini(prompt, function(res) {
@@ -3659,8 +4040,15 @@ if (!window._galaxyHasLoadedOnce) {
                                     try {
                                         var cleaned = res.text.replace(/```json/gi, "").replace(/```/g, "").trim();
                                         var qList = JSON.parse(cleaned);
-                                        if (Array.isArray(qList) && qList.length > 0) {
-                                            upd("dynamicQuiz", qList);
+                                        var safeList = sanitizeGeneratedQuiz(qList);
+                                        // A model reply missing `options` used to crash the render
+                                        // (quizQ.options.map); one missing its own answer produced an
+                                        // unanswerable item. Drop bad items, keep the static bank if
+                                        // nothing usable survives.
+                                        if (safeList.length > 0) {
+                                            upd("dynamicQuiz", safeList);
+                                        } else {
+                                            console.warn("Galaxy quiz: generated questions were unusable; keeping the built-in bank.");
                                         }
                                     } catch(e) {
                                         console.warn("Gemini JSON Parse Error:", e, res.text);
@@ -3706,7 +4094,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "mb-3 flex flex-wrap items-center gap-2" },
 
-                React.createElement("span", { className: "mr-1 text-xs font-black uppercase tracking-wider text-slate-500" }, "Galaxy shape"),
+                React.createElement("span", { className: "mr-1 text-xs font-black uppercase tracking-wider text-slate-500" }, __alloT('stem.galaxy.galaxy_shape_label', 'Galaxy shape')),
 
                 Object.keys(GALAXY_TYPES).map(function (key) {
 
@@ -3787,23 +4175,46 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("div", { "aria-hidden": true, style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 46%, transparent 34%, rgba(2,6,23,0.62) 100%), linear-gradient(rgba(129,140,248,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(129,140,248,0.045) 1px, transparent 1px)', backgroundSize: '100% 100%, 44px 44px, 44px 44px', mixBlendMode: 'screen', opacity: 0.34 } }),
                 React.createElement("div", { "aria-hidden": true, style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(to bottom, rgba(2,6,23,0.82) 0%, rgba(2,6,23,0.3) 9%, rgba(2,6,23,0) 20%, rgba(2,6,23,0) 80%, rgba(2,6,23,0.34) 91%, rgba(2,6,23,0.88) 100%)', opacity: 0.86 } }),
                 React.createElement("div", { "data-galaxy-observe-transition": "true", "aria-hidden": true, style: { position: 'absolute', inset: 0, zIndex: 6, pointerEvents: 'none', opacity: 0, mixBlendMode: 'screen' } }),
+
+                // Three.js is fetched from a CDN, so on school wi-fi this box could sit
+                // empty for several seconds while the status pill already claimed
+                // "Drag to orbit". Honest progress instead, cleared by initGalaxy.
+                !d.webglError && !galaxySceneReady && React.createElement("div", { "data-galaxy-building": "true", className: "absolute inset-0 z-[8] flex flex-col items-center justify-center gap-3 text-center", style: { pointerEvents: 'none', background: 'radial-gradient(circle at 50% 46%, rgba(15,23,42,0.35), rgba(2,6,23,0.72))' }, role: "status", "aria-live": "polite" },
+                  React.createElement("div", { className: "h-9 w-9 rounded-full border-2 border-indigo-300/30 border-t-cyan-300 motion-safe:animate-spin", "aria-hidden": true }),
+                  React.createElement("p", { className: "text-xs font-black tracking-wide text-cyan-100" }, __alloT('stem.galaxy.building_scene', 'Building the galaxy…')),
+                  React.createElement("p", { className: "max-w-[16rem] text-[11px] leading-relaxed text-slate-300" }, __alloT('stem.galaxy.building_scene_sub', 'Placing stars, dust lanes and nebulae. This can take a moment on a slow connection.'))
+                ),
                 React.createElement("div", { "aria-hidden": true, className: "absolute inset-x-0 top-0 z-[7] bg-slate-950 transition-all duration-700", style: { height: galaxyTourActive ? '5.5%' : '0', opacity: galaxyTourActive ? 0.92 : 0, pointerEvents: 'none' } }),
                 React.createElement("div", { "aria-hidden": true, className: "absolute inset-x-0 bottom-0 z-[7] bg-slate-950 transition-all duration-700", style: { height: galaxyTourActive ? '5.5%' : '0', opacity: galaxyTourActive ? 0.92 : 0, pointerEvents: 'none' } }),
-                React.createElement("div", { className: "absolute right-2 top-1/2 z-10 flex -translate-y-1/2 flex-col gap-1.5 sm:right-3", role: "toolbar", "aria-label": "Galaxy camera controls" },
-                  [{ key: 'zoomIn', icon: '+', label: 'Zoom in', action: function (cv) { if (cv._galaxyZoom) cv._galaxyZoom('in'); } },
-                   { key: 'zoomOut', icon: '−', label: 'Zoom out', action: function (cv) { if (cv._galaxyZoom) cv._galaxyZoom('out'); } },
-                   { key: 'reset', icon: '⌂', label: 'Reset camera', action: function (cv) { if (cv._galaxyResetView) cv._galaxyResetView(); } }].map(function (control) {
+                React.createElement("div", { className: "absolute right-2 top-1/2 z-10 flex -translate-y-1/2 flex-col gap-1.5 sm:right-3", role: "toolbar", "aria-label": __alloT('stem.galaxy.aria_camera_controls', 'Galaxy camera controls') },
+                  [{ key: 'zoomIn', icon: '+', label: __alloT('stem.galaxy.camera_zoom_in', 'Zoom in'), action: function (cv) { if (cv._galaxyZoom) cv._galaxyZoom('in'); } },
+                   { key: 'zoomOut', icon: '−', label: __alloT('stem.galaxy.camera_zoom_out', 'Zoom out'), action: function (cv) { if (cv._galaxyZoom) cv._galaxyZoom('out'); } },
+                   { key: 'reset', icon: '⌂', label: __alloT('stem.galaxy.camera_reset', 'Reset camera'), action: function (cv) { if (cv._galaxyResetView) cv._galaxyResetView(); } }].map(function (control) {
                     return React.createElement("button", { type: "button", key: control.key, title: control.label, "aria-label": control.label, onClick: function () { var cv = galaxyCanvasActive.current; if (cv) control.action(cv); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-slate-950/75 text-lg font-black text-white shadow-lg backdrop-blur-md transition-colors hover:border-cyan-300/50 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300" }, control.icon);
                   }),
-                  React.createElement("button", { type: "button", title: galaxyAutoRotate ? "Pause auto-rotation" : "Resume auto-rotation", "aria-label": galaxyAutoRotate ? "Pause auto-rotation" : "Resume auto-rotation", "aria-pressed": galaxyAutoRotate, onClick: function () { var next = !galaxyAutoRotate; upd('galaxyAutoRotate', next); var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetAutoRotate) cv._galaxySetAutoRotate(next); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border text-lg font-black shadow-lg backdrop-blur-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 " + (galaxyAutoRotate ? "border-cyan-300/40 bg-cyan-400/20 text-cyan-100" : "border-white/10 bg-slate-950/75 text-slate-300 hover:bg-slate-900") }, "↻"),
-                  React.createElement("button", { type: "button", title: galaxyHudHidden ? "Show simulation labels" : "Hide simulation labels", "aria-label": galaxyHudHidden ? "Show simulation labels" : "Hide simulation labels", "aria-pressed": !galaxyHudHidden, onClick: function () { var nextHidden = !galaxyHudHidden; upd('galaxyHudHidden', nextHidden); var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetHudHidden) cv._galaxySetHudHidden(nextHidden); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-slate-950/75 text-base font-black text-white shadow-lg backdrop-blur-md transition-colors hover:border-indigo-300/50 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300" }, galaxyHudHidden ? "◫" : "◩"),
-                  React.createElement("button", { type: "button", title: galaxyTourActive ? "Stop cinematic tour" : "Start cinematic tour", "aria-label": galaxyTourActive ? "Stop cinematic tour" : "Start cinematic tour", "aria-pressed": galaxyTourActive, onClick: function () { var nextTour = !galaxyTourActive; upd('galaxyTourActive', nextTour); var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetTour) cv._galaxySetTour(nextTour); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border text-base font-black shadow-lg backdrop-blur-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-300 " + (galaxyTourActive ? "border-fuchsia-300/50 bg-fuchsia-400/20 text-fuchsia-100" : "border-white/10 bg-slate-950/75 text-white hover:border-fuchsia-300/50 hover:bg-slate-900") }, galaxyTourActive ? "■" : "▶"),
-                  React.createElement("button", { type: "button", title: "Toggle fullscreen", "aria-label": "Toggle fullscreen", onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyToggleFullscreen) cv._galaxyToggleFullscreen(); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-slate-950/75 text-base font-black text-white shadow-lg backdrop-blur-md transition-colors hover:border-indigo-300/50 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300" }, "⛶")
+                  React.createElement("button", { type: "button", title: galaxyAutoRotate ? __alloT('stem.galaxy.camera_pause_rotation', 'Pause auto-rotation') : __alloT('stem.galaxy.camera_resume_rotation', 'Resume auto-rotation'), "aria-label": galaxyAutoRotate ? __alloT('stem.galaxy.camera_pause_rotation', 'Pause auto-rotation') : __alloT('stem.galaxy.camera_resume_rotation', 'Resume auto-rotation'), "aria-pressed": galaxyAutoRotate, onClick: function () { var next = !galaxyAutoRotate; upd('galaxyAutoRotate', next); var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetAutoRotate) cv._galaxySetAutoRotate(next); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border text-lg font-black shadow-lg backdrop-blur-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 " + (galaxyAutoRotate ? "border-cyan-300/40 bg-cyan-400/20 text-cyan-100" : "border-white/10 bg-slate-950/75 text-slate-300 hover:bg-slate-900") }, "↻"),
+                  React.createElement("button", { type: "button", title: galaxyHudHidden ? __alloT('stem.galaxy.camera_show_labels', 'Show simulation labels') : __alloT('stem.galaxy.camera_hide_labels', 'Hide simulation labels'), "aria-label": galaxyHudHidden ? __alloT('stem.galaxy.camera_show_labels', 'Show simulation labels') : __alloT('stem.galaxy.camera_hide_labels', 'Hide simulation labels'), "aria-pressed": !galaxyHudHidden, onClick: function () { var nextHidden = !galaxyHudHidden; upd('galaxyHudHidden', nextHidden); var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetHudHidden) cv._galaxySetHudHidden(nextHidden); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-slate-950/75 text-base font-black text-white shadow-lg backdrop-blur-md transition-colors hover:border-indigo-300/50 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300" }, galaxyHudHidden ? "◫" : "◩"),
+                  React.createElement("button", { type: "button", title: galaxyTourActive ? __alloT('stem.galaxy.camera_stop_tour', 'Stop cinematic tour') : __alloT('stem.galaxy.camera_start_tour', 'Start cinematic tour'), "aria-label": galaxyTourActive ? __alloT('stem.galaxy.camera_stop_tour', 'Stop cinematic tour') : __alloT('stem.galaxy.camera_start_tour', 'Start cinematic tour'), "aria-pressed": galaxyTourActive, onClick: function () { var nextTour = !galaxyTourActive; upd('galaxyTourActive', nextTour); var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetTour) cv._galaxySetTour(nextTour); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border text-base font-black shadow-lg backdrop-blur-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-300 " + (galaxyTourActive ? "border-fuchsia-300/50 bg-fuchsia-400/20 text-fuchsia-100" : "border-white/10 bg-slate-950/75 text-white hover:border-fuchsia-300/50 hover:bg-slate-900") }, galaxyTourActive ? "■" : "▶"),
+                  React.createElement("button", { type: "button", title: __alloT('stem.galaxy.camera_fullscreen', 'Toggle fullscreen'), 'aria-label': __alloT('stem.galaxy.camera_fullscreen', 'Toggle fullscreen'), onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyToggleFullscreen) cv._galaxyToggleFullscreen(); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-slate-950/75 text-base font-black text-white shadow-lg backdrop-blur-md transition-colors hover:border-indigo-300/50 hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300" }, "⛶")
                 ),
-                // Compact spectral legend
-                !galaxyHudHidden && React.createElement("div", { className: "absolute top-3 left-3 rounded-full border border-indigo-200/15 bg-slate-950/75 px-3 py-2 text-xs text-white/90 shadow-lg backdrop-blur-md max-sm:hidden" },
-                  React.createElement("span", { className: "font-black tracking-[0.16em]" }, "O B A F G K M"),
-                  React.createElement("span", { className: "ml-2 text-slate-400" }, "hot → cool")
+                // Compact spectral legend — the letters "O B A F G K M" mean nothing
+                // on their own to a learner seeing a field of coloured stars. Showing
+                // the actual STAR_TYPES colour beside each class makes the canvas
+                // readable, and it now survives on phones instead of being hidden.
+                !galaxyHudHidden && React.createElement("div", { className: "absolute top-3 left-3 rounded-2xl border border-indigo-200/15 bg-slate-950/75 px-2.5 py-1.5 text-white/90 shadow-lg backdrop-blur-md", role: "img", "aria-label": __alloT('stem.galaxy.aria_spectral_legend', 'Star colour key, hottest to coolest: O B A F G K M — blue is hottest, red is coolest.') },
+                  React.createElement("div", { className: "flex items-end gap-[3px]", "aria-hidden": true },
+                    STAR_TYPES.map(function (st) {
+                      return React.createElement("div", { key: st.id, className: "flex flex-col items-center gap-0.5", title: st.label + " · " + st.temp + " K" },
+                        React.createElement("span", { className: "block h-2.5 w-3.5 rounded-[3px] sm:w-4", style: { background: st.color, boxShadow: '0 0 6px ' + st.color + '99' } }),
+                        React.createElement("span", { className: "text-[9px] font-black leading-none text-white/80" }, st.id)
+                      );
+                    })
+                  ),
+                  React.createElement("div", { className: "mt-1 flex items-center justify-between text-[9px] font-bold uppercase tracking-wider text-slate-400", "aria-hidden": true },
+                    React.createElement("span", null, __alloT('stem.galaxy.legend_hot', 'hot')),
+                    React.createElement("span", { className: "text-slate-500" }, "→"),
+                    React.createElement("span", null, __alloT('stem.galaxy.legend_cool', 'cool'))
+                  )
                 ),
                 !galaxyHudHidden && React.createElement("div", { className: "absolute top-3 right-3 flex items-center gap-2 rounded-full border border-indigo-200/15 bg-slate-950/75 px-3 py-2 text-xs text-white shadow-lg backdrop-blur-md max-sm:hidden" },
                   React.createElement("span", { className: "font-black text-indigo-200" }, gType.icon + " " + gType.label),
@@ -3811,7 +4222,9 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("span", { className: "font-bold text-cyan-200" }, cosmicAge.toFixed(1) + " Gyr")
                 ),
                 !galaxyHudHidden && React.createElement("div", { "data-galaxy-orientation": "true", className: "absolute left-1/2 top-3 hidden -translate-x-1/2 rounded-full border border-cyan-200/15 bg-slate-950/75 px-3 py-2 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-md lg:block" }, "Angled view"),
-                !galaxyHudHidden && React.createElement("div", { "data-galaxy-status": "true", role: "status", "aria-live": "polite", className: "absolute bottom-3 left-3 max-w-[calc(100%_-_5.5rem)] rounded-full border border-white/10 bg-slate-950/70 px-3 py-2 text-xs font-bold text-slate-200 shadow-lg backdrop-blur-md pointer-events-none" }, selStar ? ("Focused on " + selStar.label + " · drag to orbit around it") : selNeb ? ("Focused on " + selNeb.name + " · drag to orbit around it") : "Drag to orbit · scroll or pinch to zoom · select a star"),
+                // Held back until the scene exists — announcing "drag to orbit" to a
+                // screen reader while the canvas is still empty is just wrong.
+                !galaxyHudHidden && galaxySceneReady && React.createElement("div", { "data-galaxy-status": "true", role: "status", "aria-live": "polite", className: "absolute bottom-3 left-3 max-w-[calc(100%_-_5.5rem)] rounded-full border border-white/10 bg-slate-950/70 px-3 py-2 text-xs font-bold text-slate-200 shadow-lg backdrop-blur-md pointer-events-none" }, selStar ? ("Focused on " + selStar.label + " · drag to orbit around it") : selNeb ? ("Focused on " + selNeb.name + " · drag to orbit around it") : "Drag to orbit · scroll or pinch to zoom · select a star"),
                 // Scale info overlay
 
                 !galaxyHudHidden && layers.grid && React.createElement("div", { className: "absolute bottom-3 right-16 bg-slate-950/70 backdrop-blur-md rounded-lg px-2.5 py-2 text-xs text-white/85 border border-blue-200/15 shadow-xl" },
@@ -3830,18 +4243,21 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("div", { className: "mb-3 flex items-start gap-3" },
                     React.createElement("div", { className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-cyan-700 text-lg text-white shadow-md", "aria-hidden": true }, "✦"),
                     React.createElement("div", { className: "min-w-0" },
-                      React.createElement("h4", { className: "text-sm font-black text-slate-900" }, "Galaxy controls"),
-                      React.createElement("p", { className: "text-xs leading-relaxed text-slate-600" }, "Adjust the view without losing sight of the simulation.")
+                      React.createElement("h4", { className: "text-sm font-black text-slate-900" }, __alloT('stem.galaxy.controls_title', 'Galaxy controls')),
+                      React.createElement("p", { className: "text-xs leading-relaxed text-slate-600" }, __alloT('stem.galaxy.controls_sub', 'Adjust the view without losing sight of the simulation.'))
                     )
                   ),
-                  React.createElement("div", { className: "mb-3 grid grid-cols-4 gap-1 rounded-xl bg-slate-200/70 p-1", role: "tablist", "aria-label": "Galaxy control groups" },
+                  React.createElement("div", { className: "mb-3 grid grid-cols-4 gap-1 rounded-xl bg-slate-200/70 p-1", role: "tablist", "aria-label": __alloT('stem.galaxy.aria_control_groups', 'Galaxy control groups') },
                     [{ key: 'view', icon: '◉', label: 'View' }, { key: 'motion', icon: '↻', label: 'Motion' }, { key: 'time', icon: '◷', label: 'Time' }, { key: 'discover', icon: '⌖', label: 'Discover' }].map(function (panel) {
                       var active = galaxyControlPanel === panel.key;
-                      return React.createElement("button", { type: "button", key: panel.key, role: "tab", "aria-selected": active, onClick: function () { upd('galaxyControlPanel', panel.key); }, className: "min-h-[44px] rounded-lg px-1.5 py-2 text-xs font-black transition-colors " + (active ? "bg-white text-indigo-700 shadow-sm" : "text-slate-600 hover:bg-white/70 hover:text-slate-900") },
-                        React.createElement("span", { className: "block text-sm", "aria-hidden": true }, panel.icon), panel.label);
+                      // A tab without id/aria-controls leaves screen readers unable to
+                      // connect the tab to the panel it reveals; roving tabindex keeps
+                      // the group a single stop in the tab order.
+                      return React.createElement("button", { type: "button", key: panel.key, role: "tab", id: "galaxy-tab-" + panel.key, "aria-controls": "galaxy-panel-" + panel.key, "aria-selected": active, tabIndex: active ? 0 : -1, onClick: function () { upd('galaxyControlPanel', panel.key); }, className: "min-h-[44px] rounded-lg px-1.5 py-2 text-xs font-black transition-colors " + (active ? "bg-white text-indigo-700 shadow-sm" : "text-slate-600 hover:bg-white/70 hover:text-slate-900") },
+                        React.createElement("span", { className: "block text-sm", "aria-hidden": true }, panel.icon), __alloT('stem.galaxy.control_group_' + panel.key, panel.label));
                     })
                   ),
-                  galaxyControlPanel === 'view' && React.createElement("div", { className: "space-y-3", role: "tabpanel" },              // ── Observatory Filters ──
+                  galaxyControlPanel === 'view' && React.createElement("div", { className: "space-y-3", role: "tabpanel", id: "galaxy-panel-view", "aria-labelledby": "galaxy-tab-view" },              // ── Observatory Filters ──
               React.createElement("div", { "data-galaxy-observatory": "true", className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
                 React.createElement("div", { className: "flex flex-wrap items-start gap-2 mb-2" },
                   React.createElement("span", { className: "text-lg", "aria-hidden": true }, activeObserve.icon),
@@ -3859,7 +4275,7 @@ if (!window._galaxyHasLoadedOnce) {
                       key: mode.key,
                       "aria-pressed": on ? "true" : "false",
                       onClick: function () {
-                        var cv = document.querySelector('[data-galaxy-canvas]');
+                        var cv = galaxyCanvasActive.current;
                         if (cv && cv._setObserveMode) cv._setObserveMode(mode.key);
                         var nextLog = addInspectKey('observe:' + mode.key);
                         nextLog[mode.target] = true;
@@ -3888,8 +4304,8 @@ if (!window._galaxyHasLoadedOnce) {
               React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
                 React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" },
                   React.createElement("div", null,
-                    React.createElement("p", { className: "text-xs font-black text-slate-800" }, "Rendering detail"),
-                    React.createElement("p", { className: "text-[11px] text-slate-500" }, "Auto adapts to this device; Cinematic maximizes depth and particle detail.")
+                    React.createElement("p", { className: "text-xs font-black text-slate-800" }, __alloT('stem.galaxy.rendering_detail_title', 'Rendering detail')),
+                    React.createElement("p", { className: "text-[11px] text-slate-500" }, __alloT('stem.galaxy.rendering_detail_sub', 'Auto adapts to this device; Cinematic maximizes depth and particle detail.'))
                   ),
                   React.createElement("span", { className: "rounded-full bg-indigo-50 px-2 py-1 text-[11px] font-black text-indigo-700" }, galaxyQuality === 'auto' ? "Adaptive" : galaxyQuality.charAt(0).toUpperCase() + galaxyQuality.slice(1))
                 ),
@@ -3924,7 +4340,7 @@ if (!window._galaxyHasLoadedOnce) {
 
 
                   ),
-                  galaxyControlPanel === 'motion' && React.createElement("div", { className: "space-y-3", role: "tabpanel" },              // ── Galaxy rotation & the dark matter mystery ──
+                  galaxyControlPanel === 'motion' && React.createElement("div", { className: "space-y-3", role: "tabpanel", id: "galaxy-panel-motion", "aria-labelledby": "galaxy-tab-motion" },              // ── Galaxy rotation & the dark matter mystery ──
 
               React.createElement("div", { className: "bg-gradient-to-br from-slate-900 to-indigo-950 rounded-xl border border-indigo-400/30 p-4 shadow-lg" },
 
@@ -3966,7 +4382,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                         if (Object.keys(tried).length === 2 && Object.keys(d.rotTried || {}).length < 2) awardStemXP('galaxy_rotation', 5, 'Compared galaxy rotation models');
 
-                        var cv = document.querySelector('[data-galaxy-canvas]');
+                        var cv = galaxyCanvasActive.current;
 
                         if (cv && cv._setRotMode) cv._setRotMode(rm.key);
 
@@ -4092,7 +4508,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "flex items-center gap-3 px-1" },
 
-                React.createElement("span", { className: "text-xs font-bold text-slate-600 whitespace-nowrap" }, "\u2B50 Stars: " + starCount.toLocaleString()),
+                React.createElement("span", { className: "text-xs font-bold text-slate-600 whitespace-nowrap" }, "\u2B50 " + __alloT('stem.galaxy.stars_count_label', 'Stars') + ": " + starCount.toLocaleString()),
 
                 React.createElement("input", {
 
@@ -4102,13 +4518,15 @@ if (!window._galaxyHasLoadedOnce) {
 
                   onChange: function (e) {
 
-                    var val = parseInt(e.target.value);
+                    var val = parseInt(e.target.value, 10);
 
                     upd("starCount", val);
 
-                    var cv = document.querySelector('[data-galaxy-canvas]');
+                    scheduleOnCanvas(galaxyCanvasActive.current, '_galaxyStarCountTimer', 140, function (cv) {
 
-                    if (cv && cv._setStarCount) cv._setStarCount(val);
+                      if (cv._setStarCount) cv._setStarCount(val);
+
+                    });
 
                   },
 
@@ -4123,7 +4541,7 @@ if (!window._galaxyHasLoadedOnce) {
 
 
                   ),
-                  galaxyControlPanel === 'time' && React.createElement("div", { className: "space-y-3", role: "tabpanel" },              // ── Cosmic Age Time-Lapse ──
+                  galaxyControlPanel === 'time' && React.createElement("div", { className: "space-y-3", role: "tabpanel", id: "galaxy-panel-time", "aria-labelledby": "galaxy-tab-time" },              // ── Cosmic Age Time-Lapse ──
 
               React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-4" },
 
@@ -4151,9 +4569,11 @@ if (!window._galaxyHasLoadedOnce) {
 
                       upd("cosmicAge", val);
 
-                      var cv = document.querySelector('[data-galaxy-canvas]');
+                      scheduleOnCanvas(galaxyCanvasActive.current, '_galaxyAgeTimer', 90, function (cv) {
 
-                      if (cv && cv._updateAge) cv._updateAge(val);
+                        if (cv._updateAge) cv._updateAge(val);
+
+                      });
                       // Canvas Narration: cosmic age change
                       if (typeof canvasNarrate === 'function') {
                         var ep = getEpochNarration(val);
@@ -4200,7 +4620,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                         upd("cosmicAge", parseFloat(age.toFixed(1)));
 
-                        var cv = document.querySelector('[data-galaxy-canvas]');
+                        var cv = galaxyCanvasActive.current;
 
                         if (cv && cv._updateAge) cv._updateAge(age);
 
@@ -4218,7 +4638,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     onClick: function () {
 
-                      var cv = document.querySelector('[data-galaxy-canvas]');
+                      var cv = galaxyCanvasActive.current;
 
                       var evt = (cv && cv._triggerSupernova) ? cv._triggerSupernova() : null;
                       var msg = evt ? "Random supernova: " + evt.type + " star (" + evt.spectral + "-type)" : __alloT('stem.galaxy.supernova_unavailable', 'Supernova effect is not available yet.');
@@ -4247,7 +4667,13 @@ if (!window._galaxyHasLoadedOnce) {
 
                 ),
 
-                d.lastGalaxyEvent && React.createElement("div", { className: "mt-2 rounded-lg border border-amber-300/30 bg-amber-300/10 px-2.5 py-1.5 text-xs font-bold text-amber-100" }, d.lastGalaxyEvent),
+                // This banner sits on the LIGHT time-lapse card, but was styled for a
+                // dark panel: text-amber-100 (#fef3c7) on bg-amber-300/10 over
+                // violet-50 is about 1.1:1 — the supernova read-out was invisible.
+                d.lastGalaxyEvent && React.createElement("div", { className: "mt-2 flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-900", role: "status", "aria-live": "polite" },
+                  React.createElement("span", { className: "text-sm leading-none", "aria-hidden": true }, "💥"),
+                  React.createElement("span", { className: "min-w-0 flex-1 leading-relaxed" }, d.lastGalaxyEvent)
+                ),
 
                 // Milestone labels
 
@@ -4277,7 +4703,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                         upd("cosmicAge", m.age);
 
-                        var cv = document.querySelector('[data-galaxy-canvas]');
+                        var cv = galaxyCanvasActive.current;
 
                         if (cv && cv._updateAge) cv._updateAge(m.age);
 
@@ -4318,12 +4744,12 @@ if (!window._galaxyHasLoadedOnce) {
 
 
                   ),
-                  galaxyControlPanel === 'discover' && React.createElement("div", { className: "space-y-3", role: "tabpanel" },              // ── Warp points ──
+                  galaxyControlPanel === 'discover' && React.createElement("div", { className: "space-y-3", role: "tabpanel", id: "galaxy-panel-discover", "aria-labelledby": "galaxy-tab-discover" },              // ── Warp points ──
 
               React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-2" },
 
                 WARP_POINTS.map(function (wp) { return React.createElement("button", { "aria-label": "Warp to " + wp.label, key: wp.label, onClick: function () {
-                  var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp);
+                  var cv = galaxyCanvasActive.current; if (cv && cv._galaxyWarp) cv._galaxyWarp(wp);
                   var warpInspect = (wp.zoom === 2 && wp.x === 0 && wp.z === 0) ? 'blackHole' : (wp.zoom === 0.8 ? 'galaxyType' : 'spiralArms');
                   var warpDesc = wp.desc || (warpInspect === 'blackHole' ? __alloT('stem.galaxy.warp_blackhole_desc', 'Sagittarius A* sits in this crowded core; stars orbit it so quickly that an unseen compact mass is required.') : null);
                   var warpPatch = { selectedStar: null, selectedNebula: null, inspectTarget: warpInspect, inspectLog: addInspectKey(warpInspect) };
@@ -4341,7 +4767,7 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
-                    React.createElement("p", { className: "rounded-xl border border-indigo-100 bg-indigo-50 p-3 text-xs leading-relaxed text-indigo-800" }, "Warp to a landmark, then inspect the evidence card below the workspace.")
+                    React.createElement("p", { className: "rounded-xl border border-indigo-100 bg-indigo-50 p-3 text-xs leading-relaxed text-indigo-800" }, __alloT('stem.galaxy.warp_hint', 'Warp to a landmark, then inspect the evidence card below the workspace.'))
                   )
                 )
               ),
@@ -4360,7 +4786,7 @@ if (!window._galaxyHasLoadedOnce) {
               React.createElement("details", { className: "group rounded-2xl border border-slate-200 bg-slate-50/70 shadow-sm" },
                 React.createElement("summary", { className: "flex min-h-[48px] cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm font-black text-slate-800" },
                   React.createElement("span", { className: "flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-base", "aria-hidden": true }, "🔭"),
-                  React.createElement("span", { className: "min-w-0 flex-1" }, "Explore the science behind the simulation"),
+                  React.createElement("span", { className: "min-w-0 flex-1" }, __alloT('stem.galaxy.explore_science_summary', 'Explore the science behind the simulation')),
                   React.createElement("span", { className: "text-xs font-bold text-indigo-600 group-open:hidden" }, "Show"),
                   React.createElement("span", { className: "hidden text-xs font-bold text-indigo-600 group-open:inline" }, "Hide")
                 ),
@@ -4615,11 +5041,18 @@ if (!window._galaxyHasLoadedOnce) {
 
                   (currentInspector.facts || []).map(function (fact, idx) {
 
+                    // "Signal 1 / 2 / 3" named nothing — a tile reading "30,000+ K"
+                    // sat under a heading that told you nothing about it. Where the
+                    // quantity is known the label says so; where the facts are already
+                    // self-describing sentences the label row is dropped entirely
+                    // rather than padded with a meaningless one.
+                    var factLabel = (currentInspector.factLabels || [])[idx];
+
                     return React.createElement("div", { key: currentInspector.key + "-fact-" + idx, className: "rounded-lg bg-slate-50 border border-slate-100 p-2 text-center" },
 
-                      React.createElement("div", { className: "font-black text-slate-500" }, "Signal " + (idx + 1)),
+                      factLabel ? React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider text-slate-500" }, factLabel) : null,
 
-                      React.createElement("div", { className: "font-bold leading-tight", style: { color: currentInspector.color } }, fact)
+                      React.createElement("div", { className: "font-bold leading-tight" + (factLabel ? " mt-0.5" : ""), style: { color: currentInspector.color } }, fact)
 
                     );
 
@@ -4815,45 +5248,69 @@ if (!window._galaxyHasLoadedOnce) {
 // ── Quiz mode ──
 
               d.quizMode && d.isGeneratingQuiz && React.createElement("div", { className: "flex flex-col items-center justify-center p-12 mt-6 max-w-2xl mx-auto rounded-2xl bg-indigo-50 border-2 border-indigo-300 animate-pulse"}, React.createElement("h2", {className: "text-lg font-bold text-indigo-600 mb-2"}, "✨ " + __alloT('stem.galaxy.quiz_generating_title', 'Gemini is Generating Astrophysic Questions...')), React.createElement("p", {className: "text-sm text-indigo-400"}, __alloT('stem.galaxy.quiz_generating_sub', 'Parsing deep space databases...'))),
-              d.quizMode && !d.isGeneratingQuiz && quizQ && React.createElement("div", { className: "mt-6 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl border border-slate-400 p-8 animate-in fade-in slide-in-from-bottom-4" },
+              d.quizMode && !d.isGeneratingQuiz && !d.quizDone && quizQ && React.createElement("div", { className: "mt-6 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl border border-slate-400 p-8 animate-in fade-in slide-in-from-bottom-4" },
 
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
-                  React.createElement("p", { className: "text-xs font-bold text-indigo-700" }, "\uD83E\uDDE0 Question " + ((d.quizIdx || 0) + 1) + "/" + ACTIVE_BANK.length),
+                  React.createElement("p", { className: "text-xs font-bold text-indigo-700" }, "\uD83E\uDDE0 " + __alloT('stem.galaxy.quiz_question_label', 'Question') + " " + (quizIndex + 1) + "/" + ACTIVE_BANK.length),
 
                   React.createElement("div", { className: "flex items-center gap-2 text-xs" },
 
-                    React.createElement("span", { className: "font-bold text-green-600" }, "\u2714 " + (d.quizScore || 0)),
+                    React.createElement("span", { className: "font-bold text-green-700" }, "\u2714 " + (d.quizScore || 0)),
 
-                    React.createElement("span", { className: "font-bold text-amber-500" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
+                    React.createElement("span", { className: "font-bold text-amber-600" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
 
                   )
 
                 ),
 
+                // Progress through the bank was only ever a "3/20" string; a bar makes
+                // the remaining distance legible at a glance.
+                React.createElement("div", { className: "mb-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-100", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": ACTIVE_BANK.length, "aria-valuenow": quizIndex + 1, "aria-label": __alloT('stem.galaxy.aria_quiz_progress', 'Quiz progress') },
+                  React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-500", style: { width: (((quizIndex + 1) / ACTIVE_BANK.length) * 100).toFixed(1) + "%" } })
+                ),
+
                 React.createElement("p", { className: "text-sm font-bold text-slate-800 mb-3" }, quizQ.q),
 
-                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
 
                   quizQ.options.map(function (opt) {
 
+                    var answered = !!d.quizFeedback;
+                    var isAnswer = opt === quizQ.a;
+                    var isMyPick = answered && d.quizFeedback.picked === opt;
+                    // Two defects here. (1) The old "other wrong options" style was
+                    // text-slate-200 on bg-white at opacity-50 \u2014 roughly 1.2:1, so
+                    // they vanished. (2) The learner's OWN wrong answer was styled
+                    // identically to the options they never touched, so there was no
+                    // way to see what you had actually picked.
+                    var stateClass = !answered ? "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400"
+                      : isAnswer ? "border-green-500 bg-green-50 text-green-800"
+                      : isMyPick ? "border-red-500 bg-red-50 text-red-800"
+                      : "border-slate-200 bg-slate-50 text-slate-500";
+                    var marker = !answered ? null : isAnswer ? "\u2713 " : isMyPick ? "\u2717 " : "";
+
                     return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
-                      key: opt, disabled: !!d.quizFeedback,
+                      key: opt, disabled: answered, type: "button",
 
                       onClick: function () {
 
                         var correct = opt === quizQ.a;
 
-                        upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 " + __alloT('stem.galaxy.quiz_correct', 'Correct! +10 XP') : "\u274C " + __alloT('stem.galaxy.quiz_answer_is', 'The answer is: ') + quizQ.a });
+                        upd("quizFeedback", { correct: correct, picked: opt, msg: correct ? "\u2705 " + __alloT('stem.galaxy.quiz_correct', 'Correct! +10 XP') : "\u274C " + __alloT('stem.galaxy.quiz_answer_is', 'The answer is: ') + quizQ.a });
 
-                        if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); }
+                        // The feedback promised "+10 XP" but nothing was ever awarded.
+                        if (correct) {
+                          upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1);
+                          if (typeof awardStemXP === 'function') awardStemXP('galaxy_quiz', 10, 'Answered a galaxy quiz question correctly');
+                        }
 
                         else { upd("quizStreak", 0); }
 
-                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-200 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
+                      }, className: "min-h-[44px] px-3 py-2 text-left text-xs font-bold rounded-lg border-2 transition-all disabled:cursor-default " + (answered ? "" : "hover:scale-[1.02] ") + stateClass
 
-                    }, opt);
+                    }, marker ? React.createElement("span", { className: "mr-1 font-black", "aria-hidden": true }, marker) : null, opt);
 
                   })
 
@@ -4863,11 +5320,39 @@ if (!window._galaxyHasLoadedOnce) {
 
                   d.quizFeedback.msg,
 
-                  React.createElement("button", { "aria-label": __alloT('stem.galaxy.quiz_next', 'Next'), onClick: function () { upd("quizIdx", ((d.quizIdx || 0) + 1) % ACTIVE_BANK.length); upd("quizFeedback", null); }, className: "ml-3 px-2 py-0.5 bg-indigo-600 text-white rounded text-xs" }, __alloT('stem.galaxy.quiz_next', 'Next') + " \u2192")
+                  (function () {
+                    // The old handler wrapped with % ACTIVE_BANK.length, so the quiz
+                    // silently looped forever and never reported a result.
+                    var isLastQuestion = quizIndex >= ACTIVE_BANK.length - 1;
+                    var nextLabel = isLastQuestion ? __alloT('stem.galaxy.quiz_see_results', 'See results') : __alloT('stem.galaxy.quiz_next', 'Next');
+                    return React.createElement("button", { "aria-label": nextLabel, onClick: function () {
+                      patchGalaxy(isLastQuestion ? { quizDone: true, quizFeedback: null } : { quizIdx: quizIndex + 1, quizFeedback: null });
+                    }, className: "ml-3 min-h-[32px] px-2 py-0.5 bg-indigo-600 text-white rounded text-xs" }, nextLabel + " \u2192");
+                  })()
 
                 )
 
               ),
+
+              // \u2500\u2500 Quiz results \u2500\u2500
+              d.quizMode && !d.isGeneratingQuiz && d.quizDone && (function () {
+                var total = ACTIVE_BANK.length;
+                var score = d.quizScore || 0;
+                var pct = total ? Math.round((score / total) * 100) : 0;
+                var verdict = pct >= 80 ? __alloT('stem.galaxy.quiz_result_strong', 'Strong grasp of stellar and galactic structure.')
+                  : pct >= 50 ? __alloT('stem.galaxy.quiz_result_building', 'Solid start \u2014 revisit the panels for the ideas that slipped.')
+                  : __alloT('stem.galaxy.quiz_result_explore', 'Explore the simulation panels, then try again \u2014 the answers are all in there.');
+                return React.createElement("div", { className: "mt-6 max-w-2xl mx-auto rounded-2xl border border-indigo-200 bg-white p-8 text-center shadow-xl animate-in fade-in", role: "status" },
+                  React.createElement("p", { className: "text-3xl", "aria-hidden": true }, pct >= 80 ? "\ud83c\udf1f" : pct >= 50 ? "\ud83d\ude80" : "\ud83d\udd2d"),
+                  React.createElement("h4", { className: "mt-2 text-lg font-black text-slate-900" }, __alloT('stem.galaxy.quiz_complete_title', 'Quiz complete')),
+                  React.createElement("p", { className: "mt-1 text-sm font-bold text-indigo-700" }, score + " / " + total + " (" + pct + "%)"),
+                  React.createElement("p", { className: "mx-auto mt-2 max-w-sm text-xs leading-relaxed text-slate-600" }, verdict),
+                  React.createElement("div", { className: "mt-4 flex flex-wrap justify-center gap-2" },
+                    React.createElement("button", { type: "button", onClick: function () { patchGalaxy({ quizIdx: 0, quizScore: 0, quizStreak: 0, quizFeedback: null, quizDone: false }); }, className: "min-h-[44px] rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700" }, "\u21ba " + __alloT('stem.galaxy.quiz_try_again', 'Try again')),
+                    React.createElement("button", { type: "button", onClick: function () { patchGalaxy({ quizMode: false, quizDone: false, quizFeedback: null, simMode: 'galaxy' }); }, className: "min-h-[44px] rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100" }, "\ud83c\udf0c " + __alloT('stem.galaxy.quiz_back_to_galaxy', 'Back to the galaxy'))
+                  )
+                );
+              })(),
 
 
 
@@ -4895,11 +5380,11 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("p", { id: "black-hole-description", className: "mt-1 text-xs leading-relaxed text-slate-600" }, __alloT('stem.galaxy.blackhole_description', 'A teaching model near a rotating black hole. Distances are visual, not to scale.')),
                   React.createElement("p", { id: "black-hole-status", role: "status", "aria-live": "polite", className: "mt-2 text-xs font-semibold text-indigo-800" }, blackHoleEffectivePaused ? (blackHoleReducedMotion && !blackHoleMotionAllowed ? __alloT('stem.galaxy.bh_status_reduced_motion', 'Animation paused to honor your reduced-motion preference.') : __alloT('stem.galaxy.bh_status_paused', 'Simulation paused.')) : __alloT('stem.galaxy.bh_status_running', 'Simulation running.')),
                   React.createElement("label", { htmlFor: "black-hole-spin", className: "mt-4 block text-xs font-bold text-slate-700" }, __alloT('stem.galaxy.bh_spin_label', 'Spin: '), React.createElement("span", { className: "font-mono text-indigo-700" }, blackHoleSpin.toFixed(2))),
-                  React.createElement("input", { id: "black-hole-spin", type: "range", min: 0, max: 0.99, step: 0.01, value: blackHoleSpin, "aria-valuetext": blackHoleSpin.toFixed(2) + " of 0.99", className: "w-full accent-indigo-600", onChange: function(e){ var v=parseFloat(e.target.value); upd('blackHoleSpin',v); var cv=document.querySelector('[data-black-hole-canvas]'); if(cv&&cv._setBlackHoleSpin)cv._setBlackHoleSpin(v); } }),
+                  React.createElement("input", { id: "black-hole-spin", type: "range", min: 0, max: 0.99, step: 0.01, value: blackHoleSpin, "aria-valuetext": blackHoleSpin.toFixed(2) + " of 0.99", className: "w-full accent-indigo-600", onChange: function(e){ var v=parseFloat(e.target.value); upd('blackHoleSpin',v); var cv=blackHoleCanvasActive.current; if(cv&&cv._setBlackHoleSpin)cv._setBlackHoleSpin(v); } }),
                   React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.galaxy.bh_spin_desc', 'Higher spin speeds the inner disk and strengthens its bright approaching side.')),
                   React.createElement("label", { htmlFor: "black-hole-disk", className: "mt-3 block text-xs font-bold text-slate-700" }, __alloT('stem.galaxy.bh_disk_label', 'Disk brightness: '), React.createElement("span", { className: "font-mono text-indigo-700" }, Math.round(blackHoleDisk*100) + "%")),
-                  React.createElement("input", { id: "black-hole-disk", type: "range", min: 0.2, max: 1, step: 0.01, value: blackHoleDisk, "aria-valuetext": Math.round(blackHoleDisk*100) + " percent", className: "w-full accent-indigo-600", onChange: function(e){ var v=parseFloat(e.target.value); upd('blackHoleDisk',v); var cv=document.querySelector('[data-black-hole-canvas]'); if(cv&&cv._setBlackHoleDisk)cv._setBlackHoleDisk(v); } }),
-                  React.createElement("button", { type: "button", className: "mt-4 w-full rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700", onClick: function(){ var next; if (!blackHoleMotionAllowed) { upd('blackHoleMotionAllowed',true); upd('blackHolePaused',false); next=false; } else { next=!blackHolePaused; upd('blackHolePaused',next); } var cv=document.querySelector('[data-black-hole-canvas]'); if(cv&&cv._setBlackHolePaused)cv._setBlackHolePaused(next); }, "aria-pressed": blackHoleEffectivePaused }, blackHoleEffectivePaused ? "\u25b6 " + __alloT('stem.galaxy.bh_start_anim', 'Start animation') : "\u23f8 " + __alloT('stem.galaxy.bh_pause_anim', 'Pause animation'))
+                  React.createElement("input", { id: "black-hole-disk", type: "range", min: 0.2, max: 1, step: 0.01, value: blackHoleDisk, "aria-valuetext": Math.round(blackHoleDisk*100) + " percent", className: "w-full accent-indigo-600", onChange: function(e){ var v=parseFloat(e.target.value); upd('blackHoleDisk',v); var cv=blackHoleCanvasActive.current; if(cv&&cv._setBlackHoleDisk)cv._setBlackHoleDisk(v); } }),
+                  React.createElement("button", { type: "button", className: "mt-4 w-full rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700", onClick: function(){ var next; if (!blackHoleMotionAllowed) { upd('blackHoleMotionAllowed',true); upd('blackHolePaused',false); next=false; } else { next=!blackHolePaused; upd('blackHolePaused',next); } var cv=blackHoleCanvasActive.current; if(cv&&cv._setBlackHolePaused)cv._setBlackHolePaused(next); }, "aria-pressed": blackHoleEffectivePaused }, blackHoleEffectivePaused ? "\u25b6 " + __alloT('stem.galaxy.bh_start_anim', 'Start animation') : "\u23f8 " + __alloT('stem.galaxy.bh_pause_anim', 'Pause animation'))
                 ),
                 React.createElement("div", { className: "rounded-2xl border border-orange-200 bg-orange-50 p-4" },
                   React.createElement("h4", { className: "text-sm font-black text-orange-950" }, __alloT('stem.galaxy.tidal_forces_title', 'Tidal forces experiment')),
@@ -4922,7 +5407,7 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("select", { id: "black-hole-mass", value: blackHoleMassMode, onChange: function(e){upd('blackHoleMassMode',e.target.value);}, className: "mt-1 w-full rounded-lg border border-orange-600 bg-white px-2 py-2 text-xs text-slate-900", "aria-describedby": "black-hole-mass-note" },
                     React.createElement("option", { value: "stellar" }, __alloT('stem.galaxy.bh_mass_stellar', 'Stellar-mass')), React.createElement("option", { value: "supermassive" }, __alloT('stem.galaxy.bh_mass_supermassive', 'Supermassive'))),
                   React.createElement("p", { id: "black-hole-mass-note", className: "mt-1 text-xs leading-relaxed text-orange-900" }, blackHoleMassMode==='stellar'?__alloT('stem.galaxy.bh_mass_note_stellar', 'Stronger tidal gradient: disruption begins farther outside the horizon.'):__alloT('stem.galaxy.bh_mass_note_supermassive', 'Gentler at the horizon: a compact object can cross before extreme stretching develops.')),
-                  React.createElement("button", { type: "button", className: "mt-3 w-full rounded-lg bg-orange-700 px-3 py-2 text-xs font-bold text-white hover:bg-orange-800", onClick: function(){var cv=document.querySelector('[data-black-hole-canvas]');if(cv&&cv._dropIntoBlackHole)cv._dropIntoBlackHole(blackHoleDropObject,blackHoleMassMode);}, "aria-describedby": "black-hole-drop-help" }, __alloT('stem.galaxy.bh_drop_btn', 'Drop object into black hole'))
+                  React.createElement("button", { type: "button", className: "mt-3 w-full rounded-lg bg-orange-700 px-3 py-2 text-xs font-bold text-white hover:bg-orange-800", onClick: function(){var cv=blackHoleCanvasActive.current;if(cv&&cv._dropIntoBlackHole)cv._dropIntoBlackHole(blackHoleDropObject,blackHoleMassMode);}, "aria-describedby": "black-hole-drop-help" }, __alloT('stem.galaxy.bh_drop_btn', 'Drop object into black hole'))
                 ),
                 React.createElement("div", { className: "rounded-2xl border border-violet-200 bg-violet-50 p-4" },
                   React.createElement("h4", { className: "text-sm font-black text-violet-900" }, __alloT('stem.galaxy.bh_what_seeing_title', 'What you are seeing')),
@@ -5017,9 +5502,40 @@ if (!window._galaxyHasLoadedOnce) {
 
                     var W = cvEl.offsetWidth, H = cvEl.offsetHeight;
 
-                    cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                    // The backing store was hardcoded at 2×: soft on 3× phones and
+                    // tablets, and four times the pixels needed on a 1× display.
+                    // A 0-sized canvas (mode switched while hidden) must not produce
+                    // a 0×0 backing store either — nothing would ever draw again.
+                    function starLifeScale() { return Math.max(1, Math.min(3, window.devicePixelRatio || 1)); }
+                    function sizeStarLifeCanvas() {
+                      W = Math.max(1, cvEl.offsetWidth || cvEl.clientWidth || W || 320);
+                      H = Math.max(1, cvEl.offsetHeight || cvEl.clientHeight || H || 240);
+                      var dpr = starLifeScale();
+                      cvEl.width = Math.round(W * dpr); cvEl.height = Math.round(H * dpr);
+                      // Assigning width/height resets the transform, so re-apply it.
+                      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    }
+                    sizeStarLifeCanvas();
 
-                    var tick = 0;
+                    // WCAG 2.3.3 — the injected reduced-motion CSS only reaches CSS
+                    // animations, so this rAF loop kept pulsing, rotating and flashing
+                    // (the supernova stage especially) for users who asked for less
+                    // motion. Hold the clock at a representative frame instead of 0,
+                    // which would freeze mid-pulse and look broken.
+                    var starLifeMotionQuery = null;
+                    try { starLifeMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)'); } catch (motionQueryError) {}
+                    var starLifeReduceMotion = !!(starLifeMotionQuery && starLifeMotionQuery.matches);
+                    var onStarLifeMotionChange = function (e) { starLifeReduceMotion = !!(e && e.matches); };
+                    if (starLifeMotionQuery) {
+                      if (starLifeMotionQuery.addEventListener) starLifeMotionQuery.addEventListener('change', onStarLifeMotionChange);
+                      else if (starLifeMotionQuery.addListener) starLifeMotionQuery.addListener(onStarLifeMotionChange);
+                      cvEl._starLifeMotionCleanup = function () {
+                        if (starLifeMotionQuery.removeEventListener) starLifeMotionQuery.removeEventListener('change', onStarLifeMotionChange);
+                        else if (starLifeMotionQuery.removeListener) starLifeMotionQuery.removeListener(onStarLifeMotionChange);
+                      };
+                    }
+
+                    var tick = starLifeReduceMotion ? 40 : 0;
 
                     function drawStar() {
                       // Stop + clean up once the canvas leaves the DOM (leaving Star-Life mode or the
@@ -5028,16 +5544,23 @@ if (!window._galaxyHasLoadedOnce) {
                       if (!cvEl.isConnected) {
                         try { cancelAnimationFrame(cvEl._starLifeAnim); } catch (e) {}
                         try { if (cvEl._starLifeRO) cvEl._starLifeRO.disconnect(); } catch (e) {}
+                        try { if (cvEl._starLifeMotionCleanup) cvEl._starLifeMotionCleanup(); } catch (e) {}
                         return;
                       }
-                      tick++;
+                      if (starLifeReduceMotion) { tick = 40; } else { tick++; }
                       ctx.clearRect(0, 0, W, H);
                       // Starfield background
                       ctx.fillStyle = '#020210';
                       ctx.fillRect(0, 0, W, H);
+                      // `(si * 137) % W` walks a fixed stride across the canvas, so the
+                      // "random" background actually laid the stars out in visible
+                      // diagonal rows. A hash scatters them properly, and it is still
+                      // deterministic (no per-frame Math.random flicker).
                       for (var si = 0; si < 120; si++) {
-                        var sx = ((si * 137 + 29) % W);
-                        var sy = ((si * 211 + 17) % H);
+                        var hx = Math.sin(si * 12.9898) * 43758.5453;
+                        var hy = Math.sin(si * 78.233) * 27183.1234;
+                        var sx = (hx - Math.floor(hx)) * W;
+                        var sy = (hy - Math.floor(hy)) * H;
                         var sb = 0.15 + 0.35 * Math.sin(tick * 0.015 + si * 1.7);
                         ctx.globalAlpha = sb;
                         ctx.fillStyle = si % 7 === 0 ? '#aaccff' : si % 11 === 0 ? '#ffddaa' : '#fff';
@@ -5439,30 +5962,55 @@ if (!window._galaxyHasLoadedOnce) {
                       }
 
                       // ── HUD Labels + Physical Properties ──
+                      // Legibility floor: the HUD sat directly on the star's own glow,
+                      // so a scrim keeps it readable against a red supergiant or a
+                      // supernova flash without dimming the artwork itself.
+                      var topScrim = ctx.createLinearGradient(0, 0, 0, 46);
+                      topScrim.addColorStop(0, 'rgba(2,2,16,0.72)'); topScrim.addColorStop(1, 'rgba(2,2,16,0)');
+                      ctx.fillStyle = topScrim; ctx.fillRect(0, 0, W, 46);
+                      var bottomScrim = ctx.createLinearGradient(0, H - 56, 0, H);
+                      bottomScrim.addColorStop(0, 'rgba(2,2,16,0)'); bottomScrim.addColorStop(1, 'rgba(2,2,16,0.78)');
+                      ctx.fillStyle = bottomScrim; ctx.fillRect(0, H - 56, W, 56);
+
                       ctx.textAlign = 'center';
                       // Stage name (top)
                       ctx.font = 'bold 14px Inter, system-ui, sans-serif';
-                      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                      ctx.fillStyle = 'rgba(255,255,255,0.92)';
                       ctx.fillText(stageLabel, cx, 22);
                       // Classification
                       var cls = mass < HYDROGEN_FUSION_LIMIT ? 'Brown dwarf (substellar)' : mass < M_DWARF_LIMIT ? 'M-type Red Dwarf' : mass < 0.8 ? 'K-type Orange' : mass < 1.04 ? 'G-type (Sun-like)' : mass < 1.4 ? 'F-type Yellow-White' : mass < 2.1 ? 'A-type White' : mass < 16 ? 'B-type Blue-White' : 'O-type Blue Giant';
                       ctx.font = '10px Inter, system-ui, sans-serif';
-                      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+                      ctx.fillStyle = 'rgba(255,255,255,0.62)';
                       ctx.fillText(cls, cx, 36);
 
                       // ── Physical properties panel (bottom center) ──
                       var surfTemp = mass < HYDROGEN_FUSION_LIMIT ? 1800 : mass < M_DWARF_LIMIT ? 3200 : mass < 0.8 ? 4500 : mass < 1.04 ? 5778 : mass < 1.4 ? 6500 : mass < 2.1 ? 8500 : mass < 16 ? 20000 : 40000;
                       var luminosity = Math.pow(mass, 3.5);
-                      var radius = mass < 0.8 ? Math.pow(mass, 0.8) : mass < 2 ? Math.pow(mass, 0.57) : Math.pow(mass, 0.78);
+                      var radius = mainSequenceRadius(mass);
                       var lifetime = mass < 0.2 ? '>100' : (10 / Math.pow(mass, 2.5)).toFixed(mass < 1 ? 0 : 1);
                       var lifetimeText = mass < HYDROGEN_FUSION_LIMIT ? 'No sustained hydrogen fusion' : 'Lifespan: ' + lifetime + ' billion years';
                       ctx.font = 'bold 10px Inter, system-ui, sans-serif';
-                      ctx.fillStyle = 'rgba(255,255,255,0.55)';
-                      ctx.fillText(mass + ' Solar Masses', cx, H - 40);
+                      ctx.fillStyle = 'rgba(255,255,255,0.72)';
+                      ctx.fillText(mass + ' Solar Masses', cx, H - 42);
+                      // On a narrow canvas this line ran off both edges. Shrink to fit,
+                      // and split across two rows if even the smallest size overflows.
+                      var lumText = (luminosity < 100 ? luminosity.toFixed(1) : Math.round(luminosity).toLocaleString()) + ' L\u2609';
+                      var statsLine = 'T: ' + surfTemp.toLocaleString() + ' K  |  L: ' + lumText + '  |  R: ' + radius.toFixed(2) + ' R\u2609';
+                      ctx.fillStyle = 'rgba(255,255,255,0.52)';
+                      var statsSize = 9;
+                      ctx.font = statsSize + 'px monospace';
+                      while (statsSize > 6.5 && ctx.measureText(statsLine).width > W - 16) {
+                        statsSize -= 0.5;
+                        ctx.font = statsSize + 'px monospace';
+                      }
+                      if (ctx.measureText(statsLine).width > W - 16) {
+                        ctx.fillText('T: ' + surfTemp.toLocaleString() + ' K', cx, H - 30);
+                        ctx.fillText('L: ' + lumText + '  |  R: ' + radius.toFixed(2) + ' R\u2609', cx, H - 21);
+                      } else {
+                        ctx.fillText(statsLine, cx, H - 26);
+                      }
                       ctx.font = '9px monospace';
-                      ctx.fillStyle = 'rgba(255,255,255,0.35)';
-                      ctx.fillText('T: ' + surfTemp.toLocaleString() + ' K  |  L: ' + (luminosity < 100 ? luminosity.toFixed(1) : Math.round(luminosity).toLocaleString()) + ' L\u2609  |  R: ' + radius.toFixed(2) + ' R\u2609', cx, H - 26);
-                      ctx.fillText(lifetimeText, cx, H - 14);
+                      ctx.fillText(lifetimeText, cx, H - 10);
 
                       // ── Radiative/Convective zone indicators (on main sequence stars) ──
                       if (stage === 'main_sequence' || stage === 'protostar') {
@@ -5501,13 +6049,18 @@ if (!window._galaxyHasLoadedOnce) {
                       }
 
                       // ── Size comparison reference (bottom-left) ──
-                      ctx.save(); ctx.globalAlpha = 0.25;
-                      ctx.font = '7px monospace'; ctx.textAlign = 'left'; ctx.fillStyle = '#94a3b8';
-                      var sunRefR = dim * 0.14; // reference: what 1 solar mass looks like
+                      ctx.save(); ctx.globalAlpha = 0.55;
+                      ctx.font = '8px monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#fbbf24';
+                      // The old marker was labelled "Sun (1 M☉)" but drawn at 0.3× the
+                      // scale the star itself uses, so it read as a Sun far smaller than
+                      // it is. Overlaying the Sun's true outline on the star makes the
+                      // comparison honest and much easier to read.
+                      var sunRefR = dim * 0.14; // baseR evaluates to exactly this at 1 M☉
                       if (mass !== 1 && stage === 'main_sequence') {
-                        ctx.fillText('Sun (1 M\u2609)', 12, H - 50);
-                        ctx.beginPath(); ctx.arc(12 + sunRefR * 0.3, H - 60, sunRefR * 0.3, 0, Math.PI * 2);
-                        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 0.5; ctx.setLineDash([1, 2]); ctx.stroke(); ctx.setLineDash([]);
+                        ctx.beginPath(); ctx.arc(cx, cy, sunRefR, 0, Math.PI * 2);
+                        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([]);
+                        // Park the label clear of whichever circle is larger.
+                        ctx.fillText('Sun (1 M\u2609)', cx, Math.max(50, cy - Math.max(sunRefR, baseR) - 6));
                       }
                       ctx.restore();
 
@@ -5519,13 +6072,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     drawStar();
 
-                    var ro = new ResizeObserver(function () {
-
-                      W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-
-                      cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
-
-                    });
+                    var ro = new ResizeObserver(function () { sizeStarLifeCanvas(); });
 
                     ro.observe(cvEl);
                     cvEl._starLifeRO = ro;
@@ -6083,7 +6630,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("h4", { className: "text-sm font-bold text-indigo-700 mb-2 flex items-center gap-2" },
 
-                  React.createElement("span", null, "\uD83D\uDCA1"), "Did You Know?"
+                  React.createElement("span", null, "\uD83D\uDCA1"), __alloT('stem.galaxy.did_you_know_title', 'Did You Know?')
 
                 ),
 
@@ -6167,7 +6714,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                 return React.createElement("div", { className: "bg-gradient-to-br from-slate-900 via-violet-950 to-slate-900 rounded-2xl border border-violet-400/30 p-4 shadow-lg" },
 
-                  React.createElement("h4", { className: "text-sm font-bold text-white mb-1 flex items-center gap-2" }, React.createElement("span", null, "✨"), "You Are Star Stuff"),
+                  React.createElement("h4", { className: "text-sm font-bold text-white mb-1 flex items-center gap-2" }, React.createElement("span", null, "✨"), __alloT('stem.galaxy.star_stuff_title', 'You Are Star Stuff')),
 
                   React.createElement("p", { className: "text-xs text-slate-400 leading-relaxed mb-2" }, "Almost every atom heavier than helium was forged inside a star. Colors show where each element in your body — and your phone — came from."),
 
@@ -6247,73 +6794,62 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("h4", { className: "text-sm font-bold text-slate-800 mb-3 flex items-center gap-2" },
 
-                  React.createElement("span", null, "\uD83D\uDD2D"), "Size Comparison"
+                  React.createElement("span", null, "\uD83D\uDD2D"), __alloT('stem.galaxy.size_comparison_title', 'Size Comparison')
 
                 ),
 
-                React.createElement("div", { className: "flex items-end justify-center gap-4 py-4" },
-
-                  // Sun reference
-
-                  React.createElement("div", { className: "flex flex-col items-center" },
-
-                    React.createElement("div", { className: "rounded-full bg-gradient-to-br from-amber-300 to-amber-500 shadow-lg shadow-amber-200", style: { width: '40px', height: '40px' } }),
-
-                    React.createElement("span", { className: "text-xs text-slate-600 mt-1 font-bold" }, "Sun (1 M\u2609)")
-
-                  ),
-
-                  // Current star
-
-                  React.createElement("div", { className: "flex flex-col items-center" },
-
-                    React.createElement("div", {
-
-                      className: "rounded-full shadow-lg transition-all duration-300", style: {
-
-                        width: Math.max(8, Math.min(120, Math.pow(lifecycleMass, 0.8) * 20)) + 'px',
-
-                        height: Math.max(8, Math.min(120, Math.pow(lifecycleMass, 0.8) * 20)) + 'px',
-
-                        background: lifecycleMass < 0.45 ? 'linear-gradient(135deg, #ffcc6f, #ff9944)' :
-
-                          lifecycleMass < 0.8 ? 'linear-gradient(135deg, #ffd2a1, #ffaa66)' :
-
-                            lifecycleMass < 1.04 ? 'linear-gradient(135deg, #fff4ea, #ffdd99)' :
-
-                              lifecycleMass < 1.4 ? 'linear-gradient(135deg, #f8f7ff, #ddd)' :
-
-                                lifecycleMass < 2.1 ? 'linear-gradient(135deg, #cad7ff, #99aaee)' :
-
-                                  lifecycleMass < 16 ? 'linear-gradient(135deg, #aabfff, #7799ff)' :
-
-                                    'linear-gradient(135deg, #9bb0ff, #6677ff)',
-
-                        boxShadow: '0 0 ' + Math.min(20, lifecycleMass * 2) + 'px ' + (lifecycleMass < 0.8 ? '#ffd2a166' : lifecycleMass < 2.1 ? '#fff4ea66' : '#aabfff66')
-
-                      }
-
-                    }),
-
-                    React.createElement("span", { className: "text-xs text-slate-600 mt-1 font-bold" }, lifecycleMass + " M\u2609")
-
-                  )
-
-                ),
-
-                React.createElement("p", { className: "text-center text-xs text-slate-600 italic mt-2" },
-
-                  "Main-sequence radius scales roughly as M" + "\u2070\u00B7\u2078" + ". " +
-
-                  (lifecycleMass < 1 ? "Your star is smaller and cooler than the Sun." :
-
-                    lifecycleMass < 2 ? "Your star is similar in size to the Sun." :
-
-                      lifecycleMass < 10 ? "Your star is significantly larger and hotter than the Sun!" :
-
-                        "Your star is a colossal giant \u2014 millions of times more luminous than the Sun!")
-
-                )
+                (function () {
+                  // The Sun used to be a hardcoded 40px while the star used
+                  // M^0.8 * 20 \u2014 which is 20px at 1 M\u2609. Every star below ~2.8 M\u2609
+                  // therefore looked SMALLER than the Sun, contradicting the caption
+                  // right beneath it. Both circles now come from one scale.
+                  var SUN_PX = 34, MAX_PX = 132;
+                  var starRadius = mainSequenceRadius(lifecycleMass);
+                  var rawPx = SUN_PX * starRadius;
+                  var starPx = Math.max(8, Math.min(MAX_PX, rawPx));
+                  var clipped = rawPx > MAX_PX;
+                  var starGradient = lifecycleMass < 0.45 ? 'linear-gradient(135deg, #ffcc6f, #ff9944)' :
+                    lifecycleMass < 0.8 ? 'linear-gradient(135deg, #ffd2a1, #ffaa66)' :
+                      lifecycleMass < 1.04 ? 'linear-gradient(135deg, #fff4ea, #ffdd99)' :
+                        lifecycleMass < 1.4 ? 'linear-gradient(135deg, #f8f7ff, #dddddd)' :
+                          lifecycleMass < 2.1 ? 'linear-gradient(135deg, #cad7ff, #99aaee)' :
+                            lifecycleMass < 16 ? 'linear-gradient(135deg, #aabfff, #7799ff)' :
+                              'linear-gradient(135deg, #9bb0ff, #6677ff)';
+                  var luminosity = Math.pow(lifecycleMass, 3.5);
+                  var sizeVerdict = starRadius < 0.92 ? __alloT('stem.galaxy.size_smaller', 'Your star is smaller and cooler than the Sun.')
+                    : starRadius <= 1.15 ? __alloT('stem.galaxy.size_similar', 'Your star is about the same size as the Sun.')
+                    : starRadius < 3 ? __alloT('stem.galaxy.size_larger', 'Your star is clearly larger and hotter than the Sun.')
+                    : __alloT('stem.galaxy.size_giant', 'Your star is a blue giant \u2014 vastly larger, hotter, and more luminous than the Sun.');
+                  // The old copy claimed "millions of times more luminous" for anything
+                  // over 10 M\u2609; M^3.5 puts 10 M\u2609 at ~3,000 L\u2609, not millions.
+                  var luminosityNote = __alloT('stem.galaxy.size_luminosity_prefix', 'About ') +
+                    (luminosity < 1 ? luminosity.toFixed(3) : luminosity < 1000 ? Math.round(luminosity).toLocaleString() : Math.round(luminosity / 100) * 100 >= 1000000 ? (luminosity / 1000000).toFixed(1) + '\u00D7 10\u2076' : Math.round(luminosity).toLocaleString()) +
+                    __alloT('stem.galaxy.size_luminosity_suffix', ' times the Sun\u2019s luminosity.');
+                  return React.createElement("div", null,
+                    React.createElement("div", { className: "flex items-end justify-center gap-4 py-4", role: "img", "aria-label": __alloT('stem.galaxy.aria_size_comparison', 'Size comparison: the Sun beside a star of ') + lifecycleMass + __alloT('stem.galaxy.aria_size_comparison_tail', ' solar masses, drawn at ') + starRadius.toFixed(2) + __alloT('stem.galaxy.aria_size_comparison_radii', ' solar radii.') },
+                      React.createElement("div", { className: "flex flex-col items-center" },
+                        React.createElement("div", { className: "rounded-full bg-gradient-to-br from-amber-300 to-amber-500 shadow-lg shadow-amber-200", style: { width: SUN_PX + 'px', height: SUN_PX + 'px' } }),
+                        React.createElement("span", { className: "text-xs text-slate-600 mt-1 font-bold" }, __alloT('stem.galaxy.size_sun_label', 'Sun') + " (1 M\u2609)")
+                      ),
+                      React.createElement("div", { className: "flex flex-col items-center" },
+                        React.createElement("div", {
+                          className: "rounded-full shadow-lg transition-all duration-300", style: {
+                            width: starPx + 'px',
+                            height: starPx + 'px',
+                            background: starGradient,
+                            boxShadow: '0 0 ' + Math.min(24, 4 + starRadius * 5).toFixed(0) + 'px ' + (lifecycleMass < 0.8 ? '#ffd2a166' : lifecycleMass < 2.1 ? '#fff4ea66' : '#aabfff66')
+                          }
+                        }),
+                        React.createElement("span", { className: "text-xs text-slate-600 mt-1 font-bold" }, lifecycleMass + " M\u2609"),
+                        React.createElement("span", { className: "text-[11px] text-slate-500" }, starRadius.toFixed(2) + " R\u2609")
+                      )
+                    ),
+                    React.createElement("p", { className: "text-center text-xs text-slate-600 italic mt-2" },
+                      sizeVerdict + " " + luminosityNote
+                    ),
+                    clipped && React.createElement("p", { className: "text-center text-[11px] text-slate-400 mt-1" }, __alloT('stem.galaxy.size_clipped_note', 'Drawn at the panel limit \u2014 the real star is bigger than this box can show.'))
+                  );
+                })()
 
               ),
 
@@ -6330,54 +6866,124 @@ if (!window._galaxyHasLoadedOnce) {
             // === H7b'' inquiry widget: stellar metallicity discovery ===
             !d.quizMode && simMode === 'metalHunt' && (function() {
               var h = React.createElement;
-              var iq = d.metalHunt || { metallicity: 1, mass: 1, age: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-              function setIQ(patch) { upd('metalHunt', Object.assign({}, iq, patch)); }
+              var iq = d.metalHunt || {};
+              var metallicity = iq.metallicity !== undefined ? iq.metallicity : 1;
+              var starMass = iq.mass !== undefined ? iq.mass : 1;
+              var starAge = iq.age !== undefined ? iq.age : 5;
+              function setIQ(patch) { upd('metalHunt', Object.assign({ metallicity: metallicity, mass: starMass, age: starAge }, iq, patch)); }
               var state;
-              if (iq.metallicity < 0.05) state = 'popIII';
-              else if (iq.metallicity < 0.3) state = 'poor';
-              else if (iq.metallicity < 1.3) state = 'solar';
+              if (metallicity < 0.05) state = 'popIII';
+              else if (metallicity < 0.3) state = 'poor';
+              else if (metallicity < 1.3) state = 'solar';
               else state = 'rich';
               var sm = {
-                popIII: { label: '🌌 Population III (zero-metal)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: 'Hypothetical first stars. Pure H+He. Extremely massive.' },
-                poor:   { label: '🔵 Metal-poor (Population II)', color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: 'Old halo stars. Globular clusters. Long-lived.' },
-                solar:  { label: '🟡 Solar-metallicity (Pop I)', color: '#facc15', bg: '#fefce8', border: '#fde047', desc: 'Sun-like. Modern disk stars. Planets possible.' },
-                rich:   { label: '🟠 Metal-rich (super-solar)', color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: 'Young inner-disk stars. High planet formation rate.' }
+                popIII: { label: '🌌 ' + __alloT('stem.galaxy.mh_pop3_label', 'Population III (zero-metal)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.galaxy.mh_pop3_desc', 'The hypothetical first stars: hydrogen and helium only, and thought to be very massive. None has ever been observed.') },
+                poor:   { label: '🔵 ' + __alloT('stem.galaxy.mh_pop2_label', 'Metal-poor (Population II)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.galaxy.mh_pop2_desc', 'Old halo and globular-cluster stars, formed before much enrichment. Long-lived and low in heavy elements.') },
+                solar:  { label: '🟡 ' + __alloT('stem.galaxy.mh_pop1_label', 'Solar-metallicity (Population I)'), color: '#facc15', bg: '#fefce8', border: '#fde047', desc: __alloT('stem.galaxy.mh_pop1_desc', 'Sun-like disk stars. Enough heavy elements for rocky planets to form.') },
+                rich:   { label: '🟠 ' + __alloT('stem.galaxy.mh_rich_label', 'Metal-rich (super-solar)'), color: '#ea580c', bg: '#fff7ed', border: '#fdba74', desc: __alloT('stem.galaxy.mh_rich_desc', 'Young inner-disk stars born from gas that generations of earlier stars already enriched.') }
               }[state];
+
+              // Mass and age used to be inert decoration. Two textbook relations make
+              // them do real work, without turning the widget into a scored quiz:
+              //   • main-sequence lifetime ≈ 10 / M^2.5 Gyr
+              //   • the interstellar medium was enriched over cosmic time, so a star's
+              //     age constrains the metallicity it could have been born with.
+              var msLifetime = 10 / Math.pow(Math.max(0.08, starMass), 2.5);
+              var formationTime = Math.max(0.2, 13.8 - starAge);
+              var expectedZ = Math.min(1.6, Math.pow(formationTime / 9, 1.6));
+              var stillBurning = starAge <= msLifetime;
+              var zRatio = metallicity / Math.max(0.001, expectedZ);
+              var chemistryFits = zRatio > 0.33 && zRatio < 3;
+              var checks = [
+                {
+                  key: 'lifetime',
+                  ok: stillBurning,
+                  label: __alloT('stem.galaxy.mh_check_lifetime', 'Still on the main sequence?'),
+                  detail: stillBurning
+                    ? __alloT('stem.galaxy.mh_check_lifetime_yes', 'Yes — its hydrogen-burning lifetime is about ') + (msLifetime >= 1000 ? '>1,000' : msLifetime.toFixed(msLifetime < 10 ? 2 : 0)) + __alloT('stem.galaxy.mh_check_lifetime_yes_tail', ' Gyr, longer than the age you set.')
+                    : __alloT('stem.galaxy.mh_check_lifetime_no', 'No — a star this massive burns out in about ') + (msLifetime < 0.01 ? '<0.01' : msLifetime.toFixed(2)) + __alloT('stem.galaxy.mh_check_lifetime_no_tail', ' Gyr, so at this age it would already be a remnant.')
+                },
+                {
+                  key: 'chemistry',
+                  ok: chemistryFits,
+                  label: __alloT('stem.galaxy.mh_check_chemistry', 'Does the chemistry match the era?'),
+                  detail: chemistryFits
+                    ? __alloT('stem.galaxy.mh_check_chemistry_yes', 'Yes — gas forming stars this long ago carried roughly this much heavy-element content (about ') + expectedZ.toFixed(2) + __alloT('stem.galaxy.mh_check_chemistry_yes_tail', ' Z☉).')
+                    : (zRatio >= 3
+                      ? __alloT('stem.galaxy.mh_check_chemistry_high', 'Unusual — that is far more enrichment than the young universe had produced by then (roughly ') + expectedZ.toFixed(2) + __alloT('stem.galaxy.mh_check_chemistry_tail', ' Z☉ expected).')
+                      : __alloT('stem.galaxy.mh_check_chemistry_low', 'Unusual — a star born this recently would normally inherit far more heavy elements (roughly ') + expectedZ.toFixed(2) + __alloT('stem.galaxy.mh_check_chemistry_tail', ' Z☉ expected).'))
+                }
+              ];
+              var logEntries = Array.isArray(iq.log) ? iq.log : [];
+              var sliders = [
+                { k: 'metallicity', v: metallicity, l: __alloT('stem.galaxy.mh_slider_metallicity', 'Metallicity (Z☉)'), mn: 0.001, mx: 2, st: 0.01, unit: ' Z☉' },
+                { k: 'mass', v: starMass, l: __alloT('stem.galaxy.mh_slider_mass', 'Mass (M☉)'), mn: 0.1, mx: 50, st: 0.1, unit: ' M☉' },
+                { k: 'age', v: starAge, l: __alloT('stem.galaxy.mh_slider_age', 'Age (Gyr)'), mn: 0, mx: 14, st: 0.1, unit: __alloT('stem.galaxy.mh_unit_gyr', ' billion years') }
+              ];
               return h('div', { className: 'p-4 rounded-xl bg-slate-900 text-slate-100 border border-purple-400 space-y-3' },
-                h('h3', { className: 'text-sm font-black text-purple-300' }, '🌟 Stellar metallicity discovery'),
-                h('p', { className: 'text-[12px] text-slate-300 leading-relaxed' }, 'Adjust metallicity (Z/Z☉), stellar mass, age. Widget shows 4 discrete stellar populations. No score, no reveal.'),
+                h('h3', { className: 'text-sm font-black text-purple-300' }, '🌟 ' + __alloT('stem.galaxy.mh_title', 'Stellar metallicity discovery')),
+                h('p', { className: 'text-[12px] text-slate-300 leading-relaxed' }, __alloT('stem.galaxy.mh_intro', 'A star’s heavy-element content ("metallicity") records the universe it was born into. Set a metallicity, a mass, and an age, then read what kind of star that describes — and whether such a star could exist.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                   h('div', { className: 'text-xs text-slate-700 mt-1' }, sm.desc)
                 ),
-                h('div', { className: 'grid grid-cols-3 gap-3' },
-                  [{ k: 'metallicity', l: 'Metallicity (Z☉)', mn: 0.001, mx: 2, st: 0.01 },
-                   { k: 'mass', l: 'Mass (M☉)', mn: 0.1, mx: 50, st: 0.1 },
-                   { k: 'age', l: 'Age (Gyr)', mn: 0, mx: 14, st: 0.1 }].map(function(s) {
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
+                  sliders.map(function(s) {
                     return h('div', { key: s.k },
-                      h('label', { htmlFor: 'mh-' + s.k, className: 'block text-xs font-bold text-slate-300' }, s.l + ': ', h('span', { className: 'font-mono text-purple-300' }, iq[s.k])),
-                      h('input', { id: 'mh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                      h('label', { htmlFor: 'mh-' + s.k, className: 'block text-xs font-bold text-slate-300' }, s.l + ': ', h('span', { className: 'font-mono text-purple-300' }, s.v)),
+                      h('input', { id: 'mh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: s.v,
+                        'aria-valuetext': s.v + s.unit,
                         onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
-                        className: 'w-full', 'aria-label': s.l }));
+                        className: 'w-full accent-purple-400' }));
                   })
                 ),
-                h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ z: iq.metallicity, m: iq.mass, a: iq.age, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-800 text-xs font-bold text-slate-200 border border-slate-600' }, '📋 Log'),
-                  h('button', { onClick: function() { setIQ({ metallicity: 1, mass: 1, age: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-transparent text-xs font-semibold text-slate-400 border border-slate-600' }, '↺ Reset')
+                h('div', { className: 'rounded-lg border border-slate-600 bg-slate-950/60 p-3 space-y-2', role: 'status', 'aria-live': 'polite' },
+                  h('p', { className: 'text-xs font-black uppercase tracking-wider text-slate-300' }, __alloT('stem.galaxy.mh_plausibility_title', 'Could this star exist?')),
+                  checks.map(function(check) {
+                    return h('div', { key: check.key, className: 'flex items-start gap-2' },
+                      h('span', { className: 'text-sm leading-none mt-0.5', 'aria-hidden': true }, check.ok ? '✅' : '⚠️'),
+                      h('p', { className: 'text-[12px] leading-relaxed ' + (check.ok ? 'text-slate-200' : 'text-amber-200') },
+                        h('span', { className: 'font-bold' }, check.label + ' '), check.detail));
+                  }),
+                  h('p', { className: 'text-[11px] italic leading-relaxed text-slate-400' }, __alloT('stem.galaxy.mh_plausibility_note', 'A warning is not a wrong answer — real stars that break these patterns exist, and each one is a research question. Ask what could explain it.'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: What does metallicity tell us about a star’s history?',
-                  className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-slate-500 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-700/30 text-xs font-bold text-amber-300 border border-amber-700' }, '🤔 Stuck — show open prompts'),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('button', { type: 'button', onClick: function() { setIQ({ log: logEntries.concat([{ z: metallicity, m: starMass, a: starAge, st: state }]).slice(-8) }); }, className: 'min-h-[36px] px-2 py-1 rounded bg-slate-800 text-xs font-bold text-slate-200 border border-slate-600' }, '📋 ' + __alloT('stem.galaxy.mh_log_btn', 'Log this combination')),
+                  h('button', { type: 'button', onClick: function() { setIQ({ metallicity: 1, mass: 1, age: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'min-h-[36px] px-2 py-1 rounded bg-transparent text-xs font-semibold text-slate-400 border border-slate-600' }, '↺ ' + __alloT('stem.galaxy.mh_reset_btn', 'Reset'))
+                ),
+                // The Log button previously recorded entries that were never displayed.
+                logEntries.length > 0 && h('div', { className: 'overflow-x-auto rounded-lg border border-slate-600' },
+                  h('table', { className: 'w-full text-left text-[11px]' },
+                    h('caption', { className: 'sr-only' }, __alloT('stem.galaxy.mh_log_caption', 'Logged star combinations, most recent last')),
+                    h('thead', null, h('tr', { className: 'bg-slate-800 text-slate-300' },
+                      h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, '#'),
+                      h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, 'Z☉'),
+                      h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, 'M☉'),
+                      h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, __alloT('stem.galaxy.mh_log_age_col', 'Age (Gyr)')),
+                      h('th', { scope: 'col', className: 'px-2 py-1 font-black' }, __alloT('stem.galaxy.mh_log_population_col', 'Population')))),
+                    h('tbody', null, logEntries.map(function(entry, entryIndex) {
+                      return h('tr', { key: entryIndex, className: entryIndex % 2 ? 'bg-slate-900' : 'bg-slate-900/40' },
+                        h('td', { className: 'px-2 py-1 text-slate-400' }, entryIndex + 1),
+                        h('td', { className: 'px-2 py-1 font-mono text-purple-300' }, entry.z),
+                        h('td', { className: 'px-2 py-1 font-mono text-purple-300' }, entry.m),
+                        h('td', { className: 'px-2 py-1 font-mono text-purple-300' }, entry.a),
+                        h('td', { className: 'px-2 py-1 text-slate-200' }, entry.st));
+                    })))),
+                h('label', { htmlFor: 'mh-hypothesis', className: 'block text-xs font-bold text-slate-300' }, __alloT('stem.galaxy.mh_hypothesis_label', 'Your hypothesis')),
+                h('textarea', { id: 'mh-hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.galaxy.mh_hypothesis_placeholder', 'What does metallicity tell us about a star’s history?'),
+                  className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-slate-500 rounded p-2 leading-snug', rows: 3 }),
+                !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'min-h-[36px] px-2 py-1 rounded bg-amber-700/30 text-xs font-bold text-amber-300 border border-amber-700' }, '🤔 ' + __alloT('stem.galaxy.mh_stuck_btn', 'Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-xs text-slate-200 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, 'Old globular clusters have low Z. Investigate why.'),
-                    h('li', null, 'Planets need metals. Which population is most planet-friendly?'))),
+                    h('li', null, __alloT('stem.galaxy.mh_prompt1', 'Old globular clusters have very low metallicity. What does that say about when they formed?')),
+                    h('li', null, __alloT('stem.galaxy.mh_prompt2', 'Rocky planets need heavy elements. Which population is the most planet-friendly, and why?')),
+                    h('li', null, __alloT('stem.galaxy.mh_prompt3', 'Where did the metals in a Population I star come from, if the Big Bang made almost none?')))),
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-300 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  'I understand — explain in own words'),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain how metallicity shaped the early Universe vs today.',
-                  className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-emerald-600 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-                h('div', { className: 'text-[11px] italic text-slate-500' }, 'Design note: discrete 4-state population marker; no luminosity score; no reveal — by design.')
+                  __alloT('stem.galaxy.mh_understood_label', 'I understand — let me explain in my own words')),
+                iq.understood && h('textarea', { 'aria-label': __alloT('stem.galaxy.mh_explanation_label', 'Your explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.galaxy.mh_explanation_placeholder', 'Explain how metallicity differed in the early universe compared with today.'),
+                  className: 'w-full text-[12px] bg-slate-800 text-slate-100 border border-emerald-600 rounded p-2 leading-snug mt-2', rows: 4 }),
+                h('p', { className: 'text-[11px] italic leading-relaxed text-slate-500' }, __alloT('stem.galaxy.mh_model_note', 'This is a simplified teaching model: real enrichment histories vary by galaxy and by location within it. There is deliberately no score here — the point is the reasoning, not a right answer.'))
               );
             })()
 
