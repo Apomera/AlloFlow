@@ -19670,7 +19670,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   useEffect(() => { pdfRunHistoryRef.current = pdfRunHistory; }, [pdfRunHistory]);
   useEffect(() => {
     const cur = pdfFixResult;
-    if (!cur || !cur.accessibleHtml || cur.afterScore == null) return;
+    // M3 (audit 2026-07-26): a run that finishes with NO verified score is the outcome a reviewer
+    // most needs counted — the pipeline explicitly supports it ("PDF transformed to accessible HTML"
+    // with no number, when neither the AI rubric nor a deterministic engine produced a usable one).
+    // Returning early on a null afterScore dropped those runs from _succeeded, _incomplete AND
+    // _failed alike, so the session's success rate was computed over a denominator that had quietly
+    // shed every unverifiable run. The row is written with afterScore: null — the CSV shows an empty
+    // column rather than a fabricated number — and remediationOutcome classifies it as non-success.
+    if (!cur || !cur.accessibleHtml) return;
     // Startup restoration is a view of an existing run, not a new completion.
     // Do not manufacture a reliability-history row with a placeholder filename.
     if (cur._sessionRestored && !pendingPdfFile) return;
@@ -25654,19 +25661,35 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       _maybeSaveIncompleteProject();
       return _r;
     } catch (err) {
-      const _st = (err && err.pipelineStats && typeof err.pipelineStats === 'object')
-        ? err.pipelineStats
-        : ((_docPipeline && _docPipeline.getPipelineStats) ? _docPipeline.getPipelineStats() : {});
+      // M5 (audit 2026-07-26): NEVER borrow another run's numbers. getPipelineStats() returns the
+      // module-global _pipelineStats, which belongs to whatever run is currently executing — so a
+      // duplicate Fix & Verify click, rejected by the re-entry lock in microseconds, used to append
+      // a `failed` row carrying the LIVE run's apiCalls, visionCalls, totalApiMs, durationMs and a
+      // fabricated failStage. The live run then added its own success row: one document, one
+      // successful remediation, reliability panel reporting 50%. An error with no run-scoped stats
+      // must record nulls.
+      const _st = (err && err.pipelineStats && typeof err.pipelineStats === 'object') ? err.pipelineStats : {};
+      // M5: errors that mean the run NEVER STARTED are not failures of anything. Recording them
+      // punishes the reliability rate for a double-click or a pre-flight refusal.
+      const _neverStarted = !!(err && (err.isAlreadyRunning
+        || err.code === 'BASELINE_AUDIT_REQUIRED'
+        || err.code === 'ALLO_DOCUMENT_EPOCH_REQUIRED'
+        || err.code === 'ALLO_STALE_DOCUMENT'));
       const _cancelled = !!((_st && _st.outcome === 'cancelled') || (err && (err.name === 'AbortError' || err.isAbort || err.code === 'ALLO_REMEDIATION_CANCELLED')));
       try {
         const _fname = (opts && opts.fileName) || pendingPdfFile?.name || 'document';
-        if (!_cancelled) setPdfRunHistory((prev) => {
+        // M6 (audit 2026-07-26): a CANCELLED run is recorded too, as its own outcome. Stalls,
+        // aborts and superseded runs used to vanish from BOTH the numerator and the denominator of
+        // the "N% success" figure Aaron defends to UMaine — so that rate was structurally incapable
+        // of showing the failure mode the pilot most needs to know about. 'cancelled' belongs in the
+        // denominator, never the numerator.
+        if (!_neverStarted) setPdfRunHistory((prev) => {
           const next = [...prev, {
-            _k: 'fail:' + _fname + ':' + Date.now(),
+            _k: (_cancelled ? 'cancel:' : 'fail:') + _fname + ':' + Date.now(),
             at: new Date().toISOString(),
             fileName: _fname,
-            outcome: 'failed',
-            failStage: _st.lastOpenStepLabel || 'unknown',
+            outcome: _cancelled ? 'cancelled' : 'failed',
+            failStage: _st.lastOpenStepLabel || null, // M5: 'unknown' is honest; another run's stage was not
             failReason: (err && err.message) ? String(err.message).slice(0, 200) : String(err).slice(0, 200),
             retries: _st.retries != null ? _st.retries : null,
             visionCalls: _st.visionCalls != null ? _st.visionCalls : null,

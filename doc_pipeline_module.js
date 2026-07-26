@@ -20071,6 +20071,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       let autoFixPasses = 0;
       const maxFixPasses = loopCtx.maxFixPasses; // S1: run-entry snapshot, not the live bound var
       let bestHtml = accessibleHtml;
+      // M8 (audit 2026-07-26): the audit that describes bestHtml. Seeded with the incoming audit,
+      // which does describe the incoming html; every promotion below replaces both together.
+      let bestVerification = verification || null;
       const _initialAiUsable = _alloUsableCompleteAiAudit(verification);
       const _initialAxeUsable = _alloUsableAxeAudit(axeResults);
       let _bestEvidenceComplete = _initialAiUsable && _initialAxeUsable;
@@ -20347,6 +20350,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             bestAiScore = newAiScore;
             bestAxeViolations = newAxeViolations;
             _bestEvidenceComplete = true;
+            // M8 (audit 2026-07-26): the AUDIT that describes those bytes, kept with them. The loop
+            // returned `verification` — the LAST pass's audit — while shipping bestHtml, a pass that
+            // was deliberately NOT promoted. The final authoritative audit normally erases the
+            // mismatch by re-auditing the shipped bytes, but when it returns null/throws AND the
+            // deferred re-audit also fails (both the common throttle-storm outcome the deferred loop
+            // exists for), the last-pass audit survives and is published verbatim as
+            // verificationAudit, as "Remaining Issues (N)", and as the resolved/persisted/introduced
+            // diff. The teacher then works through a list of issues computed on a different version
+            // of the document than the one in their download.
+            bestVerification = reVerify || null;
           }
 
           warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
@@ -20434,6 +20447,15 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       if (bestHtml && bestHtml !== accessibleHtml) {
         warnLog('[Auto-fix] Shipping best verified version (AI ' + bestAiScore + ', axe ' + bestAxeViolations + ') instead of the loop\'s last working state.');
         accessibleHtml = bestHtml;
+        // M8: the audit has to travel with the bytes it describes. If the promoted version has no
+        // audit of its own, return NULL rather than the last pass's — fixAndVerifyPdf already fails
+        // closed on a null verification (_aiDegraded → deterministic headline), which is the honest
+        // outcome. A mismatched issue list is worse than no issue list: the teacher acts on it.
+        if (verification !== bestVerification) {
+          warnLog('[Auto-fix] Returning the audit that describes the shipped version'
+            + (bestVerification ? '' : ' (none — the promoted version was never re-audited; the final audit governs)') + '.');
+          verification = bestVerification;
+        }
       }
     return { accessibleHtml, verification, axeResults, autoFixPasses, bestAiScore, bestAxeViolations, lastFullCoverageAiScore: _lastFullCoverageAiScore };
   };

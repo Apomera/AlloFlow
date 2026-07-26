@@ -1146,3 +1146,70 @@ describe('M20 — a completed run cannot be adopted as a live owner', () => {
     expect(iProgress).toBeGreaterThan(iActive);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M8 / M5 / M3 / M6 — the audit that ships, and the reliability rate.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('M8 — the returned audit describes the HTML that ships', () => {
+  it('the promotion keeps the audit with the bytes', () => {
+    // Keep-best restored bestHtml but returned `verification` — the LAST pass's audit, for a pass
+    // deliberately NOT promoted. Normally the final authoritative audit erases the mismatch by
+    // re-auditing the shipped bytes; when that returns null/throws AND the deferred re-audit also
+    // fails (the common throttle-storm outcome), the last-pass audit survives and is published as
+    // verificationAudit, "Remaining Issues (N)", and the resolved/introduced diff.
+    expect(dp).toContain('bestVerification = reVerify || null;');
+    const iBestHtml = dp.indexOf('bestHtml = accessibleHtml;\n            bestAiScore');
+    const iBestVer = dp.indexOf('bestVerification = reVerify || null;');
+    expect(iBestHtml).toBeGreaterThan(0);
+    expect(iBestVer).toBeGreaterThan(iBestHtml);
+  });
+
+  it('a promoted version with no audit of its own returns NULL, not a mismatched one', () => {
+    // fixAndVerifyPdf already fails closed on a null verification (_aiDegraded → deterministic
+    // headline). A mismatched issue list is worse than no issue list: the teacher acts on it.
+    expect(dp).toContain('if (verification !== bestVerification) {');
+    expect(dp).toContain('verification = bestVerification;');
+  });
+});
+
+describe('M5/M3/M6 — the reliability history counts what actually happened', () => {
+  const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+  const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+
+  it('M5: a failure row never borrows the LIVE run\'s numbers', () => {
+    // getPipelineStats() returns the module-global _pipelineStats, belonging to whatever run is
+    // executing — so a duplicate click rejected in microseconds appended a `failed` row carrying
+    // the live run's apiCalls, visionCalls, totalApiMs and a fabricated failStage. The live run
+    // then added its own success row: one document, one remediation, 50% reported.
+    expect(anti).toContain("const _st = (err && err.pipelineStats && typeof err.pipelineStats === 'object') ? err.pipelineStats : {};");
+    expect(anti).not.toContain('_docPipeline.getPipelineStats) ? _docPipeline.getPipelineStats() : {});');
+    expect(anti).toContain("failStage: _st.lastOpenStepLabel || null,");
+  });
+
+  it('M5: errors meaning the run NEVER STARTED are not recorded at all', () => {
+    expect(anti).toContain('const _neverStarted = !!(err && (err.isAlreadyRunning');
+    expect(anti).toContain("err.code === 'BASELINE_AUDIT_REQUIRED'");
+    expect(anti).toContain('if (!_neverStarted) setPdfRunHistory((prev) => {');
+  });
+
+  it('M3: a run that finished with no verified score is still recorded', () => {
+    expect(anti).toContain('if (!cur || !cur.accessibleHtml) return;');
+    expect(anti).not.toContain('if (!cur || !cur.accessibleHtml || cur.afterScore == null) return;');
+  });
+
+  it('M6: cancelled runs get their own outcome instead of vanishing', () => {
+    expect(anti).toContain("outcome: _cancelled ? 'cancelled' : 'failed',");
+  });
+
+  it('M6: cancelled counts in the DENOMINATOR and never the numerator', () => {
+    expect(view).toContain("r.outcome === 'cancelled'");
+    expect(view).toContain("const _cancelled = _outcomed.filter((r) => r.outcome === 'cancelled');");
+    // the numerator is still success-only
+    expect(view).toContain("const _succeeded = _outcomed.filter((r) => r.outcome === 'success');");
+    expect(view).toContain('_successRate = _outcomed.length ? Math.round(_succeeded.length / _outcomed.length * 100) : null;');
+  });
+
+  it('M6: a run with cancellations does not render as all-green', () => {
+    expect(view).toContain('(_failed.length === 0 && _incomplete.length === 0 && _cancelled.length === 0)');
+  });
+});

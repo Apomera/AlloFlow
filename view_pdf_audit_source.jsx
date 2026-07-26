@@ -7875,10 +7875,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   // Reliability denominator (2026-06-13): only rows that carry an
                   // `outcome` count toward the rate, so pre-telemetry / loaded
                   // rows (outcome=null) don't dilute it into a dishonest 100%.
-                  const _outcomed = _hist.filter((r) => r.outcome === 'success' || r.outcome === 'incomplete' || r.outcome === 'failed');
+                  // M6 (audit 2026-07-26): 'cancelled' joins the denominator. Stalls, aborts and
+                  // superseded runs were recorded nowhere, so they vanished from BOTH the numerator
+                  // and the denominator — this rate could not show the failure mode a pilot most
+                  // needs to see. It counts against the rate, exactly like 'incomplete' and
+                  // 'failed', and never toward it.
+                  const _outcomed = _hist.filter((r) => r.outcome === 'success' || r.outcome === 'incomplete' || r.outcome === 'failed' || r.outcome === 'cancelled');
                   const _succeeded = _outcomed.filter((r) => r.outcome === 'success');
                   const _failed = _outcomed.filter((r) => r.outcome === 'failed');
                   const _incomplete = _outcomed.filter((r) => r.outcome === 'incomplete');
+                  const _cancelled = _outcomed.filter((r) => r.outcome === 'cancelled');
                   // Honest rate (2026-06-14): success = reached the target with no
                   // residual violations. 'incomplete' (completed BELOW target) sits
                   // in the denominator, NOT the numerator — so this is a real
@@ -7893,8 +7899,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <span className="font-bold text-indigo-800">📈 {t('pdf_audit.history.lead') || 'Remediation history'}:</span>
                       <span>{_hist.length} {t('pdf_audit.history.runs') || 'document(s)'}{_avgGain != null ? (' · ' + (t('pdf_audit.history.avg') || 'average gain') + ' +' + _avgGain) : ''}{_last ? (' · ' + (t('pdf_audit.history.last') || 'last') + ': ' + _last.fileName + (_last.beforeScore != null ? (' (' + _last.beforeScore + '→' + _last.afterScore + ')') : '')) : ''}</span>
                       {_outcomed.length > 0 && (
-                        <span className={(_failed.length === 0 && _incomplete.length === 0) ? 'text-emerald-700 font-bold' : 'text-amber-700 font-bold'} title={_failed.length > 0 && _topStage ? ('Most failures at: ' + _topStage) : ''}>
-                          · {_successRate}% {t('pdf_audit.history.success') || 'success'} ({_succeeded.length}/{_outcomed.length}{_incomplete.length > 0 ? (', ' + _incomplete.length + ' ' + (t('pdf_audit.history.incomplete') || 'below target')) : ''}{_failed.length > 0 ? (', ' + _failed.length + ' ' + (t('pdf_audit.history.failed') || 'failed') + (_topStage ? (' · ' + (t('pdf_audit.history.mostly_at') || 'mostly at') + ' ' + _topStage) : '')) : ''})
+                        <span className={(_failed.length === 0 && _incomplete.length === 0 && _cancelled.length === 0) ? 'text-emerald-700 font-bold' : 'text-amber-700 font-bold'} title={_failed.length > 0 && _topStage ? ('Most failures at: ' + _topStage) : ''}>
+                          · {_successRate}% {t('pdf_audit.history.success') || 'success'} ({_succeeded.length}/{_outcomed.length}{_incomplete.length > 0 ? (', ' + _incomplete.length + ' ' + (t('pdf_audit.history.incomplete') || 'below target')) : ''}{_failed.length > 0 ? (', ' + _failed.length + ' ' + (t('pdf_audit.history.failed') || 'failed') + (_topStage ? (' · ' + (t('pdf_audit.history.mostly_at') || 'mostly at') + ' ' + _topStage) : '')) : ''}{_cancelled.length > 0 ? (', ' + _cancelled.length + ' ' + (t('pdf_audit.history.cancelled') || 'stopped or superseded')) : ''})
                         </span>
                       )}
                       <button onClick={() => {
