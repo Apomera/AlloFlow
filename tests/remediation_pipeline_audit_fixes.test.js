@@ -347,6 +347,43 @@ describe('H8/H10 — a failure must not be recorded as content', () => {
     expect(asBlockArray({ type: 'p', text: 'bare single block' })).toBeTruthy();
   });
 
+  it('H20: a dead chunk is never joined into the document as placeholder text', () => {
+    // "[Chunk N could not be extracted]" was joined into extractedText, recorded as the OCR ground
+    // truth, and — being longer than the 20-char emptiness guard — sailed through. A run where every
+    // chunk failed shipped a document made entirely of those strings, with coverage measured against
+    // them. Now: dead chunks contribute nothing, and an all-dead run aborts with a real explanation.
+    expect(dp).not.toContain('could not be extracted]`;');
+    expect(dp).toContain("if (!chunk || !chunk.trim()) { _failedChunks.push(i); return ''; }");
+    expect(dp).toContain('if (_failedChunks.length === chunkResults.length && chunkResults.length > 0) {');
+    expect(dp).toContain("extractedText = chunks.filter((c) => c && c.trim()).join('\\n\\n---\\n\\n');");
+  });
+
+  it('H13: the AI truncation notice is stripped and surfaced, not treated as content', () => {
+    // gemini_api appends "[Note: Document was partially extracted...]" when it truncates. Nothing
+    // consumed it, so a truncated extraction became authoritative ground truth at 100% coverage.
+    const gemini = readFileSync(resolve(process.cwd(), 'gemini_api_source.jsx'), 'utf8');
+    expect(gemini).toContain('Document was partially extracted'); // the producer still exists
+    // both chunk paths now detect it
+    expect(dp).toContain('const _TRUNCATION_NOTE = /\\n*\\[Note: Document was partially extracted[^\\]]*\\]\\s*$/i;');
+    expect(dp).toContain('const _TRUNC_RE = /\\n*\\[Note: Document was partially extracted[^\\]]*\\]\\s*$/i;');
+    expect(dp).toContain('_truncatedChunkIdx.add(i)');
+    expect(dp).toContain('_truncatedChunks.push(i)');
+  });
+
+  it('H13/H20: the regexes actually match what the producer emits', () => {
+    // A pin on a regex that never fires is worse than no pin. Exercise it against the real strings.
+    const producer = readFileSync(resolve(process.cwd(), 'gemini_api_source.jsx'), 'utf8');
+    const emitted = (producer.match(/\[Note: Document was partially extracted[^\]]*\]/g) || []);
+    expect(emitted.length).toBeGreaterThanOrEqual(2); // both truncation sites
+    const RE = /\n*\[Note: Document was partially extracted[^\]]*\]\s*$/i;
+    for (const note of emitted) {
+      expect(RE.test('Some real extracted text.\n\n' + note)).toBe(true);
+      expect('Some real extracted text.\n\n'.concat(note).replace(RE, '')).toBe('Some real extracted text.');
+    }
+    // and it must not eat legitimate bracketed content mid-document
+    expect(RE.test('See [Note: Document was partially extracted] and then more text follows.')).toBe(false);
+  });
+
   it('H10: a failed legend re-extraction keeps the original table', () => {
     // `null` from _reextractAsLegend is also what a Canvas throttle returns. Replacing the table
     // with an image stub deleted every row the deterministic pass had already recovered.

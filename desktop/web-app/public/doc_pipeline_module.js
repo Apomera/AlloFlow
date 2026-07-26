@@ -21513,8 +21513,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // became the ground truth every downstream coverage net measures against. A teacher could
           // ship a document missing whole pages behind a green score.
           const _failedChunkIdx = new Set();
+          // H13 (audit 2026-07-26): callGeminiVision appends this note when it truncates its own
+          // output. No consumer anywhere in the repo looked for it, so a truncated chunk became
+          // authoritative ground truth and coverage still reported 100%. Treat it as a partial
+          // failure: keep the text we did get, strip the note so it can't leak into the document,
+          // and mark the chunk so its pages reach the partial-extraction banner.
+          const _TRUNCATION_NOTE = /\n*\[Note: Document was partially extracted[^\]]*\]\s*$/i;
+          const _truncatedChunkIdx = new Set();
           const chunks = chunkResults.map((chunk, i) => {
             if (!chunk || !chunk.trim()) { _failedChunkIdx.add(i); return ''; }
+            if (_TRUNCATION_NOTE.test(chunk)) { _truncatedChunkIdx.add(i); chunk = chunk.replace(_TRUNCATION_NOTE, ''); }
             const fenced = chunk.trim()
               .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '');
             // _safeStripJsonWrapper only mutates when the chunk is a real JSON object
@@ -21540,13 +21548,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const cleanedChunks = chunks.map((chunkText, ci) => {
             const startPage = ci * PAGES_PER_CHUNK;
             const pageCount = Math.min(PAGES_PER_CHUNK, effectivePageCount - startPage);
-            if (_failedChunkIdx.has(ci)) {
+            if (_failedChunkIdx.has(ci) || _truncatedChunkIdx.has(ci)) {
+              const _why = _failedChunkIdx.has(ci)
+                ? ('Gemini Vision returned no text for chunk ' + (ci + 1) + ' (pages ' + (_rangeStart + startPage) + '-' + (_rangeStart + startPage + pageCount - 1) + ').')
+                : ('Gemini Vision truncated chunk ' + (ci + 1) + ' (pages ' + (_rangeStart + startPage) + '-' + (_rangeStart + startPage + pageCount - 1) + ') — some content on these pages is missing.');
               for (let q = 0; q < pageCount; q++) {
-                _visionPageErrors.push({
-                  pageNum: _rangeStart + startPage + q,
-                  engine: 'vision',
-                  error: 'Gemini Vision returned no text for chunk ' + (ci + 1) + ' (pages ' + (_rangeStart + startPage) + '-' + (_rangeStart + startPage + pageCount - 1) + ').',
-                });
+                _visionPageErrors.push({ pageNum: _rangeStart + startPage + q, engine: 'vision', error: _why });
               }
             }
             const parts = chunkText.split(_PB_RE);
@@ -21734,17 +21741,50 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           if (batch + MAX_PARALLEL < chunkPromises.length) await new Promise(r => setTimeout(r, 500));
         }
         updateProgress(1, `Processing ${chunkResults.filter(Boolean).length}/${numChunks} chunks...`);
+        // H13/H20 (audit 2026-07-26): a failure string must never become the document.
+        //   H20 — a dead chunk was replaced with the literal "[Chunk N could not be extracted]",
+        //         which was then joined into extractedText, recorded as the OCR ground truth, and
+        //         (being longer than 20 chars) sailed past the emptiness guard below. A run where
+        //         EVERY chunk failed shipped a document made entirely of those placeholders, with
+        //         coverage measured against them.
+        //   H13 — callGeminiVision appends "[Note: Document was partially extracted...]" when it
+        //         truncates. Nothing in the repo consumed that marker, so a truncated extraction
+        //         became authoritative ground truth and coverage still reported 100%.
+        // Both are now counted, stripped, and surfaced as page errors so the partial-extraction
+        // banner fires and the OCR-evidence cache refuses to bank the hole.
+        const _TRUNC_RE = /\n*\[Note: Document was partially extracted[^\]]*\]\s*$/i;
+        const _failedChunks = [];
+        const _truncatedChunks = [];
         const chunks = chunkResults.map((chunk, i) => {
-          if (!chunk || !chunk.trim()) return `[Chunk ${i + 1} could not be extracted]`;
+          if (!chunk || !chunk.trim()) { _failedChunks.push(i); return ''; }
           const fenced = chunk.trim()
             .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '');
           const unwrapped = _safeStripJsonWrapper(fenced, i);
           // M16: un-escape only when a JSON wrapper was actually stripped (see the scanned path above).
-          if (!unwrapped.stripped) return unwrapped.text;
-          return unwrapped.text
-            .replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t');
+          let text = unwrapped.stripped
+            ? unwrapped.text.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t')
+            : unwrapped.text;
+          if (_TRUNC_RE.test(text)) { _truncatedChunks.push(i); text = text.replace(_TRUNC_RE, ''); }
+          return text;
         });
-        extractedText = chunks.join('\n\n---\n\n');
+        if (_failedChunks.length === chunkResults.length && chunkResults.length > 0) {
+          throw new Error('Text extraction failed for every section of this document. Nothing was recovered, so no remediation was attempted — the original file is untouched. This usually means the AI service was unavailable or the file could not be read; try again in a few minutes.');
+        }
+        if (_failedChunks.length || _truncatedChunks.length) {
+          const _perChunkPages = Math.max(1, Math.ceil((effectivePageCount || chunkResults.length) / Math.max(1, chunkResults.length)));
+          const _mk = (idx, why) => {
+            const out = [];
+            for (let q = 0; q < _perChunkPages; q++) out.push({ pageNum: (idx * _perChunkPages) + q + 1, engine: 'vision', error: why });
+            return out;
+          };
+          const _errs = []
+            .concat(..._failedChunks.map((i) => _mk(i, 'Section ' + (i + 1) + ' of the document returned no text.')))
+            .concat(..._truncatedChunks.map((i) => _mk(i, 'Section ' + (i + 1) + ' was truncated by the AI service; some content is missing.')));
+          try { window.__lastOcrPageErrors = (window.__lastOcrPageErrors || []).concat(_errs); } catch (_) {}
+          warnLog('[PDF Fix] chunked extraction: ' + _failedChunks.length + ' failed, ' + _truncatedChunks.length
+            + ' truncated of ' + chunkResults.length + ' chunk(s) — surfaced as extraction errors, not shipped as placeholder text.');
+        }
+        extractedText = chunks.filter((c) => c && c.trim()).join('\n\n---\n\n');
       }
       // Record ground truth from OCR fallback if deterministic extraction was not used
       if (extractedText && !window.__lastGroundTruthCharCount) {
