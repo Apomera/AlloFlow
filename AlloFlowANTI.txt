@@ -19633,8 +19633,57 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     window.addEventListener('alloflow:extraction-complete', onExtractionComplete);
     window.addEventListener('alloflow:fix-issues-detected', onFixIssuesDetected);
     window.addEventListener('alloflow:image-reinsertion-report', onImageReinsertionReport);
+    // M4 (audit 2026-07-26): the BATCH lane's per-file outcomes. Batch successes never set
+    // pdfFixResult (silent mode returns early) and batch failures never reach the fixAndVerifyPdf
+    // wrapper (the runner calls the pipeline-internal closure), so the highest-volume path — where
+    // per-file wall timeouts and quota stops actually happen — left nothing in pdfRunHistory, in
+    // the project file's runHistory, or in the CSV, while a comment asserted it covered both.
+    const onBatchFileOutcome = (e) => {
+      const d = e && e.detail;
+      if (!d || !d.fileName) return;
+      const _ps = d.pipelineStats || null;
+      const _res = d.result || null;
+      const _resid = (_res && _res.axeAudit && _res.axeAudit.totalViolations != null) ? _res.axeAudit.totalViolations : null;
+      // Classify a COMPLETED batch file with the same rule single files use, so one reliability
+      // number means one thing. Failed/cancelled files carry their outcome verbatim.
+      const _outcome = d.outcome === 'completed'
+        ? (((_docPipeline && typeof _docPipeline.remediationOutcome === 'function')
+          ? _docPipeline.remediationOutcome(_res || {}, { targetScore: pdfTargetScore })
+          : { state: 'incomplete' }).state)
+        : d.outcome;
+      setPdfRunHistory((prev) => {
+        const _k = 'batch:' + (d.runId || (d.fileName + ':' + Date.now()));
+        if (prev.some((r) => r._k === _k)) return prev;
+        const next = [...prev, {
+          _k, at: new Date().toISOString(),
+          runId: d.runId || null,
+          fileName: d.fileName,
+          source: 'batch', // so the panel/CSV can tell hand-run files from batch files
+          outcome: _outcome,
+          failStage: d.failStage || null,
+          failReason: d.failReason || null,
+          beforeScore: _res && _res.beforeScore != null ? _res.beforeScore : null,
+          afterScore: _res && _res.afterScore != null ? _res.afterScore : null,
+          passes: (_res && _res.autoFixPasses) || null,
+          axeViolations: _resid,
+          pages: (_res && _res.pageCount) || null,
+          verificationState: (_res && _res.verificationState) || 'unavailable',
+          retries: _ps ? _ps.retries : null,
+          recoveredRetries: (_ps && _ps.recoveredRetries != null) ? _ps.recoveredRetries : null,
+          terminalFailures: (_ps && _ps.terminalFailures != null) ? _ps.terminalFailures : null,
+          authThrottles: (_ps && _ps.authThrottles != null) ? _ps.authThrottles : null,
+          visionCalls: _ps ? _ps.visionCalls : null,
+          apiCalls: _ps ? _ps.apiCalls : null,
+          apiMs: _ps ? _ps.totalApiMs : null,
+          durationMs: _ps ? _ps.durationMs : null,
+        }];
+        return next.length > 200 ? next.slice(-200) : next;
+      });
+    };
     window.addEventListener('alloflow:fidelity-stale', onFidelityStale);
+    window.addEventListener('alloflow:batch-file-outcome', onBatchFileOutcome);
     return () => {
+      window.removeEventListener('alloflow:batch-file-outcome', onBatchFileOutcome);
       window.removeEventListener('alloflow:chunk-session-start', onSessionStart);
       window.removeEventListener('alloflow:chunk-start', onChunkStart);
       window.removeEventListener('alloflow:chunk-fixed', onChunkFixed);

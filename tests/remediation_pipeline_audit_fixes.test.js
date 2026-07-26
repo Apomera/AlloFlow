@@ -1320,3 +1320,55 @@ describe('L10/L11 — batch continuation and hands-off retry accounting', () => 
     expect(iCount).toBeGreaterThan(iCheck);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M4 — the batch lane reaches the reliability record.
+//
+// Batch successes never set pdfFixResult (silent mode returns early) and batch failures never
+// reach the host's fixAndVerifyPdf wrapper (the runner calls the pipeline-internal closure, not the
+// wrapped export). So the highest-volume path — the one where per-file 8-minute wall timeouts and
+// quota stops actually happen — left nothing in pdfRunHistory, nothing in the project file's
+// runHistory, and nothing in the CSV, while a comment asserted it covered "single-file + batch +
+// page-range call sites at once".
+// ─────────────────────────────────────────────────────────────────────────────
+describe('M4 — batch files are recorded', () => {
+  const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+  const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+
+  it('the runner emits one outcome per file, on BOTH paths', () => {
+    expect(dp).toContain('const _emitBatchFileOutcome = (item, result, err) => {');
+    expect(dp).toContain('_emitBatchFileOutcome(item, result, null);');
+    expect(dp).toContain('_emitBatchFileOutcome(item, null, err);');
+  });
+
+  it('the emit sits inside the per-file try/catch, not after the loop', () => {
+    const iSuccess = dp.indexOf('_emitBatchFileOutcome(item, result, null);');
+    const iFailure = dp.indexOf('_emitBatchFileOutcome(item, null, err);');
+    const iAbortCheck = dp.indexOf('if (_batchAbortCtrl.signal.aborted) {', iFailure);
+    expect(iSuccess).toBeGreaterThan(0);
+    expect(iFailure).toBeGreaterThan(iSuccess);
+    // recorded BEFORE the abort branch can break out, so a stopped batch still records the file
+    expect(iAbortCheck).toBeGreaterThan(iFailure);
+  });
+
+  it('the host listens and appends a row', () => {
+    expect(anti).toContain("window.addEventListener('alloflow:batch-file-outcome', onBatchFileOutcome);");
+    expect(anti).toContain("window.removeEventListener('alloflow:batch-file-outcome', onBatchFileOutcome);");
+    expect(anti).toContain("source: 'batch',");
+  });
+
+  it('a COMPLETED batch file is classified by the same rule single files use', () => {
+    // Otherwise one reliability number would mean two different things.
+    expect(anti).toContain("_docPipeline.remediationOutcome(_res || {}, { targetScore: pdfTargetScore })");
+  });
+
+  it('rows are deduped by runId so a re-render cannot double-count a file', () => {
+    expect(anti).toContain("const _k = 'batch:' + (d.runId || (d.fileName + ':' + Date.now()));");
+    expect(anti).toContain('if (prev.some((r) => r._k === _k)) return prev;');
+  });
+
+  it('the CSV distinguishes batch files from hand-run ones', () => {
+    expect(view).toContain("const head = 'date,file,source,outcome,verification,fail_stage");
+    expect(view).toContain("_csv(r.source || 'single')");
+  });
+});

@@ -14633,6 +14633,41 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
 
     let _quotaStopped = false;
     let _batchHandoffStopped = false;
+    // ── M4 (audit 2026-07-26): make the BATCH lane visible to the reliability record ──────────
+    // Batch successes never set pdfFixResult (silent mode returns early), and batch failures never
+    // reach the host's fixAndVerifyPdf wrapper, because the runner calls the pipeline-internal
+    // closure directly rather than the wrapped export. So the highest-volume path — the one where
+    // per-file 8-minute wall timeouts and quota stops actually happen — left nothing in
+    // pdfRunHistory, nothing in the project file's runHistory, and nothing in the CSV. The
+    // pdfBatchSummary is in-memory only and is discarded on Start New Audit. The reliability record
+    // therefore described hand-run single files only, while a comment asserted it covered both.
+    //
+    // One event per file, carrying the same fields the single-file rows use. FERPA: fileName is
+    // already what the host records for single files and never leaves the browser from here.
+    const _emitBatchFileOutcome = (item, result, err) => {
+      try {
+        if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function' || typeof CustomEvent !== 'function') return;
+        const _stats = (err && err.pipelineStats && typeof err.pipelineStats === 'object')
+          ? err.pipelineStats
+          : ((result && result.pipelineStats) || null);
+        const _cancelled = !!((_stats && _stats.outcome === 'cancelled')
+          || (err && (err.name === 'AbortError' || err.isAbort || err.code === 'ALLO_REMEDIATION_CANCELLED'))
+          || (!err && !result));
+        window.dispatchEvent(new CustomEvent('alloflow:batch-file-outcome', {
+          detail: {
+            batchGeneration: owner.generation,
+            documentEpoch: owner.documentEpoch,
+            fileName: (item && item.fileName) || 'document',
+            runId: (_stats && _stats.runId) || (result && result.runId) || null,
+            outcome: err ? (_cancelled ? 'cancelled' : 'failed') : 'completed',
+            failStage: (_stats && _stats.lastOpenStepLabel) || null,
+            failReason: err ? String((err && err.message) || err).slice(0, 200) : null,
+            result: result || null,
+            pipelineStats: _stats,
+          },
+        }));
+      } catch (_) { /* telemetry must never break the batch */ }
+    };
     for (let i = 0; i < queue.length; i++) {
       if (_batchAbortCtrl.signal.aborted) {
         setPdfBatchStep('Stopped by user · ' + i + '/' + queue.length + ' processed');
@@ -14653,7 +14688,9 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         const result = await _processOne(item, i, false);
         queue[i] = { ...item, status: 'done', result };
         setPdfBatchQueue([...queue]);
+        _emitBatchFileOutcome(item, result, null);
       } catch (err) {
+        _emitBatchFileOutcome(item, null, err);
         if (_batchAbortCtrl.signal.aborted) {
           queue[i] = { ...item, status: 'pending', error: null, interrupted: true };
           setPdfBatchQueue([...queue]);
