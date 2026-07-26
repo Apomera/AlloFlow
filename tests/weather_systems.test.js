@@ -2487,6 +2487,43 @@ describe('Weather Systems ensemble, verification and storyline visuals', () => {
   });
 });
 
+describe('Weather Systems immersive 3D scene', () => {
+  const { readFileSync } = require('node:fs');
+  const { resolve } = require('node:path');
+  const source = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weathersystems.js'), 'utf8');
+
+  it('only outlines a feature the learner actually selected', () => {
+    // The fallback used to be 'airMasses', so every scene opened with a
+    // depth-test-disabled yellow wireframe around its largest object.
+    expect(source()).toContain("selectFeatureVisual(d.immersiveExplainerFeature || '')");
+    expect(source()).not.toContain("selectFeatureVisual(d.immersiveExplainerFeature || 'airMasses')");
+  });
+
+  it('fades the two air-mass volumes when the scenario has no front', () => {
+    const text = source();
+    expect(text).toContain("var hasFrontalBoundary = scenario.frontType !== 'none'");
+    expect(text).toContain('hasFrontalBoundary ? 0.13 : 0.03');
+    expect(text).toContain('hasFrontalBoundary ? 0.11 : 0.03');
+  });
+
+  it('builds cloud height from instability rather than three fixed steps', () => {
+    const text = source();
+    expect(text).toContain('var convective = clamp(state.instability / 100, 0, 1) * (stormy ? 1 : 0.4)');
+    // Cluster height and scale vary per cloud instead of cycling through three buckets.
+    expect(text).toContain('sceneNoise(cloudIndex * 2.9)');
+    expect(text).toContain('sceneNoise(cloudIndex * 5.1)');
+    expect(text).not.toContain('6.2 + (cloudIndex % 3) * 1.4');
+  });
+
+  it('keeps the terrain edge and the precipitation column out of the sky', () => {
+    const text = source();
+    // The 44x34 plane ended inside the camera frustum.
+    expect(text).toContain('new THREE.PlaneGeometry(72, 58, profile.terrainX, profile.terrainY)');
+    // Particles stay under the cloud deck instead of reaching y=11 as "stars".
+    expect(text).toContain("particlePositions[particle * 3 + 1] = 0.4 + ((particle * 83) % 70) / 10");
+  });
+});
+
 describe('Weather Systems geographic map loader resilience', () => {
   const { readFileSync } = require('node:fs');
   const { resolve } = require('node:path');

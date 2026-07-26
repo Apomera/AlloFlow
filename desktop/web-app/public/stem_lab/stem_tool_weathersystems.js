@@ -3426,7 +3426,9 @@ function openImmersiveTourStep(stepId) {
         rim.position.set(18, 8, -16); scene.add(rim);
         scene.add(new THREE.AmbientLight(stormy ? 0x334155 : 0x64748b, 0.22));
 
-        var groundGeo = new THREE.PlaneGeometry(44, 34, profile.terrainX, profile.terrainY);
+        // 44x34 ended inside the camera frustum, so the near-left corner showed the edge of
+        // the world against the sky. Widened past the visible cone; the fog closes the rest.
+        var groundGeo = new THREE.PlaneGeometry(72, 58, profile.terrainX, profile.terrainY);
         var positions = groundGeo.attributes.position;
         for (var vertex = 0; vertex < positions.count; vertex += 1) {
           var vx = positions.getX(vertex); var vy = positions.getY(vertex);
@@ -3489,12 +3491,15 @@ var geographyGroup = new THREE.Group();
         }
         scene.add(geographyGroup);
 
+        // A single high-pressure system is one air mass, not two divided by a boundary, so
+        // the contrasting volumes fade right down when the scenario has no front.
+        var hasFrontalBoundary = scenario.frontType !== 'none';
         var airMassGroup = new THREE.Group();
         airMassGroup.name = 'Air masses';
         airMassGroup.userData.weatherFeatureId = 'airMasses';
-        var coolMass = new THREE.Mesh(new THREE.BoxGeometry(18, 8, 22), new THREE.MeshPhongMaterial({ color: 0x2563eb, transparent: true, opacity: 0.13, side: THREE.DoubleSide, depthWrite: false }));
+        var coolMass = new THREE.Mesh(new THREE.BoxGeometry(18, 8, 22), new THREE.MeshPhongMaterial({ color: 0x2563eb, transparent: true, opacity: hasFrontalBoundary ? 0.13 : 0.03, side: THREE.DoubleSide, depthWrite: false }));
         coolMass.position.set(-11, 3.2, 0); airMassGroup.add(coolMass);
-        var warmMass = new THREE.Mesh(new THREE.BoxGeometry(18, 8, 22), new THREE.MeshPhongMaterial({ color: 0xf97316, transparent: true, opacity: 0.11, side: THREE.DoubleSide, depthWrite: false }));
+        var warmMass = new THREE.Mesh(new THREE.BoxGeometry(18, 8, 22), new THREE.MeshPhongMaterial({ color: 0xf97316, transparent: true, opacity: hasFrontalBoundary ? 0.11 : 0.03, side: THREE.DoubleSide, depthWrite: false }));
         warmMass.position.set(11, 3.2, 0); airMassGroup.add(warmMass);
         scene.add(airMassGroup);
         var frontMat = new THREE.MeshPhongMaterial({ color: scenario.frontType === 'warm' ? 0xef4444 : scenario.frontType === 'occluded' ? 0xa855f7 : 0x38bdf8, transparent: true, opacity: scenario.frontType === 'none' ? 0.08 : 0.38, side: THREE.DoubleSide, depthWrite: false });
@@ -3513,13 +3518,24 @@ var geographyGroup = new THREE.Group();
         var cloudCount = Math.max(2, Math.min(profile.maxClouds, Math.round(cloudCover / 7)));
         for (var cloudIndex = 0; cloudIndex < cloudCount; cloudIndex += 1) {
           var cluster = new THREE.Group();
+          // Unstable air builds upward. Every cluster used to be the same flat pancake at
+          // one of three heights, so a thunderstorm sky and an overcast sky drew identically.
+          var convective = clamp(state.instability / 100, 0, 1) * (stormy ? 1 : 0.4);
           for (var puff = 0; puff < profile.cloudPuffs; puff += 1) {
             var cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
-            cloudMesh.scale.set(1.5 + puff * 0.18, 0.72 + (puff % 2) * 0.18, 1.05);
-            cloudMesh.position.set((puff - 1.5) * 1.1, Math.sin(puff * 1.7) * 0.45, (puff % 2) * 0.65);
+            var puffT = puff / Math.max(1, profile.cloudPuffs - 1);
+            var lift = convective * puffT * 3.4;
+            var taper = 1 - convective * puffT * 0.42;
+            cloudMesh.scale.set((1.5 + puff * 0.18) * taper, (0.72 + (puff % 2) * 0.18) * (1 + convective * 0.5), 1.05 * taper);
+            cloudMesh.position.set(
+              (puff - 1.5) * 1.1 * (1 - convective * 0.5),
+              Math.sin(puff * 1.7) * 0.45 + lift,
+              (puff % 2) * 0.65 * (1 - convective * 0.4)
+            );
             cluster.add(cloudMesh);
           }
-          cluster.position.set(-17 + (cloudIndex * 7.1) % 34, 6.2 + (cloudIndex % 3) * 1.4, -10 + (cloudIndex * 5.3) % 20);
+          cluster.scale.setScalar(0.82 + sceneNoise(cloudIndex * 5.1) * 0.62);
+          cluster.position.set(-17 + (cloudIndex * 7.1) % 34, 6.2 + sceneNoise(cloudIndex * 2.9) * 2.8, -10 + (cloudIndex * 5.3) % 20);
           cluster.userData.speed = 0.0015 + windSpeed * 0.000035;
           cloudGroup.add(cluster);
         }
@@ -3531,7 +3547,9 @@ var geographyGroup = new THREE.Group();
           var particlePositions = new Float32Array(particleCount * 3);
           for (var particle = 0; particle < particleCount; particle += 1) {
             particlePositions[particle * 3] = -18 + ((particle * 47) % 360) / 10;
-            particlePositions[particle * 3 + 1] = 1 + ((particle * 83) % 100) / 10;
+            // Keep the column under the cloud deck. Filling up to y=11 put points in clear
+            // sky above the clouds, where they read as stars rather than falling precipitation.
+            particlePositions[particle * 3 + 1] = 0.4 + ((particle * 83) % 70) / 10;
             particlePositions[particle * 3 + 2] = -12 + ((particle * 61) % 240) / 10;
           }
           var particleGeo = new THREE.BufferGeometry();
@@ -3766,7 +3784,11 @@ var geographyGroup = new THREE.Group();
         canvas.addEventListener('pointerleave', handleScenePointerLeave);
         immersiveRuntimeRef.current.selectFeatureVisual = selectFeatureVisual;
         immersiveRuntimeRef.current.setFeatureHoverVisual = setFeatureHoverVisual;
-        selectFeatureVisual(d.immersiveExplainerFeature || 'airMasses');
+        // Only draw the selection box for a feature the learner actually chose. This used to
+        // fall back to 'airMasses', so every scene opened with a depth-test-disabled yellow
+        // wireframe around the largest object in it — the loudest thing on screen, and a
+        // highlight of a selection nobody made.
+        selectFeatureVisual(d.immersiveExplainerFeature || '');
         if (d.immersiveHoverFeature) update({ immersiveHoverFeature: '', immersiveHoverInput: '' });
 
         var clock = new THREE.Clock();
