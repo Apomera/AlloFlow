@@ -64,7 +64,7 @@
   // intact so reload-from-cloud preserves structure even if visuals are
   // regenerated locally.
   function sanitizeHistoryForCloud(historyItems) {
-    return historyItems.filter(item => !isPrivatePersonaHistoryItem(item)).map(item => {
+    const cleaned = historyItems.filter(item => !isPrivatePersonaHistoryItem(item)).map(item => {
         if (item.type === 'glossary' && Array.isArray(item.data)) {
             const cleanData = item.data.map(gItem => {
                 const { image, ...rest } = gItem;
@@ -120,6 +120,66 @@
         }
         return item;
     });
+    return fitArtworkToBudget(cleaned);
+  }
+
+  // ── Generated artwork vs the Firestore document cap ──────────────────────
+  // Firestore rejects a document over 1 MiB. Generated artwork is stored inline
+  // as base64 data URLs and dwarfs everything else in a history item: measured
+  // through the real optimizeImage path (400px, q0.7 JPEG), one furnished
+  // 16-locus Memory Palace is ~425 KB, or ~850 KB with Relief depth maps on. Two
+  // or three saved palaces therefore push a teacher's history past the cap and
+  // the whole sync write fails — taking the mnemonics, mastery schedule and
+  // student-built loci down with the pictures.
+  //
+  // Artwork is REGENERABLE; the rest of a palace is not, and is tiny. So when the
+  // payload will not fit, drop the pictures and keep the palace. The OLDEST items
+  // lose theirs first, so whatever the teacher is working on now keeps its art
+  // longest. Callers see a normal history array, just a lighter one.
+  const CLOUD_ART_BUDGET_BYTES = 850 * 1024;
+
+  // Whole-store artwork that lives beside its own metadata. Removing the store's
+  // image maps leaves labels, mnemonics, mastery, themes and student-built rooms
+  // and loci untouched — a palace that reloads without pictures still walks, and
+  // the frames fall back to their numbered cards.
+  function stripHeavyArtwork(item) {
+    const data = item && item.data;
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return item;
+    let touched = false;
+    const next = { ...data };
+    const palace = next.memoryPalace;
+    if (palace && typeof palace === 'object' && (palace.images || palace.depths)) {
+      const { images, depths, ...keep } = palace;
+      next.memoryPalace = keep;
+      touched = true;
+    }
+    if (next.conceptArt) { delete next.conceptArt; touched = true; }
+    return touched ? { ...item, data: next } : item;
+  }
+
+  function fitArtworkToBudget(items) {
+    if (!Array.isArray(items)) return items;
+    let size = estimateJsonBytes(items);
+    if (size <= CLOUD_ART_BUDGET_BYTES) return items;
+    const out = items.slice();
+    let dropped = 0;
+    // History is appended, so index 0 is the oldest.
+    for (let i = 0; i < out.length && size > CLOUD_ART_BUDGET_BYTES; i++) {
+      const lighter = stripHeavyArtwork(out[i]);
+      if (lighter === out[i]) continue;          // nothing heavy here; don't re-measure
+      out[i] = lighter;
+      dropped += 1;
+      size = estimateJsonBytes(out);
+    }
+    if (dropped) {
+      try {
+        window.__alloLastCloudArtDrop = { items: dropped, bytesAfter: size };
+        if (typeof window.warnLog === 'function') {
+          window.warnLog(`[FirestoreSync] Cloud payload over budget — dropped generated artwork from ${dropped} history item(s) to fit. Palaces keep their loci, mnemonics and review schedule.`);
+        }
+      } catch (e) { /* diagnostics only */ }
+    }
+    return out;
   }
 
   const SESSION_RESOURCE_SYNC_MAX_BYTES = 850 * 1024;
@@ -258,6 +318,8 @@
   window.sanitizeHistoryForCloud = sanitizeHistoryForCloud;
   window.hydrateHistory = hydrateHistory;
   window.estimateJsonBytes = estimateJsonBytes;
+  window.stripHeavyArtwork = stripHeavyArtwork;
+  window.fitArtworkToBudget = fitArtworkToBudget;
   window.prepareSessionResourcesForWrite = prepareSessionResourcesForWrite;
   // Exposed for the student-pack serializer (mailbox/QR channels): packs must
   // apply the SAME binary-null + string-trim pass the Firebase session path

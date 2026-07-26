@@ -947,3 +947,48 @@ describe('Memory Palace generation prompt', () => {
     expect(block).toMatch(/never pad/i);
   });
 });
+
+// ── The printed handout must match the walk ───────────────────────────────
+// doc_pipeline's palace projection used to read b.mnemonics directly, so once a
+// student replaced an image with their own, the paper copy showed them a DIFFERENT
+// mnemonic from the one they had actually encoded — and student-built rooms and
+// loci were missing from the handout entirely.
+//
+// These are source-contract assertions, not render assertions: the print path
+// lives deep inside a very large render pipeline with no unit-test seam. They pin
+// the wiring; they do not prove the emitted HTML.
+describe('doc_pipeline — Memory Palace print projection', () => {
+  const doc = () => readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+
+  it('projects the palace from the same store the walk uses', () => {
+    const d = doc();
+    expect(d).toContain('const _palaceStore = (item.data && item.data.memoryPalace) || {};');
+    expect(d).toContain('const _palaceRooms = () => {');
+    expect(d).toContain('_palaceStore.myMnemonics');
+    // the student's own image outranks the generated one, exactly as buildPalace does
+    expect(d).toContain('mnemonic: ownText || (mnems[k] != null ? String(mnems[k]) : \'\')');
+  });
+
+  it('prints student-built rooms and loci, re-homing orphans like buildPalace', () => {
+    const d = doc();
+    expect(d).toContain('_palaceStore.extraRooms');
+    expect(d).toContain('_palaceStore.extraLoci');
+    expect(d).toContain('byKey[String(e.room)] || rooms[0]');   // orphan re-home
+  });
+
+  it('labels a self-authored image as the student\'s own', () => {
+    const d = doc();
+    expect(d.match(/Your picture/g) || []).toHaveLength(2);      // room plan + text fallback
+  });
+
+  it('leaves no path still reading the raw mnemonics array for the palace', () => {
+    const d = doc();
+    const palaceBlocks = d.split("type === 'Memory Palace'").slice(1);
+    expect(palaceBlocks).toHaveLength(2);                        // room plan + text fallback
+    palaceBlocks.forEach((block) => {
+      const scoped = block.slice(0, 3000);
+      expect(scoped).toContain('_palaceRooms()');
+      expect(scoped).not.toContain('b.mnemonics');
+    });
+  });
+});

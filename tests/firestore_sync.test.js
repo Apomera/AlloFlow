@@ -181,3 +181,85 @@ describe('prepareSessionResourcesForWrite — live session Firestore size guard'
     expect(out.overLimit).toBe(false);
   });
 });
+
+// ── Generated artwork vs the Firestore 1 MiB document cap ─────────────────
+// Measured through the real optimizeImage path (400px, q0.7 JPEG), a furnished
+// 16-locus Memory Palace is ~425 KB, or ~850 KB with Relief depth maps. Two or
+// three saved palaces used to push the whole history document past Firestore's
+// hard 1 MiB limit, and the write failed — taking the mnemonics, the review
+// schedule and the student-built loci down with the regenerable pictures.
+// The rule now: drop the art, keep the palace, oldest first.
+describe('sanitizeHistoryForCloud — artwork budget', () => {
+  const BUDGET = 850 * 1024;
+  const art = 'data:image/jpeg;base64,' + 'A'.repeat(26_000);   // ~1 measured image
+
+  const palace = (id) => ({
+    id,
+    type: 'outline',
+    title: 'Palace ' + id,
+    data: {
+      main: 'The Water Cycle',
+      branches: [{ title: 'Sky', items: ['Evaporation'], mnemonics: ['a kettle'] }],
+      memoryPalace: {
+        images: Object.fromEntries(Array.from({ length: 16 }, (_, i) => ['b0_i' + i, art])),
+        depths: Object.fromEntries(Array.from({ length: 16 }, (_, i) => ['b0_i' + i, art])),
+        myMnemonics: { b0_i0: 'An image the student wrote themselves' },
+        mastery: { b0_i0: { reps: 3, strength: 0.8, dueAt: '2026-08-01T00:00:00.000Z' } },
+        extraRooms: [{ id: 'xr1', title: 'My Attic' }],
+        extraLoci: [{ id: 'xl1', room: 'b0', label: 'My own fact', lx: 12, lz: -30 }],
+        theme: 'gallery',
+      },
+    },
+  });
+
+  it('leaves a payload that already fits completely untouched', () => {
+    const items = [palace('p1')];
+    const out = sanitize(items);
+    expect(estimateBytes(out)).toBeLessThanOrEqual(BUDGET);
+    expect(Object.keys(out[0].data.memoryPalace.images)).toHaveLength(16);
+    expect(Object.keys(out[0].data.memoryPalace.depths)).toHaveLength(16);
+  });
+
+  it('brings an oversized history back under the cap', () => {
+    const items = [palace('p1'), palace('p2'), palace('p3'), palace('p4')];
+    expect(estimateBytes(items)).toBeGreaterThan(1024 * 1024);   // would be rejected by Firestore
+    const out = sanitize(items);
+    expect(estimateBytes(out)).toBeLessThanOrEqual(BUDGET);
+  });
+
+  it('sacrifices the OLDEST artwork first and keeps what is being worked on', () => {
+    const out = sanitize([palace('p1'), palace('p2'), palace('p3'), palace('p4')]);
+    const hasArt = (item) => Object.keys(item.data.memoryPalace.images || {}).length > 0;
+    expect(hasArt(out[0])).toBe(false);                 // oldest gave its pictures up
+    expect(hasArt(out[out.length - 1])).toBe(true);     // newest still has them
+  });
+
+  it('NEVER drops the parts that cannot be regenerated', () => {
+    const out = sanitize([palace('p1'), palace('p2'), palace('p3'), palace('p4')]);
+    out.forEach((item) => {
+      const mp = item.data.memoryPalace;
+      expect(mp.myMnemonics.b0_i0).toBe('An image the student wrote themselves');
+      expect(mp.mastery.b0_i0.reps).toBe(3);
+      expect(mp.extraLoci).toHaveLength(1);
+      expect(mp.extraLoci[0].label).toBe('My own fact');
+      expect(mp.extraRooms).toHaveLength(1);
+      expect(mp.theme).toBe('gallery');
+      expect(item.data.branches[0].items).toEqual(['Evaporation']);
+    });
+  });
+
+  it('drops per-node concept art under the same rule', () => {
+    const withArt = [palace('p1'), palace('p2'), palace('p3'), palace('p4')];
+    withArt[0].data.conceptArt = { n1: art };
+    const out = sanitize(withArt);
+    expect(out[0].data.conceptArt).toBeUndefined();
+    expect(estimateBytes(out)).toBeLessThanOrEqual(BUDGET);
+  });
+
+  it('does not invent a memoryPalace on items that never had one', () => {
+    const plain = { id: 'x', type: 'outline', data: { main: 'no palace here', branches: [] } };
+    const out = sanitize([plain, palace('p1'), palace('p2'), palace('p3'), palace('p4')]);
+    expect(out[0].data.memoryPalace).toBeUndefined();
+    expect(out[0].data.main).toBe('no palace here');
+  });
+});

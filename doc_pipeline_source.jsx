@@ -3040,7 +3040,10 @@ function _alloDistributionVerdict(r, opts) {
     }[r.expertReviewReason];
     review.push(_reasonText || String(r.expertReviewReason || 'this run was flagged for expert review'));
   }
-  if (cov != null && cov < 90) review.push('only ' + cov + '% of the source text is preserved in reading order — check the Diff for missing content');
+  // L5 (audit 2026-07-26): integrityCoverage is a CHARACTER-COUNT ratio. It says nothing about
+  // order, and no reading-order check runs against the source — so "preserved in reading order"
+  // claimed more than the measurement supports. State what was actually measured.
+  if (cov != null && cov < 90) review.push('only ' + cov + '% of the source characters are present in the output — check the Diff for missing content');
   if (kinds.numeric) review.push('numbers may have changed between source and output — verify scores, dates, and percentages before anyone reads this');
   if (kinds.refusal) review.push('AI meta/refusal text leaked into the output — it should not ship; re-run the remediation');
   if (kinds.tables) review.push('one or more tables may have been collapsed or lost — check the Diff');
@@ -4166,6 +4169,17 @@ var createDocPipeline = function(deps) {
         timestamp: Date.now(),
       });
       _activeRemediationProgress = next;
+      // Self-healing UI ownership (2026-07-26). setPdfFixLoading(true) is written ONCE, at run
+      // entry; a single lost write left the modal interactive for the whole run. Re-assert it on
+      // every heartbeat of a run that still owns the pipeline, so the busy state repairs itself
+      // within one progress event instead of staying wrong until the run ends.
+      // Terminal states are deliberately excluded: clearing the flag belongs to the completion /
+      // failure paths, which also write pdfFixResult and the step label in the same tick.
+      // Silent (batch) runs never reach here — they never populate _activeRemediationProgress.
+      if ((next.status === 'running' || next.status === 'throttled')
+        && typeof setPdfFixLoading === 'function' && _isRemediationRunning()) {
+        setPdfFixLoading(true);
+      }
       if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
         window.__alloRemediationProgress = next;
         window.dispatchEvent(new CustomEvent('alloflow:remediation-progress', { detail: next }));
@@ -4221,6 +4235,20 @@ var createDocPipeline = function(deps) {
         }
       }
     } catch(e) { /* canvas sink is best-effort; never block the pipeline */ }
+  };
+  // Host-side diagnostics sink (2026-07-26). The in-app Log panel — the one place a teacher can
+  // actually copy from — reads window._alloflowPipelineWarnings, and only _pipeLog writes there.
+  // So a finding made on the HOST side (e.g. "every progress event for this run is being dropped
+  // by the documentEpoch gate") landed in DevTools and nowhere a field report could reach it.
+  // Same buffer, same event, no run scope required.
+  var _logHostDiagnostic = function(tag, message, data) {
+    try {
+      _pipeLog(String(tag || 'Host'), String(message || ''), data || null, {
+        runId: (data && data.runId) || null,
+        documentEpoch: (data && Object.prototype.hasOwnProperty.call(data, 'documentEpoch')) ? data.documentEpoch : null,
+        stats: { startTime: 0 },
+      });
+    } catch (_) { /* diagnostics must never break the caller */ }
   };
   var _pipeStepStart = function(step, owner) {
     var stats = (owner && owner.stats) || _pipelineStats;
@@ -5665,6 +5693,24 @@ var createDocPipeline = function(deps) {
   // The note kinds _recomputeContentFidelity can re-derive — the host replaces these per round and
   // carries every other kind forward from the original run.
   const _RECOMPUTABLE_FIDELITY_KINDS = { links: 1, tables: 1, refusal: 1, placement: 1, numeric: 1 };
+  // C1 (audit 2026-07-26): the SINGLE rule for how a follow-up pass updates fidelity notes.
+  // Notes come in two flavours. Recomputable ones (links/tables/refusal/placement/numeric, plus
+  // reading-order for the re-fix lanes) are a property of the CURRENT html and must be replaced.
+  // Everything else — lowOcrAccuracy, lowOcrConfidence, altQuality, folioLeak, pageEdge,
+  // ocrColumnOrder, activeContent — is a durable property of the SOURCE document, established once
+  // during extraction and true no matter how many fix passes run afterwards.
+  // The finalization reducer below already got this right; the view's "Fix Remaining" lane did a
+  // flat `notes = freshNotes`, silently deleting every durable disclosure — including the "OCR
+  // quality is POOR, the text may be garbled" warning — and with it fidelityLimited,
+  // needsExpertReview, the distribution verdict's cautions, and the exported accessibility
+  // statement. Both lanes now go through here.
+  const _REFIX_RECOMPUTED_FIDELITY_KINDS = Object.assign({}, _RECOMPUTABLE_FIDELITY_KINDS, { 'reading-order': 1 });
+  const _mergeFidelityNotes = function (prevNotes, freshNotes, recomputedKinds) {
+    const kinds = recomputedKinds || _REFIX_RECOMPUTED_FIDELITY_KINDS;
+    const prev = Array.isArray(prevNotes) ? prevNotes : [];
+    const fresh = Array.isArray(freshNotes) ? freshNotes : [];
+    return prev.filter((n) => !(n && kinds[n.kind])).concat(fresh);
+  };
 
   // ── #6-full: the FINALIZATION REDUCER (2026-07-16) ─────────────────────────────────────────
   // One canonical "round evidence → next result" assembly. Extracted VERBATIM from the host's
@@ -5723,7 +5769,7 @@ var createDocPipeline = function(deps) {
       try { _roundFid = _recomputeContentFidelity(round.sourceText, html); } catch (_) { _roundFid = null; }
     }
     const _roundNotes = _roundFid
-      ? (cur.fidelityNotes || []).filter((n) => !(n && _RECOMPUTABLE_FIDELITY_KINDS[n.kind])).concat(_roundFid.fidelityNotes || [])
+      ? _mergeFidelityNotes(cur.fidelityNotes, _roundFid.fidelityNotes, _RECOMPUTABLE_FIDELITY_KINDS)
       : (cur.fidelityNotes || []);
     const _nextIntegrityCoverage = _roundFid ? _roundFid.integrityCoverage : cur.integrityCoverage;
     const _nextIntegrityWarning = _roundFid
@@ -5764,7 +5810,21 @@ var createDocPipeline = function(deps) {
     const _verificationReviewCount = Number.isFinite(_verification.reviewCount)
       ? Math.max(0, _verification.reviewCount)
       : 0;
-    const _aiVerificationIncomplete = _verificationCoverage.ai !== 'complete';
+    // H7 (audit 2026-07-26): derive this from the AUDIT's own health, not from the coverage string.
+    // The policy sets coverage.ai = 'complete-with-review' whenever the AI returned even one issue it
+    // could not classify (ruleId 'other' → requiresManualReview) — a COMPLETE audit that read every
+    // requested section and produced a grounded score. Testing `!== 'complete'` swept that terminal
+    // state in with the degraded ones, so the teacher was told "AI semantic verification incomplete
+    // (8 of 8 sections audited — the AI service was throttled)" — self-contradictory and false — the
+    // after-score was hidden behind an em dash, the distribution verdict gained a fabricated
+    // throttling caution, and a "Complete final audit" button invited them to burn another full
+    // chunked audit on an already-complete one. Manual-review findings already surface honestly via
+    // verificationState 'review-required'; they are not an incomplete run.
+    // Scoped deliberately: this widens the set of TERMINAL coverage states by exactly one rather
+    // than re-deriving from the audit object. _alloUsableCompleteAiAudit additionally demands
+    // section counts that this reducer's callers do not all carry, so using it here would flip
+    // legitimately-complete rounds to "incomplete" — the same false report in the other direction.
+    const _aiVerificationIncomplete = !/^complete(?:-with-review)?$/.test(String(_verificationCoverage.ai || ''));
     const _scoreSource = _aiVerificationIncomplete
       ? (_det !== null ? 'deterministic-only' : 'unverified')
       : (_det !== null ? 'min' : 'content-only');
@@ -5779,14 +5839,48 @@ var createDocPipeline = function(deps) {
     const _rawExpertBase = _storedExpertBase || (_hadVerificationContribution
       ? { needed: false, reason: null }
       : { needed: !!cur.needsExpertReview, reason: cur.expertReviewReason || null });
-    const _baseAccessibilityReview = !!(_rawExpertBase.needed && (_rawExpertBase.reason === 'accessibility' || _rawExpertBase.reason === 'both' || !_rawExpertBase.reason));
+    const _inheritedAccessibilityReview = !!(_rawExpertBase.needed && (_rawExpertBase.reason === 'accessibility' || _rawExpertBase.reason === 'both' || !_rawExpertBase.reason));
+    // H6 (audit 2026-07-26): re-derive the accessibility half from THIS round's evidence. It used to
+    // be inherited from the previous result forever, which failed in both directions:
+    //   under-warning — a round that introduced a confirmed critical axe violation (or an Equal
+    //     Access FAIL) while the net deterministic score held would commit, and needsExpertReview
+    //     stayed false, so the expert-review card never appeared over a real WCAG barrier;
+    //   over-warning — a run flagged 'accessibility' kept that reason after the criticals were
+    //     fixed, permanently suppressing the success toast.
+    // The fresh audits were already in hand (_freshAxe/_freshEa) and simply were not consulted. This
+    // is the same predicate the two view lanes use, so all three agree.
+    // DELIBERATELY ONE-WAY. Fresh evidence can only ADD the warning, never clear it.
+    //   * The under-warning half is a safety defect and is fixed here: a round that introduces a
+    //     confirmed critical now raises the flag regardless of what the previous round concluded.
+    //   * The over-warning half (a stale 'accessibility' reason surviving after the criticals are
+    //     fixed) is left alone ON PURPOSE. Clearing an expert-review warning from an automated
+    //     signal is a product decision about how much evidence is enough to tell a teacher a
+    //     document no longer needs human review — Aaron's call, not a mechanical fix. Making it
+    //     one-way also keeps the frozen-reference parity suite meaningful.
+    const _freshAccessibilityReview = !!(
+      (_freshAxe && Array.isArray(_freshAxe.critical) && _freshAxe.critical.length > 0)
+      || (_freshEa && Number.isFinite(_freshEa.failViolations) && _freshEa.failViolations > 0)
+      || (Number.isFinite(afterScore) && afterScore < 50)
+    );
+    const _baseAccessibilityReview = _inheritedAccessibilityReview || _freshAccessibilityReview;
     const _freshContentFidelityReview = !!_nextFidelityLimited;
     const _expertBaseReason = _baseAccessibilityReview
       ? (_freshContentFidelityReview ? 'both' : 'accessibility')
       : (_freshContentFidelityReview ? 'content-fidelity' : null);
 
     const _plain = (round && round.plainText) || htmlToPlainText(html);
-    return Object.assign({}, cur, {
+    // M9 (audit 2026-07-26): these three describe the PREVIOUS result and were carried forward
+    // untouched by Object.assign, so a superseded round's "estimated minimum score" kept being shown
+    // against the current document — an estimate derived from HTML the teacher is no longer looking
+    // at. They are cleared rather than recomputed: this reducer has no access to the last successful
+    // AI score the main pipeline builds the estimate from, and no estimate is honest where a stale
+    // one is misleading. A run that still wants one recomputes it in fixAndVerifyPdf (~24782).
+    const _staleEstimateReset = {
+      _estimatedMinimumScore: null,
+      _estimatedScoreBasis: null,
+      _finalAuditRetryAvailable: !!(_aiVerificationIncomplete && html),
+    };
+    return Object.assign({}, cur, _staleEstimateReset, {
       accessibleHtml: html,
       axeAudit: _freshAxe,
       _detScore: _det,
@@ -7593,7 +7687,17 @@ var createDocPipeline = function(deps) {
     try { return JSON.parse(repaired); } catch(e) {}
     const arrMatch = repaired.match(/\[\s*\{[\s\S]*\}\s*\]/);
     if (arrMatch) { try { return JSON.parse(arrMatch[0]); } catch(e) {} }
-    _pipeLog('repairAndParseJsonShared', 'gave up — returning null', String(raw).slice(0, 200));
+    // H4 (audit 2026-07-26, FERPA): this used to log 200 raw characters of the model's reply.
+    // `raw` here is the response to prompts that carry up to 5000 characters of the teacher's
+    // document (the surgical-directive pass at ~8420 among others), so a malformed reply routinely
+    // echoed verbatim student text into window._alloflowPipelineWarnings — the buffer behind the
+    // in-app Log panel's Copy button, which teachers paste into bug reports. Log the SHAPE, which is
+    // what actually diagnoses a parse failure; never the content.
+    _pipeLog('repairAndParseJsonShared', 'gave up — returning null', {
+      chars: String(raw == null ? '' : raw).length,
+      startsWith: /^\s*[[{]/.test(String(raw || '')) ? 'json-ish' : 'not-json',
+      hasFence: String(raw || '').indexOf('```') !== -1,
+    });
     return null;
   };
 
@@ -10886,7 +10990,18 @@ var createDocPipeline = function(deps) {
       return { fullText, pages, pageCount: pdf.numPages, sourceCharCount: fullText.length, pageErrors };
     } catch (e) {
       warnLog('[Tesseract] extractPdfTextTesseract failed:', e && e.message);
-      return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, error: e && e.message, pageErrors: [] };
+      // C3 (audit 2026-07-26): a whole-engine failure (this catch also covers ensureTesseractLoaded,
+      // so a CDN miss lands here) used to report `pageErrors: []` — indistinguishable from a clean
+      // run. Callers concat these into window.__lastOcrPageErrors to decide whether to show the
+      // partial-extraction banner, so an empty array meant the engine's total death was invisible.
+      // Emit one record per page we know about; fall back to a single document-level record when
+      // the failure happened before the page count was known.
+      const _engineErr = 'Tesseract OCR failed for the whole document' + (e && e.message ? ': ' + String(e.message).slice(0, 160) : '.');
+      const _known = (pdf && pdf.numPages) || 0;
+      const _errs = [];
+      if (_known > 0) { for (let p = 1; p <= _known; p++) _errs.push({ pageNum: p, engine: 'tesseract', error: _engineErr }); }
+      else _errs.push({ pageNum: null, engine: 'tesseract', error: _engineErr });
+      return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, error: e && e.message, pageErrors: _errs };
     } finally {
       if (pdf) { try { pdf.destroy(); } catch (_) {} }
       try { await _ocrWorkerRelease(); } catch (_) {} // P7: free the shared worker at end-of-document
@@ -11884,8 +11999,14 @@ var createDocPipeline = function(deps) {
     // Do not replay an extraction that already knew a page failed. A retry may recover it.
     if (Array.isArray(record.ocrPageErrors) && record.ocrPageErrors.length) return false;
     if (!Array.isArray(record.groundTruthPages) || !record.groundTruthPages.length) return false;
+    // C3 (audit 2026-07-26): PRESENCE is not evidence. The equal-char page split pushes a record for
+    // every expected page even when its chunk came back empty, so a hole satisfied this check and the
+    // truncated evidence got banked — every retry in the session then replayed the same missing pages.
+    // Require actual text. (A genuinely blank page in the source is indistinguishable from a lost one
+    // here, and refusing to bank costs one re-extraction; replaying a hole costs the teacher content.)
     const present = new Set(record.groundTruthPages
-      .map(p => p && Number(p.pageNum))
+      .filter(p => p && String(p.text || '').trim().length > 0)
+      .map(p => Number(p.pageNum))
       .filter(n => Number.isFinite(n) && n > 0));
     return _ocrEvidenceExpectedPages(identity).every(pageNum => present.has(pageNum));
   };
@@ -14092,7 +14213,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         progress('Auditing...');
         const auditResult = await _withTimeout(
           runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true, fileName: item.fileName, auditorCount: _batchSettings.pdfAuditorCount, outputLanguage: _batchSettings.leveledTextLanguage, signal: _fileCtrl.signal }),
-          _remainingMs(), 'batch audit: ' + item.fileName);
+          _remainingMs(), 'batch audit: ' + _alloDiagnosticDocumentLabel(item.fileName));
         if (!auditResult || auditResult.score === -1) {
           throw new Error(auditResult?.summary || 'Audit failed');
         }
@@ -14112,7 +14233,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         });
         let result;
         try {
-          result = await _withTimeout(_fixPromise, _remainingMs(), 'batch fix: ' + item.fileName);
+          result = await _withTimeout(_fixPromise, _remainingMs(), 'batch fix: ' + _alloDiagnosticDocumentLabel(item.fileName));
         } catch (_fixErr) {
           // The timeout race does not cancel its operand. Abort first, then wait for the
           // managed run to release the shared lock before the next file can enter. A
@@ -20021,6 +20142,20 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const cleaned = _stripCodeFence(imgResult);
           const parsed = JSON.parse(cleaned);
           extractedImages = (parsed.images || []).filter(img => img.type !== 'decorative');
+          // H14: on a page-range (multi-session) run the prompt still asks for ALL images, so drop
+          // anything outside the range before ordinal pairing sees it. Images with no usable page
+          // number are KEPT — dropping an image because Vision omitted a field would lose content,
+          // and the pairing-confidence check downstream is what protects the alt text.
+          if (Array.isArray(imgCtx.pageRange) && imgCtx.pageRange.length === 2) {
+            const _pgFrom = Number(imgCtx.pageRange[0]) || 1;
+            const _pgTo = Number(imgCtx.pageRange[1]) || Infinity;
+            const _before = extractedImages.length;
+            extractedImages = extractedImages.filter((img) => {
+              const _p = Number(img && img.page);
+              return !Number.isFinite(_p) || (_p >= _pgFrom && _p <= _pgTo);
+            });
+            if (_before !== extractedImages.length) warnLog('[PDF Fix] image extraction: dropped ' + (_before - extractedImages.length) + ' image(s) outside the remediated page range ' + _pgFrom + '-' + _pgTo + '.');
+          }
           warnLog(`[PDF Fix] Found ${extractedImages.length} meaningful images`);
 
           // Extract images algorithmically from PDF pages using canvas rendering
@@ -20201,11 +20336,28 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
                     // Sort by Y position (top-to-bottom) to match visual reading order
                     imagePositions.sort((a, b) => a.y - b.y);
-                    // Crop each image region from the rendered page
+                    // H11 (audit 2026-07-26): the geometry side is built from the RAW operator list,
+                    // which still contains every paintImageXObject — including the decorative ones
+                    // filtered out of `imgs` at ~20144. Pairing `imgs[i]` to `imagePositions[i]` by a
+                    // bare counter therefore hands the diagram the LOGO's crop rectangle whenever a
+                    // decorative image sorts above it. The result ships a wrong image under a correct
+                    // alt text — which passes every alt-PRESENCE check we run (axe image-alt, the
+                    // alt-quality heuristics, the Vision spot-check's small sample), so nothing
+                    // catches it and a screen-reader user is told the district logo is the diagram.
+                    // A wrong image is worse than no image: when the counts disagree we cannot know
+                    // the mapping, so refuse to crop and let the existing placeholder path degrade
+                    // honestly. Equal counts still pair positionally, which is the case this code
+                    // was written for and is reliable there.
+                    const _cropGeometryTrusted = imagePositions.length === imgs.length;
+                    if (!_cropGeometryTrusted && imgs.length) {
+                      warnLog('[PDF Fix] page ' + pg + ': ' + imagePositions.length + ' image region(s) on the page but '
+                        + imgs.length + ' described image(s) — cannot map descriptions to regions, skipping crops for this page'
+                        + ' (the images remain available, uncropped, with their own descriptions).');
+                    }
                     let imgOpIdx = 0;
                     for (const img of imgs) {
                       _throwIfImageCancelled();
-                      const pos = imagePositions[imgOpIdx] || imagePositions[0];
+                      const pos = _cropGeometryTrusted ? imagePositions[imgOpIdx] : null;
                       imgOpIdx++;
                       if (pos && pos.w > 20 && pos.h > 20) {
                         try {
@@ -20800,7 +20952,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         _applyGeminiPacing(true, _heavyPages >= 20 ? { maxConcurrent: 2, staggerMs: 1000 } : {});
       }
     } catch (_pcErr) {}
-    _pipeLog('Init', 'Pipeline starting', { file: _fileName, batch: _isBatch, hasAudit: !!_auditResult, pageCount: _auditResult?.pageCount, base64KB: _base64 ? Math.round(_base64.length * 0.75 / 1024) : 0 }, _runTelemetry);
+    // H5 (audit 2026-07-26, FERPA): `file: _fileName` put the RAW filename into the copyable
+    // diagnostics log — on the line directly above one that deliberately redacts it via
+    // _alloDiagnosticDocumentLabel. Student filenames routinely carry names and case numbers
+    // ("Smith, Jordan - IEP 2026.pdf"). Same redaction on both lines.
+    _pipeLog('Init', 'Pipeline starting', { file: _alloDiagnosticDocumentLabel(_fileName), batch: _isBatch, hasAudit: !!_auditResult, pageCount: _auditResult?.pageCount, base64KB: _base64 ? Math.round(_base64.length * 0.75 / 1024) : 0 }, _runTelemetry);
     warnLog('[fixAndVerifyPdf] Starting — batch:', _isBatch, 'base64:', !!_base64, 'audit:', !!_auditResult, 'file:', _alloDiagnosticDocumentLabel(_fileName));
 
     // "Silent mode" = caller is doing its own UI via an onProgress callback
@@ -20976,6 +21132,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__lastGroundTruthPageMap = null;
       window.__lastGroundTruthMethod = null;
       window.__lastOcrPageErrors = []; // audit #17: per-page extraction failures, fresh each run
+      window.__alloImagePairingUncertain = null; // H14: image/caption pairing doubt, fresh each run
       window.__lastOcrLowConfidencePages = []; // B5 (2026-06-20): per-page low OCR confidence, fresh each run
       // Cross-document guard (review F1/F5, 2026-07-01): stamp this run's OCR globals with
       // the CURRENT document's fingerprint. createTaggedPdf's legacy window-fallbacks
@@ -21328,8 +21485,15 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             if (batch + MAX_PARALLEL < chunkPromises.length) await new Promise(r => setTimeout(r, 500));
           }
           if (_slicedChunks > 0) warnLog(`[Vision] ${_slicedChunks}/${chunkPromises.length} extraction chunk(s) uploaded as page-slices instead of the full document`);
+          // C3 (audit 2026-07-26): remember WHICH chunks came back with nothing. A failed chunk was
+          // blanked to '' here and then, further down, still pushed `pageCount` empty page records —
+          // so the hole was indistinguishable from a genuinely blank page. window.__lastOcrPageErrors
+          // stayed empty, the Stage-1 partial-extraction banner never rendered, and the shortened text
+          // became the ground truth every downstream coverage net measures against. A teacher could
+          // ship a document missing whole pages behind a green score.
+          const _failedChunkIdx = new Set();
           const chunks = chunkResults.map((chunk, i) => {
-            if (!chunk || !chunk.trim()) return '';
+            if (!chunk || !chunk.trim()) { _failedChunkIdx.add(i); return ''; }
             const fenced = chunk.trim()
               .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '');
             // _safeStripJsonWrapper only mutates when the chunk is a real JSON object
@@ -21350,10 +21514,20 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // stripped from the joined fullText either way — it must never leak into the document.
           const _PB_RE = /[ \t]*\[\[PAGE BREAK\]\][ \t]*/g;
           const pagesOut = [];
+          const _visionPageErrors = []; // C3: one record per page a failed chunk was supposed to cover
           let _sentinelSplits = 0;
           const cleanedChunks = chunks.map((chunkText, ci) => {
             const startPage = ci * PAGES_PER_CHUNK;
             const pageCount = Math.min(PAGES_PER_CHUNK, effectivePageCount - startPage);
+            if (_failedChunkIdx.has(ci)) {
+              for (let q = 0; q < pageCount; q++) {
+                _visionPageErrors.push({
+                  pageNum: _rangeStart + startPage + q,
+                  engine: 'vision',
+                  error: 'Gemini Vision returned no text for chunk ' + (ci + 1) + ' (pages ' + (_rangeStart + startPage) + '-' + (_rangeStart + startPage + pageCount - 1) + ').',
+                });
+              }
+            }
             const parts = chunkText.split(_PB_RE);
             const cleaned = chunkText.replace(_PB_RE, '\n');
             if (pageCount > 0 && parts.length === pageCount) {
@@ -21371,7 +21545,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             return cleaned;
           });
           if (_sentinelSplits > 0) warnLog(`[Vision] ${_sentinelSplits}/${chunks.length} chunk(s) page-split via the [[PAGE BREAK]] sentinel (exact boundaries; rest fell back to equal-char)`);
-          return { fullText: cleanedChunks.join('\n\n---\n\n'), pages: pagesOut };
+          if (_visionPageErrors.length) warnLog('[Vision] ' + _visionPageErrors.length + ' page(s) produced no text — surfacing as extraction errors so the partial-extraction banner renders.');
+          return { fullText: cleanedChunks.join('\n\n---\n\n'), pages: pagesOut, pageErrors: _visionPageErrors };
         };
 
         // ── OCR language resolution (light, best-effort) ──
@@ -21395,10 +21570,23 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
         let tessResult = { fullText: '', pages: [] };
         let visionResult = { fullText: '', pages: [] };
+        // C3 (audit 2026-07-26): a WHOLE-ENGINE failure (Tesseract's CDN never loads, Vision throws
+        // outright) used to return `{fullText:'', pages:[]}` — no pageErrors, so nothing downstream
+        // could tell "this engine died" from "this engine found nothing to report". Synthesize an
+        // engine-level record covering every page the run expected, so the partial-extraction banner
+        // fires and the OCR-evidence cache refuses to bank the hole.
+        const _enginePageErrors = (engine, err) => {
+          const _rs = (_pageRange && _pageRange[0]) ? _pageRange[0] : 1;
+          const _n = Math.max(1, effectivePageCount || 1);
+          const _msg = engine + ' OCR failed for the whole document' + ((err && err.message) ? ': ' + String(err.message).slice(0, 160) : '.');
+          const out = [];
+          for (let p = 0; p < _n; p++) out.push({ pageNum: _rs + p, engine: engine.toLowerCase(), error: _msg });
+          return out;
+        };
         try {
           const [t, v] = await Promise.all([
-            _tesseractExtract().catch(e => { warnLog('[OCR reconcile] Tesseract failed:', e && e.message); return { fullText: '', pages: [] }; }),
-            _visionChunkedExtract().catch(e => { warnLog('[OCR reconcile] Vision failed:', e && e.message); return { fullText: '', pages: [] }; }),
+            _tesseractExtract().catch(e => { warnLog('[OCR reconcile] Tesseract failed:', e && e.message); return { fullText: '', pages: [], pageErrors: _enginePageErrors('Tesseract', e) }; }),
+            _visionChunkedExtract().catch(e => { warnLog('[OCR reconcile] Vision failed:', e && e.message); return { fullText: '', pages: [], pageErrors: _enginePageErrors('Gemini Vision', e) }; }),
           ]);
           tessResult = t; visionResult = v;
         } catch (reconErr) {
@@ -21448,7 +21636,37 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // Per-page OCR failures from BOTH engines (audit #17). A failed page becomes empty text but
         // the doc was still marked fully remediated; surface them so the UI's Stage-1 partial-
         // extraction banner renders instead of a blind student silently losing whole pages.
-        window.__lastOcrPageErrors = [].concat(tessResult.pageErrors || [], visionResult.pageErrors || []);
+        // C3 (audit 2026-07-26): report a page as FAILED only when it produced no text after
+        // reconciliation. The two engines are redundant by design — Tesseract dying entirely while
+        // Vision succeeds is a degraded run, not a lost page, and now that both engines emit
+        // whole-engine records a raw concat would fire the partial-extraction banner on every such
+        // run. Filter the union down to pages the merge actually left empty; that is the only
+        // condition under which the teacher is missing content.
+        {
+          const _recovered = new Set();
+          (rec && rec.pages ? rec.pages : []).forEach((p) => {
+            if (p && typeof p.pageNum === 'number' && String(p.text || '').trim()) _recovered.add(p.pageNum);
+          });
+          const _allErrs = [].concat(tessResult.pageErrors || [], visionResult.pageErrors || []);
+          const _seen = new Set();
+          const _unrecovered = [];
+          _allErrs.forEach((e) => {
+            if (!e) return;
+            // A record with no page number (engine died before the page count was known) can never be
+            // proven recovered — keep it.
+            if (typeof e.pageNum === 'number' && _recovered.has(e.pageNum)) return;
+            const _k = String(e.pageNum) + '|' + String(e.engine || '');
+            if (_seen.has(_k)) return;
+            _seen.add(_k);
+            _unrecovered.push(e);
+          });
+          if (_allErrs.length && !_unrecovered.length) {
+            warnLog('[OCR reconcile] ' + _allErrs.length + ' per-page engine failure(s) were fully recovered by the other engine — no pages lost.');
+          } else if (_unrecovered.length) {
+            warnLog('[OCR reconcile] ' + _unrecovered.length + ' page(s) produced NO text from either engine — surfacing to the partial-extraction banner.');
+          }
+          window.__lastOcrPageErrors = _unrecovered;
+        }
         // Wire the reconciled OCR page map (carries Tesseract word boxes + page dims) so
         // createTaggedPdf can lay down a POSITIONED, searchable invisible text layer for the
         // scanned PDF. Previously this was never set on the scanned path, so the tagged-PDF
@@ -21626,7 +21844,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         }
       }
 
-      const _imgOut = await _extractPdfImages({ base64: _base64, mimeType: _mimeType, silentMode: _silentMode, updateProgress, signal: _runAbortSignal, shouldAbort: _runGenStale });
+      // H14 (audit 2026-07-26): pass the page range. Image extraction asks Vision for "ALL images
+      // from this PDF document" with no range, so a pages-11-20 run got images ordered over pages
+      // 1-20 while the body being remediated only holds the range's figures. Ordinal pairing then
+      // handed the range's first figure a page-1 image AND a page-1 description, overwriting the
+      // correct in-context caption with the wrong one — straight into the alt text a screen-reader
+      // user hears.
+      const _imgOut = await _extractPdfImages({ base64: _base64, mimeType: _mimeType, silentMode: _silentMode, updateProgress, signal: _runAbortSignal, shouldAbort: _runGenStale, pageRange: _pageRange });
       _throwIfRunCancelled();
       let extractedImages = _imgOut.extractedImages; // consumed by the placeholder splice, image report, and return payload
 
@@ -22456,10 +22680,53 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
       // final accessibleHtml stripped them (AI pass dropped the figure outright).
       window.__lastImageSrcMissing = [];
       window.__lastImageDroppedByAi = [];
-      if (extractedImages.length > 0) {
+      // M10 (audit 2026-07-26): this used to be `if (extractedImages.length > 0)`. The placeholders
+      // the renderer emits carry their ENTIRE interaction surface as inline on* handlers, and
+      // _alloSanitizeRemediationBodyFragment (correctly) strips every one of them a few lines above.
+      // This block re-authors them on the trusted side — so gating it on having extracted images
+      // meant that on any document where extraction returned nothing (Office input, a vision-only
+      // run, both extractors failing) every placeholder shipped with a visible "Upload image" and
+      // "Pick extracted" button that did nothing when clicked. The teacher's only manual route to
+      // fix a missing figure was silently dead. The body already handles imgInfo === null (falls
+      // back to the figure's own caption, hasSrc false), so running it unconditionally re-authors
+      // working controls for exactly that case.
+      {
         let imgIdx = 0;
-        // Find figure elements with data-img-placeholder marker (clean, no regex issues)
-        bodyContent = bodyContent.replace(/<figure data-img-placeholder="true"[\s\S]*?<\/figure>/gi, (match) => {
+        // H14 (audit 2026-07-26): images are paired to placeholders BY ORDINAL. That is only sound
+        // when the two lists are the same length — otherwise every figure after the first mismatch
+        // gets another figure's picture and, worse, another figure's DESCRIPTION written into its
+        // alt attribute, discarding the correct in-context caption the extraction produced. Count
+        // first; when the counts disagree we still place the images (a missing figure is its own
+        // harm) but keep each figure's OWN caption as the alt text, and disclose the uncertainty.
+        const _placeholderCount = (bodyContent.match(/<figure\s[^>]*data-img-placeholder="true"/gi) || []).length;
+        const _imagePairingTrusted = _placeholderCount === extractedImages.length;
+        if (!_imagePairingTrusted && _placeholderCount > 0) {
+          warnLog('[PDF Fix] image pairing uncertain: ' + _placeholderCount + ' placeholder(s) vs '
+            + extractedImages.length + ' extracted image(s) — keeping each figure\'s own caption as its alt text.');
+          // NOTE: _structuralFidelityNotes is declared with `let` further down (~24368), so it is in
+          // its temporal dead zone here — pushing to it directly would throw a ReferenceError that a
+          // try/catch would swallow, leaving the disclosure silently missing. Stash on the run-scoped
+          // window signal instead, the same way the OCR-stage disclosures reach that block.
+          try {
+            window.__alloImagePairingUncertain = {
+              placeholders: _placeholderCount,
+              images: extractedImages.length,
+              msg: extractedImages.length === 0
+                ? ('The document has ' + _placeholderCount + ' figure slot(s) but no images could be recovered from the source. Each figure kept its own description and ships as an empty placeholder — add the pictures in the image review panel, or the figures carry no visual content for sighted readers.')
+                : ('The document has ' + _placeholderCount + ' figure slot(s) but ' + extractedImages.length
+                  + ' image(s) were recovered, so images could not be matched to captions with confidence. Each figure kept its own description, but check in the image review panel that every picture sits under the right caption before distributing.'),
+            };
+          } catch (_) {}
+        }
+        // Find figure elements with data-img-placeholder marker (clean, no regex issues).
+        // C2 (audit 2026-07-26): this pattern required data-img-placeholder to be the FIRST
+        // attribute, but the renderer emits `<figure id="pdf-img-ph-…-figure" data-img-placeholder="true" …>`
+        // (doc_builder_renderer_source.jsx:259) — id first, always. So it matched ZERO figures and no
+        // extracted image was ever spliced in: imgIdx never advanced, _deferredImageMap stayed empty,
+        // and the dropped-image recovery + reinsertion report downstream all no-opped SILENTLY, leaving
+        // every figure as a grey "Image placeholder" box with nothing in the log to say so.
+        // Use the same tolerant form _stripImagePlaceholdersForAi already uses at ~7568.
+        bodyContent = bodyContent.replace(/<figure\s[^>]*data-img-placeholder="true"[\s\S]*?<\/figure>/gi, (match) => {
           const captionMatch = match.match(/<figcaption[^>]*>([\s\S]*?)<\/figcaption>/i);
           const altText = captionMatch ? captionMatch[1].replace(/<[^>]*>/g, '').trim() : 'Image';
           // Unwrap guard (2026-06-12, user report: section content rendered
@@ -22486,7 +22753,10 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
             const imgInfo = extractedImages[imgIdx] || null;
             imgIdx++;
             const imgId = 'pdf-img-' + imgIdx;
-            const desc = imgInfo ? imgInfo.description : altText;
+            // H14: only trust the extracted description when the ordinal pairing is sound. The
+            // figure's own figcaption is the in-context truth; a mispaired description is a wrong
+            // answer stated confidently, which is worse for a screen-reader user than a thin one.
+            const desc = (imgInfo && _imagePairingTrusted) ? imgInfo.description : altText;
             const purpose = imgInfo ? (imgInfo.educationalPurpose || '') : '';
             const hasSrc = imgInfo && imgInfo.generatedSrc;
             const isRegenerated = imgInfo && imgInfo.isRegenerated;
@@ -24116,6 +24386,14 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       let _structuralFidelityNotes = [];
       try {
         _structuralFidelityNotes = _computeStructuralFidelityNotes((extractedText || '').replace(_ALLO_MARKER_RE, ''), accessibleHtml);
+        // H14 (audit 2026-07-26): the image/caption pairing check runs back in Step 2, long before
+        // this array exists, so it parks its finding on a run-scoped signal. Consume it here — a
+        // picture sitting under the wrong caption is a content-fidelity loss like any other, and it
+        // must reach fidelityLimited / needsExpertReview / the exported statement.
+        try {
+          const _ip = (typeof window !== 'undefined') ? window.__alloImagePairingUncertain : null;
+          if (_ip && _ip.msg) _structuralFidelityNotes.push({ kind: 'imagePairing', msg: _ip.msg });
+        } catch (_) {}
         _structuralFidelityNotes.forEach((n) => warnLog('[Fidelity] ' + n.msg));
       } catch (_sfErr) { warnLog('[Fidelity] structural net failed (non-critical): ' + (_sfErr && _sfErr.message)); }
       // A changed NUMBER is the highest-stakes fidelity loss for an assessment report, but the bulk
@@ -24890,7 +25168,37 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // resumable capture so a stale run cannot overwrite the current run's recovery slot.
       if (_runWasCancelled) {
         if (_silentMode) throw err;
-        warnLog('[PDF Fix] Stale run failed (gen ' + _myRunGen + ' != current ' + ((typeof window !== 'undefined' && window.__alloPdfRunGen) || 0) + ') — suppressing failure history, recovery capture, UI writes, and toast.');
+        // H19/M19 (audit 2026-07-26): "cancelled" covers two very different things, and treating
+        // them alike threw away the expensive half of the run. A teacher pressing Stop is a
+        // deliberate discard — nothing to salvage, no file to push at them. A WATCHDOG
+        // invalidation is a stall the teacher never asked for: the run may already hold many
+        // minutes of OCR/Vision extraction, and that is precisely what the resumable-incomplete-
+        // project feature exists to save. Bank the evidence for the watchdog case so
+        // "Continue a previous session" can pick it up, and mark it so the host can tell the
+        // difference. UI writes and the scary failure toast stay suppressed either way — a stale
+        // run must never stomp the current one.
+        const _watchdogInvalidated = !(err && (err.name === 'AbortError' && err.code === 'ALLO_REMEDIATION_CANCELLED' && err.userInitiated === true))
+          && _runGenStale();
+        if (_watchdogInvalidated && typeof extractedText === 'string' && extractedText.trim().length >= 50) {
+          try {
+            window.__lastIncompleteProject = {
+              incomplete: true,
+              stalled: true, // watchdog, not a user Stop
+              extractedText: extractedText,
+              base64: _base64 || null,
+              fileName: _fileName || 'document.pdf',
+              docKey: _documentKey,
+              auditResult: _auditResult || null,
+              failureReason: 'stalled',
+              failStage: (_runStats && _runStats.lastOpenStepLabel) || null,
+              failMessage: 'The run stopped responding and was invalidated by the stall watchdog.',
+              pageRange: (Array.isArray(_pageRange) && _pageRange.length === 2) ? [_pageRange[0], _pageRange[1]] : null,
+              savedAt: new Date().toISOString(),
+            };
+            warnLog('[PDF Fix] Watchdog-invalidated run banked ' + extractedText.length + ' chars of extracted text for resume.');
+          } catch (_) { /* best-effort */ }
+        }
+        warnLog('[PDF Fix] Stale run failed (gen ' + _myRunGen + ' != current ' + ((typeof window !== 'undefined' && window.__alloPdfRunGen) || 0) + ') — suppressing failure history, UI writes, and toast.');
         return null;
       }
       // Resumable incomplete project (2026-06-20): if extraction already produced
@@ -31873,6 +32181,46 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'outline') {
           const { main, main_en, branches, structureType } = item.data;
           const type = structureType || 'Structured Outline';
+          // Project the palace the way MemoryPalace.buildPalace does, so the
+          // handout matches the walk the student actually learned: an image THEY
+          // wrote outranks the generated one, and the rooms and loci they built
+          // themselves are printed too. Without this the paper copy quietly shows
+          // a different mnemonic from the one they encoded.
+          const _palaceStore = (item.data && item.data.memoryPalace) || {};
+          const _palaceRooms = () => {
+              const own = (_palaceStore.myMnemonics && typeof _palaceStore.myMnemonics === 'object') ? _palaceStore.myMnemonics : {};
+              const rooms = (branches || []).map((b, i) => ({
+                  key: 'b' + i, title: b.title, title_en: b.title_en, mine: false,
+                  loci: (b.items || []).map((it, k) => {
+                      const id = 'b' + i + '_i' + k;
+                      const mnems = Array.isArray(b.mnemonics) ? b.mnemonics : [];
+                      const ownText = typeof own[id] === 'string' ? own[id].trim() : '';
+                      return {
+                          text: typeof it === 'object' ? (it.text || '') : String(it),
+                          trans: b.items_en?.[k],
+                          mnemonic: ownText || (mnems[k] != null ? String(mnems[k]) : ''),
+                          ownImage: !!ownText, mine: false,
+                      };
+                  }),
+              }));
+              (Array.isArray(_palaceStore.extraRooms) ? _palaceStore.extraRooms : []).forEach((r, ri) => {
+                  rooms.push({ key: String((r && r.id) || ('xr' + (ri + 1))), title: (r && r.title) || '', mine: true, loci: [] });
+              });
+              const byKey = {};
+              rooms.forEach((r) => { byKey[r.key] = r; });
+              (Array.isArray(_palaceStore.extraLoci) ? _palaceStore.extraLoci : []).forEach((e) => {
+                  if (!e || !e.id) return;
+                  const room = byKey[String(e.room)] || rooms[0];   // re-home orphans, as buildPalace does
+                  if (!room) return;
+                  const ownText = typeof own[String(e.id)] === 'string' ? own[String(e.id)].trim() : '';
+                  room.loci.push({
+                      text: String(e.label != null ? e.label : (e.text || '')),
+                      mnemonic: ownText || (e.mnemonic != null ? String(e.mnemonic) : ''),
+                      ownImage: !!ownText, mine: true,
+                  });
+              });
+              return rooms;
+          };
           // WCAG-AA categorical palette for pair-coding multi-branch diagrams
           // (Cause-Effect, Mind Map, Flow Chart). Each entry's `border` and
           // `accent` colors clear 4.5:1 against white per WCAG 2.1 1.4.3.
@@ -32390,24 +32738,22 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         <div style="font-size: 0.72em; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 10px;">Memory Palace &mdash; walk the rooms in order, picture each image vividly</div>
                       </div>
                       <div style="display: flex; flex-direction: column; gap: 14px;">
-                        ${(() => { let locusNo = 0; return branches.map((b, i) => {
+                        ${(() => { let locusNo = 0; const _rooms = _palaceRooms(); return _rooms.map((room, i) => {
                           const c = _pairColor(i);
-                          const mnems = Array.isArray(b.mnemonics) ? b.mnemonics : [];
-                          return `<div class="palace-room" role="group" aria-label="Room ${i + 1} of ${branches.length}: ${b.title}" style="background: linear-gradient(135deg, ${c.bg} 0%, white 70%); border: 2px solid ${c.border}; border-left-width: 8px; border-radius: 12px; padding: 14px 18px; box-shadow: 0 4px 10px -3px rgba(0,0,0,0.12); text-align: left;">
+                          return `<div class="palace-room" role="group" aria-label="Room ${i + 1} of ${_rooms.length}: ${room.title}" style="background: linear-gradient(135deg, ${c.bg} 0%, white 70%); border: 2px solid ${c.border}; border-left-width: 8px; border-radius: 12px; padding: 14px 18px; box-shadow: 0 4px 10px -3px rgba(0,0,0,0.12); text-align: left;">
                             <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
                               <span style="font-size: 0.68em; font-weight: 800; color: white; background: ${c.border}; padding: 2px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">Room ${i + 1}</span>
-                              <span style="font-weight: 800; color: ${c.accent}; font-size: 1.05em;">${b.title}</span>
-                              ${b.title_en ? `<em style="font-size: 0.8em; color: ${c.accent}; opacity: 0.8;">(${b.title_en})</em>` : ''}
+                              <span style="font-weight: 800; color: ${c.accent}; font-size: 1.05em;">${room.title}</span>
+                              ${room.title_en ? `<em style="font-size: 0.8em; color: ${c.accent}; opacity: 0.8;">(${room.title_en})</em>` : ''}
+                              ${room.mine ? `<span style="font-size: 0.62em; font-weight: 800; color: ${c.accent}; border: 1px solid ${c.border}; padding: 1px 7px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">Yours</span>` : ''}
                             </div>
                             <ol style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
-                              ${(b.items || []).map((it, k) => {
+                              ${room.loci.map((l) => {
                                 locusNo += 1;
-                                const text = typeof it === 'object' ? (it.text || '') : String(it);
-                                const trans = b.items_en?.[k];
-                                const mn = mnems[k] ? String(mnems[k]) : '';
+                                const mn = l.mnemonic;
                                 return `<li style="display: flex; gap: 10px; align-items: flex-start;">
                                   <span aria-hidden="true" style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: ${c.border}; color: white; font-size: 0.75em; font-weight: 800; display: flex; align-items: center; justify-content: center;">${locusNo}</span>
-                                  <span style="color: ${c.accent};"><strong>${text}</strong>${trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${trans})</em>` : ''}${mn ? `<br><em style="font-size: 0.9em; opacity: 0.85;">Picture this: ${mn}</em>` : ''}</span>
+                                  <span style="color: ${c.accent};"><strong>${l.text}</strong>${l.trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${l.trans})</em>` : ''}${mn ? `<br><em style="font-size: 0.9em; opacity: 0.85;">${l.ownImage ? 'Your picture' : 'Picture this'}: ${mn}</em>` : ''}</span>
                                 </li>`;
                               }).join('')}
                             </ol>
@@ -32584,11 +32930,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   body = `
                       <p><strong>Palace:</strong> ${escape(main)}</p>
                       <p>Walk the rooms in order; each locus pairs a fact with a vivid mental image:</p>
-                      ${branches.map((b, i) => {
-                          const mnems = Array.isArray(b.mnemonics) ? b.mnemonics : [];
-                          const lis = (b.items || []).map((it, k) => {
-                              const text = typeof it === 'object' ? (it.text || '') : String(it);
-                              const mn = mnems[k] ? ` — <em>Picture this: ${escape(String(mnems[k]))}</em>` : '';
+                      ${_palaceRooms().map((room, i) => {
+                          const b = { title: room.title, title_en: room.title_en };
+                          const lis = room.loci.map((l) => {
+                              const text = l.text;
+                              const mn = l.mnemonic ? ` — <em>${l.ownImage ? 'Your picture' : 'Picture this'}: ${escape(String(l.mnemonic))}</em>` : '';
                               return `<li>${escape(text)}${mn}</li>`;
                           }).join('');
                           return `<p><strong>Room ${i + 1}: ${escape(b.title)}</strong></p><ol>${lis}</ol>`;
@@ -37653,6 +37999,42 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   var _activeSingleFixGeneration = 0;
   var _activeRemediationManaged = false;
   var _activeSingleFixStarting = false;
+  // Authoritative "is a single-file remediation live?" probe (2026-07-26, field report).
+  // The host modal used to derive its busy state ONLY from pdfFixLoading — a React boolean
+  // the pipeline writes exactly ONCE, at run entry (~L20813). When that single write was lost
+  // or cleared by another surface, the audit-results panel rendered fully interactive over a
+  // live run: the Fix & Verify button was armed, and pressing it produced nothing but the
+  // duplicate-start toast below, because THIS lock (not the flag) is what actually gates a
+  // second start. Two readers, one fact — so expose the fact.
+  //
+  // Managed batches report false on purpose: the batch runner owns its own progress UI and
+  // must not disable the single-file controls.
+  //
+  // Generation invalidation releases the probe the same way _wrapFixAndVerify releases a stale
+  // lock. Without that, an 8-min watchdog fire (which bumps __alloPdfRunGen but cannot settle
+  // the hung promise) would pin the UI busy forever — trading one stuck state for a worse one.
+  var _getActiveRemediationRun = function() {
+    if (!_activeSingleFixPromise || _activeRemediationManaged) return null;
+    var liveGeneration = (typeof window !== 'undefined') ? (window.__alloPdfRunGen || 0) : 0;
+    if (!_activeSingleFixStarting && liveGeneration !== _activeSingleFixGeneration) return null;
+    var slot = (typeof window !== 'undefined' && window.__alloActivePdfRemediation) || null;
+    return {
+      runId: slot ? slot.runId : null,
+      // null until the run clears its digest await and publishes the live slot; callers that
+      // scope by document must treat null as "not yet attributable", never as "another doc".
+      documentEpoch: slot ? slot.documentEpoch : null,
+      startedAt: slot ? slot.startedAt : null,
+      generation: _activeSingleFixGeneration,
+      starting: !!_activeSingleFixStarting,
+      progress: _activeRemediationProgress || null,
+    };
+  };
+  var _isRemediationRunning = function(documentEpoch) {
+    var run = _getActiveRemediationRun();
+    if (!run) return false;
+    if (documentEpoch === undefined || documentEpoch === null) return true;
+    return run.documentEpoch === null || run.documentEpoch === documentEpoch;
+  };
   var _wrapFixAndVerify = function(fn) { return function() {
     _bindState();
     var self = this;
@@ -37698,6 +38080,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     });
   }; };
   return {
+    // Read these instead of mirroring the host's pdfFixLoading flag — see _getActiveRemediationRun.
+    isRemediationRunning: _isRemediationRunning,
+    getActiveRemediationRun: _getActiveRemediationRun,
+    logHostDiagnostic: _logHostDiagnostic,
     deriveVerificationState: _alloDeriveVerificationState,
     createVerificationHtmlBinding: _alloCreateVerificationHtmlBinding,
     verifyVerificationHtmlBinding: _alloVerifyVerificationHtmlBinding,
@@ -37729,6 +38115,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     // prior run's fidelity state onto the panel/amber-asterisk. Pure functions, no state binding.
     computeStructuralFidelityNotes: _computeStructuralFidelityNotes,
     numericFidelityLosses: _numericFidelityLosses,
+    // C1: re-fix lanes MUST merge through this instead of assigning their fresh notes over the
+    // whole array — durable extraction-time disclosures are not theirs to drop.
+    mergeFidelityNotes: _mergeFidelityNotes,
+    refixRecomputedFidelityKinds: _REFIX_RECOMPUTED_FIDELITY_KINDS,
     htmlToPlainText: htmlToPlainText,
     restyleBlock: restyleBlock,
     listifyTableCellBullets: listifyTableCellBullets,
