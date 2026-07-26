@@ -1327,6 +1327,12 @@
       '#allo-arccity-root [role="slider"]{transition:background .12s ease;}' +
       '#allo-arccity-root [role="slider"]:hover{background:rgba(148,163,184,.4)!important;}' +
       '#allo-arccity-root .arc-card{border-radius:10px;padding:10px 12px;border:1px solid;}' +
+      // Calm board: the idle, always-running animations stop. Everything that only
+      // runs in response to an action (the beam draw, the celebration, the co-highlight
+      // pop) is left alone — calm reduces ambient noise, it does not mute feedback.
+      '#allo-arccity-root.arc-calm .arccity-node-unlit,' +
+      '#allo-arccity-root.arc-calm .arccity-halo,' +
+      '#allo-arccity-root.arc-calm .arccity-ghost-remainder{animation:none!important;}' +
       '@media (max-width:520px){' +
       '#allo-arccity-root{width:100%;padding:10px!important;overflow-x:hidden;}' +
       '#allo-arccity-root .arc-battle-panel{min-width:0;}' +
@@ -1786,6 +1792,19 @@
         var battleLaneMeta = battleArenaConfig.lanes;
         var exportEnabled = !!S.exportEnabled;
         var muted = S.muted !== false; // audio OFF by default (§7.3)
+        var keysOpen = !!S.keysOpen;
+        // §8.1's shortcut grammar, written down once so the panel, the hint line and
+        // the handler can never drift apart.
+        var SHORTCUTS = [
+          ['F', t('arccity.key_fire', 'Fire the beam')],
+          ['R', t('arccity.key_reset', 'Reset this level')],
+          ['H', t('arccity.key_hintk', 'Show the tip (once you have had a few tries)')],
+          ['B', t('arccity.key_board', 'Read the board out again')],
+          ['1 2 3', t('arccity.key_tier', 'Switch authoring tier')],
+          ['C', t('arccity.key_calm', 'Calm board on/off')],
+          ['?', t('arccity.key_help', 'Show or hide this list')],
+          ['↑ ↓ ← →', t('arccity.key_arrows', 'Nudge the focused slider (hold Shift for bigger steps)')]
+        ];
 
         // ── state updaters (all via setToolData; no React hooks) ──
         function mergeLevel(prevRoot, partial, paramsOverride) {
@@ -1916,6 +1935,23 @@
             var cur = (prev && prev._arccity) || S;
             if (!cur._focusFire) return prev;
             return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { _focusFire: false }) });
+          });
+        }
+        function toggleCalm() {
+          if (typeof setToolData !== 'function') return;
+          setToolData(function (prev) {
+            var cur = (prev && prev._arccity) || S;
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { calm: !cur.calm }) });
+          });
+          announceArc(ctx, calm
+            ? t('arccity.calm_off', 'Full board: city backdrop and glow are back.')
+            : t('arccity.calm_on', 'Calm board: backdrop, glow and idle motion off. Nothing that carries information is hidden.'));
+        }
+        function toggleKeys() {
+          if (typeof setToolData !== 'function') return;
+          setToolData(function (prev) {
+            var cur = (prev && prev._arccity) || S;
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { keysOpen: !cur.keysOpen }) });
           });
         }
         function dismissIntro() {
@@ -2164,14 +2200,25 @@
         var PAL = arcPalette(THEME);
         var BEAM = PAL.accent, NODE_OFF = PAL.nodeOff, NODE_ON = PAL.nodeOn, GATE = PAL.gate, WALL = PAL.wall;
 
+        // ── Calm board (§8.3 "reduced clutter", a UDL knob that was specified and never
+        // built — and this pass has been ADDING marks to the board, so it earns its
+        // keep). Calm strips DECORATION ONLY: the sky wash, the skyline, every glow
+        // halo, and the idle pulse/drift animations. It removes nothing that carries
+        // information — the guides, the gap measurements, the beam, and the success
+        // celebration all stay, because those are the game telling you something.
+        // Motion is a separate axis, already owned by prefers-reduced-motion.
+        var calm = !!S.calm;
+        var GLOW = calm ? null : 'url(#arc-glow)';
+        var GLOW_STRONG = calm ? null : 'url(#arc-glow-strong)';
+
         // ── Neon-city atmosphere (decorative, aria-hidden, theme-aware). Glow filters
         // only ADD a halo around the beam/node/gates — the cores keep their tested
         // colours, so contrast is never reduced. The sky stays within a hair of the
         // canvas colour on the light theme (and contrast theme keeps a plain canvas)
         // so the WCAG-verified palette contrast holds. ──
-        var SKY = THEME === 'dark' ? [['0%', '#141c38'], ['55%', '#0a0e1c'], ['100%', '#05070f']]
+        var SKY = calm ? null : (THEME === 'dark' ? [['0%', '#141c38'], ['55%', '#0a0e1c'], ['100%', '#05070f']]
           : (THEME === 'contrast' ? null
-            : [['0%', '#ffffff'], ['72%', '#f6f9fc'], ['100%', '#eef3f9']]);
+            : [['0%', '#ffffff'], ['72%', '#f6f9fc'], ['100%', '#eef3f9']]));
         var defs = h('defs', { key: 'defs' },
           h('filter', { key: 'g', id: 'arc-glow', x: '-30%', y: '-30%', width: '160%', height: '160%' },
             h('feGaussianBlur', { key: 'b', stdDeviation: 2.4, result: 'gb' }),
@@ -2181,15 +2228,15 @@
             h('feMerge', { key: 'm' }, h('feMergeNode', { key: 'n1', in: 'gb' }), h('feMergeNode', { key: 'n2', in: 'SourceGraphic' }))),
           SKY ? h('radialGradient', { key: 'sky', id: 'arc-sky', cx: '50%', cy: '40%', r: '78%' },
             SKY.map(function (s, i) { return h('stop', { key: 'st' + i, offset: s[0], stopColor: s[1] }); })) : null,
-          THEME === 'dark' ? h('linearGradient', { key: 'hz', id: 'arc-horizon', x1: '0', y1: '0', x2: '0', y2: '1' },
+          (THEME === 'dark' && !calm) ? h('linearGradient', { key: 'hz', id: 'arc-horizon', x1: '0', y1: '0', x2: '0', y2: '1' },
             h('stop', { key: 'h0', offset: '0%', stopColor: BEAM, stopOpacity: 0 }),
             h('stop', { key: 'h1', offset: '100%', stopColor: BEAM, stopOpacity: 0.2 })) : null);
         var backdropEls = [];
         if (SKY) backdropEls.push(h('rect', { key: 'backdrop', x: 0, y: 0, width: W, height: H, fill: 'url(#arc-sky)', 'aria-hidden': 'true' }));
-        if (THEME === 'dark') backdropEls.push(h('rect', { key: 'horizon', x: 0, y: H * 0.6, width: W, height: H * 0.4, fill: 'url(#arc-horizon)', 'aria-hidden': 'true' }));
+        if (THEME === 'dark' && !calm) backdropEls.push(h('rect', { key: 'horizon', x: 0, y: H * 0.6, width: W, height: H * 0.4, fill: 'url(#arc-horizon)', 'aria-hidden': 'true' }));
         // Faint distant city skyline along the bottom (dark theme only — decorative,
         // aria-hidden, low-opacity so it never competes with the grid/gameplay above).
-        if (THEME === 'dark') {
+        if (THEME === 'dark' && !calm) {
           var bld = [[0, 46, 26], [42, 30, 40], [78, 60, 20], [104, 40, 34], [150, 34, 52], [198, 54, 24], [228, 30, 44], [264, 64, 18], [296, 38, 36], [344, 30, 50], [390, 56, 22], [422, 34, 40], [462, 48, 30], [506, 30, 46], [542, 62, 20], [578, 36, 38], [612, 28, 48]];
           bld.forEach(function (b, i) { backdropEls.push(h('rect', { key: 'bld' + i, x: b[0], y: H - b[2], width: b[1] - 2, height: b[2], fill: '#0d1530', opacity: 0.55, 'aria-hidden': 'true' })); });
         }
@@ -2224,15 +2271,15 @@
         var gateKey = litNow ? 'on' : 'off';
         var obstacleEls = [];
         (level.walls || []).forEach(function (w, i) {
-          obstacleEls.push(h('rect', { key: 'wall' + i, x: sx(w.x) - 4, y: sy(w.height), width: 8, height: sy(0) - sy(w.height), fill: WALL, rx: 2, filter: 'url(#arc-glow)' }));
+          obstacleEls.push(h('rect', { key: 'wall' + i, x: sx(w.x) - 4, y: sy(w.height), width: 8, height: sy(0) - sy(w.height), fill: WALL, rx: 2, filter: GLOW }));
           // A bright cap on the wall's top edge: the height you must clear is the one
           // number that matters here, so the parapet is drawn as its own line rather
           // than left as the top pixel of a bar. Decorative (the height is announced).
           obstacleEls.push(h('line', { key: 'wallcap' + i, x1: sx(w.x) - 10, y1: sy(w.height), x2: sx(w.x) + 10, y2: sy(w.height), stroke: WALL, strokeWidth: 3, strokeLinecap: 'round', 'aria-hidden': 'true' }));
         });
         (level.gates || []).forEach(function (g, i) {
-          obstacleEls.push(h('rect', { key: 'gateLo' + i + gateKey, x: sx(g.x) - 4, y: sy(g.lo), width: 8, height: sy(0) - sy(g.lo), fill: gateFill, opacity: 0.85, rx: 2, filter: 'url(#arc-glow)', className: gateCls }));
-          obstacleEls.push(h('rect', { key: 'gateHi' + i + gateKey, x: sx(g.x) - 4, y: sy(wy1), width: 8, height: sy(g.hi) - sy(wy1), fill: gateFill, opacity: 0.85, rx: 2, filter: 'url(#arc-glow)', className: gateCls }));
+          obstacleEls.push(h('rect', { key: 'gateLo' + i + gateKey, x: sx(g.x) - 4, y: sy(g.lo), width: 8, height: sy(0) - sy(g.lo), fill: gateFill, opacity: 0.85, rx: 2, filter: GLOW, className: gateCls }));
+          obstacleEls.push(h('rect', { key: 'gateHi' + i + gateKey, x: sx(g.x) - 4, y: sy(wy1), width: 8, height: sy(g.hi) - sy(wy1), fill: gateFill, opacity: 0.85, rx: 2, filter: GLOW, className: gateCls }));
           // The APERTURE — the thing you actually have to hit. Two solid bars leave the
           // opening as negative space, which reads as "nothing there"; a faint band plus
           // two lips makes the slot itself a visible object. Decorative (aria-hidden):
@@ -2260,11 +2307,11 @@
         var nodeEl = isMatch ? null : h('circle', {
           key: 'node-' + (lit ? 'on' : 'off'), cx: ncx, cy: ncy, r: nodeR,
           fill: lit ? NODE_ON : NODE_OFF, opacity: lit ? 1 : 0.85,
-          filter: lit ? 'url(#arc-glow-strong)' : 'url(#arc-glow)',
+          filter: lit ? GLOW_STRONG : GLOW,
           className: lit ? 'arccity-node-lit' : 'arccity-node-unlit', stroke: lit ? NODE_ON : NODE_OFF, strokeWidth: 2
         });
         // Soft halo behind a lit node; full celebration the moment a shot lands.
-        var nodeGlowEls = (!isMatch && lit) ? [h('circle', { key: 'nodehalo', cx: ncx, cy: ncy, r: nodeR * 1.9, fill: NODE_ON, opacity: 0.24, filter: 'url(#arc-glow-strong)', className: 'arccity-halo', 'aria-hidden': 'true' })] : [];
+        var nodeGlowEls = (!isMatch && lit) ? [h('circle', { key: 'nodehalo', cx: ncx, cy: ncy, r: nodeR * 1.9, fill: NODE_ON, opacity: 0.24, filter: GLOW_STRONG, className: 'arccity-halo', 'aria-hidden': 'true' })] : [];
         // While the node is dark it is just a dot among other dots; a static reticle
         // (ring + four ticks, no animation of its own so it never competes with the
         // node's pulse) says "this is the thing you are aiming at". Decorative only.
@@ -2321,7 +2368,7 @@
           // opacity 0.85 (clears WCAG 3:1 for graphical objects on the light canvas)
           // + a long dash distinct from the player preview's '4 5', so it never reads
           // as the player's own line.
-          ghostCurveEls.push(h('polyline', { key: 'ghost-curve', points: gs.trim(), fill: 'none', stroke: GATE, strokeWidth: 3, strokeDasharray: '10 6', opacity: 0.85, filter: 'url(#arc-glow)', 'aria-hidden': 'true' }));
+          ghostCurveEls.push(h('polyline', { key: 'ghost-curve', points: gs.trim(), fill: 'none', stroke: GATE, strokeWidth: 3, strokeDasharray: '10 6', opacity: 0.85, filter: GLOW, 'aria-hidden': 'true' }));
         }
         var previewEls = [];
         if (showPreview) {
@@ -2364,7 +2411,7 @@
             var remStr = ptsStr(function (pt) { return pt.x >= killX - 0.0001; });
             if (remStr) overlay.push(h('polyline', { key: 'beam-remainder', points: remStr, fill: 'none', stroke: BEAM, strokeWidth: 2, strokeDasharray: '5 7', strokeLinecap: 'round', opacity: 0.38, className: 'arccity-ghost-remainder', 'aria-hidden': 'true' }));
           }
-          overlay.push(h('polyline', { key: 'beam-' + (ls.shots || 0), ref: beamRef, points: ptsStr(function (pt) { return pt.x <= killX + 0.0001; }), fill: 'none', stroke: res.result === 'hit' ? NODE_ON : BEAM, strokeWidth: 3.5, strokeLinecap: 'round', filter: 'url(#arc-glow)', pathLength: 100, strokeDasharray: 100, className: 'arccity-beam-draw' }));
+          overlay.push(h('polyline', { key: 'beam-' + (ls.shots || 0), ref: beamRef, points: ptsStr(function (pt) { return pt.x <= killX + 0.0001; }), fill: 'none', stroke: res.result === 'hit' ? NODE_ON : BEAM, strokeWidth: 3.5, strokeLinecap: 'round', filter: GLOW, pathLength: 100, strokeDasharray: 100, className: 'arccity-beam-draw' }));
           // Bright head riding the beam (positioned each frame by beamRef; the static
           // fallback here is the far end of the drawn path).
           var headPt = null;
@@ -2374,7 +2421,7 @@
             if (!isFinite(hy) || hy < wy0 - 2 || hy > wy1 + 2) continue;
             headPt = samples[hi2];
           }
-          if (headPt) overlay.push(h('circle', { key: 'beamhead-' + (ls.shots || 0), cx: sx(headPt.x), cy: sy(headPt.y), r: 5, fill: res.result === 'hit' ? NODE_ON : BEAM, filter: 'url(#arc-glow-strong)', className: 'arccity-beam-head', 'aria-hidden': 'true' }));
+          if (headPt) overlay.push(h('circle', { key: 'beamhead-' + (ls.shots || 0), cx: sx(headPt.x), cy: sy(headPt.y), r: 5, fill: res.result === 'hit' ? NODE_ON : BEAM, filter: GLOW_STRONG, className: 'arccity-beam-head', 'aria-hidden': 'true' }));
           if (res.killedAt) {
             var kx = sx(res.killedAt.x), ky = sy(res.killedAt.y), mk = 7;
             overlay.push(h('line', { key: 'kx1', x1: kx - mk, y1: ky - mk, x2: kx + mk, y2: ky + mk, stroke: PAL.danger, strokeWidth: 3, strokeLinecap: 'round' }));
@@ -2846,8 +2893,24 @@
           h('div', { key: 'btns', className: 'arc-play-actions', style: { display: 'flex', gap: 10, marginTop: 8 } },
             h('button', { key: 'fire', type: 'button', className: 'arc-fire-btn', ref: focusFireRef, onClick: fire, style: fireBtnStyle }, '⚡ ' + t('arccity.fire', 'Fire beam')),
             h('button', { key: 'reset', type: 'button', onClick: resetLevel, style: resetBtnStyle }, t('arccity.reset_btn', 'Reset')),
-            h('button', { key: 'mute', type: 'button', 'aria-label': muted ? t('arccity.unmute', 'Sound is off — turn on') : t('arccity.mute', 'Sound is on — turn off'), onClick: toggleMute, style: resetBtnStyle }, muted ? '🔇' : '🔊')),
-          h('div', { key: 'keyhint', 'aria-hidden': 'true', style: { marginTop: 6, fontSize: 11, color: INK, opacity: 0.6 } }, t('arccity.key_hint', 'Keys: F fire · R reset · arrows nudge the focused control')),
+            h('button', { key: 'mute', type: 'button', 'aria-label': muted ? t('arccity.unmute', 'Sound is off — turn on') : t('arccity.mute', 'Sound is on — turn off'), onClick: toggleMute, style: resetBtnStyle }, muted ? '🔇' : '🔊'),
+            h('button', {
+              key: 'calm', type: 'button', 'aria-pressed': calm ? 'true' : 'false',
+              'aria-label': calm ? t('arccity.calm_aria_on', 'Calm board is on — turn the city backdrop and glow back on') : t('arccity.calm_aria_off', 'Calm board — turn off the city backdrop, glow and idle motion'),
+              onClick: toggleCalm, style: Object.assign({}, resetBtnStyle, calm ? { borderColor: BEAM, background: 'rgba(34,211,238,0.12)' } : null)
+            }, calm ? '🌙' : '🌇')),
+          h('div', { key: 'keyhint', style: { marginTop: 6, fontSize: 11, color: INK, opacity: 0.7, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+            h('span', { key: 'kt' }, t('arccity.key_hint', 'Keys: F fire · R reset · H hint · arrows nudge the focused control')),
+            h('button', {
+              key: 'keys-toggle', type: 'button', 'aria-expanded': keysOpen ? 'true' : 'false', onClick: toggleKeys,
+              style: { padding: '2px 8px', borderRadius: 8, border: '1px solid ' + GRID, background: 'transparent', color: INK, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+            }, keysOpen ? t('arccity.keys_hide', 'Hide all keys') : t('arccity.keys_show', 'All keys (?)'))),
+          keysOpen ? h('ul', { key: 'keyspanel', 'aria-label': t('arccity.keys_title', 'Keyboard shortcuts'), style: { listStyle: 'none', padding: '8px 10px', margin: '6px 0 0', borderRadius: 8, border: '1px solid ' + GRID, background: 'rgba(148,163,184,0.08)', fontSize: 12, color: INK, lineHeight: 1.7 } },
+            SHORTCUTS.map(function (sc) {
+              return h('li', { key: 'sc-' + sc[0], style: { display: 'flex', gap: 8 } },
+                h('kbd', { key: 'k', style: { minWidth: 46, fontWeight: 800, fontFamily: 'inherit' } }, sc[0]),
+                h('span', { key: 'd' }, sc[1]));
+            })) : null,
           h('div', { key: 'result', role: 'status', style: { marginTop: 10, fontSize: 14, lineHeight: 1.5, color: resultColor, minHeight: 42, display: 'flex', gap: 8, alignItems: 'flex-start', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + (S.fired ? resultColor : GRID), background: resultTint } },
             h('span', { key: 'ricon', 'aria-hidden': 'true', style: { fontSize: 16, lineHeight: 1.3 } }, resultIcon),
             h('span', { key: 'rtext' }, resultText)),
@@ -2899,7 +2962,26 @@
             style: { marginTop: 10, padding: '9px 16px', borderRadius: 9, border: 'none', background: BEAM, color: PAL.btnText, fontSize: 13, fontWeight: 800, cursor: 'pointer' }
           }, '⚡ ' + t('arccity.intro_start', 'Start lighting the city')));
 
-        var levelBar = h('div', { key: 'levelbar', className: 'arc-level-strip', role: 'group', 'aria-label': t('arccity.levels', 'Levels'), style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 } }, levelBtns);
+        // ── The level strip was fourteen chips in one undifferentiated run. Grouping it
+        // into the districts the design already names turns it from a list into a route
+        // you can see your position on. Index ranges, not a re-order: the unlock chain
+        // is positional (isLevelUnlocked reads the index), so the sequence is untouched.
+        var DISTRICTS = [
+          { key: 'line', label: t('arccity.district_line', 'Line District'), from: 0, to: 1 },
+          { key: 'curves', label: t('arccity.district_curves', 'Curves & Waves'), from: 2, to: 5 },
+          { key: 'reach', label: t('arccity.district_reach', 'Reach — high-school preview'), from: 6, to: 8 },
+          { key: 'capstone', label: t('arccity.district_capstone', 'Capstone'), from: 9, to: 9 },
+          { key: 'retarget', label: t('arccity.district_retarget', 'Re-Target Yards'), from: 10, to: 12 }
+        ];
+        var levelBar = h('div', { key: 'levelbar', className: 'arc-level-strip', role: 'group', 'aria-label': t('arccity.levels', 'Levels'), style: { marginBottom: 12, display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start' } },
+          DISTRICTS.map(function (d) {
+            var chips = levelBtns.slice(d.from, d.to + 1);
+            if (!chips.length) return null;
+            var hereNow = lIdx >= d.from && lIdx <= d.to;
+            return h('div', { key: 'district-' + d.key, role: 'group', 'aria-label': d.label, style: { display: 'flex', flexDirection: 'column', gap: 5 } },
+              h('div', { key: 'dl', style: { fontSize: 10, fontWeight: 800, letterSpacing: '.05em', textTransform: 'uppercase', color: INK, opacity: hereNow ? 0.95 : 0.55 } }, d.label),
+              h('div', { key: 'dc', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } }, chips));
+          }));
 
         // ── Board legend. The board speaks in colour and shape; a two-line key turns
         // "what is that violet bar?" into a glance instead of a guess. Swatch + word
@@ -3144,7 +3226,7 @@
             if (!isFinite(replayPoint.y) || replayPoint.y < -1 || replayPoint.y > 9) continue;
             replayEndpoint = replayPoint;
           }
-          battleSvgEls.push(h('polyline', { key: 'battle-replay-trail', points: battlePoints(replayTrail.samples || [], replayTrail.seat, replayKillX), fill: 'none', stroke: '#ffffff', strokeWidth: 6, opacity: 1, filter: 'url(#arc-glow)', 'aria-hidden': 'true' }));
+          battleSvgEls.push(h('polyline', { key: 'battle-replay-trail', points: battlePoints(replayTrail.samples || [], replayTrail.seat, replayKillX), fill: 'none', stroke: '#ffffff', strokeWidth: 6, opacity: 1, filter: GLOW, 'aria-hidden': 'true' }));
           if (replayEndpoint) {
             battleSvgEls.push(h('circle', { key: 'battle-replay-end', cx: bsx(battleGlobalX(replayEndpoint.x, replayTrail.seat)), cy: bsy(replayEndpoint.y), r: 7, fill: '#111827', stroke: '#ffffff', strokeWidth: 3, 'aria-hidden': 'true' }));
           }
@@ -3171,7 +3253,7 @@
           battleSvgEls.push(h('polyline', {
             key: 'battle-preview', points: battlePoints(battlePreview, battleSeat, battlePreviewResult.killedAt && battlePreviewResult.killedAt.x),
             fill: 'none', stroke: battleWeapon === 'phase' ? '#ffffff' : (battleSeat === 0 ? '#22d3ee' : '#f472b6'),
-            strokeWidth: battleWeapon === 'phase' ? 4 : 3.5, strokeDasharray: battleWeapon === 'phase' ? null : '5 4', filter: 'url(#arc-glow)'
+            strokeWidth: battleWeapon === 'phase' ? 4 : 3.5, strokeDasharray: battleWeapon === 'phase' ? null : '5 4', filter: GLOW
           }));
           if (battlePreviewResult.result === 'trail' && battlePreviewResult.killedAt) {
             battleSvgEls.push(h('circle', { key: 'battle-preview-collision', cx: bsx(battleGlobalX(battlePreviewResult.killedAt.x, battleSeat)), cy: bsy(battlePreviewResult.killedAt.y), r: 7, fill: '#ef4444', stroke: '#ffffff', strokeWidth: 2, 'aria-hidden': 'true' }));
@@ -3194,7 +3276,7 @@
               cx: bsx(relayX), cy: bsy(relayY), r: 10,
               fill: relayOn ? battleLaneMeta[laneNo].color : '#64748b',
               stroke: relayOn ? '#ffffff' : '#334155', strokeWidth: 2,
-              opacity: relayOn ? 1 : 0.45, filter: relayOn ? 'url(#arc-glow)' : null
+              opacity: relayOn ? 1 : 0.45, filter: relayOn ? GLOW : null
             }));
           }
         });
@@ -3235,7 +3317,10 @@
         var battleReplayPanel = battleReplay ? h('section', { key: 'battle-replay', className: 'arc-battle-replay', 'aria-labelledby': 'arc-battle-replay-title', style: { margin: '10px 0', padding: '9px 10px', border: '1px solid ' + GRID, borderRadius: 9, background: 'rgba(255,255,255,0.05)' } },
           h('h3', { key: 'title', id: 'arc-battle-replay-title', style: { margin: '0 0 6px', fontSize: 13 } }, 'Shot replay'),
           h('div', { key: 'battle-replay-frame', id: 'arc-battle-replay-frame', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: 12, lineHeight: 1.45 } },
-            h('div', { key: 'position', style: { fontWeight: 800 } }, 'Shot ' + battleReplay.number + ' of ' + battleReplay.total + ' â€” ' + battleReplay.player + ' â€” ' + battleReplay.laneTitle),
+            // (was mojibake: a UTF-8 em dash that had been decoded as CP1252, so this
+            // line rendered "Shot 1 of 3 aEUR" and — worse — was ANNOUNCED that way,
+            // since the frame below is role=status aria-live.)
+            h('div', { key: 'position', style: { fontWeight: 800 } }, 'Shot ' + battleReplay.number + ' of ' + battleReplay.total + ' — ' + battleReplay.player + ' — ' + battleReplay.laneTitle),
             h('div', { key: 'equation' }, battleReplay.equation),
             h('div', { key: 'outcome', style: { opacity: 0.82 } }, 'Result: ' + battleReplay.outcome),
             h('div', { key: 'battle-replay-comparison', role: 'note', style: { marginTop: 8, padding: '7px 8px', borderLeft: '3px dashed #94a3b8', background: 'rgba(148,163,184,0.08)' } },
@@ -3369,10 +3454,25 @@
           var k = (e.key || '').toLowerCase();
           if (k === 'f') { e.preventDefault(); fire(); }
           else if (k === 'r') { e.preventDefault(); resetLevel(); }
+          else if (k === 'c') { e.preventDefault(); toggleCalm(); }
+          else if (k === '?' || k === '/') { e.preventDefault(); toggleKeys(); }
+          else if (k === 'b') { e.preventDefault(); announceArc(ctx, describeBoard(level)); }
+          else if (k === 'h') {
+            e.preventDefault();
+            // Never a shortcut to a tip you have not earned: below the miss threshold
+            // it says why rather than silently doing nothing.
+            if (hintDue) openHint();
+            else announceArc(ctx, t('arccity.hint_not_yet', 'No tip yet — take a few more tries first, then press H.'));
+          } else if (k === '1' || k === '2' || k === '3') {
+            // Tier is locked in the Gauntlet (it is the proving ground), so the key is
+            // inert there rather than quietly overriding the lock.
+            if (gauntlet) { e.preventDefault(); announceArc(ctx, t('arccity.tier_locked_key', 'The Gauntlet locks the tier — the preview stays hidden until you fire.')); }
+            else { e.preventDefault(); setTier(TIERS[Number(k) - 1]); }
+          }
         }
 
         return h('div', {
-          id: 'allo-arccity-root', className: 'arc-city-root',
+          id: 'allo-arccity-root', className: 'arc-city-root' + (calm ? ' arc-calm' : ''),
           onKeyDown: (view === 'play' && controls) ? onRootKey : null,
           style: { padding: 16, maxWidth: view === 'play' ? 1180 : 760, margin: '0 auto', color: INK }
         }, header, viewToggle, body);
