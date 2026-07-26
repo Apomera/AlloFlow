@@ -7,9 +7,12 @@ const moduleText = fs.readFileSync('ui_modals_module.js', 'utf8');
 describe('Shared UI modal accessibility', () => {
   it('exposes Teacher Gate as a named and described Escape-dismissible dialog', () => {
     expect(source).toContain('useFocusTrap(gateRef, isOpen, onClose)');
-    expect(source).toContain('role="dialog" aria-modal="true" aria-labelledby="teacher-gate-title" aria-describedby="teacher-gate-helper"');
+    expect(source).toContain('data-allo-ui-modal="teacher-gate"');
+    expect(source).toContain('aria-labelledby="teacher-gate-title"');
+    expect(source).toContain('aria-describedby="teacher-gate-helper"');
     expect(source).toContain('aria-invalid={error}');
-    expect(source).toContain("aria-describedby={error ? 'teacher-gate-error' : undefined}");
+    expect(source).toContain('aria-labelledby="teacher-gate-access-code-label"');
+    expect(source).toContain("aria-describedby={error ? 'teacher-gate-helper teacher-gate-error' : 'teacher-gate-helper'}");
   });
 
   it('renders the password error only when present and announces it', () => {
@@ -21,7 +24,8 @@ describe('Shared UI modal accessibility', () => {
   it('uses visible role and microphone names and announces microphone state', () => {
     expect(source).not.toContain("aria-label={t('common.like')}");
     expect(source).not.toContain("aria-label={t('common.confirm')}");
-    expect(source).toContain('<span role="status" aria-live="polite" aria-atomic="true">');
+    expect(source).toContain('<p id="role-mic-status" className="sr-only" role="status" aria-live="polite" aria-atomic="true">');
+    expect(source).toContain("micStatus === 'requesting' ? <RefreshCw aria-hidden=\"true\"");
   });
 
   it('names Student Entry and Welcome and connects Escape to their focus traps', () => {
@@ -38,6 +42,16 @@ describe('Shared UI modal accessibility', () => {
     expect(source).not.toContain("aria-label={t('common.generate')}");
     expect(source).not.toContain("aria-label={t('common.upload')}");
     expect(source).toContain('mt-4 min-h-6 inline-flex items-center');
+  });
+
+  it('gives every modal strong focus, reduced-motion, forced-colors, target, and reflow safeguards', () => {
+    expect(source).toContain('outline: 3px solid #0f172a !important');
+    expect(source).toContain('@media (forced-colors: active)');
+    expect(source).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(source).toContain('motion-reduce:animate-none');
+    expect(source).toContain('max-h-[calc(100vh-2rem)] overflow-y-auto');
+    expect(source).toContain('grid grid-cols-1 gap-3 mb-4 sm:grid-cols-2');
+    expect(source).toContain('className="w-full min-h-11');
   });
 
   it('preserves all five runtime exports and deploy parity', () => {

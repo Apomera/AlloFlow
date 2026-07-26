@@ -11,6 +11,29 @@ var warnLog = window.warnLog || function() { console.warn.apply(console, argumen
 var doc = window._fbDoc || function() { return null; };
 var updateDoc = window._fbUpdateDoc || function() { return Promise.resolve(); };
 var db = window._fbDb || null;
+var UI_MODAL_A11Y_STYLES = `
+  [data-allo-ui-modal]:is(button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])):focus-visible,
+  [data-allo-ui-modal] :is(button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 3px solid #0f172a !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 6px #ffffff !important;
+  }
+  @media (forced-colors: active) {
+    [data-allo-ui-modal]:is(button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])):focus-visible,
+    [data-allo-ui-modal] :is(button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])):focus-visible {
+      outline: 3px solid CanvasText !important;
+      box-shadow: none !important;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-allo-ui-modal], [data-allo-ui-modal] * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+`;
 // Lazy icon wrappers — window.AlloIcons is set in a useEffect after CDN scripts load,
 // so each icon must look up window.AlloIcons at RENDER time, not at script load time.
 var _lazyIcon = function(name) { return function(props) { var I = window.AlloIcons && window.AlloIcons[name]; return I ? React.createElement(I, props) : null; }; };
@@ -28,35 +51,50 @@ var ShieldCheck = _lazyIcon('ShieldCheck');
 var Sparkles = _lazyIcon('Sparkles');
 var Upload = _lazyIcon('Upload');
 var UserCircle2 = _lazyIcon('UserCircle2');
+var X = _lazyIcon('X');
 var XCircle = _lazyIcon('XCircle');
 
 const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, activeSessionCode, targetAppId }) => {
   const { t } = useContext(LanguageContext);
-  if (!sessionData?.quizState?.isActive || !generatedContent || generatedContent.type !== 'quiz') return null;
-  const { mode, currentQuestionIndex, phase, teams, bossStats, responses } = sessionData.quizState;
-  const currentQuestion = generatedContent?.data.questions?.[currentQuestionIndex];
+  const isQuizOpen = Boolean(sessionData?.quizState?.isActive && generatedContent && generatedContent.type === 'quiz');
+  const quizState = sessionData?.quizState || {};
+  const {
+      mode = 'live-quiz',
+      currentQuestionIndex = 0,
+      phase,
+      teams = {},
+      bossStats,
+      responses
+  } = quizState;
+  const currentQuestion = generatedContent?.data?.questions?.[currentQuestionIndex];
   const teamColor = user ? teams?.[user.uid] : null;
-  const studentGroupId = sessionData.roster?.[user?.uid]?.groupId;
+  const studentGroupId = sessionData?.roster?.[user?.uid]?.groupId;
   const studentGroup = studentGroupId ? sessionData.groups?.[studentGroupId] : null;
   const groupLanguage = studentGroup?.language;
   const showTranslated = groupLanguage && groupLanguage !== 'English';
   const [hasAnswered, setHasAnswered] = useState(false);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
   const [submitError, setSubmitError] = useState('');
+  const [isLocallyDismissed, setIsLocallyDismissed] = useState(false);
+  const quizRef = useRef(null);
+  useFocusTrap(quizRef, isQuizOpen && !isLocallyDismissed, () => setIsLocallyDismissed(true));
+  useEffect(() => {
+      setIsLocallyDismissed(false);
+  }, [activeSessionCode, isQuizOpen]);
   useEffect(() => {
       setSubmitError('');
       if (user && responses && responses[user.uid] !== undefined) {
           setHasAnswered(true);
           setSelectedOptionIndex(responses[user.uid]);
       } else {
-          if (!responses || responses[user.uid] === undefined) {
+          if (!user || !responses || responses[user.uid] === undefined) {
              setHasAnswered(false);
              setSelectedOptionIndex(null);
           }
       }
   }, [currentQuestionIndex, responses, user]);
   useEffect(() => {
-      if (mode === 'team-showdown' && user && activeSessionCode) {
+      if (isQuizOpen && mode === 'team-showdown' && user && activeSessionCode) {
           const currentTeam = teams?.[user.uid];
           if (!currentTeam) {
               const teamOptions = ['Red', 'Blue', 'Green', 'Yellow'];
@@ -75,7 +113,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
               joinTeam();
           }
       }
-  }, [mode, user, teams, activeSessionCode, targetAppId]);
+  }, [isQuizOpen, mode, user, teams, activeSessionCode, targetAppId]);
   const submitQuizResponse = async (optionIndex) => {
       if (hasAnswered || !user || !activeSessionCode) return;
       setSubmitError('');
@@ -107,6 +145,19 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
           default: return { bg: 'bg-indigo-950', accent: 'text-white', icon: '📝' };
       }
   };
+  if (!isQuizOpen) return null;
+  if (isLocallyDismissed) {
+      return (
+          <button
+              type="button"
+              onClick={() => setIsLocallyDismissed(false)}
+              className="fixed bottom-4 right-4 z-[1000] min-h-11 rounded-xl bg-indigo-700 px-4 py-3 font-bold text-white shadow-2xl"
+              data-allo-ui-modal="student-quiz-return"
+          >
+              Return to live quiz
+          </button>
+      );
+  }
   const styles = getModeStyles();
   const getTeamBadgeColor = (color) => {
       switch(color) {
@@ -121,7 +172,17 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
   const correctAnswerIndex = currentQuestion?.options?.findIndex(opt => opt === currentQuestion.correctAnswer);
   const isCorrect = isRevealed && selectedOptionIndex === correctAnswerIndex;
   return (
-    <div className={`fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in slide-in-from-bottom duration-500 text-white font-sans`} data-help-key="quiz_student_overlay">
+    <div
+        ref={quizRef}
+        className={`fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in slide-in-from-bottom duration-500 text-white font-sans motion-reduce:animate-none motion-reduce:transition-none`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="student-quiz-title"
+        aria-describedby="student-quiz-question"
+        data-allo-ui-modal="student-quiz"
+        data-help-key="quiz_student_overlay"
+    >
+        <style>{UI_MODAL_A11Y_STYLES}</style>
         {submitError && (
             <p id="quiz-submit-error" role="alert" className="m-4 rounded-lg border border-red-300 bg-red-950 px-4 py-3 font-semibold text-white">
                 {submitError}
@@ -129,8 +190,8 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
         )}
         <div className="p-4 flex justify-between items-start bg-black/20 backdrop-blur-md border-b border-white/10 shrink-0">
             <div>
-                <h2 className={`font-black text-xl uppercase tracking-widest ${styles.accent} flex items-center gap-2 drop-shadow-md`} data-help-key="quiz_student_mode_header">
-                    <span>{styles.icon}</span>
+                <h2 id="student-quiz-title" className={`font-black text-xl uppercase tracking-widest ${styles.accent} flex items-center gap-2 drop-shadow-md`} data-help-key="quiz_student_mode_header">
+                    <span aria-hidden="true">{styles.icon}</span>
                     <span>{mode.replace(/-/g, ' ')}</span>
                 </h2>
                 {teamColor && (
@@ -142,24 +203,24 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
              <div className="flex flex-col items-end">
                 <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">{t('quiz.question_label')}</span>
                 <span className="text-3xl font-mono font-black text-white leading-none">
-                    {currentQuestionIndex + 1} <span className="text-lg text-white/50">/ {generatedContent?.data.questions.length}</span>
+                    {currentQuestionIndex + 1} <span className="text-lg text-white/50">/ {generatedContent?.data?.questions?.length || 0}</span>
                 </span>
             </div>
         </div>
         <div className="flex-grow flex flex-col items-center justify-center p-6 text-center overflow-y-auto">
             {phase === 'boss-defeated' && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg animate-in zoom-in duration-500">
+                <div role="status" aria-live="polite" aria-atomic="true" className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg animate-in zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none">
                     <div className="text-center p-8">
-                        <div className="text-8xl mb-6">🎉</div>
+                        <div aria-hidden="true" className="text-8xl mb-6">🎉</div>
                         <h2 className="text-5xl font-black text-white mb-4 drop-shadow-lg">{t('quiz.boss.victory_msg')}</h2>
                         <p className="text-xl text-green-200">{bossStats?.name || t('quiz.boss.name_fallback')} {t('quiz.boss.defeat_suffix')}</p>
                     </div>
                 </div>
             )}
             {phase === 'class-defeated' && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg animate-in zoom-in duration-500">
+                <div role="status" aria-live="polite" aria-atomic="true" className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg animate-in zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none">
                     <div className="text-center p-8">
-                        <div className="text-8xl mb-6">💀</div>
+                        <div aria-hidden="true" className="text-8xl mb-6">💀</div>
                         <h2 className="text-5xl font-black text-white mb-4 drop-shadow-lg">{t('quiz.boss.class_defeat_msg')}</h2>
                         <p className="text-xl text-red-200">{t('quiz.boss.class_fallen_msg')}</p>
                     </div>
@@ -167,7 +228,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
             )}
             {mode === 'boss-battle' && bossStats && (
                 <div className="mb-8 w-full max-w-lg flex flex-col items-center animate-in fade-in zoom-in duration-700">
-                     <div className={`relative mb-6 ${phase === 'revealed' && bossStats.lastDamage > 0 ? 'animate-shake' : ''}`}>
+                     <div className={`relative mb-6 ${phase === 'revealed' && bossStats.lastDamage > 0 ? 'animate-shake motion-reduce:animate-none' : ''}`}>
                          {bossStats.image ? (
                              <img loading="lazy"
                                 src={bossStats.image}
@@ -177,11 +238,11 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                              />
                          ) : (
                              <div className="w-24 h-24 md:w-32 md:h-32 bg-red-900/50 rounded-full border-4 border-red-500/50 flex items-center justify-center text-4xl shadow-xl backdrop-blur-sm">
-                                 {bossStats.isGenerating ? <RefreshCw className="animate-spin text-red-400"/> : "👾"}
+                                 {bossStats.isGenerating ? <RefreshCw aria-hidden="true" className="animate-spin text-red-400 motion-reduce:animate-none"/> : <span aria-hidden="true">👾</span>}
                              </div>
                          )}
                          {phase === 'revealed' && bossStats.lastDamage > 0 && (
-                             <div className="absolute top-0 right-[-20px] text-red-500 font-black text-3xl animate-[bounce_0.5s_infinite] z-20 stroke-white drop-shadow-md">
+                             <div role="status" className="absolute top-0 right-[-20px] text-red-500 font-black text-3xl animate-[bounce_0.5s_infinite] motion-reduce:animate-none z-20 stroke-white drop-shadow-md">
                                  -{bossStats.lastDamage}
                              </div>
                          )}
@@ -193,7 +254,12 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                          </div>
                          <div className="w-full h-6 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner">
                              <div
-                                className="h-full bg-gradient-to-r from-red-600 to-red-500 transition-all duration-500 ease-out"
+                                role="progressbar"
+                                aria-label={`${bossStats.name || "Boss"} health`}
+                                aria-valuemin="0"
+                                aria-valuemax={bossStats.maxHP}
+                                aria-valuenow={Math.max(0, Math.round(bossStats.currentHP))}
+                                className="h-full bg-gradient-to-r from-red-600 to-red-500 transition-all duration-500 ease-out motion-reduce:transition-none"
                                 style={{ width: `${Math.max(0, (bossStats.currentHP / bossStats.maxHP) * 100)}%` }}
                              ></div>
                          </div>
@@ -205,12 +271,17 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                          </div>
                          <div className="w-full h-5 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner">
                              <div
-                                className="h-full bg-gradient-to-r from-green-600 to-emerald-500 transition-all duration-500 ease-out"
+                                role="progressbar"
+                                aria-label={t('quiz.boss.class_hp')}
+                                aria-valuemin="0"
+                                aria-valuemax={bossStats.classMaxHP || 100}
+                                aria-valuenow={Math.max(0, Math.round(bossStats.classHP ?? 100))}
+                                className="h-full bg-gradient-to-r from-green-600 to-emerald-500 transition-all duration-500 ease-out motion-reduce:transition-none"
                                 style={{ width: `${Math.max(0, ((bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100)) * 100)}%` }}
                              ></div>
                          </div>
                          {phase === 'revealed' && bossStats.lastClassDamage > 0 && (
-                             <div className="text-orange-400 text-xs font-bold mt-1 animate-pulse text-center">
+                             <div role="status" className="text-orange-400 text-xs font-bold mt-1 animate-pulse motion-reduce:animate-none text-center">
                                  {t('quiz.boss.counter_attack_msg', { damage: bossStats.lastClassDamage })}
                              </div>
                          )}
@@ -218,7 +289,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                 </div>
             )}
             <div className="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-2xl max-w-3xl w-full">
-                <h3 className="text-2xl md:text-4xl font-bold text-white leading-tight drop-shadow-sm" data-help-key="quiz_student_question">
+                <h3 id="student-quiz-question" aria-live="polite" aria-atomic="true" className="text-2xl md:text-4xl font-bold text-white leading-tight drop-shadow-sm" data-help-key="quiz_student_question">
                     {currentQuestion ? currentQuestion.question : t('quiz.loading_question')}
                 </h3>
                 {currentQuestion && showTranslated && currentQuestion.question_en && (
@@ -340,29 +411,29 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
             <div className="mt-8 min-h-16 flex items-center justify-center w-full mb-8">
                 {phase === 'answering' && (
                     hasAnswered ? (
-                        <div className="bg-slate-900/80 backdrop-blur-md text-white px-6 py-3 rounded-full font-bold text-sm animate-in fade-in slide-in-from-bottom-2 flex items-center gap-3 border border-white/10 shadow-lg">
+                        <div role="status" aria-live="polite" aria-atomic="true" className="bg-slate-900/80 backdrop-blur-md text-white px-6 py-3 rounded-full font-bold text-sm animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none flex items-center gap-3 border border-white/10 shadow-lg">
                            <span className="relative flex h-3 w-3">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                              <span aria-hidden="true" className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 motion-reduce:animate-none"></span>
                               <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                             </span>
                            {t('quiz.status.answer_sent')}
                         </div>
                     ) : (
-                        <div className="text-white/50 font-mono text-xs uppercase tracking-widest animate-pulse">
+                        <div className="text-white/50 font-mono text-xs uppercase tracking-widest animate-pulse motion-reduce:animate-none">
                             {t('quiz.status.choose_option')}
                         </div>
                     )
                 )}
                 {phase === 'revealed' && currentQuestion?.itemType === 'likert' && (
-                    <div className="flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 px-4">
+                    <div role="status" aria-live="polite" aria-atomic="true" className="flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 motion-reduce:animate-none px-4">
                         <div className="w-full px-8 py-6 rounded-3xl font-bold text-lg shadow-xl flex items-center justify-center gap-4 border-2 border-purple-300 bg-purple-50 text-purple-900">
-                            <span>🗣️</span>
+                            <span aria-hidden="true">🗣️</span>
                             <span>{t('quiz.poll_completed') || 'Thanks for sharing your take.'}</span>
                         </div>
                     </div>
                 )}
                 {phase === 'revealed' && currentQuestion?.itemType !== 'likert' && (
-                    <div className="flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 px-4">
+                    <div role="status" aria-live="polite" aria-atomic="true" className="flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 motion-reduce:animate-none px-4">
                         <div className={`
                             w-full px-8 py-6 rounded-3xl font-black text-2xl shadow-2xl flex items-center justify-center gap-6 border-4 transform transition-transform hover:scale-105
                             ${isCorrect
@@ -412,6 +483,14 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                 )}
             </div>
         </div>
+        <button
+            type="button"
+            onClick={() => setIsLocallyDismissed(true)}
+            className="absolute right-4 top-4 z-[60] min-h-11 rounded-lg border-2 border-white/70 bg-slate-950/90 px-4 py-2 text-sm font-bold text-white shadow-lg"
+            aria-label="Leave live quiz view"
+        >
+            Exit quiz view
+        </button>
     </div>
   );
 });
@@ -444,23 +523,22 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
     }
   };
   return (
-    <div ref={gateRef} role="dialog" aria-modal="true" aria-labelledby="teacher-gate-title" aria-describedby="teacher-gate-helper" className="fixed inset-0 z-[1000] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" data-help-key="teacher_gate_modal">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center border-4 border-indigo-100 relative transform transition-all animate-in zoom-in-95">
-        <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-slate-600 hover:text-slate-900 transition-colors p-1 rounded-full hover:bg-slate-100"
-            aria-label={t('common.cancel')}
-        >
-            <X size={20} />
-        </button>
+    <div ref={gateRef} className="fixed inset-0 z-[1000] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center overflow-y-auto p-4 animate-in fade-in duration-300 motion-reduce:animate-none" role="dialog" aria-modal="true" aria-labelledby="teacher-gate-title" aria-describedby="teacher-gate-helper" data-allo-ui-modal="teacher-gate" data-help-key="teacher_gate_modal">
+      <style>{UI_MODAL_A11Y_STYLES}</style>
+      <div className="my-auto max-h-[calc(100vh-2rem)] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-sm w-full text-center border-4 border-indigo-100 relative transform transition-all animate-in zoom-in-95 motion-reduce:animate-none motion-reduce:transition-none">
+
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-200 shadow-sm">
-            <Lock size={32} className="text-red-600" />
+            <Lock aria-hidden="true" size={32} className="text-red-600" />
         </div>
         <h2 id="teacher-gate-title" className="text-2xl font-black text-slate-800 mb-2">{t('modals.teacher_gate.title')}</h2>
         <p id="teacher-gate-helper" className="text-slate-600 mb-6 text-sm font-medium">{t('modals.teacher_gate.helper')}</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
+                <label id="teacher-gate-access-code-label" htmlFor="teacher-gate-access-code" className="mb-2 block text-sm font-bold text-slate-700">
+                    {t('modals.teacher_gate.access_code_placeholder')}
+                </label>
                 <input
+                    id="teacher-gate-access-code"
                     type="password"
                     autoComplete="current-password"
                     value={passwordInput}
@@ -472,13 +550,13 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
                     className={`w-full text-center text-lg p-3 border-2 rounded-xl outline-none focus:ring-4 transition-all placeholder:text-slate-600 ${error ? 'border-red-400 bg-red-50 focus:ring-red-200 text-red-900' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 text-indigo-900'}`}
                     autoFocus
                     aria-invalid={error}
-                    aria-describedby={error ? 'teacher-gate-error' : undefined}
-                    aria-label={t('modals.teacher_gate.access_code_placeholder')}
+                    aria-labelledby="teacher-gate-access-code-label"
+                    aria-describedby={error ? 'teacher-gate-helper teacher-gate-error' : 'teacher-gate-helper'}
                     data-help-key="teacher_gate_input"
                 />
                 {error && (
                     <p id="teacher-gate-error" role="alert" className="text-xs font-bold text-red-700 mt-2 flex items-center justify-center gap-1">
-                        <XCircle size={12} /> {t('modals.teacher_gate.error_incorrect')}
+                        <XCircle aria-hidden="true" size={12} /> {t('modals.teacher_gate.error_incorrect')}
                     </p>
                 )}
             </div>
@@ -490,6 +568,15 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
                 {t('modals.teacher_gate.unlock')}
             </button>
         </form>
+        <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 min-h-6 min-w-6 text-slate-600 hover:text-slate-900 transition-colors p-1 rounded-full hover:bg-slate-100"
+            aria-label={t('common.cancel')}
+            data-alloflow-close-on-escape="true"
+        >
+            <X aria-hidden="true" size={20} />
+        </button>
       </div>
     </div>
   );
@@ -523,7 +610,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
           if (event.error === 'not-allowed' || event.error === 'permission-denied') {
               setMicStatus('denied');
           } else {
-              setMicStatus('granted');
+              setMicStatus('denied');
           }
       };
       try {
@@ -533,17 +620,25 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
           setMicStatus('denied');
       }
   };
+  const micStatusText = micStatus === 'granted' ? t('roles.mic_ready') :
+      micStatus === 'unsupported' ? t('roles.voice_not_supported') :
+      micStatus === 'denied' ? t('roles.mic_denied') :
+      micStatus === 'requesting' ? t('roles.mic_requesting') :
+      t('roles.mic_enable');
   return (
   <div
     ref={roleRef}
+    className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-4 sm:py-8 px-4 animate-in fade-in duration-300 motion-reduce:animate-none"
     role="dialog"
     aria-modal="true"
     aria-labelledby="role-selection-title"
-    className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-8 px-4 animate-in fade-in duration-300"
+    aria-describedby="role-selection-description"
+    data-allo-ui-modal="role-selection"
   >
+    <style>{UI_MODAL_A11Y_STYLES}</style>
     <div className="min-h-full flex items-center justify-center">
-    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 relative">
-      <div className="absolute top-4 right-4">
+    <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative">
+      <div className="flex justify-end mb-2">
           <UiLanguageSelector />
       </div>
       <div className="flex justify-center mb-6">
@@ -552,7 +647,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
         </div>
       </div>
       <h2 id="role-selection-title" className="text-3xl font-black text-slate-800 mb-2 tracking-tight">{t('roles.title')}</h2>
-      <p className="text-slate-600 mb-8 font-medium">{t('roles.subtitle')}</p>
+      <p id="role-selection-description" className="text-slate-600 mb-8 font-medium">{t('roles.subtitle')}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <button
             onClick={() => handleRoleClick('student')}
@@ -598,8 +693,11 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
       <div className="border-t border-slate-100 pt-4">
           <p className="text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2">{t('roles.mic_setup')}</p>
           <button
+            type="button"
             onClick={handleMicCheck}
             disabled={micStatus === 'granted' || micStatus === 'requesting'}
+            aria-busy={micStatus === 'requesting'}
+            aria-describedby="role-mic-status"
             className={`flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold transition-all ${
                 micStatus === 'granted' ? 'bg-green-100 text-green-700 cursor-default' :
                 micStatus === 'denied' || micStatus === 'unsupported' ? 'bg-red-50 text-red-700 border border-red-200' :
@@ -607,20 +705,17 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
                 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 hover:text-indigo-600'
             }`}
           >
-              {micStatus === 'granted' ? <CheckCircle size={14} /> :
-               micStatus === 'denied' || micStatus === 'unsupported' ? <XCircle size={14} /> :
-               micStatus === 'requesting' ? <RefreshCw size={14} className="animate-spin"/> :
-               <Mic size={14} />}
-              <span role="status" aria-live="polite" aria-atomic="true">
-                {micStatus === 'granted' ? t('roles.mic_ready') :
-                 micStatus === 'unsupported' ? t('roles.voice_not_supported') :
-                 micStatus === 'denied' ? t('roles.mic_denied') :
-                 micStatus === 'requesting' ? t('roles.mic_requesting') :
-                 t('roles.mic_enable')}
-              </span>
+              {micStatus === 'granted' ? <CheckCircle aria-hidden="true" size={14} /> :
+               micStatus === 'denied' || micStatus === 'unsupported' ? <XCircle aria-hidden="true" size={14} /> :
+               micStatus === 'requesting' ? <RefreshCw aria-hidden="true" size={14} className="animate-spin motion-reduce:animate-none"/> :
+               <Mic aria-hidden="true" size={14} />}
+              <span>{micStatusText}</span>
           </button>
+          <p id="role-mic-status" className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+              {micStatus === 'idle' ? '' : micStatusText}
+          </p>
           {micStatus === 'idle' && (
-              <p className="text-[11px] text-slate-600 mt-2">
+              <p id="role-mic-tip" className="text-[11px] text-slate-600 mt-2">
                   {t('roles.mic_tip')}
               </p>
           )}
@@ -662,64 +757,75 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
   return (
     <div
         ref={entryRef}
+        className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center overflow-y-auto p-4 animate-in fade-in duration-300 motion-reduce:animate-none"
         role="dialog"
         aria-modal="true"
         aria-labelledby="student-entry-title"
         aria-describedby="student-entry-description"
-        className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+        data-allo-ui-modal="student-entry"
     >
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 relative">
+      <style>{UI_MODAL_A11Y_STYLES}</style>
+      <div className="my-auto max-h-[calc(100vh-2rem)] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative">
         <button
+            type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            className="absolute top-4 right-4 min-h-6 min-w-6 p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
             aria-label={t('common.close')}
+            data-alloflow-close-on-escape="true"
         >
-            <X size={20} />
+            <X aria-hidden="true" size={20} />
         </button>
         <h2 id="student-entry-title" className="text-2xl font-black text-slate-800 mb-2">{t('wizard.step_codename') || 'Pick Your Codename!'}</h2>
         <p id="student-entry-description" className="text-slate-600 mb-6 font-medium">{t('modals.student_entry_sub')}</p>
         <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-6">
-            <div className="flex gap-2 mb-4">
-                <select
-                    value={selectedAdj}
-                    onChange={(e) => setSelectedAdj(e.target.value)}
-                    className="w-1/2 p-2 rounded-lg border border-indigo-200 text-indigo-900 font-bold text-sm focus:ring-2 focus:ring-indigo-400 outline-none cursor-pointer"
-                    aria-label={t('modals.entry.select_adjective')}
-                    data-help-key="entry_adjective"
-                >
-                    {adjectives.map((adj, i) => (
-                        <option key={i} value={adj}>{adj}</option>
-                    ))}
-                </select>
-                <select
-                    value={selectedAnimal}
-                    onChange={(e) => setSelectedAnimal(e.target.value)}
-                    className="w-1/2 p-2 rounded-lg border border-indigo-200 text-indigo-900 font-bold text-sm focus:ring-2 focus:ring-indigo-400 outline-none cursor-pointer"
-                    aria-label={t('modals.entry.select_animal')}
-                    data-help-key="entry_animal"
-                >
-                    {animals.map((anim, i) => (
-                        <option key={i} value={anim}>{anim}</option>
-                    ))}
-                </select>
+            <div className="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-2">
+                <label className="text-left text-xs font-bold text-indigo-900">
+                    <span className="mb-1 block">{t('modals.entry.select_adjective')}</span>
+                    <select
+                        value={selectedAdj}
+                        onChange={(e) => setSelectedAdj(e.target.value)}
+                        className="w-full min-h-11 p-2 rounded-lg border border-indigo-200 text-indigo-900 font-bold text-sm cursor-pointer"
+                        aria-label={t('modals.entry.select_adjective')}
+                        data-help-key="entry_adjective"
+                    >
+                        {adjectives.map((adj, i) => (
+                            <option key={i} value={adj}>{adj}</option>
+                        ))}
+                    </select>
+                </label>
+                <label className="text-left text-xs font-bold text-indigo-900">
+                    <span className="mb-1 block">{t('modals.entry.select_animal')}</span>
+                    <select
+                        value={selectedAnimal}
+                        onChange={(e) => setSelectedAnimal(e.target.value)}
+                        className="w-full min-h-11 p-2 rounded-lg border border-indigo-200 text-indigo-900 font-bold text-sm cursor-pointer"
+                        aria-label={t('modals.entry.select_animal')}
+                        data-help-key="entry_animal"
+                    >
+                        {animals.map((anim, i) => (
+                            <option key={i} value={anim}>{anim}</option>
+                        ))}
+                    </select>
+                </label>
             </div>
             <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-indigo-100">
                 <div className="text-xl font-black text-indigo-600 tracking-tight truncate mr-2" role="status" aria-live="polite" aria-atomic="true">
                     {selectedAdj} {selectedAnimal}
                 </div>
                 <button
+                    type="button"
                     onClick={randomizeName}
-                    className="p-2 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 hover:scale-110 transition-all shrink-0"
+                    className="min-h-6 min-w-6 p-2 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 hover:scale-110 motion-reduce:hover:scale-100 transition-all shrink-0"
                     title={t('modals.entry.randomize_codename')}
                     aria-label={t('modals.entry.randomize_codename')}
                     data-help-key="entry_randomize_btn"
                 >
-                    <RefreshCw size={18} />
+                    <RefreshCw aria-hidden="true" size={18} />
                 </button>
             </div>
         </div>
         <p className="text-xs text-slate-600 font-bold flex items-center justify-center gap-1 mb-6">
-            <ShieldCheck size={12} className="text-green-500"/> {t('entry.warning')}
+            <ShieldCheck aria-hidden="true" size={12} className="text-green-500"/> {t('entry.warning')}
         </p>
         <div className="flex flex-col gap-3">
             <button
@@ -739,7 +845,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                 <Upload size={16} /> {t('entry.load')}
             </button>
         </div>
-        <button onClick={onClose} className="mt-4 min-h-6 inline-flex items-center text-sm text-slate-600 hover:text-slate-900 underline focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('common.cancel')}</button>
+        <button type="button" onClick={onClose} className="mt-4 min-h-6 inline-flex items-center text-sm text-slate-600 hover:text-slate-900 underline rounded">{t('common.cancel')}</button>
       </div>
     </div>
   );
@@ -753,29 +859,34 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
   return (
     <div
         ref={welcomeRef}
+        className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center overflow-y-auto p-4 animate-in fade-in duration-300 motion-reduce:animate-none"
         role="dialog"
         aria-modal="true"
         aria-labelledby="student-welcome-title"
         aria-describedby="student-welcome-description"
-        className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+        data-allo-ui-modal="student-welcome"
     >
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-teal-100 transform transition-all animate-in zoom-in-95 duration-300 relative">
+      <style>{UI_MODAL_A11Y_STYLES}</style>
+      <div className="my-auto max-h-[calc(100vh-2rem)] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full text-center border-4 border-teal-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative">
         <button
+            type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            className="absolute top-4 right-4 min-h-6 min-w-6 p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
             aria-label={t('welcome.close_aria')}
+            data-alloflow-close-on-escape="true"
         >
-            <X size={20} />
+            <X aria-hidden="true" size={20} />
         </button>
         <div className="flex justify-center mb-6">
           <div className="bg-teal-100 p-4 rounded-full shadow-inner">
-             <FolderOpen size={48} className="text-teal-600" />
+             <FolderOpen aria-hidden="true" size={48} className="text-teal-600" />
           </div>
         </div>
         <h2 id="student-welcome-title" className="text-2xl font-black text-slate-800 mb-2">{t('modals.student_welcome')}</h2>
         <p id="student-welcome-description" className="text-slate-600 mb-8 font-medium">{t('welcome.prompt')}</p>
         <div className="space-y-3">
             <button
+                type="button"
                 onClick={() => {
                     onUpload();
                     onClose();
@@ -786,6 +897,7 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
                 <Upload size={20} /> {t('welcome.load')}
             </button>
             <button
+                type="button"
                 onClick={onClose}
                 className="w-full p-3 rounded-xl text-slate-600 font-bold hover:bg-slate-100 transition-colors active:scale-95"
                 data-help-key="welcome_skip_btn"

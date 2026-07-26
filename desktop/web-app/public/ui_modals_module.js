@@ -26,6 +26,29 @@ var updateDoc = window._fbUpdateDoc || function () {
   return Promise.resolve();
 };
 var db = window._fbDb || null;
+var UI_MODAL_A11Y_STYLES = `
+  [data-allo-ui-modal]:is(button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])):focus-visible,
+  [data-allo-ui-modal] :is(button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 3px solid #0f172a !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 6px #ffffff !important;
+  }
+  @media (forced-colors: active) {
+    [data-allo-ui-modal]:is(button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])):focus-visible,
+    [data-allo-ui-modal] :is(button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])):focus-visible {
+      outline: 3px solid CanvasText !important;
+      box-shadow: none !important;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-allo-ui-modal], [data-allo-ui-modal] * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+`;
 // Lazy icon wrappers — window.AlloIcons is set in a useEffect after CDN scripts load,
 // so each icon must look up window.AlloIcons at RENDER time, not at script load time.
 var _lazyIcon = function (name) {
@@ -48,6 +71,7 @@ var ShieldCheck = _lazyIcon('ShieldCheck');
 var Sparkles = _lazyIcon('Sparkles');
 var Upload = _lazyIcon('Upload');
 var UserCircle2 = _lazyIcon('UserCircle2');
+var X = _lazyIcon('X');
 var XCircle = _lazyIcon('XCircle');
 const StudentQuizOverlay = React.memo(({
   sessionData,
@@ -59,38 +83,45 @@ const StudentQuizOverlay = React.memo(({
   const {
     t
   } = useContext(LanguageContext);
-  if (!sessionData?.quizState?.isActive || !generatedContent || generatedContent.type !== 'quiz') return null;
+  const isQuizOpen = Boolean(sessionData?.quizState?.isActive && generatedContent && generatedContent.type === 'quiz');
+  const quizState = sessionData?.quizState || {};
   const {
-    mode,
-    currentQuestionIndex,
+    mode = 'live-quiz',
+    currentQuestionIndex = 0,
     phase,
-    teams,
+    teams = {},
     bossStats,
     responses
-  } = sessionData.quizState;
-  const currentQuestion = generatedContent?.data.questions?.[currentQuestionIndex];
+  } = quizState;
+  const currentQuestion = generatedContent?.data?.questions?.[currentQuestionIndex];
   const teamColor = user ? teams?.[user.uid] : null;
-  const studentGroupId = sessionData.roster?.[user?.uid]?.groupId;
+  const studentGroupId = sessionData?.roster?.[user?.uid]?.groupId;
   const studentGroup = studentGroupId ? sessionData.groups?.[studentGroupId] : null;
   const groupLanguage = studentGroup?.language;
   const showTranslated = groupLanguage && groupLanguage !== 'English';
   const [hasAnswered, setHasAnswered] = useState(false);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
   const [submitError, setSubmitError] = useState('');
+  const [isLocallyDismissed, setIsLocallyDismissed] = useState(false);
+  const quizRef = useRef(null);
+  useFocusTrap(quizRef, isQuizOpen && !isLocallyDismissed, () => setIsLocallyDismissed(true));
+  useEffect(() => {
+    setIsLocallyDismissed(false);
+  }, [activeSessionCode, isQuizOpen]);
   useEffect(() => {
     setSubmitError('');
     if (user && responses && responses[user.uid] !== undefined) {
       setHasAnswered(true);
       setSelectedOptionIndex(responses[user.uid]);
     } else {
-      if (!responses || responses[user.uid] === undefined) {
+      if (!user || !responses || responses[user.uid] === undefined) {
         setHasAnswered(false);
         setSelectedOptionIndex(null);
       }
     }
   }, [currentQuestionIndex, responses, user]);
   useEffect(() => {
-    if (mode === 'team-showdown' && user && activeSessionCode) {
+    if (isQuizOpen && mode === 'team-showdown' && user && activeSessionCode) {
       const currentTeam = teams?.[user.uid];
       if (!currentTeam) {
         const teamOptions = ['Red', 'Blue', 'Green', 'Yellow'];
@@ -109,7 +140,7 @@ const StudentQuizOverlay = React.memo(({
         joinTeam();
       }
     }
-  }, [mode, user, teams, activeSessionCode, targetAppId]);
+  }, [isQuizOpen, mode, user, teams, activeSessionCode, targetAppId]);
   const submitQuizResponse = async optionIndex => {
     if (hasAnswered || !user || !activeSessionCode) return;
     setSubmitError('');
@@ -161,6 +192,15 @@ const StudentQuizOverlay = React.memo(({
         };
     }
   };
+  if (!isQuizOpen) return null;
+  if (isLocallyDismissed) {
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => setIsLocallyDismissed(false),
+      className: "fixed bottom-4 right-4 z-[1000] min-h-11 rounded-xl bg-indigo-700 px-4 py-3 font-bold text-white shadow-2xl",
+      "data-allo-ui-modal": "student-quiz-return"
+    }, "Return to live quiz");
+  }
   const styles = getModeStyles();
   const getTeamBadgeColor = color => {
     switch (color) {
@@ -180,18 +220,27 @@ const StudentQuizOverlay = React.memo(({
   const correctAnswerIndex = currentQuestion?.options?.findIndex(opt => opt === currentQuestion.correctAnswer);
   const isCorrect = isRevealed && selectedOptionIndex === correctAnswerIndex;
   return /*#__PURE__*/React.createElement("div", {
-    className: `fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in slide-in-from-bottom duration-500 text-white font-sans`,
+    ref: quizRef,
+    className: `fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in slide-in-from-bottom duration-500 text-white font-sans motion-reduce:animate-none motion-reduce:transition-none`,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": "student-quiz-title",
+    "aria-describedby": "student-quiz-question",
+    "data-allo-ui-modal": "student-quiz",
     "data-help-key": "quiz_student_overlay"
-  }, submitError && /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("style", null, UI_MODAL_A11Y_STYLES), submitError && /*#__PURE__*/React.createElement("p", {
     id: "quiz-submit-error",
     role: "alert",
     className: "m-4 rounded-lg border border-red-300 bg-red-950 px-4 py-3 font-semibold text-white"
   }, submitError), /*#__PURE__*/React.createElement("div", {
     className: "p-4 flex justify-between items-start bg-black/20 backdrop-blur-md border-b border-white/10 shrink-0"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    id: "student-quiz-title",
     className: `font-black text-xl uppercase tracking-widest ${styles.accent} flex items-center gap-2 drop-shadow-md`,
     "data-help-key": "quiz_student_mode_header"
-  }, /*#__PURE__*/React.createElement("span", null, styles.icon), /*#__PURE__*/React.createElement("span", null, mode.replace(/-/g, ' '))), teamColor && /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, styles.icon), /*#__PURE__*/React.createElement("span", null, mode.replace(/-/g, ' '))), teamColor && /*#__PURE__*/React.createElement("span", {
     className: `text-[11px] font-bold px-2 py-0.5 rounded uppercase mt-2 inline-block shadow-sm ${getTeamBadgeColor(teamColor)}`
   }, t('quiz.team_label', {
     color: teamColor
@@ -203,23 +252,31 @@ const StudentQuizOverlay = React.memo(({
     className: "text-3xl font-mono font-black text-white leading-none"
   }, currentQuestionIndex + 1, " ", /*#__PURE__*/React.createElement("span", {
     className: "text-lg text-white/50"
-  }, "/ ", generatedContent?.data.questions.length)))), /*#__PURE__*/React.createElement("div", {
+  }, "/ ", generatedContent?.data?.questions?.length || 0)))), /*#__PURE__*/React.createElement("div", {
     className: "flex-grow flex flex-col items-center justify-center p-6 text-center overflow-y-auto"
   }, phase === 'boss-defeated' && /*#__PURE__*/React.createElement("div", {
-    className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg animate-in zoom-in duration-500"
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg animate-in zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-center p-8"
   }, /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true",
     className: "text-8xl mb-6"
   }, "🎉"), /*#__PURE__*/React.createElement("h2", {
     className: "text-5xl font-black text-white mb-4 drop-shadow-lg"
   }, t('quiz.boss.victory_msg')), /*#__PURE__*/React.createElement("p", {
     className: "text-xl text-green-200"
   }, bossStats?.name || t('quiz.boss.name_fallback'), " ", t('quiz.boss.defeat_suffix')))), phase === 'class-defeated' && /*#__PURE__*/React.createElement("div", {
-    className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg animate-in zoom-in duration-500"
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg animate-in zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-center p-8"
   }, /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true",
     className: "text-8xl mb-6"
   }, "💀"), /*#__PURE__*/React.createElement("h2", {
     className: "text-5xl font-black text-white mb-4 drop-shadow-lg"
@@ -228,7 +285,7 @@ const StudentQuizOverlay = React.memo(({
   }, t('quiz.boss.class_fallen_msg')))), mode === 'boss-battle' && bossStats && /*#__PURE__*/React.createElement("div", {
     className: "mb-8 w-full max-w-lg flex flex-col items-center animate-in fade-in zoom-in duration-700"
   }, /*#__PURE__*/React.createElement("div", {
-    className: `relative mb-6 ${phase === 'revealed' && bossStats.lastDamage > 0 ? 'animate-shake' : ''}`
+    className: `relative mb-6 ${phase === 'revealed' && bossStats.lastDamage > 0 ? 'animate-shake motion-reduce:animate-none' : ''}`
   }, bossStats.image ? /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
     src: bossStats.image,
@@ -238,9 +295,13 @@ const StudentQuizOverlay = React.memo(({
   }) : /*#__PURE__*/React.createElement("div", {
     className: "w-24 h-24 md:w-32 md:h-32 bg-red-900/50 rounded-full border-4 border-red-500/50 flex items-center justify-center text-4xl shadow-xl backdrop-blur-sm"
   }, bossStats.isGenerating ? /*#__PURE__*/React.createElement(RefreshCw, {
-    className: "animate-spin text-red-400"
-  }) : "👾"), phase === 'revealed' && bossStats.lastDamage > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-0 right-[-20px] text-red-500 font-black text-3xl animate-[bounce_0.5s_infinite] z-20 stroke-white drop-shadow-md"
+    "aria-hidden": "true",
+    className: "animate-spin text-red-400 motion-reduce:animate-none"
+  }) : /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "👾")), phase === 'revealed' && bossStats.lastDamage > 0 && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    className: "absolute top-0 right-[-20px] text-red-500 font-black text-3xl animate-[bounce_0.5s_infinite] motion-reduce:animate-none z-20 stroke-white drop-shadow-md"
   }, "-", bossStats.lastDamage)), /*#__PURE__*/React.createElement("div", {
     className: "w-full"
   }, /*#__PURE__*/React.createElement("div", {
@@ -248,7 +309,12 @@ const StudentQuizOverlay = React.memo(({
   }, /*#__PURE__*/React.createElement("span", null, bossStats.name || "Boss", " HP"), /*#__PURE__*/React.createElement("span", null, Math.round(bossStats.currentHP), " / ", bossStats.maxHP)), /*#__PURE__*/React.createElement("div", {
     className: "w-full h-6 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "h-full bg-gradient-to-r from-red-600 to-red-500 transition-all duration-500 ease-out",
+    role: "progressbar",
+    "aria-label": `${bossStats.name || "Boss"} health`,
+    "aria-valuemin": "0",
+    "aria-valuemax": bossStats.maxHP,
+    "aria-valuenow": Math.max(0, Math.round(bossStats.currentHP)),
+    className: "h-full bg-gradient-to-r from-red-600 to-red-500 transition-all duration-500 ease-out motion-reduce:transition-none",
     style: {
       width: `${Math.max(0, bossStats.currentHP / bossStats.maxHP * 100)}%`
     }
@@ -259,17 +325,26 @@ const StudentQuizOverlay = React.memo(({
   }, /*#__PURE__*/React.createElement("span", null, t('quiz.boss.class_hp')), /*#__PURE__*/React.createElement("span", null, Math.round(bossStats.classHP ?? 100), " / ", bossStats.classMaxHP || 100)), /*#__PURE__*/React.createElement("div", {
     className: "w-full h-5 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "h-full bg-gradient-to-r from-green-600 to-emerald-500 transition-all duration-500 ease-out",
+    role: "progressbar",
+    "aria-label": t('quiz.boss.class_hp'),
+    "aria-valuemin": "0",
+    "aria-valuemax": bossStats.classMaxHP || 100,
+    "aria-valuenow": Math.max(0, Math.round(bossStats.classHP ?? 100)),
+    className: "h-full bg-gradient-to-r from-green-600 to-emerald-500 transition-all duration-500 ease-out motion-reduce:transition-none",
     style: {
       width: `${Math.max(0, (bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100) * 100)}%`
     }
   })), phase === 'revealed' && bossStats.lastClassDamage > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "text-orange-400 text-xs font-bold mt-1 animate-pulse text-center"
+    role: "status",
+    className: "text-orange-400 text-xs font-bold mt-1 animate-pulse motion-reduce:animate-none text-center"
   }, t('quiz.boss.counter_attack_msg', {
     damage: bossStats.lastClassDamage
   })))), /*#__PURE__*/React.createElement("div", {
     className: "bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-2xl max-w-3xl w-full"
   }, /*#__PURE__*/React.createElement("h3", {
+    id: "student-quiz-question",
+    "aria-live": "polite",
+    "aria-atomic": "true",
     className: "text-2xl md:text-4xl font-bold text-white leading-tight drop-shadow-sm",
     "data-help-key": "quiz_student_question"
   }, currentQuestion ? currentQuestion.question : t('quiz.loading_question')), currentQuestion && showTranslated && currentQuestion.question_en && /*#__PURE__*/React.createElement("p", {
@@ -361,21 +436,33 @@ const StudentQuizOverlay = React.memo(({
   })), /*#__PURE__*/React.createElement("div", {
     className: "mt-8 min-h-16 flex items-center justify-center w-full mb-8"
   }, phase === 'answering' && (hasAnswered ? /*#__PURE__*/React.createElement("div", {
-    className: "bg-slate-900/80 backdrop-blur-md text-white px-6 py-3 rounded-full font-bold text-sm animate-in fade-in slide-in-from-bottom-2 flex items-center gap-3 border border-white/10 shadow-lg"
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "bg-slate-900/80 backdrop-blur-md text-white px-6 py-3 rounded-full font-bold text-sm animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none flex items-center gap-3 border border-white/10 shadow-lg"
   }, /*#__PURE__*/React.createElement("span", {
     className: "relative flex h-3 w-3"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+    "aria-hidden": "true",
+    className: "animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 motion-reduce:animate-none"
   }), /*#__PURE__*/React.createElement("span", {
     className: "relative inline-flex rounded-full h-3 w-3 bg-green-500"
   })), t('quiz.status.answer_sent')) : /*#__PURE__*/React.createElement("div", {
-    className: "text-white/50 font-mono text-xs uppercase tracking-widest animate-pulse"
+    className: "text-white/50 font-mono text-xs uppercase tracking-widest animate-pulse motion-reduce:animate-none"
   }, t('quiz.status.choose_option'))), phase === 'revealed' && currentQuestion?.itemType === 'likert' && /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 px-4"
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 motion-reduce:animate-none px-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-full px-8 py-6 rounded-3xl font-bold text-lg shadow-xl flex items-center justify-center gap-4 border-2 border-purple-300 bg-purple-50 text-purple-900"
-  }, /*#__PURE__*/React.createElement("span", null, "🗣️"), /*#__PURE__*/React.createElement("span", null, t('quiz.poll_completed') || 'Thanks for sharing your take.'))), phase === 'revealed' && currentQuestion?.itemType !== 'likert' && /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 px-4"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🗣️"), /*#__PURE__*/React.createElement("span", null, t('quiz.poll_completed') || 'Thanks for sharing your take.'))), phase === 'revealed' && currentQuestion?.itemType !== 'likert' && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "flex flex-col gap-6 items-center w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500 motion-reduce:animate-none px-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: `
                             w-full px-8 py-6 rounded-3xl font-black text-2xl shadow-2xl flex items-center justify-center gap-6 border-4 transform transition-transform hover:scale-105
@@ -413,7 +500,12 @@ const StudentQuizOverlay = React.memo(({
     className: "mt-3 pt-3 border-t border-slate-200"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 italic whitespace-pre-wrap"
-  }, currentQuestion.factCheck_en)))))));
+  }, currentQuestion.factCheck_en)))))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setIsLocallyDismissed(true),
+    className: "absolute right-4 top-4 z-[60] min-h-11 rounded-lg border-2 border-white/70 bg-slate-950/90 px-4 py-2 text-sm font-bold text-white shadow-lg",
+    "aria-label": "Leave live quiz view"
+  }, "Exit quiz view"));
 });
 const TeacherGate = React.memo(({
   isOpen,
@@ -454,23 +546,19 @@ const TeacherGate = React.memo(({
   };
   return /*#__PURE__*/React.createElement("div", {
     ref: gateRef,
+    className: "fixed inset-0 z-[1000] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center overflow-y-auto p-4 animate-in fade-in duration-300 motion-reduce:animate-none",
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "teacher-gate-title",
     "aria-describedby": "teacher-gate-helper",
-    className: "fixed inset-0 z-[1000] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300",
+    "data-allo-ui-modal": "teacher-gate",
     "data-help-key": "teacher_gate_modal"
+  }, /*#__PURE__*/React.createElement("style", null, UI_MODAL_A11Y_STYLES), /*#__PURE__*/React.createElement("div", {
+    className: "my-auto max-h-[calc(100vh-2rem)] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-sm w-full text-center border-4 border-indigo-100 relative transform transition-all animate-in zoom-in-95 motion-reduce:animate-none motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center border-4 border-indigo-100 relative transform transition-all animate-in zoom-in-95"
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: onClose,
-    className: "absolute top-4 right-4 text-slate-600 hover:text-slate-900 transition-colors p-1 rounded-full hover:bg-slate-100",
-    "aria-label": t('common.cancel')
-  }, /*#__PURE__*/React.createElement(X, {
-    size: 20
-  })), /*#__PURE__*/React.createElement("div", {
     className: "w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-200 shadow-sm"
   }, /*#__PURE__*/React.createElement(Lock, {
+    "aria-hidden": "true",
     size: 32,
     className: "text-red-600"
   })), /*#__PURE__*/React.createElement("h2", {
@@ -482,7 +570,12 @@ const TeacherGate = React.memo(({
   }, t('modals.teacher_gate.helper')), /*#__PURE__*/React.createElement("form", {
     onSubmit: handleSubmit,
     className: "flex flex-col gap-4"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    id: "teacher-gate-access-code-label",
+    htmlFor: "teacher-gate-access-code",
+    className: "mb-2 block text-sm font-bold text-slate-700"
+  }, t('modals.teacher_gate.access_code_placeholder')), /*#__PURE__*/React.createElement("input", {
+    id: "teacher-gate-access-code",
     type: "password",
     autoComplete: "current-password",
     value: passwordInput,
@@ -494,20 +587,30 @@ const TeacherGate = React.memo(({
     className: `w-full text-center text-lg p-3 border-2 rounded-xl outline-none focus:ring-4 transition-all placeholder:text-slate-600 ${error ? 'border-red-400 bg-red-50 focus:ring-red-200 text-red-900' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 text-indigo-900'}`,
     autoFocus: true,
     "aria-invalid": error,
-    "aria-describedby": error ? 'teacher-gate-error' : undefined,
-    "aria-label": t('modals.teacher_gate.access_code_placeholder'),
+    "aria-labelledby": "teacher-gate-access-code-label",
+    "aria-describedby": error ? 'teacher-gate-helper teacher-gate-error' : 'teacher-gate-helper',
     "data-help-key": "teacher_gate_input"
   }), error && /*#__PURE__*/React.createElement("p", {
     id: "teacher-gate-error",
     role: "alert",
     className: "text-xs font-bold text-red-700 mt-2 flex items-center justify-center gap-1"
   }, /*#__PURE__*/React.createElement(XCircle, {
+    "aria-hidden": "true",
     size: 12
   }), " ", t('modals.teacher_gate.error_incorrect'))), /*#__PURE__*/React.createElement("button", {
     type: "submit",
     className: "w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2",
     "data-help-key": "teacher_gate_unlock"
-  }, t('modals.teacher_gate.unlock')))));
+  }, t('modals.teacher_gate.unlock'))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: onClose,
+    className: "absolute top-4 right-4 min-h-6 min-w-6 text-slate-600 hover:text-slate-900 transition-colors p-1 rounded-full hover:bg-slate-100",
+    "aria-label": t('common.cancel'),
+    "data-alloflow-close-on-escape": "true"
+  }, /*#__PURE__*/React.createElement(X, {
+    "aria-hidden": "true",
+    size: 20
+  }))));
 });
 const RoleSelectionModal = React.memo(({
   onSelect,
@@ -542,7 +645,7 @@ const RoleSelectionModal = React.memo(({
       if (event.error === 'not-allowed' || event.error === 'permission-denied') {
         setMicStatus('denied');
       } else {
-        setMicStatus('granted');
+        setMicStatus('denied');
       }
     };
     try {
@@ -552,18 +655,21 @@ const RoleSelectionModal = React.memo(({
       setMicStatus('denied');
     }
   };
+  const micStatusText = micStatus === 'granted' ? t('roles.mic_ready') : micStatus === 'unsupported' ? t('roles.voice_not_supported') : micStatus === 'denied' ? t('roles.mic_denied') : micStatus === 'requesting' ? t('roles.mic_requesting') : t('roles.mic_enable');
   return /*#__PURE__*/React.createElement("div", {
     ref: roleRef,
+    className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-4 sm:py-8 px-4 animate-in fade-in duration-300 motion-reduce:animate-none",
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "role-selection-title",
-    className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-8 px-4 animate-in fade-in duration-300"
-  }, /*#__PURE__*/React.createElement("div", {
+    "aria-describedby": "role-selection-description",
+    "data-allo-ui-modal": "role-selection"
+  }, /*#__PURE__*/React.createElement("style", null, UI_MODAL_A11Y_STYLES), /*#__PURE__*/React.createElement("div", {
     className: "min-h-full flex items-center justify-center"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white rounded-2xl shadow-2xl p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 relative"
+    className: "bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-4 right-4"
+    className: "flex justify-end mb-2"
   }, /*#__PURE__*/React.createElement(UiLanguageSelector, null)), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center mb-6"
   }, /*#__PURE__*/React.createElement("div", {
@@ -575,6 +681,7 @@ const RoleSelectionModal = React.memo(({
     id: "role-selection-title",
     className: "text-3xl font-black text-slate-800 mb-2 tracking-tight"
   }, t('roles.title')), /*#__PURE__*/React.createElement("p", {
+    id: "role-selection-description",
     className: "text-slate-600 mb-8 font-medium"
   }, t('roles.subtitle')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
@@ -623,23 +730,33 @@ const RoleSelectionModal = React.memo(({
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2"
   }, t('roles.mic_setup')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleMicCheck,
     disabled: micStatus === 'granted' || micStatus === 'requesting',
+    "aria-busy": micStatus === 'requesting',
+    "aria-describedby": "role-mic-status",
     className: `flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold transition-all ${micStatus === 'granted' ? 'bg-green-100 text-green-700 cursor-default' : micStatus === 'denied' || micStatus === 'unsupported' ? 'bg-red-50 text-red-700 border border-red-200' : micStatus === 'requesting' ? 'bg-slate-100 text-slate-600' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 hover:text-indigo-600'}`
   }, micStatus === 'granted' ? /*#__PURE__*/React.createElement(CheckCircle, {
+    "aria-hidden": "true",
     size: 14
   }) : micStatus === 'denied' || micStatus === 'unsupported' ? /*#__PURE__*/React.createElement(XCircle, {
+    "aria-hidden": "true",
     size: 14
   }) : micStatus === 'requesting' ? /*#__PURE__*/React.createElement(RefreshCw, {
+    "aria-hidden": "true",
     size: 14,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Mic, {
+    "aria-hidden": "true",
     size: 14
-  }), /*#__PURE__*/React.createElement("span", {
+  }), /*#__PURE__*/React.createElement("span", null, micStatusText)), /*#__PURE__*/React.createElement("p", {
+    id: "role-mic-status",
+    className: "sr-only",
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true"
-  }, micStatus === 'granted' ? t('roles.mic_ready') : micStatus === 'unsupported' ? t('roles.voice_not_supported') : micStatus === 'denied' ? t('roles.mic_denied') : micStatus === 'requesting' ? t('roles.mic_requesting') : t('roles.mic_enable'))), micStatus === 'idle' && /*#__PURE__*/React.createElement("p", {
+  }, micStatus === 'idle' ? '' : micStatusText), micStatus === 'idle' && /*#__PURE__*/React.createElement("p", {
+    id: "role-mic-tip",
     className: "text-[11px] text-slate-600 mt-2"
   }, t('roles.mic_tip'))))));
 });
@@ -683,18 +800,22 @@ const StudentEntryModal = React.memo(({
   if (!isOpen) return null;
   return /*#__PURE__*/React.createElement("div", {
     ref: entryRef,
+    className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center overflow-y-auto p-4 animate-in fade-in duration-300 motion-reduce:animate-none",
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "student-entry-title",
     "aria-describedby": "student-entry-description",
-    className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 relative"
+    "data-allo-ui-modal": "student-entry"
+  }, /*#__PURE__*/React.createElement("style", null, UI_MODAL_A11Y_STYLES), /*#__PURE__*/React.createElement("div", {
+    className: "my-auto max-h-[calc(100vh-2rem)] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: onClose,
-    className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors",
-    "aria-label": t('common.close')
+    className: "absolute top-4 right-4 min-h-6 min-w-6 p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors",
+    "aria-label": t('common.close'),
+    "data-alloflow-close-on-escape": "true"
   }, /*#__PURE__*/React.createElement(X, {
+    "aria-hidden": "true",
     size: 20
   })), /*#__PURE__*/React.createElement("h2", {
     id: "student-entry-title",
@@ -705,26 +826,34 @@ const StudentEntryModal = React.memo(({
   }, t('modals.student_entry_sub')), /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-6"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2 mb-4"
-  }, /*#__PURE__*/React.createElement("select", {
+    className: "grid grid-cols-1 gap-3 mb-4 sm:grid-cols-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "text-left text-xs font-bold text-indigo-900"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mb-1 block"
+  }, t('modals.entry.select_adjective')), /*#__PURE__*/React.createElement("select", {
     value: selectedAdj,
     onChange: e => setSelectedAdj(e.target.value),
-    className: "w-1/2 p-2 rounded-lg border border-indigo-200 text-indigo-900 font-bold text-sm focus:ring-2 focus:ring-indigo-400 outline-none cursor-pointer",
+    className: "w-full min-h-11 p-2 rounded-lg border border-indigo-200 text-indigo-900 font-bold text-sm cursor-pointer",
     "aria-label": t('modals.entry.select_adjective'),
     "data-help-key": "entry_adjective"
   }, adjectives.map((adj, i) => /*#__PURE__*/React.createElement("option", {
     key: i,
     value: adj
-  }, adj))), /*#__PURE__*/React.createElement("select", {
+  }, adj)))), /*#__PURE__*/React.createElement("label", {
+    className: "text-left text-xs font-bold text-indigo-900"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mb-1 block"
+  }, t('modals.entry.select_animal')), /*#__PURE__*/React.createElement("select", {
     value: selectedAnimal,
     onChange: e => setSelectedAnimal(e.target.value),
-    className: "w-1/2 p-2 rounded-lg border border-indigo-200 text-indigo-900 font-bold text-sm focus:ring-2 focus:ring-indigo-400 outline-none cursor-pointer",
+    className: "w-full min-h-11 p-2 rounded-lg border border-indigo-200 text-indigo-900 font-bold text-sm cursor-pointer",
     "aria-label": t('modals.entry.select_animal'),
     "data-help-key": "entry_animal"
   }, animals.map((anim, i) => /*#__PURE__*/React.createElement("option", {
     key: i,
     value: anim
-  }, anim)))), /*#__PURE__*/React.createElement("div", {
+  }, anim))))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-indigo-100"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xl font-black text-indigo-600 tracking-tight truncate mr-2",
@@ -732,16 +861,19 @@ const StudentEntryModal = React.memo(({
     "aria-live": "polite",
     "aria-atomic": "true"
   }, selectedAdj, " ", selectedAnimal), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: randomizeName,
-    className: "p-2 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 hover:scale-110 transition-all shrink-0",
+    className: "min-h-6 min-w-6 p-2 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 hover:scale-110 motion-reduce:hover:scale-100 transition-all shrink-0",
     title: t('modals.entry.randomize_codename'),
     "aria-label": t('modals.entry.randomize_codename'),
     "data-help-key": "entry_randomize_btn"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
+    "aria-hidden": "true",
     size: 18
   })))), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 font-bold flex items-center justify-center gap-1 mb-6"
   }, /*#__PURE__*/React.createElement(ShieldCheck, {
+    "aria-hidden": "true",
     size: 12,
     className: "text-green-500"
   }), " ", t('entry.warning')), /*#__PURE__*/React.createElement("div", {
@@ -762,8 +894,9 @@ const StudentEntryModal = React.memo(({
   }, /*#__PURE__*/React.createElement(Upload, {
     size: 16
   }), " ", t('entry.load'))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: onClose,
-    className: "mt-4 min-h-6 inline-flex items-center text-sm text-slate-600 hover:text-slate-900 underline focus:outline-none focus:ring-2 focus:ring-slate-400 rounded"
+    className: "mt-4 min-h-6 inline-flex items-center text-sm text-slate-600 hover:text-slate-900 underline rounded"
   }, t('common.cancel'))));
 });
 const StudentWelcomeModal = React.memo(({
@@ -779,24 +912,29 @@ const StudentWelcomeModal = React.memo(({
   if (!isOpen) return null;
   return /*#__PURE__*/React.createElement("div", {
     ref: welcomeRef,
+    className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center overflow-y-auto p-4 animate-in fade-in duration-300 motion-reduce:animate-none",
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "student-welcome-title",
     "aria-describedby": "student-welcome-description",
-    className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-teal-100 transform transition-all animate-in zoom-in-95 duration-300 relative"
+    "data-allo-ui-modal": "student-welcome"
+  }, /*#__PURE__*/React.createElement("style", null, UI_MODAL_A11Y_STYLES), /*#__PURE__*/React.createElement("div", {
+    className: "my-auto max-h-[calc(100vh-2rem)] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full text-center border-4 border-teal-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: onClose,
-    className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors",
-    "aria-label": t('welcome.close_aria')
+    className: "absolute top-4 right-4 min-h-6 min-w-6 p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors",
+    "aria-label": t('welcome.close_aria'),
+    "data-alloflow-close-on-escape": "true"
   }, /*#__PURE__*/React.createElement(X, {
+    "aria-hidden": "true",
     size: 20
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center mb-6"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-teal-100 p-4 rounded-full shadow-inner"
   }, /*#__PURE__*/React.createElement(FolderOpen, {
+    "aria-hidden": "true",
     size: 48,
     className: "text-teal-600"
   }))), /*#__PURE__*/React.createElement("h2", {
@@ -808,6 +946,7 @@ const StudentWelcomeModal = React.memo(({
   }, t('welcome.prompt')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-3"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       onUpload();
       onClose();
@@ -817,6 +956,7 @@ const StudentWelcomeModal = React.memo(({
   }, /*#__PURE__*/React.createElement(Upload, {
     size: 20
   }), " ", t('welcome.load')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: onClose,
     className: "w-full p-3 rounded-xl text-slate-600 font-bold hover:bg-slate-100 transition-colors active:scale-95",
     "data-help-key": "welcome_skip_btn"
