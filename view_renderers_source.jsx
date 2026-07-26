@@ -3726,8 +3726,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const attemptsTotalRef = React.useRef(0);
     const startedByArmRef = React.useRef(false);
     const [recallBank, setRecallBank] = React.useState([]);
-    const bankRef = React.useRef([]);                                 // live bank for the in-VR answer chips (stale-closure safe)
-    bankRef.current = recallBank;
+    const bankRef = React.useRef([]);                                 // live choices for the in-VR answer chips (stale-closure safe)
     const [answered, setAnswered] = React.useState(0);
     const [recallHint, setRecallHint] = React.useState(null);
     const [canReveal, setCanReveal] = React.useState(false);
@@ -3981,7 +3980,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         setAnswered(0); setFinished(null); setRecallHint(null); setCanReveal(false); setTypedAnswer(''); setWrongFlash(false); setSelfRevealId(null);
     };
 
-    const startRecall = (mode, viaArm, direction) => {
+    const startRecall = (mode, viaArm, direction, only) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (!MP || recall) return;
         const palace = MP.buildPalace(data || {});
@@ -3990,11 +3989,14 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         _resetRecallRun();
         const seed = (Date.now() % 2147483647) || 7;
         const dir = (MP.RECALL_DIRECTIONS || ['forward']).indexOf(direction) >= 0 ? direction : 'forward';
-        const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed }) : targets;
+        // `only` narrows the walk to the loci actually due — that is what makes the
+        // spacing schedule mean anything. Without it every "review" re-tested and
+        // re-scheduled the whole palace.
+        const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed, only }) : targets;
         recallOrderRef.current = order.length ? order : targets;
-        setRecallBank(mode === 'self' ? [] : MP.buildRecallBank(palace, seed));
+        setRecallBank([]);
         startedByArmRef.current = viaArm === true;
-        setRecall({ mode: mode === 'type' ? 'type' : (mode === 'self' ? 'self' : 'bank'), seed, direction: dir, startAt: recallOrderRef.current[0] });
+        setRecall({ mode: mode === 'type' ? 'type' : (mode === 'self' ? 'self' : 'bank'), seed, direction: dir, focused: !!(only && only.length), startAt: recallOrderRef.current[0] });
         if (addToast) addToast(t('memory_palace.recall_start') || '🧠 The labels are covered. Walk the palace and recall what lives at each locus!', 'info');
         // Teacher start arms every student in the live session (2D sort-game contract).
         if (isTeacherMode && viaArm !== true && typeof onRecallArm === 'function') { try { onRecallArm(); } catch (e) {} }
@@ -4019,10 +4021,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         _resetRecallRun();
         const seed = (Date.now() % 2147483647) || 11;
         const dir = (MP.RECALL_DIRECTIONS || []).indexOf(direction) >= 0 ? direction : (recall.direction || 'forward');
-        const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed }) : targets;
+        const only = recall.focused ? recallOrderRef.current.slice() : null;   // a retry keeps the same scope
+        const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed, only }) : targets;
         recallOrderRef.current = order.length ? order : targets;   // a re-shuffle gets a fresh sequence
-        setRecallBank(mode === 'self' ? [] : MP.buildRecallBank(palace, seed));
-        setRecall({ mode, seed, direction: dir, startAt: recallOrderRef.current[0] });   // new identity => scene remounts covered
+        setRecallBank([]);
+        setRecall({ mode, seed, direction: dir, focused: !!recall.focused, startAt: recallOrderRef.current[0] });   // new identity => scene remounts covered
     };
 
     // Live-session arming (mirrors the Strand Challenge contract).
@@ -4031,6 +4034,18 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         else if (!armed && !isTeacherMode && recall && startedByArmRef.current) { startedByArmRef.current = false; exitRecall(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [armed, isTeacherMode, ready, failed, recall, hasContent]);
+
+    // The answer set for the locus you are standing at. It is a constant size and
+    // is NOT consumed as you go: the old bank held one chip per locus and removed
+    // each answered one, so by the last locus a single chip remained and could be
+    // clicked with no retrieval at all — yet scored as a perfect first-try recall.
+    const recallChoices = React.useMemo(() => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || !MP.buildLocusChoices || !recall || recall.mode !== 'bank') return [];
+        if (!palaceRef.current || !current || current.entry) return [];
+        try { return MP.buildLocusChoices(palaceRef.current, current.id, { seed: recall.seed }); } catch (e) { return []; }
+    }, [recall, current, nonce]);
+    bankRef.current = recallChoices;
 
     const advanceRecall = () => {
         if (!palaceRef.current || !handleRef.current) return;
@@ -4066,7 +4081,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         // is captured per-render and can't dedupe them; finishedRef can.
         if (!MP || !palaceRef.current || finishedRef.current) return;
         finishedRef.current = true;
-        const targets = palaceRef.current.route.filter((id) => id !== '__entry');
+        // Score and reschedule ONLY what this walk covered. A due-filtered review
+        // visits a subset, and scoring the whole route would write a give-up record
+        // (strength 0.2, due tomorrow) over every locus the session deliberately
+        // skipped — turning a focused review into a palace-wide demotion.
+        const targets = (recallOrderRef.current && recallOrderRef.current.length)
+            ? recallOrderRef.current.slice()
+            : palaceRef.current.route.filter((id) => id !== '__entry');
         const res = recallResultsRef.current;
         targets.forEach((id) => { if (!res[id]) res[id] = { attempts: 0, correct: false, revealed: true }; });
         const score = MP.scoreRecall(res);
@@ -4111,12 +4132,6 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             r.correct = true;
             if (playSound) playSound('correct');
             if (handleRef.current) { handleRef.current.revealLocus(cur.id); handleRef.current.setLocusStatus(cur.id, 'correct'); }
-            setRecallBank((bank) => {
-                const i = bank.findIndex((c) => c.id === cur.id);
-                const j = i >= 0 ? i : bank.findIndex((c) => MP.matchAnswer(cur.label, c.label));
-                if (j < 0) return bank;
-                const nb = bank.slice(); nb.splice(j, 1); return nb;
-            });
             setRecallHint(null); setCanReveal(false); setTypedAnswer('');
             setAnswered((n) => n + 1);
             _laterRecall(() => advanceRecall());
@@ -4142,10 +4157,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (r.correct || r.revealed) return;
         r.revealed = true;
         if (handleRef.current) { handleRef.current.revealLocus(cur.id); handleRef.current.setLocusStatus(cur.id, 'incorrect'); }
-        setRecallBank((bank) => { const i = bank.findIndex((c) => c.id === cur.id); if (i < 0) return bank; const nb = bank.slice(); nb.splice(i, 1); return nb; });
         setRecallHint(null); setCanReveal(false); setTypedAnswer('');
         setAnswered((n) => n + 1);
-        setTimeout(() => advanceRecall(), 700);
+        // Tracked, so exiting recall cannot leave an advance pending that later
+        // yanks the camera in study mode.
+        _laterRecall(() => advanceRecall());
     };
 
     // Low-pressure guided journey: the learner recalls privately, reveals the
@@ -4163,7 +4179,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (!cur || !recall || recall.mode !== 'self' || finished || selfRevealId !== cur.id) return;
         const res = recallResultsRef.current;
         if (res[cur.id]) return;
-        res[cur.id] = { attempts: 1, correct: !!remembered, revealed: false, selfChecked: true };
+        // selfRated travels with the result so the scheduler and the summary can
+        // tell an unverified self-report from a measured retrieval.
+        res[cur.id] = { attempts: 1, correct: !!remembered, revealed: false, selfChecked: true, selfRated: true };
         attemptsTotalRef.current += 1;
         if (handleRef.current) handleRef.current.setLocusStatus(cur.id, remembered ? 'correct' : 'incorrect');
         if (playSound) playSound(remembered ? 'correct' : 'reveal');
@@ -5199,7 +5217,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     </div>
                     {recallEligible && (
                         <button
-                            onClick={() => startRecall('bank', false)}
+                            onClick={() => startRecall('bank', false, 'forward', (dueInfo.due || []).concat(dueInfo.newIds || []))}
                             className="flex-shrink-0 flex items-center gap-1 bg-amber-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-amber-700 transition-colors"
                         >
                             🔁 {t('memory_palace.review_now') || 'Review now'}
@@ -5895,6 +5913,20 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 .replace('{ok}', String(finished.firstTry + finished.eventual)).replace('{total}', String(finished.total)).replace('{first}', String(finished.firstTry))}
                     </span>
                     {' '}· ⏱ {fmtTime(elapsed)} · {(t('memory_palace.recall_points') || '{points} points').replace('{points}', String(finished.points))}
+                    {/* Say what kind of evidence this walk produced. A focused review
+                        covers less than the palace, and a self-check is the student's
+                        own judgement rather than a measured retrieval — presenting
+                        either as a full tested result would overclaim. */}
+                    {recall.focused && (
+                        <div className="mt-1 text-xs text-emerald-800">
+                            {(t('memory_palace.recall_focused_note') || 'Focused review: only the {count} loci that were due.').replace('{count}', String(finished.total))}
+                        </div>
+                    )}
+                    {finished.selfRated > 0 && (
+                        <div className="mt-1 text-xs text-emerald-800">
+                            {(t('memory_palace.recall_self_rated_note') || 'You rated {count} of these yourself — practice, not a tested recall.').replace('{count}', String(finished.selfRated))}
+                        </div>
+                    )}
                     {/* Next challenge. Walking the route BACKWARDS (or from a random
                         start) is what separates a route anchored to places from a list
                         rehearsed in order — so it is offered as the step after a walk,
@@ -5968,7 +6000,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             )
                         ) : recall.mode === 'bank' ? (
                             <div className="flex flex-wrap gap-2">
-                                {recallBank.map((chip) => (
+                                {recallChoices.map((chip) => (
                                     <button
                                         key={chip.id}
                                         onClick={() => submitRecallAnswer(chip.label, chip.id)}

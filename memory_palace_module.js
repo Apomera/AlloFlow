@@ -453,6 +453,52 @@
     return items;
   }
 
+  function _hashId(str) {
+    var h = 2166136261;
+    str = String(str == null ? '' : str);
+    for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = (h * 16777619) >>> 0; }
+    return h >>> 0;
+  }
+
+  // ── Choices for ONE locus — a constant-size question, not a shrinking one ──
+  // The old bank held one chip per locus and removed each answered chip, so the
+  // choice set collapsed as the walk went on and the final locus was a forced
+  // single choice — answerable with no retrieval at all, yet scored as a perfect
+  // first-try recall and rewarded with the longest review interval. A fixed-size
+  // set per locus keeps recognition scaffolded (the UDL reason bank mode exists)
+  // while keeping the question honest from the first locus to the last.
+  // Seeded by run AND locus, so a set is stable if you come back to a locus but
+  // differs between loci and between runs.
+  var RECALL_CHOICE_COUNT = 6;
+  function buildLocusChoices(palace, locusId, opts) {
+    opts = opts || {};
+    var all = ((palace && palace.loci) || []).filter(function (l) { return l.id !== '__entry'; });
+    var target = null, pool = [];
+    all.forEach(function (l) {
+      if (l.id === locusId) target = l;
+      else pool.push({ id: l.id, label: l.label });
+    });
+    if (!target) return [];
+    // A distractor that reads the same as the answer would make the item
+    // unanswerable rather than harder.
+    var answerText = _foldLoose(target.label);
+    pool = pool.filter(function (c) { return _foldLoose(c.label) !== answerText; });
+    var want = isNum(opts.size) ? opts.size : RECALL_CHOICE_COUNT;
+    want = Math.max(2, Math.min(want, pool.length + 1));
+    var rnd = _lcg((((isNum(opts.seed) ? opts.seed : 1) >>> 0) ^ _hashId(locusId)) >>> 0);
+    for (var i = pool.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd() * (i + 1));
+      var t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+    }
+    var out = pool.slice(0, Math.max(0, want - 1));
+    out.push({ id: target.id, label: target.label });
+    for (var k = out.length - 1; k > 0; k--) {
+      var j2 = Math.floor(rnd() * (k + 1));
+      var t2 = out[k]; out[k] = out[j2]; out[j2] = t2;
+    }
+    return out;
+  }
+
   // ── Recall ORDER — forward is the walk; backward and shuffled are the check ──
   // Reciting a route in reverse (or from a random start) is the classic probe
   // for whether content is anchored to PLACES or just rehearsed as a list: a
@@ -463,6 +509,17 @@
   function buildRecallOrder(palace, opts) {
     opts = opts || {};
     var ids = ((palace && palace.route) || []).filter(function (id) { return id !== '__entry'; });
+    // `only` narrows the walk to a subset — the loci actually due for review.
+    // Spacing only pays off if the due set is what gets practised; re-testing the
+    // whole palace every time is arithmetically a schedule and pedagogically none.
+    // Unknown ids are ignored, and an empty result falls back to the full route so
+    // a stale due list can never hand back a quiz with nothing in it.
+    if (Array.isArray(opts.only) && opts.only.length) {
+      var keep = {};
+      opts.only.forEach(function (id) { keep[String(id)] = true; });
+      var narrowed = ids.filter(function (id) { return keep[id]; });
+      if (narrowed.length) ids = narrowed;
+    }
     var dir = String(opts.direction || 'forward');
     if (dir === 'backward') return ids.reverse();          // filter() already gave us a fresh array
     if (dir === 'shuffle') {
@@ -575,16 +632,20 @@
   // results: {locusId: {attempts, correct, revealed}} → totals + points.
   // First-try recalls score full marks; eventual recalls half; reveals nothing.
   function scoreRecall(results) {
-    var total = 0, firstTry = 0, eventual = 0, revealed = 0;
+    var total = 0, firstTry = 0, eventual = 0, revealed = 0, selfRated = 0;
     Object.keys(results || {}).forEach(function (id) {
       var r = results[id]; if (!r) return;
       total++;
       if (r.revealed) { revealed++; return; }
+      if (r.selfRated) { selfRated++; if (r.correct) eventual++; return; }
       if (r.correct && r.attempts <= 1) firstTry++;
       else if (r.correct) eventual++;
     });
     return {
       total: total, firstTry: firstTry, eventual: eventual, revealed: revealed,
+      // Self-rated walks are counted separately so a summary can say what kind of
+      // evidence it is rather than presenting a self-report as a measured recall.
+      selfRated: selfRated,
       points: firstTry * 10 + eventual * 5,
       perfect: total > 0 && firstTry === total
     };
@@ -599,14 +660,26 @@
   // slip, so review focus tracks the student's OWN measured memory.
   var _REVIEW_LADDER = [1, 3, 7, 16, 35, 75];   // days between successful reviews
 
+  // Strength is a claim about RETRIEVAL, so it has to distinguish how the answer
+  // arrived. Being right on the fourth guess is elimination, not recall, and used
+  // to score the same 0.6 as a near-miss — which advanced the ladder and bought a
+  // longer gap. A self-rated "I remembered" is a real retrieval attempt but an
+  // unverified one, so it tops out where an eventual recall does.
   function _strengthOf(r) {
     if (!r) return 0;
     if (r.revealed) return 0.2;
-    if (r.correct && (r.attempts || 1) <= 1) return 1.0;   // first try
-    if (r.correct) return 0.6;                             // got it, eventually
-    return 0;                                              // missed
+    var attempts = isNum(r.attempts) ? r.attempts : 1;
+    if (!r.correct) return 0;                              // missed
+    if (r.selfRated) return 0.6;                           // self-reported, not verified
+    if (attempts <= 1) return 1.0;                         // first try
+    if (attempts <= 2) return 0.6;                         // got it, eventually
+    return 0.2;                                            // guessed through the options
   }
   function _parseDay(iso) { var t = Date.parse(iso); return isNaN(t) ? 0 : t; }
+  function _sameUtcDay(a, b) {
+    if (!a || !b) return false;
+    return String(a).slice(0, 10) === String(b).slice(0, 10);
+  }
   function _addDays(iso, days) { return new Date(_parseDay(iso) + days * 86400000).toISOString(); }
 
   // prevMastery + a recall walk's per-locus results (+ now) → updated mastery map.
@@ -617,6 +690,20 @@
       var s = _strengthOf(results[id]);
       var prev = m[id] || { reps: 0 };
       var prevReps = isNum(prev.reps) ? prev.reps : 0;
+      var lastResult0 = (results[id] && results[id].revealed) ? 'revealed' : (s >= 1 ? 'first-try' : (s >= 0.6 ? 'eventual' : 'missed'));
+      // Massed practice must not buy a longer gap. Walking the same palace six
+      // times in five minutes used to advance reps six times and push the next
+      // review out to the top of the ladder — the exact opposite of spacing. A
+      // repeat success on a day already reviewed is recorded but does NOT advance
+      // the schedule. A repeat FAILURE still demotes: forgetting is news whenever
+      // it happens, and the item should come back tomorrow.
+      if (_sameUtcDay(prev.lastReviewedAt, nowISO) && s >= 0.6) {
+        m[id] = {
+          reps: prevReps, strength: s, lastResult: lastResult0, lastReviewedAt: nowISO,
+          dueAt: prev.dueAt || _addDays(nowISO, 1)
+        };
+        return;
+      }
       var reps = (s >= 0.6) ? (prevReps + 1) : Math.max(0, prevReps - 1);
       // Success indexes the ladder at reps-1, so the FIRST correct recall spaces at
       // 1 day (ladder[0]), not 3. ANY failure to recall — a wrong guess (s=0) OR a
@@ -624,8 +711,7 @@
       // an item weeks out (which the old `s === 0` gate did to revealed items).
       var idx = Math.max(0, Math.min(_REVIEW_LADDER.length - 1, reps - 1));
       var intervalDays = (s < 0.6) ? 1 : _REVIEW_LADDER[idx];
-      var lastResult = (results[id] && results[id].revealed) ? 'revealed' : (s >= 1 ? 'first-try' : (s >= 0.6 ? 'eventual' : 'missed'));
-      m[id] = { reps: reps, strength: s, lastResult: lastResult, lastReviewedAt: nowISO, dueAt: _addDays(nowISO, intervalDays) };
+      m[id] = { reps: reps, strength: s, lastResult: lastResult0, lastReviewedAt: nowISO, dueAt: _addDays(nowISO, intervalDays) };
     });
     return m;
   }
@@ -2496,6 +2582,8 @@
     describeLocusForSR: describeLocusForSR,
     describeLocusForRecall: describeLocusForRecall,
     buildRecallBank: buildRecallBank,
+    buildLocusChoices: buildLocusChoices,
+    RECALL_CHOICE_COUNT: RECALL_CHOICE_COUNT,
     matchAnswer: matchAnswer,
     scoreRecall: scoreRecall,
     buildPromptEvalPrompt: buildPromptEvalPrompt,

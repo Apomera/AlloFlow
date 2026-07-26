@@ -5776,6 +5776,8 @@
     "refine_failed": "Could not refine — try rephrasing.",
     "locus_of": "Locus {idx} of {total}",
     "picture_this": "Picture this:",
+    "recall_focused_note": "Focused review: only the {count} loci that were due.",
+    "recall_self_rated_note": "You rated {count} of these yourself — practice, not a tested recall.",
     "build_toggle": "Build",
     "build_tooltip": "Extend the palace yourself: point at a spot on any room floor and click to add a new locus there",
     "build_hint": "Point at the floor inside any room and click to add a new spot. Rooms you add are yours to keep — the palace grows, and nothing you already learned moves.",

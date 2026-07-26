@@ -2925,7 +2925,6 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const startedByArmRef = React.useRef(false);
   const [recallBank, setRecallBank] = React.useState([]);
   const bankRef = React.useRef([]);
-  bankRef.current = recallBank;
   const [answered, setAnswered] = React.useState(0);
   const [recallHint, setRecallHint] = React.useState(null);
   const [canReveal, setCanReveal] = React.useState(false);
@@ -3191,7 +3190,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     setWrongFlash(false);
     setSelfRevealId(null);
   };
-  const startRecall = (mode, viaArm, direction) => {
+  const startRecall = (mode, viaArm, direction, only) => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     if (!MP || recall) return;
     const palace = MP.buildPalace(data || {});
@@ -3203,11 +3202,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     _resetRecallRun();
     const seed = Date.now() % 2147483647 || 7;
     const dir = (MP.RECALL_DIRECTIONS || ["forward"]).indexOf(direction) >= 0 ? direction : "forward";
-    const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed }) : targets;
+    const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed, only }) : targets;
     recallOrderRef.current = order.length ? order : targets;
-    setRecallBank(mode === "self" ? [] : MP.buildRecallBank(palace, seed));
+    setRecallBank([]);
     startedByArmRef.current = viaArm === true;
-    setRecall({ mode: mode === "type" ? "type" : mode === "self" ? "self" : "bank", seed, direction: dir, startAt: recallOrderRef.current[0] });
+    setRecall({ mode: mode === "type" ? "type" : mode === "self" ? "self" : "bank", seed, direction: dir, focused: !!(only && only.length), startAt: recallOrderRef.current[0] });
     if (addToast) addToast(t("memory_palace.recall_start") || "\u{1F9E0} The labels are covered. Walk the palace and recall what lives at each locus!", "info");
     if (isTeacherMode && viaArm !== true && typeof onRecallArm === "function") {
       try {
@@ -3244,10 +3243,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     _resetRecallRun();
     const seed = Date.now() % 2147483647 || 11;
     const dir = (MP.RECALL_DIRECTIONS || []).indexOf(direction) >= 0 ? direction : recall.direction || "forward";
-    const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed }) : targets;
+    const only = recall.focused ? recallOrderRef.current.slice() : null;
+    const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed, only }) : targets;
     recallOrderRef.current = order.length ? order : targets;
-    setRecallBank(mode === "self" ? [] : MP.buildRecallBank(palace, seed));
-    setRecall({ mode, seed, direction: dir, startAt: recallOrderRef.current[0] });
+    setRecallBank([]);
+    setRecall({ mode, seed, direction: dir, focused: !!recall.focused, startAt: recallOrderRef.current[0] });
   };
   React.useEffect(() => {
     if (armed && !isTeacherMode && !recall && ready && !failed && hasContent) startRecall("bank", true);
@@ -3256,6 +3256,17 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       exitRecall();
     }
   }, [armed, isTeacherMode, ready, failed, recall, hasContent]);
+  const recallChoices = React.useMemo(() => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!MP || !MP.buildLocusChoices || !recall || recall.mode !== "bank") return [];
+    if (!palaceRef.current || !current || current.entry) return [];
+    try {
+      return MP.buildLocusChoices(palaceRef.current, current.id, { seed: recall.seed });
+    } catch (e) {
+      return [];
+    }
+  }, [recall, current, nonce]);
+  bankRef.current = recallChoices;
   const advanceRecall = () => {
     if (!palaceRef.current || !handleRef.current) return;
     const route = palaceRef.current.route;
@@ -3288,7 +3299,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     if (!MP || !palaceRef.current || finishedRef.current) return;
     finishedRef.current = true;
-    const targets = palaceRef.current.route.filter((id) => id !== "__entry");
+    const targets = recallOrderRef.current && recallOrderRef.current.length ? recallOrderRef.current.slice() : palaceRef.current.route.filter((id) => id !== "__entry");
     const res = recallResultsRef.current;
     targets.forEach((id) => {
       if (!res[id]) res[id] = { attempts: 0, correct: false, revealed: true };
@@ -3349,14 +3360,6 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         handleRef.current.revealLocus(cur.id);
         handleRef.current.setLocusStatus(cur.id, "correct");
       }
-      setRecallBank((bank) => {
-        const i = bank.findIndex((c) => c.id === cur.id);
-        const j = i >= 0 ? i : bank.findIndex((c) => MP.matchAnswer(cur.label, c.label));
-        if (j < 0) return bank;
-        const nb = bank.slice();
-        nb.splice(j, 1);
-        return nb;
-      });
       setRecallHint(null);
       setCanReveal(false);
       setTypedAnswer("");
@@ -3386,18 +3389,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       handleRef.current.revealLocus(cur.id);
       handleRef.current.setLocusStatus(cur.id, "incorrect");
     }
-    setRecallBank((bank) => {
-      const i = bank.findIndex((c) => c.id === cur.id);
-      if (i < 0) return bank;
-      const nb = bank.slice();
-      nb.splice(i, 1);
-      return nb;
-    });
     setRecallHint(null);
     setCanReveal(false);
     setTypedAnswer("");
     setAnswered((n) => n + 1);
-    setTimeout(() => advanceRecall(), 700);
+    _laterRecall(() => advanceRecall());
   };
   const revealSelfCheck = () => {
     const cur = currentRef.current;
@@ -3410,7 +3406,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     if (!cur || !recall || recall.mode !== "self" || finished || selfRevealId !== cur.id) return;
     const res = recallResultsRef.current;
     if (res[cur.id]) return;
-    res[cur.id] = { attempts: 1, correct: !!remembered, revealed: false, selfChecked: true };
+    res[cur.id] = { attempts: 1, correct: !!remembered, revealed: false, selfChecked: true, selfRated: true };
     attemptsTotalRef.current += 1;
     if (handleRef.current) handleRef.current.setLocusStatus(cur.id, remembered ? "correct" : "incorrect");
     if (playSound) playSound(remembered ? "correct" : "reveal");
@@ -4473,7 +4469,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   )))), !presenting && !recall && dueInfo && dueInfo.dueCount > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u{1F501} ", (t("memory_palace.review_due") || "{count} loci are ready for review").replace("{count}", String(dueInfo.dueCount))), " ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-800" }, t("memory_palace.review_due_why") || "\u2014 walk the palace again to strengthen the ones fading from memory.")), recallEligible && /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: () => startRecall("bank", false),
+      onClick: () => startRecall("bank", false, "forward", (dueInfo.due || []).concat(dueInfo.newIds || [])),
       className: "flex-shrink-0 flex items-center gap-1 bg-amber-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-amber-700 transition-colors"
     },
     "\u{1F501} ",
@@ -5010,7 +5006,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u2716 ",
     t("memory_palace.decorate_remove") || "Remove art at this locus"
-  )))), !presenting && recall && finished && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, finished.perfect ? t("memory_palace.recall_perfect") || "\u{1F3DB}\u2728 Perfect walk! Every locus recalled on the first try." : (t("memory_palace.recall_summary") || "Recalled {ok} of {total} ({first} on the first try).").replace("{ok}", String(finished.firstTry + finished.eventual)).replace("{total}", String(finished.total)).replace("{first}", String(finished.firstTry))), " ", "\xB7 \u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_points") || "{points} points").replace("{points}", String(finished.points)), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-emerald-800" }, t("memory_palace.order_next") || "Try it a harder way:"), recall.direction !== "backward" && /* @__PURE__ */ React.createElement(
+  )))), !presenting && recall && finished && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, finished.perfect ? t("memory_palace.recall_perfect") || "\u{1F3DB}\u2728 Perfect walk! Every locus recalled on the first try." : (t("memory_palace.recall_summary") || "Recalled {ok} of {total} ({first} on the first try).").replace("{ok}", String(finished.firstTry + finished.eventual)).replace("{total}", String(finished.total)).replace("{first}", String(finished.firstTry))), " ", "\xB7 \u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_points") || "{points} points").replace("{points}", String(finished.points)), recall.focused && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-xs text-emerald-800" }, (t("memory_palace.recall_focused_note") || "Focused review: only the {count} loci that were due.").replace("{count}", String(finished.total))), finished.selfRated > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-xs text-emerald-800" }, (t("memory_palace.recall_self_rated_note") || "You rated {count} of these yourself \u2014 practice, not a tested recall.").replace("{count}", String(finished.selfRated))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-emerald-800" }, t("memory_palace.order_next") || "Try it a harder way:"), recall.direction !== "backward" && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -5054,7 +5050,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F441} ",
     t("memory_palace.reveal_then_rate") || "Reveal, then rate my recall"
-  ) : recall.mode === "bank" ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, recallBank.map((chip) => /* @__PURE__ */ React.createElement(
+  ) : recall.mode === "bank" ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, recallChoices.map((chip) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: chip.id,

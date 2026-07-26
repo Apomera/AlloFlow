@@ -193,15 +193,16 @@ describe('MemoryPalace — spaced-repetition mastery (pure scheduling)', () => {
     expect(m.a.reps).toBe(1);
     expect(daysFromNow(m.a.dueAt)).toBe(1);
     expect(m.a.lastResult).toBe('first-try');
-    // another strong recall → reps 2 → ladder[1] = 3 days
-    m = MP.updateMastery(m, { a: { attempts: 1, correct: true } }, NOW);
+    // another strong recall ON A LATER DAY → reps 2 → ladder[1] = 3 days
+    const NEXT = '2026-07-04T12:00:00.000Z';
+    m = MP.updateMastery(m, { a: { attempts: 1, correct: true } }, NEXT);
     expect(m.a.reps).toBe(2);
-    expect(daysFromNow(m.a.dueAt)).toBe(3);
+    expect(Math.round((Date.parse(m.a.dueAt) - Date.parse(NEXT)) / dayMs)).toBe(3);
     // a miss → reps drops to 1, and due tomorrow (strength 0 ⇒ 1 day)
-    m = MP.updateMastery(m, { a: { attempts: 3, correct: false } }, NOW);
+    m = MP.updateMastery(m, { a: { attempts: 3, correct: false } }, NEXT);
     expect(m.a.reps).toBe(1);
     expect(m.a.strength).toBe(0);
-    expect(daysFromNow(m.a.dueAt)).toBe(1);
+    expect(Math.round((Date.parse(m.a.dueAt) - Date.parse(NEXT)) / dayMs)).toBe(1);
     expect(m.a.lastResult).toBe('missed');
   });
 
@@ -214,9 +215,9 @@ describe('MemoryPalace — spaced-repetition mastery (pure scheduling)', () => {
     expect(daysFromNow(m.x.dueAt)).toBe(1);
   });
 
-  it('eventual (multi-attempt) and revealed recalls score partial strength', () => {
+  it('eventual (second-attempt) and revealed recalls score partial strength', () => {
     const m = MP.updateMastery({}, {
-      b: { attempts: 3, correct: true },   // eventual → 0.6
+      b: { attempts: 2, correct: true },   // eventual → 0.6
       c: { attempts: 4, revealed: true },  // revealed → 0.2
     }, NOW);
     expect(m.b.strength).toBe(0.6);
@@ -766,7 +767,7 @@ describe('MemoryPalace view — own image + recall order wiring', () => {
 
   it('runs the recall check in a chosen order without moving the palace', () => {
     const v = view();
-    expect(v).toContain('MP.buildRecallOrder(palace, { direction: dir, seed })');
+    expect(v).toContain('MP.buildRecallOrder(palace, { direction: dir, seed, only })');
     expect(v).toContain('recallOrderRef.current');
     expect(v).toContain("retryRecall('backward')");
     expect(v).toContain("retryRecall('shuffle')");
@@ -990,5 +991,138 @@ describe('doc_pipeline — Memory Palace print projection', () => {
       expect(scoped).toContain('_palaceRooms()');
       expect(scoped).not.toContain('b.mnemonics');
     });
+  });
+});
+
+// ── The assessment spine ──────────────────────────────────────────────────
+// Four defects that between them let a student mark a whole palace "mastered
+// until October" in about two minutes, with no retrieval at all. Each is pinned
+// here because each was invisible from the UI.
+describe('MemoryPalace — assessment spine', () => {
+  const T0 = '2026-07-26T10:00:00.000Z';
+  const sameDayLater = '2026-07-26T10:05:00.000Z';
+  const nextDay = '2026-07-27T10:00:00.000Z';
+  const dayMs = 86400000;
+  const inDays = (iso, from) => Math.round((Date.parse(iso) - Date.parse(from)) / dayMs);
+
+  it('massed practice cannot buy a longer interval', () => {
+    let m = MP.updateMastery({}, { a: { attempts: 1, correct: true } }, T0);
+    const firstDue = m.a.dueAt;
+    for (let i = 0; i < 5; i++) {
+      m = MP.updateMastery(m, { a: { attempts: 1, correct: true } }, sameDayLater);
+    }
+    expect(m.a.reps).toBe(1);            // was 6
+    expect(m.a.dueAt).toBe(firstDue);    // was pushed to +75 days
+    expect(inDays(m.a.dueAt, T0)).toBe(1);
+  });
+
+  it('still advances on a genuinely later day', () => {
+    let m = MP.updateMastery({}, { a: { attempts: 1, correct: true } }, T0);
+    m = MP.updateMastery(m, { a: { attempts: 1, correct: true } }, nextDay);
+    expect(m.a.reps).toBe(2);
+    expect(inDays(m.a.dueAt, nextDay)).toBe(3);
+  });
+
+  it('a same-day FAILURE still demotes — forgetting is news whenever it happens', () => {
+    let m = MP.updateMastery({}, { a: { attempts: 1, correct: true } }, T0);
+    m = MP.updateMastery(m, { a: { attempts: 1, correct: true } }, nextDay);   // reps 2
+    const slipped = MP.updateMastery(m, { a: { attempts: 2, correct: false } }, nextDay);
+    expect(slipped.a.reps).toBe(1);
+    expect(slipped.a.strength).toBe(0);
+    expect(inDays(slipped.a.dueAt, nextDay)).toBe(1);
+  });
+
+  it('guessing through the options earns no ladder advance', () => {
+    const brute = MP.updateMastery({}, { a: { attempts: 4, correct: true } }, T0);
+    expect(brute.a.strength).toBe(0.2);
+    expect(brute.a.reps).toBe(0);                     // was 0.6 / reps 1
+    expect(inDays(brute.a.dueAt, T0)).toBe(1);
+    const second = MP.updateMastery({}, { a: { attempts: 2, correct: true } }, T0);
+    expect(second.a.strength).toBe(0.6);              // a near miss still counts
+    expect(second.a.reps).toBe(1);
+  });
+
+  it('a self-rated recall is never scored as a verified first-try one', () => {
+    const self = MP.updateMastery({}, { a: { attempts: 1, correct: true, selfRated: true } }, T0);
+    const real = MP.updateMastery({}, { a: { attempts: 1, correct: true } }, T0);
+    expect(self.a.strength).toBe(0.6);
+    expect(real.a.strength).toBe(1);
+    const score = MP.scoreRecall({ a: { attempts: 1, correct: true, selfRated: true } });
+    expect(score.selfRated).toBe(1);
+    expect(score.firstTry).toBe(0);      // not presented as a measured first-try recall
+    expect(score.eventual).toBe(1);
+  });
+
+  it('a review can be narrowed to the loci that are actually due', () => {
+    const p = MP.buildPalace(sampleData());
+    const all = MP.buildRecallOrder(p, {});
+    const due = [all[0], all[2]];
+    expect(MP.buildRecallOrder(p, { only: due })).toEqual(due);
+    // direction still applies inside the narrowed set
+    expect(MP.buildRecallOrder(p, { only: due, direction: 'backward' })).toEqual(due.slice().reverse());
+    // a stale/unknown due list must never produce an empty quiz
+    expect(MP.buildRecallOrder(p, { only: ['gone_1', 'gone_2'] })).toEqual(all);
+    expect(MP.buildRecallOrder(p, { only: [] })).toEqual(all);
+  });
+
+  it('the choice set stays a real question at every locus', () => {
+    const p = MP.buildPalace(sampleData());
+    const ids = p.route.filter((id) => id !== '__entry');
+    ids.forEach((id) => {
+      const choices = MP.buildLocusChoices(p, id, { seed: 11 });
+      expect(choices.length).toBeGreaterThan(1);            // never a forced single choice
+      expect(choices.some((c) => c.id === id)).toBe(true);  // the answer is present
+      const labels = choices.map((c) => c.label);
+      expect(new Set(labels).size).toBe(labels.length);     // no duplicate-label ambiguity
+    });
+  });
+
+  it('choices are stable for a locus but differ between loci and runs', () => {
+    const p = MP.buildPalace(sampleData());
+    const a1 = MP.buildLocusChoices(p, 'b0_i0', { seed: 5 });
+    const a2 = MP.buildLocusChoices(p, 'b0_i0', { seed: 5 });
+    expect(a2).toEqual(a1);
+    expect(MP.buildLocusChoices(p, 'b0_i1', { seed: 5 })).not.toEqual(a1);
+    expect(MP.buildLocusChoices(p, 'b0_i0', { seed: 6 })).not.toEqual(a1);
+    expect(MP.buildLocusChoices(p, 'no_such_locus', { seed: 5 })).toEqual([]);
+  });
+
+  it('caps the choice set without ever dropping the answer', () => {
+    const p = MP.buildPalace(sampleData());
+    const small = MP.buildLocusChoices(p, 'b0_i0', { seed: 3, size: 2 });
+    expect(small).toHaveLength(2);
+    expect(small.some((c) => c.id === 'b0_i0')).toBe(true);
+  });
+});
+
+describe('MemoryPalace view — assessment spine wiring', () => {
+  const view = () => readFileSync(resolve(process.cwd(), 'view_renderers_source.jsx'), 'utf8');
+
+  it('Review now starts a focused walk, unlike the plain recall button', () => {
+    const v = view();
+    expect(v).toContain("startRecall('bank', false, 'forward', (dueInfo.due || []).concat(dueInfo.newIds || []))");
+    // and the plain button still walks everything
+    expect(v).toContain("startRecall('bank', false)");
+  });
+
+  it('a focused walk only scores what it actually covered', () => {
+    const v = view();
+    const fn = v.slice(v.indexOf('const finishRecall'), v.indexOf('const finishRecall') + 1200);
+    expect(fn).toContain('recallOrderRef.current');
+    expect(fn).not.toMatch(/const targets = palaceRef\.current\.route\.filter/);
+  });
+
+  it('renders per-locus choices rather than a bank that empties as you go', () => {
+    const v = view();
+    expect(v).toContain('MP.buildLocusChoices(palaceRef.current, current.id, { seed: recall.seed })');
+    expect(v).toContain('{recallChoices.map((chip) => (');
+    // the two splices that used to consume the bank are gone
+    expect(v).not.toContain('const nb = bank.slice(); nb.splice(j, 1); return nb;');
+    expect(v).not.toContain('nb.splice(i, 1); return nb; });');
+  });
+
+  it('marks a self-check result as self-reported for everything downstream', () => {
+    const v = view();
+    expect(v).toContain('selfChecked: true, selfRated: true');
   });
 });

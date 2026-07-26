@@ -5235,6 +5235,8 @@
     "refine_failed": "No se pudo refinar; prueba a reformular.",
     "locus_of": "Locus {idx} de {total}",
     "picture_this": "Imagina esto:",
+    "recall_focused_note": "Repaso enfocado: solo los {count} lugares que tocaban.",
+    "recall_self_rated_note": "Tú mismo evaluaste {count} de estos: es práctica, no un recuerdo comprobado.",
     "build_toggle": "Construir",
     "build_tooltip": "Amplía el palacio tú mismo: apunta a un punto del piso de cualquier sala y haz clic para agregar ahí un lugar nuevo",
     "build_hint": "Apunta al piso dentro de una sala y haz clic para agregar un lugar nuevo. Las salas que agregues son tuyas: el palacio crece y nada de lo que ya aprendiste se mueve.",
