@@ -221,6 +221,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Remediated Model UN's 90-second crisis-response deadline: the Chair can pause, resume, or add 60 seconds for every delegate without losing drafts or responses; paused sessions retain their remaining time and neither tick nor close. Timer changes are announced separately from the per-second visual timer; response instructions are programmatically associated with the text area; and pause, extend, grade, close/end, and submit actions provide 44 CSS-pixel targets with dual-color visible focus and forced-colors support (WCAG 1.3.1, 2.2.1, 2.4.6, 2.4.7, 2.5.8, 3.3.2, 4.1.2, 4.1.3).
 
+- Programmatically associated Model UN's clause, amendment text, optional amendment rationale, backchannel note, and private-notes fields with persistent visible labels; kept the speech composer directly named near its declaration; and extended dual-color focus-visible and forced-colors styling to all remediated fields. The focused static audit now reports no input-label findings in the module (WCAG 1.3.1, 2.4.6, 2.4.7, 3.3.2, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

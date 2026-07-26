@@ -941,9 +941,9 @@
     var style = document.createElement('style');
     style.id = 'mun-crisis-a11y-css';
     style.textContent = [
-      '.mun-crisis-control:focus-visible, .mun-crisis-response:focus-visible { outline: 3px solid #fff; outline-offset: 3px; box-shadow: 0 0 0 6px #1d4ed8; }',
+      '.mun-crisis-control:focus-visible, .mun-crisis-response:focus-visible, .mun-form-control:focus-visible { outline: 3px solid #fff; outline-offset: 3px; box-shadow: 0 0 0 6px #1d4ed8; }',
       '@media (forced-colors: active) {',
-      '  .mun-crisis-control:focus-visible, .mun-crisis-response:focus-visible { outline-color: Highlight; box-shadow: none; }',
+      '  .mun-crisis-control:focus-visible, .mun-crisis-response:focus-visible, .mun-form-control:focus-visible { outline-color: Highlight; box-shadow: none; }',
       '}'
     ].join('\n');
     if (document.head) document.head.appendChild(style);
@@ -3524,6 +3524,8 @@
         }, loading ? '⏳ Generating…' : (userPaper && userPaper.stance ? '✨ AI starter (from your paper)' : '✨ AI starter'))
       ),
       h('textarea', {
+        className: 'mun-form-control',
+        'aria-label': 'Compose your opening speech',
         value: text,
         onChange: function(e) { setText(e.target.value); },
         placeholder: shortForm
@@ -3535,8 +3537,7 @@
           background: 'rgba(255,255,255,0.04)', color: '#e2e8f0',
           border: '1px solid #475569', borderRadius: 6, resize: 'vertical',
           boxSizing: 'border-box'
-        },
-        'aria-label': 'Compose your opening speech'
+        }
       }),
       // Word-count progress bar: shows progress toward the target window
       // (green inside target band, yellow under-/over-target, gray empty).
@@ -3801,7 +3802,13 @@
                 }, t.label);
               })
             ),
+            h('label', {
+              htmlFor: 'mun_clause_text',
+              style: { display: 'block', fontSize: 11, color: '#ddd6fe', fontWeight: 700, marginBottom: 4 }
+            }, clauseType === 'operative' ? 'Operative clause text' : 'Preambulatory clause text'),
             h('textarea', {
+              id: 'mun_clause_text',
+              className: 'mun-form-control',
               value: text,
               onChange: function(e) { setText(e.target.value); },
               placeholder: clauseType === 'operative'
@@ -4394,7 +4401,13 @@
               }, t.label);
             })
           ),
+          h('label', {
+            htmlFor: 'mun_amendment_text',
+            style: { display: 'block', fontSize: 11, color: '#fde68a', fontWeight: 700, marginBottom: 4 }
+          }, amType === 'strike' ? 'Text to remove' : (amType === 'add' ? 'Text to add' : 'Rewritten clause text')),
           h('textarea', {
+            id: 'mun_amendment_text',
+            className: 'mun-form-control',
             value: text,
             onChange: function(e) { setText(e.target.value); },
             placeholder: amType === 'strike'
@@ -4410,7 +4423,13 @@
               marginBottom: 6
             }
           }),
+          h('label', {
+            htmlFor: 'mun_amendment_rationale',
+            style: { display: 'block', fontSize: 11, color: '#fde68a', fontWeight: 700, marginBottom: 4 }
+          }, 'Diplomatic rationale (optional, one sentence)'),
           h('input', {
+            id: 'mun_amendment_rationale',
+            className: 'mun-form-control',
             type: 'text', value: rationale,
             onChange: function(e) { setRationale(e.target.value); },
             placeholder: 'Diplomatic rationale (1 sentence, optional)',
@@ -6988,7 +7007,13 @@
                 })
               )
             ),
+            h('label', {
+              htmlFor: 'mun_backchannel_note',
+              style: { display: 'block', fontSize: 11, color: '#c4b5fd', fontWeight: 700, marginBottom: 4 }
+            }, 'Private note to the selected delegation'),
             h('textarea', {
+              id: 'mun_backchannel_note',
+              className: 'mun-form-control',
               value: text,
               onChange: function(e) { setText(e.target.value); },
               placeholder: 'Discreet diplomatic note (e.g., "Will you co-sponsor if we add a sunset clause?")',
@@ -7276,7 +7301,10 @@
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
           h('span', { style: { fontSize: 18 } }, '📓'),
           h('div', { style: { flex: 1 } },
-            h('div', { style: { fontSize: 10, color: '#fcd34d', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 } }, 'Private notes'),
+            h('label', {
+              htmlFor: 'mun_private_notes',
+              style: { display: 'block', fontSize: 10, color: '#fcd34d', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }
+            }, 'Private notes'),
             h('div', { style: { fontSize: 11, color: '#cbd5e1' } }, myCountry.flag + ' ' + myCountry.name + ' · only you see this')
           ),
           h('button', {
@@ -7286,6 +7314,8 @@
           }, '✕')
         ),
         h('textarea', {
+          id: 'mun_private_notes',
+          className: 'mun-form-control',
           value: notes,
           onChange: function(e) { setNotes(e.target.value.slice(0, 4000)); },
           placeholder: 'Priorities, allies, talking points, names…\n\nExamples:\n- Push $100B fund\n- Ally with BRA, KEN\n- Watch CHN amendment',
