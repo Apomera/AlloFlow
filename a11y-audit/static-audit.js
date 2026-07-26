@@ -78,7 +78,11 @@ const CHECKS = [
     severity: 'critical',
     description: 'Focus indicator suppressed via outline:none or outline:"none" without focus:ring or boxShadow replacement',
     test(line, lineNum, lines) {
-      const hasOutlineNone = /outline\s*:\s*['"]?none['"]?/.test(line) || /outline-none/.test(line);
+      // Remove only complete pointer-focus rules that explicitly preserve
+      // :focus-visible. Other outline suppression on the same source line must
+      // remain auditable.
+      const auditableLine = line.replace(/[^{}]*:focus:not\(\s*:focus-visible\s*\)[^{]*\{[^{}]*outline\s*:\s*['"]?none['"]?[^{}]*\}/g, '');
+      const hasOutlineNone = /outline\s*:\s*['"]?none['"]?/.test(auditableLine) || /outline-none/.test(auditableLine);
       if (!hasOutlineNone) return false;
       // Check if same line has focus:ring or focus:border or boxShadow
       if (/focus:ring/.test(line) || /focus:border/.test(line)) return false;

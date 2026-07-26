@@ -74,4 +74,20 @@ describe('static audit UI heuristics', () => {
     const report = scanFixture("const icon = h('svg', { viewBox: '0 0 20 20' });");
     expect(report).toContain('SVG-001');
   });
+  it('does not report pointer-only outline suppression that preserves focus-visible', () => {
+    const report = scanFixture([
+      ".tool button:focus-visible { outline: 3px solid #4f46e5; }",
+      ".tool :focus:not(:focus-visible) { outline: none; }",
+    ].join('\n'));
+    expect(report).not.toContain('FOCUS-001');
+  });
+
+  it('still reports unqualified outline suppression without a replacement', () => {
+    const report = scanFixture(".tool input:focus { outline: none; }");
+    expect(report).toContain('FOCUS-001');
+  });
+  it('still reports another unqualified rule sharing a line with a pointer-only rule', () => {
+    const report = scanFixture(".tool input:focus { outline: none; } .tool :focus:not(:focus-visible) { outline: none; }");
+    expect(report).toContain('FOCUS-001');
+  });
 });
