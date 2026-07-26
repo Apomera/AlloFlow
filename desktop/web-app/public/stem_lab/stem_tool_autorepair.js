@@ -3286,6 +3286,1419 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // { id: 'log_<timestamp>', date: 'YYYY-MM-DD', odo: 85432, service: 'Oil + filter', cost: 45, notes: 'Synthetic 0W-20, OEM filter' }
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 9.98: UNDER-HOOD 3D TOUR — "where is it and what does it look like"
+  //
+  // Every other module in this tool teaches PROCEDURE. This one teaches
+  // LOCATION, which is the thing a flat diagram teaches worst and the thing a
+  // first-time owner is actually missing when they pop the hood and freeze.
+  //
+  // Layout modelled: transverse front-wheel-drive 4-cylinder, left-hand drive
+  // (the common first car). Exact placement varies by make and model and the
+  // UI says so out loud — what generalizes is the SHAPE of the bay, what each
+  // part looks like, and one hard rule: the brake fluid reservoir is on the
+  // firewall on the driver's side, because it bolts to the back of the brake
+  // pedal's booster.
+  //
+  // Axes: +x = driver's side (LHD), −z = firewall/rear of bay, +z = grille.
+  // y = 0 is the bay floor. Units are arbitrary "bay widths," not metres.
+  // ─────────────────────────────────────────────────────────
+
+  var UNDER_HOOD_PARTS = [
+    { id: 'engine', icon: '⚙️', label: 'Engine block',
+      shape: 'box', pos: [0, 0.30, -0.15], size: [1.5, 0.55, 0.75], color: '#64748b',
+      where: 'The big metal mass in the middle. On most first cars it sits sideways (transverse), so the "front" of the engine faces one fender rather than the grille.',
+      what: 'Where fuel burns and the crankshaft turns. Everything else in the bay exists to feed it, cool it, or take power off it.',
+      check: 'You do not open this. What you check is everything attached to it — oil, coolant, belt — and whether it is leaking, which shows as wet streaks or crust on the block.',
+      fail: 'Knocking under acceleration, blue smoke (burning oil), white sweet-smelling smoke (burning coolant), or a puddle under the car. Any of these means stop and get it looked at.',
+      safety: 'Hot enough to give a serious burn for a long time after shutdown. So is the exhaust manifold bolted to it.' },
+
+    { id: 'oilcap', icon: '🛢️', label: 'Oil filler cap',
+      shape: 'cyl', pos: [-0.20, 0.60, -0.15], size: [0.12, 0.12, 0.10], color: '#f59e0b',
+      where: 'Screw-on cap on TOP of the engine, usually stamped with an oil-can symbol.',
+      what: 'Where new oil goes in. Not where you check the level — that is the dipstick.',
+      check: 'Only opened when you are adding oil. Add a little at a time and re-check the dipstick; overfilling is its own problem, not a bonus.',
+      fail: 'A thick tan or milky sludge on the underside of the cap can mean coolant is mixing with oil. That is a real finding worth a shop visit, though a small amount of condensation on short winter trips is normal and not the same thing.',
+      maine: 'Short cold trips are exactly when harmless cap condensation shows up. Judge it after a long drive, not after a run to the store in February.' },
+
+    { id: 'dipstick', icon: '📏', label: 'Oil dipstick',
+      shape: 'dipstick', pos: [0.52, 0.56, 0.18], size: [0.06, 0.42, 0.06], color: '#eab308',
+      where: 'A bright loop handle — usually yellow or orange — sticking out of the block. Deliberately coloured so you can find it fast.',
+      what: 'A marked metal blade that reads how much oil is in the pan.',
+      check: 'Engine off, car on level ground, wait a few minutes after shutdown so oil drains back down. Pull it, wipe it clean, push it fully back in, pull it again — the second pull is the real reading. Level should sit between the two marks. A few makes specify a warm engine, so check your manual once and then do it the same way every time.',
+      fail: 'Below the low mark means add oil now. Gritty, or milky like coffee with cream, means stop driving and get advice.',
+      maine: 'Oil thickens in deep cold, so let the car sit level a few extra minutes before trusting a January reading.' },
+
+    { id: 'coolant', icon: '🧊', label: 'Coolant overflow tank',
+      shape: 'tank', pos: [-1.05, 0.34, -0.60], size: [0.32, 0.46, 0.32], color: '#f8fafc', capColor: '#0ea5e9',
+      where: 'A translucent plastic jug off to one side, with MIN and MAX lines moulded into it and usually a bright cap.',
+      what: 'The expansion tank for the cooling system. Coolant grows when hot and gets pushed here, then gets drawn back as the engine cools.',
+      check: 'Read the level against the MIN/MAX lines with the engine COLD. You can do this without opening anything — that is the whole point of the tank being see-through.',
+      fail: 'Dropping repeatedly means a leak somewhere in the system. Oily film on the surface is a serious finding.',
+      safety: 'This tank is the safe one to look at. The radiator cap is not — see the radiator entry.',
+      maine: 'Coolant is also antifreeze. Weak or watered-down mix can freeze and crack things that cost far more than a jug of coolant.' },
+
+    { id: 'radiator', icon: '🌡️', label: 'Radiator + cap',
+      shape: 'box', pos: [0, 0.19, 1.02], size: [2.3, 0.38, 0.12], color: '#5c6b80', cap: [0.75, 0.30, 0],
+      where: 'The wide, thin, finned panel at the very front of the bay, right behind the grille.',
+      what: 'Air passing through the fins pulls heat out of the coolant. The cap holds the system under pressure, which raises coolant\'s boiling point.',
+      check: 'Visual only from the front: look for bent or clogged fins, road debris, and any green, orange, or pink crust that marks a leak.',
+      fail: 'Temperature gauge climbing, steam from the front of the car, or sweet-smelling residue on the fins.',
+      safety: 'NEVER open the radiator cap on a warm engine. The system is pressurized, and releasing that pressure lets superheated coolant flash to steam and spray out. This causes serious burns. Wait until it is cold to the touch, and use the overflow tank for routine level checks so you never need to open it at all.' },
+
+    { id: 'brake', icon: '🛑', label: 'Brake fluid reservoir',
+      shape: 'tank', pos: [0.88, 0.48, -0.80], size: [0.30, 0.34, 0.28], color: '#e2e8f0', capColor: '#1e293b',
+      where: 'Against the firewall at the BACK of the bay, on the driver\'s side. This is the one location you can predict on almost any left-hand-drive car, because it bolts to the back of the brake booster, which sits directly behind the brake pedal.',
+      what: 'Holds the hydraulic fluid that carries your foot\'s push to all four brakes.',
+      check: 'Read the level through the translucent body against the MIN/MAX marks. Fluid should be clear to light amber.',
+      fail: 'Dark brown or black fluid is old and due for a flush. A falling level usually means either worn pads or a leak — and a leak in a brake system is a stop-driving-now problem.',
+      safety: 'Keep the cap closed. Brake fluid absorbs water from the air, which lowers its boiling point and can cause brake fade under hard use. It also strips paint on contact, so wipe spills off bodywork immediately.' },
+
+    { id: 'washer', icon: '💦', label: 'Washer fluid reservoir',
+      shape: 'tank', pos: [1.20, 0.32, 0.05], size: [0.32, 0.42, 0.32], color: '#eff6ff', capColor: '#2563eb',
+      where: 'Another translucent jug, cap almost always marked with a windshield-and-spray symbol. Position varies a lot between models.',
+      what: 'Feeds the windshield sprayers. The only under-hood reservoir you can safely fill to the top whenever you want.',
+      check: 'Look at the level, top it up. That is the entire procedure. Good first job for building the habit of opening the hood at all.',
+      fail: 'Pump buzzes but nothing sprays: either empty, a clogged nozzle, or a frozen line.',
+      safety: 'Do not substitute plain water. Beyond freezing, it does a poor job of cutting road film.',
+      maine: 'Use winter-rated fluid rated well below zero. Summer fluid or water freezes in the lines and reservoir, and a frozen reservoir can crack. A windshield glazed with salt spray and no working washers is a genuine visibility emergency.' },
+
+    { id: 'battery', icon: '🔋', label: 'Battery',
+      shape: 'battery', pos: [-1.10, 0.26, 0.60], size: [0.58, 0.44, 0.44], color: '#334155',
+      where: 'A heavy rectangular block in one of the front corners, with two posts on top — one marked + (red cover) and one marked − .',
+      what: 'Supplies the big current burst that cranks the starter, and steadies voltage while running.',
+      check: 'Look for white or blue-green fluffy corrosion on the terminals, and try to wiggle the clamps — they should not move at all.',
+      fail: 'Slow, laboured cranking; headlights that dim badly while cranking; or a click with no crank.',
+      safety: 'Disconnect NEGATIVE first and reconnect NEGATIVE last. Doing it the other way lets your wrench bridge the positive post to the car\'s bodywork, which is a dead short across a battery — sparks, and a battery can vent flammable hydrogen. Never rest tools on top of a battery.',
+      maine: 'Cold cuts available cranking power at the same time thick oil makes the engine harder to turn. A battery that was merely weak in October is the one that strands you in January.' },
+
+    { id: 'belt', icon: '🎗️', label: 'Serpentine belt + pulleys',
+      shape: 'belt', pos: [-0.86, 0.34, -0.12], size: [0.30, 0.30, 0.05], color: '#0f172a',
+      where: 'On one END of a transverse engine: a long ribbed rubber belt snaking around several pulleys.',
+      what: 'One belt takes power off the crankshaft and drives the accessories — typically alternator, water pump, power steering, and A/C compressor.',
+      check: 'Engine OFF. Look at the ribbed side for cracks across the ribs, missing chunks, fraying edges, or a shiny glazed surface.',
+      fail: 'A squeal on cold start or when you turn the wheel hard often points at the belt or its tensioner. If this belt snaps you can lose charging and often water-pump circulation at once, which is why a cheap belt is worth replacing early.',
+      safety: 'Never inspect with the engine running, and keep sleeves, hair, jewellery, and shop rags clear. Spinning pulleys do not let go.' },
+
+    { id: 'alternator', icon: '⚡', label: 'Alternator',
+      shape: 'cyl', pos: [-0.84, 0.14, 0.24], size: [0.19, 0.19, 0.30], color: '#78716c',
+      where: 'A finned metal cylinder with a pulley on its nose, driven by the serpentine belt.',
+      what: 'Generates the electricity the car runs on once started, and recharges the battery. The battery starts the car; the alternator runs it.',
+      check: 'Mostly a symptom-and-meter job rather than a visual one, but you can confirm the belt actually wraps its pulley and that its wiring is not chafed.',
+      fail: 'A battery-shaped warning light that comes on WHILE DRIVING is a charging-system warning, not a "your battery is low" message. Dimming lights, then dying electronics, then a stall. Classic trap: this gets misdiagnosed as a bad battery, a new battery gets bought, and the car dies again a few days later because the alternator was never charging it.' },
+
+    { id: 'airbox', icon: '🌬️', label: 'Air filter box',
+      shape: 'box', pos: [1.02, 0.30, 0.32], size: [0.58, 0.44, 0.52], color: '#1e293b',
+      where: 'A black plastic box, usually held by clips or a few screws, with a fat corrugated duct running from it to the engine.',
+      what: 'Houses the engine air filter, which keeps grit out of the cylinders.',
+      check: 'Undo the clips, lift the lid, hold the filter up to daylight. If light barely passes through, replace it. Genuinely one of the easiest jobs in the bay and needs no tools on many cars.',
+      fail: 'A filter packed with dust, leaves, or the occasional mouse nest.',
+      maine: 'Dirt roads and long winters load filters faster than the mileage interval assumes. Look at it rather than trusting the schedule.' },
+
+    { id: 'fusebox', icon: '🔌', label: 'Under-hood fuse box',
+      shape: 'box', pos: [-1.14, 0.22, 0.12], size: [0.40, 0.30, 0.34], color: '#111827',
+      where: 'A black box with a lift-off lid, usually near the battery. The lid\'s underside carries the fuse map.',
+      what: 'Holds fuses and relays for the higher-current circuits — cooling fans, fuel pump, headlights.',
+      check: 'Pull the lid, read the map printed on it, and pull a suspect fuse to see whether the metal strip inside is broken. Many boxes clip a small fuse puller inside.',
+      fail: 'One dead electrical item with everything else fine is a classic blown fuse. If a replacement fuse blows straight away, stop: something downstream is shorted and the fuse is doing its job.',
+      safety: 'Always replace a fuse with the same amperage rating. Fitting a higher-rated fuse, or worse a bit of wire, removes the protection and lets the wiring itself become the thing that burns.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.99: REPAIR BAY — 3D diagnose-and-fix simulation
+  //
+  // The skill being taught is NOT "know which part is bad." It is
+  // DIAGNOSE BEFORE YOU REPLACE. Every case here has a trap answer that a
+  // student who skips the evidence will fall into, and each trap is one that
+  // real customers really get charged for — a battery sold to fix an
+  // alternator, a thermostat sold to fix a fan fuse, a starter sold to fix a
+  // corroded clamp.
+  //
+  // Two mechanics carry that lesson:
+  //   1. Engine state. Some evidence only exists with the engine RUNNING
+  //      (charging voltage, whether the fan kicks in); some inspection is only
+  //      safe with it OFF. Getting that wrong records a safety violation.
+  //   2. Evidence scoring. Committing to the right answer with no supporting
+  //      findings is a lucky guess, and it is graded as one.
+  //
+  // Case 5 has no DIY answer at all: the correct action is to refer it out.
+  // "Know when to stop and call a pro" is stated in this tool's header as a
+  // core aim, so at least one case has to actually reward it.
+  // ─────────────────────────────────────────────────────────
+
+  // Inspecting these with the engine running is a real-world safety failure,
+  // not a rules-lawyer gotcha. Text mirrors the under-hood safety copy.
+  var RB_RUNNING_HAZARD = {
+    belt: 'You just put your hands next to a spinning belt and pulleys. Sleeves, hair, and jewellery get pulled in faster than you can react. Engine OFF before any belt inspection — always.',
+    radiator: 'You opened a pressurized cooling system at operating temperature. Releasing that pressure lets superheated coolant flash to steam and spray. In a real bay this is a burn that scars. Let it go cold, and use the overflow tank for routine level checks.'
+  };
+
+  // Illustrative shop ballpark in US dollars, parts + labour, kept in ONE
+  // block so the numbers can be reviewed and updated together. These are
+  // teaching figures, NOT quotes — real prices swing hard by vehicle, region
+  // and shop rate, and the UI says so wherever a total is shown. The lesson
+  // does not depend on the exact numbers: it depends on the fact that a
+  // misdiagnosis makes the customer pay for the wrong part AND the right one.
+  var RB_COSTS = {
+    charging:   { alt: 560, batt: 190, clean: 30, belt: 130 },
+    squeal:     { belt: 210, alt: 560, dressing: 8, ignore: 0 },
+    overheat:   { fuse: 45, coolant: 25, thermo: 220, rad: 550 },
+    nocrank:    { clean: 30, batt: 190, starter: 460, jump: 0 },
+    headgasket: { refer: 0, sealer: 30, topup: 25, cap: 18 },
+    oilpressure:{ fixleak: 380, topup: 35, sensor: 120, thicker: 60 },
+    badbattery: { batt: 190, alt: 560, clean: 30, wait: 0 }
+  };
+
+  var REPAIR_CASES = [
+    {
+      id: 'charging', icon: '🔋', title: 'The dash light that is not about the battery',
+      complaint: 'The battery light came on while I was driving home. Then the headlights went dim and it died at a stop sign. It started again after a jump, but only for about ten minutes.',
+      dash: ['Battery-shaped warning light, came on while driving'],
+      findings: {
+        battery: { text: 'Terminals are clean and tight. Case is not bulging or leaking. This battery has been looked after.', key: true },
+        belt: { text: 'Belt is present, correctly routed, properly tensioned. No glazing, no cracks.', key: true },
+        alternator: { text: 'Nothing obviously broken. The plug and the heavy output wire are both seated and undamaged.', key: false },
+        fusebox: { text: 'All fuses intact, including the charging-system fuse.', key: false },
+        engine: { text: 'No leaks, runs smoothly while it has power.', key: false }
+      },
+      tests: [
+        { id: 'v-off', label: 'Measure battery voltage, engine OFF', needs: 'off', key: true,
+          text: '12.4 V. That is a healthy rested battery — a little down from a full 12.6 V, which is exactly what you would expect after it was drained and jumped.' },
+        { id: 'v-run', label: 'Measure battery voltage, engine RUNNING', needs: 'running', key: true,
+          text: '12.1 V and drifting DOWN. A working charging system holds roughly 13.7–14.7 V at idle. This is below resting voltage, which means nothing is charging — the car is running off the battery alone and flattening it as it goes.' },
+        { id: 'obd', label: 'Scan for OBD-II codes', needs: 'any', key: false,
+          text: 'P0562 — System Voltage Low. Confirms the symptom; does not by itself name the part.' }
+      ],
+      choices: [
+        { id: 'alt', label: 'Replace the alternator', verdict: 'correct',
+          why: 'Charging voltage BELOW resting voltage, with a good belt turning it and clean tight terminals feeding it, means the alternator is not producing. You ruled out the two cheap things first and then condemned the expensive one on evidence. That is the job.' },
+        { id: 'batt', label: 'Replace the battery', verdict: 'trap',
+          why: 'This is the single most common misdiagnosis in the trade. The battery measured 12.4 V rested — it was fine. You have sold a battery that will be flat again within days, because nothing is recharging it. The battery light does not mean "bad battery"; it means "charging system fault."' },
+        { id: 'clean', label: 'Clean and tighten the battery terminals', verdict: 'wrong',
+          why: 'You inspected them yourself and found them clean and tight. Repeating a check you already passed is not a repair.' },
+        { id: 'belt', label: 'Replace the serpentine belt', verdict: 'wrong',
+          why: 'The belt was intact and correctly tensioned. A snapped belt would usually also stop the water pump, so you would be dealing with overheating on top of the charging fault.' }
+      ],
+      teaching: 'A battery-shaped light that comes on WHILE DRIVING is a charging warning, not a fuel-gauge for your battery. Work the order: connections, then belt, then output. Measuring voltage with the engine running is the test that actually separates "battery" from "alternator," and it takes thirty seconds.'
+    },
+
+    {
+      id: 'squeal', icon: '🎗️', title: 'The cold-morning squeal',
+      complaint: 'Loud squeal for about twenty seconds when I start it on a cold morning. It fades once it warms up. It gets louder if I turn the wheel all the way while parked.',
+      dash: ['No warning lights'],
+      findings: {
+        belt: { text: 'The ribbed side is shiny and glazed, with fine cracks running across several ribs. The edges are starting to fray.', key: true },
+        alternator: { text: 'Pulley spins freely by hand with no roughness and no side-to-side play in the bearing.', key: true },
+        battery: { text: 'Clean, tight, holding voltage.', key: false },
+        engine: { text: 'No leaks, no unusual noise from inside the engine itself.', key: false }
+      },
+      tests: [
+        { id: 'listen', label: 'Start it cold and listen', needs: 'running', key: true,
+          text: 'A sharp, high squeal from the accessory-drive end of the engine. It fades as things warm and expand. Loading the power steering makes it worse.' },
+        { id: 'tension', label: 'Check belt tension by hand, engine OFF', needs: 'off', key: true,
+          text: 'More deflection than spec, and the automatic tensioner arm is sitting near the end of its travel — it has run out of adjustment taking up a stretched belt.' }
+      ],
+      choices: [
+        { id: 'belt', label: 'Replace the serpentine belt, and check the tensioner while you are in there', verdict: 'correct',
+          why: 'Glazing plus cracks across the ribs plus a tensioner at the end of its travel is a worn belt, full stop. Checking the tensioner matters: fit a new belt to a tired tensioner and you will be doing this again.' },
+        { id: 'alt', label: 'Replace the alternator', verdict: 'trap',
+          why: 'You spun that pulley yourself and found no bearing play. A squeal is a friction noise from a slipping belt, not a charging fault — and the car has no charging symptoms at all. This is an expensive part fitted to fix a cheap one.' },
+        { id: 'dressing', label: 'Spray belt dressing on it', verdict: 'trap',
+          why: 'Belt dressing quiets a bad belt for a few days by making it tacky. It does not repair cracks, it attracts grit, and it hides the warning noise that was doing you a favour. You have silenced the symptom and kept the failure.' },
+        { id: 'ignore', label: 'Tell them it is harmless and send them away', verdict: 'wrong',
+          why: 'A belt cracked and frayed enough to squeal can snap. On most cars this one belt drives charging AND water-pump circulation, so it fails into a dead battery and an overheating engine at the same time, usually far from home.' }
+      ],
+      teaching: 'Noise diagnosis is about WHEN. Cold-only and load-sensitive points at a slipping belt, because rubber is stiffest and grip is worst cold. A bearing whine would be constant and would get worse with heat, not better.'
+    },
+
+    {
+      id: 'overheat', icon: '🌡️', title: 'Hot in traffic, fine on the highway',
+      complaint: 'The temperature gauge climbs when I am stuck in traffic downtown. On the highway it sits right in the middle and never moves.',
+      dash: ['Temperature gauge reads high at idle, normal at speed'],
+      findings: {
+        coolant: { text: 'Level sits between MIN and MAX. Clean, correct colour, no oily film on the surface.', key: true },
+        radiator: { text: 'Fins are clear of leaves and road debris. No crust, no staining, no drips. It is not blocked and it is not leaking.', key: true },
+        fusebox: { text: 'The 30 A cooling-fan fuse is blown — the metal strip inside is visibly broken.', key: true },
+        belt: { text: 'Intact and correctly tensioned.', key: false },
+        engine: { text: 'No external coolant leaks anywhere on the block.', key: false }
+      },
+      tests: [
+        { id: 'idle', label: 'Let it idle up to temperature and watch the cooling fan', needs: 'running', key: true,
+          text: 'Temperature climbs steadily past normal. The cooling fan never spins up. Rev it and nothing changes — this is not an airflow shortage you can fix with engine speed.' },
+        { id: 'cap', label: 'Open the radiator cap to check the coolant', needs: 'any', hazard: 'radiator', key: false,
+          text: 'You can read the level safely at the overflow tank instead. There was never a reason to open this.' }
+      ],
+      choices: [
+        { id: 'fuse', label: 'Replace the cooling-fan fuse — then find out why it blew', verdict: 'correct',
+          why: 'Correct, and the second half is the part that separates a technician from a parts-swapper. A fuse blows because something drew too much current. If the replacement blows straight away, the fan motor is likely failing and dragging. Fit the fuse, then watch it.' },
+        { id: 'coolant', label: 'Top up the coolant', verdict: 'trap',
+          why: 'You checked the level yourself and it was between MIN and MAX. Adding coolant to a system that has enough changes nothing, and the car still has no fan.' },
+        { id: 'thermo', label: 'Replace the thermostat', verdict: 'trap',
+          why: 'Think about where it overheats. A stuck thermostat blocks coolant flow all the time, so it would overheat on the highway too — probably worse, under load. This car is perfectly happy at speed, which points squarely at low-speed AIRFLOW, not flow through the engine.' },
+        { id: 'rad', label: 'Replace the radiator', verdict: 'wrong',
+          why: 'The fins were clear and it cools the car fine at highway speed, which is the radiator doing its job. Nothing you found suggests it is at fault.' }
+      ],
+      teaching: 'This one is solved by geometry, not parts. At highway speed, air is rammed through the radiator by motion alone. In traffic there is no ram air, so the fan has to supply it. "Fine at speed, hot when stopped" is almost a signature for an airflow problem at low speed: fan, fan relay, fan fuse, or fan motor.'
+    },
+
+    {
+      id: 'nocrank', icon: '🔌', title: 'Just a click',
+      complaint: 'I turn the key and it just clicks at me. The dash lights are on, but they go really dim the moment I try to start it.',
+      dash: ['Dash lights on, then dim hard when cranking'],
+      findings: {
+        battery: { text: 'Heavy white-blue crust built up around the positive terminal. The clamp visibly moves when you wiggle it by hand — it is not tight on the post.', key: true },
+        fusebox: { text: 'All fuses intact.', key: false },
+        alternator: { text: 'Looks normal. Belt drives it correctly.', key: false },
+        belt: { text: 'Intact.', key: false }
+      },
+      tests: [
+        { id: 'v-post', label: 'Measure voltage at the battery POST, engine off', needs: 'off', key: true,
+          text: '12.5 V. On the post itself, this is a healthy rested battery with plenty left in it.' },
+        { id: 'v-clamp', label: 'Measure voltage at the CABLE CLAMP, engine off', needs: 'off', key: true,
+          text: '10.9 V — one and a half volts LOST between the post and the clamp sitting on it. That gap is being burned up crossing corrosion and a loose connection. The battery is not the problem; getting its power out is.' },
+        { id: 'lights', label: 'Switch the headlights on and watch them', needs: 'any', key: false,
+          text: 'They come on, then dim heavily under load. Consistent with a supply that collapses when current is demanded.' }
+      ],
+      choices: [
+        { id: 'clean', label: 'Clean the corrosion off and tighten the terminal, then re-test', verdict: 'correct',
+          why: 'The cheapest fix in the bay, and it is the right one. 12.5 V at the post and 10.9 V at the clamp means the fault lives in the connection, not the component. Re-testing afterwards is what confirms it rather than assuming it.' },
+        { id: 'batt', label: 'Replace the battery', verdict: 'trap',
+          why: 'You measured 12.5 V at the post — that is a good battery. Fitting a new one bolts a healthy battery to the same corroded, loose clamp, and the car will click at you again. Check the connection before condemning the component.' },
+        { id: 'starter', label: 'Replace the starter', verdict: 'trap',
+          why: 'A click can be a failing starter, so this is not a silly thought — but you already found only 10.9 V reaching the cable. Starve any starter of voltage and it will click instead of turning. Fix the supply, THEN re-test. Diagnosing a component through a known-bad connection tells you nothing.' },
+        { id: 'jump', label: 'Jump-start it and send them on their way', verdict: 'wrong',
+          why: 'That gets them home once. The corroded clamp is still there tomorrow morning, probably in a car park, probably in the rain.' }
+      ],
+      teaching: 'Voltage drop is the measurement that finds bad connections, and almost nobody thinks to take it. Measure across the joint: healthy connections lose almost nothing. If the post reads good and the clamp reads low, the fault is the few millimetres in between — and it costs a wire brush, not a part.'
+    },
+
+    {
+      id: 'headgasket', icon: '🛑', title: 'The one you do not take on',
+      complaint: 'There is milky gunk under the oil cap. I keep having to top up the coolant, and there is white smoke out of the exhaust that smells kind of sweet.',
+      dash: ['Temperature occasionally spikes', 'No other lights'],
+      findings: {
+        oilcap: { text: 'Heavy tan sludge on the underside — thick, not a light film. This is well past the harmless winter condensation you get from short cold trips.', key: true },
+        coolant: { text: 'Below MIN. The customer says they filled it two weeks ago. Nothing has been on the driveway.', key: true },
+        dipstick: { text: 'The oil is the colour of coffee with cream. It should be amber to black, never milky.', key: true },
+        radiator: { text: 'No external leaks, no staining, no drips, no puddle under the car. Wherever the coolant is going, it is not going onto the ground.', key: true },
+        engine: { text: 'Runs, but with a faint misfire and a smell of coolant at the tailpipe.', key: false }
+      },
+      tests: [
+        { id: 'exhaust', label: 'Run it and watch the exhaust', needs: 'running', key: true,
+          text: 'Steady white vapour that does not clear as it warms up, with a sweet smell. Ordinary cold-morning condensation disappears within a minute or two. This does not.' },
+        { id: 'blocktest', label: 'Combustion-gas (block) test on the coolant', needs: 'any', key: true,
+          text: 'The test fluid changes colour: there are combustion gases in the cooling system. Cylinder pressure is getting into the coolant, which means the seal between them has failed.' }
+      ],
+      choices: [
+        { id: 'refer', label: 'Refer it to a shop — this is an internal coolant leak, head gasket at minimum', verdict: 'correct',
+          why: 'Coolant vanishing with no external leak, milky oil, sweet white exhaust, and combustion gas in the coolant all point inside the engine. This needs the head off, the surfaces checked for flatness, possibly machining, new bolts, and an exact torque sequence. Recognising the boundary of your own bay is a professional judgement, not an admission of defeat — and taking this on half-equipped turns a big bill into a bigger one.' },
+        { id: 'sealer', label: 'Pour in head-gasket sealer', verdict: 'trap',
+          why: 'Bottle sealers work by circulating something that hardens where it meets combustion heat. It cannot tell the difference between the leak and your radiator, heater core, or thermostat. Best case it buys a few weeks; worst case you have added two blockages to the problem you started with, and the shop now has to flush the system before it can even begin.' },
+        { id: 'topup', label: 'Tell them to keep topping up the coolant', verdict: 'wrong',
+          why: 'Coolant entering a cylinder does not compress. Every mile risks washing the bore, wrecking bearings through contaminated oil, or hydrolocking the engine. The repair gets more expensive every time they drive it.' },
+        { id: 'cap', label: 'Replace the radiator cap', verdict: 'wrong',
+          why: 'A cap controls system pressure and only matters where coolant escapes to the outside. There is no external leak here. A new cap cannot stop coolant being pushed into the combustion chamber.' }
+      ],
+      teaching: 'Notice how this case is built: one symptom on its own is ambiguous. Milky residue on a cap alone is often just condensation from short winter trips, and saying so is not a cop-out. It is the CLUSTER that makes the call — disappearing coolant with no puddle, milky oil, sweet white exhaust that never clears, and gas in the coolant. Single findings suggest. Converging findings diagnose.',
+      startCaution: 'Noted: you needed to run it to see the exhaust, and that is fair. In a real bay you would keep that as short as possible — every minute this engine runs pushes more combustion gas into the coolant and more coolant past the seal.'
+    },
+
+    {
+      id: 'oilpressure', icon: '🛢️', title: 'The light that flickers at idle',
+      complaint: 'The red oil-can light flickers when I am stopped at a light, then goes out as soon as I pull away. The engine sounds a bit tickly when it does it.',
+      dash: ['Red oil-pressure light, flickering at idle only'],
+      findings: {
+        dipstick: { text: 'Checked properly — engine off, car level, wiped and re-dipped. The oil is below the low mark and barely registering on the stick at all.', key: true },
+        oilcap: { text: 'Underside is clean. No sludge, no milkiness. Whatever is happening, coolant is not mixing with the oil.', key: true },
+        engine: { text: 'A wet dark film with baked-on crust running down the back of the block near a seal. This has been seeping for a long time, not since yesterday.', key: true },
+        coolant: { text: 'Level and condition both normal.', key: false },
+        belt: { text: 'Intact and correctly tensioned.', key: false }
+      },
+      tests: [
+        { id: 'listen', label: 'Let it idle and listen to the top of the engine', needs: 'running', key: true,
+          text: 'A light, fast ticking from the top end at idle that quietens as the revs come up. That is valve train noise from oil not arriving fast enough — and idle is exactly when oil flow is slowest.' },
+        { id: 'ground', label: 'Look at where they park', needs: 'any', key: false,
+          text: 'Fresh dark spots on the driveway, roughly under the back of the engine. Consistent with the crust you found on the block.' }
+      ],
+      choices: [
+        { id: 'fixleak', label: 'Top it up now, then find and fix the leak', verdict: 'correct',
+          why: 'Both halves matter. Topping up stops the damage happening today; fixing the seal stops it coming back in six weeks. Oil starvation destroys bearings quietly — there is often no dramatic noise until the damage is already done, which is why a flickering light gets ignored right up until it becomes a very large bill.' },
+        { id: 'topup', label: 'Just top it up and tell them to watch it', verdict: 'trap',
+          why: 'You have fixed today and guaranteed a repeat. It is losing enough oil to run low between checks, and the failure mode is that one week they forget, the light stops flickering and stays on, and the engine is damaged before they reach a garage. "Keep an eye on it" puts a maintenance schedule on somebody who came to you because they do not have one.' },
+        { id: 'sensor', label: 'Replace the oil pressure sender — probably just a bad sensor', verdict: 'trap',
+          why: 'Senders do fail, so this is not an absurd thought. But you measured the oil well below minimum and you heard valve train ticking that matches. When the physical evidence agrees with the warning light, believing the light is the safe call. Silencing an accurate warning is how engines get destroyed.' },
+        { id: 'thicker', label: 'Switch to a thicker oil to slow the leak down', verdict: 'wrong',
+          why: 'Thicker oil can mask a small seep, and it is an old trick. But the grade in the manual is what the bearing clearances and the oil pump were designed around, and thicker oil flows more slowly on a cold start — which is when most wear happens. You would trade a known leak for uncertain lubrication, and the leak would still be there.' }
+      ],
+      teaching: 'Know which warning you are looking at. The red oil CAN is PRESSURE, and it means stop now — not "add oil when convenient." Some cars also have a separate amber oil LEVEL message, which is informational. They overlap, because a low level starves the pump and drops pressure, and they overlap most at idle when flow is slowest. That is why "it only flickers when I am stopped" is the early warning, not the reassurance people hear it as.'
+    },
+
+    {
+      id: 'badbattery', icon: '🔋', title: 'When it really is the battery',
+      complaint: 'It cranks really slowly on cold mornings, like it is struggling to turn over. Once it warms up above freezing it is completely fine. It is still the battery it came with, and it is a 2019.',
+      dash: ['No warning lights at all'],
+      findings: {
+        battery: { text: 'Terminals are clean and tight — no corrosion, clamps solid on the posts. The date sticker on the case makes this battery seven years old.', key: true },
+        alternator: { text: 'Driven correctly by the belt, wiring intact.', key: false },
+        belt: { text: 'Intact, correct tension, no glazing.', key: false },
+        fusebox: { text: 'All fuses intact.', key: false }
+      },
+      tests: [
+        { id: 'v-rest', label: 'Measure resting voltage, engine OFF', needs: 'off', key: true,
+          text: '12.4 V rested. Nothing alarming — and this is precisely the number that fools people into declaring the battery healthy and going looking elsewhere.' },
+        { id: 'load', label: 'Load-test the battery', needs: 'off', key: true,
+          text: 'Under load the voltage collapses to 8.9 V and recovers slowly. A healthy battery should hold above roughly 9.6 V through the test. This one can hold a voltage sitting still but cannot deliver current when asked.' },
+        { id: 'v-run', label: 'Measure charging voltage, engine RUNNING', needs: 'running', key: true,
+          text: '14.1 V at idle. The charging system is doing its job perfectly. Whatever is wrong, it is not the alternator.' }
+      ],
+      choices: [
+        { id: 'batt', label: 'Replace the battery', verdict: 'correct',
+          why: 'Correct — and how you got here is the whole point. You did not assume, you load-tested. Clean tight terminals, a charging system putting out 14.1 V, seven years of service, and a battery that collapses to 8.9 V under load is a battery at the end of its life. Same action that was a trap in two earlier cases, right here because the evidence says so.' },
+        { id: 'alt', label: 'Replace the alternator', verdict: 'trap',
+          why: 'You measured 14.1 V at idle. That is a charging system working exactly as designed. Nothing in this case points at the alternator — and it is four times the price of the part that is actually worn out.' },
+        { id: 'clean', label: 'Clean and tighten the terminals', verdict: 'trap',
+          why: 'Right instinct, wrong car. Checking the connection before condemning the battery is exactly the habit that solved the no-crank case — here it simply passed. Once a check passes, it stops being a candidate.' },
+        { id: 'wait', label: 'Tell them it is just the cold and to live with it', verdict: 'wrong',
+          why: 'Cold is the trigger, not the cause. Low temperatures thicken the oil so the engine is harder to turn AND cut the current a battery can deliver, so winter finds the weak battery first. It will not recover in spring; it will fail completely on the coldest morning of the year, which is also the worst possible morning to be stranded.' }
+      ],
+      teaching: 'This case exists to stop the earlier ones teaching the wrong lesson. "Replace the battery" was a trap twice — but the rule was never "never replace batteries," it was TEST BEFORE YOU REPLACE. Resting voltage and a load test answer different questions: resting voltage tells you state of charge, a load test tells you remaining capacity. Only the second one answers "will this crank the engine at minus ten." A battery that reads 12.4 V and fails a load test is finished, and replacing it is the right call.'
+    }
+  ];
+
+  // ── 3D under-hood viewer ────────────────────────────────────────────────
+  // Deliberately hook-free. This tool's render() calls no React hooks at all,
+  // and every module lives inside a switch(view) branch, so a hook added here
+  // would be a conditionally-called hook and would blow up on navigation.
+  // Instead the scene is owned by this module-scope singleton and mounted via
+  // a STABLE ref callback (UH3D.attach). Stability matters: an inline
+  // arrow/function ref gets a new identity every render, which makes React
+  // call ref(null)+ref(node) each pass and re-initialise the canvas endlessly.
+  //
+  // React → scene communication is one-way through UH3D.sync(props); the RAF
+  // loop reads the latest props each frame, so selection changes never remount.
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.995: ROADSIDE TYRE CHANGE — ordered procedure with safety gates
+  //
+  // A third pedagogy. The under-hood tour teaches LOCATION, the Repair Bay
+  // teaches DIAGNOSIS, this teaches SEQUENCE — where doing the right actions in
+  // the wrong order is the failure, and two of the orderings can kill you.
+  //
+  // The two that matter most:
+  //   · Loosen the lug nuts BEFORE lifting. Lift first and the wheel just spins.
+  //   · Never get under a car held up by a jack. A jack lifts; it does not hold.
+  //
+  // There is also a case for NOT doing it at all — a busy shoulder with no room
+  // to work is the one where calling for help is the skilled answer. Same
+  // "know when to stop" thread as the head-gasket case in the Repair Bay.
+  // ─────────────────────────────────────────────────────────
+
+  var TIRE_PARTS = [
+    { id: 'wheel', icon: '🛞', label: 'Flat tyre',
+      what: 'The wheel you are replacing. Held on by the lug nuts, and — while it is still on the ground — held still by its own grip on the road.',
+      note: 'That grip is the reason the nuts come loose before the car goes up, not after.' },
+    { id: 'lugs', icon: '🔩', label: 'Lug nuts',
+      what: 'Usually four, five or six, clamping the wheel to the hub. They are done up tight, often 80–100 lb-ft, which is far more than hand pressure.',
+      note: 'Loosen on the ground, snug by hand in the air, tighten properly back on the ground — in a star pattern.' },
+    { id: 'jackpoint', icon: '📍', label: 'Jack point',
+      what: 'A reinforced spot on the underside, usually on the sill just behind the front wheel or ahead of the rear. Most cars mark it with a notch, arrow or triangle.',
+      note: 'It is reinforced for exactly this load. The floor pan next to it is thin sheet metal, and a suspension arm can move. Your manual shows the exact spots.' },
+    { id: 'jack', icon: '⬆️', label: 'Jack',
+      what: 'A lifting device. It raises the car and holds it only while nothing disturbs it.',
+      note: 'A jack is NOT a support. It can tip, and it can sink into soft ground or hot tarmac. Nothing of you goes under a car held only by a jack — ever.' },
+    { id: 'chock', icon: '🧱', label: 'Wheel chock',
+      what: 'A wedge against a wheel still on the ground, stopping the car rolling while one corner is lifted.',
+      note: 'Chock the wheel diagonally opposite the one you are removing. A brick, a solid lump of wood or a proper chock all work.' },
+    { id: 'spare', icon: '🛞', label: 'Spare wheel',
+      what: 'Either a full-size spare or a narrow temporary — a "donut" or "space-saver".',
+      note: 'Temporary spares carry speed and distance limits, usually around 50 mph and a short trip. The real numbers are printed on the spare itself. It is a get-to-the-shop wheel, not a replacement.' }
+  ];
+
+  var TIRE_STEPS = [
+    { id: 'safe', icon: '🚨', label: 'Get the car somewhere safe and put the hazards on',
+      why: 'Flat, firm and as far from moving traffic as you can get. A jack on a slope or on soft ground is the start of most tyre-change accidents, and a car on a lift is easier to disturb than people expect.',
+      tooEarly: 'This one is always first.' },
+    { id: 'brake', icon: '🅿️', label: 'Park brake on, transmission in Park (or in gear)',
+      why: 'Stops the car moving before you take a wheel off it. On an automatic that is Park; on a manual, first or reverse.',
+      tooEarly: 'Not yet — you have not chosen where you are doing this. Securing the car matters less than not doing it in a live traffic lane.' },
+    { id: 'chock', icon: '🧱', label: 'Chock the wheel diagonally opposite the flat',
+      why: 'The park brake usually holds only two wheels, and you are about to remove some of the grip the car is standing on. The chock is the backup that stops it rolling off the jack.',
+      tooEarly: 'Not yet — get the car parked and secured before you start placing things around it.' },
+    { id: 'tools', icon: '🧰', label: 'Get the spare, the jack and the wrench out first',
+      why: 'Find out now whether the spare is flat, or the wrench is missing, or the lock-nut key is not in the glovebox. Discovering that with the car already in the air is a much worse moment.',
+      tooEarly: 'Not yet — secure the car first. Digging in the boot with the car unsecured is how it gets away from you.' },
+    { id: 'loosen', icon: '🔧', label: 'Break the lug nuts loose — about a quarter turn, wheel still on the ground',
+      why: 'THE step people get wrong. The nuts are tight, and it takes real force to move them. On the ground, the tyre grips the road and holds the wheel still while you push. In the air there is nothing to stop the wheel simply turning — and leaning on a wrench can shove the car off the jack.',
+      tooEarly: 'Not yet — you need your tools out before you can loosen anything.' },
+    { id: 'place', icon: '📍', label: 'Set the jack under the proper jack point',
+      why: 'A reinforced point that is built to take the whole corner of the car. Anywhere else — the floor pan, a suspension arm, a plastic sill cover — bends, slips, or lets the car drop.',
+      tooEarly: 'Not yet. Loosen the nuts BEFORE the wheel leaves the ground — once it is in the air you have lost the grip that holds the wheel still.' },
+    { id: 'raise', icon: '⬆️', label: 'Raise the car until the flat is just clear of the ground',
+      why: 'Just clear — an inch or so. Every extra inch makes the car less stable for no benefit. You need enough room to slide the flat off and the spare on, and no more.',
+      tooEarly: 'Not yet — the jack is not under the jack point. Lifting from the wrong spot is how bodywork gets bent and cars come down unexpectedly.' },
+    { id: 'remove', icon: '🔩', label: 'Take the nuts off and lift the wheel away',
+      why: 'They should already be loose, so this is finger work. Put the nuts somewhere they cannot roll away — a pocket, or upturned in the hubcap.',
+      tooEarly: 'Not yet — the wheel is still on the ground, so it will just spin when you try.' },
+    { id: 'mount', icon: '🛞', label: 'Lift the spare on and hand-tighten the nuts',
+      why: 'Line the holes up, push it flat against the hub, and run every nut down by hand until it touches. Hand-tight only for now — the real tightening happens once the weight is back on the wheel.',
+      tooEarly: 'Not yet — the flat is still on the car.' },
+    { id: 'lower1', icon: '⬇️', label: 'Lower it until the spare touches and takes the weight',
+      why: 'Not all the way down — just enough that the tyre grips the road again. Now the wheel cannot spin, which is exactly what you need to tighten properly.',
+      tooEarly: 'Not yet — there is nothing mounted to lower onto.' },
+    { id: 'tighten', icon: '⭐', label: 'Tighten fully in a star pattern',
+      why: 'Never go around the circle in order. Cross over — top, bottom, then across and across. A star pattern pulls the wheel squarely onto the hub as it tightens. Going round in sequence can cock the wheel slightly and leave it clamped unevenly, which lets nuts work loose.',
+      tooEarly: 'Not yet — the wheel is still off the ground, so it will turn as you push and you cannot get anything properly tight.' },
+    { id: 'lower2', icon: '🧰', label: 'Lower fully, take the jack out, stow everything',
+      why: 'Jack, wrench, chock and the flat tyre all go back in. A jack loose in the boot is a heavy object in a crash, and the flat still has to get to a shop.',
+      tooEarly: 'Not yet — the nuts are not properly tightened.' },
+    { id: 'check', icon: '📋', label: 'Check the spare\'s pressure and note its limits',
+      why: 'Spares sit for years and go soft. If it is a temporary, it carries speed and distance limits — usually around 50 mph and a short trip, with the real numbers printed on the spare itself. Many manufacturers also ask you to re-check the nut tightness after about 50 miles. Drive to a tyre shop, not on with your day.',
+      tooEarly: 'Not yet — finish fitting it first.' }
+  ];
+
+  // Never correct, at any point. Picking one is a safety violation, not a
+  // sequencing slip, and the explanation is the reason it is in the list.
+  var TIRE_HAZARDS = [
+    { id: 'under', icon: '☠️', label: 'Slide underneath to get a better look',
+      why: 'NEVER. A jack lifts a car; it does not hold one. Jacks tip, they sink into soft ground and hot tarmac, and they fail. People are killed this way every year. If something genuinely has to be done under a car, it goes on axle stands first — and a roadside wheel change never requires you to be under it at all.' },
+    { id: 'badpoint', icon: '💥', label: 'Put the jack under the floor pan or a suspension arm',
+      why: 'The jack point is reinforced for the whole weight of that corner. The floor pan beside it is thin sheet metal that will fold, and a suspension arm can move under load. Wrong spot means crumpled bodywork at best and the car coming off the jack at worst.' },
+    { id: 'torqueup', icon: '🌀', label: 'Fully torque the nuts while the wheel is still in the air',
+      why: 'The wheel turns as you push, so you cannot actually get them tight — and heaving on a wrench against a car balanced on a jack is a good way to bring it down. Snug by hand in the air; tighten for real once the tyre is back on the road.' },
+    { id: 'traffic', icon: '🛣️', label: 'Do it on the traffic side, on the shoulder of a busy road',
+      why: 'This is the one where stopping is the skilled answer. If you cannot get well clear of moving traffic, or the flat is on the traffic side, do not attempt it. Stay in the car with your belt on and the hazards going, and call for assistance. Being hit on a shoulder is one of the most common ways this goes badly wrong, and a wheel is replaceable.' }
+  ];
+
+  // Fixed presentation order for the action pool — deliberately NOT the correct
+  // sequence, and fixed rather than shuffled so tests are deterministic and a
+  // teacher demoing it twice sees the same screen.
+  var TIRE_POOL_ORDER = [
+    'raise', 'safe', 'under', 'tighten', 'chock', 'remove', 'badpoint', 'tools',
+    'lower2', 'loosen', 'traffic', 'brake', 'mount', 'place', 'torqueup', 'lower1', 'check'
+  ];
+
+  // -- Wheel-corner scene content --
+  // Phase-driven: `api.phase` is how many steps are done, and the scene shows
+  // that state — chock appears, jack goes under, car lifts, wheel comes off,
+  // spare goes on. Seeing the car actually rise is most of the point.
+  function buildWheelCornerScene(THREE, api) {
+    var meshes = {};
+    var picks = [];
+    var done = api.phase || 0;
+
+    var lift = done >= 7 ? (done >= 12 ? 0 : (done >= 10 ? 0.03 : 0.20)) : 0;
+    var flatOff = done >= 8;
+    var spareOn = done >= 9;
+    // Step 12 is "lower fully, take the jack out, stow everything", so from
+    // there on the jack, chock and flat go away. Leaving them lying around
+    // would have the picture contradicting the instruction the student just
+    // followed.
+    var stowed = done >= 12;
+    var jackOut = done >= 4 && !stowed;
+    var jackUnder = done >= 6 && done < 12;
+    var chockOut = done >= 3 && !stowed;
+
+    // Ground
+    var ground = new THREE.Mesh(new THREE.BoxGeometry(9, 0.06, 6),
+      api.trim(api.contrast ? 0x111111 : (api.dark ? 0x131c2e : 0x9aa5b4), 4));
+    ground.position.y = -0.03;
+    if (api.wantShadow) ground.receiveShadow = true;
+    api.scene.add(ground);
+
+    // Car body corner + sill, lifted as a unit when jacked
+    var car = new THREE.Group();
+    var bodyMat = api.trim(api.contrast ? 0xffffff : 0x3b6ea5, 40);
+    var body = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.85, 1.5), bodyMat);
+    body.position.set(0, 1.05, 0);
+    car.add(body);
+    var roof = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.55, 1.35), bodyMat);
+    roof.position.set(0.1, 1.72, 0);
+    car.add(roof);
+    var sill = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.14, 0.16),
+      api.trim(api.contrast ? 0xffffff : 0x27384d, 20));
+    sill.position.set(0, 0.58, 0.74);
+    car.add(sill);
+    car.position.y = lift;
+    if (api.wantShadow) car.traverse(function (o) { if (o.isMesh) o.castShadow = true; });
+    api.scene.add(car);
+
+    function reg(id, group, anchorTo) {
+      group.userData.partId = id;
+      group.traverse(function (o) {
+        if (!o.isMesh) return;
+        o.userData.partId = id;
+        picks.push(o);
+        if (api.wantShadow) { o.castShadow = true; o.receiveShadow = true; }
+      });
+      (anchorTo || api.scene).add(group);
+      meshes[id] = group;
+    }
+
+    // Jack point — a marked notch on the sill, riding with the car
+    var jp = new THREE.Group();
+    var jpMesh = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.13, 0.13),
+      api.trim(api.contrast ? 0xffffff : 0xf59e0b, 50));
+    jp.add(jpMesh);
+    jp.position.set(-0.42, 0.58, 0.76);
+    reg('jackpoint', jp, car);
+
+    function wheel(radius, width, tyreHex) {
+      var g = new THREE.Group();
+      var tyre = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, width, 26),
+        api.trim(api.contrast ? 0xdddddd : tyreHex, 6));
+      tyre.rotation.x = Math.PI / 2;
+      g.add(tyre);
+      var rim = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.58, radius * 0.58, width * 1.04, 22),
+        api.trim(api.contrast ? 0xffffff : 0xc3cbd6, 60));
+      rim.rotation.x = Math.PI / 2;
+      g.add(rim);
+      return g;
+    }
+
+    // Flat tyre — on the car, or lying on the ground once removed
+    var flat = wheel(0.40, 0.24, 0x1b1f27);
+    if (stowed) flat.position.set(-1.85, -0.8, 1.15);                   // back in the boot
+    else if (flatOff) { flat.position.set(-1.85, 0.12, 1.15); flat.rotation.x = Math.PI / 2; }
+    else { flat.position.set(-0.95, 0.40 + lift, 0.70); }
+    reg('wheel', flat);
+
+    // Lug nuts — on the flat while mounted, on the spare once fitted
+    var lugs = new THREE.Group();
+    for (var i = 0; i < 5; i++) {
+      var a = (i / 5) * Math.PI * 2;
+      var nut = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.06, 6),
+        api.trim(api.contrast ? 0xffffff : 0x8d97a6, 46));
+      nut.rotation.x = Math.PI / 2;
+      nut.position.set(Math.cos(a) * 0.15, Math.sin(a) * 0.15, 0.14);
+      lugs.add(nut);
+    }
+    if (flatOff && !spareOn) lugs.position.set(-1.55, 0.05, 1.5);        // set aside
+    else lugs.position.set(-0.95, 0.40 + lift, 0.70);
+    reg('lugs', lugs);
+
+    // Hub, visible only with the wheel off
+    if (flatOff && !spareOn) {
+      var hub = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.12, 18),
+        api.trim(api.contrast ? 0xffffff : 0x6b7280, 40));
+      hub.rotation.x = Math.PI / 2;
+      hub.position.set(-0.95, 0.40 + lift, 0.66);
+      if (api.wantShadow) hub.castShadow = true;
+      api.scene.add(hub);
+    }
+
+    // Rear wheel, always on
+    var rear = wheel(0.40, 0.24, 0x1b1f27);
+    rear.position.set(1.05, 0.40 + lift, 0.70);
+    if (api.wantShadow) rear.traverse(function (o) { if (o.isMesh) o.castShadow = true; });
+    api.scene.add(rear);
+
+    // Spare — leaning by the car, then mounted
+    var spare = wheel(0.38, 0.20, 0x2a2f39);
+    if (spareOn) spare.position.set(-0.95, 0.40 + lift, 0.70);
+    else if (jackOut) { spare.position.set(-2.05, 0.38, 0.05); spare.rotation.y = 0.3; }
+    else spare.position.set(-2.05, -0.6, 0.05);                          // still in the boot
+    reg('spare', spare);
+
+    // Jack — out of the boot, then under the jack point
+    var jack = new THREE.Group();
+    var jbase = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.05, 0.22), api.trim(0x9ca3af, 40));
+    jack.add(jbase);
+    var jcol = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.30 + lift, 0.09), api.trim(0xd1d5db, 50));
+    jcol.position.y = 0.16 + lift / 2;
+    jack.add(jcol);
+    if (jackUnder) jack.position.set(-0.42, 0.02, 0.76);
+    else if (jackOut) jack.position.set(-1.6, 0.02, 1.55);
+    else jack.position.set(-1.6, -0.7, 1.55);
+    reg('jack', jack);
+
+    // Chock — wedged against the far wheel
+    var chock = new THREE.Group();
+    var cw = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.16, 0.24), api.trim(0xca8a04, 18));
+    chock.add(cw);
+    if (chockOut) chock.position.set(1.52, 0.08, 0.70);
+    else chock.position.set(1.52, -0.7, 0.70);
+    reg('chock', chock);
+
+    return { meshes: meshes, picks: picks, anchor: ground };
+  }
+
+  // -- Engine-bay scene content --
+  // Pure geometry: given a THREE and the viewer's material helpers, populate
+  // the scene and hand back the pickable meshes. Knows nothing about React,
+  // lifecycle, or the DOM - which is what lets the same viewer drive the
+  // wheel-corner scene.
+  function buildEngineBayScene(THREE, api) {
+    var meshes = {};
+    var picks = [];
+    // Bay shell: floor + low fender rails + firewall. Kept deliberately LOW
+    // and dark — it exists to frame the parts, and earlier taller walls just
+    // occluded them from any useful camera angle. The grille side is left
+    // open so you are always looking into the bay, never through a wall.
+    var shellMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0x111111 : (api.dark ? 0x131c2e : 0xaab6c6),
+      shininess: 6, specular: 0x0a0e16
+    });
+    var floor = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.08, 2.4), shellMat);
+    floor.position.set(0, -0.04, 0);
+    if (api.wantShadow) floor.receiveShadow = true;
+    api.scene.add(floor);
+    var wallGeo = new THREE.BoxGeometry(0.08, 0.30, 2.4);
+    var lWall = new THREE.Mesh(wallGeo, shellMat); lWall.position.set(-1.70, 0.15, 0); api.scene.add(lWall);
+    var rWall = new THREE.Mesh(wallGeo, shellMat); rWall.position.set(1.70, 0.15, 0); api.scene.add(rWall);
+    var fireGeo = new THREE.BoxGeometry(3.4, 0.46, 0.08);
+    var firewall = new THREE.Mesh(fireGeo, shellMat); firewall.position.set(0, 0.23, -1.16); api.scene.add(firewall);
+    if (api.wantShadow) { lWall.receiveShadow = true; rWall.receiveShadow = true; firewall.receiveShadow = true; }
+
+    // ── Decorative plumbing ────────────────────────────────────────────────
+    // Hoses, ducts and cables. Not pickable and not in the parts list: they
+    // exist so the bay reads as a connected SYSTEM instead of a dozen loose
+    // boxes, and so "the fat duct running to the engine" in the air-filter
+    // copy is a thing the student can actually see.
+    function hose(pts, radius, colorHex) {
+      var curve = new THREE.CatmullRomCurve3(pts.map(function (p) {
+        return new THREE.Vector3(p[0], p[1], p[2]);
+      }));
+      var m = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 22, radius, 9, false),
+        new THREE.MeshPhongMaterial({
+          color: api.contrast ? 0xdddddd : colorHex,
+          shininess: 22, specular: 0x333333
+        })
+      );
+      if (api.wantShadow) m.castShadow = true;
+      api.scene.add(m);
+      return m;
+    }
+    // Upper + lower radiator hoses (radiator ⇄ engine)
+    hose([[0.30, 0.36, 0.98], [0.36, 0.52, 0.66], [0.30, 0.50, 0.30]], 0.045, 0x1f2937);
+    hose([[-0.40, 0.10, 0.98], [-0.48, 0.16, 0.62], [-0.44, 0.20, 0.26]], 0.045, 0x1f2937);
+    // Intake duct: air filter box → engine. Deliberately fat and obvious.
+    hose([[0.82, 0.34, 0.28], [0.60, 0.44, 0.10], [0.34, 0.52, -0.06]], 0.070, 0x111827);
+    // Battery cable → fuse box
+    hose([[-1.04, 0.46, 0.52], [-1.02, 0.44, 0.34], [-1.10, 0.36, 0.20]], 0.026, 0xb91c1c);
+    // Coolant overflow line → radiator neck
+    hose([[-1.00, 0.56, -0.58], [-0.30, 0.50, -0.10], [0.60, 0.36, 0.86]], 0.020, 0x334155);
+
+    // Parts
+    var meshes = {};
+    var picks = [];
+    api.parts.forEach(function (p) {
+      var group = new THREE.Group();
+      var col = new THREE.Color(api.partColor(p));
+      // Phong over Lambert: the specular roll-off is what separates painted
+      // metal (engine, alternator) from moulded plastic (airbox, tanks).
+      var metallic = (p.id === 'engine' || p.id === 'alternator' || p.id === 'radiator');
+      var mat = new THREE.MeshPhongMaterial({
+        color: col,
+        shininess: api.contrast ? 0 : (metallic ? 48 : 14),
+        specular: api.contrast ? 0x000000 : (metallic ? 0x9aa6b8 : 0x2b3442)
+      });
+      var translucent = (p.shape === 'tank');
+      if (translucent) {
+        mat.transparent = true;
+        mat.opacity = api.contrast ? 1 : 0.62;
+        mat.shininess = api.contrast ? 0 : 70;
+        mat.specular = new THREE.Color(0xdfe8f5);
+      }
+
+
+      if (p.shape === 'cyl') {
+        group.add(new THREE.Mesh(new THREE.CylinderGeometry(p.size[0], p.size[1], p.size[2], 20), mat));
+        if (p.id === 'alternator') {
+          group.rotation.z = Math.PI / 2;
+          // Cooling fins + the pulley nose the belt actually wraps.
+          for (var af = 0; af < 6; af++) {
+            var fin = new THREE.Mesh(new THREE.TorusGeometry(p.size[0] * 1.01, 0.012, 6, 16), api.trim(0x57534e, 20));
+            fin.rotation.x = Math.PI / 2;
+            fin.position.y = -p.size[2] * 0.34 + af * (p.size[2] * 0.135);
+            group.add(fin);
+          }
+          var nose = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.07, 14), api.trim(0x9ca3af, 60));
+          nose.position.y = p.size[2] * 0.5 + 0.03;
+          group.add(nose);
+        }
+      } else if (p.shape === 'belt') {
+        var beltMesh = new THREE.Mesh(new THREE.TorusGeometry(p.size[0], p.size[2], 10, 30), mat);
+        beltMesh.rotation.y = Math.PI / 2;
+        group.add(beltMesh);
+        // Ribs. The copy tells students to look for cracks ACROSS the ribs,
+        // so the ribs need to be visible rather than implied.
+        for (var rb = 0; rb < 5; rb++) {
+          var rib = new THREE.Mesh(new THREE.TorusGeometry(p.size[0], 0.007, 5, 30), api.trim(0x334155, 8));
+          rib.rotation.y = Math.PI / 2;
+          rib.position.x = -0.018 + rb * 0.009;
+          group.add(rib);
+        }
+        var pulleyMat = api.trim(0x9ca3af, 62);
+        [[0, p.size[0] * 0.78, 0], [0, -p.size[0] * 0.78, 0]].forEach(function (o) {
+          var pl = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.09, 16), pulleyMat);
+          pl.rotation.z = Math.PI / 2;
+          pl.position.set(o[0], o[1], o[2]);
+          group.add(pl);
+        });
+      } else if (p.shape === 'battery') {
+        group.add(new THREE.Mesh(new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2]), mat));
+        // Vent caps along the top — the visual cue that this is a battery
+        // and not just another black box.
+        for (var vc = 0; vc < 3; vc++) {
+          var vent = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.03, 0.24), api.trim(0x1f2937, 8));
+          vent.position.set(-0.10 + vc * 0.10, p.size[1] * 0.5 + 0.015, 0);
+          group.add(vent);
+        }
+        var posT = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.09, 12), api.trim(0xdc2626, 40));
+        posT.position.set(-p.size[0] * 0.28, p.size[1] * 0.55, 0);
+        group.add(posT);
+        var negT = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.09, 12), api.trim(0x0f172a, 40));
+        negT.position.set(p.size[0] * 0.28, p.size[1] * 0.55, 0);
+        group.add(negT);
+      } else if (p.shape === 'dipstick') {
+        group.add(new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, p.size[1], 10), mat));
+        var loop = new THREE.Mesh(new THREE.TorusGeometry(0.062, 0.020, 8, 18), mat);
+        loop.position.y = p.size[1] * 0.5 + 0.05;
+        loop.rotation.x = Math.PI / 2;
+        group.add(loop);
+        // The tube it seats into.
+        var tube = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, p.size[1] * 0.55, 10), api.trim(0x475569, 24));
+        tube.position.y = -p.size[1] * 0.28;
+        group.add(tube);
+      } else if (p.shape === 'tank') {
+        group.add(new THREE.Mesh(new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2]), mat));
+        var cap = new THREE.Mesh(new THREE.CylinderGeometry(p.size[0] * 0.32, p.size[0] * 0.32, 0.08, 14),
+          api.trim(p.capColor ? parseInt(p.capColor.slice(1), 16) : 0x334155, 44));
+        cap.position.y = p.size[1] * 0.5 + 0.04;
+        group.add(cap);
+        // MIN / MAX bands — the thing the "read it against the lines" copy
+        // is asking the student to find.
+        [[0.30, 0x94a3b8], [-0.16, 0x94a3b8]].forEach(function (bd) {
+          var band = new THREE.Mesh(new THREE.BoxGeometry(p.size[0] * 1.02, 0.012, p.size[2] * 0.30), api.trim(bd[1], 6));
+          band.position.set(0, p.size[1] * bd[0], p.size[2] * 0.5);
+          group.add(band);
+        });
+      } else {
+        group.add(new THREE.Mesh(new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2]), mat));
+        if (p.id === 'radiator') {
+          // Fin stack. Reads as "the finned panel behind the grille."
+          for (var fi = 0; fi < 26; fi++) {
+            var f = new THREE.Mesh(new THREE.BoxGeometry(0.012, p.size[1] * 0.82, 0.15), api.trim(0x8593a8, 16));
+            f.position.set(-p.size[0] * 0.46 + fi * (p.size[0] * 0.037), 0, 0.01);
+            group.add(f);
+          }
+        }
+        if (p.id === 'engine') {
+          // Valve cover (where the oil filler cap lives) + intake plenum.
+          var vcover = new THREE.Mesh(new THREE.BoxGeometry(p.size[0] * 0.78, 0.16, p.size[2] * 0.52), api.trim(0x3f4b5c, 34));
+          vcover.position.set(-0.06, p.size[1] * 0.5 + 0.08, -0.02);
+          group.add(vcover);
+          var plenum = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, p.size[0] * 0.62, 14), api.trim(0x475569, 40));
+          plenum.rotation.z = Math.PI / 2;
+          plenum.position.set(0.10, p.size[1] * 0.5 + 0.06, 0.26);
+          group.add(plenum);
+          // Exhaust manifold heat shield, front face.
+          var shield = new THREE.Mesh(new THREE.BoxGeometry(p.size[0] * 0.66, 0.20, 0.06), api.trim(0x8a8f98, 52));
+          shield.position.set(0, 0.02, p.size[2] * 0.5 + 0.03);
+          group.add(shield);
+        }
+        if (p.id === 'airbox') {
+          // Lid clips — the thing you undo to check the filter.
+          for (var cl = 0; cl < 2; cl++) {
+            var clip = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.05), api.trim(0x64748b, 30));
+            clip.position.set(-p.size[0] * 0.3 + cl * p.size[0] * 0.6, p.size[1] * 0.22, p.size[2] * 0.5);
+            group.add(clip);
+          }
+        }
+        if (p.cap) {
+          var rcap = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.09, 14), api.trim(0xf59e0b, 44));
+          rcap.position.set(p.cap[0], p.size[1] * 0.5 + 0.04, p.cap[2]);
+          group.add(rcap);
+        }
+      }
+
+      group.position.set(p.pos[0], p.pos[1], p.pos[2]);
+      group.userData.partId = p.id;
+      group.traverse(function (o) {
+        if (!o.isMesh) return;
+        o.userData.partId = p.id;      // every sub-mesh picks as its parent part
+        picks.push(o);
+        if (api.wantShadow) { o.castShadow = true; o.receiveShadow = true; }
+      });
+      api.scene.add(group);
+      meshes[p.id] = group;
+    });
+    return { meshes: meshes, picks: picks, anchor: floor };
+  }
+
+  // Generic 3D viewer shell — everything that is NOT scene content: attach and
+  // teardown, pause-when-unseen, WebGL context-loss recovery, theme rebuild,
+  // drag + raycast picking, keyboard camera, and label chips with de-overlap.
+  //
+  // Scene content comes from cfg.buildScene, so the tyre-change module reuses
+  // this whole lifecycle rather than copying ~200 lines of it. cfg is:
+  //   parts      — [{id, label, ...}] used for labels and pick mapping
+  //   buildScene — (THREE, api) => { meshes: {id: Group}, picks: [Mesh], anchor: Mesh }
+  //   home       — { yaw, pitch, dist } default camera
+  function makeBayViewer(cfg) {
+    var S = null;                 // live scene state, null when detached
+    var props = { selected: null, onPick: null, onStatus: null, dark: true, contrast: false };
+    var status = 'idle';          // idle | loading | ready | failed
+    var restoreAttempts = 0;      // WebGL context-loss rebuilds, capped at 1
+
+    function setStatus(next) {
+      if (status === next) return;
+      status = next;
+      if (props.onStatus) { try { props.onStatus(next); } catch (e) {} }
+    }
+
+    function partColor(p) {
+      if (props.contrast) return '#ffffff';
+      return p.color;
+    }
+
+    function partLabel(id) {
+      for (var i = 0; i < cfg.parts.length; i++) {
+        if (cfg.parts[i].id === id) return cfg.parts[i].label;
+      }
+      return id;
+    }
+
+    function build(THREE, node) {
+      var renderer;
+      try {
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      } catch (e) {
+        return null;              // no WebGL on this device — 2D list carries on
+      }
+      var w = node.clientWidth || 480;
+      var hgt = node.clientHeight || 340;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(w, hgt);
+      node.appendChild(renderer.domElement);
+      renderer.domElement.style.display = 'block';
+      renderer.domElement.style.width = '100%';
+      renderer.domElement.style.height = '100%';
+      renderer.domElement.style.borderRadius = '10px';
+      // pan-y, NOT none. With touch-action:none a full-width canvas swallows
+      // every vertical swipe, so on a phone or tablet the student cannot
+      // scroll past the bay to reach the parts list underneath — the canvas
+      // becomes a scroll trap. pan-y gives vertical swipes back to the page
+      // and keeps horizontal drag for rotation; the ▲▼ buttons and arrow keys
+      // still cover tilt.
+      renderer.domElement.style.touchAction = 'pan-y';
+      renderer.domElement.setAttribute('aria-hidden', 'true');
+
+      // Floating label chip. Owned by this module and mutated directly in the
+      // RAF loop — routing a per-frame screen position through React state
+      // would re-render the whole tool 60 times a second.
+      // One chip per part, created once and positioned in the RAF loop. The
+      // "label everything" mode turns the bay into the map the module claims
+      // to be, which is exactly what a first-time owner staring at an unlabelled
+      // engine actually needs.
+      function chipCss(strong) {
+        return 'position:absolute;pointer-events:none;padding:' + (strong ? '3px 8px' : '2px 6px') +
+          ';border-radius:999px;font:' + (strong ? '700 11px' : '600 10px') + '/1.3 system-ui,sans-serif;' +
+          'white-space:nowrap;transform:translate(-50%,-50%);opacity:0;' +
+          'transition:opacity .12s linear;z-index:2;' +
+          (props.contrast
+            ? 'background:#000;color:#fff;border:' + (strong ? '2px' : '1px') + ' solid #fff;'
+            : strong
+              ? 'background:rgba(15,23,42,.94);color:#fbbf24;border:1px solid #fbbf24;'
+              : 'background:rgba(15,23,42,.72);color:#e2e8f0;border:1px solid rgba(148,163,184,.55);');
+      }
+      var labels = {};
+      UNDER_HOOD_PARTS.forEach(function (p) {
+        var el = document.createElement('div');
+        el.setAttribute('aria-hidden', 'true');
+        el.textContent = p.label;
+        el.style.cssText = chipCss(false);
+        node.appendChild(el);
+        labels[p.id] = el;
+      });
+
+      // Shadows are what make a box read as an OBJECT SITTING IN a bay rather
+      // than a sprite floating on a background. Cheap here: a dozen casters.
+      // Skipped in high-contrast, where soft grey gradients fight the mode.
+      var wantShadow = !props.contrast;
+      if (wantShadow) {
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      }
+
+      var scene = new THREE.Scene();
+      scene.background = new THREE.Color(props.contrast ? 0x000000 : (props.dark ? 0x0b1220 : 0xdfe6ef));
+      if (!props.contrast) {
+        scene.fog = new THREE.Fog(props.dark ? 0x0b1220 : 0xdfe6ef, 5.2, 11.0);
+      }
+
+      var camera = new THREE.PerspectiveCamera(42, w / hgt, 0.1, 100);
+
+      scene.add(new THREE.AmbientLight(0xffffff, props.contrast ? 0.95 : 0.44));
+      var key = new THREE.DirectionalLight(0xfff4e0, props.contrast ? 0.4 : 0.92);
+      key.position.set(2.4, 4.6, 2.8);
+      if (wantShadow) {
+        key.castShadow = true;
+        key.shadow.mapSize.width = 1024;
+        key.shadow.mapSize.height = 1024;
+        var sc = key.shadow.camera;
+        sc.left = -3.2; sc.right = 3.2; sc.top = 3.2; sc.bottom = -3.2;
+        sc.near = 0.5; sc.far = 14;
+        key.shadow.bias = -0.0012;
+      }
+      scene.add(key);
+      var fill = new THREE.DirectionalLight(0xbcd4ff, props.contrast ? 0.2 : 0.34);
+      fill.position.set(-2.6, 1.6, -2.0);
+      scene.add(fill);
+      // Low warm bounce off the bay floor — stops undersides going pure black.
+      var bounce = new THREE.DirectionalLight(0xffd9a0, props.contrast ? 0 : 0.20);
+      bounce.position.set(-0.6, -1.8, 1.2);
+      scene.add(bounce);
+
+      // ── Scene content ──
+      // Everything above is generic. What actually gets modelled comes from the
+      // caller, which is how the engine bay and the wheel corner share one
+      // viewer. Shared material helpers go in so both scenes look alike.
+      function trim(hex, shiny) {
+        return new THREE.MeshPhongMaterial({
+          color: props.contrast ? 0xffffff : hex,
+          shininess: props.contrast ? 0 : (shiny == null ? 30 : shiny),
+          specular: props.contrast ? 0x000000 : 0x6b7688
+        });
+      }
+      var content = cfg.buildScene(THREE, {
+        scene: scene, contrast: props.contrast, dark: props.dark,
+        wantShadow: wantShadow, trim: trim, partColor: partColor, parts: cfg.parts,
+        phase: props.phase || null
+      });
+      var meshes = content.meshes;
+      var picks = content.picks;
+      var anchor = content.anchor;
+
+      // Selection cage. Emissive alone is not enough — on the pale translucent
+      // reservoirs an amber glow washes straight out, and the selected part is
+      // often behind the radiator from the default angle. A wireframe box with
+      // depthTest off reads on ANY part colour and shows through occluders,
+      // which is the whole job: "the thing you asked about is HERE."
+      // In high-contrast mode every part is flattened to white, so a white cage
+      // would be invisible against them. Yellow is the tool's contrast accent
+      // and sits at ~19:1 on black.
+      var selBox = new THREE.BoxHelper(anchor, props.contrast ? 0xffff00 : 0xfbbf24);
+      selBox.material.depthTest = false;
+      selBox.material.transparent = true;
+      selBox.material.linewidth = 2;
+      selBox.renderOrder = 999;
+      selBox.visible = false;
+      scene.add(selBox);
+
+      return {
+        THREE: THREE, node: node, renderer: renderer, scene: scene, camera: camera,
+        labels: labels, chipCss: chipCss, meshes: meshes, picks: picks, selBox: selBox,
+        raycaster: new THREE.Raycaster(), pointer: new THREE.Vector2(),
+        builtDark: props.dark, builtContrast: props.contrast, builtPhase: (props.phase || 0),
+        paused: false, io: null,
+        yaw: cfg.home.yaw, pitch: cfg.home.pitch, dist: cfg.home.dist,
+        dragging: false, lastX: 0, lastY: 0, moved: 0,
+        hovered: null, t0: 0, raf: 0, handlers: [],
+        reduced: (function () {
+          try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+          catch (e) { return false; }
+        })()
+      };
+    }
+
+    function placeCamera() {
+      var cy = Math.max(0.12, Math.min(1.35, S.pitch));
+      S.camera.position.set(
+        Math.sin(S.yaw) * Math.cos(cy) * S.dist,
+        Math.sin(cy) * S.dist,
+        Math.cos(S.yaw) * Math.cos(cy) * S.dist
+      );
+      S.camera.lookAt(0, 0.30, 0);
+    }
+
+    // Screen-space position of a part, for the HTML label chip. Returns null
+    // when the part is behind the camera.
+    function project(id) {
+      var g = S.meshes[id];
+      if (!g) return null;
+      var v = new S.THREE.Vector3();
+      g.getWorldPosition(v);
+      v.y += 0.30;
+      v.project(S.camera);
+      if (v.z > 1) return null;
+      var r = S.renderer.domElement;
+      return { x: (v.x * 0.5 + 0.5) * r.clientWidth, y: (-v.y * 0.5 + 0.5) * r.clientHeight };
+    }
+
+    // Rendering pauses when the bay is off-screen or the tab is hidden. This
+    // tool's audience is on school Chromebooks, often with a dozen tabs open;
+    // spinning a WebGL loop for a canvas nobody can see burns battery and
+    // frame budget for nothing.
+    function pauseLoop() {
+      if (!S || S.paused) return;
+      S.paused = true;
+      if (S.raf) cancelAnimationFrame(S.raf);
+      S.raf = 0;
+    }
+    function resumeLoop() {
+      if (!S || !S.paused) return;
+      S.paused = false;
+      S.raf = requestAnimationFrame(frame);
+    }
+
+    function frame() {
+      if (!S || S.paused) return;
+
+      // Scene colours are baked at build time from the theme. If the user
+      // toggles dark/light/high-contrast while sitting in this module, rebuild
+      // rather than leaving a stale background. Done here, not in sync(),
+      // because sync() runs during React's render pass and must not touch DOM.
+      // Theme AND phase are baked at build time. The tyre scene changes shape
+      // as the procedure advances (car lifts, wheel comes off), so a phase
+      // change rebuilds exactly like a theme change does.
+      if (S.builtDark !== props.dark || S.builtContrast !== props.contrast ||
+          S.builtPhase !== (props.phase || 0)) {
+        var node = S.node;
+        var keep = { yaw: S.yaw, pitch: S.pitch, dist: S.dist };
+        teardown();
+        if (window.THREE && node && node.isConnected) {
+          start(window.THREE, node);
+          if (S) { S.yaw = keep.yaw; S.pitch = keep.pitch; S.dist = keep.dist; }
+        }
+        return;
+      }
+
+      S.raf = requestAnimationFrame(frame);
+      S.t0 += 1;
+      placeCamera();
+
+      var sel = props.selected;
+      // Repair Bay marks already-inspected parts green so the student can see
+      // what ground they have covered without leaving the 3D view.
+      var marks = props.marks || {};
+      // Selection has to be unmistakable at a glance: bright emissive + a
+      // small scale bump, with everything else only GENTLY pushed back. An
+      // earlier build dimmed non-selected parts to 0.35 and the whole bay just
+      // read as fog — recede the context, don't erase it.
+      var pulse = S.reduced ? 1 : (0.78 + 0.22 * Math.sin(S.t0 * 0.08));
+      for (var id in S.meshes) {
+        if (!S.meshes.hasOwnProperty(id)) continue;
+        var isSel = (id === sel);
+        var isHov = (id === S.hovered && !isSel);
+        var recede = (sel && !isSel);
+        var g = S.meshes[id];
+
+        var wantScale = isSel ? (S.reduced ? 1.12 : 1.06 + 0.06 * pulse) : 1;
+        g.scale.setScalar(g.scale.x + (wantScale - g.scale.x) * 0.25);
+
+        g.traverse(function (o) {
+          if (!o.isMesh || !o.material) return;
+          if (o.material.emissive) {
+            // Restrained on purpose. The wireframe cage answers "where is it";
+            // a hot emissive on top of that just repaints the part gold and
+            // destroys the colour cue the student is meant to transfer to a
+            // real engine bay.
+            if (isSel) o.material.emissive.setRGB(0.26 * pulse, 0.19 * pulse, 0.03 * pulse);
+            else if (isHov) o.material.emissive.setRGB(0.16, 0.17, 0.20);
+            else if (marks[id] === 'checked') o.material.emissive.setRGB(0.02, 0.13, 0.07);
+            else o.material.emissive.setRGB(0, 0, 0);
+          }
+          if (o.material.userData._baseOpacity === undefined) {
+            o.material.userData._baseOpacity = (o.material.opacity === undefined) ? 1 : o.material.opacity;
+          }
+          var base = o.material.userData._baseOpacity;
+          var want = recede ? base * 0.70 : base;
+          if (Math.abs(o.material.opacity - want) > 0.01) {
+            o.material.opacity = want;
+            var nextTransparent = want < 1;
+            if (o.material.transparent !== nextTransparent) {
+              o.material.transparent = nextTransparent;
+              o.material.needsUpdate = true;   // only on the actual flip
+            }
+          }
+        });
+      }
+
+      if (sel && S.meshes[sel]) {
+        S.selBox.visible = true;
+        S.selBox.setFromObject(S.meshes[sel]);
+        S.selBox.material.opacity = S.reduced ? 1 : (0.6 + 0.4 * pulse);
+      } else if (S.selBox.visible) {
+        S.selBox.visible = false;
+      }
+
+      S.renderer.render(S.scene, S.camera);
+
+      // Label chips. Focused chip (selected/hovered) always shows; the rest
+      // only in "label everything" mode, and dimmer so focus still reads.
+      var focusId = sel || S.hovered;
+      var showAll = !!props.showAllLabels;
+      var placed = [];
+      var viewW = S.renderer.domElement.clientWidth;
+      var viewH = S.renderer.domElement.clientHeight;
+
+      for (var li = 0; li < UNDER_HOOD_PARTS.length; li++) {
+        var pid = UNDER_HOOD_PARTS[li].id;
+        var el = S.labels[pid];
+        var strong = (pid === focusId);
+        var want = strong || showAll;
+        if (!want) {
+          if (el.style.opacity !== '0') el.style.opacity = '0';
+          continue;
+        }
+        var at = project(pid);
+        if (!at) { if (el.style.opacity !== '0') el.style.opacity = '0'; continue; }
+        if (el._strong !== strong) {
+          el._strong = strong;
+          el.style.cssText = S.chipCss(strong);
+          el._w = 0;                       // restyle changes the measured size
+        }
+        // Measure once per style; offsetWidth forces layout, so never per-frame.
+        if (!el._w) {
+          el.style.opacity = '0.01';
+          el._w = el.offsetWidth || 90;
+          el._h = el.offsetHeight || 18;
+        }
+        placed.push({ el: el, x: at.x, y: at.y, w: el._w, h: el._h, strong: strong });
+      }
+
+      // Label-everything mode put twelve chips on a small canvas and several
+      // landed on top of each other, which defeats the point of a map. Greedy
+      // de-overlap: keep the focused chip anchored, nudge the rest downward
+      // until they clear. O(n²) over twelve items — nothing.
+      placed.sort(function (a, b) { return (b.strong ? 1 : 0) - (a.strong ? 1 : 0) || a.y - b.y; });
+      var settled = [];
+      for (var pi2 = 0; pi2 < placed.length; pi2++) {
+        var c = placed[pi2];
+        if (!c.strong) {
+          var guard = 0;
+          while (guard++ < 14) {
+            var hit = false;
+            for (var si = 0; si < settled.length; si++) {
+              var o = settled[si];
+              if (Math.abs(c.x - o.x) < (c.w + o.w) / 2 + 4 &&
+                  Math.abs(c.y - o.y) < (c.h + o.h) / 2 + 3) { hit = true; break; }
+            }
+            if (!hit) break;
+            c.y += c.h + 4;
+          }
+          // Pushed off the bottom? Better to hide it than to stack it on the edge.
+          if (c.y > viewH - c.h / 2) { c.el.style.opacity = '0'; continue; }
+        }
+        // Keep chips inside the viewport horizontally.
+        c.x = Math.max(c.w / 2 + 2, Math.min(viewW - c.w / 2 - 2, c.x));
+        settled.push(c);
+        c.el.style.left = c.x + 'px';
+        c.el.style.top = c.y + 'px';
+        c.el.style.opacity = c.strong ? '1' : '0.92';
+      }
+    }
+
+    function bind() {
+      var el = S.renderer.domElement;
+      function on(target, type, fn, opts) {
+        target.addEventListener(type, fn, opts || false);
+        S.handlers.push([target, type, fn, opts || false]);
+      }
+      function ndc(ev) {
+        var r = el.getBoundingClientRect();
+        S.pointer.x = ((ev.clientX - r.left) / r.width) * 2 - 1;
+        S.pointer.y = -((ev.clientY - r.top) / r.height) * 2 + 1;
+      }
+      function hit() {
+        S.raycaster.setFromCamera(S.pointer, S.camera);
+        var xs = S.raycaster.intersectObjects(S.picks, false);
+        return xs.length ? xs[0].object.userData.partId : null;
+      }
+      on(el, 'pointerdown', function (ev) {
+        S.dragging = true; S.moved = 0;
+        S.lastX = ev.clientX; S.lastY = ev.clientY;
+        try { el.setPointerCapture(ev.pointerId); } catch (e) {}
+      });
+      on(el, 'pointermove', function (ev) {
+        if (S.dragging) {
+          var dx = ev.clientX - S.lastX, dy = ev.clientY - S.lastY;
+          S.moved += Math.abs(dx) + Math.abs(dy);
+          S.yaw -= dx * 0.008;
+          S.pitch = Math.max(0.12, Math.min(1.35, S.pitch + dy * 0.006));
+          S.lastX = ev.clientX; S.lastY = ev.clientY;
+        } else {
+          ndc(ev);
+          var over = hit();
+          if (over !== S.hovered) {
+            S.hovered = over;
+            el.style.cursor = over ? 'pointer' : 'grab';
+          }
+        }
+      });
+      on(el, 'pointerup', function (ev) {
+        var wasDrag = S.moved > 6;
+        S.dragging = false;
+        try { el.releasePointerCapture(ev.pointerId); } catch (e) {}
+        if (wasDrag) return;                       // rotating, not picking
+        ndc(ev);
+        var id = hit();
+        if (id && props.onPick) { try { props.onPick(id); } catch (e) {} }
+      });
+      on(el, 'pointerleave', function () {
+        S.dragging = false;
+        if (S.hovered) { S.hovered = null; el.style.cursor = 'grab'; }
+      });
+      on(el, 'wheel', function (ev) {
+        ev.preventDefault();
+        S.dist = Math.max(2.6, Math.min(8.5, S.dist + (ev.deltaY > 0 ? 0.4 : -0.4)));
+      }, { passive: false });
+      el.style.cursor = 'grab';
+
+      var onResize = function () {
+        if (!S || !S.node) return;
+        var w = S.node.clientWidth, hh = S.node.clientHeight;
+        if (!w || !hh) return;
+        S.renderer.setSize(w, hh);
+        S.camera.aspect = w / hh;
+        S.camera.updateProjectionMatrix();
+      };
+      on(window, 'resize', onResize);
+
+      on(el, 'pointercancel', function () {
+        // Fires when the browser takes the gesture over for scrolling
+        // (touch-action: pan-y). Without this the scene stays stuck in
+        // "dragging" and the next pointermove yanks the camera.
+        S.dragging = false;
+      });
+
+      // ── Context loss ──
+      // Real on low-memory Chromebooks: the GPU process drops contexts under
+      // pressure. Previously this was a permanent "failed". Now we rebuild
+      // once, and only fall back to the 2D list if the rebuild also fails.
+      on(el, 'webglcontextlost', function (ev) {
+        ev.preventDefault();
+        console.warn('[AutoRepair] WebGL context lost — attempting one rebuild');
+        var node = S ? S.node : null;
+        var keep = S ? { yaw: S.yaw, pitch: S.pitch, dist: S.dist } : null;
+        teardown();
+        if (restoreAttempts >= 1 || !node || !node.isConnected) { setStatus('failed'); return; }
+        restoreAttempts++;
+        setStatus('loading');
+        window.setTimeout(function () {
+          if (!node.isConnected) return;
+          try {
+            start(window.THREE, node);
+            if (S && keep) { S.yaw = keep.yaw; S.pitch = keep.pitch; S.dist = keep.dist; }
+          } catch (e) { setStatus('failed'); }
+        }, 350);
+      }, false);
+
+      // ── Pause when unseen ──
+      var onVis = function () {
+        if (document.hidden) pauseLoop(); else resumeLoop();
+      };
+      on(document, 'visibilitychange', onVis);
+
+      if (typeof IntersectionObserver === 'function') {
+        try {
+          S.io = new IntersectionObserver(function (entries) {
+            for (var i = 0; i < entries.length; i++) {
+              if (entries[i].isIntersecting && !document.hidden) resumeLoop();
+              else if (!entries[i].isIntersecting) pauseLoop();
+            }
+          }, { threshold: 0.01 });
+          S.io.observe(S.node);
+        } catch (e) { S.io = null; }
+      }
+    }
+
+    function teardown() {
+      if (!S) return;
+      if (S.raf) cancelAnimationFrame(S.raf);
+      if (S.io) { try { S.io.disconnect(); } catch (e) {} S.io = null; }
+      S.handlers.forEach(function (hd) {
+        try { hd[0].removeEventListener(hd[1], hd[2], hd[3]); } catch (e) {}
+      });
+      try {
+        S.scene.traverse(function (o) {
+          if (o.geometry && o.geometry.dispose) o.geometry.dispose();
+          if (o.material) {
+            var ms = Array.isArray(o.material) ? o.material : [o.material];
+            ms.forEach(function (m) { if (m && m.dispose) m.dispose(); });
+          }
+        });
+        if (S.renderer.domElement && S.renderer.domElement.parentNode) {
+          S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
+        }
+        Object.keys(S.labels || {}).forEach(function (k) {
+          var el = S.labels[k];
+          if (el && el.parentNode) el.parentNode.removeChild(el);
+        });
+        S.renderer.dispose();
+        if (S.renderer.forceContextLoss) S.renderer.forceContextLoss();
+      } catch (e) {}
+      S = null;
+      status = 'idle';
+    }
+
+    function start(THREE, node) {
+      var built = build(THREE, node);
+      if (!built) { setStatus('failed'); return; }
+      S = built;
+      bind();
+      placeCamera();
+      setStatus('ready');
+      S.raf = requestAnimationFrame(frame);
+    }
+
+    return {
+      // STABLE identity — never recreate this function.
+      attach: function (node) {
+        if (!node) { teardown(); return; }
+        if (S && S.node === node) return;
+        teardown();
+        restoreAttempts = 0;      // fresh visit gets its own context-loss retry
+        setStatus('loading');
+        if (window.THREE) { start(window.THREE, node); return; }
+        if (!window.StemLab || !window.StemLab.ensureThree) { setStatus('failed'); return; }
+        window.StemLab.ensureThree({
+          orbit: false,
+          failMessage: 'The 3D engine could not load. School network filters sometimes block CDNs. The full labelled parts list below remains available.'
+        }).then(function (THREE) {
+          if (!node.isConnected) return;           // navigated away mid-load
+          start(THREE, node);
+        }).catch(function () {
+          console.warn('[AutoRepair] Three.js failed to load — under-hood tour falling back to the 2D list');
+          setStatus('failed');
+        });
+      },
+      sync: function (next) { props = next; },
+      nudge: function (dYaw, dPitch) {
+        if (!S) return;
+        S.yaw += dYaw;
+        S.pitch = Math.max(0.12, Math.min(1.35, S.pitch + dPitch));
+      },
+      // Zoom was wheel-only, which left keyboard, touch and switch users with
+      // no way to get closer. Same clamp as the wheel handler.
+      zoom: function (delta) {
+        if (!S) return;
+        S.dist = Math.max(2.6, Math.min(8.5, S.dist + delta));
+      },
+      reset: function () {
+        if (!S) return;
+        S.yaw = cfg.home.yaw; S.pitch = cfg.home.pitch; S.dist = cfg.home.dist;
+      },
+      status: function () { return status; }
+    };
+  }
+
+  var UH3D = makeBayViewer({
+    parts: UNDER_HOOD_PARTS,
+    buildScene: buildEngineBayScene,
+    home: { yaw: -0.42, pitch: 0.74, dist: 4.1 }
+  });
+
+  // Second viewer instance, same lifecycle, different scene. Both are
+  // singletons and only one module is mounted at a time, so they never
+  // contend for the canvas.
+  var TIRE3D = makeBayViewer({
+    parts: TIRE_PARTS,
+    buildScene: buildWheelCornerScene,
+    home: { yaw: 0.34, pitch: 0.34, dist: 6.4 }
+  });
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 10: KNOWLEDGE QUIZ — 10 questions covering safety, diagnostic, repair
   // ─────────────────────────────────────────────────────────
   var QUIZ = [
@@ -3649,6 +5062,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             desc: __alloT('stem.autorepair.just_bought_it_drive_it_keep_it_health', 'Just bought it / drive it / keep it healthy.'),
             modules: [
               { id: 'firstcar', icon: '🚗', label: __alloT('stem.autorepair.first_car_start_here', 'First car? Start here'), desc: __alloT('stem.autorepair.just_bought_your_first_car_30_day_week', 'Just bought your first car. 30-day week-by-week plan.') },
+              { id: 'underhood', icon: '🔎', label: __alloT('stem.autorepair.under_hood_tour_menu', 'Under-hood tour (3D)'), desc: __alloT('stem.autorepair.spin_the_engine_bay_find_all_12_parts', 'Spin the engine bay. Find all 12 parts and learn what each one looks like.') },
+              { id: 'tyre', icon: '🛞', label: __alloT('stem.autorepair.change_a_tyre_menu', 'Change a tyre (3D)'), desc: __alloT('stem.autorepair.13_steps_in_order_get_the_order_wrong', '13 steps, in order. Get the order wrong and the wheel just spins — or worse.') },
               { id: 'walk', icon: '🚶', label: __alloT('stem.autorepair.pre_drive_walk_around', 'Pre-drive walk-around'), desc: __alloT('stem.autorepair.60_second_daily_check_the_professional', '60-second daily check. The professional habit.') },
               { id: 'vin', icon: '🆔', label: __alloT('stem.autorepair.vin_decoder', 'VIN decoder'), desc: __alloT('stem.autorepair.17_character_vin_parse_free_recall_loo', '17-character VIN parse + free recall lookup.') },
               { id: 'maint', icon: '📅', label: __alloT('stem.autorepair.maintenance_schedule', 'Maintenance schedule'), desc: __alloT('stem.autorepair.personalized_from_your_odometer', 'Personalized from your odometer.') },
@@ -3664,6 +5079,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             modules: [
               { id: 'diagnose', icon: '🔍', label: __alloT('stem.autorepair.diagnose', 'Diagnose'), desc: __alloT('stem.autorepair.obd_ii_listening_fluids_visual', 'OBD-II, listening, fluids, visual.') },
               { id: 'tree', icon: '🌳', label: __alloT('stem.autorepair.decision_tree', 'Decision tree'), desc: __alloT('stem.autorepair.6_interactive_symptom_flowcharts', '6 interactive symptom flowcharts.') },
+              { id: 'repairbay', icon: '🔧', label: __alloT('stem.autorepair.repair_bay_menu', 'Repair Bay (3D)'), desc: __alloT('stem.autorepair.7_cases_inspect_test_commit_graded_on_', '7 cases. Inspect the 3D bay, run tests, commit one repair. Graded on evidence and safety.') },
               { id: 'lab', icon: '🧪', label: __alloT('stem.autorepair.hands_on_lab_simulator', 'Hands-on lab simulator'), desc: __alloT('stem.autorepair.6_graded_diagnostic_scenarios_with_let', '6 graded diagnostic scenarios with letter grades.') },
               { id: 'damage', icon: '🔬', label: __alloT('stem.autorepair.damage_id_game', 'Damage ID game'), desc: __alloT('stem.autorepair.15_visual_pattern_cases_build_tech_eye', '15 visual-pattern cases. Build tech eye.') },
               { id: 'glossary', icon: '📖', label: __alloT('stem.autorepair.glossary', 'Glossary'), desc: __alloT('stem.autorepair.50_essential_auto_terms', '50+ essential auto terms.') }
@@ -3711,6 +5127,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var badgeCount = Object.keys(badges).length;
         var collapsedCats = d.collapsedCats || {};
 
+        // Progress on the two 3D modules, surfaced on their menu tiles so a
+        // student can see where they left off without opening each one.
+        var uhSeenCount = Object.keys(d.uhSeen || {}).length;
+        var rbDoneRec = d.rbDone || {};
+        var rbSolved = 0;
+        REPAIR_CASES.forEach(function (c) { if (rbDoneRec[c.id] && rbDoneRec[c.id].verdict === 'correct') rbSolved++; });
+        var tcSteps = (d.tcDone || []).length;
+        var moduleProgress = {
+          underhood: uhSeenCount > 0 ? uhSeenCount + '/' + UNDER_HOOD_PARTS.length : null,
+          repairbay: Object.keys(rbDoneRec).length > 0 ? rbSolved + '/' + REPAIR_CASES.length : null,
+          tyre: tcSteps > 0 ? tcSteps + '/' + TIRE_STEPS.length : null
+        };
+
         return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.auto_repair_shop_main_menu', 'Auto Repair Shop main menu'), style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
           h('a', { href: '#ar-menu-categories', 'data-ar-focusable': true,
             style: { position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' },
@@ -3753,13 +5182,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               ),
               !collapsed && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 8 } },
                 cat.modules.map(function(m) {
+                  var prog = moduleProgress[m.id];
                   return h('button', { 'data-ar-focusable': true, key: m.id,
-                    'aria-label': 'Open ' + m.label + ' module',
+                    'aria-label': 'Open ' + m.label + ' module' + (prog ? ' — progress ' + prog : ''),
                     onClick: function() { setView(m.id); },
-                    style: { textAlign: 'left', padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, color: T.text, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4 } },
+                    style: { textAlign: 'left', padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + (prog ? T.accent : T.border), color: T.text, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                       h('span', { style: { fontSize: 22 } }, m.icon),
-                      h('strong', { style: { fontWeight: 700, fontSize: 14, color: T.text } }, m.label)
+                      h('strong', { style: { fontWeight: 700, fontSize: 14, color: T.text } }, m.label),
+                      prog && h('span', { style: { marginLeft: 'auto', fontSize: 11, fontWeight: 800, color: T.accentHi, whiteSpace: 'nowrap' } }, prog)
                     ),
                     h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45 } }, m.desc)
                   );
@@ -7497,6 +8928,805 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ─────────────────────────────────────────
       // BADGE GALLERY view — progress dashboard
       // ─────────────────────────────────────────
+      // ─────────────────────────────────────────
+      // Shared 3D viewport + camera controls, used by BOTH the under-hood tour
+      // and the Repair Bay so the two never drift apart.
+      //
+      // The container itself takes focus and handles arrow keys / +- / 0.
+      // That matters: before this, rotating needed a mouse drag and zooming
+      // needed a scroll wheel, so keyboard, touch-only and switch users had a
+      // fixed camera. The parts list is still the content path — this just
+      // stops the 3D view being mouse-exclusive.
+      // ─────────────────────────────────────────
+      function bayViewport(cfg) {
+        var V = cfg.viewer || UH3D;
+        var st3 = d.uh3dStatus || 'idle';
+        var note = st3 === 'failed' ? cfg.failText : (st3 === 'loading' ? cfg.loadText : null);
+        function onKey(e) {
+          var k = e.key;
+          var handled = true;
+          if (k === 'ArrowLeft') V.nudge(-0.16, 0);
+          else if (k === 'ArrowRight') V.nudge(0.16, 0);
+          else if (k === 'ArrowUp') V.nudge(0, 0.10);
+          else if (k === 'ArrowDown') V.nudge(0, -0.10);
+          else if (k === '+' || k === '=') V.zoom(-0.4);
+          else if (k === '-' || k === '_') V.zoom(0.4);
+          else if (k === '0') { V.reset(); arAnnounce('View reset'); }
+          else handled = false;
+          if (handled) { e.preventDefault(); e.stopPropagation(); }
+        }
+        return h('div', {
+          ref: V.attach,
+          tabIndex: 0,
+          role: 'group',
+          'data-ar-focusable': true,
+          'aria-label': cfg.label + '. Interactive 3D view. Arrow keys rotate, plus and minus zoom, zero resets. All of this content is also in the parts list.',
+          onKeyDown: onKey,
+          style: {
+            position: 'relative', width: '100%', height: cfg.height || 340,
+            borderRadius: 10, overflow: 'hidden',
+            background: isContrast ? '#000' : (isDark ? '#0b1220' : '#e2e8f0'),
+            border: '1px solid ' + T.border
+          }
+        }, note && h('div', { style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 18, fontSize: 12.5, color: T.muted, lineHeight: 1.55 } }, note));
+      }
+
+      function bayControls(cfg) {
+        var V = (cfg && cfg.viewer) || UH3D;
+        var st3 = d.uh3dStatus || 'idle';
+        var live = st3 === 'ready';
+        function ctl(aria, glyph, fn) {
+          return h('button', { key: aria, 'data-ar-focusable': true, 'aria-label': aria,
+            disabled: !live, onClick: fn,
+            style: btnGhost({ opacity: live ? 1 : 0.45, cursor: live ? 'pointer' : 'not-allowed', minWidth: 34 }) }, glyph);
+        }
+        return h('div', { style: { display: 'flex', gap: 5, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' } },
+          ctl('Rotate view left', '⟲', function () { V.nudge(-0.28, 0); }),
+          ctl('Rotate view right', '⟳', function () { V.nudge(0.28, 0); }),
+          ctl('Tilt view up', '▲', function () { V.nudge(0, 0.16); }),
+          ctl('Tilt view down', '▼', function () { V.nudge(0, -0.16); }),
+          ctl('Zoom in', '＋', function () { V.zoom(-0.5); }),
+          ctl('Zoom out', '－', function () { V.zoom(0.5); }),
+          ctl('Reset the view', '⌂', function () { V.reset(); arAnnounce('View reset'); }),
+          cfg && cfg.extra
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // UNDER-HOOD view — 3D bay + always-present labelled parts list
+      //
+      // The 3D canvas is aria-hidden and is an ENHANCEMENT. The parts list and
+      // detail panel below it carry 100% of the content and are the keyboard
+      // and screen-reader path. If WebGL is missing or a school filter blocks
+      // the CDN, the module loses a picture and loses nothing else.
+      // ─────────────────────────────────────────
+      function renderUnderHood() {
+        var sel = d.uhSel || null;
+        var seen = d.uhSeen || {};
+        var st = d.uh3dStatus || 'idle';
+        var showAllLabels = !!d.uhAllLabels;
+        var selPart = null;
+        for (var pi = 0; pi < UNDER_HOOD_PARTS.length; pi++) {
+          if (UNDER_HOOD_PARTS[pi].id === sel) { selPart = UNDER_HOOD_PARTS[pi]; break; }
+        }
+
+        function pick(id) {
+          if (!id) return;
+          var lbl = id;
+          for (var i = 0; i < UNDER_HOOD_PARTS.length; i++) {
+            if (UNDER_HOOD_PARTS[i].id === id) { lbl = UNDER_HOOD_PARTS[i].label; break; }
+          }
+          var nextSeen = Object.assign({}, seen);
+          nextSeen[id] = true;
+          updMulti({ uhSel: id, uhSeen: nextSeen });
+          arAnnounce(lbl + ' selected. Details below the viewer.');
+          if (Object.keys(nextSeen).length >= UNDER_HOOD_PARTS.length) {
+            awardBadge('underhood-tour', __alloT('stem.autorepair.under_hood_navigator', 'Under-Hood Navigator'));
+          }
+        }
+
+        // One-way bridge into the scene singleton. Cheap object store only —
+        // onStatus is never invoked synchronously from here.
+        UH3D.sync({
+          selected: sel,
+          showAllLabels: showAllLabels,
+          dark: isDark,
+          contrast: isContrast,
+          onPick: pick,
+          onStatus: function (next) { upd('uh3dStatus', next); }
+        });
+
+        var seenCount = Object.keys(seen).length;
+
+        function fact(icon, heading, body, tone) {
+          if (!body) return null;
+          var bd = tone === 'bad' ? T.bad : (tone === 'warn' ? T.warn : T.border);
+          return h('div', { key: heading, style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + bd, borderLeft: '4px solid ' + bd } },
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: tone === 'bad' ? T.bad : T.accentHi, textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 4 } },
+              h('span', { 'aria-hidden': 'true' }, icon + ' '), heading),
+            h('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.55 } }, body)
+          );
+        }
+
+        var viewerNote =
+          st === 'failed' ? __alloT('stem.autorepair.uh_3d_unavailable', '3D view unavailable on this device or network — every part is still listed below with its location, check, and failure signs.')
+          : st === 'loading' ? __alloT('stem.autorepair.uh_3d_loading', 'Loading the 3D engine bay…')
+          : null;
+
+        return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.under_hood_tour', 'Under-hood tour'), style: { padding: 20, maxWidth: 1040, margin: '0 auto', color: T.text } },
+          backBar(__alloT('stem.autorepair.under_hood_tour_title', '🔎 Under-hood tour')),
+
+          // Arrived here from a live Repair Bay case? Offer the way back.
+          // The case state is untouched in toolData, so returning drops the
+          // student straight back where they were.
+          d.uhFrom === 'repairbay' && h('button', { 'data-ar-focusable': true,
+            'aria-label': 'Return to the Repair Bay case you were working',
+            onClick: function () { updMulti({ view: 'repairbay', uhFrom: null }); arAnnounce('Back to the case'); },
+            style: btnSecondary({ marginBottom: 12, borderColor: T.accent }) },
+            __alloT('stem.autorepair.uh_back_to_case', '← Back to the case you were working')),
+
+          h('p', { style: { margin: '0 0 6px', fontSize: 13, color: T.muted, lineHeight: 1.6 } },
+            __alloT('stem.autorepair.uh_intro', 'Pop the hood and nothing is labelled. This is the map. Drag to spin the bay, tap a part to learn what it is, how to check it, and what it looks like when it goes wrong.')),
+          h('div', { role: 'note', style: { margin: '0 0 12px', padding: 9, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11.5, color: T.dim, lineHeight: 1.55 } },
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.uh_caveat_lead', 'Read this first: ')),
+            __alloT('stem.autorepair.uh_caveat', 'this is a generic transverse four-cylinder, left-hand drive. Exact positions vary by make, model, and year — always confirm against your own car and its manual. What transfers is what each part LOOKS like and the one rule you can rely on: the brake fluid reservoir sits on the firewall on the driver\'s side, because it bolts to the back of the brake pedal\'s booster.')),
+
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14, alignItems: 'start' } },
+
+            // ── 3D viewport (enhancement; the list below is the content path) ──
+            h('div', null,
+              bayViewport({
+                label: __alloT('stem.autorepair.uh_viewer_label', 'Engine bay, 3D'),
+                height: 340,
+                failText: viewerNote,
+                loadText: viewerNote
+              }),
+              // Orientation legend — the 3D scene carries no text of its own.
+              h('div', { 'aria-hidden': 'true', style: { display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 10.5, color: T.dim, fontWeight: 700, letterSpacing: '.03em' } },
+                h('span', null, '◀ PASSENGER SIDE'),
+                h('span', null, 'GRILLE / FRONT'),
+                h('span', null, 'DRIVER SIDE ▶')
+              ),
+              bayControls({
+                extra: [
+                  h('button', { key: 'lbl', 'data-ar-focusable': true,
+                    'aria-pressed': showAllLabels ? 'true' : 'false',
+                    'aria-label': showAllLabels ? 'Hide the labels on every part' : 'Show a label on every part',
+                    onClick: function () {
+                      upd('uhAllLabels', !showAllLabels);
+                      arAnnounce(showAllLabels ? 'Part labels hidden' : 'All parts labelled');
+                    },
+                    style: btnGhost({
+                      background: showAllLabels ? T.accent : 'transparent',
+                      color: showAllLabels ? '#0f172a' : T.muted,
+                      fontWeight: showAllLabels ? 700 : 400
+                    }) }, __alloT('stem.autorepair.uh_label_all', '🏷 Label all')),
+                  sel && h('button', { key: 'clr', 'data-ar-focusable': true, 'aria-label': 'Clear selection',
+                    onClick: function () { upd('uhSel', null); arAnnounce('Selection cleared'); },
+                    style: btnGhost() }, __alloT('stem.autorepair.uh_clear', '✕ Clear'))
+                ]
+              }),
+              h('div', { style: { marginTop: 6, fontSize: 10.5, color: T.dim, lineHeight: 1.5 } },
+                __alloT('stem.autorepair.uh_hint', 'Drag or arrow keys to spin · scroll or + / − to zoom · 0 resets · tap a part to select it. Everything the 3D view shows is also in the parts list.'))
+            ),
+
+            // ── Parts list — the accessible, always-present path ──
+            h('div', null,
+              h('h2', { style: { margin: '0 0 4px', fontSize: 14, color: T.accentHi } },
+                __alloT('stem.autorepair.uh_parts_heading', 'Parts in the bay')),
+              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 8 } },
+                seenCount + ' / ' + UNDER_HOOD_PARTS.length + __alloT('stem.autorepair.uh_explored', ' explored')),
+              h('ul', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 5 } },
+                UNDER_HOOD_PARTS.map(function (p) {
+                  var active = p.id === sel;
+                  return h('li', { key: p.id },
+                    h('button', { 'data-ar-focusable': true,
+                      'aria-pressed': active ? 'true' : 'false',
+                      'aria-label': p.label + (seen[p.id] ? ' — already explored' : ''),
+                      onClick: function () { pick(p.id); },
+                      style: {
+                        width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8,
+                        padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
+                        background: active ? T.accent : T.cardAlt,
+                        color: active ? '#0f172a' : T.text,
+                        border: '1px solid ' + (active ? T.accent : T.border),
+                        fontWeight: active ? 800 : 600, fontSize: 13
+                      } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, p.icon),
+                      h('span', { style: { flex: 1 } }, p.label),
+                      seen[p.id] && h('span', { 'aria-hidden': 'true', style: { fontSize: 11, color: active ? '#0f172a' : T.good } }, '✓')
+                    )
+                  );
+                })
+              )
+            )
+          ),
+
+          // ── Detail panel ──
+          selPart
+            ? h('div', { role: 'region', 'aria-label': selPart.label + ' details',
+                style: { marginTop: 16, padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
+                h('h2', { style: { margin: '0 0 2px', fontSize: 17, color: T.accentHi } },
+                  h('span', { 'aria-hidden': 'true' }, selPart.icon + ' '), selPart.label),
+                fact('📍', __alloT('stem.autorepair.uh_where', 'Where to look'), selPart.where),
+                fact('❓', __alloT('stem.autorepair.uh_what', 'What it does'), selPart.what),
+                fact('✅', __alloT('stem.autorepair.uh_check', 'How to check it'), selPart.check),
+                fact('⚠️', __alloT('stem.autorepair.uh_fail', 'What failure looks like'), selPart.fail, 'warn'),
+                selPart.safety ? fact('🛡️', __alloT('stem.autorepair.uh_safety', 'Safety'), selPart.safety, 'bad') : null,
+                selPart.maine ? fact('🌲', __alloT('stem.autorepair.uh_maine', 'Maine reality'), selPart.maine) : null
+              )
+            : h('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border, fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+                __alloT('stem.autorepair.uh_empty', 'Pick a part from the list or tap one in the 3D bay to see where it is, how to check it, and what it looks like when it fails.')),
+
+          seenCount >= UNDER_HOOD_PARTS.length && h('div', { style: { marginTop: 12, padding: 11, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good, fontSize: 12.5, color: T.text, lineHeight: 1.55 } },
+            h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.uh_done_lead', '✓ Every part explored. ')),
+            __alloT('stem.autorepair.uh_done', 'Now do it for real: open your own hood with the engine cold and find all twelve. The ones that are somewhere different on your car are the ones you will actually remember.')),
+
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // REPAIR BAY view — 3D diagnose-and-fix simulation
+      //
+      // Same accessibility contract as the under-hood tour: the 3D bay is one
+      // way to inspect a part, the button list is another, and both do exactly
+      // the same thing. Nothing is reachable only by clicking the canvas.
+      // ─────────────────────────────────────────
+      function renderRepairBay() {
+        var caseId = d.rbCase || null;
+        var kase = null;
+        for (var ci = 0; ci < REPAIR_CASES.length; ci++) {
+          if (REPAIR_CASES[ci].id === caseId) { kase = REPAIR_CASES[ci]; break; }
+        }
+        var done = d.rbDone || {};
+
+        // ── Case picker ──
+        if (!kase) {
+          UH3D.sync({ selected: null, dark: isDark, contrast: isContrast, onPick: null, onStatus: function (n) { upd('uh3dStatus', n); } });
+          var solved = 0;
+          REPAIR_CASES.forEach(function (c) { if (done[c.id] && done[c.id].verdict === 'correct') solved++; });
+          return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.repair_bay', 'Repair Bay'), style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+            backBar(__alloT('stem.autorepair.repair_bay_title', '🔧 Repair Bay — diagnose & fix')),
+            h('p', { style: { margin: '0 0 6px', fontSize: 13, color: T.muted, lineHeight: 1.6 } },
+              __alloT('stem.autorepair.rb_intro', 'A car comes in with a complaint. Inspect it, run the tests that actually separate the possibilities, then commit to one repair. You are graded on your evidence and your safety, not just on getting the right answer.')),
+            h('div', { role: 'note', style: { margin: '0 0 14px', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.text, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.rb_rule_lead', 'The rule this bay teaches: ')),
+              __alloT('stem.autorepair.rb_rule', 'diagnose before you replace. Every case has a wrong answer that looks obvious and costs the customer real money. Guessing right still scores badly here — because on a real car, a guess that happens to work teaches you nothing and the next one strands somebody.')),
+            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 8 } }, solved + ' / ' + REPAIR_CASES.length + __alloT('stem.autorepair.rb_solved', ' cases correctly diagnosed')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
+              REPAIR_CASES.map(function (c) {
+                var rec = done[c.id];
+                return h('button', { key: c.id, 'data-ar-focusable': true,
+                  'aria-label': 'Open case: ' + c.title + (rec ? ' — previously graded ' + rec.grade : ''),
+                  onClick: function () { updMulti({ rbCase: c.id, rbEngine: 'off', rbFound: {}, rbSel: null, rbVerdict: null, rbViolations: [], rbNotes: '' }); arAnnounce('Case opened: ' + c.title); },
+                  style: { textAlign: 'left', padding: 13, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + (rec && rec.verdict === 'correct' ? T.good : T.border), color: T.text, cursor: 'pointer' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, c.icon),
+                    h('strong', { style: { fontSize: 13.5, color: T.accentHi } }, c.title),
+                    rec && h('span', { style: { marginLeft: 'auto', fontSize: 12, fontWeight: 800, color: rec.verdict === 'correct' ? T.good : T.warn } }, rec.grade)
+                  ),
+                  h('div', { style: { fontSize: 11.5, color: T.muted, lineHeight: 1.5, fontStyle: 'italic' } }, '“' + c.complaint.slice(0, 96) + (c.complaint.length > 96 ? '…' : '') + '”')
+                );
+              })
+            ),
+            disclaimerFooter()
+          );
+        }
+
+        // ── Live case ──
+        var engine = d.rbEngine || 'off';
+        var found = d.rbFound || {};
+        var sel = d.rbSel || null;
+        var verdict = d.rbVerdict || null;
+        var violations = d.rbViolations || [];
+
+        var keyTotal = 0, keyGot = 0;
+        Object.keys(kase.findings).forEach(function (pid) {
+          if (kase.findings[pid].key) { keyTotal++; if (found['p:' + pid]) keyGot++; }
+        });
+        kase.tests.forEach(function (t) {
+          if (t.key) { keyTotal++; if (found['t:' + t.id]) keyGot++; }
+        });
+
+        var marks = {};
+        Object.keys(kase.findings).forEach(function (pid) { if (found['p:' + pid]) marks[pid] = 'checked'; });
+
+        function logViolation(text) {
+          if (violations.indexOf(text) !== -1) return violations;
+          var next = violations.concat([text]);
+          upd('rbViolations', next);
+          addToast('⚠️ Safety violation recorded');
+          arAnnounce('Safety violation: ' + text);
+          return next;
+        }
+
+        function inspect(pid) {
+          if (verdict) return;
+          var f = kase.findings[pid];
+          var patch = { rbSel: pid };
+          if (!f) {
+            updMulti(patch);
+            arAnnounce('Nothing relevant to this complaint on the ' + pid);
+            return;
+          }
+          // Hands near a spinning belt / a hot pressurized cap is a real
+          // failure, so it is recorded rather than silently prevented.
+          if (engine === 'running' && RB_RUNNING_HAZARD[pid]) {
+            logViolation(RB_RUNNING_HAZARD[pid]);
+          }
+          var nf = Object.assign({}, found); nf['p:' + pid] = true;
+          patch.rbFound = nf;
+          updMulti(patch);
+          arAnnounce('Inspected ' + pid + '. ' + f.text);
+        }
+
+        function runTest(t) {
+          if (verdict) return;
+          if (t.needs !== 'any' && t.needs !== engine) {
+            arAnnounce('Cannot run that test with the engine ' + engine);
+            return;
+          }
+          if (t.hazard && engine === 'running' && RB_RUNNING_HAZARD[t.hazard]) {
+            logViolation(RB_RUNNING_HAZARD[t.hazard]);
+          }
+          var nf = Object.assign({}, found); nf['t:' + t.id] = true;
+          upd('rbFound', nf);
+          arAnnounce(t.label + '. ' + t.text);
+        }
+
+        var costs = RB_COSTS[kase.id] || {};
+        function rbCost(choice) { return costs[choice.id] || 0; }
+        function correctChoice() {
+          for (var i = 0; i < kase.choices.length; i++) if (kase.choices[i].verdict === 'correct') return kase.choices[i];
+          return null;
+        }
+
+        function commit(choice) {
+          var grade;
+          if (choice.verdict !== 'correct') grade = 'F';
+          else {
+            var ratio = keyTotal ? keyGot / keyTotal : 0;
+            if (violations.length) grade = ratio >= 0.75 ? 'C' : 'D';
+            else if (ratio >= 0.99) grade = 'A';
+            else if (ratio >= 0.6) grade = 'B';
+            else grade = 'C';
+          }
+          var nd = Object.assign({}, done);
+          nd[kase.id] = { verdict: choice.verdict, grade: grade, evidence: keyGot + '/' + keyTotal, violations: violations.length, cost: rbCost(choice) };
+          updMulti({ rbVerdict: choice.id, rbDone: nd });
+          arAnnounce('Committed: ' + choice.label + '. Grade ' + grade);
+          var allRight = REPAIR_CASES.every(function (c) { return nd[c.id] && nd[c.id].verdict === 'correct'; });
+          if (allRight) awardBadge('repair-bay-ace', __alloT('stem.autorepair.repair_bay_ace', 'Repair Bay Ace'));
+        }
+
+        UH3D.sync({
+          selected: sel, marks: marks, dark: isDark, contrast: isContrast,
+          onPick: inspect,
+          onStatus: function (n) { upd('uh3dStatus', n); }
+        });
+
+        var st = d.uh3dStatus || 'idle';
+        var chosen = null;
+        for (var qi = 0; qi < kase.choices.length; qi++) { if (kase.choices[qi].id === verdict) { chosen = kase.choices[qi]; break; } }
+        var selFinding = sel ? kase.findings[sel] : null;
+        var rec = done[kase.id];
+
+        function panel(title, body, tone) {
+          var bd = tone === 'bad' ? T.bad : (tone === 'good' ? T.good : (tone === 'warn' ? T.warn : T.border));
+          return h('div', { style: { marginTop: 10, padding: 11, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + bd, borderLeft: '4px solid ' + bd } },
+            h('div', { style: { fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.04em', color: tone === 'bad' ? T.bad : (tone === 'good' ? T.good : T.accentHi), marginBottom: 4 } }, title),
+            h('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.6 } }, body));
+        }
+
+        return h('div', { role: 'main', 'aria-label': 'Repair Bay case: ' + kase.title, style: { padding: 20, maxWidth: 1060, margin: '0 auto', color: T.text } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
+            h('button', { 'data-ar-focusable': true, 'aria-label': 'Back to case list',
+              onClick: function () { updMulti({ rbCase: null, rbSel: null }); }, style: btnGhost() }, __alloT('stem.autorepair.rb_cases', '← Cases')),
+            h('h1', { style: { margin: 0, fontSize: 17, color: T.text } },
+              h('span', { 'aria-hidden': 'true' }, kase.icon + ' '), kase.title)
+          ),
+
+          // Complaint
+          h('div', { style: { padding: 12, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 5 } }, __alloT('stem.autorepair.rb_complaint', 'Customer says')),
+            h('p', { style: { margin: '0 0 6px', fontSize: 13.5, color: T.text, lineHeight: 1.6, fontStyle: 'italic' } }, '“' + kase.complaint + '”'),
+            h('div', { style: { fontSize: 11.5, color: T.muted } },
+              h('strong', null, __alloT('stem.autorepair.rb_dash', 'On the dash: ')), kase.dash.join(' · '))
+          ),
+
+          // Engine state — the mechanic that makes evidence and safety real
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + (engine === 'running' ? T.warn : T.border), marginBottom: 12 } },
+            h('span', { style: { fontSize: 12, fontWeight: 800, color: T.text } },
+              h('span', { 'aria-hidden': 'true' }, engine === 'running' ? '🔊 ' : '🔇 '),
+              __alloT('stem.autorepair.rb_engine', 'Engine: '), engine === 'running' ? __alloT('stem.autorepair.rb_running', 'RUNNING') : __alloT('stem.autorepair.rb_off', 'OFF')),
+            h('button', { 'data-ar-focusable': true, disabled: !!verdict,
+              'aria-label': engine === 'running' ? 'Shut the engine off' : 'Start the engine',
+              onClick: function () {
+                var next = engine === 'running' ? 'off' : 'running';
+                upd('rbEngine', next);
+                // Some cases need the engine run to produce evidence but are
+                // being damaged by running. That is a caution, not a
+                // violation — punishing a student for gathering required
+                // evidence would teach them not to gather it.
+                if (next === 'running' && kase.startCaution) addToast('⏱️ ' + kase.startCaution);
+                arAnnounce('Engine ' + (next === 'running' ? 'started' : 'shut off'));
+              },
+              style: btnSecondary({ opacity: verdict ? 0.5 : 1 }) },
+              engine === 'running' ? __alloT('stem.autorepair.rb_shutoff', 'Shut it off') : __alloT('stem.autorepair.rb_start', 'Start it')),
+            h('span', { style: { fontSize: 11, color: T.dim, flex: 1, minWidth: 200, lineHeight: 1.45 } },
+              engine === 'running'
+                ? __alloT('stem.autorepair.rb_running_hint', 'Some evidence only exists now — charging voltage, whether the fan kicks in. Some inspection is unsafe now.')
+                : __alloT('stem.autorepair.rb_off_hint', 'Safe to inspect belts and open the cooling system. Some tests need it running.'))
+          ),
+
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14, alignItems: 'start' } },
+            // 3D bay
+            h('div', null,
+              bayViewport({
+                label: __alloT('stem.autorepair.rb_viewer_label', 'Engine bay for this case, 3D'),
+                height: 300,
+                failText: __alloT('stem.autorepair.rb_3d_failed', '3D bay unavailable — inspect using the buttons below. Nothing in this case needs the 3D view.'),
+                loadText: __alloT('stem.autorepair.rb_3d_loading', 'Loading the bay…')
+              }),
+              bayControls(null),
+              h('div', { style: { marginTop: 6, fontSize: 10.5, color: T.dim, lineHeight: 1.5 } },
+                __alloT('stem.autorepair.rb_3d_hint', 'Click a part in the bay to inspect it, or use the buttons — they do the same thing. Green = already inspected.')),
+              selFinding && h('div', { style: { marginTop: 8, padding: 11, borderRadius: 8, background: T.card, border: '1px solid ' + (selFinding.key ? T.good : T.border) } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: T.accentHi, marginBottom: 4 } },
+                  __alloT('stem.autorepair.rb_you_see', 'You see — '), (function () { for (var i = 0; i < UNDER_HOOD_PARTS.length; i++) { if (UNDER_HOOD_PARTS[i].id === sel) return UNDER_HOOD_PARTS[i].label; } return sel; })()),
+                h('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.6 } }, selFinding.text),
+                selFinding.key && h('div', { style: { marginTop: 5, fontSize: 11, fontWeight: 700, color: T.good } }, __alloT('stem.autorepair.rb_key_evidence', '✓ Counts as key evidence')),
+                // A student who does not yet know what an alternator IS cannot
+                // reason about "no bearing play." The reference is one module
+                // away; make it one tap away instead of a dead end.
+                h('button', { 'data-ar-focusable': true,
+                  'aria-label': 'Look this part up in the under-hood tour, then come back to the case',
+                  onClick: function () {
+                    updMulti({ view: 'underhood', uhSel: sel, uhFrom: 'repairbay' });
+                    arAnnounce('Opened the under-hood reference for this part');
+                  },
+                  style: btnGhost({ marginTop: 8, fontSize: 11 }) },
+                  __alloT('stem.autorepair.rb_lookup', '📖 What is this part?'))
+              )
+            ),
+
+            // Inspect + test controls
+            h('div', null,
+              h('h2', { style: { margin: '0 0 6px', fontSize: 13.5, color: T.accentHi } }, __alloT('stem.autorepair.rb_inspect', 'Inspect')),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 12 } },
+                Object.keys(kase.findings).map(function (pid) {
+                  var lbl = pid;
+                  for (var i = 0; i < UNDER_HOOD_PARTS.length; i++) { if (UNDER_HOOD_PARTS[i].id === pid) { lbl = UNDER_HOOD_PARTS[i].label; break; } }
+                  var got = !!found['p:' + pid];
+                  var risky = engine === 'running' && !!RB_RUNNING_HAZARD[pid];
+                  return h('button', { key: pid, 'data-ar-focusable': true, disabled: !!verdict,
+                    'aria-label': 'Inspect ' + lbl + (got ? ' — already inspected' : '') + (risky ? ' — unsafe with the engine running' : ''),
+                    onClick: function () { inspect(pid); },
+                    style: { padding: '6px 10px', borderRadius: 999, fontSize: 12, cursor: verdict ? 'not-allowed' : 'pointer', opacity: verdict ? 0.55 : 1,
+                      background: sel === pid ? T.accent : (got ? T.cardAlt : T.card), color: sel === pid ? '#0f172a' : T.text,
+                      border: '1px solid ' + (risky ? T.bad : (got ? T.good : T.border)), fontWeight: got ? 700 : 600 } },
+                    (got ? '✓ ' : '') + lbl + (risky ? ' ⚠' : ''));
+                })
+              ),
+              h('h2', { style: { margin: '0 0 6px', fontSize: 13.5, color: T.accentHi } }, __alloT('stem.autorepair.rb_tests', 'Tests')),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                kase.tests.map(function (t) {
+                  var got = !!found['t:' + t.id];
+                  var avail = (t.needs === 'any' || t.needs === engine);
+                  return h('div', { key: t.id },
+                    h('button', { 'data-ar-focusable': true, disabled: !!verdict || !avail,
+                      'aria-label': t.label + (avail ? '' : ' — requires the engine ' + t.needs),
+                      onClick: function () { runTest(t); },
+                      style: { width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 8, fontSize: 12.5,
+                        cursor: (verdict || !avail) ? 'not-allowed' : 'pointer', opacity: (verdict || !avail) ? 0.5 : 1,
+                        background: got ? T.cardAlt : T.card, color: T.text,
+                        border: '1px solid ' + (got ? T.good : T.border), fontWeight: got ? 700 : 600 } },
+                      (got ? '✓ ' : '') + t.label,
+                      !avail && h('span', { style: { display: 'block', fontSize: 10.5, color: T.dim, fontWeight: 600, marginTop: 2 } },
+                        __alloT('stem.autorepair.rb_needs_engine', 'Needs the engine ') + t.needs.toUpperCase())),
+                    got && h('div', { style: { padding: '7px 10px', fontSize: 12, color: T.text, lineHeight: 1.55, background: T.card, borderLeft: '3px solid ' + (t.key ? T.good : T.border), marginTop: 3, borderRadius: 4 } }, t.text)
+                  );
+                })
+              ),
+              h('div', { style: { marginTop: 10, fontSize: 11.5, color: T.muted } },
+                h('strong', { style: { color: keyGot === keyTotal ? T.good : T.warn } }, __alloT('stem.autorepair.rb_evidence', 'Key evidence: ') + keyGot + ' / ' + keyTotal))
+            )
+          ),
+
+          violations.length > 0 && h('div', { role: 'alert', style: { marginTop: 14, padding: 12, borderRadius: 8, background: T.cardAlt, border: '2px solid ' + T.bad } },
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: T.bad, marginBottom: 6 } },
+              h('span', { 'aria-hidden': 'true' }, '⚠️ '), __alloT('stem.autorepair.rb_violations', 'Safety violations: ') + violations.length),
+            violations.map(function (v, i) {
+              return h('div', { key: i, style: { fontSize: 12.5, color: T.text, lineHeight: 1.6, marginBottom: 4 } }, '• ' + v);
+            })
+          ),
+
+          // Working notes — reflective practice, shown back in the debrief so
+          // the student can compare what they THOUGHT against what happened.
+          // Optional on purpose: gating the commit on a textarea just teaches
+          // students to type a character to get past it.
+          h('div', { style: { marginTop: 16 } },
+            h('label', { htmlFor: 'rb-notes', style: { display: 'block', fontSize: 13.5, fontWeight: 800, color: T.accentHi, marginBottom: 4 } },
+              __alloT('stem.autorepair.rb_notes_label', 'Working notes — what do you think is wrong, and what makes you think it?')),
+            h('textarea', { id: 'rb-notes', 'data-ar-focusable': true, rows: 2,
+              value: d.rbNotes || '', disabled: !!verdict,
+              placeholder: __alloT('stem.autorepair.rb_notes_ph', 'Optional. Writing the reasoning down before you commit is what turns a guess into a diagnosis.'),
+              onChange: function (e) { upd('rbNotes', e.target.value); },
+              style: { width: '100%', minHeight: 48, padding: 8, borderRadius: 8, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, fontSize: 12.5, lineHeight: 1.5, fontFamily: 'inherit' } })
+          ),
+
+          // Commit
+          h('div', { style: { marginTop: 16 } },
+            h('h2', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.rb_call_it', 'Call it')),
+            !verdict && h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              __alloT('stem.autorepair.rb_call_hint', 'Pick one action. You cannot take it back, same as telling a customer.')),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              kase.choices.map(function (c) {
+                var isPick = verdict === c.id;
+                var reveal = !!verdict;
+                var tone = !reveal ? T.border : (c.verdict === 'correct' ? T.good : (c.verdict === 'trap' ? T.bad : T.warn));
+                return h('div', { key: c.id },
+                  h('button', { 'data-ar-focusable': true, disabled: reveal,
+                    'aria-label': c.label, onClick: function () { commit(c); },
+                    style: { width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 8, fontSize: 13,
+                      cursor: reveal ? 'default' : 'pointer',
+                      background: isPick ? (c.verdict === 'correct' ? T.good : T.bad) : T.cardAlt,
+                      color: isPick ? '#0f172a' : T.text,
+                      border: '1px solid ' + tone, fontWeight: isPick ? 800 : 600, opacity: reveal && !isPick ? 0.82 : 1 } },
+                    (reveal ? (c.verdict === 'correct' ? '✓ ' : (c.verdict === 'trap' ? '✗ ' : '– ')) : '') + c.label,
+                    isPick && h('span', { style: { display: 'block', fontSize: 11, fontWeight: 800, marginTop: 2 } }, __alloT('stem.autorepair.rb_your_call', 'YOUR CALL'))),
+                  reveal && h('div', { style: { padding: '8px 11px', fontSize: 12.5, color: T.text, lineHeight: 1.6, background: T.card, borderLeft: '3px solid ' + tone, marginTop: 3, borderRadius: 4 } },
+                    c.verdict === 'trap' && h('strong', { style: { color: T.bad } }, __alloT('stem.autorepair.rb_trap', 'Trap answer. ')),
+                    c.why)
+                );
+              })
+            )
+          ),
+
+          chosen && h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + (chosen.verdict === 'correct' ? T.good : T.bad) } },
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: chosen.verdict === 'correct' ? T.good : T.bad, marginBottom: 4 } },
+              __alloT('stem.autorepair.rb_grade', 'Grade: ') + (rec ? rec.grade : '')),
+            h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 8 } },
+              __alloT('stem.autorepair.rb_evidence_gathered', 'Evidence gathered before you called it: ') + keyGot + ' / ' + keyTotal +
+              ' · ' + __alloT('stem.autorepair.rb_safety', 'Safety violations: ') + violations.length),
+            // What it cost the customer. The parts-cannon lesson is abstract
+            // until it has a number on it: a misdiagnosis means paying for the
+            // wrong part AND still paying for the right one.
+            (function () {
+              var right = correctChoice();
+              var rightCost = right ? rbCost(right) : 0;
+              var wasted = chosen.verdict === 'correct' ? 0 : rbCost(chosen);
+              var total = wasted + rightCost;
+              return h('div', { style: { marginTop: 10, padding: 11, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + (wasted > 0 ? T.bad : T.good) } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.04em', color: wasted > 0 ? T.bad : T.good, marginBottom: 5 } },
+                  __alloT('stem.autorepair.rb_bill', 'What the customer pays')),
+                h('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.65 } },
+                  wasted > 0
+                    ? [
+                        h('div', { key: 'w' }, __alloT('stem.autorepair.rb_bill_wasted', 'Your repair: ') + '$' + wasted + __alloT('stem.autorepair.rb_bill_nofix', ' — and it did not fix the car.')),
+                        h('div', { key: 'r' }, __alloT('stem.autorepair.rb_bill_still', 'The repair it still needs: ') + '$' + rightCost),
+                        h('div', { key: 't', style: { marginTop: 4, fontWeight: 800, color: T.bad } }, __alloT('stem.autorepair.rb_bill_total', 'Total: ') + '$' + total + ' — $' + wasted + __alloT('stem.autorepair.rb_bill_extra', ' of that was avoidable.'))
+                      ]
+                    : h('div', null, '$' + rightCost + __alloT('stem.autorepair.rb_bill_only', ' — the repair it actually needed, and nothing else.'))
+                ),
+                h('div', { style: { marginTop: 6, fontSize: 10.5, color: T.dim, fontStyle: 'italic', lineHeight: 1.5 } },
+                  __alloT('stem.autorepair.rb_bill_disclaimer', 'Rough teaching figures only, not quotes. Real prices vary a lot by vehicle, region and shop rate.'),
+                  kase.id === 'headgasket' ? __alloT('stem.autorepair.rb_bill_hg', ' The head-gasket job itself typically runs well into four figures at a shop — which is exactly why recognising it and handing it over is the valuable call.') : '')
+              );
+            })(),
+            (d.rbNotes && d.rbNotes.trim()) && panel(
+              __alloT('stem.autorepair.rb_your_notes', 'What you wrote before you committed'),
+              d.rbNotes, 'good'),
+            (chosen.verdict === 'correct' && keyGot < keyTotal) && panel(
+              __alloT('stem.autorepair.rb_right_thin', 'Right answer, thin evidence'),
+              __alloT('stem.autorepair.rb_right_thin_body', 'You landed on the correct repair without collecting everything that proves it. On a real car that is a guess that happened to pay off — and the habit it builds is the one that eventually sells somebody a part they did not need. Reopen the case and find the tests you skipped.'),
+              'warn'),
+            (violations.length > 0) && panel(
+              __alloT('stem.autorepair.rb_safety_first', 'Safety comes before the diagnosis'),
+              __alloT('stem.autorepair.rb_safety_body', 'A correct diagnosis does not undo an injury. Every violation above describes something that hurts people in real bays, and the habit of checking engine state first is what prevents all of them.'),
+              'bad'),
+            panel(__alloT('stem.autorepair.rb_takeaway', 'What this case teaches'), kase.teaching, 'good'),
+            h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
+              h('button', { 'data-ar-focusable': true, onClick: function () { updMulti({ rbEngine: 'off', rbFound: {}, rbSel: null, rbVerdict: null, rbViolations: [], rbNotes: '' }); arAnnounce('Case reset'); },
+                style: btnSecondary() }, __alloT('stem.autorepair.rb_retry', '↺ Run it again')),
+              h('button', { 'data-ar-focusable': true, onClick: function () { updMulti({ rbCase: null, rbSel: null }); },
+                style: btnPrimary() }, __alloT('stem.autorepair.rb_next_case', 'Next case →'))
+            )
+          ),
+
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // TYRE CHANGE view — ordered procedure, 3D state, safety gates
+      //
+      // Same accessibility contract as the other two: the 3D corner is a
+      // picture of where you are, and every action is a real button. Nothing
+      // requires the canvas.
+      // ─────────────────────────────────────────
+      function renderTireChange() {
+        var doneIds = d.tcDone || [];
+        var wrong = d.tcWrong || 0;
+        var violations = d.tcViolations || [];
+        var last = d.tcLast || null;
+        var sel = d.tcSel || null;
+        var finished = doneIds.length >= TIRE_STEPS.length;
+
+        function stepById(id) {
+          for (var i = 0; i < TIRE_STEPS.length; i++) if (TIRE_STEPS[i].id === id) return TIRE_STEPS[i];
+          return null;
+        }
+        function hazardById(id) {
+          for (var i = 0; i < TIRE_HAZARDS.length; i++) if (TIRE_HAZARDS[i].id === id) return TIRE_HAZARDS[i];
+          return null;
+        }
+
+        var nextStep = TIRE_STEPS[doneIds.length] || null;
+
+        function choose(id) {
+          if (finished) return;
+          var hz = hazardById(id);
+          if (hz) {
+            var nv = violations.indexOf(hz.id) === -1 ? violations.concat([hz.id]) : violations;
+            updMulti({ tcViolations: nv, tcLast: { kind: 'hazard', id: hz.id } });
+            addToast('☠️ ' + hz.label);
+            arAnnounce('Safety violation. ' + hz.why);
+            return;
+          }
+          var st = stepById(id);
+          if (!st) return;
+          if (nextStep && st.id === nextStep.id) {
+            var nd = doneIds.concat([id]);
+            updMulti({ tcDone: nd, tcLast: { kind: 'ok', id: id } });
+            arAnnounce('Correct. ' + st.label + '. ' + st.why);
+            if (nd.length >= TIRE_STEPS.length && violations.length === 0 && wrong === 0) {
+              awardBadge('tyre-change-clean', __alloT('stem.autorepair.roadside_ready', 'Roadside Ready'));
+            }
+            return;
+          }
+          updMulti({ tcWrong: wrong + 1, tcLast: { kind: 'early', id: id } });
+          arAnnounce('Not yet. ' + st.tooEarly);
+        }
+
+        // Only TIRE3D is mounted in this view; UH3D was torn down by its own
+        // ref callback when the under-hood container unmounted.
+        TIRE3D.sync({
+          selected: sel,
+          phase: doneIds.length,
+          dark: isDark, contrast: isContrast,
+          onPick: function (pid) { upd('tcSel', pid); arAnnounce(pid + ' selected'); },
+          onStatus: function (n) { upd('uh3dStatus', n); }
+        });
+
+        var selPart = null;
+        for (var ti = 0; ti < TIRE_PARTS.length; ti++) if (TIRE_PARTS[ti].id === sel) selPart = TIRE_PARTS[ti];
+
+        // Feedback for the last action
+        var fb = null;
+        if (last && last.kind === 'hazard') {
+          var hzz = hazardById(last.id);
+          if (hzz) fb = { tone: T.bad, title: __alloT('stem.autorepair.tc_unsafe', '☠️ Unsafe — this is never the answer'), body: hzz.why };
+        } else if (last && last.kind === 'early') {
+          var se = stepById(last.id);
+          if (se) fb = { tone: T.warn, title: __alloT('stem.autorepair.tc_not_yet', '⏳ Right action, wrong moment'), body: se.tooEarly };
+        } else if (last && last.kind === 'ok') {
+          var so = stepById(last.id);
+          if (so) fb = { tone: T.good, title: __alloT('stem.autorepair.tc_good', '✓ ') + so.label, body: so.why };
+        }
+
+        var grade = 'A';
+        if (violations.length >= 3) grade = 'F';
+        else if (violations.length > 0) grade = 'D';
+        else if (wrong >= 3) grade = 'C';
+        else if (wrong > 0) grade = 'B';
+
+        return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.tc_title_aria', 'Roadside tyre change'), style: { padding: 20, maxWidth: 1040, margin: '0 auto', color: T.text } },
+          backBar(__alloT('stem.autorepair.tc_title', '🛞 Change a tyre')),
+
+          h('p', { style: { margin: '0 0 6px', fontSize: 13, color: T.muted, lineHeight: 1.6 } },
+            __alloT('stem.autorepair.tc_intro', 'Every one of these actions is something you genuinely have to do. The skill is doing them in the right order — get that wrong and at best the wheel spins uselessly, at worst the car comes off the jack.')),
+          h('div', { role: 'note', style: { margin: '0 0 12px', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.bad, fontSize: 12, color: T.text, lineHeight: 1.6 } },
+            h('strong', { style: { color: T.bad } }, __alloT('stem.autorepair.tc_rule_lead', 'The rule that matters most: ')),
+            __alloT('stem.autorepair.tc_rule', 'a jack lifts a car, it does not hold one. Nothing of you goes under a car supported only by a jack — not an arm, not your head, ever. A roadside wheel change never needs you under there.')),
+
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14, alignItems: 'start' } },
+            h('div', null,
+              bayViewport({
+                viewer: TIRE3D,
+                label: __alloT('stem.autorepair.tc_viewer_label', 'Car corner and wheel, 3D'),
+                height: 300,
+                failText: __alloT('stem.autorepair.tc_3d_failed', '3D view unavailable — the full procedure is in the buttons below and nothing here needs the picture.'),
+                loadText: __alloT('stem.autorepair.tc_3d_loading', 'Loading the car…')
+              }),
+              bayControls({ viewer: TIRE3D }),
+              h('div', { style: { marginTop: 6, fontSize: 10.5, color: T.dim, lineHeight: 1.5 } },
+                __alloT('stem.autorepair.tc_3d_hint', 'The car changes as you work: the chock appears, the jack goes under, the corner lifts, the wheel comes off. Click any part to read what it is. Every action is also a button below.')),
+              selPart && h('div', { style: { marginTop: 8, padding: 11, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } },
+                h('div', { style: { fontSize: 12.5, fontWeight: 800, color: T.accentHi, marginBottom: 4 } },
+                  h('span', { 'aria-hidden': 'true' }, selPart.icon + ' '), selPart.label),
+                h('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.6 } }, selPart.what),
+                h('div', { style: { marginTop: 5, fontSize: 12, color: T.warn, lineHeight: 1.55 } }, selPart.note))
+            ),
+
+            h('div', null,
+              h('h2', { style: { margin: '0 0 4px', fontSize: 14, color: T.accentHi } },
+                __alloT('stem.autorepair.tc_progress', 'Done so far')),
+              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 8 } },
+                doneIds.length + ' / ' + TIRE_STEPS.length +
+                (wrong ? ' · ' + wrong + __alloT('stem.autorepair.tc_misorders', ' out-of-order attempts') : '') +
+                (violations.length ? ' · ' + violations.length + __alloT('stem.autorepair.tc_unsafe_count', ' unsafe') : '')),
+              doneIds.length === 0
+                ? h('div', { style: { fontSize: 12, color: T.muted, fontStyle: 'italic', marginBottom: 10 } },
+                    __alloT('stem.autorepair.tc_nothing_yet', 'Nothing yet. Pick the action you would take first.'))
+                : h('ol', { style: { margin: '0 0 10px', paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 3 } },
+                    doneIds.map(function (id, i) {
+                      var st = stepById(id);
+                      return h('li', { key: id, style: { fontSize: 12, color: T.text, lineHeight: 1.5 } },
+                        h('span', { 'aria-hidden': 'true' }, (st ? st.icon : '') + ' '), st ? st.label : id);
+                    })
+                  ),
+              fb && h('div', { role: 'status', style: { padding: 11, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + fb.tone, borderLeft: '4px solid ' + fb.tone, marginBottom: 10 } },
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: fb.tone, marginBottom: 4 } }, fb.title),
+                h('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.6 } }, fb.body))
+            )
+          ),
+
+          // Action pool
+          !finished && h('div', { style: { marginTop: 16 } },
+            h('h2', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } },
+              __alloT('stem.autorepair.tc_whats_next', 'What do you do next?')),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 5 } },
+              TIRE_POOL_ORDER.map(function (id) {
+                if (doneIds.indexOf(id) !== -1) return null;
+                var st = stepById(id);
+                var hz = st ? null : hazardById(id);
+                var item = st || hz;
+                if (!item) return null;
+                var flagged = hz && violations.indexOf(hz.id) !== -1;
+                return h('button', { key: id, 'data-ar-focusable': true,
+                  'aria-label': item.label,
+                  onClick: function () { choose(id); },
+                  style: { width: '100%', textAlign: 'left', padding: '9px 11px', borderRadius: 8, fontSize: 13,
+                    cursor: 'pointer', background: flagged ? T.cardAlt : T.card, color: T.text,
+                    border: '1px solid ' + (flagged ? T.bad : T.border), fontWeight: 600, lineHeight: 1.45 } },
+                  h('span', { 'aria-hidden': 'true' }, item.icon + ' '), item.label,
+                  flagged && h('span', { style: { display: 'block', fontSize: 10.5, color: T.bad, fontWeight: 800, marginTop: 2 } },
+                    __alloT('stem.autorepair.tc_already_flagged', 'You already tried this — it is still unsafe'))
+                );
+              })
+            )
+          ),
+
+          finished && h('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + (grade === 'A' ? T.good : (violations.length ? T.bad : T.warn)) } },
+            h('div', { style: { fontSize: 22, fontWeight: 900, color: grade === 'A' ? T.good : (violations.length ? T.bad : T.warn), marginBottom: 4 } },
+              __alloT('stem.autorepair.tc_grade', 'Wheel changed. Grade: ') + grade),
+            h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 8 } },
+              wrong + __alloT('stem.autorepair.tc_summary_wrong', ' out-of-order attempts · ') + violations.length + __alloT('stem.autorepair.tc_summary_unsafe', ' unsafe actions')),
+            violations.length > 0 && h('div', { style: { padding: 11, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.bad, marginBottom: 8 } },
+              h('div', { style: { fontSize: 12, fontWeight: 800, color: T.bad, marginBottom: 5 } },
+                __alloT('stem.autorepair.tc_unsafe_recap', 'The unsafe ones matter more than the grade')),
+              violations.map(function (vid) {
+                var hz = hazardById(vid);
+                return hz ? h('div', { key: vid, style: { fontSize: 12.5, color: T.text, lineHeight: 1.6, marginBottom: 5 } },
+                  h('strong', null, hz.label + ' — '), hz.why) : null;
+              })),
+            h('div', { style: { padding: 11, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good, fontSize: 12.5, color: T.text, lineHeight: 1.6 } },
+              h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.tc_now_real', 'Now do it for real, before you need to. ')),
+              __alloT('stem.autorepair.tc_now_real_body', 'Find your jack, your wrench and your spare, and check the spare actually holds air. Read your manual for where the jack points are on your car. A driveway on a dry afternoon is a much better place to learn this than a dark verge in February.')),
+            h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
+              h('button', { 'data-ar-focusable': true,
+                onClick: function () { updMulti({ tcDone: [], tcWrong: 0, tcViolations: [], tcLast: null, tcSel: null }); arAnnounce('Reset'); },
+                style: btnSecondary() }, __alloT('stem.autorepair.tc_again', '↺ Run it again')),
+              h('button', { 'data-ar-focusable': true, onClick: function () { setView('menu'); },
+                style: btnPrimary() }, __alloT('stem.autorepair.tc_menu', 'Back to menu')))
+          ),
+
+          disclaimerFooter()
+        );
+      }
+
       function renderBadges() {
         // Catalog of all unlockable badges, grouped by module category.
         // 'check' returns true if earned (looks at the badges object).
@@ -7508,6 +9738,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             { id: 'winter-prep', icon: '🌨️', name: __alloT('stem.autorepair.maine_winter_prepped', 'Maine Winter Prepped'), how: 'Complete all 12 cold-weather prep items.' },
             { id: 'kit-packed', icon: '🎒', name: __alloT('stem.autorepair.trunk_kit_packed', 'Trunk Kit Packed'), how: 'Pack all 16 roadside-emergency kit items.' },
             { id: 'first-car-30day', icon: '🚗', name: __alloT('stem.autorepair.30_day_plan_complete', '30-Day Plan Complete'), how: 'Finish all 17 first-car-owner tasks.' },
+            { id: 'underhood-tour', icon: '🔎', name: __alloT('stem.autorepair.under_hood_navigator', 'Under-Hood Navigator'), how: 'Explore all 12 parts in the 3D under-hood tour.' },
+            { id: 'tyre-change-clean', icon: '🛞', name: __alloT('stem.autorepair.roadside_ready', 'Roadside Ready'), how: 'Change a tyre with every step in the right order and no unsafe actions.' },
             { id: 'walkaround-pro', icon: '🚶', name: __alloT('stem.autorepair.walk_around_pro', 'Walk-Around Pro'), how: 'Complete all 10 pre-drive walk-around steps.' },
             { id: 'tire-pro', icon: '🛞', name: __alloT('stem.autorepair.tire_pro', 'Tire Pro'), how: 'Tap any rotation pattern in the Tire Deep Dive.' }
           ] },
@@ -7518,6 +9750,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             { id: 'visual-inspector', icon: '👁️', name: __alloT('stem.autorepair.visual_inspector', 'Visual Inspector'), how: 'Tap any visual-inspection item.' },
             { id: 'tree-explorer', icon: '🌳', name: __alloT('stem.autorepair.decision_tree_explorer', 'Decision Tree Explorer'), how: 'Start any decision tree.' },
             { id: 'lab-master', icon: '🏆', name: __alloT('stem.autorepair.lab_master', 'Lab Master'), how: 'Complete all 6 lab simulator scenarios with 70%+.' },
+            { id: 'repair-bay-ace', icon: '🔧', name: __alloT('stem.autorepair.repair_bay_ace', 'Repair Bay Ace'), how: 'Correctly diagnose all 7 Repair Bay cases.' },
             { id: 'damage-id-ace', icon: '🔬', name: __alloT('stem.autorepair.damage_id_ace', 'Damage ID Ace'), how: 'Score 80%+ on the 15-case Damage ID game.' }
           ] },
           { group: '🔧 Fix it', items: [
@@ -7633,6 +9866,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         case 'badges':     return renderBadges();
         case 'path':       return renderPath();
         case 'tires':      return renderTires();
+        case 'underhood':  return renderUnderHood();
+        case 'repairbay':  return renderRepairBay();
+        case 'tyre':       return renderTireChange();
         case 'walk':       return renderWalkAround();
         case 'resources':  return renderResources();
         case 'engineHunt': return (function() {
