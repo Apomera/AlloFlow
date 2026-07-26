@@ -1368,6 +1368,10 @@
       '@keyframes arccityGhostFlow{from{stroke-dashoffset:0;}to{stroke-dashoffset:-28;}}' +
       // beam head only appears once the beam has drawn its length
       '@keyframes arccityHeadIn{from{opacity:0;}to{opacity:1;}}' +
+      // co-highlight: the equation number you just took hold of gives one pop. The
+      // beam-coloured underline that marks it is a STATIC inline style, so this
+      // animation is pure emphasis — reduced-motion players lose nothing.
+      '@keyframes arccityEqHot{0%{transform:scale(1.32);}60%{transform:scale(.97);}100%{transform:scale(1);}}' +
       // ALL motion is opt-in: nothing animates when the user prefers reduced motion.
       '@media (prefers-reduced-motion: no-preference){' +
       '#allo-arccity-root .arccity-node-unlit{animation:arccityPulse 1.8s ease-in-out infinite;}' +
@@ -1382,6 +1386,7 @@
       '#allo-arccity-root .arccity-beam-draw{animation:arccityBeamDraw .5s ease-out;}' +
       '#allo-arccity-root .arccity-ghost-remainder{animation:arccityGhostFlow 1.4s linear infinite;}' +
       '#allo-arccity-root .arccity-beam-head{animation:arccityHeadIn .25s ease-out both;}' +
+      '#allo-arccity-root .arccity-eq-hot{animation:arccityEqHot .34s cubic-bezier(.34,1.56,.64,1);}' +
       '}';
     document.head.appendChild(st);
   })();
@@ -1769,6 +1774,12 @@
         var badges = S.badges || [];
         var showPreview = previewVisible(tier, S.fired);
         var indepSolved = !!(ls && ls.independent);
+        // Which parameters the player is currently driving, and a tick that only
+        // advances when that SET changes — the co-highlight (§4.2) reads both. Declared
+        // here, above every consumer (paramRow and the equation), per the flat-handler
+        // render-crash rule in §10.1.
+        var touchedNames = (S.touch && S.touch.names) || [];
+        var touchTick = (S.touch && S.touch.n) || 0;
         var view = S.view || 'play';
         var battle = normalizeBattleState(S.battle);
         var battleArenaConfig = battleArena(battle.arena);
@@ -1785,6 +1796,16 @@
           bl[level.id] = Object.assign({}, base, partial || {});
           return Object.assign({}, prevRoot, { _arccity: Object.assign({}, cur, { byLevel: bl }, partial && partial._root ? partial._root : {}) });
         }
+        // ── Co-highlighting bookkeeping (§4.2). Records WHICH parameters the player is
+        // currently driving, so the equation can mark them. The tick only advances when
+        // the SET of touched names changes — during a continuous drag the names stay
+        // the same, so the pulse fires once at the start instead of restarting every
+        // frame (which would read as a flicker, not a link).
+        function touchPatch(cur, names) {
+          var prev = cur && cur.touch;
+          var same = !!(prev && prev.names && prev.names.length === names.length && names.every(function (n2) { return prev.names.indexOf(n2) >= 0; }));
+          return { names: names, n: same ? (prev.n || 0) : (((prev && prev.n) || 0) + 1) };
+        }
         function setParam(name, raw) {
           if (typeof setToolData !== 'function') return;
           var nv = clampStep(raw, level.params[name]);
@@ -1794,7 +1815,7 @@
             var bl = Object.assign({}, cur.byLevel || {});
             var base = Object.assign({ params: defaultParams(level), shots: 0, solved: false, misses: 0 }, bl[level.id] || {});
             bl[level.id] = Object.assign({}, base, { params: np });
-            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: false }) });
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: false, touch: touchPatch(cur, [name]) }) });
           });
         }
         function setParamsMulti(np) {
@@ -1804,7 +1825,7 @@
             var bl = Object.assign({}, cur.byLevel || {});
             var base = Object.assign({ params: defaultParams(level), shots: 0, solved: false, misses: 0 }, bl[level.id] || {});
             bl[level.id] = Object.assign({}, base, { params: Object.assign({}, base.params, np) });
-            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: false }) });
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: false, touch: touchPatch(cur, Object.keys(np)) }) });
           });
         }
         function fire() {
@@ -1897,6 +1918,13 @@
             return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { _focusFire: false }) });
           });
         }
+        function dismissIntro() {
+          if (typeof setToolData !== 'function') return;
+          setToolData(function (prev) {
+            var cur = (prev && prev._arccity) || S;
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { introSeen: true }) });
+          });
+        }
         function toggleMute() {
           if (typeof setToolData !== 'function') return;
           setToolData(function (prev) {
@@ -1914,8 +1942,8 @@
             // Reset = a FRESH attempt: clear the shot/miss counters (so a clean run can
             // earn the 3rd star) but KEEP the earned achievements (solved/independent/
             // flawless/stars never regress).
-            bl[level.id] = Object.assign({}, base, { params: defaultParams(level), shots: 0, misses: 0, prevShot: null, lastShot: null });
-            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: false }) });
+            bl[level.id] = Object.assign({}, base, { params: defaultParams(level), shots: 0, misses: 0, prevShot: null, lastShot: null, hintOpen: false, hintDismissedAt: null });
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: false, touch: null }) });
           });
           announceArc(ctx, t('arccity.reset', 'Reset. ') + describeBoard(level));
         }
@@ -1923,7 +1951,9 @@
           if (typeof setToolData !== 'function') return;
           setToolData(function (prev) {
             var cur = (prev && prev._arccity) || S;
-            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { levelId: id, fired: false }) });
+            // touch is per-level (the names differ between families), so a level
+            // switch clears it rather than carrying a stale highlight across.
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { levelId: id, fired: false, touch: null }) });
           });
           announceArc(ctx, describeBoard(levelById(id)));
         }
@@ -2538,24 +2568,71 @@
             else if (key === 'Home') { e.preventDefault(); setParam(name, snaps ? snaps[0] : spec.min); }
             else if (key === 'End') { e.preventDefault(); setParam(name, snaps ? snaps[snaps.length - 1] : spec.max); }
           }
+          // ── Pointer authoring on the track. These sliders were step-only: reaching
+          // h = 10 from h = 0 meant 40 taps on "+". Press-or-drag anywhere on the
+          // track now sets the value directly, which is what every learner who has
+          // ever used a slider expects. The keyboard grammar above is untouched — this
+          // is an ADDITIONAL way in, never the only one (§2.2 parameter-space aiming).
+          function valueAtClientX(trackEl, clientX) {
+            var r = trackEl.getBoundingClientRect();
+            if (!r || !r.width) return null;
+            var frac = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+            if (snaps) return snaps[Math.max(0, Math.min(snaps.length - 1, Math.round(frac * (snaps.length - 1))))];
+            return spec.min + frac * (spec.max - spec.min); // setParam snaps it to the step
+          }
+          function onTrackPointerDown(e) {
+            if (typeof setToolData !== 'function') return;
+            var trackEl = e.currentTarget;
+            if (!trackEl || !trackEl.getBoundingClientRect) return;
+            if (e.preventDefault) e.preventDefault();
+            try { if (trackEl.focus) trackEl.focus(); } catch (e2) { }          // pointer use should also move focus
+            try { if (trackEl.setPointerCapture && e.pointerId != null) trackEl.setPointerCapture(e.pointerId); } catch (e2) { }
+            function apply(ev) { var v = valueAtClientX(trackEl, ev.clientX); if (v != null) setParam(name, v); }
+            apply(e);
+            function up(ev) {
+              try { if (trackEl.releasePointerCapture && ev && ev.pointerId != null) trackEl.releasePointerCapture(ev.pointerId); } catch (e2) { }
+              try {
+                window.removeEventListener('pointermove', apply);
+                window.removeEventListener('pointerup', up);
+                window.removeEventListener('pointercancel', up);
+                window.removeEventListener('blur', up);
+              } catch (e2) { }
+            }
+            try {
+              window.addEventListener('pointermove', apply);
+              window.addEventListener('pointerup', up);
+              window.addEventListener('pointercancel', up);
+              window.addEventListener('blur', up);
+            } catch (e2) { }
+          }
           // 36px hit targets (widened to 44 on touch-width by the stylesheet) — the
           // +/- buttons are the primary authoring control for keyboard and motor-
           // impaired players, so they are sized as controls, not as decorations.
           var btn = { width: 36, height: 36, borderRadius: 9, border: '1px solid ' + GRID, background: 'rgba(255,255,255,0.06)', color: INK, fontSize: 19, lineHeight: '30px', cursor: 'pointer' };
-          return h('div', { key: 'row-' + name, role: 'group', 'aria-label': spec.label, style: { marginBottom: 10 } },
+          // The other half of the co-highlight: the row whose knob is live carries the
+          // same beam-coloured edge as its number in the equation, so the link reads in
+          // both directions rather than only equation-ward.
+          var rowHot = touchedNames.indexOf(name) >= 0;
+          return h('div', {
+            key: 'row-' + name, role: 'group', 'aria-label': spec.label,
+            style: { marginBottom: 10, paddingLeft: 8, borderLeft: '3px solid ' + (rowHot ? BEAM : 'transparent') }
+          },
             h('div', { key: 'hdr', style: { display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 13, color: INK, marginBottom: 5 } },
-              h('span', { key: 'l' }, spec.label),
+              h('span', { key: 'l', style: rowHot ? { fontWeight: 700 } : null }, spec.label),
               h('span', { key: 'v', style: { fontVariantNumeric: 'tabular-nums', fontWeight: 800, color: BEAM, whiteSpace: 'nowrap' } }, valLabel)),
             h('div', { key: 'ctl', style: { display: 'flex', alignItems: 'center', gap: 8 } },
               h('button', { key: 'dec', type: 'button', className: 'arc-param-btn', 'aria-label': 'Decrease ' + spec.label, onClick: function () { bump(-1); }, style: btn }, '−'),
               h('div', {
                 key: 'sld', role: 'slider', tabIndex: 0, 'aria-label': spec.label,
                 'aria-valuemin': spec.min, 'aria-valuemax': spec.max, 'aria-valuenow': val, 'aria-valuetext': spec.label + ' ' + valLabel,
-                onKeyDown: onKey,
-                style: { position: 'relative', flex: 1, height: 12, borderRadius: 7, background: 'rgba(148,163,184,0.25)' }
+                onKeyDown: onKey, onPointerDown: onTrackPointerDown,
+                // 20px tall so the track is a real pointer target; the visible rail is
+                // the 12px child, so it looks unchanged but is far easier to hit.
+                style: { position: 'relative', flex: 1, height: 20, display: 'flex', alignItems: 'center', touchAction: 'none', cursor: 'pointer' }
               },
-                h('div', { key: 'fill', style: { position: 'absolute', left: 0, top: 0, height: 12, width: (pct * 100) + '%', background: BEAM, borderRadius: 7, opacity: 0.55 } }),
-                h('div', { key: 'thumb', style: { position: 'absolute', top: -4, left: 'calc(' + (pct * 100) + '% - 10px)', width: 20, height: 20, borderRadius: '50%', background: BEAM, border: '2px solid ' + INK, boxShadow: '0 0 8px ' + BEAM } })),
+                h('div', { key: 'rail', style: { position: 'absolute', left: 0, right: 0, height: 12, borderRadius: 7, background: 'rgba(148,163,184,0.25)' } }),
+                h('div', { key: 'fill', style: { position: 'absolute', left: 0, height: 12, width: (pct * 100) + '%', background: BEAM, borderRadius: 7, opacity: 0.55 } }),
+                h('div', { key: 'thumb', style: { position: 'absolute', left: 'calc(' + (pct * 100) + '% - 10px)', width: 20, height: 20, borderRadius: '50%', background: BEAM, border: '2px solid ' + INK, boxShadow: '0 0 8px ' + BEAM, pointerEvents: 'none' } })),
               h('button', { key: 'inc', type: 'button', className: 'arc-param-btn', 'aria-label': 'Increase ' + spec.label, onClick: function () { bump(1); }, style: btn }, '+')));
         }
 
@@ -2573,7 +2650,32 @@
         var resultTint = !S.fired ? 'rgba(148,163,184,0.10)'
           : (res.result === 'hit' ? 'rgba(52,211,153,0.13)' : (res.result === 'miss' ? 'rgba(250,204,21,0.11)' : 'rgba(248,113,113,0.11)'));
 
-        var showHint = !ls.solved && (ls.misses || 0) >= HINT_AFTER;
+        // ── The hint ladder is an OFFER, not an interruption (§8.3: "auto-offered as a
+        // gentle, dismissable nudge — never forced"). It used to simply appear, which
+        // hands the answer to a player who was still thinking. Now: after HINT_AFTER
+        // misses the tool asks; "Show me" opens the tip, "Not yet" stands down until
+        // the next miss.
+        //
+        // The independence gate (§9.2) is deliberately UNCHANGED: reaching HINT_AFTER
+        // misses still disqualifies the solve as "used independently", even if the tip
+        // was declined. That under-credits a player who refused help, which is the safe
+        // direction — the alternative would let the tool claim independence it cannot
+        // evidence. Making it exact needs a per-level hintUsed flag and Aaron's sign-off
+        // on the accounting change, so it is left honest-but-conservative here.
+        var hintDue = !ls.solved && (ls.misses || 0) >= HINT_AFTER;
+        var hintOpen = hintDue && !!ls.hintOpen;
+        var showHintOffer = hintDue && !ls.hintOpen && (ls.hintDismissedAt == null || (ls.misses || 0) > ls.hintDismissedAt);
+        function openHint() {
+          if (typeof setToolData !== 'function') return;
+          setToolData(function (prev) { return mergeLevel(prev, { hintOpen: true }); });
+          announceArc(ctx, '💡 ' + level.hint);
+        }
+        function declineHint() {
+          if (typeof setToolData !== 'function') return;
+          var atMiss = ls.misses || 0;
+          setToolData(function (prev) { return mergeLevel(prev, { hintDismissedAt: atMiss }); });
+          announceArc(ctx, t('arccity.hint_declined', 'Tip put away. It will be offered again after your next try.'));
+        }
 
         var coordItems = [h('li', { key: 'cn' }, '🎯 ' + t('arccity.node', 'Node (target):') + ' x ' + level.node.x + ', y ' + level.node.y)];
         (level.walls || []).forEach(function (w, i) { coordItems.push(h('li', { key: 'cw' + i }, '🧱 ' + t('arccity.wall', 'Wall:') + ' x ' + w.x + ', height ' + w.height)); });
@@ -2594,22 +2696,54 @@
           }, t('arccity.next_level', 'Next level') + ': ' + nextLv.title + ' →');
         }
 
+        // ── Co-highlighting (§4.2, "mandatory"): the equation and the knob driving it
+        // have to read as ONE object, not two parallel readouts. The number you are
+        // currently moving is underlined in the beam colour and pulses once when you
+        // take hold of it — including when a BOARD handle is dragged, where the vertex
+        // drag marks h and k together. The underline is a static mark, so a
+        // reduced-motion player gets the whole signal with no animation at all.
+        function eqNum(name, text) {
+          var hot = touchedNames.indexOf(name) >= 0;
+          return h('span', {
+            key: hot ? name + '-hot' + touchTick : name,
+            className: hot ? 'arccity-eq-hot' : null,
+            style: hot
+              ? { color: BEAM, fontWeight: 800, display: 'inline-block', borderBottom: '2px solid ' + BEAM }
+              : { color: BEAM, fontWeight: 800 }
+          }, text);
+        }
+        // Defensive: a family whose param is absent from the level spec renders nothing
+        // rather than throwing the whole tool into its fallback (the empty-Gauntlet stub
+        // level carries `params: {}` — the render must survive it).
+        function eqVal(name) {
+          var sp = level.params && level.params[name];
+          if (!sp || P[name] == null) return null;
+          return eqNum(name, fmtVal(P[name], sp.step));
+        }
+        var equationEls = null;
+        if (gauntlet && gauntlet.empty) {
+          equationEls = null;                                     // no board, no equation
+        } else if (level.family === 'line') {
+          equationEls = ['y = ', eqVal('m'), ' · x + ', eqVal('b')];
+        } else if (level.family === 'absval') {
+          equationEls = ['y = ', eqVal('a'), ' · |x − ', eqVal('h'), '| + ', eqVal('k')];
+        } else if (level.family === 'sine') {
+          equationEls = ['y = ', eqVal('a'), ' · sin(', eqVal('b'), '·x + ', eqVal('c'), ') + ', eqVal('k'),
+            h('span', { key: 'per', style: { opacity: 0.7, fontWeight: 600 } }, '   (period ' + periodOf(P.b) + ')')];
+        } else if (level.family === 'exp') {
+          equationEls = ['y = ', eqVal('a'), ' · e^(', eqVal('b'), '·x) + ', eqVal('k')];
+        } else if (level.family === 'log') {
+          equationEls = ['y = ', eqVal('a'), ' · ln(x + ', eqVal('c'), ') + ', eqVal('k')];
+        } else if (level.family === 'poly') {
+          equationEls = ['y = cubic — crest x=', eqVal('p'), ', dip x=', eqVal('q'), ', steepness ', eqVal('a')];
+        } else {
+          equationEls = ['y = ', eqVal('a'), ' (x − ', eqVal('h'), ')² + ', eqVal('k')];
+        }
+
         var controls = (gauntlet && gauntlet.empty) ? null : h('div', { key: 'controls', style: { marginTop: 14 } },
           h('div', { key: 'eqlabel', style: { fontSize: 11, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: INK, opacity: 0.75, marginBottom: 4 } }, t('arccity.your_function', 'Your function')),
           h('div', { key: 'eq', 'aria-label': describeEquation(level, P), style: { fontSize: 16, color: INK, marginBottom: 8, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + GRID, background: 'rgba(255,255,255,0.05)', fontVariantNumeric: 'tabular-nums' } },
-            level.family === 'line'
-              ? ['y = ', h('span', { key: 'm', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.m, level.params.m.step)), ' · x + ', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step))]
-              : (level.family === 'absval'
-                ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · |x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.h, level.params.h.step)), '| + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
-                : (level.family === 'sine'
-                  ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · sin(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step)), '·x + ', h('span', { key: 'c', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.c, level.params.c.step)), ') + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step)), h('span', { key: 'per', style: { opacity: 0.7, fontWeight: 600 } }, '   (period ' + periodOf(P.b) + ')')]
-                  : (level.family === 'exp'
-                    ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · e^(', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step)), '·x) + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
-                    : (level.family === 'log'
-                      ? ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' · ln(x + ', h('span', { key: 'c', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.c, level.params.c.step)), ') + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))]
-                      : (level.family === 'poly'
-                        ? ['y = cubic — crest x=', h('span', { key: 'p', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.p, level.params.p.step)), ', dip x=', h('span', { key: 'q', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.q, level.params.q.step)), ', steepness ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step))]
-                        : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.h, level.params.h.step)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))])))))),
+            equationEls),
           tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.6, marginBottom: 10 } }, handleEls.length ? t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.') : t('arccity.slider_hint', 'Tip: use the sliders (or the +/− buttons and arrow keys) to shape the beam.')) : null,
           h('div', { key: 'rows' }, paramRows),
           h('div', { key: 'btns', className: 'arc-play-actions', style: { display: 'flex', gap: 10, marginTop: 8 } },
@@ -2620,7 +2754,11 @@
           h('div', { key: 'result', role: 'status', style: { marginTop: 10, fontSize: 14, lineHeight: 1.5, color: resultColor, minHeight: 42, display: 'flex', gap: 8, alignItems: 'flex-start', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + (S.fired ? resultColor : GRID), background: resultTint } },
             h('span', { key: 'ricon', 'aria-hidden': 'true', style: { fontSize: 16, lineHeight: 1.3 } }, resultIcon),
             h('span', { key: 'rtext' }, resultText)),
-          showHint ? h('div', { key: 'hint', style: { marginTop: 8, fontSize: 13, color: PAL.warn, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + PAL.warn, background: 'rgba(252,211,77,0.10)' } }, '💡 ' + level.hint) : null,
+          showHintOffer ? h('div', { key: 'hintoffer', role: 'note', style: { marginTop: 8, fontSize: 13, color: INK, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + PAL.warn, background: 'rgba(252,211,77,0.10)', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+            h('span', { key: 'q', style: { flex: '1 1 180px' } }, '💡 ' + t('arccity.hint_offer', 'Want a tip on which knob to turn?')),
+            h('button', { key: 'hintyes', type: 'button', onClick: openHint, style: { padding: '7px 12px', borderRadius: 8, border: '1px solid ' + PAL.warn, background: 'rgba(252,211,77,0.18)', color: INK, fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, t('arccity.hint_show', 'Show me')),
+            h('button', { key: 'hintno', type: 'button', onClick: declineHint, style: { padding: '7px 12px', borderRadius: 8, border: '1px solid ' + GRID, background: 'transparent', color: INK, fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, t('arccity.hint_later', 'Not yet'))) : null,
+          hintOpen ? h('div', { key: 'hint', role: 'note', style: { marginTop: 8, fontSize: 13, color: PAL.warn, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + PAL.warn, background: 'rgba(252,211,77,0.10)' } }, '💡 ' + level.hint) : null,
           nextLevelCta,
           h('div', { key: 'shots', style: { marginTop: 6, fontSize: 12, color: INK, opacity: 0.7 } },
             (ls.solved ? '✅ ' + t('arccity.solved', 'Node lit!') + (indepSolved ? ' ' + t('arccity.indep_tag', '(solved independently)') : '') + '  ' : '') + t('arccity.shots', 'Shots fired:') + ' ' + (ls.shots || 0)),
@@ -2647,6 +2785,22 @@
             'aria-label': t('arccity.city_restored', 'City restored') + ': ' + progressDone + ' / ' + progressLevels.length,
             style: { height: 8, borderRadius: 6, background: 'rgba(148,163,184,0.25)', overflow: 'hidden' }
           }, h('div', { key: 'pfill', style: { height: 8, width: progressPct + '%', background: NODE_ON, borderRadius: 6 } })));
+
+        // ── The premise (§1 / §8.4). The fiction that makes a dark dot worth lighting
+        // was in the design doc and nowhere in the tool. Shown once, ≤40 words, and
+        // NON-BLOCKING — the board is already live underneath, so "one-tap play" is
+        // still literally one tap and the card never gates a returning player. Not
+        // autofocused: stealing focus into an embedded tool on load is its own bug.
+        var introCard = (S.introSeen || view !== 'play') ? null : h('div', {
+          key: 'intro', role: 'note',
+          style: { marginBottom: 12, padding: '12px 14px', borderRadius: 12, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.08)', color: INK }
+        },
+          h('div', { key: 'itxt', style: { fontSize: 13, lineHeight: 1.55 } },
+            t('arccity.premise', 'Arc City went dark. Its power runs along curves, not straight wires. You are a Lightwright: author the right function and your beam threads the streets to wake each block.')),
+          h('button', {
+            key: 'intro-dismiss', type: 'button', onClick: dismissIntro,
+            style: { marginTop: 10, padding: '9px 16px', borderRadius: 9, border: 'none', background: BEAM, color: PAL.btnText, fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+          }, '⚡ ' + t('arccity.intro_start', 'Start lighting the city')));
 
         var levelBar = h('div', { key: 'levelbar', className: 'arc-level-strip', role: 'group', 'aria-label': t('arccity.levels', 'Levels'), style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 } }, levelBtns);
 
@@ -2682,12 +2836,34 @@
             .concat(tierBtns)
             .concat([h('span', { key: 'tblurb', style: { fontSize: 11, color: INK, opacity: 0.6 } }, tierBlurb(tier))]));
 
-        var badgeStrip = badges.length
-          ? h('div', { key: 'badges', role: 'group', 'aria-label': t('arccity.badges', 'Badges earned'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 } },
-            badges.map(function (bid) {
-              return h('span', { key: 'badge-' + bid, title: badgeLabel(bid), style: { fontSize: 11, padding: '3px 8px', borderRadius: 999, border: '1px solid ' + GRID, background: 'rgba(52,211,153,0.12)', color: INK } }, '🏅 ' + badgeLabel(bid));
-            }))
-          : null;
+        // ── Badge case. Earned badges came first; the ones still out there were
+        // invisible, so the set read as "whatever happened to turn up" rather than as
+        // something to go after. Unearned badges now show dimmed and greyed with their
+        // action name intact (they are action descriptions — "re-lit a node using
+        // vertex form" — never ability claims, §9.4), so the case is a map of what the
+        // city still needs. Earned count is stated in text, never colour alone.
+        var earnedCount = badges.length;
+        var badgeStrip = h('div', { key: 'badges', role: 'group', 'aria-label': t('arccity.badges', 'Badges earned'), style: { marginTop: 14 } },
+          h('div', { key: 'bhdr', style: { fontSize: 11, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: INK, opacity: 0.75, marginBottom: 6 } },
+            t('arccity.badges', 'Badges earned') + ' — ' + earnedCount + ' / ' + BADGES.length),
+          h('div', { key: 'blist', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+            BADGES.map(function (bd) {
+              var got = badges.indexOf(bd.id) >= 0;
+              // Chip shows the badge's NAME; the full action description rides the
+              // title + accessible name, so 13 chips stay a scannable grid instead of
+              // thirteen sentences.
+              var shortName = bd.label.split(' — ')[0];
+              return h('span', {
+                key: 'badge-' + bd.id, title: bd.label,
+                'aria-label': bd.label + (got ? ' — ' + t('arccity.badge_earned', 'earned') : ' — ' + t('arccity.badge_not_yet', 'not yet earned')),
+                style: {
+                  fontSize: 11, padding: '3px 8px', borderRadius: 999, color: INK,
+                  border: '1px solid ' + (got ? NODE_ON : GRID),
+                  background: got ? 'rgba(52,211,153,0.12)' : 'transparent',
+                  opacity: got ? 1 : 0.5, fontWeight: got ? 700 : 500
+                }
+              }, (got ? '🏅 ' : '🔒 ') + shortName);
+            })));
 
         // ── View toggle (Play ↔ Teacher) ──
         function viewBtn(v, label) {
@@ -2706,12 +2882,33 @@
         var teacherPanel = h('div', { key: 'teacherpanel', style: { marginTop: 4 } },
           h('div', { key: 'caveat', role: 'note', style: { fontSize: 13, lineHeight: 1.5, color: INK, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + GRID, background: 'rgba(148,163,184,0.10)', marginBottom: 12 } }, '⚠️ ' + summary.caveat),
           h('h3', { key: 'psh', style: { fontSize: 15, margin: '0 0 8px', color: INK } }, t('arccity.progress_summary', 'Progress summary')),
-          h('div', { key: 'relit', style: { fontSize: 14, fontWeight: 700, color: INK, marginBottom: 4 } }, t('arccity.levels_solved', 'Levels solved:') + ' ' + summary.nodesReLit + ' / ' + summary.totalLevels),
-          h('div', { key: 'starsline', style: { fontSize: 14, fontWeight: 700, color: INK, marginBottom: 2 } }, t('arccity.stars', 'Stars:') + ' ' + summary.stars + ' / ' + summary.starsMax),
-          h('div', { key: 'starlegend', style: { fontSize: 11, color: INK, opacity: 0.65, marginBottom: 10 } }, summary.starLegend),
+          // Two figure tiles instead of two sentences: a teacher scanning this panel
+          // between students needs the counts to land in one glance. Both stay
+          // countable observations (§9.4) — a tally of levels and of stars, never a
+          // rate, percentile, or score attached to the person.
+          h('div', { key: 'tstats', style: { display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
+            [
+              { k: 'lv', label: t('arccity.levels_solved', 'Levels solved:'), val: summary.nodesReLit + ' / ' + summary.totalLevels },
+              { k: 'st', label: t('arccity.stars', 'Stars:'), val: summary.stars + ' / ' + summary.starsMax }
+            ].map(function (tile) {
+              return h('div', { key: 'tstat-' + tile.k, style: { flex: '1 1 140px', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + GRID, background: 'rgba(148,163,184,0.08)' } },
+                h('div', { key: 'l', style: { fontSize: 11, color: INK, opacity: 0.75, marginBottom: 2 } }, tile.label),
+                h('div', { key: 'v', style: { fontSize: 20, fontWeight: 800, color: INK, fontVariantNumeric: 'tabular-nums' } }, tile.val));
+            })),
+          h('div', { key: 'starlegend', style: { fontSize: 11, color: INK, opacity: 0.65, marginBottom: 12 } }, summary.starLegend),
           h('h3', { key: 'fh', style: { fontSize: 14, margin: '0 0 6px', color: INK } }, t('arccity.functions', 'Functions')),
-          h('ul', { key: 'fams', style: { listStyle: 'none', padding: 0, margin: '0 0 12px', fontSize: 13, color: INK } },
-            Object.keys(summary.families).map(function (f) { return h('li', { key: 'fam-' + f, style: { marginBottom: 3 } }, f + ': ' + summary.families[f]); })),
+          // Each family gets its status as a chip, tinted by which of the three states
+          // it is in. The state WORD is always present — the tint is redundant, never
+          // the carrier — and the wording stays "explored / with scaffold /
+          // independently", never a mastery claim.
+          h('ul', { key: 'fams', style: { listStyle: 'none', padding: 0, margin: '0 0 12px', fontSize: 13, color: INK, display: 'flex', flexDirection: 'column', gap: 4 } },
+            Object.keys(summary.families).map(function (f) {
+              var st = summary.families[f];
+              var tone = /independent/i.test(st) ? NODE_ON : (/scaffold/i.test(st) ? BEAM : GRID);
+              return h('li', { key: 'fam-' + f, style: { display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' } },
+                h('span', { key: 'n', style: { fontWeight: 700, minWidth: 92 } }, f),
+                h('span', { key: 's', style: { fontSize: 12, padding: '2px 8px', borderRadius: 999, border: '1px solid ' + tone, color: INK } }, st));
+            })),
           h('div', { key: 'indepnote', style: { fontSize: 11, color: INK, opacity: 0.65, margin: '0 0 12px' } }, t('arccity.indep_def', '"Used independently" = solved with the preview hidden and without using the hint.')),
           h('h3', { key: 'lh', style: { fontSize: 14, margin: '0 0 6px', color: INK } }, t('arccity.levels', 'Levels')),
           h('ul', { key: 'lvls', style: { listStyle: 'none', padding: 0, margin: '0 0 12px', fontSize: 13, color: INK } },
@@ -3030,11 +3227,11 @@
           : (view === 'battle'
             ? battlePanel
             : ((gauntlet && gauntlet.empty)
-              ? h('div', { key: 'game' }, levelBar, progressBar, gauntletBanner) // no board until families are solved
+              ? h('div', { key: 'game' }, introCard, levelBar, progressBar, gauntletBanner) // no board until families are solved
               // Two columns on a wide viewport (stylesheet-driven; a single column
               // below 900px keeps the original top-to-bottom reading order, which is
               // also the DOM/tab order — so nothing about keyboard or SR play changes).
-              : h('div', { key: 'game' }, levelBar, progressBar, gauntletBanner,
+              : h('div', { key: 'game' }, introCard, levelBar, progressBar, gauntletBanner,
                 h('div', { key: 'playgrid', className: 'arc-play-grid' },
                   h('div', { key: 'boardcol', className: 'arc-board-col' }, (gauntlet ? gauntletTierLock : tierBar), svg, boardLegend),
                   h('div', { key: 'ctlcol', className: 'arc-ctl-col' }, controls, gauntletNav, badgeStrip)))));
