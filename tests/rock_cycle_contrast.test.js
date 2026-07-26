@@ -21,10 +21,16 @@ const TW = {
   'slate-700': '#334155', 'slate-800': '#1e293b', 'slate-900': '#0f172a',
   'orange-50': '#fff7ed', 'orange-100': '#ffedd5', 'orange-600': '#ea580c',
   'orange-700': '#c2410c', 'orange-800': '#9a3412', 'orange-900': '#7c2d12',
-  'amber-50': '#fffbeb', 'amber-700': '#b45309', 'amber-800': '#92400e',
-  'emerald-600': '#059669', 'emerald-800': '#065f46',
-  'sky-50': '#f0f9ff', 'sky-800': '#075985',
-  'red-100': '#fee2e2',
+  'amber-50': '#fffbeb', 'amber-600': '#d97706', 'amber-700': '#b45309',
+  'amber-800': '#92400e', 'amber-900': '#78350f',
+  'emerald-50': '#ecfdf5', 'emerald-100': '#d1fae5', 'emerald-600': '#059669',
+  'emerald-800': '#065f46', 'emerald-900': '#064e3b',
+  'sky-50': '#f0f9ff', 'sky-800': '#075985', 'sky-900': '#0c4a6e',
+  'red-50': '#fef2f2', 'red-100': '#fee2e2', 'red-600': '#dc2626',
+  'red-700': '#b91c1c', 'red-800': '#991b1b', 'red-900': '#7f1d1d',
+  'blue-50': '#eff6ff', 'blue-500': '#3b82f6', 'blue-800': '#1e40af',
+  'green-50': '#f0fdf4', 'green-600': '#16a34a', 'green-700': '#15803d', 'green-800': '#166534',
+  'violet-600': '#7c3aed', 'violet-700': '#6d28d9', 'violet-800': '#5b21b6',
 };
 
 function luminance(hex) {
@@ -81,6 +87,34 @@ describe('rock cycle colour contrast', () => {
     PATHS.forEach((p) => {
       const src = readFileSync(p, 'utf8');
       expect(src).not.toContain('.text-slate-600 { color: #64748b !important; }');
+    });
+  });
+
+  it('every text colour in the rocks/minerals tool clears AA too', () => {
+    // Same floor for the sibling `rocks` tool, which owns the specimen grids,
+    // the mineral detail panels and the identification activities.
+    const SURFACES_ROCKS = SURFACES.concat(['emerald-50', 'blue-50', 'green-50', 'red-50']);
+    PATHS.forEach((p) => {
+      const src = readFileSync(p, 'utf8');
+      const body = src.slice(src.indexOf("registerTool('rocks'"), src.indexOf("registerTool('rockCycle'"));
+      const used = new Set();
+      classNamesIn(body).forEach((cn) => {
+        [...cn.matchAll(/(?:^|\s)text-((?:slate|orange|amber|emerald|sky|red|blue|green|violet)-\d{2,3})/g)]
+          .forEach((m) => used.add(m[1]));
+      });
+
+      expect(used.size).toBeGreaterThan(5);
+
+      const failures = [];
+      used.forEach((tc) => {
+        expect(TW[tc], `unknown colour text-${tc} — add it to the table`).toBeTruthy();
+        SURFACES_ROCKS.forEach((bg) => {
+          const r = contrast(TW[tc], TW[bg]);
+          if (r < 4.5) failures.push(`text-${tc} on ${bg} = ${r.toFixed(2)}:1`);
+        });
+      });
+
+      expect(failures, `${p}\n  ${failures.join('\n  ')}`).toEqual([]);
     });
   });
 
