@@ -170,6 +170,89 @@ describe('Geometry World worksheet escapes authored content', () => {
   });
 });
 
+/**
+ * Extract validateLesson. It closes over MAX_BLOCKS, addToast and __alloT, so those
+ * are supplied as locals — the block budget is the behaviour under test.
+ */
+function loadValidateLesson() {
+  const start = SOURCE.indexOf('      function validateLesson(lesson) {');
+  const end = SOURCE.indexOf('      function finishGeneration(lesson) {');
+  expect(start).toBeGreaterThan(-1);
+  expect(end).toBeGreaterThan(start);
+  const prelude = 'var MAX_BLOCKS = 1500;\n'
+    + 'var toasts = [];\n'
+    + 'var addToast = function (m, k) { toasts.push({ message: m, kind: k }); };\n'
+    + 'var __alloT = function (k, fb) { return fb || k; };\n';
+  // eslint-disable-next-line no-new-func
+  return new Function(prelude + SOURCE.slice(start, end) + '\nreturn { validateLesson, toasts, MAX_BLOCKS };')();
+}
+
+describe('Geometry World lesson block budget', () => {
+  const fill = (x1, y1, z1, x2, y2, z2) => ({ type: 'fill', x1, y1, z1, x2, y2, z2, block: 'stone' });
+
+  it('drops a structure that alone exceeds the block limit', () => {
+    const v = loadValidateLesson();
+    // The coordinate clamps permit x/z in [-4,30] and y in [0,20]: 35*21*35 = 25,725
+    // meshes, 17x MAX_BLOCKS. Building it locked up the tab.
+    const lesson = v.validateLesson({
+      title: 'Huge',
+      ground: { xMin: -4, xMax: 24, zMin: -4, zMax: 24, y: 0, type: 'grass' },
+      structures: [fill(-4, 0, -4, 30, 20, 30)],
+      npcs: [{ name: 'A', position: [1, 1, 1], dialogue: 'hi' }],
+    });
+
+    expect(lesson.structures.some((s) => (s.x2 - s.x1 + 1) * (s.y2 - s.y1 + 1) * (s.z2 - s.z1 + 1) > v.MAX_BLOCKS)).toBe(false);
+    expect(v.toasts.some((t) => /exceeded the 1500-block limit/.test(t.message))).toBe(true);
+  });
+
+  it('keeps the total under the limit across many structures', () => {
+    const v = loadValidateLesson();
+    // Ten 10x10x10 fills = 10,000 blocks; nothing used to bound the count.
+    const many = [];
+    for (let i = 0; i < 10; i += 1) many.push(fill(i, 0, 0, i + 9, 9, 9));
+    const lesson = v.validateLesson({
+      title: 'Many',
+      ground: { xMin: 0, xMax: 9, zMin: 0, zMax: 9, y: 0, type: 'grass' },
+      structures: many,
+      npcs: [{ name: 'A', position: [1, 1, 1], dialogue: 'hi' }],
+    });
+
+    const groundCost = 10 * 10;
+    const total = lesson.structures.reduce(
+      (sum, s) => sum + (s.x2 - s.x1 + 1) * (s.y2 - s.y1 + 1) * (s.z2 - s.z1 + 1), 0);
+    expect(groundCost + total).toBeLessThanOrEqual(v.MAX_BLOCKS);
+    expect(lesson.structures.length).toBeGreaterThan(0);
+  });
+
+  it('leaves a normal lesson completely intact', () => {
+    const v = loadValidateLesson();
+    const structures = [fill(0, 0, 0, 4, 2, 3), fill(8, 0, 8, 10, 4, 10)];
+    const lesson = v.validateLesson({
+      title: 'Normal',
+      ground: { xMin: -4, xMax: 24, zMin: -4, zMax: 24, y: 0, type: 'grass' },
+      structures: structures.map((s) => Object.assign({}, s)),
+      npcs: [{ name: 'Guide', position: [2, 1, 2], dialogue: 'hi' }],
+    });
+
+    expect(lesson.structures).toHaveLength(2);
+    expect(v.toasts.some((t) => /exceeded/.test(t.message))).toBe(false);
+  });
+});
+
+describe('Geometry World fillBlocks respects the limit', () => {
+  PATHS.forEach((p) => {
+    it(`caps lesson fills and reports truncation — ${p}`, () => {
+      const src = readFileSync(p, 'utf8');
+      // MAX_BLOCKS was enforced only on student placement, never on the path lesson
+      // loading actually uses.
+      expect(src).toContain('if (count >= MAX_BLOCKS) { engine._fillTruncated = true; return; }');
+      // Counted incrementally — Object.keys() inside the triple loop would be quadratic.
+      expect(src).toContain('var count = Object.keys(engine.blocks).length;');
+      expect(src).toContain('if (engine._fillTruncated && addToast) {');
+    });
+  });
+});
+
 describe('Geometry World AI lessons resolve to themselves', () => {
   PATHS.forEach((p) => {
     it(`does not fall back to volumeExplorer for an ai_ lesson key — ${p}`, () => {

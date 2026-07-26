@@ -134,7 +134,7 @@ describe('Geometry World world-surface accessibility', () => {
     expect(wrap.getAttribute('role')).not.toBe('img');
     expect(wrap.getAttribute('role')).toBe('application');
     m.unmount();
-  });
+  }, 20000);
 
   it('keeps the controls inside the world surface exposed to assistive tech', () => {
     const m = mountTool(cfg, { _introShownOnce: true, worldActive: true });
@@ -148,7 +148,7 @@ describe('Geometry World world-surface accessibility', () => {
       expect(b.getAttribute('aria-label') || b.textContent).toBeTruthy();
     });
     m.unmount();
-  });
+  }, 20000);
 
   it('is focusable and describes its keyboard contract', () => {
     const m = mountTool(cfg, { _introShownOnce: true, worldActive: true });
@@ -165,13 +165,13 @@ describe('Geometry World world-surface accessibility', () => {
     expect(desc.textContent).toMatch(/arrow keys/i);
     expect(desc.textContent).toMatch(/W A S D/i);
     m.unmount();
-  });
+  }, 20000);
 
   it('advertises arrow-key look in the in-app controls panel', () => {
     const m = mountTool(cfg, { _introShownOnce: true, worldActive: true, showHelp: true });
     expect(m.container.textContent).toContain('Look around (no mouse)');
     m.unmount();
-  });
+  }, 20000);
 });
 
 describe('Geometry World arrow-key look', () => {

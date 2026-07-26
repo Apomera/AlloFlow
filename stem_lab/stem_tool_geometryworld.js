@@ -3009,11 +3009,27 @@
           }
         }
 
+        // MAX_BLOCKS was enforced only on student placement, never here — yet this is
+        // the path lesson loading uses. validateLesson's own coordinate clamps still
+        // permit a single fill of 35 x 21 x 35 = 25,725 meshes (17x the limit), which a
+        // generated or hand-pasted lesson could hit and lock up the tab. Cap it, and
+        // flag the truncation so loadLesson can say so rather than silently drop
+        // geometry the student is then asked to measure.
         engine.fillBlocks = function(x1, y1, z1, x2, y2, z2, type) {
-          for (var x = Math.min(x1,x2); x <= Math.max(x1,x2); x++)
-            for (var y = Math.min(y1,y2); y <= Math.max(y1,y2); y++)
-              for (var z = Math.min(z1,z2); z <= Math.max(z1,z2); z++)
+          // Counted incrementally: Object.keys().length inside the triple loop would
+          // make a large fill quadratic.
+          var count = Object.keys(engine.blocks).length;
+          for (var x = Math.min(x1,x2); x <= Math.max(x1,x2); x++) {
+            for (var y = Math.min(y1,y2); y <= Math.max(y1,y2); y++) {
+              for (var z = Math.min(z1,z2); z <= Math.max(z1,z2); z++) {
+                if (count >= MAX_BLOCKS) { engine._fillTruncated = true; return; }
+                var k = x + ',' + y + ',' + z;
+                if (engine.blocks[k]) continue;
                 engine.placeBlock(x, y, z, type);
+                if (engine.blocks[k]) count++;
+              }
+            }
+          }
         };
 
         engine.clearWorld = function() {
@@ -3128,6 +3144,7 @@
           if (engine.congratsSprite) { engine.scene.remove(engine.congratsSprite); engine.congratsSprite = null; engine.congratsCreated = false; }
           // Place ground and structures as indestructible lesson blocks
           engine._placingLessonBlocks = true;
+          engine._fillTruncated = false;
           engine._measurementLayer = 'ground';
           if (lesson.ground) {
             var g = lesson.ground;
@@ -3139,6 +3156,9 @@
           });
           engine._placingLessonBlocks = false;
           engine._measurementLayer = null;
+          if (engine._fillTruncated && addToast) {
+            addToast('⚠️ This world is larger than the ' + MAX_BLOCKS + '-block limit — part of it was not built. Measurements may not match the lesson.', 'error');
+          }
           if (lesson.npcs) lesson.npcs.forEach(function(n) { engine.createNPC(n); });
           // Smooth camera entry — start high above spawn, swoop down
           if (lesson.spawnPoint) {
@@ -4910,10 +4930,18 @@
 
           var totalAttempts = correct.length + wrong.length;
           var accuracy = totalAttempts > 0 ? Math.round((correct.length / totalAttempts) * 100) : 0;
-          var sessionDuration = log.length > 0 ? log[log.length - 1].timestamp / 1000 : 0;
+          // Real elapsed time, not the timestamp of the last logged event. A student who
+          // worked for two minutes and then sat idle for ten reported a 2-minute session,
+          // which inflated the questions-per-minute rate below — a rate presented
+          // alongside RTI tiering, so it needs to mean what it says.
+          var sessionDuration = engine.sessionStart ? (Date.now() - engine.sessionStart) / 1000
+            : (log.length > 0 ? log[log.length - 1].timestamp / 1000 : 0);
 
-          // Calculate digits correct per minute equivalent (questions correct per minute)
-          var questionsPerMinute = sessionDuration > 60 ? (correct.length / (sessionDuration / 60)).toFixed(2) : 'N/A (session < 1 min)';
+          // answer_correct fires once per follow-up STEP, so intermediate scaffolding
+          // steps counted as whole questions here. Rate the student against questions
+          // actually completed.
+          var questionsCompleted = correct.filter(function(e) { return e.data && e.data.isFinalStep; }).length;
+          var questionsPerMinute = sessionDuration > 60 ? (questionsCompleted / (sessionDuration / 60)).toFixed(2) : 'N/A (session < 1 min)';
 
           // Measurement accuracy — how many measurements matched expected volumes
           var predictionSummary = summarizePredictionAccuracy(measurements);
@@ -4935,6 +4963,9 @@
             totalAttempts: totalAttempts,
             accuracy: accuracy + '%',
             questionsPerMinute: questionsPerMinute,
+            // questionsCorrect above counts ANSWER ATTEMPTS (one per follow-up step).
+            // This counts whole questions carried to their final step.
+            questionsCompleted: questionsCompleted,
 
             // Skill indicators
             measurementsTaken: measurements.length,
@@ -5482,6 +5513,26 @@
           if (validBlocks.indexOf(s.block) < 0) s.block = 'stone';
           return true;
         });
+        // Budget the total block count. The coordinate clamps above still allow one
+        // structure of 35 x 21 x 35, and nothing bounded how many structures a model
+        // could emit — the engine caps it now, but truncating mid-build leaves a
+        // half-drawn world the NPC questions then ask about. Drop whole structures
+        // that don't fit instead, largest-cost-last, so what remains is complete.
+        var groundCost = (function () {
+          var g = lesson.ground;
+          return (Math.abs(g.xMax - g.xMin) + 1) * (Math.abs(g.zMax - g.zMin) + 1);
+        })();
+        var budget = MAX_BLOCKS - Math.min(groundCost, MAX_BLOCKS);
+        var dropped = 0;
+        lesson.structures = lesson.structures.filter(function (s) {
+          var cost = (s.x2 - s.x1 + 1) * (s.y2 - s.y1 + 1) * (s.z2 - s.z1 + 1);
+          if (cost > budget) { dropped++; return false; }
+          budget -= cost;
+          return true;
+        });
+        if (dropped && addToast) {
+          addToast('⚠️ Dropped ' + dropped + ' structure(s) that exceeded the ' + MAX_BLOCKS + '-block limit', 'info');
+        }
         // Validate NPCs
         lesson.npcs = lesson.npcs.filter(function(n) {
           if (!n || !n.name) return false;
@@ -7657,7 +7708,7 @@
                         upd({ consecutiveWrong: 0, npcWrongCount: clearedWrongs });
                         if (typeof awardXP === 'function') awardXP('geometryWorld', 2, 'Step correct: ' + data.name);
                         var eng = window[engineKey];
-                        if (eng && eng.logEvent) eng.logEvent('answer_correct', { npc: data.name, question: curQ.text, choice: choice, step: curStep });
+                        if (eng && eng.logEvent) eng.logEvent('answer_correct', { npc: data.name, question: curQ.text, choice: choice, step: curStep, isFinalStep: !!isLastStep });
                         // Check if there are more follow-up steps
                         if (!isLastStep) {
                           // Advance to next follow-up
@@ -7716,7 +7767,7 @@
                         // NPC shake animation
                         var eng2 = window[engineKey];
                         if (eng2 && npc && npc._shakeUntil !== undefined) { npc._shakeUntil = (eng2.clock ? eng2.clock.getElapsedTime() : 0) + 0.5; }
-                        if (eng2 && eng2.logEvent) eng2.logEvent('answer_wrong', { npc: data.name, question: curQ.text, chosenAnswer: choice, correctAnswer: curQ.choices[curQ.correct] });
+                        if (eng2 && eng2.logEvent) eng2.logEvent('answer_wrong', { npc: data.name, question: curQ.text, chosenAnswer: choice, correctAnswer: curQ.choices[curQ.correct], step: curStep, isFinalStep: !!isLastStep });
                         // Track per-NPC wrong count (not global) so hint escalation is scoped.
                         // Previously `consecutiveWrong` was lesson-wide, letting wrongs on NPC A
                         // trigger level-3 hints on the first wrong answer at NPC B. Also prevents

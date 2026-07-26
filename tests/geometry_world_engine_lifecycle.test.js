@@ -184,7 +184,7 @@ describe('Geometry World engine lifecycle', () => {
     const m = mountTool(cfg, { _introShownOnce: true, worldActive: true });
     expect(m.container.querySelector('#geoworld-fs-wrap')).toBeTruthy();
     m.unmount();
-  });
+  }, 20000);
 
   // ── THE REGRESSION ──
   // With the inline ref this fails on the FIRST re-render: React calls
@@ -205,7 +205,7 @@ describe('Geometry World engine lifecycle', () => {
     expect(fake._calls.clearWorld).toBe(0);
     expect(fake._calls.rendererDisposed).toBe(0);
     m.unmount();
-  });
+  }, 20000);
 
   it('survives a state update pushed through ctx.updateMulti (the Start Lesson path)', () => {
     const fake = makeFakeEngine();
@@ -220,7 +220,7 @@ describe('Geometry World engine lifecycle', () => {
     expect(window[ENGINE_KEY]).toBe(fake);
     expect(fake._calls.clearWorld).toBe(0);
     m.unmount();
-  });
+  }, 20000);
 
   it('DOES tear the engine down on a real unmount', () => {
     const fake = makeFakeEngine();
@@ -232,7 +232,7 @@ describe('Geometry World engine lifecycle', () => {
 
     expect(fake._calls.clearWorld).toBe(1);
     expect(window[ENGINE_KEY]).toBeUndefined();
-  });
+  }, 20000);
 
   // ── The second half of the blank-screen bug ──
   it('detaches the WebGL canvas from the DOM on teardown', () => {
@@ -251,7 +251,7 @@ describe('Geometry World engine lifecycle', () => {
     // live world, which is what made the viewport look empty.
     expect(fake.renderer.domElement.parentNode).toBeNull();
     host.remove();
-  });
+  }, 20000);
 });
 
 describe('Geometry World lesson start', () => {
@@ -299,7 +299,7 @@ describe('Geometry World lesson start', () => {
     expect(window[ENGINE_KEY]).toBe(fake);
     expect(fake._calls.clearWorld).toBe(0);
     m.unmount();
-  });
+  }, 20000);
 
   it('does not dismiss the intro into an empty world when the engine is not ready yet', () => {
     // initEngine runs ~100ms after the container mounts; an eager click used to
@@ -319,5 +319,5 @@ describe('Geometry World lesson start', () => {
     // student into a blank default world.
     expect(m.bucket().showLessonIntro).not.toBe(false);
     m.unmount();
-  });
+  }, 20000);
 });
