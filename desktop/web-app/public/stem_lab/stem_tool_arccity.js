@@ -1307,6 +1307,26 @@
       '#allo-arccity-root,#allo-arccity-root *{box-sizing:border-box;}' +
       '#allo-arccity-root .arc-battle-options>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:800;}' +
       '#allo-arccity-root .arc-battle-option-group button,#allo-arccity-root .arc-battle-lanes button,#allo-arccity-root .arc-battle-loadout button,#allo-arccity-root .arc-battle-replay button{min-height:40px;}' +
+      // ── Play layout. On a wide viewport the board and the authoring controls sit
+      // side by side and the board STICKS while you scroll the controls — so
+      // "change a number" and "see the curve move" are never separated by a scroll.
+      // Below 900px it collapses to the original single column (unchanged order).
+      '#allo-arccity-root .arc-play-grid{display:grid;gap:16px;align-items:start;}' +
+      '@media (min-width:900px){' +
+      '#allo-arccity-root .arc-play-grid{grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr);}' +
+      '#allo-arccity-root .arc-board-col{position:sticky;top:8px;}' +
+      '}' +
+      // Level chips keep a common width so the strip reads as a route, not ragged text.
+      '#allo-arccity-root .arc-level-strip button{min-width:106px;}' +
+      // Affordance feedback: depth/brightness only — never a colour-only signal, and
+      // every transition is short enough to stay under the reduced-motion bar.
+      '#allo-arccity-root button:not(:disabled){transition:filter .12s ease,transform .1s ease,box-shadow .12s ease;}' +
+      '#allo-arccity-root button:not(:disabled):hover{filter:brightness(1.12);}' +
+      '#allo-arccity-root button:not(:disabled):active{transform:translateY(1px);}' +
+      '#allo-arccity-root .arc-fire-btn:not(:disabled):hover{box-shadow:0 0 0 3px rgba(34,211,238,.28);}' +
+      '#allo-arccity-root [role="slider"]{transition:background .12s ease;}' +
+      '#allo-arccity-root [role="slider"]:hover{background:rgba(148,163,184,.4)!important;}' +
+      '#allo-arccity-root .arc-card{border-radius:10px;padding:10px 12px;border:1px solid;}' +
       '@media (max-width:520px){' +
       '#allo-arccity-root{width:100%;padding:10px!important;overflow-x:hidden;}' +
       '#allo-arccity-root .arc-battle-panel{min-width:0;}' +
@@ -1318,6 +1338,8 @@
       '#allo-arccity-root .arc-battle-lanes button{flex:1 1 90px;min-height:44px;}' +
       '#allo-arccity-root .arc-battle-actions{position:sticky;bottom:0;z-index:4;padding:8px 0 10px;background:var(--allo-stem-surface,#0f172a);border-top:1px solid var(--allo-stem-border,#475569);}' +
       '#allo-arccity-root .arc-battle-actions button{min-height:44px;}' +
+      '#allo-arccity-root .arc-param-btn{min-width:44px;min-height:44px;}' +
+      '#allo-arccity-root .arc-level-strip button{min-width:0;flex:1 1 132px;}' +
       '#allo-arccity-root .arc-battle-secondary{font-size:12px!important;line-height:1.45;}' +
       '#allo-arccity-root .arc-battle-board{max-height:none!important;}' +
       '}' +
@@ -1341,6 +1363,11 @@
       '@keyframes arccityGateLit{0%{opacity:.35;}45%{opacity:1;}100%{opacity:.85;}}' +
       // beam draws on from the source when fired (dashoffset along its own length)
       '@keyframes arccityBeamDraw{from{stroke-dashoffset:100;}to{stroke-dashoffset:0;}}' +
+      // the "would-have-gone" remainder past a block: dashes drift forward, so the
+      // path the beam was DENIED reads as motion that stopped, not as a second beam
+      '@keyframes arccityGhostFlow{from{stroke-dashoffset:0;}to{stroke-dashoffset:-28;}}' +
+      // beam head only appears once the beam has drawn its length
+      '@keyframes arccityHeadIn{from{opacity:0;}to{opacity:1;}}' +
       // ALL motion is opt-in: nothing animates when the user prefers reduced motion.
       '@media (prefers-reduced-motion: no-preference){' +
       '#allo-arccity-root .arccity-node-unlit{animation:arccityPulse 1.8s ease-in-out infinite;}' +
@@ -1353,6 +1380,8 @@
       '#allo-arccity-root .arccity-gate-lit{animation:arccityGateLit .5s ease-out;}' +
       '#allo-arccity-root .arccity-halo{animation:arccityHalo 2.6s ease-in-out infinite;}' +
       '#allo-arccity-root .arccity-beam-draw{animation:arccityBeamDraw .5s ease-out;}' +
+      '#allo-arccity-root .arccity-ghost-remainder{animation:arccityGhostFlow 1.4s linear infinite;}' +
+      '#allo-arccity-root .arccity-beam-head{animation:arccityHeadIn .25s ease-out both;}' +
       '}';
     document.head.appendChild(st);
   })();
@@ -1385,8 +1414,18 @@
     try {
       var len = el.getTotalLength ? el.getTotalLength() : 0;
       if (!len) return;
+      // The bright beam HEAD rides the same path the dash reveal is uncovering, so
+      // the light reads as travelling rather than as a line that simply appears.
+      // Purely decorative: if the host has no getPointAtLength (jsdom, old engines)
+      // the head just stays where the render placed it — the end of the path.
+      var head = null;
+      try { head = el.ownerSVGElement ? el.ownerSVGElement.querySelector('.arccity-beam-head') : null; } catch (e) { head = null; }
+      function moveHead(at) {
+        if (!head || !el.getPointAtLength) return;
+        try { var pt = el.getPointAtLength(at); head.setAttribute('cx', pt.x); head.setAttribute('cy', pt.y); } catch (e) { }
+      }
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (reduce) { el.style.strokeDasharray = 'none'; el.style.strokeDashoffset = '0'; return; }
+      if (reduce) { el.style.strokeDasharray = 'none'; el.style.strokeDashoffset = '0'; moveHead(len); return; }
       if (el._arcAnimated) return;
       _arcActiveBeams.push(el);
       el._arcAnimated = true;
@@ -1397,6 +1436,7 @@
         if (start === null) start = ts;
         var prog = Math.min(1, (ts - start) / dur);
         el.style.strokeDashoffset = String(len * (1 - prog));
+        moveHead(len * prog);
         if (prog < 1) { el._arcAnimId = window.requestAnimationFrame(step); }
         else {
           el._arcAnimId = null;
@@ -1790,7 +1830,11 @@
             // flawless (3rd star): an independent solve with ZERO misses THIS run
             // (base.misses is the count before this shot). Sticky once earned.
             var flawless = base.flawless || (r.result === 'hit' && solveIsIndependent(tier) && (base.misses || 0) === 0);
-            bl[level.id] = Object.assign({}, base, { params: P, shots: shots, solved: solved, misses: misses, independent: base.independent || indep, flawless: flawless });
+            // lastShot / prevShot: the params of this shot and the one before it —
+            // two tiny numeric objects (never sample arrays, §10.1) that let the board
+            // draw the PREVIOUS attempt as a faint trail, so a tweak is visible as a
+            // before/after instead of a curve that silently replaces itself.
+            bl[level.id] = Object.assign({}, base, { params: P, shots: shots, solved: solved, misses: misses, independent: base.independent || indep, flawless: flawless, prevShot: base.lastShot || null, lastShot: P });
             var mergedBadges = (cur.badges || []).slice();
             newBadges.forEach(function (bd) { if (mergedBadges.indexOf(bd) === -1) mergedBadges.push(bd); });
             return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: true, badges: mergedBadges }) });
@@ -1870,7 +1914,7 @@
             // Reset = a FRESH attempt: clear the shot/miss counters (so a clean run can
             // earn the 3rd star) but KEEP the earned achievements (solved/independent/
             // flawless/stars never regress).
-            bl[level.id] = Object.assign({}, base, { params: defaultParams(level), shots: 0, misses: 0 });
+            bl[level.id] = Object.assign({}, base, { params: defaultParams(level), shots: 0, misses: 0, prevShot: null, lastShot: null });
             return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { byLevel: bl, fired: false }) });
           });
           announceArc(ctx, t('arccity.reset', 'Reset. ') + describeBoard(level));
@@ -2151,10 +2195,23 @@
         var obstacleEls = [];
         (level.walls || []).forEach(function (w, i) {
           obstacleEls.push(h('rect', { key: 'wall' + i, x: sx(w.x) - 4, y: sy(w.height), width: 8, height: sy(0) - sy(w.height), fill: WALL, rx: 2, filter: 'url(#arc-glow)' }));
+          // A bright cap on the wall's top edge: the height you must clear is the one
+          // number that matters here, so the parapet is drawn as its own line rather
+          // than left as the top pixel of a bar. Decorative (the height is announced).
+          obstacleEls.push(h('line', { key: 'wallcap' + i, x1: sx(w.x) - 10, y1: sy(w.height), x2: sx(w.x) + 10, y2: sy(w.height), stroke: WALL, strokeWidth: 3, strokeLinecap: 'round', 'aria-hidden': 'true' }));
         });
         (level.gates || []).forEach(function (g, i) {
           obstacleEls.push(h('rect', { key: 'gateLo' + i + gateKey, x: sx(g.x) - 4, y: sy(g.lo), width: 8, height: sy(0) - sy(g.lo), fill: gateFill, opacity: 0.85, rx: 2, filter: 'url(#arc-glow)', className: gateCls }));
           obstacleEls.push(h('rect', { key: 'gateHi' + i + gateKey, x: sx(g.x) - 4, y: sy(wy1), width: 8, height: sy(g.hi) - sy(wy1), fill: gateFill, opacity: 0.85, rx: 2, filter: 'url(#arc-glow)', className: gateCls }));
+          // The APERTURE — the thing you actually have to hit. Two solid bars leave the
+          // opening as negative space, which reads as "nothing there"; a faint band plus
+          // two lips makes the slot itself a visible object. Decorative (aria-hidden):
+          // the exact lo/hi numbers are already in the coordinate list and the SR board
+          // readout, and the band is low-opacity so it never touches gate contrast.
+          obstacleEls.push(h('rect', { key: 'gateSlot' + i + gateKey, x: sx(g.x) - 6, y: sy(g.hi), width: 12, height: Math.max(0, sy(g.lo) - sy(g.hi)), fill: gateFill, opacity: 0.16, rx: 2, 'aria-hidden': 'true' }));
+          [g.lo, g.hi].forEach(function (edge, ei) {
+            obstacleEls.push(h('line', { key: 'gateLip' + i + ei + gateKey, x1: sx(g.x) - 11, y1: sy(edge), x2: sx(g.x) + 11, y2: sy(edge), stroke: gateFill, strokeWidth: 2, strokeLinecap: 'round', opacity: 0.75, 'aria-hidden': 'true' }));
+          });
           if (g.slope) { // tangent tick showing the required entry slope (the "tilt")
             var smy = (g.lo + g.hi) / 2, sdx = 0.9;
             obstacleEls.push(h('line', { key: 'gslope' + i, x1: sx(g.x - sdx), y1: sy(smy - g.slope.value * sdx), x2: sx(g.x + sdx), y2: sy(smy + g.slope.value * sdx), stroke: PAL.warn, strokeWidth: 2.5, strokeDasharray: '5 3', strokeLinecap: 'round' }));
@@ -2178,6 +2235,16 @@
         });
         // Soft halo behind a lit node; full celebration the moment a shot lands.
         var nodeGlowEls = (!isMatch && lit) ? [h('circle', { key: 'nodehalo', cx: ncx, cy: ncy, r: nodeR * 1.9, fill: NODE_ON, opacity: 0.24, filter: 'url(#arc-glow-strong)', className: 'arccity-halo', 'aria-hidden': 'true' })] : [];
+        // While the node is dark it is just a dot among other dots; a static reticle
+        // (ring + four ticks, no animation of its own so it never competes with the
+        // node's pulse) says "this is the thing you are aiming at". Decorative only.
+        if (!isMatch && !lit) {
+          nodeGlowEls.push(h('circle', { key: 'nodereticle', cx: ncx, cy: ncy, r: nodeR * 1.85, fill: 'none', stroke: NODE_OFF, strokeWidth: 1.5, strokeDasharray: '3 5', opacity: 0.5, 'aria-hidden': 'true' }));
+          nodeGlowEls.push(h('g', { key: 'nodeticks', 'aria-hidden': 'true' }, [0, 90, 180, 270].map(function (deg, ti) {
+            var rad = deg * Math.PI / 180, r0 = nodeR * 2.1, r1 = nodeR * 2.7;
+            return h('line', { key: 'ntk' + ti, x1: ncx + Math.cos(rad) * r0, y1: ncy + Math.sin(rad) * r0, x2: ncx + Math.cos(rad) * r1, y2: ncy + Math.sin(rad) * r1, stroke: NODE_OFF, strokeWidth: 2, strokeLinecap: 'round', opacity: 0.55 });
+          })));
+        }
         var sk = ls.shots || 0; // celebration els key off the shot count → replay on every hit
         var nodeBurstEls = (S.fired && res.result === 'hit') ? [
           h('circle', { key: 'shock-' + sk, cx: ncx, cy: ncy, r: nodeR, fill: 'none', stroke: NODE_ON, strokeWidth: 4, className: 'arccity-shock', 'aria-hidden': 'true' }),
@@ -2235,14 +2302,75 @@
           previewEls.push(h('text', { key: 'pvhide', x: W / 2, y: 28, textAnchor: 'middle', fill: INK, opacity: 0.6, fontSize: 14 }, isMatch ? t('arccity.preview_hidden_match', 'Preview hidden — predict the curve, then Fire ⚡') : t('arccity.preview_hidden', 'Preview hidden — predict, then Fire ⚡')));
         }
 
+        // ── Previous-attempt trail. The ghost is ALWAYS "the shot before the one you
+        // are looking at": while you tweak it is your last fired shot, and once you
+        // fire again it steps back one, so the current beam is never drawn twice.
+        // Re-sampled from the two stored param objects — nothing large is persisted. ──
+        var trailEls = [];
+        // Suppressed on match levels: there the reference curve is the GHOST, and a
+        // third curve on the same overlay would make "am I on the target?" harder,
+        // not easier.
+        var ghostShotParams = (S.fired ? ls.prevShot : ls.lastShot);
+        if (ghostShotParams && !isMatch && (S.fired || showPreview)) {
+          var samePos = true;
+          for (var tpi = 0; tpi < level.paramOrder.length; tpi++) {
+            var tpn = level.paramOrder[tpi];
+            if (Math.abs((ghostShotParams[tpn] || 0) - (P[tpn] || 0)) > 1e-9) { samePos = false; break; }
+          }
+          if (!samePos) {
+            var tsamp = sampleCurve(level, ghostShotParams), ts = '';
+            for (var tgi = 0; tgi < tsamp.length; tgi++) { var tgy = tsamp[tgi].y; if (!isFinite(tgy) || tgy < wy0 - 2 || tgy > wy1 + 2) continue; ts += sx(tsamp[tgi].x) + ',' + sy(tgy) + ' '; }
+            if (ts) trailEls.push(h('polyline', { key: 'prevtrail', points: ts.trim(), fill: 'none', stroke: INK, strokeWidth: 2, strokeDasharray: '1 7', strokeLinecap: 'round', opacity: 0.34, 'aria-hidden': 'true' }));
+          }
+        }
+
         var overlay = [];
         if (S.fired) {
           var killX = res.killedAt ? res.killedAt.x : wx1;
+          // The path the beam was DENIED (§7.3): everything past the block, faint and
+          // drifting, so a stop reads as "here is where you were headed", not a
+          // truncated line. Drawn under the beam; decorative (the reason is in text).
+          if (res.killedAt) {
+            var remStr = ptsStr(function (pt) { return pt.x >= killX - 0.0001; });
+            if (remStr) overlay.push(h('polyline', { key: 'beam-remainder', points: remStr, fill: 'none', stroke: BEAM, strokeWidth: 2, strokeDasharray: '5 7', strokeLinecap: 'round', opacity: 0.38, className: 'arccity-ghost-remainder', 'aria-hidden': 'true' }));
+          }
           overlay.push(h('polyline', { key: 'beam-' + (ls.shots || 0), ref: beamRef, points: ptsStr(function (pt) { return pt.x <= killX + 0.0001; }), fill: 'none', stroke: res.result === 'hit' ? NODE_ON : BEAM, strokeWidth: 3.5, strokeLinecap: 'round', filter: 'url(#arc-glow)', pathLength: 100, strokeDasharray: 100, className: 'arccity-beam-draw' }));
+          // Bright head riding the beam (positioned each frame by beamRef; the static
+          // fallback here is the far end of the drawn path).
+          var headPt = null;
+          for (var hi2 = 0; hi2 < samples.length; hi2++) {
+            var hy = samples[hi2].y;
+            if (samples[hi2].x > killX + 0.0001) break;
+            if (!isFinite(hy) || hy < wy0 - 2 || hy > wy1 + 2) continue;
+            headPt = samples[hi2];
+          }
+          if (headPt) overlay.push(h('circle', { key: 'beamhead-' + (ls.shots || 0), cx: sx(headPt.x), cy: sy(headPt.y), r: 5, fill: res.result === 'hit' ? NODE_ON : BEAM, filter: 'url(#arc-glow-strong)', className: 'arccity-beam-head', 'aria-hidden': 'true' }));
           if (res.killedAt) {
             var kx = sx(res.killedAt.x), ky = sy(res.killedAt.y), mk = 7;
             overlay.push(h('line', { key: 'kx1', x1: kx - mk, y1: ky - mk, x2: kx + mk, y2: ky + mk, stroke: PAL.danger, strokeWidth: 3, strokeLinecap: 'round' }));
             overlay.push(h('line', { key: 'kx2', x1: kx - mk, y1: ky + mk, x2: kx + mk, y2: ky - mk, stroke: PAL.danger, strokeWidth: 3, strokeLinecap: 'round' }));
+          }
+          // Near-miss (§7.3): the beam got all the way down the street but slid past
+          // the node. Draw the actual shortest gap and label it, so "missed by 0.4"
+          // is a distance you can SEE and shrink — the same number describeResult
+          // announces, measured off the same sample array.
+          if (!isMatch && res.result === 'miss' && isFinite(res.nodeDist)) {
+            var nearest = null, nbest = Infinity;
+            for (var ni2 = 0; ni2 < samples.length; ni2++) {
+              var ndx = samples[ni2].x - level.node.x, ndy = samples[ni2].y - level.node.y;
+              if (!isFinite(ndy)) continue;
+              var nd = Math.sqrt(ndx * ndx + ndy * ndy);
+              if (nd < nbest) { nbest = nd; nearest = samples[ni2]; }
+            }
+            if (nearest) {
+              overlay.push(h('line', { key: 'missgap', x1: sx(nearest.x), y1: sy(nearest.y), x2: ncx, y2: ncy, stroke: PAL.warn, strokeWidth: 2, strokeDasharray: '4 3', strokeLinecap: 'round', 'aria-hidden': 'true' }));
+              overlay.push(h('circle', { key: 'missdot', cx: sx(nearest.x), cy: sy(nearest.y), r: 3.5, fill: PAL.warn, 'aria-hidden': 'true' }));
+              overlay.push(h('text', {
+                key: 'misslabel', x: (sx(nearest.x) + ncx) / 2 + 8, y: (sy(nearest.y) + ncy) / 2 - 6,
+                fill: PAL.warn, fontSize: 11, fontWeight: 800, 'aria-hidden': 'true',
+                style: { paintOrder: 'stroke', stroke: _tickHalo, strokeWidth: 3 }
+              }, round1(res.nodeDist) + ' ' + t('arccity.units_short', 'units short')));
+            }
           }
         }
 
@@ -2327,10 +2455,24 @@
         var svg = (gauntlet && gauntlet.empty) ? null : h('svg', {
           key: 'svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%',
           role: 'img', 'aria-label': describeBoard(level),
-          style: { display: 'block', maxHeight: '50vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden', touchAction: 'none' }
-        }, [].concat([defs], backdropEls, gridEls, axisEls, obstacleEls, ghostEls, ghostCurveEls, previewEls, overlay, mathEls, nodeGlowEls, (nodeEl ? [nodeEl] : []), nodeBurstEls, handleEls));
+          style: { display: 'block', maxHeight: '58vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden', touchAction: 'none' }
+        }, [].concat([defs], backdropEls, gridEls, axisEls, obstacleEls, ghostEls, ghostCurveEls, trailEls, previewEls, overlay, mathEls, nodeGlowEls, (nodeEl ? [nodeEl] : []), nodeBurstEls, handleEls));
 
         // ── Level progression bar ──
+        // Literal t() keys (never a computed key, so the translation-key checker can
+        // still see every string this tool can render).
+        function familyTagOf(fam, goal) {
+          if (goal === 'match') return t('arccity.family_transform', 'transform');
+          if (fam === 'line') return t('arccity.family_line', 'line');
+          if (fam === 'parabola') return t('arccity.family_parabola', 'parabola');
+          if (fam === 'absval') return t('arccity.family_absval', 'absolute value');
+          if (fam === 'sine') return t('arccity.family_sine', 'sine wave');
+          if (fam === 'exp') return t('arccity.family_exp', 'exponential');
+          if (fam === 'log') return t('arccity.family_log', 'logarithm');
+          if (fam === 'poly') return t('arccity.family_poly', 'cubic');
+          if (fam === 'gauntlet') return t('arccity.family_gauntlet', 'every family');
+          return '';
+        }
         var levelBtns = LEVELS.map(function (lv, i) {
           var unlocked = isLevelUnlocked(byLevel, i);
           // The Gauntlet keys its stage progress under 'G-Lx', so its tile reads
@@ -2339,6 +2481,10 @@
           var solved = lv.family === 'gauntlet' ? gauntletComplete(byLevel, gauntletOrder(byLevel, lv.stages)) : !!(byLevel[lv.id] && byLevel[lv.id].solved);
           var current = lv.id === (S.levelId || 'L1');
           var face = (solved ? '✅ ' : (unlocked ? '' : '🔒 ')) + lv.title;
+          // A tiny family tag under the title: the strip is 14 chips long, and the
+          // titles are fiction ("Switchback", "Tilt Gates"). Naming the maths each one
+          // teaches turns the strip into a map of the curriculum, not a list of names.
+          var familyTag = familyTagOf(lv.family, lv.goal);
           // Mastery stars (function levels only — the Gauntlet shows ✅ via its own rule).
           var stars = lv.family === 'gauntlet' ? 0 : levelStars(byLevel[lv.id]);
           var starLine = stars > 0
@@ -2347,7 +2493,10 @@
           return h('button', {
             key: 'lvl-' + lv.id, type: 'button', disabled: !unlocked,
             'aria-current': current ? 'true' : null,
-            'aria-label': lv.title + (solved ? ' (completed' + (stars ? ', ' + stars + ' of 3 stars' : '') + ')' : (unlocked ? '' : ' (locked)')),
+            // The family tag is drawn aria-hidden (it is a visual sub-label), so the
+            // same information is folded into the accessible name instead — the
+            // curriculum map must read identically either way.
+            'aria-label': lv.title + (familyTag ? ' — ' + familyTag : '') + (solved ? ' (completed' + (stars ? ', ' + stars + ' of 3 stars' : '') + ')' : (unlocked ? '' : ' (locked)')),
             onClick: function () { if (unlocked) switchLevel(lv.id); },
             style: {
               padding: '6px 10px', borderRadius: 8, fontSize: 12, fontWeight: current ? 800 : 600,
@@ -2356,7 +2505,9 @@
               color: unlocked ? INK : 'var(--allo-stem-text-soft, #475569)',
               opacity: unlocked ? 1 : 0.7, cursor: unlocked ? 'pointer' : 'not-allowed', textAlign: 'center'
             }
-          }, h('div', { key: 'face' }, face), starLine);
+          }, h('div', { key: 'face' }, face),
+            familyTag ? h('div', { key: 'fam', 'aria-hidden': 'true', style: { fontSize: 10, lineHeight: 1.2, marginTop: 2, opacity: 0.7, fontWeight: 600 } }, familyTag) : null,
+            starLine);
         });
 
         // ── Parameter controls ──
@@ -2387,31 +2538,40 @@
             else if (key === 'Home') { e.preventDefault(); setParam(name, snaps ? snaps[0] : spec.min); }
             else if (key === 'End') { e.preventDefault(); setParam(name, snaps ? snaps[snaps.length - 1] : spec.max); }
           }
-          var btn = { width: 30, height: 30, borderRadius: 8, border: '1px solid ' + GRID, background: 'rgba(255,255,255,0.06)', color: INK, fontSize: 18, lineHeight: '26px', cursor: 'pointer' };
+          // 36px hit targets (widened to 44 on touch-width by the stylesheet) — the
+          // +/- buttons are the primary authoring control for keyboard and motor-
+          // impaired players, so they are sized as controls, not as decorations.
+          var btn = { width: 36, height: 36, borderRadius: 9, border: '1px solid ' + GRID, background: 'rgba(255,255,255,0.06)', color: INK, fontSize: 19, lineHeight: '30px', cursor: 'pointer' };
           return h('div', { key: 'row-' + name, role: 'group', 'aria-label': spec.label, style: { marginBottom: 10 } },
-            h('div', { key: 'hdr', style: { display: 'flex', justifyContent: 'space-between', fontSize: 13, color: INK, marginBottom: 4 } },
+            h('div', { key: 'hdr', style: { display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 13, color: INK, marginBottom: 5 } },
               h('span', { key: 'l' }, spec.label),
-              h('span', { key: 'v', style: { fontVariantNumeric: 'tabular-nums', fontWeight: 700 } }, valLabel)),
+              h('span', { key: 'v', style: { fontVariantNumeric: 'tabular-nums', fontWeight: 800, color: BEAM, whiteSpace: 'nowrap' } }, valLabel)),
             h('div', { key: 'ctl', style: { display: 'flex', alignItems: 'center', gap: 8 } },
-              h('button', { key: 'dec', type: 'button', 'aria-label': 'Decrease ' + spec.label, onClick: function () { bump(-1); }, style: btn }, '−'),
+              h('button', { key: 'dec', type: 'button', className: 'arc-param-btn', 'aria-label': 'Decrease ' + spec.label, onClick: function () { bump(-1); }, style: btn }, '−'),
               h('div', {
                 key: 'sld', role: 'slider', tabIndex: 0, 'aria-label': spec.label,
                 'aria-valuemin': spec.min, 'aria-valuemax': spec.max, 'aria-valuenow': val, 'aria-valuetext': spec.label + ' ' + valLabel,
                 onKeyDown: onKey,
-                style: { position: 'relative', flex: 1, height: 10, borderRadius: 6, background: 'rgba(148,163,184,0.25)' }
+                style: { position: 'relative', flex: 1, height: 12, borderRadius: 7, background: 'rgba(148,163,184,0.25)' }
               },
-                h('div', { key: 'fill', style: { position: 'absolute', left: 0, top: 0, height: 10, width: (pct * 100) + '%', background: BEAM, borderRadius: 6, opacity: 0.5 } }),
-                h('div', { key: 'thumb', style: { position: 'absolute', top: -3, left: 'calc(' + (pct * 100) + '% - 8px)', width: 16, height: 16, borderRadius: '50%', background: BEAM, boxShadow: '0 0 6px ' + BEAM } })),
-              h('button', { key: 'inc', type: 'button', 'aria-label': 'Increase ' + spec.label, onClick: function () { bump(1); }, style: btn }, '+')));
+                h('div', { key: 'fill', style: { position: 'absolute', left: 0, top: 0, height: 12, width: (pct * 100) + '%', background: BEAM, borderRadius: 7, opacity: 0.55 } }),
+                h('div', { key: 'thumb', style: { position: 'absolute', top: -4, left: 'calc(' + (pct * 100) + '% - 10px)', width: 20, height: 20, borderRadius: '50%', background: BEAM, border: '2px solid ' + INK, boxShadow: '0 0 8px ' + BEAM } })),
+              h('button', { key: 'inc', type: 'button', className: 'arc-param-btn', 'aria-label': 'Increase ' + spec.label, onClick: function () { bump(1); }, style: btn }, '+')));
         }
 
         var paramRows = level.paramOrder.map(function (n) { return paramRow(n); });
 
-        var fireBtnStyle = { flex: 1, padding: '10px 14px', borderRadius: 10, border: 'none', background: BEAM, color: PAL.btnText, fontWeight: 800, fontSize: 15, cursor: 'pointer' };
-        var resetBtnStyle = { padding: '10px 14px', borderRadius: 10, border: '1px solid ' + GRID, background: 'transparent', color: INK, fontWeight: 700, fontSize: 14, cursor: 'pointer' };
+        var fireBtnStyle = { flex: 1, padding: '12px 14px', borderRadius: 10, border: 'none', background: BEAM, color: PAL.btnText, fontWeight: 800, fontSize: 15, cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.18)' };
+        var resetBtnStyle = { padding: '12px 14px', borderRadius: 10, border: '1px solid ' + GRID, background: 'transparent', color: INK, fontWeight: 700, fontSize: 14, cursor: 'pointer' };
 
         var resultText = S.fired ? describeResult(level, res, ls.shots || 0) : describeBoard(level);
         var resultColor = !S.fired ? INK : (res.result === 'hit' ? NODE_ON : (res.result === 'miss' ? PAL.warn : PAL.danger));
+        // The outcome line is the single most-read thing on the screen after a shot, so
+        // it gets a card of its own: icon + tinted border keyed to the outcome. Colour
+        // is never the only signal — the icon and the sentence both say what happened.
+        var resultIcon = !S.fired ? 'ℹ️' : (res.result === 'hit' ? '✨' : (res.result === 'miss' ? '🎯' : '⛔'));
+        var resultTint = !S.fired ? 'rgba(148,163,184,0.10)'
+          : (res.result === 'hit' ? 'rgba(52,211,153,0.13)' : (res.result === 'miss' ? 'rgba(250,204,21,0.11)' : 'rgba(248,113,113,0.11)'));
 
         var showHint = !ls.solved && (ls.misses || 0) >= HINT_AFTER;
 
@@ -2419,8 +2579,24 @@
         (level.walls || []).forEach(function (w, i) { coordItems.push(h('li', { key: 'cw' + i }, '🧱 ' + t('arccity.wall', 'Wall:') + ' x ' + w.x + ', height ' + w.height)); });
         (level.gates || []).forEach(function (g, i) { coordItems.push(h('li', { key: 'cg' + i }, '🚪 ' + t('arccity.gate', 'Gate:') + ' x ' + g.x + ', opening y ' + g.lo + ' to ' + g.hi + (g.slope ? ', slope ≈ ' + g.slope.value + ' ±' + g.slope.tol + ' (' + (g.slope.value < 0 ? 'descending' : 'climbing') + ')' : ''))); });
 
+        // ── Forward motion. Solving a level used to leave the player to hunt the right
+        // chip in the level strip; the next step is now offered where their eyes
+        // already are. The Gauntlet keeps its own Next-challenge control (§ below), so
+        // this is suppressed there to avoid two competing "next" buttons.
+        var nextLevelCta = null;
+        if (!gauntlet && ls.solved && lIdx < LEVELS.length - 1 && isLevelUnlocked(byLevel, lIdx + 1)) {
+          var nextLv = LEVELS[lIdx + 1];
+          nextLevelCta = h('button', {
+            key: 'nextlevel', type: 'button',
+            'aria-label': t('arccity.next_level_aria', 'Next level:') + ' ' + nextLv.title,
+            onClick: function () { switchLevel(nextLv.id); },
+            style: { display: 'block', width: '100%', marginTop: 10, padding: '11px 14px', borderRadius: 10, border: '1px solid ' + NODE_ON, background: 'rgba(52,211,153,0.14)', color: INK, fontSize: 14, fontWeight: 800, cursor: 'pointer', textAlign: 'center' }
+          }, t('arccity.next_level', 'Next level') + ': ' + nextLv.title + ' →');
+        }
+
         var controls = (gauntlet && gauntlet.empty) ? null : h('div', { key: 'controls', style: { marginTop: 14 } },
-          h('div', { key: 'eq', 'aria-label': describeEquation(level, P), style: { fontSize: 15, color: INK, marginBottom: 6, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', fontVariantNumeric: 'tabular-nums' } },
+          h('div', { key: 'eqlabel', style: { fontSize: 11, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: INK, opacity: 0.75, marginBottom: 4 } }, t('arccity.your_function', 'Your function')),
+          h('div', { key: 'eq', 'aria-label': describeEquation(level, P), style: { fontSize: 16, color: INK, marginBottom: 8, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + GRID, background: 'rgba(255,255,255,0.05)', fontVariantNumeric: 'tabular-nums' } },
             level.family === 'line'
               ? ['y = ', h('span', { key: 'm', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.m, level.params.m.step)), ' · x + ', h('span', { key: 'b', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.b, level.params.b.step))]
               : (level.family === 'absval'
@@ -2436,12 +2612,16 @@
                         : ['y = ', h('span', { key: 'a', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.a, level.params.a.step)), ' (x − ', h('span', { key: 'h', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.h, level.params.h.step)), ')² + ', h('span', { key: 'k', style: { color: BEAM, fontWeight: 800 } }, fmtVal(P.k, level.params.k.step))])))))),
           tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.6, marginBottom: 10 } }, handleEls.length ? t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.') : t('arccity.slider_hint', 'Tip: use the sliders (or the +/− buttons and arrow keys) to shape the beam.')) : null,
           h('div', { key: 'rows' }, paramRows),
-          h('div', { key: 'btns', style: { display: 'flex', gap: 10, marginTop: 6 } },
-            h('button', { key: 'fire', type: 'button', ref: focusFireRef, onClick: fire, style: fireBtnStyle }, '⚡ ' + t('arccity.fire', 'Fire beam')),
+          h('div', { key: 'btns', className: 'arc-play-actions', style: { display: 'flex', gap: 10, marginTop: 8 } },
+            h('button', { key: 'fire', type: 'button', className: 'arc-fire-btn', ref: focusFireRef, onClick: fire, style: fireBtnStyle }, '⚡ ' + t('arccity.fire', 'Fire beam')),
             h('button', { key: 'reset', type: 'button', onClick: resetLevel, style: resetBtnStyle }, t('arccity.reset_btn', 'Reset')),
             h('button', { key: 'mute', type: 'button', 'aria-label': muted ? t('arccity.unmute', 'Sound is off — turn on') : t('arccity.mute', 'Sound is on — turn off'), onClick: toggleMute, style: resetBtnStyle }, muted ? '🔇' : '🔊')),
-          h('div', { key: 'result', role: 'status', style: { marginTop: 12, fontSize: 14, lineHeight: 1.5, color: resultColor, minHeight: 42 } }, resultText),
-          showHint ? h('div', { key: 'hint', style: { marginTop: 8, fontSize: 13, color: PAL.warn, padding: '8px 10px', borderRadius: 8, background: 'rgba(252,211,77,0.10)' } }, '💡 ' + level.hint) : null,
+          h('div', { key: 'keyhint', 'aria-hidden': 'true', style: { marginTop: 6, fontSize: 11, color: INK, opacity: 0.6 } }, t('arccity.key_hint', 'Keys: F fire · R reset · arrows nudge the focused control')),
+          h('div', { key: 'result', role: 'status', style: { marginTop: 10, fontSize: 14, lineHeight: 1.5, color: resultColor, minHeight: 42, display: 'flex', gap: 8, alignItems: 'flex-start', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + (S.fired ? resultColor : GRID), background: resultTint } },
+            h('span', { key: 'ricon', 'aria-hidden': 'true', style: { fontSize: 16, lineHeight: 1.3 } }, resultIcon),
+            h('span', { key: 'rtext' }, resultText)),
+          showHint ? h('div', { key: 'hint', style: { marginTop: 8, fontSize: 13, color: PAL.warn, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + PAL.warn, background: 'rgba(252,211,77,0.10)' } }, '💡 ' + level.hint) : null,
+          nextLevelCta,
           h('div', { key: 'shots', style: { marginTop: 6, fontSize: 12, color: INK, opacity: 0.7 } },
             (ls.solved ? '✅ ' + t('arccity.solved', 'Node lit!') + (indepSolved ? ' ' + t('arccity.indep_tag', '(solved independently)') : '') + '  ' : '') + t('arccity.shots', 'Shots fired:') + ' ' + (ls.shots || 0)),
           h('ul', { key: 'coords', style: { listStyle: 'none', padding: 0, margin: '8px 0 0', fontSize: 12, color: INK, opacity: 0.8 } }, coordItems));
@@ -2451,7 +2631,39 @@
           h('p', { key: 'sub', style: { margin: '4px 0 0', fontSize: 13, color: INK, opacity: 0.8 } },
             t('arccity.subtitle', 'Author a function whose beam threads the gates, clears the walls, and lights the node.')));
 
-        var levelBar = h('div', { key: 'levelbar', role: 'group', 'aria-label': t('arccity.levels', 'Levels'), style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 } }, levelBtns);
+        // ── City-restored bar. §9.4 language: a countable, COLLECTIVE tally of what the
+        // city has back, never a percentage of a person. Counts only playable function
+        // levels (the Gauntlet is orchestration over them, so counting it would
+        // double-count the same work).
+        var progressLevels = LEVELS.filter(function (lv) { return lv.family !== 'gauntlet'; });
+        var progressDone = progressLevels.filter(function (lv) { return !!(byLevel[lv.id] && byLevel[lv.id].solved); }).length;
+        var progressPct = progressLevels.length ? Math.round(progressDone / progressLevels.length * 100) : 0;
+        var progressBar = h('div', { key: 'cityprogress', style: { marginBottom: 12 } },
+          h('div', { key: 'plab', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, color: INK, marginBottom: 4 } },
+            h('span', { key: 'pl' }, '🌃 ' + t('arccity.city_restored', 'City restored')),
+            h('span', { key: 'pv', style: { fontVariantNumeric: 'tabular-nums' } }, progressDone + ' / ' + progressLevels.length + ' ' + t('arccity.nodes_relit', 'nodes re-lit'))),
+          h('div', {
+            key: 'ptrack', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': progressLevels.length, 'aria-valuenow': progressDone,
+            'aria-label': t('arccity.city_restored', 'City restored') + ': ' + progressDone + ' / ' + progressLevels.length,
+            style: { height: 8, borderRadius: 6, background: 'rgba(148,163,184,0.25)', overflow: 'hidden' }
+          }, h('div', { key: 'pfill', style: { height: 8, width: progressPct + '%', background: NODE_ON, borderRadius: 6 } })));
+
+        var levelBar = h('div', { key: 'levelbar', className: 'arc-level-strip', role: 'group', 'aria-label': t('arccity.levels', 'Levels'), style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 } }, levelBtns);
+
+        // ── Board legend. The board speaks in colour and shape; a two-line key turns
+        // "what is that violet bar?" into a glance instead of a guess. Swatch + word
+        // together (never colour alone), and it mirrors the coordinate list's icons.
+        var legendItems = [
+          { c: NODE_OFF, k: 'node', label: t('arccity.legend_node', 'node to light') },
+          { c: GATE, k: 'gate', label: t('arccity.legend_gate', 'gate — pass through the opening') }
+        ];
+        if ((level.walls || []).length) legendItems.push({ c: WALL, k: 'wall', label: t('arccity.legend_wall', 'wall — clear the top') });
+        legendItems.push({ c: BEAM, k: 'beam', label: t('arccity.legend_beam', 'your beam') });
+        var boardLegend = h('div', { key: 'legend', 'aria-hidden': 'true', style: { display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8, fontSize: 11, color: INK, opacity: 0.85 } },
+          legendItems.map(function (li) {
+            return h('span', { key: 'lg-' + li.k, style: { display: 'inline-flex', alignItems: 'center', gap: 5 } },
+              h('span', { key: 'sw', style: { width: 11, height: 11, borderRadius: 3, background: li.c, display: 'inline-block' } }), li.label);
+          }));
 
         var tierBtns = TIERS.map(function (tr) {
           var active = tr === tier;
@@ -2818,11 +3030,34 @@
           : (view === 'battle'
             ? battlePanel
             : ((gauntlet && gauntlet.empty)
-              ? h('div', { key: 'game' }, levelBar, gauntletBanner) // no board until families are solved
-              : h('div', { key: 'game' }, levelBar, gauntletBanner, (gauntlet ? gauntletTierLock : tierBar), svg, controls, gauntletNav, badgeStrip)));
+              ? h('div', { key: 'game' }, levelBar, progressBar, gauntletBanner) // no board until families are solved
+              // Two columns on a wide viewport (stylesheet-driven; a single column
+              // below 900px keeps the original top-to-bottom reading order, which is
+              // also the DOM/tab order — so nothing about keyboard or SR play changes).
+              : h('div', { key: 'game' }, levelBar, progressBar, gauntletBanner,
+                h('div', { key: 'playgrid', className: 'arc-play-grid' },
+                  h('div', { key: 'boardcol', className: 'arc-board-col' }, (gauntlet ? gauntletTierLock : tierBar), svg, boardLegend),
+                  h('div', { key: 'ctlcol', className: 'arc-ctl-col' }, controls, gauntletNav, badgeStrip)))));
 
-        return h('div', { id: 'allo-arccity-root', className: 'arc-city-root', style: { padding: 16, maxWidth: 760, margin: '0 auto', color: INK } },
-          header, viewToggle, body);
+        // ── Tool-scoped shortcuts (§8.1). Bound to the root element rather than to
+        // `window`, so there is no global listener to leak and no interference with
+        // the rest of the page — they fire only while focus is inside Arc City.
+        // Typing targets and the arrow-key sliders keep their own handling.
+        function onRootKey(e) {
+          if (!e || e.altKey || e.ctrlKey || e.metaKey) return;
+          var tgt = e.target || {};
+          var tag = (tgt.tagName || '').toUpperCase();
+          if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tgt.isContentEditable) return;
+          var k = (e.key || '').toLowerCase();
+          if (k === 'f') { e.preventDefault(); fire(); }
+          else if (k === 'r') { e.preventDefault(); resetLevel(); }
+        }
+
+        return h('div', {
+          id: 'allo-arccity-root', className: 'arc-city-root',
+          onKeyDown: (view === 'play' && controls) ? onRootKey : null,
+          style: { padding: 16, maxWidth: view === 'play' ? 1180 : 760, margin: '0 auto', color: INK }
+        }, header, viewToggle, body);
 
       } catch (e) {
         return h('div', { style: { padding: 16, color: '#fca5a5', fontSize: 14 } },
