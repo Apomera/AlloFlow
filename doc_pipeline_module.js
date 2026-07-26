@@ -1984,6 +1984,28 @@ function readingOrderSequenceRatio(textA, textB) {
   return _r;
 }
 
+// ── Extraction page-count resolution (audit finding M13, 2026-07-26) ────────
+// The Vision extraction fan-out is sized from a page count that may be a pure GUESS: when pdf.js
+// cannot open a file (encrypted, corrupt), the pipeline keeps a "~3KB base64 per page" estimate,
+// which is two orders of magnitude off for a scanned page. An 8 MB scanned IEP estimated ~2700
+// pages → ~1366 Vision chunks, every one out of range, each falling back to re-uploading the
+// whole 8 MB file: tens of minutes of a teacher's quota on a document with a few dozen real
+// pages, plus hallucinated pseudo-pages in the ground truth from any chunk that did answer.
+//
+// Precedence: a real count from a reader that COULD open the file always wins; failing that, an
+// unverifiable estimate is capped. Under-extracting is the safer failure — the <20-char abort and
+// the partial-extraction banner both still fire, so a short document cannot ship silently.
+// Pure (numbers in → verdict out) so the precedence is unit-testable.
+function _alloResolveExtractionPageCount(pageCount, isEstimate, probedPageCount, maxEstimate) {
+  var count = Number(pageCount) || 0;
+  var probed = Number(probedPageCount) || 0;
+  var cap = Number(maxEstimate) || 0;
+  if (!isEstimate) return { pageCount: count, isEstimate: false, source: 'known' };
+  if (probed > 0) return { pageCount: probed, isEstimate: false, source: 'probed' };
+  if (cap > 0 && count > cap) return { pageCount: cap, isEstimate: true, source: 'capped' };
+  return { pageCount: count, isEstimate: true, source: 'estimated' };
+}
+
 // ── Multi-column reading-order REPAIR (H-5's harder half, 2026-07-01) ──
 // readingOrderSequenceRatio (above) DETECTS a scrambled order; this REPAIRS it at the
 // extraction root. pdf.js returns text items in content-stream order, and the extractor's
@@ -2010,16 +2032,39 @@ function _alloOrderTextItems(items, opts) {
     var scale = (it && it.transform && isFinite(it.transform[0]) && Math.abs(it.transform[0]) > 0.01) ? Math.abs(it.transform[0]) : 10;
     return String((it && it.str) || '').length * scale * 0.5;
   };
-  var _legacy = function (arr) {
+  // H12 (audit 2026-07-26): the within-line sort is direction-aware. pdf.js emits a line's text
+  // items in LOGICAL order, which for RTL script runs right-to-left — descending x. Sorting them
+  // ascending-x, as this did unconditionally, reverses the phrases inside every multi-run line of
+  // an Arabic/Hebrew/Farsi/Urdu handout. Nothing downstream could see it: the character count,
+  // _numericFidelityLosses and the autoRestore word-set comparison are all count/set based, so a
+  // pure reordering scores 100% fidelity, and readingOrderSequenceRatio compares two texts that
+  // both came through this helper — a consistently reversed source scores ~1.
+  var _legacy = function (arr, rtl) {
     return arr.slice().sort(function (a, b) {
       var ay = _y(a), by = _y(b);
       if (Math.abs(ay - by) > 2) return by - ay;
-      return _x(a) - _x(b);
+      return rtl ? _x(b) - _x(a) : _x(a) - _x(b);
     });
   };
   var real = [];
   for (var i = 0; i < (items || []).length; i++) { var it = items[i]; if (it && String(it.str || '').trim()) real.push(it); }
   var keepEmpties = (items || []).length - real.length; // empties re-dropped by the caller's join; order among them is irrelevant
+  // RTL auto-detection (2026-07-01): when opts.rtl is not explicitly set, detect a
+  // right-to-left document from the items' OWN characters (Hebrew, Arabic, Syriac,
+  // Thaana, Arabic Supplement/Extended + presentation forms). An RTL two-column page
+  // reads its RIGHT column first — left-first order would be exactly as scrambled as
+  // the interleave this function exists to fix. Threshold: RTL letters must outnumber
+  // Latin letters (a mixed English worksheet with sprinkled Arabic terms stays LTR).
+  // H12: hoisted ABOVE the single-column early return. It used to sit below it, so on a
+  // single-column RTL page — the common case for a handout — the detector never ran at all.
+  var _rtl = opts.rtl;
+  if (_rtl === undefined) {
+    var _allStr = '';
+    for (var iR = 0; iR < real.length; iR++) _allStr += String(real[iR].str || '');
+    var _rtlCount = (_allStr.match(/[֐-޿ࢠ-ࣿיִ-﷿ﹰ-﻿]/g) || []).length;
+    var _latCount = (_allStr.match(/[A-Za-z]/g) || []).length;
+    _rtl = _rtlCount > 20 && _rtlCount > _latCount;
+  }
   var MAX_DEPTH = 2;
   var split = function (arr, depth) {
     if (arr.length < 20 || depth > MAX_DEPTH) return { cols: [arr], gutters: [] };
@@ -2073,22 +2118,8 @@ function _alloOrderTextItems(items, opts) {
   };
   var res = split(real, 0);
   if (res.cols.length <= 1) {
-    var _single = { items: _legacy(items || []), columns: 1, gutters: [], applied: false };
+    var _single = { items: _legacy(items || [], _rtl), columns: 1, gutters: [], applied: false, rtl: !!_rtl };
     return _single;
-  }
-  // RTL auto-detection (2026-07-01): when opts.rtl is not explicitly set, detect a
-  // right-to-left document from the items' OWN characters (Hebrew, Arabic, Syriac,
-  // Thaana, Arabic Supplement/Extended + presentation forms). An RTL two-column page
-  // reads its RIGHT column first — left-first order would be exactly as scrambled as
-  // the interleave this function exists to fix. Threshold: RTL letters must outnumber
-  // Latin letters (a mixed English worksheet with sprinkled Arabic terms stays LTR).
-  var _rtl = opts.rtl;
-  if (_rtl === undefined) {
-    var _allStr = '';
-    for (var iR = 0; iR < real.length; iR++) _allStr += String(real[iR].str || '');
-    var _rtlCount = (_allStr.match(/[֐-޿ࢠ-ࣿיִ-﷿ﹰ-﻿]/g) || []).length;
-    var _latCount = (_allStr.match(/[A-Za-z]/g) || []).length;
-    _rtl = _rtlCount > 20 && _rtlCount > _latCount;
   }
   // Column order: left→right (or right→left for RTL); items legacy-sorted within each column.
   var colsOrdered = res.cols.slice().sort(function (A, B) {
@@ -2098,9 +2129,9 @@ function _alloOrderTextItems(items, opts) {
     return _rtl ? bx - ax : ax - bx;
   });
   var out = [];
-  for (var c = 0; c < colsOrdered.length; c++) out = out.concat(_legacy(colsOrdered[c]));
+  for (var c = 0; c < colsOrdered.length; c++) out = out.concat(_legacy(colsOrdered[c], _rtl));
   if (keepEmpties > 0) { for (var i7 = 0; i7 < (items || []).length; i7++) { var e = items[i7]; if (!(e && String(e.str || '').trim())) out.push(e); } }
-  var _multi = { items: out, columns: res.cols.length, gutters: res.gutters, applied: true };
+  var _multi = { items: out, columns: res.cols.length, gutters: res.gutters, applied: true, rtl: !!_rtl };
   return _multi;
 }
 
@@ -2947,12 +2978,29 @@ function _detectRefusalText(html) {
 // remediated output HTML for dropped hyperlinks (#4), collapsed/lost tables (#3), and leaked
 // refusal text (#2). Returns an array of { kind, msg }. Heuristic + conservative (slack before it
 // fires) so it surfaces a real-loss signal without crying wolf.
-function _computeStructuralFidelityNotes(srcText, outHtml) {
+// M12 (audit 2026-07-26): `srcCounts` is an OPTIONAL structural baseline measured at extraction
+// time — `{ links }` today. The markdown counts below only exist for input that arrives AS
+// markdown: the Vision-OCR prompts explicitly ask for `[text](url)` and `|---|` rows, so the nets
+// work on scanned documents. The deterministic pdf.js path joins raw text items and produces
+// neither, so on a born-digital PDF — a large share of runs — `_srcLinks` was always 0 and the
+// dropped-hyperlink net could not fire however many links the remediation lost. A real count
+// (pdf.js Link annotations) overrides the markdown guess when one was measured.
+//
+// KNOWN GAP, deliberately not faked: there is no equivalent table baseline for the text-layer
+// path. A PDF has no "table" object to count — recovering one needs layout analysis this
+// function does not do. Both table nets below therefore remain inert on born-digital input.
+// Inventing a count we cannot actually measure would be worse than a net that is honestly silent.
+function _computeStructuralFidelityNotes(srcText, outHtml, srcCounts) {
   const notes = [];
   const _src = String(srcText || '');
   const _out = String(outHtml || '');
-  // (#4) Links — markdown source links [text](url) (excluding ![images]) vs output <a href>.
-  const _srcLinks = (_src.match(/(?:^|[^!])\[[^\]\n]{1,200}\]\([^)\s]+\)/g) || []).length;
+  const _counts = srcCounts || {};
+  // (#4) Links — source links vs output <a href>. Preference order: a measured structural count,
+  // then markdown source links [text](url) (excluding ![images]).
+  const _measuredLinks = Number(_counts.links);
+  const _srcLinks = Number.isFinite(_measuredLinks) && _measuredLinks > 0
+    ? _measuredLinks
+    : (_src.match(/(?:^|[^!])\[[^\]\n]{1,200}\]\([^)\s]+\)/g) || []).length;
   const _outLinks = (_out.match(/<a\s[^>]*\bhref\s*=/gi) || []).length;
   if (_srcLinks >= 2 && _outLinks < _srcLinks && (_srcLinks - _outLinks) >= Math.max(2, Math.ceil(_srcLinks * 0.2))) {
     notes.push({ kind: 'links', msg: 'Links: the source had ~' + _srcLinks + ' hyperlink(s) but the output has ' + _outLinks + ' — ' + (_srcLinks - _outLinks) + ' may have been dropped. Check the Diff.' });
@@ -5700,7 +5748,13 @@ var createDocPipeline = function(deps) {
           out.numericWarn = lostVals.length + ' source numeric value(s) not found unchanged in the output (' + vsample + '). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.';
         }
       } catch (_) {}
-      try { out.structuralNotes = _computeStructuralFidelityNotes(sourceText, html) || []; } catch (_) { out.structuralNotes = []; }
+      // M12: the re-fix lane must measure links against the SAME baseline the primary pass used.
+      // 'links' is a RECOMPUTABLE note kind, so a recompute that fell back to counting markdown in
+      // a pdf.js source text would read 0 source links and silently CLEAR a real dropped-link
+      // warning the primary pass had raised — the two-lane drift this audit keeps finding.
+      let _srcCounts = null;
+      try { const _n = (typeof window !== 'undefined') ? window.__alloSourceLinkCount : null; if (Number.isFinite(_n) && _n > 0) _srcCounts = { links: _n }; } catch (_) {}
+      try { out.structuralNotes = _computeStructuralFidelityNotes(sourceText, html, _srcCounts) || []; } catch (_) { out.structuralNotes = []; }
       out.fidelityNotes = (out.structuralNotes || []).slice();
       if (out.placementWarn) out.fidelityNotes.push({ kind: 'placement', msg: out.placementWarn });
       if (out.numericWarn) out.fidelityNotes.push({ kind: 'numeric', msg: out.numericWarn });
@@ -5866,20 +5920,26 @@ var createDocPipeline = function(deps) {
     //     fixed, permanently suppressing the success toast.
     // The fresh audits were already in hand (_freshAxe/_freshEa) and simply were not consulted. This
     // is the same predicate the two view lanes use, so all three agree.
-    // DELIBERATELY ONE-WAY. Fresh evidence can only ADD the warning, never clear it.
-    //   * The under-warning half is a safety defect and is fixed here: a round that introduces a
-    //     confirmed critical now raises the flag regardless of what the previous round concluded.
-    //   * The over-warning half (a stale 'accessibility' reason surviving after the criticals are
-    //     fixed) is left alone ON PURPOSE. Clearing an expert-review warning from an automated
-    //     signal is a product decision about how much evidence is enough to tell a teacher a
-    //     document no longer needs human review — Aaron's call, not a mechanical fix. Making it
-    //     one-way also keeps the frozen-reference parity suite meaningful.
+    // TWO-WAY, gated on evidence (Aaron, 2026-07-26). The predicate below is the SAME one the main
+    // pipeline uses to raise the flag in the first place (~24622: axe criticals, Equal Access
+    // confirmed failures, or a genuinely rough score), so the evidence that can raise it is exactly
+    // the evidence that can clear it — the alternative was a document that had been fully fixed
+    // still telling the teacher it needed a human, forever.
+    //   * raising  — a round that introduces a confirmed critical flags it regardless of what the
+    //     previous round concluded (the under-warning safety defect);
+    //   * clearing — ONLY when this round actually produced a scored deterministic audit. A missing
+    //     or errored audit is not evidence of a clean document, so with no fresh audit in hand the
+    //     inherited warning stands. `_scored` already rejects empty/error audit objects, so a
+    //     crashed axe run cannot masquerade as "no criticals found".
     const _freshAccessibilityReview = !!(
       (_freshAxe && Array.isArray(_freshAxe.critical) && _freshAxe.critical.length > 0)
       || (_freshEa && Number.isFinite(_freshEa.failViolations) && _freshEa.failViolations > 0)
       || (Number.isFinite(afterScore) && afterScore < 50)
     );
-    const _baseAccessibilityReview = _inheritedAccessibilityReview || _freshAccessibilityReview;
+    const _haveFreshAccessibilityEvidence = !!(_freshAxe || _freshEa);
+    const _baseAccessibilityReview = _haveFreshAccessibilityEvidence
+      ? _freshAccessibilityReview
+      : (_inheritedAccessibilityReview || _freshAccessibilityReview);
     const _freshContentFidelityReview = !!_nextFidelityLimited;
     const _expertBaseReason = _baseAccessibilityReview
       ? (_freshContentFidelityReview ? 'both' : 'accessibility')
@@ -9548,9 +9608,25 @@ var createDocPipeline = function(deps) {
       // denominator below uses non-blank page count so one broken page doesn't
       // trip the isScanned heuristic on a 20-page document.
       const pageErrors = [];
+      let _rtlOrderLogged = false; // H12: announce the direction repair ONCE, not per page
+      // M12 (audit 2026-07-26): the lost-hyperlink fidelity net counted markdown `[text](url)` in
+      // the source, which this extractor NEVER produces — it joins raw pdf.js text items. So the
+      // net read 0 source links on every born-digital PDF and could not fire, no matter how many
+      // hyperlinks the remediation dropped. A PDF's links are annotations, not text: ask for them
+      // directly and give the net a baseline that actually exists for this input.
+      let _srcLinkAnnotations = 0;
       for (let p = 1; p <= pdf.numPages; p++) {
         try {
           const page = await _withTimeout(pdf.getPage(p), 30000, 'getPage (text layer) p' + p);
+          try {
+            const _annots = await _withTimeout(page.getAnnotations(), 15000, 'getAnnotations (text layer) p' + p);
+            for (let ai = 0; ai < (_annots || []).length; ai++) {
+              const _a = _annots[ai];
+              // A Link annotation with no destination at all is decorative chrome, not a link the
+              // output owes an <a> for.
+              if (_a && _a.subtype === 'Link' && (_a.url || _a.unsafeUrl || _a.dest || _a.action)) _srcLinkAnnotations++;
+            }
+          } catch (_) { /* annotations are a bonus signal — never fail a page over them */ }
           const tc = await _withTimeout(page.getTextContent(), 30000, 'getTextContent (text layer) p' + p);
           // Column-aware reading order (H-5 repair, 2026-07-01). _alloOrderTextItems detects a
           // high-confidence column gutter and reads column-by-column; on ANY ambiguity (single
@@ -9561,6 +9637,9 @@ var createDocPipeline = function(deps) {
           const _ordered = _alloOrderTextItems(tc.items || [], {});
           const items = _ordered.items;
           if (_ordered.applied) { try { warnLog('[PDF Det] p' + p + ': multi-column layout detected (' + _ordered.columns + ' columns) — reading order repaired column-by-column'); } catch (_) {} }
+          // H12: a reversed RTL line reads as perfect fidelity to every net in the pipeline
+          // (they are all count/set based), so the only way anyone finds out is this line.
+          if (_ordered.rtl && !_rtlOrderLogged) { _rtlOrderLogged = true; try { warnLog('[PDF Det] right-to-left script detected — reading each line right-to-left (logical order)'); } catch (_) {} }
           const pageText = items.map(i => i.str || '').join(' ').replace(/\s+/g, ' ').trim();
           pages.push({ pageNum: p, text: pageText, columns: _ordered.applied ? _ordered.columns : 1 });
         } catch (pageErr) {
@@ -9570,6 +9649,10 @@ var createDocPipeline = function(deps) {
           try { warnLog('[PDF Det] page ' + p + ' failed (' + (pdf.numPages - 1) + ' other pages still attempted): ' + _pmsg); } catch (_) {}
         }
       }
+      // M12: park the real source-link count for the structural fidelity net. Same idiom as H14 —
+      // the net runs thousands of lines away, long after this function has returned.
+      try { if (typeof window !== 'undefined') window.__alloSourceLinkCount = _srcLinkAnnotations; } catch (_) {}
+      if (_srcLinkAnnotations > 0) { try { warnLog('[PDF Det] ' + _srcLinkAnnotations + ' hyperlink annotation(s) in the source — the output is expected to carry them'); } catch (_) {} }
       const fullText = pages.map(p => p.text).filter(Boolean).join('\n\n');
       // Denominator fix: average against pages that ACTUALLY produced text. A
       // 20-page doc where 1 page failed and 19 produced text shouldn't get
@@ -10906,7 +10989,13 @@ var createDocPipeline = function(deps) {
     throw lastErr || new Error('Tesseract.recognize failed (all attempts exhausted)');
   };
 
-  const extractPdfTextTesseract = async (base64, onProgress, lang) => {
+  // M14 (audit 2026-07-26): pageRange is [start, end], 1-based inclusive, either element optional.
+  // Without it this OCR'd the WHOLE document and the caller threw the out-of-scope pages away —
+  // 200 pages rendered and recognised for a 20-page job, a progress label reading "page 137/200"
+  // during it, and (worse) every out-of-range render failure landing in window.__lastOcrPageErrors,
+  // where it named untouched pages in the Stage-1 banner and permanently blocked OCR-evidence
+  // banking, since _ocrEvidenceCompatible refuses any record carrying page errors.
+  const extractPdfTextTesseract = async (base64, onProgress, lang, pageRange) => {
     let pdf = null; // (2026-06-20) freed in finally to release the pdf.js worker doc (batch memory leak)
     try {
       await ensurePdfJsLoaded();
@@ -10927,17 +11016,24 @@ var createDocPipeline = function(deps) {
       // render at all. Vision OCR runs alongside this pass and remains the content fallback.
       let _renderFailureStreak = 0;
       let _renderCircuitOpen = false;
-      for (let p = 1; p <= pdf.numPages; p++) {
+      // M14: OCR only the selected pages. Clamped to the real document bounds, so a teacher who
+      // typed "1-500" on a 30-page file still gets 30 pages rather than 470 render failures.
+      const _ocrFirstPage = Math.max(1, Math.min(pdf.numPages, (pageRange && pageRange[0]) || 1));
+      const _ocrLastPage = Math.max(_ocrFirstPage, Math.min(pdf.numPages, (pageRange && pageRange[1]) || pdf.numPages));
+      if (_ocrFirstPage > 1 || _ocrLastPage < pdf.numPages) {
+        warnLog(`[Tesseract] OCR limited to pages ${_ocrFirstPage}-${_ocrLastPage} of ${pdf.numPages} (selected range)`);
+      }
+      for (let p = _ocrFirstPage; p <= _ocrLastPage; p++) {
         let canvas = null, renderScale = 2.0, renderViewport = null; // hoisted so the finally can free it on BOTH success and failure
         if (_renderCircuitOpen) {
           const _skipMsg = 'Tesseract render circuit open after repeated page-render timeouts; Vision OCR companion remains active';
           pages.push({ pageNum: p, text: '', words: null, error: _skipMsg });
           pageErrors.push({ pageNum: p, error: _skipMsg });
-          if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'vision-fallback' });
+          if (typeof onProgress === 'function') onProgress({ page: p, total: _ocrLastPage, phase: 'vision-fallback' });
           continue;
         }
         try {
-          if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'render' });
+          if (typeof onProgress === 'function') onProgress({ page: p, total: _ocrLastPage, phase: 'render' });
           const page = await _withTimeout(pdf.getPage(p), 30000, 'pdf.getPage (OCR p' + p + ')'); // bound getPage too — pdf.js worker can stall
           // Render at 2x for OCR accuracy, bounded so a hung/slow render can't stall the pipeline.
           // #4 fix (2026-06-17): the 45s timeout here used to SILENTLY BLANK a slow/large page (no
@@ -10975,7 +11071,7 @@ var createDocPipeline = function(deps) {
             }
           }
           _renderFailureStreak = 0; // this page rendered; restore the full quality ladder next page
-          if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'ocr' });
+          if (typeof onProgress === 'function') onProgress({ page: p, total: _ocrLastPage, phase: 'ocr' });
           // Bounded, self-healing OCR (see _ocrRecognize): timeout per attempt + transient
           // retry + English fallback. v5 returns ONLY text by default; {blocks:true} opts into
           // the word hierarchy that places each word's invisible glyphs at its real position.
@@ -21153,6 +21249,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__lastGroundTruthPageMap = null;
       window.__lastGroundTruthMethod = null;
       window.__lastOcrPageErrors = []; // audit #17: per-page extraction failures, fresh each run
+      window.__alloSourceLinkCount = 0; // M12: source hyperlink annotations, fresh each run (a prior document's count must never become this one's baseline)
       window.__alloImagePairingUncertain = null; // H14: image/caption pairing doubt, fresh each run
       window.__lastOcrLowConfidencePages = []; // B5 (2026-06-20): per-page low OCR confidence, fresh each run
       // Cross-document guard (review F1/F5, 2026-07-01): stamp this run's OCR globals with
@@ -21263,10 +21360,15 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // Determine chunk strategy based on page count
       // If audit didn't return pageCount, estimate from base64 size (rough: ~3KB base64 per page)
       let effectivePageCount = pageCount;
+      // M13 (audit 2026-07-26): remember that this number is a GUESS. It survives all the way to
+      // the Vision fan-out whenever pdf.js could not open the file at all, and ~3KB/page is two
+      // orders of magnitude off for a scanned page — see the clamp below.
+      let _pageCountIsSizeEstimate = false;
       if (effectivePageCount <= 1 && _base64) {
         const estimatedFromSize = Math.max(1, Math.round(_base64.length * 0.75 / 1024 / 3));
         if (estimatedFromSize > 3) {
           effectivePageCount = estimatedFromSize;
+          _pageCountIsSizeEstimate = true;
           warnLog(`[PDF Fix] pageCount unknown — estimated ${effectivePageCount} pages from ${Math.round(_base64.length * 0.75 / 1024)}KB file size`);
         }
       }
@@ -21274,6 +21376,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // ── Step 0 (S2-extracted → _runExtractionPhase) ──
       const _extOut = await _runExtractionPhase({ base64: _base64, fileName: _fileName, pageRange: _pageRange, forceOcrPages: _forceOcrPages, forceFullOcr: _forceFullOcr, effectivePageCount, updateProgress });
       extractedText = _extOut.extractedText;                 // '' when the doc is scanned → the OCR path below runs
+      if (_extOut.effectivePageCount !== effectivePageCount) _pageCountIsSizeEstimate = false; // pdf.js adopted a real count (M13)
       effectivePageCount = _extOut.effectivePageCount;       // real pdf.js page count when the text branch adopted it
       _forceFullOcr = _extOut.forceFullOcr;                  // garbled-layer detector can force the OCR path
       _garbledFallbackText = _extOut.garbledFallbackText;    // discarded layer kept as the junk-ratio fallback
@@ -21308,6 +21411,48 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           warnLog('[OCR cache] Exact-byte hit - reused ' + extractedText.length + ' chars / ' + effectivePageCount + ' pages; skipped language detection, Tesseract, and Vision extraction calls');
         }
       }
+
+      // ── M13: never fan out Vision against a guessed page count ──────────────────────────────
+      // When pdf.js cannot open the file — an encrypted or corrupt PDF, where
+      // extractPdfTextDeterministic returns pageCount:0 WITH an error and the 0-page abort is
+      // deliberately skipped so Vision can still rescue the document — effectivePageCount is
+      // still the ~3KB/page size estimate. An 8 MB scanned IEP estimates ~2700 pages, which
+      // becomes ~1366 chunks; every one of them is out of range, so each throws 'slice out of
+      // range' and falls back to re-uploading the whole 8 MB file. That is tens of minutes of a
+      // teacher's quota spent on a document with a few dozen real pages, and any out-of-range
+      // chunk that DOES return text contributes hallucinated pseudo-pages to the ground truth.
+      //
+      // pdf-lib opens plenty of files pdf.js refuses (it is far more permissive, and
+      // ignoreEncryption reads owner-password documents), so ask it for the true count first.
+      // The loaded document is kept for the slice source below rather than parsed twice.
+      let _pageCountProbeDoc = null;
+      let _probedPageCount = 0;
+      const M13_MAX_ESTIMATED_PAGES = 200;
+      if (_pageCountIsSizeEstimate && _base64) {
+        try {
+          let _probeLib = (typeof window !== 'undefined' && window.PDFLib) || null;
+          if (!_probeLib || !_probeLib.PDFDocument) {
+            try { await ensurePdfLibLoaded(); } catch (_) {}
+            _probeLib = (typeof window !== 'undefined' && window.PDFLib) || null;
+          }
+          if (_probeLib && _probeLib.PDFDocument) {
+            _pageCountProbeDoc = await _probeLib.PDFDocument.load(_b64ToBytes(_base64), { ignoreEncryption: true, updateMetadata: false });
+            _probedPageCount = _pageCountProbeDoc.getPageCount();
+          }
+        } catch (e) {
+          // Both readers refused the file. The bounded estimate is then the only guard left.
+          warnLog('[PDF Fix] page-count probe failed (' + ((e && e.message) || e) + ') — falling back to a capped size estimate');
+          _pageCountProbeDoc = null;
+        }
+      }
+      const _pageCountVerdict = _alloResolveExtractionPageCount(effectivePageCount, _pageCountIsSizeEstimate, _probedPageCount, M13_MAX_ESTIMATED_PAGES);
+      if (_pageCountVerdict.pageCount !== effectivePageCount) {
+        warnLog(_pageCountVerdict.source === 'probed'
+          ? `[PDF Fix] size estimate ${effectivePageCount} pages replaced with the real page count ${_pageCountVerdict.pageCount} (pdf.js could not open this file; pdf-lib could)`
+          : `[PDF Fix] page-count estimate ${effectivePageCount} is unverifiable (neither pdf.js nor pdf-lib could open this file) — capping the extraction fan-out at ${_pageCountVerdict.pageCount} pages`);
+      }
+      effectivePageCount = _pageCountVerdict.pageCount;
+      _pageCountIsSizeEstimate = _pageCountVerdict.isEstimate;
 
       const PAGES_PER_CHUNK = 2; // Tight: 2 pages per chunk — safely fits in 8192 output tokens
       const numChunks = Math.max(1, Math.ceil(effectivePageCount / PAGES_PER_CHUNK));
@@ -21429,7 +21574,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               try { await ensurePdfLibLoaded(); } catch (_) {}
               _NSlib = (typeof window !== 'undefined' && window.PDFLib) || null;
             }
-            if (_NSlib && _NSlib.PDFDocument) {
+            if (_pageCountProbeDoc) {
+              _sliceSrcDoc = _pageCountProbeDoc; // M13: already parsed for the page-count probe
+            } else if (_NSlib && _NSlib.PDFDocument) {
               try { _sliceSrcDoc = await _NSlib.PDFDocument.load(_b64ToBytes(_base64), { ignoreEncryption: true, updateMetadata: false }); }
               catch (e) { warnLog('[Vision] slice-source load failed — falling back to full-doc uploads: ' + (e && e.message)); _sliceSrcDoc = null; }
             } else {
@@ -21594,7 +21741,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
         const _tesseractExtract = async () => extractPdfTextTesseract(_base64, (ev) => {
           updateProgress(1, `Tesseract OCR page ${ev.page}/${ev.total} (${ev.phase})…`);
-        }, _ocrTessLang);
+        }, _ocrTessLang, _pageRange); // M14: OCR the selected range only, like Vision already does
 
         let tessResult = { fullText: '', pages: [] };
         let visionResult = { fullText: '', pages: [] };
@@ -21629,6 +21776,20 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const _rs = Math.max(1, _pageRange[0] || 1);
           const _re = _pageRange[1] || Infinity;
           _tessPagesForRec = _tessPagesForRec.filter(p => p && typeof p.pageNum === 'number' && p.pageNum >= _rs && p.pageNum <= _re);
+          // M14: the SAME filter has to reach the errors. It used to apply to pages only, so a
+          // failure on an out-of-scope page still reached window.__lastOcrPageErrors — naming
+          // pages this run never touched in the Stage-1 banner, and (because
+          // _ocrEvidenceCompatible rejects any record with page errors) permanently blocking the
+          // session from banking its OCR evidence, forcing a full re-OCR on every retry. Belt and
+          // braces now that the loop itself is bounded: an engine-level synthesized record, or a
+          // stale result from before the range narrowed, can still carry out-of-range entries.
+          if (Array.isArray(tessResult.pageErrors) && tessResult.pageErrors.length) {
+            const _keptErrors = tessResult.pageErrors.filter(e => !(e && typeof e.pageNum === 'number') || (e.pageNum >= _rs && e.pageNum <= _re));
+            if (_keptErrors.length !== tessResult.pageErrors.length) {
+              warnLog(`[OCR reconcile] dropped ${tessResult.pageErrors.length - _keptErrors.length} Tesseract page error(s) outside the selected range ${_rs}-${_re === Infinity ? 'end' : _re}`);
+              tessResult = Object.assign({}, tessResult, { pageErrors: _keptErrors });
+            }
+          }
         }
         const rec = reconcileOcrPages(_tessPagesForRec, visionResult.pages || []);
         // #F (2026-07-05): remember the running-head/folio numbers the page-edge strip detected, so the
@@ -24452,7 +24613,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // fidelity concern (review banner) + the diagnostics log, never block.
       let _structuralFidelityNotes = [];
       try {
-        _structuralFidelityNotes = _computeStructuralFidelityNotes((extractedText || '').replace(_ALLO_MARKER_RE, ''), accessibleHtml);
+        // M12: pdf.js Link annotations counted at extraction time, when the deterministic path
+        // produces no markdown for the link net to count. Null on the OCR path, where the Vision
+        // prompt does ask for `[text](url)` and the markdown count is the right baseline.
+        let _srcStructCounts = null;
+        try { const _lc = (typeof window !== 'undefined') ? window.__alloSourceLinkCount : null; if (Number.isFinite(_lc) && _lc > 0) _srcStructCounts = { links: _lc }; } catch (_) {}
+        _structuralFidelityNotes = _computeStructuralFidelityNotes((extractedText || '').replace(_ALLO_MARKER_RE, ''), accessibleHtml, _srcStructCounts);
         // H14 (audit 2026-07-26): the image/caption pairing check runs back in Step 2, long before
         // this array exists, so it parks its finding on a run-scoped signal. Consume it here — a
         // picture sitting under the wrong caption is a content-fidelity loss like any other, and it
@@ -38330,6 +38496,8 @@ window.AlloModules.createDocPipeline.altQuality = _alloAltQuality; // static: al
 window.AlloModules.createDocPipeline.scanAltQuality = _alloScanAltQuality; // static: whole-document alt scan (DOMParser envs only)
 window.AlloModules.createDocPipeline.scanActiveContent = _alloScanActiveContent; // static: A1 Document Safety walk (needs a pdf-lib doc — exercised by the Playwright corpus)
 window.AlloModules.createDocPipeline.latexToSpeakable = _alloLatexToSpeakable; // static: LaTeX→spoken English (2026-07-02, Item E), unit-tested
+window.AlloModules.createDocPipeline.orderTextItems = _alloOrderTextItems; // static: H12 (2026-07-26) — column + RTL reading-order repair; pure, so the direction fix is unit-testable without pdf.js
+window.AlloModules.createDocPipeline.resolveExtractionPageCount = _alloResolveExtractionPageCount; // static: M13 (2026-07-26) — guessed-page-count precedence + cap for the Vision fan-out
 window.AlloModules.createDocPipeline.cleanScannedOcrText = _cleanScannedOcrText; // static: P2-a folio-strip + hyphen-rejoin (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.stripRestoreMarkdown = _stripRestoreMarkdown; // static: P2-b restore markdown-strip (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.stripPageEdgeArtifacts = _stripPageEdgeArtifacts; // static: #F page-edge running-head/folio strip (2026-07-05), unit-tested

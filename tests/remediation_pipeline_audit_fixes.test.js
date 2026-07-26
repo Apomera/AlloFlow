@@ -423,14 +423,267 @@ describe('H6/H7 — round-scoped verdicts', () => {
     expect(dp).toContain("const _aiVerificationIncomplete = !/^complete(?:-with-review)?$/.test(String(_verificationCoverage.ai || ''));");
   });
 
-  it('H6: fresh axe/EA evidence can RAISE the accessibility review flag', () => {
-    expect(dp).toContain('const _freshAccessibilityReview = !!(');
-    expect(dp).toContain('const _baseAccessibilityReview = _inheritedAccessibilityReview || _freshAccessibilityReview;');
+  // H6 is TWO-WAY as of 2026-07-26 (Aaron's call): the round's own evidence both raises and
+  // clears the accessibility half. The full truth table is pinned behaviourally against the live
+  // reducer in tests/finalize_round_reducer.test.js. What is pinned HERE is the one invariant a
+  // refactor could quietly drop without failing any of those cases:
+  it('H6: clearing is gated on evidence actually existing, not on its absence', () => {
+    // Without this gate, `_freshAccessibilityReview` is false whenever no audit ran at all — so a
+    // round that gathered nothing (or whose axe run crashed) would read as "audited clean" and
+    // retire a real warning. `_scored` already rejects error objects; this keeps null from
+    // counting too.
+    expect(dp).toContain('const _haveFreshAccessibilityEvidence = !!(_freshAxe || _freshEa);');
+    expect(dp).toMatch(/_baseAccessibilityReview = _haveFreshAccessibilityEvidence\s*\n?\s*\?\s*_freshAccessibilityReview/);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// H12 — RTL documents lost intra-line reading order in the deterministic path.
+//
+// pdf.js emits a line's text items in LOGICAL order; for RTL script that runs right-to-left,
+// i.e. DESCENDING x. The within-line sort was unconditionally ascending-x, so every multi-run
+// line of an Arabic/Hebrew/Farsi/Urdu handout came out with its phrases reversed. The RTL
+// detector existed but sat BELOW the single-column early return, so on a one-column handout —
+// the common case — it never even ran.
+//
+// Nothing downstream could catch this: the character count, _numericFidelityLosses and the
+// autoRestore word-set comparison are count/set based, so a pure reordering scores 100%
+// fidelity, and readingOrderSequenceRatio compares two texts that both came through this same
+// helper. Hence a behavioural pin here rather than a source match.
+//
+// Non-Latin text is written as \u escapes on purpose: this repo has a documented history of
+// shell/tooling round-trips silently mangling literal non-ASCII into false-negative tests.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('H12 — right-to-left lines are read right-to-left', () => {
+  let orderTextItems;
+
+  // Three text runs on ONE baseline. Visually left-to-right they sit at x=100, 250, 400;
+  // for RTL the logically-FIRST run is the RIGHTMOST one.
+  const RUN_RIGHT = '\u0627\u0644\u0645\u062F\u0631\u0633\u0629\u0627\u0644\u0645'; // logical 1st
+  const RUN_MID = '\u0648\u0627\u0644\u0637\u0627\u0644\u0628\u0627\u062A\u0648';   // logical 2nd
+  const RUN_LEFT = '\u0641\u064A\u0627\u0644\u0635\u0641\u0627\u0644\u062B\u0627';  // logical 3rd
+
+  const item = (str, x, y) => ({ str, width: 40, transform: [10, 0, 0, 10, x, y] });
+  const order = (items, opts) => orderTextItems(items, opts || {}).items.map((i) => i.str);
+
+  beforeAll(() => {
+    loadAlloModule('doc_pipeline_module.js');
+    orderTextItems = window.AlloModules.createDocPipeline.orderTextItems;
   });
 
-  it('H6: the flag is strictly one-way — fresh evidence must not CLEAR an inherited warning', () => {
-    // Clearing an expert-review warning from an automated signal is a product decision, not a
-    // mechanical fix. A `? :` here instead of `||` would silently make it two-way.
-    expect(dp).not.toMatch(/_baseAccessibilityReview = _hasFreshDeterministicEvidence\s*\?/);
+  it('exposes the ordering helper (it is pure, so it is testable without pdf.js)', () => {
+    expect(typeof orderTextItems).toBe('function');
+  });
+
+  it('a single-column Arabic line keeps its phrases in logical order', () => {
+    // Deliberately fed in scrambled input order: the SORT is what is under test.
+    const items = [item(RUN_LEFT, 100, 700), item(RUN_RIGHT, 400, 700), item(RUN_MID, 250, 700)];
+    expect(order(items)).toEqual([RUN_RIGHT, RUN_MID, RUN_LEFT]);
+  });
+
+  it('reports that it applied right-to-left ordering (the only signal any net can see)', () => {
+    const items = [item(RUN_LEFT, 100, 700), item(RUN_RIGHT, 400, 700), item(RUN_MID, 250, 700)];
+    expect(orderTextItems(items, {}).rtl).toBe(true);
+  });
+
+  it('an English line is unaffected — still left-to-right', () => {
+    const items = [item('third', 400, 700), item('first', 100, 700), item('second', 250, 700)];
+    expect(order(items)).toEqual(['first', 'second', 'third']);
+    expect(orderTextItems(items, {}).rtl).toBe(false);
+  });
+
+  it('an English worksheet with a few Arabic terms sprinkled in stays left-to-right', () => {
+    // The detector requires RTL letters to OUTNUMBER Latin ones, so a vocabulary handout that
+    // glosses a couple of words is not treated as an RTL document.
+    const items = [
+      item('The word for school is', 100, 700),
+      item('\u0627\u0644\u0645\u062F\u0631\u0633\u0629', 300, 700),
+      item('and the word for class is', 100, 680),
+      item('\u0627\u0644\u0635\u0641', 300, 680),
+    ];
+    expect(orderTextItems(items, {}).rtl).toBe(false);
+    expect(order(items)[0]).toBe('The word for school is');
+  });
+
+  it('still sorts lines top-to-bottom — direction applies WITHIN a line, not between lines', () => {
+    const items = [
+      item(RUN_LEFT, 100, 680), item(RUN_RIGHT, 400, 680),   // second line
+      item(RUN_MID, 250, 700), item(RUN_RIGHT, 400, 700),    // first line (higher y)
+    ];
+    expect(order(items)).toEqual([RUN_RIGHT, RUN_MID, RUN_RIGHT, RUN_LEFT]);
+  });
+
+  it('an explicit opts.rtl still wins over detection', () => {
+    const items = [item('third', 400, 700), item('first', 100, 700), item('second', 250, 700)];
+    expect(order(items, { rtl: true })).toEqual(['third', 'second', 'first']);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M13 — the Vision extraction fan-out was sized from a guess with no upper bound.
+//
+// When pdf.js cannot open a file (encrypted, corrupt) the pipeline keeps a "~3KB base64 per
+// page" estimate — two orders of magnitude off for a scanned page. An 8 MB scanned IEP
+// estimated ~2700 pages, became ~1366 Vision chunks, and every one of them was out of range:
+// each threw 'slice out of range' and fell back to re-uploading the whole 8 MB file.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('M13 — a guessed page count cannot drive an unbounded extraction fan-out', () => {
+  let resolve_;
+  beforeAll(() => {
+    loadAlloModule('doc_pipeline_module.js');
+    resolve_ = window.AlloModules.createDocPipeline.resolveExtractionPageCount;
+  });
+
+  it('a KNOWN page count is never second-guessed', () => {
+    expect(resolve_(2731, false, 0, 200)).toEqual({ pageCount: 2731, isEstimate: false, source: 'known' });
+  });
+
+  it('a reader that could open the file beats the size estimate', () => {
+    // pdf-lib opens plenty of files pdf.js refuses — it is more permissive, and ignoreEncryption
+    // reads owner-password documents. That real count wins outright.
+    expect(resolve_(2731, true, 34, 200)).toEqual({ pageCount: 34, isEstimate: false, source: 'probed' });
+  });
+
+  it('a probed count LARGER than the cap is still honoured — the cap only bounds guesses', () => {
+    expect(resolve_(2731, true, 640, 200)).toEqual({ pageCount: 640, isEstimate: false, source: 'probed' });
+  });
+
+  it('an unverifiable estimate is capped', () => {
+    // The 8 MB encrypted-IEP case: nothing could open the file, so the fan-out is bounded.
+    expect(resolve_(2731, true, 0, 200)).toEqual({ pageCount: 200, isEstimate: true, source: 'capped' });
+  });
+
+  it('an estimate under the cap passes through, still flagged as an estimate', () => {
+    expect(resolve_(40, true, 0, 200)).toEqual({ pageCount: 40, isEstimate: true, source: 'estimated' });
+  });
+
+  it('the pipeline actually applies the verdict before sizing the chunk fan-out', () => {
+    // Ordering matters more than the numbers: computing numChunks from the raw estimate and
+    // clamping afterwards would fix nothing.
+    const iVerdict = dp.indexOf('const _pageCountVerdict = _alloResolveExtractionPageCount(');
+    const iChunks = dp.indexOf('const numChunks = Math.max(1, Math.ceil(effectivePageCount / PAGES_PER_CHUNK));');
+    expect(iVerdict).toBeGreaterThan(0);
+    expect(iChunks).toBeGreaterThan(iVerdict);
+  });
+
+  it('the probe document is reused as the slice source rather than parsing the file twice', () => {
+    expect(dp).toContain('_sliceSrcDoc = _pageCountProbeDoc;');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M14 — Tesseract ignored the page range.
+//
+// A teacher remediating pages 1-20 of a 200-page scanned textbook — the exact workflow the
+// page-range feature exists for — had all 200 pages rendered and recognised, watched a progress
+// label counting to 200, and then had 180 of them discarded. Worse, an out-of-scope page that
+// failed to render still reached window.__lastOcrPageErrors, where it named untouched pages in
+// the Stage-1 banner and (because _ocrEvidenceCompatible rejects any record carrying page
+// errors) permanently blocked OCR-evidence banking, forcing a full re-OCR on every retry.
+//
+// These pins are STRUCTURAL, not behavioural: the extractor needs pdf.js, a canvas and the
+// Tesseract worker in the loop, so there is no honest way to exercise it in jsdom. The ordering
+// assertion is the one that would actually catch a regression.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('M14 — Tesseract OCRs only the selected pages', () => {
+  it('the extractor accepts a page range', () => {
+    expect(dp).toContain('const extractPdfTextTesseract = async (base64, onProgress, lang, pageRange) => {');
+  });
+
+  it('the render loop is bounded by it, clamped to the real document length', () => {
+    // Clamping matters as much as the bound: a teacher who types "1-500" on a 30-page file must
+    // get 30 pages, not 470 render failures.
+    expect(dp).toContain('const _ocrFirstPage = Math.max(1, Math.min(pdf.numPages, (pageRange && pageRange[0]) || 1));');
+    expect(dp).toContain('const _ocrLastPage = Math.max(_ocrFirstPage, Math.min(pdf.numPages, (pageRange && pageRange[1]) || pdf.numPages));');
+    expect(dp).toContain('for (let p = _ocrFirstPage; p <= _ocrLastPage; p++) {');
+    expect(dp).not.toContain('for (let p = 1; p <= pdf.numPages; p++) {\n        let canvas = null');
+  });
+
+  it('progress counts against the range, not the document length', () => {
+    // "Tesseract OCR page 137/200" during a 20-page job is a lie about what the run is doing.
+    expect(dp).not.toContain("onProgress({ page: p, total: pdf.numPages, phase:");
+  });
+
+  it('the caller passes the range through', () => {
+    expect(dp).toMatch(/\}, _ocrTessLang, _pageRange\);/);
+  });
+
+  it('out-of-range page errors are dropped BEFORE they reach the banner and the evidence cache', () => {
+    expect(dp).toContain('const _keptErrors = tessResult.pageErrors.filter(');
+    const iFilter = dp.indexOf('const _keptErrors = tessResult.pageErrors.filter(');
+    const iConsolidate = dp.indexOf('window.__lastOcrPageErrors = _unrecovered;');
+    expect(iFilter).toBeGreaterThan(0);
+    expect(iConsolidate).toBeGreaterThan(iFilter);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M12 — the dropped-hyperlink net measured markdown that pdf.js never produces.
+//
+// _computeStructuralFidelityNotes counted `[text](url)` in the source. The Vision-OCR prompts do
+// ask for that format, so the net worked on scanned input — but the deterministic pdf.js path
+// joins raw text items and emits no markdown at all, so on a born-digital PDF the source link
+// count was always 0 and the net could not fire however many hyperlinks the remediation dropped.
+// A PDF's links are annotations, not text.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('M12 — the link net measures a baseline that exists for the input', () => {
+  let notes_;
+  beforeAll(() => {
+    loadAlloModule('doc_pipeline_module.js');
+    notes_ = window.AlloModules.createDocPipeline({
+      callGemini: async () => 'OK', callGeminiVision: async () => '{}', callImagen: async () => null,
+      addToast: () => {}, t: (k) => k, isRtlLang: () => false,
+      updateExportPreview: () => {}, getDefaultTitle: () => 'Document', state: {},
+    }).computeStructuralFidelityNotes;
+  });
+
+  // What extractPdfTextDeterministic really produces: raw text items joined with spaces.
+  const PDFJS_TEXT = 'Homework Portal Grades Attendance Library Catalog Family Handbook '
+    + 'Visit the portal for assignments. Check attendance weekly. Browse the catalog. Read the handbook.';
+  const HTML_NO_LINKS = '<main><h1>Resources</h1><p>' + PDFJS_TEXT + '</p></main>';
+
+  it('with NO measured baseline, pdf.js text yields no link finding — the old, inert behaviour', () => {
+    expect((notes_(PDFJS_TEXT, HTML_NO_LINKS) || []).some((n) => n.kind === 'links')).toBe(false);
+  });
+
+  it('with a measured annotation count, a document that dropped every link is flagged', () => {
+    const found = (notes_(PDFJS_TEXT, HTML_NO_LINKS, { links: 4 }) || []).filter((n) => n.kind === 'links');
+    expect(found).toHaveLength(1);
+    expect(found[0].msg).toContain('4');
+  });
+
+  it('links that SURVIVED are not flagged', () => {
+    const html = '<main>' + [1, 2, 3, 4].map((i) => `<p><a href="https://example.org/${i}">Link ${i}</a></p>`).join('') + '</main>';
+    expect((notes_(PDFJS_TEXT, html, { links: 4 }) || []).some((n) => n.kind === 'links')).toBe(false);
+  });
+
+  it('one lost link out of four stays under the conservative slack — the net does not cry wolf', () => {
+    const html = '<main>' + [1, 2, 3].map((i) => `<p><a href="https://example.org/${i}">Link ${i}</a></p>`).join('') + '</main>';
+    expect((notes_(PDFJS_TEXT, html, { links: 4 }) || []).some((n) => n.kind === 'links')).toBe(false);
+  });
+
+  it('the markdown fallback still works for OCR input, which really is markdown', () => {
+    const md = 'See [the portal](https://example.org/a) and [the catalog](https://example.org/b) and [the handbook](https://example.org/c).';
+    expect((notes_(md, '<main><p>See the portal and the catalog and the handbook.</p></main>') || []).some((n) => n.kind === 'links')).toBe(true);
+  });
+
+  it('a measured count of 0 does not suppress the markdown fallback', () => {
+    // A scanned document has no pdf.js annotations, so the count is legitimately 0 there. Zero
+    // must mean "nothing measured", not "measured, and there are none".
+    const md = 'See [a](https://example.org/a) and [b](https://example.org/b) and [c](https://example.org/c).';
+    expect((notes_(md, '<main><p>See a and b and c.</p></main>', { links: 0 }) || []).some((n) => n.kind === 'links')).toBe(true);
+  });
+
+  it('the extractor really does collect Link annotations, and resets the count per run', () => {
+    expect(dp).toContain("if (_a && _a.subtype === 'Link' && (_a.url || _a.unsafeUrl || _a.dest || _a.action)) _srcLinkAnnotations++;");
+    expect(dp).toContain('window.__alloSourceLinkCount = _srcLinkAnnotations;');
+    expect(dp).toContain('window.__alloSourceLinkCount = 0;');
+  });
+
+  it('the re-fix recompute reads the SAME baseline, so it cannot clear a real warning', () => {
+    // 'links' is a recomputable note kind: a recompute that fell back to counting markdown in a
+    // pdf.js source text would read 0 and silently retire the primary pass's finding.
+    const iRecompute = dp.indexOf('out.structuralNotes = _computeStructuralFidelityNotes(sourceText, html, _srcCounts)');
+    expect(iRecompute).toBeGreaterThan(0);
   });
 });

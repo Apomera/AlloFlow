@@ -138,10 +138,26 @@ async function referenceMerge(P, cur, { html, reVerify, rawAxe, rawEa, auditOnly
 // change, not a refactor slip, so it is excluded from the parity comparison and pinned separately
 // in the dedicated test below — parity still covers every other field.
 const M9_DIVERGENT_KEYS = ['_estimatedMinimumScore', '_estimatedScoreBasis', '_finalAuditRetryAvailable'];
+
+// DELIBERATE DIVERGENCE (audit finding H6, 2026-07-26; two-way clearing authorised by Aaron the
+// same day). The frozen reference INHERITS the accessibility half of the expert-review verdict from
+// the previous result forever and never consults this round's audits. That failed both ways: a
+// round that introduced a confirmed critical kept needsExpertReview=false, and a document whose
+// criticals had all been fixed kept telling the teacher it needed a human. The reducer now
+// re-derives the flag from this round's scored evidence using the SAME predicate the main pipeline
+// uses to raise it (doc_pipeline_source.jsx ~24622).
+//
+// These two fields are therefore excluded from parity and covered by the dedicated truth table
+// below instead — which is STRONGER than parity for them, because it asserts real values rather
+// than agreement with an implementation that is now known to be wrong. Every other field still
+// has to match the frozen reference exactly.
+const H6_DIVERGENT_KEYS = ['needsExpertReview', 'expertReviewReason'];
+
 function normalized(result) {
   const c = JSON.parse(JSON.stringify(Object.assign({}, result, { verificationHtmlBinding: undefined })));
   c._bindingPresent = !!result.verificationHtmlBinding;
   for (const k of M9_DIVERGENT_KEYS) delete c[k];
+  for (const k of H6_DIVERGENT_KEYS) delete c[k];
   return c;
 }
 
@@ -252,6 +268,70 @@ describe('finalizeRemediationRound — PARITY with the frozen pre-refactor host 
   it('throws on a missing/unscored aiAudit (callers bail on null re-verification instead of merging)', async () => {
     const P = await livePipeline();
     await expect(P.finalizeRemediationRound(baseCur(), { html: ROUND_HTML, aiAudit: null })).rejects.toThrow(/aiAudit/);
+  });
+});
+
+// ── H6: the expert-review accessibility half, re-derived per round ────────────
+// Replaces parity coverage for needsExpertReview/expertReviewReason (see H6_DIVERGENT_KEYS).
+// `noFidelity` neutralises the content-fidelity half so each case reads the accessibility half
+// alone: an empty sourceText skips the fidelity recompute, so _nextFidelityLimited is just
+// cur.fidelityLimited.
+const noFidelity = { fidelityNotes: [], integrityWarning: null, fidelityLimited: false, sourceText: '' };
+
+describe('H6: fresh evidence re-derives the accessibility half of the expert-review verdict', () => {
+  it('CLEARS a stale accessibility warning when this round audits clean', async () => {
+    const { live } = await bothWays(
+      Object.assign({}, noFidelity, { needsExpertReview: true, expertReviewReason: 'accessibility' }),
+      { rawAxe: AXE(95, 0), rawEa: AXE(92) }
+    );
+    expect(live.needsExpertReview).toBe(false);
+    expect(live.expertReviewReason).toBeNull();
+  });
+
+  it('RAISES on a confirmed axe critical even though the previous round concluded clean', async () => {
+    const { live } = await bothWays(
+      Object.assign({}, noFidelity, { needsExpertReview: false, expertReviewReason: null }),
+      { rawAxe: Object.assign(AXE(95, 1), { critical: [{ id: 'color-contrast' }] }) }
+    );
+    expect(live.needsExpertReview).toBe(true);
+    expect(live.expertReviewReason).toBe('accessibility');
+  });
+
+  it('RAISES on an Equal Access confirmed failure', async () => {
+    const { live } = await bothWays(
+      Object.assign({}, noFidelity, { needsExpertReview: false, expertReviewReason: null }),
+      { rawAxe: AXE(95, 0), rawEa: Object.assign(AXE(90), { failViolations: 2 }) }
+    );
+    expect(live.expertReviewReason).toBe('accessibility');
+  });
+
+  // The safety edge: absence of evidence is not evidence of absence. A round that gathered no
+  // deterministic audit — or whose audit CRASHED — must leave the inherited warning standing,
+  // otherwise a broken axe run would silently retire a real warning.
+  it('with no deterministic audit this round, the inherited warning STANDS', async () => {
+    const { live } = await bothWays(
+      Object.assign({}, noFidelity, { needsExpertReview: true, expertReviewReason: 'accessibility' }),
+      { rawAxe: null, rawEa: null }
+    );
+    expect(live.expertReviewReason).toBe('accessibility');
+  });
+
+  it('a CRASHED axe audit does not count as "no criticals found"', async () => {
+    const { live } = await bothWays(
+      Object.assign({}, noFidelity, { needsExpertReview: true, expertReviewReason: 'accessibility' }),
+      { rawAxe: { error: 'boom' }, rawEa: null }
+    );
+    expect(live.axeAudit).toBeNull();
+    expect(live.expertReviewReason).toBe('accessibility');
+  });
+
+  it('clearing the accessibility half leaves an independent content-fidelity concern intact', async () => {
+    const { live } = await bothWays(
+      Object.assign({}, noFidelity, { needsExpertReview: true, expertReviewReason: 'both', fidelityLimited: true }),
+      { rawAxe: AXE(95, 0), rawEa: AXE(92) }
+    );
+    expect(live.needsExpertReview).toBe(true);
+    expect(live.expertReviewReason).toBe('content-fidelity');
   });
 });
 
