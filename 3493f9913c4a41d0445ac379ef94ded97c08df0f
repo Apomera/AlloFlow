@@ -1,0 +1,1 @@
+Subject line has a stray leading '@' and a trailing '@' line: a PowerShell here-string was passed to bash. Intended subject: 'feat(stem): Weather Systems - atmospheric map scene + validated chart palettes'. Commit content is correct and complete; not amended because 78 commits from a concurrent session sit on top of it.
