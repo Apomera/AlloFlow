@@ -594,4 +594,193 @@ describe('MemoryPalace - live 3D organizer HUD contract', () => {
     expect(view).toContain('routeOrder = routeDraft.slice()');
     expect(view).toContain('routeOrder: activeRouteOrder');
   });
+  it('offers a paced, narrated cinematic tour that pauses on interaction', () => {
+    const source = readFileSync(resolve(process.cwd(), 'memory_palace_module.js'), 'utf8');
+    const view = readFileSync(resolve(process.cwd(), 'view_renderers_source.jsx'), 'utf8');
+    expect(source).toContain('railEaseMultiplier');
+    expect(source).toContain('state.setTourPace = function (multiplier)');
+    expect(source).toContain('setTourPace: setTourPace');
+    expect(view).toContain('const _mpTourPaces = Object.freeze');
+    expect(view).toContain('Cinematic tour');
+    expect(view).toContain('const startCinematicTour = () =>');
+    expect(view).toContain('const pauseCinematicTour =');
+    expect(view).toContain('data-palace-tour-control="true"');
+    expect(view).toContain('onPointerDownCapture={handleTourInteraction}');
+    expect(view).toContain('onKeyDownCapture={handleTourInteraction}');
+    expect(view).toContain('window.AlloSpeechPlayer');
+    expect(view).toContain('window.__alloPlaybackRate');
+    expect(view).toContain('Reduced-motion settings use instant camera cuts.');
+  });
+});
+
+// ── Self-authored images (generation effect) ──────────────────────────────
+// The method of loci works because the learner BUILDS the picture. These pin
+// that a student's own image outranks the generated one everywhere the
+// mnemonic is read, that the generated line is kept rather than destroyed,
+// and that the quality checks stay language-neutral (an English word-list
+// heuristic would silently mis-judge every non-Latin pack).
+describe('MemoryPalace — self-authored mnemonics', () => {
+  it('lets a saved own-image outrank the generated one and keeps the AI line', () => {
+    const data = sampleData();
+    data.memoryPalace = { myMnemonics: { b0_i0: 'My uncle boiling the whole ocean in a teacup' } };
+    const p = MP.buildPalace(data);
+    const own = p.loci.find((l) => l.id === 'b0_i0');
+    expect(own.mnemonic).toBe('My uncle boiling the whole ocean in a teacup');
+    expect(own.mnemonicSource).toBe('self');
+    expect(own.aiMnemonic).toContain('kettle');            // generated line preserved, not overwritten
+    const untouched = p.loci.find((l) => l.id === 'b0_i1');
+    expect(untouched.mnemonicSource).toBe('ai');
+    expect(untouched.mnemonic).toBe(untouched.aiMnemonic);
+  });
+
+  it('carries the student own image into the screen-reader announcement', () => {
+    const data = sampleData();
+    data.memoryPalace = { myMnemonics: { b0_i0: 'A kettle wearing my sneakers' } };
+    const p = MP.buildPalace(data);
+    const said = MP.describeLocusForSR(p, 'b0_i0', null, {});
+    expect(said).toContain('A kettle wearing my sneakers');
+    expect(said).not.toContain('golden steam');            // the replaced AI line is not also read out
+  });
+
+  it('ignores blank overrides and never rewrites the entrance', () => {
+    const data = sampleData();
+    data.memoryPalace = { myMnemonics: { b0_i0: '   ', __entry: 'not allowed' } };
+    const p = MP.buildPalace(data);
+    expect(p.loci.find((l) => l.id === 'b0_i0').mnemonicSource).toBe('ai');
+    expect(p.loci.find((l) => l.id === '__entry').mnemonic).toBe('');
+  });
+
+  it('applyOwnMnemonic swaps in place and reverts to the generated line when cleared', () => {
+    const p = MP.buildPalace(sampleData());
+    const ai = p.loci.find((l) => l.id === 'b0_i0').mnemonic;
+    expect(MP.applyOwnMnemonic(p, 'b0_i0', 'A lake in a kettle')).toBe(true);
+    expect(p.loci.find((l) => l.id === 'b0_i0').mnemonic).toBe('A lake in a kettle');
+    MP.applyOwnMnemonic(p, 'b0_i0', '');
+    const back = p.loci.find((l) => l.id === 'b0_i0');
+    expect(back.mnemonic).toBe(ai);                        // falling back restores, never blanks
+    expect(back.mnemonicSource).toBe('ai');
+    expect(MP.applyOwnMnemonic(p, '__entry', 'nope')).toBe(false);
+    expect(MP.applyOwnMnemonic(p, 'no_such_locus', 'nope')).toBe(false);
+  });
+
+  it('mnemonicFeedback flags empty, too-short and label-echo drafts', () => {
+    expect(MP.mnemonicFeedback('', 'Evaporation').empty).toBe(true);
+    expect(MP.mnemonicFeedback('steam', 'Evaporation').tooShort).toBe(true);
+    expect(MP.mnemonicFeedback('  evaporation  ', 'Evaporation').echoesLabel).toBe(true);
+    const good = MP.mnemonicFeedback('A kettle the size of a house screaming on my roof', 'Evaporation');
+    expect(good.ok).toBe(true);
+    expect(good.criteria).toEqual(MP.MNEMONIC_CRITERIA);
+  });
+
+  it('judges non-Latin drafts by the same rules (no ASCII-only word matching)', () => {
+    // An accent/ASCII-folding check would strip these to '' and call every
+    // Japanese draft an echo of every Japanese label.
+    expect(MP.mnemonicFeedback('やかんが屋根の上で叫んでいる', '蒸発').echoesLabel).toBe(false);
+    expect(MP.mnemonicFeedback('やかんが屋根の上で叫んでいる', '蒸発').ok).toBe(true);
+    expect(MP.mnemonicFeedback('蒸発', '蒸発').echoesLabel).toBe(true);
+    expect(MP.mnemonicFeedback('Осьминог играет на пианино в моей кухне', 'Испарение').ok).toBe(true);
+  });
+
+  it('setLocusMnemonic updates the accessible route list without a rebuild', () => {
+    const el = document.createElement('div');
+    const h = MP.render(el, sampleData(), {});            // jsdom ⇒ visible fallback route list
+    expect(typeof h.setLocusMnemonic).toBe('function');
+    expect(el.textContent).toContain('golden steam');
+    h.setLocusMnemonic('b0_i0', 'A kettle wearing my sneakers');
+    expect(el.textContent).toContain('A kettle wearing my sneakers');
+    expect(el.textContent).not.toContain('golden steam');
+    h.setLocusMnemonic('b0_i0', '');                      // clearing restores the generated line
+    expect(el.textContent).toContain('golden steam');
+    h.destroy();
+  });
+});
+
+// ── Recall order — the backward/shuffled mastery check ────────────────────
+describe('MemoryPalace.buildRecallOrder', () => {
+  it('walks forward by default and excludes the entrance', () => {
+    const p = MP.buildPalace(sampleData());
+    const order = MP.buildRecallOrder(p, {});
+    expect(order).not.toContain('__entry');
+    expect(order).toEqual(p.route.filter((id) => id !== '__entry'));
+  });
+
+  it('reverses the route for the backward check', () => {
+    const p = MP.buildPalace(sampleData());
+    const fwd = MP.buildRecallOrder(p, { direction: 'forward' });
+    expect(MP.buildRecallOrder(p, { direction: 'backward' })).toEqual(fwd.slice().reverse());
+  });
+
+  it('shuffles deterministically per seed and covers every locus exactly once', () => {
+    const p = MP.buildPalace(sampleData());
+    const fwd = MP.buildRecallOrder(p, { direction: 'forward' });
+    const a = MP.buildRecallOrder(p, { direction: 'shuffle', seed: 42 });
+    const b = MP.buildRecallOrder(p, { direction: 'shuffle', seed: 42 });
+    expect(a).toEqual(b);                                  // seeded ⇒ replayable for tests + retries
+    expect(a.slice().sort()).toEqual(fwd.slice().sort());  // a permutation, never a subset
+  });
+
+  it('never mutates the palace route and survives a junk direction', () => {
+    const p = MP.buildPalace(sampleData());
+    const before = p.route.slice();
+    MP.buildRecallOrder(p, { direction: 'backward' });
+    MP.buildRecallOrder(p, { direction: 'shuffle', seed: 3 });
+    expect(p.route).toEqual(before);
+    expect(MP.buildRecallOrder(p, { direction: 'sideways' })).toEqual(before.filter((id) => id !== '__entry'));
+    expect(MP.buildRecallOrder(null, {})).toEqual([]);
+  });
+});
+
+// ── View wiring for the two learner-facing lanes ──────────────────────────
+// jsdom cannot mount the organizer, so these pin the source contract the way
+// the sibling HUD tests do: the plumbing exists, persists to its own sub-store,
+// and pushes live rather than remounting the walk.
+describe('MemoryPalace view — own image + recall order wiring', () => {
+  const view = () => readFileSync(resolve(process.cwd(), 'view_renderers_source.jsx'), 'utf8');
+
+  it('offers a zero-AI own-image editor that persists to its own sub-store', () => {
+    const v = view();
+    expect(v).toContain('const saveOwnMnemonic = (id, text) =>');
+    expect(v).toContain('store.myMnemonics = next');
+    expect(v).toContain("id=\"mp-own-mnemonic\"");
+    expect(v).toContain("t('memory_palace.own_write')");
+    expect(v).toContain("t('memory_palace.own_revert')");
+    // the four criteria are self-rated prompts, not a machine score
+    expect(v).toContain("t('memory_palace.own_crit_action')");
+    expect(v).toContain("t('memory_palace.own_crit_personal')");
+  });
+
+  it('pushes an edited image into the live walk instead of remounting it', () => {
+    const v = view();
+    expect(v).toContain('handleRef.current.setLocusMnemonic(id, own)');
+    expect(v).toContain('MP.applyOwnMnemonic(palaceRef.current, id, own)');
+    // myMnemonics must stay OUT of dataKey or every save would rebuild the
+    // scene and throw the walker back to the entrance.
+    const dataKey = v.slice(v.indexOf('const dataKey = JSON.stringify({'), v.indexOf('const nowISO'));
+    expect(dataKey).not.toContain('myMnemonics');
+  });
+
+  it('drops a stale draft when the walker moves to another locus', () => {
+    const v = view();
+    expect(v).toContain("React.useEffect(() => { setMnEditing(false); setMnDraft(''); }, [mnLocusId]);");
+  });
+
+  it('runs the recall check in a chosen order without moving the palace', () => {
+    const v = view();
+    expect(v).toContain('MP.buildRecallOrder(palace, { direction: dir, seed })');
+    expect(v).toContain('recallOrderRef.current');
+    expect(v).toContain("retryRecall('backward')");
+    expect(v).toContain("retryRecall('shuffle')");
+    // restart through retryRecall, never exit-then-start (stale state + disarms)
+    expect(v).not.toContain('exitRecall(); startRecall(');
+    // goTo still takes a ROUTE index — the geography is unchanged
+    expect(v).toContain('const nextIdx = route.indexOf(nextId);');
+  });
+
+  it('keeps the harder orders as a next step, not a fourth start button', () => {
+    const v = view();
+    const summary = v.slice(v.indexOf("t('memory_palace.order_next')"));
+    expect(summary.slice(0, 2000)).toContain("t('memory_palace.order_backward')");
+    // offered from the finished-run summary
+    expect(v.indexOf("t('memory_palace.order_next')")).toBeGreaterThan(v.indexOf('recall && finished && ('));
+  });
 });

@@ -72,6 +72,55 @@
     return ordered;
   }
 
+  // ── Self-authored images (the generation effect) ──────────────────────
+  // The method of loci works because the LEARNER builds the picture: an image
+  // you invent yourself is recalled better than one handed to you. So a
+  // student's own line always outranks the generated one downstream (walk
+  // strip, live-region announcement, route list, study sheet, recall hint and
+  // the art prompts), while the generated line is KEPT — never destroyed — so
+  // they can compare the two or fall back to it.
+  //
+  // The checks below are deliberately LANGUAGE-NEUTRAL: no verb lists, no word
+  // matching. Whether an image is vivid is the student's judgment to make (the
+  // criteria are prompts they answer themselves, not machine verdicts); code
+  // only checks what is checkable in any script — that something was written,
+  // and that it isn't just the item name typed back.
+  var MNEMONIC_MIN_CHARS = 12;
+  var MNEMONIC_CRITERIA = ['action', 'sensory', 'placed', 'personal'];
+
+  function _foldLoose(s) {
+    s = String(s == null ? '' : s).toLowerCase();
+    try { s = s.normalize('NFKC'); } catch (e) {}
+    return s.replace(/\s+/g, ' ').trim();
+  }
+
+  function mnemonicFeedback(text, label) {
+    var raw = String(text == null ? '' : text).trim();
+    var folded = _foldLoose(raw);
+    var empty = folded.length === 0;
+    return {
+      chars: raw.length,
+      empty: empty,
+      tooShort: !empty && raw.length < MNEMONIC_MIN_CHARS,
+      echoesLabel: !empty && folded === _foldLoose(label),
+      ok: !empty && raw.length >= MNEMONIC_MIN_CHARS && folded !== _foldLoose(label),
+      criteria: MNEMONIC_CRITERIA.slice()
+    };
+  }
+
+  // Swap ONE locus between the student's own image and the generated one, in
+  // place — the palace object is shared with the mounted scene, so a live walk
+  // updates without a remount (and without losing the walker's position).
+  function applyOwnMnemonic(palace, id, text) {
+    var l = locusById(palace, id);
+    if (!l || l.id === '__entry') return false;
+    var own = (typeof text === 'string') ? text.trim() : '';
+    if (l.aiMnemonic == null) l.aiMnemonic = (l.mnemonicSource === 'self') ? '' : (l.mnemonic || '');
+    if (own) { l.mnemonic = own; l.mnemonicSource = 'self'; }
+    else { l.mnemonic = l.aiMnemonic || ''; l.mnemonicSource = l.mnemonic ? 'ai' : ''; }
+    return true;
+  }
+
   // ── buildPalace — PURE: {main, branches[±mnemonics]} → rooms/loci/route ──
   // Rooms in a row along +X (entry hall first), items alternate left/right walls
   // in reading order, each locus carries its camera stop. Deterministic.
@@ -135,6 +184,20 @@
         });
         route.push(id);
       });
+    });
+
+    // A saved self-authored image wins over the generated one everywhere the
+    // mnemonic is read (see the generation-effect note above).
+    var ownMnemonics = (opts.myMnemonics && typeof opts.myMnemonics === 'object')
+      ? opts.myMnemonics
+      : ((data && data.memoryPalace && data.memoryPalace.myMnemonics && typeof data.memoryPalace.myMnemonics === 'object')
+        ? data.memoryPalace.myMnemonics : null);
+    loci.forEach(function (l) {
+      l.aiMnemonic = l.mnemonic || '';
+      var own = ownMnemonics ? ownMnemonics[l.id] : null;
+      var ownText = (typeof own === 'string') ? own.trim() : '';
+      if (ownText && l.id !== '__entry') { l.mnemonic = ownText; l.mnemonicSource = 'self'; }
+      else l.mnemonicSource = l.mnemonic ? 'ai' : '';
     });
 
     var preferredRoute = Array.isArray(opts.routeOrder)
@@ -252,6 +315,29 @@
       var tmp = items[i]; items[i] = items[j]; items[j] = tmp;
     }
     return items;
+  }
+
+  // ── Recall ORDER — forward is the walk; backward and shuffled are the check ──
+  // Reciting a route in reverse (or from a random start) is the classic probe
+  // for whether content is anchored to PLACES or just rehearsed as a list: a
+  // serial rehearsal collapses when the order changes, a locus-anchored one
+  // survives. Nothing about the palace moves — only the sequence the quiz
+  // visits, so scoring, mastery and the geography stay exactly as they were.
+  var RECALL_DIRECTIONS = ['forward', 'backward', 'shuffle'];
+  function buildRecallOrder(palace, opts) {
+    opts = opts || {};
+    var ids = ((palace && palace.route) || []).filter(function (id) { return id !== '__entry'; });
+    var dir = String(opts.direction || 'forward');
+    if (dir === 'backward') return ids.reverse();          // filter() already gave us a fresh array
+    if (dir === 'shuffle') {
+      var rnd = _lcg(isNum(opts.seed) ? opts.seed : 1);
+      for (var i = ids.length - 1; i > 0; i--) {
+        var j = Math.floor(rnd() * (i + 1));
+        var tmp = ids[i]; ids[i] = ids[j]; ids[j] = tmp;
+      }
+      return ids;
+    }
+    return ids;
   }
 
   function _normAnswer(s) {
@@ -640,6 +726,26 @@
     // Live-update the decoration SR names without a remount (the walk position is
     // kept): announce()/live-region reads this `decor` var through its closure.
     state.setDecor = function (d) { decor = d || {}; };
+    // Rewriting the image at a locus updates the live walk in place — the scene
+    // shares this palace object — and re-announces so the strip and the live
+    // region carry the student's own words immediately, with no remount and no
+    // lost walking position.
+    state.setLocusMnemonic = function (id, text) {
+      if (!applyOwnMnemonic(palace, id, text)) return;
+      try { announce(curIdx); } catch (e) {}
+      // The in-scene route panel quotes the mnemonic too — retext just this row
+      // rather than rebuilding the list, so focus and aria-current survive.
+      try {
+        var idx = (palace.route || []).indexOf(id);
+        var btn = idx >= 0 && state.routePanel
+          ? state.routePanel.querySelector('[data-route-index="' + idx + '"]') : null;
+        if (btn) {
+          var desc = recall ? describeLocusForRecall(palace, id, t2, decor) : describeLocusForSR(palace, id, t2, decor);
+          btn.textContent = desc;
+          btn.setAttribute('aria-label', 'Locus ' + idx + '. ' + desc);
+        }
+      } catch (e) {}
+    };
     var reduce = false; try { reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
 
     var renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -1299,6 +1405,7 @@
     // ── Camera rails ──
     var curIdx = Math.max(0, (palace.route || []).indexOf(opts.startAt || '__entry'));
     var camPos = new THREE.Vector3(), camPosT = new THREE.Vector3();
+    var railEaseMultiplier = 1;
     var look = new THREE.Vector3(), lookT = new THREE.Vector3();
     var yawOff = 0, pitchOff = 0;   // drag look-around at a stop
     var overview = false;
@@ -1502,6 +1609,7 @@
     routePanel.style.cssText = 'position:absolute;right:12px;top:12px;bottom:78px;z-index:7;width:min(360px,calc(100% - 24px));color:#e2e8f0;padding:14px 18px;overflow:auto;background:rgba(2,6,23,0.94);border:1px solid #475569;border-radius:12px;box-sizing:border-box;';
     routePanel.setAttribute('role', 'region');
     routePanel.setAttribute('aria-label', _tr(t, 'memory_palace.route_title', 'Palace route'));
+    state.routePanel = routePanel;        // so a rewritten mnemonic can retext its row
     holder.appendChild(routePanel);
     function setRouteVisible(visible, moveFocus) {
       routeVisible = !!visible;
@@ -1945,9 +2053,9 @@
         camera.position.copy(camPos);
         camera.lookAt(lookBase);
       } else {
-        var ease = reduce ? 1 : 0.07;
+        var ease = reduce ? 1 : Math.min(0.2, 0.07 * railEaseMultiplier);
         camPos.lerp(camPosT, ease);
-        look.lerp(lookT, reduce ? 1 : 0.09);
+        look.lerp(lookT, reduce ? 1 : Math.min(0.25, 0.09 * railEaseMultiplier));
         camera.position.copy(camPos);
         lookBase.copy(look);
         if (!overview && (yawOff || pitchOff)) {
@@ -2033,6 +2141,10 @@
     (window.requestAnimationFrame || function (f) { return f(); })(function () { if (!state.disposed && state.onResize) state.onResize(); });
 
     state.goTo = function (idx) { goTo(idx); };
+    state.setTourPace = function (multiplier) {
+      var n = Number(multiplier);
+      railEaseMultiplier = isFinite(n) ? Math.max(0.55, Math.min(1.8, n)) : 1;
+    };
   }
 
   // ── render — public imperative API. Returns { destroy, goTo, fellBack }. ──
@@ -2043,10 +2155,11 @@
     var palace = (data && data.version === VERSION && data.route) ? data : buildPalace(data, opts);
     while (container.firstChild) container.removeChild(container.firstChild);
 
-    var routeEl = buildRouteDom(palace, t, false, !!opts.recall, opts.decor);   // sr-only while 3D is live
+    var routeVisible = false;                                                  // flips when we fall back to the route list
+    var routeEl = buildRouteDom(palace, t, routeVisible, !!opts.recall, opts.decor);   // sr-only while 3D is live
     container.appendChild(routeEl);
 
-    var state = { raf: 0, renderer: null, scene: null, disposed: false, onResize: null, cleanup: [], goTo: null, revealLocus: null, setLocusStatus: null };
+    var state = { raf: 0, renderer: null, scene: null, disposed: false, onResize: null, cleanup: [], goTo: null, setTourPace: null, revealLocus: null, setLocusStatus: null, setLocusMnemonic: null, routePanel: null };
     function destroy() {
       state.disposed = true;
       if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
@@ -2078,6 +2191,7 @@
       }
     }
     function goTo(idx) { try { if (state.goTo) state.goTo(idx); } catch (e) {} }
+    function setTourPace(multiplier) { try { if (state.setTourPace) state.setTourPace(multiplier); } catch (e) {} }
     function revealLocus(id) { try { if (state.revealLocus) state.revealLocus(id); } catch (e) {} }
     function setLocusStatus(id, status) { try { if (state.setLocusStatus) state.setLocusStatus(id, status); } catch (e) {} }
     function setLocusImage(id, img) { try { if (state.setLocusImage) state.setLocusImage(id, img); } catch (e) {} }
@@ -2087,7 +2201,26 @@
     function replaceLocusObject(id, recipe) { try { if (state.replaceLocusObject) state.replaceLocusObject(id, recipe); } catch (e) {} }
     function clearLocus(id) { try { if (state.clearLocus) state.clearLocus(id); } catch (e) {} }
     function setDecor(d) { try { if (state.setDecor) state.setDecor(d); } catch (e) {} }
+    // The route list is the accessible source of truth, and it quotes the
+    // mnemonic — so an edited image has to reach it too, or screen-reader users
+    // would keep reading the generated line the student just replaced.
+    function refreshRoute() {
+      if (!routeEl || !routeEl.parentNode) return;
+      var fresh = buildRouteDom(palace, t, routeVisible, !!opts.recall, opts.decor);
+      routeEl.parentNode.replaceChild(fresh, routeEl);
+      routeEl = fresh;
+    }
+    function setLocusMnemonic(id, text) {
+      // Works with or without a live scene: without GL the palace object still
+      // needs the swap so the visible fallback route list stays truthful.
+      try {
+        if (state.setLocusMnemonic) state.setLocusMnemonic(id, text);
+        else applyOwnMnemonic(palace, id, text);
+      } catch (e) {}
+      try { refreshRoute(); } catch (e) {}
+    }
     function showFallback(msg) {
+      routeVisible = true;
       routeEl.style.cssText = 'color:#e2e8f0;padding:8px 16px;max-height:100%;overflow:auto;';
       var note = document.createElement('div');
       note.setAttribute('role', 'status');
@@ -2098,7 +2231,7 @@
 
     if (!isWebGLAvailable()) {
       showFallback(_tr(t, 'memory_palace.no_webgl', 'This browser cannot show the 3D palace. Showing the walking route instead.'));
-      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, setLocusBusy: setLocusBusy, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, fellBack: true };
+      return { destroy: destroy, goTo: goTo, setTourPace: setTourPace, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, setLocusBusy: setLocusBusy, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, setLocusMnemonic: setLocusMnemonic, fellBack: true };
     }
 
     var holder = document.createElement('div');
@@ -2120,7 +2253,7 @@
       showFallback(_tr(t, 'memory_palace.load_error', 'The 3D library could not load. Showing the walking route instead.'));
     });
 
-    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, setLocusBusy: setLocusBusy, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, fellBack: false };
+    return { destroy: destroy, goTo: goTo, setTourPace: setTourPace, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, setLocusBusy: setLocusBusy, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, setLocusMnemonic: setLocusMnemonic, fellBack: false };
   }
 
   window.AlloModules = window.AlloModules || {};
@@ -2131,6 +2264,12 @@
     buildPalace: buildPalace,
     normalizeRouteOrder: normalizeRouteOrder,
     navigateRoute: navigateRoute,
+    MNEMONIC_MIN_CHARS: MNEMONIC_MIN_CHARS,
+    MNEMONIC_CRITERIA: MNEMONIC_CRITERIA,
+    mnemonicFeedback: mnemonicFeedback,
+    applyOwnMnemonic: applyOwnMnemonic,
+    RECALL_DIRECTIONS: RECALL_DIRECTIONS,
+    buildRecallOrder: buildRecallOrder,
     decorSpot: decorSpot,
     landmarkSpot: landmarkSpot,
     describeLocusForSR: describeLocusForSR,

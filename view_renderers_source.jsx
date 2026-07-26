@@ -3648,8 +3648,13 @@ const _mpEsc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (ch) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
 ));
 
-const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onRecallArm, onRecallClose }) => {
-    const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
+const _mpTourPaces = Object.freeze({
+    relaxed: { label: 'Relaxed', dwell: 7600, camera: 0.72, speech: 0.88 },
+    standard: { label: 'Standard', dwell: 5100, camera: 1, speech: 1 },
+    brisk: { label: 'Brisk', dwell: 3200, camera: 1.38, speech: 1.12 },
+});
+
+const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onRecallArm, onRecallClose }) => {    const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
     const hostRef = React.useRef(null);
     const presentationRef = React.useRef(null);
     const presentationNativeRef = React.useRef(false);
@@ -3670,6 +3675,17 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const [routeMasteryAck, setRouteMasteryAck] = React.useState(false);
     const [routeAnnouncement, setRouteAnnouncement] = React.useState('');
     const routeDragRef = React.useRef(null);
+    const [tourOpen, setTourOpen] = React.useState(false);
+    const [tourPlaying, setTourPlaying] = React.useState(false);
+    const [tourPace, setTourPace] = React.useState('standard');
+    const [tourNarration, setTourNarration] = React.useState(false);
+    const [tourAnnouncement, setTourAnnouncement] = React.useState('');
+    const tourTimerRef = React.useRef(null);
+    const tourSpeechTextRef = React.useRef('');
+    const tourOpenRef = React.useRef(false);
+    const tourPlayingRef = React.useRef(false);
+    tourOpenRef.current = tourOpen;
+    tourPlayingRef.current = tourPlaying;
     const [current, setCurrent] = React.useState(null);         // {id, label, mnemonic, idx, total}
     const [nearbyEmpty, setNearbyEmpty] = React.useState(null); // proximity-driven customization card
     const nearbyEmptyRef = React.useRef(null);
@@ -3687,6 +3703,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         aliveRef.current = false;
         recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });
         recallTimersRef.current = [];
+        if (tourTimerRef.current) { try { clearTimeout(tourTimerRef.current); } catch (e) {} tourTimerRef.current = null; }
+        const spoken = tourSpeechTextRef.current;
+        const player = window.AlloSpeechPlayer;
+        if (spoken && player?.getCurrentText?.() === spoken) { try { player.stop(); } catch (e) {} }
+        tourSpeechTextRef.current = '';
     }, []);
     const _laterRecall = (fn) => {
         const id = setTimeout(() => { recallTimersRef.current = recallTimersRef.current.filter((x) => x !== id); fn(); }, 700);
@@ -3713,6 +3734,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const [typedAnswer, setTypedAnswer] = React.useState('');
     const [wrongFlash, setWrongFlash] = React.useState(false);
     const [selfRevealId, setSelfRevealId] = React.useState(null);
+    // Quiz VISITING order (forward / backward / shuffled). The palace itself never
+    // moves — only the sequence the check walks — so scoring, mastery and the
+    // geography are untouched. Reciting a route backwards is the classic probe for
+    // whether the content is anchored to PLACES or just rehearsed as a list.
+    const recallOrderRef = React.useRef([]);
     const [finished, setFinished] = React.useState(null);       // scoreRecall() result
     const [elapsed, setElapsed] = React.useState(0);
     const elapsedRef = React.useRef(0);
@@ -3813,7 +3839,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             onLocusChange: (locus, idx, total) => {
                 if (!locus) return;
                 currentRef.current = locus;
-                setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1, entry: locus.id === '__entry' });
+                setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic, idx, total: total - 1, entry: locus.id === '__entry' });
                 if (quickCreateRef.current && quickCreateRef.current.id !== locus.id && quickCreateRef.current.status !== 'generating') setQuickCreate(null);
                 // Re-surface earned hints when revisiting a struggled locus.
                 const r = recallResultsRef.current[locus.id];
@@ -3823,7 +3849,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 setSelfRevealId(null);
             },
             onEmptyLocusApproach: (locus, near, idx, total, reason) => {
-                if (!locus || recall) return;
+                if (!locus || recall || tourOpenRef.current) return;
                 if (!near) {
                     if (nearbyEmptyRef.current === locus.id) nearbyEmptyRef.current = null;
                     setNearbyEmpty((shown) => shown && shown.id === locus.id ? null : shown);
@@ -3833,7 +3859,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     return;
                 }
                 currentRef.current = locus;
-                setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1, entry: false });
+                setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic, idx, total: total - 1, entry: false });
                 if (quickCreateRef.current && quickCreateRef.current.id !== locus.id && quickCreateRef.current.status !== 'generating') setQuickCreate(null);
                 nearbyEmptyRef.current = locus.id;
                 setNearbyEmpty({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1 });
@@ -3941,7 +3967,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         setAnswered(0); setFinished(null); setRecallHint(null); setCanReveal(false); setTypedAnswer(''); setWrongFlash(false); setSelfRevealId(null);
     };
 
-    const startRecall = (mode, viaArm) => {
+    const startRecall = (mode, viaArm, direction) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (!MP || recall) return;
         const palace = MP.buildPalace(data || {});
@@ -3949,9 +3975,12 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (targets.length < 2) { if (addToast) addToast(t('memory_palace.recall_empty') || 'Not enough loci to play yet.', 'info'); return; }
         _resetRecallRun();
         const seed = (Date.now() % 2147483647) || 7;
+        const dir = (MP.RECALL_DIRECTIONS || ['forward']).indexOf(direction) >= 0 ? direction : 'forward';
+        const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed }) : targets;
+        recallOrderRef.current = order.length ? order : targets;
         setRecallBank(mode === 'self' ? [] : MP.buildRecallBank(palace, seed));
         startedByArmRef.current = viaArm === true;
-        setRecall({ mode: mode === 'type' ? 'type' : (mode === 'self' ? 'self' : 'bank'), seed, startAt: targets[0] });
+        setRecall({ mode: mode === 'type' ? 'type' : (mode === 'self' ? 'self' : 'bank'), seed, direction: dir, startAt: recallOrderRef.current[0] });
         if (addToast) addToast(t('memory_palace.recall_start') || '🧠 The labels are covered. Walk the palace and recall what lives at each locus!', 'info');
         // Teacher start arms every student in the live session (2D sort-game contract).
         if (isTeacherMode && viaArm !== true && typeof onRecallArm === 'function') { try { onRecallArm(); } catch (e) {} }
@@ -3963,7 +3992,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         startedByArmRef.current = false;
         if (typeof onRecallClose === 'function') { try { onRecallClose(); } catch (e) {} }
     };
-    const retryRecall = () => {
+    // `direction` re-runs the same palace in a harder order. Restarting THROUGH here
+    // (rather than exit-then-start) matters: exitRecall's setRecall(null) has not
+    // landed yet inside one handler, so a start call would still see the old recall
+    // state and bail — and dropping to null would also disarm a live session.
+    const retryRecall = (direction) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (!MP || !recall || !palaceRef.current) return;
         const mode = recall.mode;
@@ -3971,8 +4004,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const targets = palace.route.filter((id) => id !== '__entry');
         _resetRecallRun();
         const seed = (Date.now() % 2147483647) || 11;
+        const dir = (MP.RECALL_DIRECTIONS || []).indexOf(direction) >= 0 ? direction : (recall.direction || 'forward');
+        const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed }) : targets;
+        recallOrderRef.current = order.length ? order : targets;   // a re-shuffle gets a fresh sequence
         setRecallBank(mode === 'self' ? [] : MP.buildRecallBank(palace, seed));
-        setRecall({ mode, seed, startAt: targets[0] });   // new identity ⇒ scene remounts covered
+        setRecall({ mode, seed, direction: dir, startAt: recallOrderRef.current[0] });   // new identity => scene remounts covered
     };
 
     // Live-session arming (mirrors the Strand Challenge contract).
@@ -3986,19 +4022,25 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (!palaceRef.current || !handleRef.current) return;
         const route = palaceRef.current.route;
         const res = recallResultsRef.current;
-        const curId = currentRef.current ? currentRef.current.id : route[0];
-        const curIdx = Math.max(0, route.indexOf(curId));
-        let nextIdx = -1;
+        // The quiz walks its own order (forward / backward / shuffled); the palace
+        // route stays the geography, so goTo() still takes a ROUTE index.
+        const order = (recallOrderRef.current && recallOrderRef.current.length)
+            ? recallOrderRef.current
+            : route.filter((id) => id !== '__entry');
+        const curId = currentRef.current ? currentRef.current.id : order[0];
+        const at = order.indexOf(curId);
+        const start = at >= 0 ? at : 0;
+        let nextId = null;
         // Start at s=0 so the CURRENT locus is re-checked first: if the user manually
         // walked to a still-unanswered locus while an advance was pending, we stay on
         // it rather than skipping past it.
-        for (let s = 0; s <= route.length; s++) {
-            const i = (curIdx + s) % route.length;
-            const id = route[i];
-            if (id === '__entry') continue;
+        for (let s = 0; s <= order.length; s++) {
+            const id = order[(start + s) % order.length];
             const r = res[id];
-            if (!r || (!r.correct && !r.revealed)) { nextIdx = i; break; }
+            if (!r || (!r.correct && !r.revealed)) { nextId = id; break; }
         }
+        if (nextId == null) { finishRecall(); return; }
+        const nextIdx = route.indexOf(nextId);
         if (nextIdx < 0) { finishRecall(); return; }
         handleRef.current.goTo(nextIdx);
     };
@@ -4132,6 +4174,21 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     //    Choosing your own cue is itself encoding work (choice + generation effect).
     const [decorMode, setDecorMode] = React.useState(false);
     const [customizeOpen, setCustomizeOpen] = React.useState(false);   // collapse the "make it look good" actions behind one disclosure
+    // ── Write your own image (the generation effect) ──
+    // An image you invent yourself is recalled better than one handed to you, so
+    // the student's line replaces the generated one everywhere it is read. The AI
+    // line is kept, never destroyed, so they can compare or go back to it.
+    const [mnEditing, setMnEditing] = React.useState(false);
+    const [mnDraft, setMnDraft] = React.useState('');
+    // Walking on closes the editor: a draft written for the last locus must never
+    // follow the student to the next one.
+    const mnLocusId = current && current.id;
+    React.useEffect(() => { setMnEditing(false); setMnDraft(''); }, [mnLocusId]);
+    const mnFeedback = React.useMemo(() => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || !MP.mnemonicFeedback || !current) return null;
+        try { return MP.mnemonicFeedback(mnDraft, current.label); } catch (e) { return null; }
+    }, [mnDraft, current]);
     // Printable study sheet: the palace route as a one-page handout (rooms → loci →
     // mnemonics in walking order) — study off-screen / on paper, a UDL + offline win.
     const handlePrintStudySheet = () => {
@@ -4376,6 +4433,31 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         }
     };
 
+    // ── Save the student's own image for a locus ──
+    // Persisted under memoryPalace.myMnemonics (its own sub-store, so it can never
+    // clobber art or mastery) and pushed LIVE into the walking scene + the palace
+    // model, so the strip, the live region and the accessible route list all carry
+    // the new words without a remount — the walker keeps their position. Saving an
+    // empty draft reverts to the generated line rather than blanking the locus.
+    const saveOwnMnemonic = (id, text) => {
+        if (!id || id === '__entry' || !persist) return;
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const own = String(text == null ? '' : text).trim();
+        const next = { ...((mpRef.current && mpRef.current.myMnemonics) || {}) };
+        if (own) next[id] = own; else delete next[id];
+        const store = { ...(mpRef.current || {}) };
+        if (Object.keys(next).length) store.myMnemonics = next; else delete store.myMnemonics;
+        try { if (MP && MP.applyOwnMnemonic && palaceRef.current) MP.applyOwnMnemonic(palaceRef.current, id, own); } catch (e) {}
+        try { if (handleRef.current && handleRef.current.setLocusMnemonic) handleRef.current.setLocusMnemonic(id, own); } catch (e) {}
+        persist(Object.keys(store).length ? store : null, 'memoryPalace');
+        const locus = (palaceRef.current && (palaceRef.current.loci || []).find((l) => l.id === id)) || null;
+        if (locus && currentRef.current && currentRef.current.id === id) {
+            setCurrent((c) => (c && c.id === id ? { ...c, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic } : c));
+        }
+        setMnEditing(false); setMnDraft('');
+        if (addToast) addToast(own ? (t('memory_palace.own_saved') || 'Saved — that image is yours now.') : (t('memory_palace.own_reverted') || 'Back to the generated image.'), 'success');
+    };
+
     // Refine the CURRENT locus's sculpture. Manual tweaks mutate whole-object
     // transforms (scale/rotY/tint — no AI, instant); AI refine asks Gemini to edit
     // the recipe's parts. Both replace the sculpture live and persist.
@@ -4588,6 +4670,121 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const progressStops = progressPalace
         ? (progressPalace.route || []).slice(1).map((id) => (progressPalace.loci || []).find((l) => l.id === id)).filter(Boolean)
         : [];
+    const tourConfig = _mpTourPaces[tourPace] || _mpTourPaces.standard;
+    const tourStopIndex = current && !current.entry ? progressStops.findIndex((locus) => locus.id === current.id) : -1;
+    const tourLocus = tourStopIndex >= 0 ? progressStops[tourStopIndex] : null;
+    const tourRoom = tourLocus ? progressPalace?.rooms?.[tourLocus.roomIdx] : null;
+
+    const clearTourTimer = () => {
+        if (!tourTimerRef.current) return;
+        try { clearTimeout(tourTimerRef.current); } catch (e) {}
+        tourTimerRef.current = null;
+    };
+    const stopTourSpeech = () => {
+        const spoken = tourSpeechTextRef.current;
+        if (!spoken) return;
+        const player = window.AlloSpeechPlayer;
+        if (player?.getCurrentText?.() === spoken) { try { player.stop(); } catch (e) {} }
+        tourSpeechTextRef.current = '';
+    };
+    const pauseCinematicTour = (reason = 'manual') => {
+        clearTourTimer();
+        stopTourSpeech();
+        tourPlayingRef.current = false;
+        setTourPlaying(false);
+        setTourAnnouncement(reason === 'interaction'
+            ? (t('memory_palace.tour_paused_interaction') || 'Tour paused because you interacted with the palace.')
+            : (t('memory_palace.tour_paused') || 'Cinematic tour paused.'));
+    };
+    const startCinematicTour = () => {
+        if (!progressStops.length || !handleRef.current) return;
+        clearTourTimer();
+        stopTourSpeech();
+        tourOpenRef.current = true;
+        tourPlayingRef.current = true;
+        setTourOpen(true);
+        setTourPlaying(true);
+        setNearbyEmpty(null); setQuickCreate(null); setCustomizeOpen(false);
+        if (tourStopIndex < 0 || tourStopIndex === progressStops.length - 1) handleRef.current.goTo(1);
+        setTourAnnouncement(tourStopIndex > 0 && tourStopIndex < progressStops.length - 1
+            ? (t('memory_palace.tour_resumed') || 'Cinematic tour resumed.')
+            : (t('memory_palace.tour_started') || 'Cinematic tour started.'));
+    };
+    const closeCinematicTour = () => {
+        pauseCinematicTour('manual');
+        tourOpenRef.current = false;
+        setTourOpen(false);
+    };
+    const seekCinematicTour = (direction) => {
+        if (!progressStops.length || !handleRef.current) return;
+        pauseCinematicTour('manual');
+        const base = tourStopIndex >= 0 ? tourStopIndex : (direction > 0 ? -1 : 0);
+        const target = Math.max(0, Math.min(progressStops.length - 1, base + direction));
+        handleRef.current.goTo(target + 1);
+    };
+    const handleTourInteraction = (event) => {
+        if (!tourPlayingRef.current) return;
+        const target = event && event.target;
+        if (target?.closest?.('[data-palace-tour-control="true"]')) return;
+        pauseCinematicTour('interaction');
+    };
+
+    React.useEffect(() => {
+        try { handleRef.current?.setTourPace?.(tourConfig.camera); } catch (e) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tourPace, ready, failed, dataKey]);
+
+    React.useEffect(() => {
+        if (!tourPlaying || !progressStops.length || !handleRef.current) return undefined;
+        clearTourTimer();
+        stopTourSpeech();
+        const stopIndex = current && !current.entry ? progressStops.findIndex((locus) => locus.id === current.id) : -1;
+        if (stopIndex < 0) {
+            handleRef.current.goTo(1);
+            return undefined;
+        }
+        const locus = progressStops[stopIndex];
+        const room = progressPalace?.rooms?.[locus.roomIdx];
+        try { handleRef.current.setTourPace?.(tourConfig.camera); } catch (e) {}
+        setTourAnnouncement((t('memory_palace.tour_now_showing') || 'Tour stop {current} of {total}: {label}.')
+            .replace('{current}', String(stopIndex + 1)).replace('{total}', String(progressStops.length)).replace('{label}', locus.label));
+        if (tourNarration) {
+            const spokenText = [
+                room?.label ? (t('memory_palace.room') || 'Room') + ': ' + room.label + '.' : '',
+                (t('memory_palace.tour_stop_spoken') || 'Stop {current} of {total}: {label}.')
+                    .replace('{current}', String(stopIndex + 1)).replace('{total}', String(progressStops.length)).replace('{label}', locus.label),
+                locus.mnemonic ? (t('memory_palace.picture_this') || 'Picture this:') + ' ' + locus.mnemonic : '',
+            ].filter(Boolean).join(' ');
+            const appRate = typeof window.__alloPlaybackRate === 'number' ? window.__alloPlaybackRate : 0.95;
+            const speechRate = Math.max(0.5, Math.min(2, appRate * tourConfig.speech));
+            const player = window.AlloSpeechPlayer;
+            if (player?.speak) {
+                tourSpeechTextRef.current = spokenText;
+                try {
+                    const pending = player.speak(spokenText, { rate: speechRate });
+                    if (pending?.catch) pending.catch(() => {});
+                } catch (e) { tourSpeechTextRef.current = ''; }
+            }
+        }
+        tourTimerRef.current = setTimeout(() => {
+            tourTimerRef.current = null;
+            if (stopIndex >= progressStops.length - 1) {
+                tourPlayingRef.current = false;
+                setTourPlaying(false);
+                setTourAnnouncement(t('memory_palace.tour_complete') || 'Cinematic tour complete. You reached the final locus.');
+                return;
+            }
+            handleRef.current?.goTo(stopIndex + 2);
+        }, tourConfig.dwell);
+        return () => { clearTourTimer(); stopTourSpeech(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tourPlaying, tourPace, tourNarration, current?.id, progressStops.length]);
+
+    React.useEffect(() => {
+        if (recall && tourPlayingRef.current) pauseCinematicTour('interaction');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [recall]);
+
     const _visualStatus = (id) => {
         if (quickCreate?.id === id && quickCreate.status === 'generating') return 'generating';
         const hasImage = !!images[id];
@@ -4693,12 +4890,19 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     };
 
     return (
-        <div ref={presentationRef} className={presenting ? 'fixed inset-0 z-[9999] flex h-[100dvh] max-w-none flex-col overflow-hidden bg-slate-950 p-2 sm:p-4' : 'max-w-6xl mx-auto'} aria-label={presenting ? (t('memory_palace.presentation_aria') || 'Memory Palace presentation') : undefined}>
+        <div ref={presentationRef} onPointerDownCapture={handleTourInteraction} onKeyDownCapture={handleTourInteraction} className={presenting ? 'fixed inset-0 z-[9999] flex h-[100dvh] max-w-none flex-col overflow-hidden bg-slate-950 p-2 sm:p-4' : 'max-w-6xl mx-auto'} aria-label={presenting ? (t('memory_palace.presentation_aria') || 'Memory Palace presentation') : undefined}>
             <div className={(presenting ? 'hidden ' : 'flex ') + 'items-center justify-between gap-2 mb-3 flex-wrap'}>
                 <div className="text-xs text-slate-500">
                     {recall
                         ? (t('memory_palace.recall_hint') || '🧠 The labels are covered — the image is your cue. Recall what lives at each locus; after two misses the mnemonic appears.')
                         : (t('memory_palace.hint') || 'A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory.')}
+                    {recall && recall.direction && recall.direction !== 'forward' && (
+                        <span className="ml-1.5 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
+                            {recall.direction === 'backward'
+                                ? ('↩ ' + (t('memory_palace.order_backward') || 'Backwards'))
+                                : ('🔀 ' + (t('memory_palace.order_shuffle') || 'Shuffled'))}
+                        </span>
+                    )}
                 </div>
                 <div className="flex items-center gap-2">
                     {recall ? (
@@ -4709,7 +4913,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             </span>
                             {finished && (
                                 <button
-                                    onClick={retryRecall}
+                                    onClick={() => retryRecall()}
                                     className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
                                 >
                                     ↺ {t('memory_palace.recall_retry') || 'Walk it again'}
@@ -4752,6 +4956,22 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     title={t('memory_palace.recall_expert_tooltip') || 'Expert mode: type each answer instead of picking from the bank (stronger retrieval practice; forgiving spelling)'}
                                 >
                                     ⌨ {t('memory_palace.recall_expert') || 'Expert recall'}
+                                </button>
+                            )}
+                            {hasContent && !failed && (
+                                <button
+                                    type="button"
+                                    data-palace-tour-control="true"
+                                    onClick={() => {
+                                        if (tourOpen) closeCinematicTour();
+                                        else { tourOpenRef.current = true; setTourOpen(true); setNearbyEmpty(null); setQuickCreate(null); }
+                                    }}
+                                    aria-expanded={tourOpen ? 'true' : 'false'}
+                                    disabled={routeEditing}
+                                    className={'flex items-center gap-1 border px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 ' + (tourOpen ? 'border-cyan-400 bg-cyan-600 text-white' : 'border-cyan-300 bg-white text-cyan-800 hover:bg-cyan-50')}
+                                    title={t('memory_palace.tour_tooltip') || 'Automatically travel through every locus with adjustable pacing and optional narration'}
+                                >
+                                    🎬 {t('memory_palace.tour') || 'Cinematic tour'}
                                 </button>
                             )}
                             {hasContent && !failed && (
@@ -5071,6 +5291,64 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         <span className="hidden text-[10px] text-slate-400 md:inline">{t('memory_palace.presentation_escape') || 'Esc also exits'}</span>
                     </div>
                 )}
+                {tourOpen && !recall && hasContent && !failed && (
+                    <aside data-palace-tour-control="true"
+                        className="absolute bottom-20 left-3 z-30 max-h-[calc(100%_-_5.5rem)] w-[calc(100%_-_1.5rem)] max-w-sm overflow-y-auto rounded-2xl border border-cyan-300/80 bg-slate-950/95 text-white shadow-2xl backdrop-blur-md"
+                        aria-label={t('memory_palace.tour_controls_aria') || 'Cinematic tour controls'}>
+                        <div className="flex items-start gap-3 border-b border-slate-700 px-3 py-3">
+                            <div className={'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg shadow-inner ' + (tourPlaying ? 'bg-cyan-500 motion-safe:animate-pulse' : 'bg-slate-700')} aria-hidden="true">🎬</div>
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300">{t('memory_palace.tour') || 'Cinematic tour'}</span>
+                                    {tourPlaying && <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-[10px] font-extrabold text-emerald-200">{t('memory_palace.tour_live') || 'Playing'}</span>}
+                                </div>
+                                <div className="mt-0.5 truncate text-sm font-extrabold text-white">
+                                    {tourLocus?.label || (t('memory_palace.tour_ready') || 'Ready for the first locus')}
+                                </div>
+                                <div className="truncate text-xs font-semibold text-slate-300">
+                                    {tourRoom?.label || (t('memory_palace.tour_route_overview') || 'Route overview')}
+                                    {' · '}{Math.max(0, tourStopIndex + 1)}/{progressStops.length}
+                                </div>
+                            </div>
+                            <button type="button" onClick={closeCinematicTour} aria-label={t('common.close') || 'Close'}
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl font-bold text-slate-300 hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300">×</button>
+                        </div>
+                        <div className="h-1.5 bg-slate-800" role="progressbar" aria-label={t('memory_palace.tour_progress') || 'Tour progress'} aria-valuemin="0" aria-valuemax={progressStops.length} aria-valuenow={Math.max(0, tourStopIndex + 1)}>
+                            <div className="h-full rounded-r-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-[width] duration-500 motion-reduce:transition-none"
+                                style={{ width: (progressStops.length ? Math.max(0, ((tourStopIndex + 1) / progressStops.length) * 100) : 0) + '%' }} />
+                        </div>
+                        <div className="space-y-3 p-3">
+                            <div className="flex gap-2">
+                                <button type="button" onClick={tourPlaying ? () => pauseCinematicTour('manual') : startCinematicTour}
+                                    className={'min-h-11 flex-1 rounded-xl px-4 py-2 text-xs font-black shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ' + (tourPlaying ? 'bg-amber-400 text-slate-950 hover:bg-amber-300' : 'bg-cyan-500 text-slate-950 hover:bg-cyan-400')}>
+                                    {tourPlaying ? 'Ⅱ ' + (t('memory_palace.tour_pause') || 'Pause') : '▶ ' + (tourStopIndex >= 0 && tourStopIndex < progressStops.length - 1 ? (t('memory_palace.tour_resume') || 'Resume') : (t('memory_palace.tour_start') || 'Start tour'))}
+                                </button>
+                                <button type="button" onClick={() => seekCinematicTour(-1)} disabled={tourStopIndex <= 0}
+                                    aria-label={t('memory_palace.tour_previous') || 'Previous tour stop'}
+                                    className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-600 bg-slate-800 text-lg font-black text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-35">‹</button>
+                                <button type="button" onClick={() => seekCinematicTour(1)} disabled={tourStopIndex >= progressStops.length - 1}
+                                    aria-label={t('memory_palace.tour_next') || 'Next tour stop'}
+                                    className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-600 bg-slate-800 text-lg font-black text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-35">›</button>
+                            </div>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex rounded-xl border border-slate-600 bg-slate-900 p-1" role="group" aria-label={t('memory_palace.tour_pace') || 'Tour pace'}>
+                                    {Object.entries(_mpTourPaces).map(([key, pace]) => (
+                                        <button key={key} type="button" onClick={() => setTourPace(key)} aria-pressed={tourPace === key ? 'true' : 'false'}
+                                            className={'min-h-9 rounded-lg px-2.5 py-1 text-[11px] font-extrabold transition-colors ' + (tourPace === key ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-300 hover:bg-slate-800 hover:text-white')}>
+                                            {t('memory_palace.tour_pace_' + key) || pace.label}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button type="button" onClick={() => setTourNarration((enabled) => !enabled)} aria-pressed={tourNarration ? 'true' : 'false'}
+                                    className={'min-h-11 rounded-xl border px-3 py-2 text-xs font-extrabold transition-colors ' + (tourNarration ? 'border-cyan-300 bg-cyan-400/20 text-cyan-100' : 'border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700')}>
+                                    🔊 {tourNarration ? (t('memory_palace.tour_narration_on') || 'Narration on') : (t('memory_palace.tour_narration_off') || 'Narration off')}
+                                </button>
+                            </div>
+                            <p className="text-[11px] leading-relaxed text-slate-400">{t('memory_palace.tour_pause_help') || 'The tour pauses automatically when you interact with the palace. Reduced-motion settings use instant camera cuts.'}</p>
+                            <div className="sr-only" role="status" aria-live="polite">{tourAnnouncement}</div>
+                        </div>
+                    </aside>
+                )}
                 {!hasContent ? (
                     <div className="h-full flex flex-col items-center justify-center gap-2 text-center p-8" role="status">
                         <div className="text-3xl" aria-hidden="true">🏛</div>
@@ -5207,7 +5485,86 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     {current.mnemonic && (
                         <div className="text-sm text-indigo-900">
                             <span className="font-bold">{t('memory_palace.picture_this') || 'Picture this:'}</span> {current.mnemonic}
+                            {current.source === 'self' && (
+                                <span className="ml-1.5 inline-block rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                                    {t('memory_palace.own_badge') || 'Yours'}
+                                </span>
+                            )}
                         </div>
+                    )}
+                    {/* Writing your own image IS the technique, not a decoration on it: a
+                        picture you invent is recalled better than one you were handed.
+                        Zero AI, zero credits, works offline. */}
+                    {persist && !mnEditing && (
+                        <button
+                            type="button"
+                            onClick={() => { setMnDraft(current.source === 'self' ? (current.mnemonic || '') : ''); setMnEditing(true); }}
+                            className="mt-2 rounded-full border border-indigo-300 bg-white px-2.5 py-1 text-xs font-bold text-indigo-700 transition-colors hover:bg-indigo-100"
+                            title={t('memory_palace.own_tooltip') || 'Write the picture in your own words — an image you invent yourself is easier to recall than one you were handed'}
+                        >
+                            ✍️ {current.source === 'self' ? (t('memory_palace.own_edit') || 'Edit my image') : (t('memory_palace.own_write') || 'Write my own image')}
+                        </button>
+                    )}
+                    {persist && mnEditing && (
+                        <form className="mt-2" onSubmit={(e) => { e.preventDefault(); saveOwnMnemonic(current.id, mnDraft); }}>
+                            <label className="block text-xs font-bold text-indigo-800 mb-1" htmlFor="mp-own-mnemonic">
+                                {(t('memory_palace.own_label') || 'Your picture for: {label}').replace('{label}', current.label)}
+                            </label>
+                            <textarea
+                                id="mp-own-mnemonic"
+                                value={mnDraft}
+                                onChange={(e) => setMnDraft(e.target.value)}
+                                rows={2}
+                                autoFocus
+                                placeholder={t('memory_palace.own_placeholder') || 'Something you can SEE happening right here...'}
+                                className="w-full rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+                            />
+                            {/* Self-rated prompts, not a machine score: whether an image is
+                                vivid is the student's call, and word-list scoring would only
+                                ever work in English. */}
+                            <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-indigo-700">
+                                <li>{t('memory_palace.own_crit_action') || 'Is something MOVING in it?'}</li>
+                                <li>{t('memory_palace.own_crit_sensory') || 'Can you see a colour or hear a sound?'}</li>
+                                <li>{t('memory_palace.own_crit_placed') || 'Is it happening at THIS spot?'}</li>
+                                <li>{t('memory_palace.own_crit_personal') || 'Does it connect to something of yours?'}</li>
+                            </ul>
+                            {mnFeedback && mnFeedback.echoesLabel && (
+                                <div className="mt-1 text-[11px] font-bold text-amber-700" role="status">
+                                    {t('memory_palace.own_warn_echo') || 'That is the item name again — describe a picture of it instead.'}
+                                </div>
+                            )}
+                            {mnFeedback && mnFeedback.tooShort && !mnFeedback.echoesLabel && (
+                                <div className="mt-1 text-[11px] font-bold text-amber-700" role="status">
+                                    {t('memory_palace.own_warn_short') || 'A little more detail gives your memory something to hold on to.'}
+                                </div>
+                            )}
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                <button
+                                    type="submit"
+                                    disabled={!mnFeedback || mnFeedback.empty}
+                                    className="rounded-full bg-indigo-600 px-3 py-1 text-xs font-bold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                    {t('memory_palace.own_save') || 'Save my image'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setMnEditing(false); setMnDraft(''); }}
+                                    className="rounded-full border border-indigo-300 bg-white px-3 py-1 text-xs font-bold text-indigo-700 transition-colors hover:bg-indigo-100"
+                                >
+                                    {t('common.cancel') || 'Cancel'}
+                                </button>
+                                {current.source === 'self' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => saveOwnMnemonic(current.id, '')}
+                                        className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-100"
+                                        title={current.aiMnemonic || undefined}
+                                    >
+                                        ↩ {t('memory_palace.own_revert') || 'Use the generated one'}
+                                    </button>
+                                )}
+                            </div>
+                        </form>
                     )}
                 </div>
             )}
@@ -5377,6 +5734,31 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 .replace('{ok}', String(finished.firstTry + finished.eventual)).replace('{total}', String(finished.total)).replace('{first}', String(finished.firstTry))}
                     </span>
                     {' '}· ⏱ {fmtTime(elapsed)} · {(t('memory_palace.recall_points') || '{points} points').replace('{points}', String(finished.points))}
+                    {/* Next challenge. Walking the route BACKWARDS (or from a random
+                        start) is what separates a route anchored to places from a list
+                        rehearsed in order — so it is offered as the step after a walk,
+                        not as one more button competing at the start. */}
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                        <span className="text-xs font-bold text-emerald-800">{t('memory_palace.order_next') || 'Try it a harder way:'}</span>
+                        {recall.direction !== 'backward' && (
+                            <button
+                                type="button"
+                                onClick={() => retryRecall('backward')}
+                                className="rounded-full border border-emerald-300 bg-white px-2.5 py-1 text-xs font-bold text-emerald-800 transition-colors hover:bg-emerald-100"
+                                title={t('memory_palace.order_backward_tip') || 'Walk the same palace from the last locus to the first — proof the content is stored in places, not in list order'}
+                            >
+                                ↩ {t('memory_palace.order_backward') || 'Backwards'}
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            onClick={() => retryRecall('shuffle')}
+                            className="rounded-full border border-emerald-300 bg-white px-2.5 py-1 text-xs font-bold text-emerald-800 transition-colors hover:bg-emerald-100"
+                            title={t('memory_palace.order_shuffle_tip') || 'Visit the loci in a scrambled order — no running start from the locus before it'}
+                        >
+                            🔀 {t('memory_palace.order_shuffle') || 'Shuffled'}
+                        </button>
+                    </div>
                 </div>
             )}
             {!presenting && recall && !finished && current && (
