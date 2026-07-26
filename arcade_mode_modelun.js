@@ -936,7 +936,21 @@
   // ═══════════════════════════════════════════
   // Register the plugin with AlloHaven Arcade.
   // ═══════════════════════════════════════════
+  function attachModelUNCrisisA11yCSS() {
+    if (typeof document === 'undefined' || document.getElementById('mun-crisis-a11y-css')) return;
+    var style = document.createElement('style');
+    style.id = 'mun-crisis-a11y-css';
+    style.textContent = [
+      '.mun-crisis-control:focus-visible, .mun-crisis-response:focus-visible { outline: 3px solid #fff; outline-offset: 3px; box-shadow: 0 0 0 6px #1d4ed8; }',
+      '@media (forced-colors: active) {',
+      '  .mun-crisis-control:focus-visible, .mun-crisis-response:focus-visible { outline-color: Highlight; box-shadow: none; }',
+      '}'
+    ].join('\n');
+    if (document.head) document.head.appendChild(style);
+  }
+
   function register() {
+    attachModelUNCrisisA11yCSS();
     window.AlloHavenArcade.registerMode('model-un', {
       label: 'Model UN',
       icon: '🌐',
@@ -5676,10 +5690,10 @@
     var nowTuple = useState(Date.now());
     var setNow = nowTuple[1];
     useEffect(function() {
-      if (!crisis || !crisis.deadline) return;
+      if (!crisis || !crisis.deadline || crisis.timerPaused) return;
       var i = setInterval(function() { setNow(Date.now()); }, 1000);
       return function() { clearInterval(i); };
-    }, [crisis && crisis.deadline]);
+    }, [crisis && crisis.deadline, crisis && crisis.timerPaused]);
 
     function generateNews() {
       if (loading) return;
@@ -5720,6 +5734,8 @@
         newsAt: news.at || Date.now(),
         openedAt: Date.now(),
         deadline: Date.now() + 90 * 1000,
+        timerPaused: false,
+        pausedRemainingMs: null,
         responses: {}
       }});
       if (typeof ctx.addToast === 'function') ctx.addToast('🚨 Crisis response window OPEN (90 seconds)');
@@ -5745,6 +5761,49 @@
     }
     function closeCrisis() {
       updateMUN({ crisisResponse: null });
+    }
+
+    // WCAG 2.2.1 — the Chair can pause or extend the shared response
+    // deadline without discarding any delegate work or submitted responses.
+    function setCrisisTimerPaused(shouldPause) {
+      if (!crisis || !isHost) return;
+      var nowMs = Date.now();
+      var next;
+      if (shouldPause) {
+        var remainingMs = Math.max(0, crisis.deadline - nowMs);
+        if (remainingMs <= 0) return;
+        next = Object.assign({}, crisis, {
+          timerPaused: true,
+          pausedRemainingMs: remainingMs,
+          pausedAt: nowMs
+        });
+      } else {
+        var retainedMs = Math.max(0, Number(crisis.pausedRemainingMs) || 0);
+        next = Object.assign({}, crisis, {
+          timerPaused: false,
+          pausedRemainingMs: null,
+          pausedAt: null,
+          deadline: nowMs + retainedMs
+        });
+      }
+      updateMUN({ crisisResponse: next });
+      if (typeof ctx.addToast === 'function') {
+        ctx.addToast(shouldPause ? 'Crisis response timer paused.' : 'Crisis response timer resumed.');
+      }
+    }
+
+    function extendCrisisTimer() {
+      if (!crisis || !isHost) return;
+      var extraMs = 60 * 1000;
+      var next = crisis.timerPaused
+        ? Object.assign({}, crisis, {
+            pausedRemainingMs: Math.max(0, Number(crisis.pausedRemainingMs) || 0) + extraMs
+          })
+        : Object.assign({}, crisis, {
+            deadline: Math.max(Date.now(), crisis.deadline || 0) + extraMs
+          });
+      updateMUN({ crisisResponse: next });
+      if (typeof ctx.addToast === 'function') ctx.addToast('Crisis response time extended by 60 seconds.');
     }
 
     // No active news — host sees a small "📰 Breaking News" trigger button
@@ -5773,11 +5832,16 @@
     var myUid = isSolo ? 'me' : (ctx.userId || null);
     var myIso = myUid ? (modelUn.assignedCountries || {})[myUid] : null;
     var myCountry = myIso ? countryById(myIso) : null;
-    var crisisActive = !!(crisis && crisis.deadline && Date.now() < crisis.deadline);
-    var crisisClosed = !!(crisis && crisis.deadline && Date.now() >= crisis.deadline);
+    var crisisPaused = !!(crisis && crisis.timerPaused);
+    var crisisActive = !!(crisis && crisis.deadline && (crisisPaused || Date.now() < crisis.deadline));
+    var crisisClosed = !!(crisis && crisis.deadline && !crisisPaused && Date.now() >= crisis.deadline);
     var responses = (crisis && crisis.responses) || {};
     var responseCount = Object.keys(responses).length;
-    var timeLeftMs = crisis && crisis.deadline ? Math.max(0, crisis.deadline - Date.now()) : 0;
+    var timeLeftMs = crisis && crisis.deadline
+      ? (crisisPaused
+          ? Math.max(0, Number(crisis.pausedRemainingMs) || 0)
+          : Math.max(0, crisis.deadline - Date.now()))
+      : 0;
     var timeLeftSec = Math.ceil(timeLeftMs / 1000);
     var alreadyResponded = !!(myUid && responses[myUid]);
 
@@ -5841,8 +5905,11 @@
         news: news, crisis: crisis, myUid: myUid, myCountry: myCountry,
         agenda: agenda, isHost: isHost, isSolo: isSolo,
         timeLeftSec: timeLeftSec, crisisActive: crisisActive,
-        crisisClosed: crisisClosed, responseCount: responseCount,
+        crisisPaused: crisisPaused, crisisClosed: crisisClosed,
+        responseCount: responseCount,
         responses: responses, alreadyResponded: alreadyResponded,
+        onTogglePause: setCrisisTimerPaused,
+        onExtend: extendCrisisTimer,
         onClose: closeCrisis
       })
     );
@@ -5869,10 +5936,13 @@
     var isHost = props.isHost;
     var timeLeftSec = props.timeLeftSec;
     var crisisActive = props.crisisActive;
+    var crisisPaused = props.crisisPaused;
     var crisisClosed = props.crisisClosed;
     var responseCount = props.responseCount;
     var responses = props.responses || {};
     var alreadyResponded = props.alreadyResponded;
+    var onTogglePause = props.onTogglePause;
+    var onExtend = props.onExtend;
     var onClose = props.onClose;
 
     var textTuple = useState('');
@@ -5922,35 +5992,98 @@
       h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
         h('span', { style: { fontSize: 22 } }, '🚨'),
         h('div', { style: { flex: 1 } },
-          h('div', { style: { fontSize: 11, color: '#fde047', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' } },
-            crisisActive ? 'Crisis Response Open · ' + responseCount + ' responses · ' + timeLeftSec + 's left' : 'Crisis Response Closed · ' + responseCount + ' total responses'
+          h('div', {
+            role: 'timer',
+            'aria-label': crisisPaused
+              ? 'Crisis response timer paused with ' + timeLeftSec + ' seconds remaining'
+              : (crisisActive
+                  ? 'Crisis response timer, ' + timeLeftSec + ' seconds remaining'
+                  : 'Crisis response timer closed'),
+            style: { fontSize: 11, color: '#fde047', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }
+          },
+            crisisPaused
+              ? 'Crisis Response Paused · ' + responseCount + ' responses · ' + timeLeftSec + 's remaining'
+              : (crisisActive
+                  ? 'Crisis Response Open · ' + responseCount + ' responses · ' + timeLeftSec + 's left'
+                  : 'Crisis Response Closed · ' + responseCount + ' total responses')
           ),
-          crisisActive && h('div', { style: { fontSize: 11, color: '#fef9c3', marginTop: 2, fontStyle: 'italic' } },
+          crisisActive && h('div', { id: 'mun_crisis_response_help', style: { fontSize: 11, color: '#fef9c3', marginTop: 2, fontStyle: 'italic' } },
             'Every delegation has 90 seconds to react. Diplomatic but urgent. 25-50 words.'
           ),
           crisisClosed && h('div', { style: { fontSize: 11, color: '#fef9c3', marginTop: 2, fontStyle: 'italic' } },
             'Window closed. The Chair may now incorporate responses into the debate or move on.'
           )
         ),
-        h('div', { style: { display: 'flex', gap: 6 } },
+        h('div', {
+          role: 'group',
+          'aria-label': 'Crisis response controls',
+          style: { display: 'flex', gap: 6, flexWrap: 'wrap' }
+        },
+          isHost && crisisActive && h('button', {
+            type: 'button',
+            className: 'mun-crisis-control',
+            'aria-pressed': crisisPaused,
+            'aria-label': crisisPaused
+              ? 'Resume crisis response timer, ' + timeLeftSec + ' seconds remaining'
+              : 'Pause crisis response timer',
+            onClick: function() { onTogglePause(!crisisPaused); },
+            style: {
+              minWidth: 44, minHeight: 44, padding: '8px 10px',
+              fontSize: 11, fontWeight: 700, background: '#1d4ed8',
+              color: '#fff', border: '1px solid #93c5fd',
+              borderRadius: 6, cursor: 'pointer'
+            }
+          }, crisisPaused ? 'Resume timer' : 'Pause timer'),
+          isHost && crisisActive && h('button', {
+            type: 'button',
+            className: 'mun-crisis-control',
+            onClick: onExtend,
+            'aria-label': 'Add 60 seconds to the crisis response timer',
+            style: {
+              minWidth: 44, minHeight: 44, padding: '8px 10px',
+              fontSize: 11, fontWeight: 700, background: '#854d0e',
+              color: '#fff', border: '1px solid #fde047',
+              borderRadius: 6, cursor: 'pointer'
+            }
+          }, 'Add 60 seconds'),
           isHost && crisisClosed && responseCount > 0 && !gradeState.grades && h('button', {
+            type: 'button',
+            className: 'mun-crisis-control',
             onClick: gradeResponses,
             disabled: gradeState.loading,
-            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, background: gradeState.loading ? '#475569' : '#7c3aed', color: '#fff', border: 'none', borderRadius: 6, cursor: gradeState.loading ? 'wait' : 'pointer' }
+            style: { minWidth: 44, minHeight: 44, padding: '8px 10px', fontSize: 11, fontWeight: 700, background: gradeState.loading ? '#475569' : '#7c3aed', color: '#fff', border: 'none', borderRadius: 6, cursor: gradeState.loading ? 'wait' : 'pointer' }
           }, gradeState.loading ? '⏳ Grading…' : '🤖 AI grade'),
           isHost && h('button', {
+            type: 'button',
+            className: 'mun-crisis-control',
             onClick: onClose,
-            style: { padding: '4px 8px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.12)', color: '#fef9c3', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, cursor: 'pointer' }
+            style: { minWidth: 44, minHeight: 44, padding: '8px 10px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.12)', color: '#fef9c3', border: '1px solid #fef9c3', borderRadius: 6, cursor: 'pointer' }
           }, crisisClosed ? '✕ Close' : '⏹ End early')
         )
       ),
 
+      h('span', {
+        role: 'status',
+        'aria-live': 'polite',
+        'aria-atomic': 'true',
+        style: {
+          position: 'absolute', width: 1, height: 1, padding: 0,
+          margin: -1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap', border: 0
+        }
+      }, crisisPaused
+        ? 'Crisis response timer paused with ' + timeLeftSec + ' seconds remaining.'
+        : (crisisClosed ? 'Crisis response timer closed.' : 'Crisis response timer running.')),
+
       // My-delegate compose (only while active and not yet responded)
       crisisActive && myCountry && !alreadyResponded && h('div', { style: { padding: 10, background: 'rgba(0,0,0,0.25)', borderRadius: 8, marginBottom: 10 } },
-        h('div', { style: { fontSize: 11, color: '#fde047', fontWeight: 700, marginBottom: 6 } },
+        h('label', { htmlFor: 'mun_crisis_response_text', style: { display: 'block', fontSize: 11, color: '#fde047', fontWeight: 700, marginBottom: 6 } },
           myCountry.flag + ' ' + myCountry.name + ' — react in 25-50 words'
         ),
         h('textarea', {
+          id: 'mun_crisis_response_text',
+          className: 'mun-crisis-response',
+          'aria-describedby': 'mun_crisis_response_help',
           value: text,
           onChange: function(e) { setText(e.target.value); },
           placeholder: 'Our delegation… (one urgent position + one concrete call to action)',
@@ -5960,9 +6093,11 @@
         h('div', { style: { display: 'flex', alignItems: 'center', marginTop: 6 } },
           h('span', { style: { fontSize: 10, color: '#fef9c3' } }, (text.trim().split(/\s+/).filter(Boolean).length) + ' word' + (text.trim().split(/\s+/).filter(Boolean).length !== 1 ? 's' : '')),
           h('button', {
+            type: 'button',
+            className: 'mun-crisis-control',
             onClick: submitResponse,
             disabled: text.trim().length < 15,
-            style: { marginLeft: 'auto', padding: '6px 14px', fontSize: 12, fontWeight: 700, background: text.trim().length >= 15 ? '#facc15' : '#475569', color: '#422006', border: 'none', borderRadius: 6, cursor: text.trim().length >= 15 ? 'pointer' : 'not-allowed' }
+            style: { marginLeft: 'auto', minWidth: 44, minHeight: 44, padding: '8px 14px', fontSize: 12, fontWeight: 700, background: text.trim().length >= 15 ? '#facc15' : '#475569', color: '#422006', border: 'none', borderRadius: 6, cursor: text.trim().length >= 15 ? 'pointer' : 'not-allowed' }
           }, '🎤 Submit response')
         )
       ),

@@ -219,6 +219,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Remediated AlloHaven Boss Encounter's synchronized class-round deadline: teachers can now pause and resume the timer for every participant without losing remaining time, paused rounds neither tick nor auto-advance, and new or skipped rounds reset pause state. Timer state changes are announced without announcing every second; the control exposes pressed state and a time-specific accessible name; all teacher actions provide 44 CSS-pixel targets and dual-color visible focus with forced-colors support; and arcade cards and verb controls no longer suppress native focus (WCAG 1.3.1, 2.2.1, 2.4.6, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
 
+- Remediated Model UN's 90-second crisis-response deadline: the Chair can pause, resume, or add 60 seconds for every delegate without losing drafts or responses; paused sessions retain their remaining time and neither tick nor close. Timer changes are announced separately from the per-second visual timer; response instructions are programmatically associated with the text area; and pause, extend, grade, close/end, and submit actions provide 44 CSS-pixel targets with dual-color visible focus and forced-colors support (WCAG 1.3.1, 2.2.1, 2.4.6, 2.4.7, 2.5.8, 3.3.2, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
