@@ -160,8 +160,8 @@ const CHECKS = [
       if (!isInput) return false;
       // Skip hidden inputs
       if (/type\s*[:=]\s*['"]hidden['"]/.test(line)) return false;
-      // Check this line and next 3 for label association
-      const context = lines.slice(lineNum - 1, lineNum + 3).join(' ');
+      // Multi-line createElement props may place aria-label after several input-specific attributes.
+      const context = lines.slice(lineNum - 1, lineNum + 8).join(' ');
       if (/aria-label/.test(context)) return false;
       if (/aria-labelledby/.test(context)) return false;
       if (/id\s*[:=]/.test(context)) return false; // might have htmlFor association
@@ -180,7 +180,8 @@ const CHECKS = [
     description: 'Tab-like UI pattern without role="tablist", role="tab", aria-selected',
     testFile(content, filePath) {
       // Look for tab-switching patterns
-      const hasTabPattern = /activeTab|setTab|tab\s*===|\.tab\b/.test(content);
+      // A plain .tab data property is not evidence of a rendered tab interface.
+      const hasTabPattern = /\b(?:activeTab|selectedTab|currentTab|setTab|onTabChange)\b|tab\s*===/.test(content);
       if (!hasTabPattern) return false;
       // Check if proper ARIA is used
       const hasTabRole = /role\s*[:=]\s*['"]tablist['"]/.test(content);

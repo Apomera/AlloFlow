@@ -35,9 +35,10 @@
       var vsA11y = document.createElement('style');
       vsA11y.id = 'vs-a11y-css';
       vsA11y.textContent = [
-        '@media (prefers-reduced-motion: reduce) { .vs-root *, .vs-root *::before, .vs-root *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
-        '.vs-root button:focus-visible, .vs-root input:focus-visible, .vs-root [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 6px; }',
-        '.vs-root :focus:not(:focus-visible) { outline: none !important; }'
+        '@media (prefers-reduced-motion: reduce) { .vs-root, .vs-root *, .vs-root *::before, .vs-root *::after { animation: none !important; scroll-behavior: auto !important; transition: none !important; } }',
+        '.vs-root :where(button,input,select,textarea,a,[tabindex]):focus-visible { outline: 3px solid #0f172a !important; outline-offset: 3px !important; box-shadow: 0 0 0 2px #fff !important; border-radius: 6px; }',
+        '@media (forced-colors: active) { .vs-root :where(button,input,select,textarea,a,[tabindex]):focus-visible { outline-color: Highlight !important; box-shadow: none !important; } }',
+        '.vs-root button { min-width: 24px; min-height: 24px; }'
       ].join('\n');
       document.head.appendChild(vsA11y);
     }
@@ -3085,6 +3086,61 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (el) el.textContent = msg;
   }
 
+  function useVideoStudioDialogFocus(dialogRef, active, initialFocusRef, onEscapeRef, returnFocusRef) {
+    useEffect(function () {
+      if (!active) return undefined;
+      var dialog = dialogRef.current;
+      if (!dialog || typeof document === 'undefined') return undefined;
+      var previous = returnFocusRef.current || document.activeElement;
+      var stack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+      var trap = { root: dialog };
+      stack.push(trap);
+      function focusable() {
+        return Array.prototype.slice.call(dialog.querySelectorAll(
+          'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),video[controls],[tabindex]:not([tabindex="-1"])'
+        )).filter(function (node) {
+          return !node.hidden && node.getAttribute('aria-hidden') !== 'true';
+        });
+      }
+      var initial = initialFocusRef.current || focusable()[0] || dialog;
+      if (initial && typeof initial.focus === 'function') initial.focus();
+      function onKeyDown(event) {
+        if (stack[stack.length - 1] !== trap) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          if (onEscapeRef.current) onEscapeRef.current();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var items = focusable();
+        if (!items.length) {
+          event.preventDefault();
+          dialog.focus();
+          return;
+        }
+        var first = items[0], last = items[items.length - 1];
+        if (!dialog.contains(document.activeElement)) {
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus();
+        } else if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+      document.addEventListener('keydown', onKeyDown);
+      return function () {
+        document.removeEventListener('keydown', onKeyDown);
+        var index = stack.indexOf(trap);
+        if (index !== -1) stack.splice(index, 1);
+        var restoreTarget = returnFocusRef.current || previous;
+        if (restoreTarget && restoreTarget.isConnected && typeof restoreTarget.focus === 'function') restoreTarget.focus();
+      };
+    }, [active]);
+  }
+
   function extFor(type) {
     if (/mp4|m4v/i.test(type || '')) return '.mp4';
     if (/quicktime/i.test(type || '')) return '.mov';
@@ -3149,9 +3205,21 @@ function vsPcmToWav(pcmBytes, sampleRate) {
 
     var _st = useState('closed'); var studioState = _st[0], setStudioState = _st[1]; // closed | opening | open | blocked
     var _vd = useState([]); var videos = _vd[0], setVideos = _vd[1];
+    var _pr = useState(null); var pendingRemoval = _pr[0], setPendingRemoval = _pr[1];
     var studioWinRef = useRef(null);
     var bridgeTokenRef = useRef(null);
     var rootRef = useRef(null);
+    var closeButtonRef = useRef(null);
+    var returnFocusRef = useRef(typeof document !== 'undefined' ? document.activeElement : null);
+    var onCloseRef = useRef(onClose);
+    var removalDialogRef = useRef(null);
+    var removalCancelRef = useRef(null);
+    var removalReturnFocusRef = useRef(null);
+    var cancelRemovalRef = useRef(null);
+    onCloseRef.current = onClose;
+    cancelRemovalRef.current = function () { setPendingRemoval(null); };
+    useVideoStudioDialogFocus(rootRef, true, closeButtonRef, onCloseRef, returnFocusRef);
+    useVideoStudioDialogFocus(removalDialogRef, !!pendingRemoval, removalCancelRef, cancelRemovalRef, removalReturnFocusRef);
     var demoRunRef = useRef({ running: false, stop: false, kind: null, cleanupAfterStop: false });
     var demoPlanRef = useRef({ id: null, controller: null, cancelled: false });
 
@@ -3878,14 +3946,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       };
     }, []);
 
-    // Escape closes (studio window itself stays open — teacher may still be editing).
-    useEffect(function () {
-      function onKey(e) { if (e.key === 'Escape') onClose(); }
-      window.addEventListener('keydown', onKey);
-      return function () { window.removeEventListener('keydown', onKey); };
-    }, [onClose]);
 
-    useEffect(function () { try { if (rootRef.current) rootRef.current.focus(); } catch (_) {} }, []);
 
     var openStudio = useCallback(function () {
       var existing = studioWinRef.current;
@@ -3921,14 +3982,20 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       }, 15000);
     }, []);
 
-    var removeTake = useCallback(function (v) {
-      var ok = true;
-      try { ok = window.confirm(T('video_studio.remove_confirm', 'Remove this video from the gallery and this device? If you have not downloaded or bundled it, this copy is gone.')); } catch (_) {}
-      if (!ok) return;
+    function requestRemoveTake(v, trigger) {
+      removalReturnFocusRef.current = trigger || document.activeElement;
+      setPendingRemoval(v);
+    }
+
+    function confirmRemoveTake() {
+      var v = pendingRemoval;
+      if (!v) return;
+      removalReturnFocusRef.current = closeButtonRef.current;
+      setPendingRemoval(null);
       vsTakeStore.removeTake(v.id);
       addToast(T('video_studio.removed', 'Video removed.'), 'success');
       announce(T('video_studio.removed_sr', 'Video removed from the gallery.'));
-    }, []);
+    }
 
     var copyPackRef = useCallback(function (v) {
       var ref = vsPackReferenceForTake(v);
@@ -3936,7 +4003,20 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var done = function () { addToast(T('video_studio.ref_copied', 'Pack reference copied — paste it wherever the resource lives. The video bytes stay in the downloaded file.'), 'success'); };
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, done); }
-        else { var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); }
+        else {
+          var previous = document.activeElement;
+          var ta = document.createElement('textarea');
+          ta.setAttribute('aria-label', T('video_studio.copy_fallback_label', 'Temporary pack reference copy field'));
+          ta.readOnly = true;
+          ta.value = text;
+          ta.style.cssText = 'position:fixed;left:-10000px;top:0;width:1px;height:1px;opacity:0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+          if (previous && previous.isConnected && typeof previous.focus === 'function') previous.focus();
+          done();
+        }
       } catch (_) { done(); }
     }, []);
 
@@ -4167,20 +4247,30 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return h('div', {
       className: 'vs-root fixed inset-0 z-[200] flex items-center justify-center p-4',
       style: { background: 'rgba(15,23,42,0.72)' },
-      role: 'dialog', 'aria-modal': 'true', 'aria-label': T('video_studio.title', 'Video Studio')
+      role: 'presentation'
     },
-      h('div', { className: 'bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden', ref: rootRef, tabIndex: -1 },
+      h('div', {
+        className: 'bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden',
+        ref: rootRef,
+        tabIndex: -1,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'video-studio-title',
+        'aria-describedby': 'video-studio-description',
+        'aria-hidden': pendingRemoval ? 'true' : undefined,
+        inert: pendingRemoval ? '' : undefined
+      },
         // Header
         h('div', { className: 'flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-rose-50' },
           h('div', { className: 'flex items-center gap-3' },
             h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, '🎥'),
             h('div', null,
-              h('h2', { className: 'font-bold text-slate-800 text-lg' }, T('video_studio.title', 'Video Studio')),
-              h('p', { className: 'text-xs text-slate-500' }, T('video_studio.subtitle', 'Record your screen, trim, caption — everything stays on your device.'))
+              h('h2', { id: 'video-studio-title', className: 'font-bold text-slate-800 text-lg' }, T('video_studio.title', 'Video Studio')),
+              h('p', { id: 'video-studio-description', className: 'text-xs text-slate-500' }, T('video_studio.subtitle', 'Record your screen, trim, caption — everything stays on your device.'))
             )
           ),
           h('button', {
-            onClick: onClose, className: 'text-slate-400 hover:text-slate-700 text-2xl leading-none px-2 py-1',
+            ref: closeButtonRef, type: 'button', onClick: onClose, className: 'min-w-11 min-h-11 text-slate-600 hover:text-slate-800 text-2xl leading-none px-2 py-1',
             'aria-label': T('video_studio.close', 'Close Video Studio panel')
           }, '×')
         ),
@@ -4279,7 +4369,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                         title: T('video_studio.ref_title', 'Copies a small JSON reference (title, duration, checksum, thumbnail) — never the video bytes — for embedding in a resource pack.')
                       }, T('video_studio.copy_ref', '📎 Copy pack reference')),
                       h('button', {
-                        onClick: function () { removeTake(v); },
+                        onClick: function (event) { requestRemoveTake(v, event.currentTarget); },
                         className: 'px-3 py-1.5 rounded-lg border border-rose-300 text-rose-700 text-xs font-semibold hover:bg-rose-50',
                         title: T('video_studio.remove_title', 'Removes this video from the gallery and this device. Files you already downloaded or bundled are not affected.')
                       }, T('video_studio.remove', '🗑 Remove'))
@@ -4287,6 +4377,42 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                   )
                 );
               }))
+        )
+      ),
+      pendingRemoval && h('div', {
+        className: 'fixed inset-0 z-[210] flex items-center justify-center p-4',
+        style: { background: 'rgba(15,23,42,0.82)' },
+        role: 'presentation',
+        onMouseDown: function (event) { if (event.target === event.currentTarget) setPendingRemoval(null); }
+      },
+        h('div', {
+          ref: removalDialogRef,
+          tabIndex: -1,
+          role: 'alertdialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'video-studio-remove-title',
+          'aria-describedby': 'video-studio-remove-message video-studio-remove-detail',
+          className: 'w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl'
+        },
+          h('h2', { id: 'video-studio-remove-title', className: 'text-lg font-bold text-slate-900' },
+            T('video_studio.remove_dialog_title', 'Remove video?')),
+          h('p', { id: 'video-studio-remove-message', className: 'mt-2 text-sm text-slate-700' },
+            T('video_studio.remove_confirm', 'Remove this video from the gallery and this device? If you have not downloaded or bundled it, this copy is gone.')),
+          h('p', { id: 'video-studio-remove-detail', className: 'mt-2 text-sm font-semibold text-slate-900 break-words' },
+            pendingRemoval.title || T('video_studio.untitled', 'Untitled video')),
+          h('div', { className: 'mt-5 flex flex-wrap justify-end gap-3' },
+            h('button', {
+              ref: removalCancelRef,
+              type: 'button',
+              onClick: function () { setPendingRemoval(null); },
+              className: 'min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-semibold text-slate-800 hover:bg-slate-100'
+            }, T('common.cancel', 'Cancel')),
+            h('button', {
+              type: 'button',
+              onClick: confirmRemoveTake,
+              className: 'min-h-11 rounded-lg bg-rose-700 px-4 py-2 font-semibold text-white hover:bg-rose-800'
+            }, T('video_studio.remove_confirm_action', 'Remove video'))
+          )
         )
       )
     );
