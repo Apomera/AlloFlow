@@ -1,5 +1,42 @@
 # Remediation pipeline audit — 2026-07-26
 
+## STATUS — all 55 findings addressed (last updated 2026-07-26)
+
+Fixed, pinned and committed on `main` across ten commits. Every fix carries a regression pin in
+`tests/remediation_pipeline_audit_fixes.test.js` (142 tests) or in the suite that owns the
+behaviour; behavioural pins were preferred over source-substring pins throughout, since the audit's
+own headline test finding was that this repo's pins are mostly raw-source matches that cannot see
+runtime behaviour and drift into permanent redness. Three suites that had been quarantined for
+exactly that reason are green again and have left `tests/QUARANTINE.txt` (92 → 90 entries).
+
+**Decisions Aaron made during the work**
+
+- **H6 — fresh evidence may CLEAR an expert-review warning, not only raise one.** Implemented
+  two-way, gated on a scored deterministic audit actually existing: a missing or crashed axe run is
+  not evidence of a clean document. The parity suite's divergence is documented as
+  `H6_DIVERGENT_KEYS` and replaced with a six-case truth table against the live reducer.
+
+**Deliberately scoped, with reasons**
+
+- **M12** — the link half is fixed with a real baseline (pdf.js Link annotations). The TABLE nets
+  remain inert on born-digital input: a PDF has no table object to count without layout analysis,
+  and a fabricated count would be worse than an honestly silent net.
+- **L4** — the partial-coverage reframe is now reachable, but stays MESSAGING ONLY. Whether a
+  29-of-30-section partial should be allowed to show a score is a product judgement about how much
+  coverage is enough, not a mechanical fix.
+- **M11** — the banner is inert markup that survives sanitization and the handler no longer
+  rewrites the whole document. Rendering a real React retry button from its data attributes is a
+  view-side feature rather than a defect fix, and was not built.
+- **M20** — the half that stands alone is done (a completed run can no longer be adopted as a live
+  owner). Giving `runAutoFixLoop` its own ownership identity so its heartbeats carry a runId is a
+  larger change and was not made.
+- **L1, L12** — the remaining test-quality findings ask for behavioural coverage where hand-written
+  mirrors stand in today. H2 and H3, the two that were load-bearing for user-facing honesty, were
+  done; L1 and L12 are follow-on test-writing work.
+
+**Known unrelated red:** `tests/individual_remediation_polish.test.js` is quarantined at "4 failing"
+and now shows 3. Those are pre-existing and outside this audit's scope.
+
 **Method.** Eight read-only reviewers over the canonical sources, one per dimension
 (run-lifecycle, failure-recovery, throttle-gate, extraction-fidelity, html-integrity,
 verification-honesty, observability, test-coverage). Every finding was then handed to a
