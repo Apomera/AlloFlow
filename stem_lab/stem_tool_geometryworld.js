@@ -2268,11 +2268,29 @@
         if (result.newBadges.length > 0) {
           var latest = result.newBadges[result.newBadges.length - 1];
           upd({ earnedBadges: result.badges, lastBadgeNotification: latest });
-          if (addToast) addToast(latest.icon + ' Achievement: ' + latest.name + ' \u2014 ' + latest.desc, 'success');
-          announceToSR('Achievement unlocked! ' + latest.name + '. ' + latest.desc);
-          if (typeof awardXP === 'function') awardXP('geometryWorld', 10, 'Badge: ' + latest.name);
-          // Auto-dismiss after 4 seconds
-          setTimeout(function() { upd('lastBadgeNotification', null); }, 4000);
+          // Several badges genuinely land at once \u2014 finishing a lesson can trip
+          // lesson_complete, perfect_lesson and first_correct on the same check. Only
+          // the last one used to be toasted and paid for, so the student silently
+          // acquired badges they were never told about and lost the XP for them.
+          result.newBadges.forEach(function(badge, i) {
+            if (typeof awardXP === 'function') awardXP('geometryWorld', 10, 'Badge: ' + badge.name);
+            // Staggered so simultaneous toasts don't overwrite each other.
+            var showIt = function() {
+              if (addToast) addToast(badge.icon + ' Achievement: ' + badge.name + ' \u2014 ' + badge.desc, 'success');
+              announceToSR('Achievement unlocked! ' + badge.name + '. ' + badge.desc);
+            };
+            if (i === 0) showIt(); else setTimeout(showIt, i * 900);
+          });
+          // Auto-dismiss the badge banner. Tracked on the engine so a second batch
+          // can't be cleared early by the previous batch's timer.
+          var engB = window[engineKey];
+          if (engB) {
+            if (engB._badgeDismissTimer) clearTimeout(engB._badgeDismissTimer);
+            engB._badgeDismissTimer = setTimeout(function() { upd('lastBadgeNotification', null); },
+              4000 + (result.newBadges.length - 1) * 900);
+          } else {
+            setTimeout(function() { upd('lastBadgeNotification', null); }, 4000);
+          }
         }
       }
 
@@ -5289,6 +5307,7 @@
           if (engine._dimLines) engine._dimLines.forEach(function(obj) { engine.scene.remove(obj); if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });
           if (engine._selectionGlows) engine._selectionGlows.forEach(function(g) { engine.scene.remove(g); g.geometry.dispose(); g.material.dispose(); });
           if (engine._gridHelper) { engine.scene.remove(engine._gridHelper); engine._gridHelper.geometry.dispose(); engine._gridHelper.material.dispose(); }
+          if (engine._badgeDismissTimer) clearTimeout(engine._badgeDismissTimer);
           if (engine._resizeObserver) { try { engine._resizeObserver.disconnect(); } catch (e) {} engine._resizeObserver = null; }
           // Collab peer avatars are built inside the animate loop, so teardown never
           // saw them — each body/head Mesh (plus its material) outlived the engine.
@@ -6749,7 +6768,11 @@
               el('button', {
                 onClick: function() {
                   var eng = window[engineKey];
-                  if (eng) { eng.loadLesson(lesson); upd({ showMyLessons: false, lastGeneratedLesson: lesson, lessonEditorJson: JSON.stringify(lesson, null, 2), activeLesson: 'ai_generated' }); }
+                  // activeLesson gets the saved lesson's own _id, not the generic
+                  // 'ai_generated' — that is the key currentLesson and the chat-history
+                  // key are both resolved from, so a specific saved lesson has to be
+                  // addressable rather than collapsing onto "whatever was last made".
+                  if (eng) { eng.loadLesson(lesson); upd({ showMyLessons: false, lastGeneratedLesson: lesson, lessonEditorJson: JSON.stringify(lesson, null, 2), activeLesson: lesson._id || 'ai_generated' }); }
                 },
                 style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '4px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer', fontWeight: 700, flexShrink: 0 }
               }, '\u25B6'),
@@ -6779,12 +6802,23 @@
               onClick: function() {
                 try {
                   var lesson = JSON.parse(lessonEditorJson);
+                  // Hand-authored lessons used to go straight to loadLesson, skipping
+                  // validateLesson \u2014 so this, the one path a teacher actually types
+                  // into, was the ONLY path with no guardrails: no coordinate clamping,
+                  // no block-type check, no malformed-question repair, and no block
+                  // budget (a typo of y2: 200 built until the engine cap cut it off).
+                  lesson = validateLesson(lesson);
                   var eng = window[engineKey];
-                  if (eng && lesson.structures) {
+                  if (eng && lesson && lesson.structures) {
                     eng.loadLesson(lesson);
                     saveToMyLessons(lesson);
-                    upd({ lastGeneratedLesson: lesson, showLessonEditor: false });
+                    // Point activeLesson at what was just loaded. Without it the tool
+                    // kept resolving currentLesson to the PREVIOUS lesson while the
+                    // engine held the new one \u2014 wrong title, objectives and worksheet.
+                    upd({ lastGeneratedLesson: lesson, showLessonEditor: false, activeLesson: lesson._id || 'ai_generated' });
                     if (addToast) addToast('\u2705 Lesson applied and saved!', 'success');
+                  } else if (!lesson && addToast) {
+                    addToast('\u274c That JSON is not a lesson object', 'error');
                   }
                 } catch(e) {
                   if (addToast) addToast('\u274C Invalid JSON: ' + e.message, 'error');

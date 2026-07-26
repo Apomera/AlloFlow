@@ -274,3 +274,38 @@ describe('Geometry World AI lessons resolve to themselves', () => {
     });
   });
 });
+
+describe('Geometry World authoring path is validated', () => {
+  PATHS.forEach((p) => {
+    const src = readFileSync(p, 'utf8');
+
+    it(`runs hand-edited lesson JSON through validateLesson — ${p}`, () => {
+      // The lesson editor is the one path a teacher types into, and it was the ONLY
+      // path with no guardrails: straight from JSON.parse to loadLesson, skipping
+      // coordinate clamping, block-type checks, malformed-question repair and the
+      // block budget.
+      expect(src).toContain('lesson = validateLesson(lesson);');
+      expect(src).not.toContain('var lesson = JSON.parse(lessonEditorJson);\n                  var eng = window[engineKey];');
+    });
+
+    it(`points activeLesson at the lesson it just loaded — ${p}`, () => {
+      // Applying an edit left activeLesson on the PREVIOUS lesson, so currentLesson
+      // resolved to the old one while the engine held the new one.
+      expect(src).toContain("activeLesson: lesson._id || 'ai_generated' });");
+      // Loading a saved lesson addresses it by its own id rather than collapsing
+      // every saved lesson onto the generic 'ai_generated'.
+      expect(src).not.toContain("lessonEditorJson: JSON.stringify(lesson, null, 2), activeLesson: 'ai_generated' }); }");
+    });
+
+    it(`celebrates and pays for EVERY badge earned at once — ${p}`, () => {
+      // Finishing a lesson can trip lesson_complete + perfect_lesson + first_correct
+      // on the same check; only the last was toasted and awarded XP.
+      expect(src).toContain('result.newBadges.forEach(function(badge, i) {');
+      expect(src).toContain("awardXP('geometryWorld', 10, 'Badge: ' + badge.name);");
+      expect(src).toContain('if (i === 0) showIt(); else setTimeout(showIt, i * 900);');
+      // The dismiss timer is tracked so a second batch is not cleared early.
+      expect(src).toContain('if (engB._badgeDismissTimer) clearTimeout(engB._badgeDismissTimer);');
+      expect(src).toContain('if (engine._badgeDismissTimer) clearTimeout(engine._badgeDismissTimer);');
+    });
+  });
+});
