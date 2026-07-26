@@ -4297,6 +4297,25 @@ var geographyGroup = new THREE.Group();
       var chartBaseline = dark ? '#334155' : '#cbd5e1';
       var chartSurface = dark ? '#0f172a' : '#ffffff';
 
+      // The three "feature" cards (storyline, readiness, broadcast) sit inline among ordinary
+      // light panels but were hard-coded dark, so in light mode they read as dark islands.
+      // These tokens keep the accented treatment while following the theme. The immersive tab
+      // stays dark on purpose — it is a viewport around a 3D canvas, not an inline card.
+      function featureCardClass(accent) {
+        var themes = {
+          blue: dark ? 'border-blue-400/30 bg-gradient-to-br from-slate-950 via-blue-950 to-cyan-950 text-white' : 'border-blue-200 bg-gradient-to-br from-white via-blue-50 to-cyan-50 text-slate-900',
+          sky: dark ? 'border-sky-500/30 bg-gradient-to-br from-sky-950 via-slate-900 to-indigo-950 text-white' : 'border-sky-200 bg-gradient-to-br from-white via-sky-50 to-indigo-50 text-slate-900',
+          cyan: dark ? 'border-cyan-400/30 bg-gradient-to-br from-cyan-950 via-slate-900 to-blue-950 text-white' : 'border-cyan-200 bg-gradient-to-br from-white via-cyan-50 to-blue-50 text-slate-900'
+        };
+        return 'overflow-hidden rounded-xl border shadow-lg ' + (themes[accent] || themes.sky);
+      }
+      var featureDivider = dark ? 'border-white/10' : 'border-slate-200';
+      var featureInset = dark ? 'bg-white/5' : 'bg-white/75';
+      var featureChip = dark ? 'bg-white/10 ring-1 ring-white/10' : 'bg-white ring-1 ring-slate-200';
+      var featureTrack = dark ? 'bg-black/30' : 'bg-slate-200';
+      var featureMuted = dark ? 'text-slate-300' : 'text-slate-600';
+      var featureFaint = dark ? 'text-slate-400' : 'text-slate-500';
+
       var panelClass = 'rounded-xl border shadow-sm ' + (dark ? 'bg-slate-900/80 border-slate-700' : 'bg-white border-sky-200');
       var mutedClass = dark ? 'text-slate-300' : 'text-slate-600';
       var skyAccentClass = dark ? 'text-sky-300' : 'text-sky-700';
@@ -5279,47 +5298,48 @@ var geographyGroup = new THREE.Group();
           { id: 'now', eyebrow: 'Current chapter', hour: state.simHour, icon: '\uD83D\uDCCD', story: nowStory, point: now },
           { id: 'next', eyebrow: nextHour === state.simHour ? 'Model boundary' : 'Next chapter', hour: nextHour, icon: '\u23E9', story: nextStory, point: next }
         ];
-        return h('section', { className: 'overflow-hidden rounded-xl border border-blue-400/30 bg-gradient-to-br from-slate-950 via-blue-950 to-cyan-950 text-white shadow-lg', 'data-weather-atmosphere-storyline': true, 'aria-labelledby': 'atmosphere-storyline-title' },
-          h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-4' },
+        var storyEyebrow = dark ? 'text-cyan-300' : 'text-cyan-700';
+        return h('section', { className: featureCardClass('blue'), 'data-weather-atmosphere-storyline': true, 'aria-labelledby': 'atmosphere-storyline-title' },
+          h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + featureDivider },
             h('div', null,
-              h('p', { className: 'text-xs font-black uppercase tracking-widest text-cyan-300' }, 'Time and change'),
+              h('p', { className: 'text-xs font-black uppercase tracking-widest ' + storyEyebrow }, 'Time and change'),
               h('h3', { id: 'atmosphere-storyline-title', className: 'text-lg font-black' }, 'Atmosphere Storyline'),
-              h('p', { className: 'mt-1 text-xs text-slate-300' }, 'Read the model as a sequence of evidence, not a single weather snapshot.')
+              h('p', { className: 'mt-1 text-xs ' + featureMuted }, 'Read the model as a sequence of evidence, not a single weather snapshot.')
             ),
-            h('div', { className: 'rounded-xl bg-white/10 px-3 py-2 text-center ring-1 ring-white/10' },
-              h('p', { className: 'text-xl font-black text-cyan-300' }, 'T +' + state.simHour),
-              h('p', { className: 'text-[11px] font-bold uppercase tracking-wide text-slate-300' }, state.simHour === 0 ? 'Starting conditions' : state.simHour < 6 ? 'Early evolution' : state.simHour < 12 ? 'Developing pattern' : 'Later outlook')
+            h('div', { className: 'rounded-xl px-3 py-2 text-center ' + featureChip },
+              h('p', { className: 'text-xl font-black ' + storyEyebrow }, 'T +' + state.simHour),
+              h('p', { className: 'text-[11px] font-bold uppercase tracking-wide ' + featureMuted }, state.simHour === 0 ? 'Starting conditions' : state.simHour < 6 ? 'Early evolution' : state.simHour < 12 ? 'Developing pattern' : 'Later outlook')
             )
           ),
           h('div', { className: 'p-4' },
             h('div', { className: 'flex flex-wrap items-center gap-2', role: 'group', 'aria-label': 'Jump to a model-hour chapter' },
-              h('span', { className: 'mr-1 text-xs font-black uppercase tracking-wide text-cyan-300' }, 'Jump to chapter'),
+              h('span', { className: 'mr-1 text-xs font-black uppercase tracking-wide ' + storyEyebrow }, 'Jump to chapter'),
               chapters.map(function (hour) {
                 var active = state.simHour === hour;
-                return h('button', { key: hour, type: 'button', onClick: function () { update({ simHour: hour, playing: false, timeAdvanced: hour > 0 }); if (announce) announce('Atmosphere storyline moved to model hour ' + hour + '.'); }, 'aria-pressed': active, className: 'min-h-11 rounded-full border px-3 py-1.5 text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10') }, 'T +' + hour);
+                return h('button', { key: hour, type: 'button', onClick: function () { update({ simHour: hour, playing: false, timeAdvanced: hour > 0 }); if (announce) announce('Atmosphere storyline moved to model hour ' + hour + '.'); }, 'aria-pressed': active, className: 'min-h-11 rounded-full border px-3 py-1.5 text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (active ? 'border-cyan-500 bg-cyan-500 text-white' : (dark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-cyan-50')) }, 'T +' + hour);
               })
             ),
             h('div', { className: 'relative mt-4 grid gap-3 md:grid-cols-3', 'aria-live': 'polite' }, cards.map(function (card) {
               var currentCard = card.id === 'now';
-              return h('article', { key: card.id, className: 'relative rounded-xl border p-4 ' + (currentCard ? 'border-cyan-300/50 bg-cyan-400/10 shadow-lg shadow-cyan-950/30' : 'border-white/10 bg-white/5') },
+              return h('article', { key: card.id, className: 'relative rounded-xl border p-4 ' + (currentCard ? (dark ? 'border-cyan-300/50 bg-cyan-400/10 shadow-lg shadow-cyan-950/30' : 'border-cyan-300 bg-cyan-50 shadow-md') : (dark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')) },
                 h('div', { className: 'flex items-start justify-between gap-2' },
                   h('div', null,
-                    h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + (currentCard ? 'text-cyan-300' : 'text-slate-400') }, card.eyebrow),
+                    h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + (currentCard ? storyEyebrow : featureFaint) }, card.eyebrow),
                     h('p', { className: 'mt-1 text-base font-black' }, 'T +' + card.hour + ' hours')
                   ),
                   h('span', { className: 'text-xl', 'aria-hidden': true }, card.icon)
                 ),
-                h('p', { className: 'mt-3 rounded-lg bg-black/20 p-2 font-mono text-xs leading-relaxed text-cyan-100' }, conditionsLine(card.point)),
-                h('p', { className: 'mt-3 text-xs leading-relaxed text-slate-200' }, card.story)
+                h('p', { className: 'mt-3 rounded-lg p-2 font-mono text-xs leading-relaxed ' + (dark ? 'bg-black/20 text-cyan-100' : 'bg-slate-100 text-slate-800') }, conditionsLine(card.point)),
+                h('p', { className: 'mt-3 text-xs leading-relaxed ' + featureMuted }, card.story)
               );
             })),
             // Three snapshots cannot show an arc. Small multiples over the whole model
             // window place each chapter on the curve it was sampled from \u2014 one axis per
             // measure, never two scales sharing a plot.
             h('div', { className: 'mt-4 grid gap-3 sm:grid-cols-3', 'data-weather-storyline-sparklines': true }, [
-              { id: 'temperature', label: 'Temperature', unit: '\u00B0C', color: '#d95926' },
-              { id: 'pressure', label: 'Pressure', unit: ' hPa', color: '#9085e9' },
-              { id: 'precipPotential', label: 'Precipitation potential', unit: '%', color: '#3987e5' }
+              { id: 'temperature', label: 'Temperature', unit: '\u00B0C', color: seriesColor.temperature },
+              { id: 'pressure', label: 'Pressure', unit: ' hPa', color: seriesColor.seaLevelPressure },
+              { id: 'precipPotential', label: 'Precipitation potential', unit: '%', color: seriesColor.precipPotential }
             ].map(function (track) {
               var values = storylinePoints.map(function (entry) { return entry.point[track.id]; });
               var low = Math.min.apply(Math, values);
@@ -5330,44 +5350,44 @@ var geographyGroup = new THREE.Group();
               var path = storylinePoints.map(function (entry, index) {
                 return (index === 0 ? 'M' : 'L') + round(sparkX(entry.hour), 1) + ' ' + round(sparkY(entry.point[track.id]), 1);
               }).join(' ');
-              return h('div', { key: track.id, className: 'rounded-xl border border-white/10 bg-black/20 p-2' },
+              return h('div', { key: track.id, className: 'rounded-xl border p-2 ' + (dark ? 'border-white/10 bg-black/20' : 'border-slate-200 bg-white/75') },
                 h('div', { className: 'flex items-baseline justify-between gap-2' },
                   h('p', { className: 'flex items-center gap-1.5 text-[11px] font-black' },
                     h('span', { className: 'inline-block h-2 w-2 rounded-full', style: { backgroundColor: track.color }, 'aria-hidden': 'true' }),
                     track.label
                   ),
-                  h('p', { className: 'text-[11px] font-black tabular-nums text-cyan-100' }, now[track.id] + track.unit)
+                  h('p', { className: 'text-[11px] font-black tabular-nums ' + (dark ? 'text-cyan-100' : 'text-slate-900') }, now[track.id] + track.unit)
                 ),
                 h('svg', {
                   viewBox: '0 0 200 48', className: 'mt-1 h-auto w-full', role: 'img',
                   'aria-label': track.label + ' across the 24-hour model window runs from ' + round(low, 1) + track.unit + ' to ' + round(high, 1) + track.unit + ', and reads ' + now[track.id] + track.unit + ' at the current chapter T plus ' + state.simHour + ' hours.'
                 },
-                  h('line', { x1: 6, y1: 44, x2: 194, y2: 44, stroke: 'rgba(255,255,255,.18)', strokeWidth: 1 }),
+                  h('line', { x1: 6, y1: 44, x2: 194, y2: 44, stroke: dark ? 'rgba(255,255,255,.18)' : 'rgba(15,23,42,.15)', strokeWidth: 1 }),
                   h('path', { d: path, fill: 'none', stroke: track.color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                   // The three chapter hours are ticked; the current one carries the dot.
                   cards.map(function (card) {
                     return h('line', {
                       key: card.id, x1: round(sparkX(card.hour), 1), y1: 42, x2: round(sparkX(card.hour), 1), y2: 46,
-                      stroke: card.id === 'now' ? '#67e8f9' : 'rgba(255,255,255,.35)', strokeWidth: card.id === 'now' ? 2 : 1
+                      stroke: card.id === 'now' ? (dark ? '#67e8f9' : '#0e7490') : (dark ? 'rgba(255,255,255,.35)' : 'rgba(15,23,42,.3)'), strokeWidth: card.id === 'now' ? 2 : 1
                     });
                   }),
-                  h('circle', { cx: round(sparkX(state.simHour), 1), cy: round(sparkY(now[track.id]), 1), r: 4, fill: track.color, stroke: '#0b1220', strokeWidth: 2 })
+                  h('circle', { cx: round(sparkX(state.simHour), 1), cy: round(sparkY(now[track.id]), 1), r: 4, fill: track.color, stroke: dark ? '#0b1220' : '#ffffff', strokeWidth: 2 })
                 ),
-                h('div', { className: 'flex justify-between text-[10px] font-bold text-slate-400' },
+                h('div', { className: 'flex justify-between text-[10px] font-bold ' + featureFaint },
                   h('span', null, 'T +0'),
                   h('span', { className: 'tabular-nums' }, round(low, 1) + ' to ' + round(high, 1) + track.unit),
                   h('span', null, 'T +24')
                 )
               );
             })),
-            h('div', { className: 'mt-4 flex items-start gap-3 rounded-xl border border-amber-300/20 bg-amber-300/10 p-3' },
+            h('div', { className: 'mt-4 flex items-start gap-3 rounded-xl border p-3 ' + (dark ? 'border-amber-300/20 bg-amber-300/10' : 'border-amber-300 bg-amber-50') },
               h('span', { className: 'text-xl', 'aria-hidden': true }, '\uD83D\uDC41\uFE0F'),
               h('div', null,
-                h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-amber-300' }, 'Evidence cue'),
+                h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + (dark ? 'text-amber-300' : 'text-amber-800') }, 'Evidence cue'),
                 h('p', { className: 'mt-1 text-xs font-bold leading-relaxed' }, watchCue)
               )
             ),
-            h('p', { className: 'mt-3 text-xs leading-relaxed text-slate-400' }, 'Storyline chapters are projections from this transparent teaching model, not observed future weather.')
+            h('p', { className: 'mt-3 text-xs leading-relaxed ' + featureFaint }, 'Storyline chapters are projections from this transparent teaching model, not observed future weather.')
           )
         );
       }
@@ -6062,10 +6082,10 @@ var geographyGroup = new THREE.Group();
         }
         function readinessCard() {
           var checklist = readinessItems.map(function (item) {
-            return h('div', { key: item.id, className: 'rounded-xl border p-3 ' + (item.complete ? 'border-emerald-300/30 bg-emerald-400/10' : 'border-white/10 bg-white/5') },
+            return h('div', { key: item.id, className: 'rounded-xl border p-3 ' + (item.complete ? (dark ? 'border-emerald-300/30 bg-emerald-400/10' : 'border-emerald-300 bg-emerald-50') : (dark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')) },
               h('div', { className: 'flex items-start justify-between gap-2' },
                 h('span', { className: 'text-lg', 'aria-hidden': true }, item.icon),
-                h('span', { className: 'rounded-full px-2 py-0.5 text-[11px] font-black ' + (item.complete ? 'bg-emerald-300 text-emerald-950' : 'bg-white/10 text-slate-200') }, item.complete ? 'Done' : item.status)
+                h('span', { className: 'rounded-full px-2 py-0.5 text-[11px] font-black ' + (item.complete ? 'bg-emerald-300 text-emerald-950' : (dark ? 'bg-white/10 text-slate-200' : 'bg-slate-100 text-slate-700')) }, item.complete ? 'Done' : item.status)
               ),
               h('div', { className: 'mt-2 text-xs font-black leading-snug' }, item.label)
             );
@@ -6085,7 +6105,7 @@ var geographyGroup = new THREE.Group();
           });
           // Each label carries its own colour key, so a segment is never matched by hue alone.
           var scoreLabels = scoringWeights.map(function (weight) {
-            return h('div', { key: weight.label, className: 'flex items-center justify-between gap-2 text-[11px] text-slate-300' },
+            return h('div', { key: weight.label, className: 'flex items-center justify-between gap-2 text-[11px] ' + featureMuted },
               h('span', { className: 'flex items-center gap-1.5' },
                 h('span', { className: 'inline-block h-2 w-2 shrink-0 rounded-full', style: { backgroundColor: weight.color }, 'aria-hidden': 'true' }),
                 weight.label
@@ -6093,38 +6113,38 @@ var geographyGroup = new THREE.Group();
               h('span', { className: 'font-black tabular-nums text-white' }, weight.points + ' pts')
             );
           });
-          return h('section', { className: 'overflow-hidden rounded-xl border border-sky-500/30 bg-gradient-to-br from-sky-950 via-slate-900 to-indigo-950 text-white shadow-lg', 'data-weather-forecast-readiness': true, 'aria-labelledby': 'weather-readiness-title' },
-            h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-4' },
+          return h('section', { className: featureCardClass('sky'), 'data-weather-forecast-readiness': true, 'aria-labelledby': 'weather-readiness-title' },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + featureDivider },
               h('div', null,
                 h('p', { className: 'text-xs font-black uppercase tracking-widest text-sky-300' }, 'Mission progress'),
                 h('h3', { id: 'weather-readiness-title', className: 'mt-1 text-lg font-black' }, 'Forecast Readiness'),
-                h('p', { className: 'mt-1 text-xs text-slate-300' }, 'Build a complete, evidence-based forecast before verification.')
+                h('p', { className: 'mt-1 text-xs ' + featureMuted }, 'Build a complete, evidence-based forecast before verification.')
               ),
-              h('div', { className: 'rounded-xl bg-white/10 px-3 py-2 text-center ring-1 ring-white/10' },
+              h('div', { className: 'rounded-xl px-3 py-2 text-center ' + featureChip },
                 h('div', { className: 'text-2xl font-black text-sky-300' }, forecastReadiness + '%'),
-                h('div', { className: 'text-[11px] font-bold uppercase tracking-wide text-slate-300' }, forecastReadiness === 100 ? 'Ready to verify' : 'In progress')
+                h('div', { className: 'text-[11px] font-bold uppercase tracking-wide ' + featureMuted }, forecastReadiness === 100 ? 'Ready to verify' : 'In progress')
               )
             ),
             h('div', { className: 'px-4 pt-3' },
-              h('div', { className: 'h-2 overflow-hidden rounded-full bg-black/30', role: 'progressbar', 'aria-label': 'Forecast readiness', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': forecastReadiness },
+              h('div', { className: 'h-2 overflow-hidden rounded-full ' + featureTrack, role: 'progressbar', 'aria-label': 'Forecast readiness', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': forecastReadiness },
                 h('div', { className: 'h-full rounded-full bg-gradient-to-r from-sky-400 to-cyan-300 transition-all motion-reduce:transition-none', style: { width: forecastReadiness + '%' } })
               )
             ),
             h('div', { className: 'grid grid-cols-2 gap-2 p-4 sm:grid-cols-3 xl:grid-cols-5' }, checklist),
-            h('div', { className: 'grid gap-3 border-t border-white/10 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,.8fr)]' },
-              h('div', { className: 'flex items-start gap-2 rounded-xl bg-white/5 p-3' },
+            h('div', { className: 'grid gap-3 border-t p-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,.8fr)] ' + featureDivider },
+              h('div', { className: 'flex items-start gap-2 rounded-xl p-3 ' + featureInset },
                 h('span', { className: 'text-lg', 'aria-hidden': true }, nextReadinessItem ? '\uD83D\uDCA1' : '\u2705'),
                 h('div', null,
                   h('div', { className: 'text-[11px] font-black uppercase tracking-wide text-sky-300' }, nextReadinessItem ? 'Your next move' : 'Forecast complete'),
                   h('p', { className: 'mt-0.5 text-xs font-bold' }, nextReadinessItem ? nextReadinessItem.label : 'All readiness signals are complete. Verify when ready.')
                 )
               ),
-              h('div', { className: 'rounded-xl bg-white/5 p-3', 'data-weather-scoring-guide': true },
+              h('div', { className: 'rounded-xl p-3 ' + featureInset, 'data-weather-scoring-guide': true },
                 h('div', { className: 'flex items-center justify-between gap-2' },
                   h('span', { className: 'text-[11px] font-black uppercase tracking-wide text-sky-300' }, 'Transparent scoring rubric'),
-                  h('span', { className: 'text-[11px] text-slate-400' }, 'Reasoning: teacher/peer review')
+                  h('span', { className: 'text-[11px] ' + featureFaint }, 'Reasoning: teacher/peer review')
                 ),
-                h('div', { className: 'mt-2 flex h-2 overflow-hidden rounded-full bg-black/30' }, scoreSegments),
+                h('div', { className: 'mt-2 flex h-2 overflow-hidden rounded-full ' + featureTrack }, scoreSegments),
                 h('div', { className: 'mt-2 grid grid-cols-2 gap-x-3 gap-y-1' }, scoreLabels)
               )
             )
@@ -6668,43 +6688,43 @@ var geographyGroup = new THREE.Group();
           var script = communicationReady
             ? audience.lead + ' ' + precipLabels[d.predictionPrecip] + precipVerb + ' most likely ' + timingLabels[d.predictionTiming] + '. Main concern: ' + hazardLabels[d.predictionHazard] + '. Recommended action: ' + actionLabels[d.readinessAction] + '.' + (d.forecastConfidence ? ' Forecast confidence: ' + d.forecastConfidence + '%.' : '')
             : audience.lead + ' Add ' + missingLabels.join(', ') + ' to complete this briefing.';
-          return h('section', { className: 'overflow-hidden rounded-xl border border-cyan-400/30 bg-gradient-to-br from-cyan-950 via-slate-900 to-blue-950 text-white shadow-lg', 'data-weather-broadcast-studio': true, 'aria-labelledby': 'weather-broadcast-title' },
-            h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-4' },
+          return h('section', { className: featureCardClass('cyan'), 'data-weather-broadcast-studio': true, 'aria-labelledby': 'weather-broadcast-title' },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + featureDivider },
               h('div', null,
                 h('p', { className: 'text-xs font-black uppercase tracking-widest text-cyan-300' }, 'Science communication'),
                 h('h3', { id: 'weather-broadcast-title', className: 'text-lg font-black' }, 'Weather Broadcast Studio'),
-                h('p', { className: 'mt-1 text-xs text-slate-300' }, 'Translate model evidence into a useful briefing for a real audience.')
+                h('p', { className: 'mt-1 text-xs ' + featureMuted }, 'Translate model evidence into a useful briefing for a real audience.')
               ),
-              h('span', { className: 'rounded-full px-3 py-1 text-xs font-black uppercase tracking-wide ' + (communicationReady ? 'bg-emerald-300 text-emerald-950' : 'bg-white/10 text-cyan-200') }, communicationReady ? '\u25CF On air' : completed + '/4 details')
+              h('span', { className: 'rounded-full px-3 py-1 text-xs font-black uppercase tracking-wide ' + (communicationReady ? 'bg-emerald-300 text-emerald-950' : (dark ? 'bg-white/10 text-cyan-200' : 'bg-slate-100 text-slate-700')) }, communicationReady ? '\u25CF On air' : completed + '/4 details')
             ),
             h('div', { className: 'p-4' },
               h('p', { className: 'text-xs font-black uppercase tracking-wide text-cyan-300' }, 'Choose your audience'),
               h('div', { className: 'mt-2 grid grid-cols-3 gap-2' }, audiences.map(function (item) {
                 var selected = item.id === audienceId;
-                return h('button', { key: item.id, type: 'button', onClick: function () { update({ broadcastAudience: item.id }); }, 'aria-pressed': selected, className: 'min-h-16 rounded-xl border px-2 py-3 text-center text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (selected ? 'border-cyan-300 bg-cyan-400 text-cyan-950' : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10') },
+                return h('button', { key: item.id, type: 'button', onClick: function () { update({ broadcastAudience: item.id }); }, 'aria-pressed': selected, className: 'min-h-16 rounded-xl border px-2 py-3 text-center text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (selected ? 'border-cyan-500 bg-cyan-500 text-white' : (dark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-cyan-50')) },
                   h('span', { className: 'mb-1 block text-xl', 'aria-hidden': true }, item.icon), item.label
                 );
               })),
               h('div', { className: 'mt-4' },
-                h('div', { className: 'mb-2 flex items-center justify-between text-xs font-bold text-slate-300' },
+                h('div', { className: 'mb-2 flex items-center justify-between text-xs font-bold ' + featureMuted },
                   h('span', null, 'Briefing completeness'),
                   h('span', null, communicationProgress + '%')
                 ),
-                h('div', { className: 'h-2 overflow-hidden rounded-full bg-black/30', role: 'progressbar', 'aria-label': 'Broadcast briefing completeness', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': communicationProgress },
+                h('div', { className: 'h-2 overflow-hidden rounded-full ' + featureTrack, role: 'progressbar', 'aria-label': 'Broadcast briefing completeness', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': communicationProgress },
                   h('div', { className: 'h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-300 transition-all motion-reduce:transition-none', style: { width: communicationProgress + '%' } })
                 )
               ),
               h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4' }, communicationItems.map(function (item) {
-                return h('div', { key: item.label, className: 'rounded-lg border px-2 py-2 text-center text-[11px] font-black ' + (item.complete ? 'border-emerald-300/30 bg-emerald-400/10 text-emerald-200' : 'border-white/10 bg-white/5 text-slate-400') }, (item.complete ? '\u2713 ' : '') + item.label);
+                return h('div', { key: item.label, className: 'rounded-lg border px-2 py-2 text-center text-[11px] font-black ' + (item.complete ? (dark ? 'border-emerald-300/30 bg-emerald-400/10 text-emerald-200' : 'border-emerald-300 bg-emerald-50 text-emerald-900') : (dark ? 'border-white/10 bg-white/5 text-slate-400' : 'border-slate-200 bg-white/75 text-slate-500')) }, (item.complete ? '\u2713 ' : '') + item.label);
               })),
-              h('div', { className: 'mt-4 rounded-xl border border-cyan-300/20 bg-black/20 p-4', role: 'status', 'aria-live': 'polite' },
+              h('div', { className: 'mt-4 rounded-xl border p-4 ' + (dark ? 'border-cyan-300/20 bg-black/20' : 'border-cyan-200 bg-white'), role: 'status', 'aria-live': 'polite' },
                 h('div', { className: 'flex items-center justify-between gap-2' },
                   h('p', { className: 'text-xs font-black uppercase tracking-wide text-cyan-300' }, communicationReady ? 'Broadcast script ready' : 'Live script builder'),
-                  h('span', { className: 'text-[11px] text-slate-400' }, audience.label + ' audience')
+                  h('span', { className: 'text-[11px] ' + featureFaint }, audience.label + ' audience')
                 ),
                 h('p', { className: 'mt-2 text-sm font-bold leading-relaxed' }, script)
               ),
-              h('p', { className: 'mt-3 text-xs leading-relaxed text-slate-400' }, 'Communication readiness is separate from forecast accuracy. Verify the science before treating the script as a model outcome.')
+              h('p', { className: 'mt-3 text-xs leading-relaxed ' + featureFaint }, 'Communication readiness is separate from forecast accuracy. Verify the science before treating the script as a model outcome.')
             )
           );
         }
