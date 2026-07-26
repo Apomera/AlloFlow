@@ -35,6 +35,15 @@ describe('static audit timer rule', () => {
     expect(report).not.toContain('TIMER-001');
   });
 
+  it('does not treat transport expiry metadata as a user deadline', () => {
+    const report = scanFixture([
+      'const SIGNALING_TTL_MS = 60 * 60 * 1000;',
+      'const payload = { createdAt: Date.now(), expiresAt: Date.now() + SIGNALING_TTL_MS };',
+      'writeTransportMetadata(payload);',
+    ].join('\n'));
+    expect(report).not.toContain('TIMER-001');
+  });
+
   it('reports a ticking user countdown without adjustment controls', () => {
     const report = scanFixture([
       'let timeLeft = 60;',

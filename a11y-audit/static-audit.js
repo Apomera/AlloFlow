@@ -263,7 +263,10 @@ const CHECKS = [
       // Require both an observed clock and explicit deadline/countdown state
       // before applying WCAG 2.2.1.
       const observesClock = /setInterval\s*\(|Date\.now\s*\(|performance\.now\s*\(/.test(content);
-      const hasUserTimeLimit = /\b(?:countdown|timeRemaining|remainingTime|timeLeft|secondsRemaining|remainingSeconds|timerActive|deadline|roundEndsAt|expiresAt)\b/i.test(content)
+      // `expiresAt` alone is commonly transport/cache cleanup metadata, not a
+      // user time limit. A user-facing expiry still matches through its
+      // countdown/remaining/deadline state.
+      const hasUserTimeLimit = /\b(?:countdown|timeRemaining|remainingTime|timeLeft|secondsRemaining|remainingSeconds|timerActive|deadline|roundEndsAt)\b/i.test(content)
         || /\b\d+\s*(?:seconds?|minutes?)\s+(?:left|remaining)\b/i.test(content);
       if (!observesClock || !hasUserTimeLimit) return false;
       // Check for a documented adjustment mechanism.

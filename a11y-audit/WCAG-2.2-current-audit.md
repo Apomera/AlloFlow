@@ -229,6 +229,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Replaced Concept Atlas SVG count-only naming with meaningful text alternatives that enumerate concept names and relationship statements in SVG descriptions. Full and empty diagrams expose concise image names plus detailed descriptions; miniature constellation thumbnails are hidden because the same atlas name and counts are adjacent; and the root/deployed AlloHaven host mirrors remain synchronized. The focused Atlas static audit now reports no SVG findings (WCAG 1.1.1, 1.3.1, 4.1.2).
 
+- Remediated Live Polling's teacher host as a named and described focus-managed dialog with initial Close focus, Tab and Shift+Tab containment, Escape closure, and launcher focus restoration. Replaced the ability-tiered group-name browser confirmation with a nested named and described alert dialog that isolates the parent, focuses the safe neutral-name action, supports Escape and backdrop cancellation, returns focus to Add group, preserves the pending name on cancel, and provides 44 CSS-pixel actions. Refined the timer heuristic so signaling-transport expiry metadata is not misclassified as a user time limit (WCAG 1.3.1, 2.1.1, 2.1.2, 2.4.3, 2.4.7, 2.5.8, 3.2.2, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

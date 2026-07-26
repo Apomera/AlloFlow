@@ -1092,6 +1092,69 @@
     });
   }
 
+  // Modal focus lifecycle shared by the teacher host and its nested
+  // confirmation. The shared stack prevents a parent dialog from handling
+  // Tab/Escape while a child alert dialog is active.
+  function useLivePollingDialogFocus(dialogRef, isOpen, onEscape, initialFocusRef) {
+    var escapeRef = R.useRef(onEscape);
+    escapeRef.current = onEscape;
+    R.useEffect(function () {
+      if (!isOpen || typeof document === 'undefined') return undefined;
+      var dialog = dialogRef.current;
+      if (!dialog) return undefined;
+      var previousFocus = document.activeElement;
+      var trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+      var trap = { root: dialog };
+      trapStack.push(trap);
+      var selector = 'a[href],area[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+      var getFocusable = function () {
+        return Array.prototype.slice.call(dialog.querySelectorAll(selector));
+      };
+      var initial = initialFocusRef && initialFocusRef.current;
+      var firstFocusable = initial || getFocusable()[0] || dialog;
+      if (firstFocusable && typeof firstFocusable.focus === 'function') firstFocusable.focus();
+      var onKeyDown = function (event) {
+        if (trapStack[trapStack.length - 1] !== trap) return;
+        if (event.key === 'Escape') {
+          if (typeof escapeRef.current === 'function') {
+            event.preventDefault();
+            event.stopPropagation();
+            escapeRef.current();
+          }
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var focusable = getFocusable();
+        if (!focusable.length) {
+          event.preventDefault();
+          dialog.focus();
+          return;
+        }
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (!dialog.contains(document.activeElement)) {
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus();
+        } else if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      };
+      document.addEventListener('keydown', onKeyDown);
+      return function () {
+        document.removeEventListener('keydown', onKeyDown);
+        var trapIndex = trapStack.indexOf(trap);
+        if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+        if (previousFocus && previousFocus.isConnected !== false && typeof previousFocus.focus === 'function') {
+          previousFocus.focus();
+        }
+      };
+    }, [dialogRef, initialFocusRef, isOpen]);
+  }
+
   const renderWordCloudItems = function (items, ariaLabel) {
     const safeItems = Array.isArray(items) ? items.filter((item) => item && item.label) : [];
     if (!safeItems.length) return null;
@@ -1228,6 +1291,12 @@
       : null;
     const onActivitySnapshot = typeof props.onActivitySnapshot === 'function' ? props.onActivitySnapshot : null;
     const hostRef = R.useRef(null);
+    const hostDialogRef = R.useRef(null);
+    const hostCloseRef = R.useRef(null);
+    const groupNameTriggerRef = R.useRef(null);
+    const groupNameDialogRef = R.useRef(null);
+    const groupNameCancelRef = R.useRef(null);
+    const [pendingGroupName, setPendingGroupName] = R.useState(null);
     const [guests, setGuests] = R.useState([]);
     const [responses, setResponses] = R.useState({});
     const [pollType, setPollType] = R.useState('rating');
@@ -1429,13 +1498,7 @@
           patch.then ? { then: Object.assign({}, r.then, patch.then) } : {});
       }); });
     };
-    const addGroup = function () {
-      const name = newGroupName.trim();
-      if (!name) return;
-      if (isAbilityTieredName(name)) {
-        const ok = window.confirm(tr('"{name}" looks like an ability-tiered group name. EL/UDL practice recommends neutral or theme-based names (Indigo, Sage, Pirate Crew, Space Crew). Use anyway?', { name: name }));
-        if (!ok) return;
-      }
+    const commitGroup = function (name) {
       const id = 'g_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
       setGroups(function (prev) { return prev.concat([{ id: id, name: name }]); });
       setNewGroupName('');
@@ -1446,6 +1509,23 @@
       if (ref && typeof writer === 'function') {
         writer(ref, { ['groups.' + id + '.name']: name }).catch(function () {});
       }
+    };
+    const addGroup = function () {
+      const name = newGroupName.trim();
+      if (!name) return;
+      if (isAbilityTieredName(name)) {
+        setPendingGroupName(name);
+        return;
+      }
+      commitGroup(name);
+    };
+    const cancelPendingGroupName = function () {
+      setPendingGroupName(null);
+    };
+    const confirmPendingGroupName = function () {
+      const name = pendingGroupName;
+      setPendingGroupName(null);
+      if (name) commitGroup(name);
     };
 
     const broadcast = function () {
@@ -1610,6 +1690,9 @@
       lastActivitySnapshotRef.current = snapshot;
       onActivitySnapshot(snapshot);
     }, [isOpen, activePoll, activeParticipantUids, guests, responses, responseStatusByPoll, feedbackByPoll, wordCloudModerationByPoll, freeTextModerationByPoll, peerShowcaseRound, peerVotesByRound, lastSharedResultsAt, onActivitySnapshot]);
+
+    useLivePollingDialogFocus(hostDialogRef, isOpen, onClose, hostCloseRef);
+    useLivePollingDialogFocus(groupNameDialogRef, pendingGroupName !== null, cancelPendingGroupName, groupNameCancelRef);
 
     if (!isOpen) return null;
     const activeResponses = (activePoll && responses[activePoll.id]) || [];
@@ -1823,16 +1906,27 @@
     const broadcastTargetCount = composerAudienceUids.length;
     const broadcastDisabled = !pollPrompt.trim() || broadcastTargetCount === 0;
 
-    return ce('div', {
-      role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Live Polling Host'),
-      style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
-    },
-      ce('div', { style: { background: 'white', maxWidth: 720, width: '100%', maxHeight: '90vh', overflow: 'auto', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
+    return ce(R.Fragment, null,
+      ce('div', {
+        role: 'presentation',
+        style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
+      },
+        ce('div', {
+          ref: hostDialogRef,
+          tabIndex: -1,
+          role: 'dialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'live-polling-host-title',
+          'aria-describedby': 'live-polling-host-description',
+          'aria-hidden': pendingGroupName !== null ? 'true' : undefined,
+          inert: pendingGroupName !== null ? '' : undefined,
+          style: { background: 'white', maxWidth: 720, width: '100%', maxHeight: '90vh', overflow: 'auto', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }
+        },
         ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' } },
-          ce('h2', { style: { margin: 0, fontSize: '1.15rem', color: '#0f172a' } }, tr('Live Polling —') + ' ', ce('span', { style: { fontFamily: 'monospace', color: '#1e3a8a' } }, sessionCode)),
-          ce('button', { onClick: onClose, style: { background: '#f1f5f9', border: 'none', padding: '0.4rem 0.8rem', borderRadius: 6, cursor: 'pointer', fontWeight: 600 } }, tr('Close'))
+          ce('h2', { id: 'live-polling-host-title', style: { margin: 0, fontSize: '1.15rem', color: '#0f172a' } }, tr('Live Polling —') + ' ', ce('span', { style: { fontFamily: 'monospace', color: '#1e3a8a' } }, sessionCode)),
+          ce('button', { ref: hostCloseRef, type: 'button', onClick: onClose, style: { minWidth: 44, minHeight: 44, background: '#f1f5f9', border: 'none', padding: '0.4rem 0.8rem', borderRadius: 6, cursor: 'pointer', fontWeight: 600 } }, tr('Close'))
         ),
-        ce('p', { style: { fontSize: '0.85rem', color: '#475569', margin: '0 0 0.75rem 0' } }, tr('Connected:') + ' ',
+        ce('p', { id: 'live-polling-host-description', style: { fontSize: '0.85rem', color: '#475569', margin: '0 0 0.75rem 0' } }, tr('Connected:') + ' ',
           ce('strong', null, guests.length), ' ' + (guests.length === 1 ? tr('guest') : tr('guests')),
           guests.length > 0 ? ' (' + guests.map(function (g) { return g.codename; }).join(', ') + ')' : ''
         ),
@@ -1918,7 +2012,7 @@
             // Group quick-create row
             ce('div', { style: { display: 'flex', gap: 6, marginBottom: 8, alignItems: 'center' } },
               ce('input', { type: 'text', value: newGroupName, onChange: function (e) { setNewGroupName(e.target.value); }, placeholder: tr('New group name (e.g., Pirate Crew)'), 'aria-label': tr('New group name'), style: { flex: 1, padding: '0.35rem 0.5rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.8rem' } }),
-              ce('button', { onClick: addGroup, disabled: !newGroupName.trim(), style: { padding: '0.35rem 0.7rem', borderRadius: 4, border: '1px solid #059669', background: !newGroupName.trim() ? '#f1f5f9' : '#059669', color: !newGroupName.trim() ? '#94a3b8' : 'white', cursor: !newGroupName.trim() ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.75rem' } }, tr('+ Add group'))
+              ce('button', { ref: groupNameTriggerRef, type: 'button', onClick: addGroup, disabled: !newGroupName.trim(), style: { minHeight: 44, padding: '0.35rem 0.7rem', borderRadius: 4, border: '1px solid #059669', background: !newGroupName.trim() ? '#f1f5f9' : '#059669', color: !newGroupName.trim() ? '#94a3b8' : 'white', cursor: !newGroupName.trim() ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.75rem' } }, tr('+ Add group'))
             ),
             groups.length === 0 ? ce('p', { style: { fontSize: '0.75rem', color: '#475569', fontStyle: 'italic', margin: '0 0 0.5rem 0' } }, tr('Create at least one group above to start adding routing rules.')) : null,
             // Rules list
@@ -2200,7 +2294,31 @@
           ) : null
         ) : ce('p', { style: { fontSize: '0.8rem', color: '#64748b', marginTop: 0 } }, tr('No active poll. Compose above and broadcast to start.'))
       )
-    );
+    ),
+    pendingGroupName !== null ? ce('div', {
+      role: 'presentation',
+      onClick: function (event) { if (event.target === event.currentTarget) cancelPendingGroupName(); },
+      style: { position: 'fixed', inset: 0, zIndex: 10001, background: 'rgba(15,23,42,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
+    },
+      ce('div', {
+        ref: groupNameDialogRef,
+        tabIndex: -1,
+        role: 'alertdialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'live-polling-group-warning-title',
+        'aria-describedby': 'live-polling-group-warning-message live-polling-group-warning-guidance',
+        style: { width: '100%', maxWidth: 480, maxHeight: 'calc(100vh - 2rem)', overflowY: 'auto', background: 'white', border: '2px solid #f59e0b', borderRadius: 12, padding: '1.25rem', boxShadow: '0 24px 64px rgba(0,0,0,0.4)' }
+      },
+        ce('h2', { id: 'live-polling-group-warning-title', style: { margin: '0 0 0.75rem', color: '#78350f', fontSize: '1.1rem' } }, tr('Use this group name?')),
+        ce('p', { id: 'live-polling-group-warning-message', style: { margin: '0 0 0.65rem', color: '#1e293b', lineHeight: 1.5 } }, tr('"{name}" looks like an ability-tiered group name.', { name: pendingGroupName })),
+        ce('p', { id: 'live-polling-group-warning-guidance', style: { margin: '0 0 1rem', color: '#475569', lineHeight: 1.5 } }, tr('EL/UDL practice recommends neutral or theme-based names such as Indigo, Sage, Pirate Crew, or Space Crew.')),
+        ce('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } },
+          ce('button', { ref: groupNameCancelRef, type: 'button', onClick: cancelPendingGroupName, style: { minHeight: 44, padding: '0.6rem 0.9rem', border: '1px solid #94a3b8', borderRadius: 7, background: 'white', color: '#334155', cursor: 'pointer', fontWeight: 800 } }, tr('Choose a neutral name')),
+          ce('button', { type: 'button', onClick: confirmPendingGroupName, style: { minHeight: 44, padding: '0.6rem 0.9rem', border: '1px solid #b45309', borderRadius: 7, background: '#b45309', color: 'white', cursor: 'pointer', fontWeight: 800 } }, tr('Use anyway'))
+        )
+      )
+    ) : null
+  );
   };
 
   const GuestOverlay = !R ? null : function GuestOverlay(props) {
