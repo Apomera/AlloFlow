@@ -1,0 +1,142 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52480-ninki-gaabna",
+  "title": "Ninki Gaabna",
+  "description": "Sheekadan waxay ku saabsan tahay nin aan la jeclayn dhererkiisa. Buugga sheekada waa la la qoray, waa la sawiray wana la daabacay carruur joogta Xarunta Farshaxanka ee Helena Heritage, Jalingo iyada oo qab ka ah Mshruuca Qalabka Tijaabinta ee Lenovo ASb.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Mercy Dennis"
+  ],
+  "illustrators": [],
+  "translators": [
+    "Zahra Nooh"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Mercy Dennis",
+      "role": "Author"
+    },
+    {
+      "name": "Zahra Nooh",
+      "role": "Translation"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Mercy Dennis (Author); Zahra Nooh (Translation)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52480",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52480",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52480",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-1316c253f68a1248",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/64840301.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/64840302.png",
+      "text": "Tuulo la dhaho Kalum, waxaa degganaa nin la dhaho Muha, in kastoo aanay jirin cid garanaysa. Dadka tuulada ma jeclayn sababtoo ah wuu yaraa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52480#page=1",
+      "sourceDigest": "sha256:691137ac7a8bec21af4b3d7c69c65fa526f2e65a31c35f810af4134c17c07236"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/64840303.png",
+      "text": "Waxay u bixiyeen 'ninkii gaabnaa.' Taasi waxay murugo ku abuurtay Muha. Wuxuu hoos fadhiisan jiray geed canbaha asaga oo layaabaan waxa aynan dadku saaxiibtinimo u la heyn.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52480#page=2",
+      "sourceDigest": "sha256:3346d0950c14d6d4785acde30066d406f29b3c9e07cc826bc23e4217f49aa87f"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/64840304.png",
+      "text": "Maalin ayaa dugsigii tuuladii waxaa ka kacay dab. Qof kasta wuu cabsaday wana la walwalay. Muha wuu deganaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52480#page=3",
+      "sourceDigest": "sha256:74543e763993a6b804c1040d4e3dcfde65408e84f0981804bb4a7234889affc6"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/64840305.png",
+      "text": "Wuxuu u orday gurigiisa si dhaqsi ah. Wuxuu so qaatay baaldi wayn oo biyo ah. Dib buu u orday oo waxuu biyo ku shubay dabkii.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52480#page=4",
+      "sourceDigest": "sha256:b02989399587ac43a40bb081701941bd59739dc0f79c1b714808e1a2f816fe65"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/64840306.png",
+      "text": "Muha inta uu hor iyo gadaal u ordaayay, dadkii kale ee degaanka ayaa ku dayday. Dabkii ayaa durba damay. Reer tuuladi faraxsana, waxay kor uqaaden Muha.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52480#page=5",
+      "sourceDigest": "sha256:8c3dc621739d667d627388ceb8d917084f1bacca2011d825c8ae9bee8227c184"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/64840307.png",
+      "text": "Dadku waxay bilaabeen inay dheelaan. Markii ay dheelayeen ayaa nin weydiiyey, \"Ninka gaaban magaciisu waa maxay?\" Muha ayaa ugu jawaabay, \"Magacaygu waa Muha.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52480#page=6",
+      "sourceDigest": "sha256:fd45cfb2043309661635f065ad83b353613bc13f81570eb84b01894a569b8d4b"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/64840308.png",
+      "text": "Dadkii tuulada degganaa waxay bilaabeen inay ammaanaan, \"Muha, Muha, Muha.\" Laga bilaabo maalintas qofna ma oran 'ninki gaabna'.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52480#page=7",
+      "sourceDigest": "sha256:8fb47e39ee36c1ff9cdb0f07d02bfcd4a9ad8c3b35e4219883ede0bae79bb3bb"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/64840309.png",
+      "text": "Dadkii tuulada waxay u dhiseen Muha guri cusub. Wuxuu ka guursaday tuulada gabar la yiraahdo Michine. Farxad bay kuwada noolaayeen intaa waxii ka danbeeyay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52480#page=8",
+      "sourceDigest": "sha256:b67a4fe24ed8563d0d2191581ba9ec8043a91051bd9a4502e6466ba01fcc8147"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 185
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:0fa5d5dcc09b137641569d38c045f44f88082fe66ee9150760091c3bc3f66e5d"
+  }
+}

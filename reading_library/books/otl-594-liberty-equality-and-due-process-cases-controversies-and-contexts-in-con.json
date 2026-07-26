@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-594-liberty-equality-and-due-process-cases-controversies-and-contexts-in-con",
+  "title": "Liberty, Equality and Due Process: Cases, Controversies, and Contexts in Constitutional Law - Third Edition",
+  "description": "This Casebook is intended to be used in a course which concentrates on Constitutional Rights and centers the Fourteenth Amendment. It can be used in a first year Law School course with a title such as “Liberty, Equality, and Due Process,” as it is at CUNY School of Law, an upper division Constitutional Rights course, or an advanced undergraduate course focusing on constitutional rights, especially equality and due process. The Casebook begins with the threshold issue of “state action” which orients students to a basic but often under-taught principle of constitutional law. The Casebook then considers judicial review and constitutional interpretation. Chapters 3-6 center on equality, including slavery before the Reconstruction Amendments, equal protection for racial, gender, and other classifications, affirmative action, and fundamental rights in equal protection doctrine. Chapters 7-9 are shorter chapters that consider the Privileges or Immunities Clause, Incorporation of Bill of Rights provisions to the states, and the Second Amendment. Chapter 10 focuses on substantive due process, with Chapter 11 treating the “synergy” between due process and equal protection regarding fundamental rights. The brief last Chapter, Chapter 12, includes materials on state constitutional rights, which can be omitted or integrated into previous subjects.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law - Constitutional Law"
+  ],
+  "authors": [
+    "Ruthann Robson - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CALI's eLangdell® Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/liberty-equality-and-due-process-cases-controversies-and-contexts-in-constitutional-law"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This Casebook is intended to be used in a course which concentrates on Constitutional Rights and centers the Fourteenth Amendment. It can be used in a first year Law School course with a title such as “Liberty, Equality, and Due Process,” as it is at CUNY School of Law, an upper division Constitutional Rights course, or an advanced undergraduate course focusing on constitutional rights, especially equality and due process. The Casebook begins with the threshold issue of “state action” which orients students to a basic but often under-taught principle of constitutional law. The Casebook then considers judicial review and constitutional interpretation. Chapters 3-6 center on equality, including slavery before the Reconstruction Amendments, equal protection for racial, gender, and other classifications, affirmative action, and fundamental rights in equal protection doctrine. Chapters 7-9 are shorter chapters that consider the Privileges or Immunities Clause, Incorporation of Bill of Rights provisions to the states, and the Second Amendment. Chapter 10 focuses on substantive due process, with Chapter 11 treating the “synergy” between due process and equal protection regarding fundamental rights. The brief last Chapter, Chapter 12, includes materials on state constitutional rights, which can be omitted or integrated into previous subjects."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 220
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "594",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

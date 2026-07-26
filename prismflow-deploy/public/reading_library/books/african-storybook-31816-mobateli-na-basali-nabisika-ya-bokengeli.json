@@ -1,0 +1,232 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-31816-mobateli-na-basali-nabisika-ya-bokengeli",
+  "title": "Mobateli na basali nabisika ya bokengeli",
+  "description": "Lisakoli ya lelo ezali ya mobateli na basali naye, bazali kopesa bongengele elamu na ba niama bakufela ba boti.",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Nina Orange"
+  ],
+  "illustrators": [
+    "Magriet Brink"
+  ],
+  "translators": [
+    "Dorine Kamin"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Nina Orange",
+      "role": "Author"
+    },
+    {
+      "name": "Dorine Kamin",
+      "role": "Translation"
+    },
+    {
+      "name": "Magriet Brink",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Nina Orange (Author); Dorine Kamin (Translation); Magriet Brink (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "31816",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-b1ebeeec76cbe63d",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/12997.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12979.png",
+      "text": "Oyo ezali lisakoli ya mobateli na basali, bazali kobatela ba niama ya bitike.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=1",
+      "sourceDigest": "sha256:f21603be50e90cf5fed27185bf947da5d12f2934c4f6f809d59f9bd14aebe736"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12980.png",
+      "text": "Sanza ya muambe ezali sanza moko ya musala mingi, mpe ya bosungi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=2",
+      "sourceDigest": "sha256:7556ecfa4dd0573d1b406e695932b3deac61eabc533ecb08b17c33e02924e9b6"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12981.png",
+      "text": "Mbula moko, mukeba akomaki ezalaki mbala naye ya liboso, ayaki nakati ya mutuka ya munene ya langi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=3",
+      "sourceDigest": "sha256:04f512c64118fd4ce0f2871208aa2a0fae1fc6fdae889e45dcd349c9517c0d87"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12982.png",
+      "text": "Mobateli na basali naye bayokelaki mukeba mawa mingi, azalaki muke mpe mawa mawa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=4",
+      "sourceDigest": "sha256:7ab6739558a52bdbd9e59ac76835519843acecfc7b01e7a84f9036680aac6f6e"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12983.png",
+      "text": "Sika sikoyo mukeba azuaki makasi mpe ayaki kosangana na baninga mususu bakomi kosakana.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=5",
+      "sourceDigest": "sha256:361f8b4f09ac09b08eccb2f5676bc1edc83b1ed427c11de4a8e078f3b649bc64"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12984.png",
+      "text": "Na mokolo mosusu na sanza kaka ya muambe batu ya batambusi èlicoptére bayaki na bisika ya bokengeli.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=6",
+      "sourceDigest": "sha256:2dc29b23a750a1029bf9f3166aa740e7f2a3ab8ee54ae031ec9e0a3846bfd18e"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12985.png",
+      "text": "Mobateli na basungi naye bakimaki mbangu pona ko salisa nzoko ya muke bayaki naye na kati ya èlicoptére ba finiki ye bulanketi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=7",
+      "sourceDigest": "sha256:fdf39989cecc48954f86284573962b176f2e4e286958b67034b2ec073e443c60"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12986.png",
+      "text": "Ezalaki na ndiwa. Azalaki na mikolo mitano kaka, mobateli na basali pe basungi ye baliesaki ye pe komelisa lokola.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=8",
+      "sourceDigest": "sha256:d32407af3ec1840c278e7c836c67549fa8b4621c1d919e8d0c19b8f237a146c8"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12987.png",
+      "text": "Oyo ya misatu mokufeli ba boti ayaki na sanza wana lisusu malea. Akomaki na bisika ya munene na mutuka ya mutane azalaki kaka na sanza motoba.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=9",
+      "sourceDigest": "sha256:f16ea61193d5c5f5ad3e63596493db6daac364648e3d88ac9c6e45a2c8bbb79e"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12988.png",
+      "text": "Melea aza moko ya ba ngubu akomaki moninga malamu ya Enkare azali muana ya mpakasa, bazalaki kokende bisaka nionso bango mibale.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=10",
+      "sourceDigest": "sha256:1a484a69e1214db6bd4f1c5d5525477a06bf2e87cd57bbbd447cd78e7a304653"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12989.png",
+      "text": "Butu moko batu nionso bazalaki kotambola bisika ba komaki Ambia.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=11",
+      "sourceDigest": "sha256:1f71266590ed5b1b54f305da895e2cd24c854836b3cd76e9e31036f8457ce5a8"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12990.png",
+      "text": "Ambia azalaki na sanza mitano alembaki mingi sima mokolo moko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=12",
+      "sourceDigest": "sha256:77493f996a3bccf8b578c4aa2eb178814c2dcafabc891301bda3af8cca15b4b4"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12991.png",
+      "text": "Pona kingo naye elekaki mulayi, na yango mobateli asungaki ye na kopesa ye bileyi ba melisaki ambia.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=13",
+      "sourceDigest": "sha256:1eb43ee32ca64e63d391683d7d436be3a06b6df49bfa305ae85bfbce232c607a"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12992.png",
+      "text": "Namike oyo ya ba mapasa mbuyi na kabange bango pe bakomaki na katikati ya sanza ya muambe. Bazali ba mboloko bazo bela bakomi na ngonga muke.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=14",
+      "sourceDigest": "sha256:95c61294344a34b7c1b93869f43ce3fb19032f3aa14cf5360f4b8da0ad5e497e"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12994.png",
+      "text": "Batu nionso bazuaki mawa pona liwa ya abei akufaki na bokomi bwa ye, awumelaki te nkasi mobateli na basali ba sungaki mua nabokebi po naye akufa te.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=15",
+      "sourceDigest": "sha256:4905e990f572c33c336c3dc6fcd63b89efd9e642d0eed3ac1d21ae1fbcb89c8e"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12997.png",
+      "text": "Naba oyo bayaki na sima ya sanza ya muambe kopi, kepi na keji bazali ba nkosi ya mike bazali kaka na mposo mibale, bazalaki na kanda makasi na bokomi na bango.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=16",
+      "sourceDigest": "sha256:8cad7d438de76fc762a4ff6e9e6281af94731c7112daf9eaf99d2ad05adda663"
+    },
+    {
+      "n": 17,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12995.png",
+      "text": "Mobateli na basali naye ba lingaki bango mingi, naba oyo ya mobulu koleka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=17",
+      "sourceDigest": "sha256:e12c3d2ccb1988f310c31d333200354a982ac1505d2799308185ee4ee5865b19"
+    },
+    {
+      "n": 18,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12996.png",
+      "text": "Ya mobulu makasi ezalaki muana ya muke na kombo ya lobolia. Lobolia alingaki koboma bitaleli ya mobateli naye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=18",
+      "sourceDigest": "sha256:b4c1633f85e188409f317be7e3d10f7a12e2f853115aa96791f5215a425c92aa"
+    },
+    {
+      "n": 19,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12998.png",
+      "text": "Batu na bisika ya bokengeli basalaki makasi pe mingi pona kotala ba niama ya mike, ba oyo bazangi ba boti mpe ba kengelaki bango malamu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=19",
+      "sourceDigest": "sha256:7eed56e2c6432170e26aa5100bd25031ed2cc0857d5cd1b57536cdd55b5e745a"
+    },
+    {
+      "n": 20,
+      "img": null,
+      "text": "Tanga na bokebi lisakoli oyo na yango oyanola na mituna. 1. Mbula boni mpe bazalaki boni? 2. Nani akomaki liboso na sanza? 3. Mbula nini ba niama bazalaki nango? 4. Nani akomaki ya suka? Azalaki na mbula boni? 5. Nani azalaki elenge naba niama nionso bakomaki na sanza muambe? 6. Bazalaki ba mbula boni? 7. Nani akomaki liboso ya ba niama nionso?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31816#page=20",
+      "sourceDigest": "sha256:5d9887d442ccf319760d7208f88bbbecf8d0cefe747d3865319c8cbe1cc40374"
+    }
+  ],
+  "stats": {
+    "pages": 20,
+    "words": 412
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:912387b5c53dd0a62ad4a380cb12c2f747c7ca85e00e87016f74ba8dd8403c9c"
+  }
+}

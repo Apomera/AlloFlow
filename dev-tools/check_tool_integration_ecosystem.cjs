@@ -40,9 +40,11 @@ if (manifest) {
   const bridgeFiles = requireMirror(bridgeEntry.paths, 'Annotation inquiry bridge');
   bridgeFiles.forEach(file => { const source = fs.readFileSync(file, 'utf8'); for (const token of ['createHandoff', 'createAnnotation', 'summarizeForCapture', bridgeEntry.version]) if (!source.includes(token)) errors.push(`Annotation inquiry bridge: ${relative(file)} does not expose ${token}.`); });
   const evidenceGraphEntry = manifest.evidenceGraph || {};
-  if (evidenceGraphEntry.version !== '1.0.0' || evidenceGraphEntry.schemaVersion !== 1) errors.push('Evidence Graph manifest requires generator version 1.0.0 and schema version 1.');
+  if (evidenceGraphEntry.version !== '1.1.0' || evidenceGraphEntry.schemaVersion !== 2) errors.push('Evidence Graph manifest requires generator version 1.1.0 and schema version 2.');
   const evidenceGraphFiles = requireMirror(evidenceGraphEntry.paths, 'Research Evidence Graph');
-  evidenceGraphFiles.forEach(file => { const source = fs.readFileSync(file, 'utf8'); for (const token of ['buildEvidenceGraph', 'toW3CWebAnnotations', 'toCslJson', 'toRoCrate', 'https://w3id.org/ro/crate/1.3/context']) if (!source.includes(token)) errors.push(`Research Evidence Graph: ${relative(file)} does not expose ${token}.`); });
+  evidenceGraphFiles.forEach(file => { const source = fs.readFileSync(file, 'utf8'); for (const token of ['buildEvidenceGraph', 'toW3CWebAnnotations', 'toCslJson', 'toRoCrate', 'validateEvidenceGraph', 'validateInteroperabilityBundle', 'importPortableBundle', 'https://w3id.org/ro/crate/1.3/context']) if (!source.includes(token)) errors.push(`Research Evidence Graph: ${relative(file)} does not expose ${token}.`); });
+  for (const schemaFile of evidenceGraphEntry.schemaPaths || []) requireFile(schemaFile, 'Evidence Graph JSON Schema');
+  if (evidenceGraphEntry.supportsValidatedImport !== true) errors.push('Evidence Graph manifest must declare validated import support.');
   requireFile(evidenceGraphEntry.documentationPath, 'Research Evidence Graph documentation');  const templateContractFile = requireFile(sdkEntry.templateContractPath, 'SDK template contract'); const templateFixtureFile = requireFile(sdkEntry.templateFixturePath, 'SDK template fixture');
   const templateContract = templateContractFile && readJson(templateContractFile); if (templateContract) { validateContract(templateContract, 'SDK template contract'); validateFixture(templateFixtureFile, templateContract, 'SDK template fixture'); }
   for (const asset of manifest.thirdPartyAssets || []) {

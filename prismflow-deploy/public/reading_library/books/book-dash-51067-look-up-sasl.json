@@ -1,0 +1,83 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-51067-look-up-sasl",
+  "title": "Look up! (SASL)",
+  "description": "Look up! There’s so much to see.",
+  "language": "South African Sign Language",
+  "langCode": "sgn",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Day and night, seasons, and weather"
+  ],
+  "authors": [
+    "Jen Thorpe"
+  ],
+  "illustrators": [],
+  "contributors": [
+    {
+      "name": "Sarah McGregor",
+      "role": "Editor"
+    },
+    {
+      "name": "Lauren Nel",
+      "role": "Designer"
+    },
+    {
+      "name": "Jen Thorpe",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/look-up-sasl/",
+    "attributionUrl": "https://bookdash.org/books/look-up-sasl/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=look-up"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2026/06/look-up_sasl-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2026/06/look-up_sasl-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Look up! There’s so much to see."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Sarah McGregor (Editor); Lauren Nel (Designer); Jen Thorpe (Writer)\n\nLanguage: South African Sign Language. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=look-up"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 73
+  }
+}

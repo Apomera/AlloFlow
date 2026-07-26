@@ -428,31 +428,61 @@ const createTTS = (deps) => {
     // as cleanTextForLocalTTS (the per-leg copies drift). Fallback-safe: on
     // no-math / loader missing / SRE failure / timeout the original text is
     // returned untouched, so the worst case is exactly today's behaviour.
-    const MATH_SEGMENT_RE = /\$\$([^$]{1,400}?)\$\$|\\\[([\s\S]{1,400}?)\\\]|\\\(([\s\S]{1,300}?)\\\)|\$([^$\n]{1,200}?)\$/g;
+    const DELIMITED_MATH_SEGMENT_RE = /\$\$([^$]{1,400}?)\$\$|\\\[([\s\S]{1,400}?)\\\]|\\\(([\s\S]{1,300}?)\\\)|\$([^$\n]{1,200}?)\$/g;
+    const MATHML_SEGMENT_RE = /<math\b[\s\S]{1,12000}?<\/math>/gi;
     // Currency guard: "$5 and $10" pairs into a bogus segment. Only treat a
-    // segment as math when it carries a LaTeX command, super/subscript, or a
-    // short equation — anything else stays verbatim (conservative by design).
-    const _mathLooksReal = (c) => /\\[a-zA-Z]+|[\^_]/.test(c) || (/=/.test(c) && c.length <= 80);
-    const _mathToSpeakable = async (raw, language) => {
+    // delimited segment as math when it carries a LaTeX command, a super/subscript,
+    // or a short equation. Actual MathML elements are always eligible.
+    const _mathLooksReal = (content) => /\\[a-zA-Z]+|[\^_]/.test(content)
+        || (/=/.test(content) && content.length <= 80);
+    const _collectMathSpeechJobs = (src) => {
+        const jobs = [];
+        DELIMITED_MATH_SEGMENT_RE.lastIndex = 0;
+        let match;
+        while ((match = DELIMITED_MATH_SEGMENT_RE.exec(src))) {
+            const body = (match[1] || match[2] || match[3] || match[4] || '').trim();
+            if (body && _mathLooksReal(body)) jobs.push({ raw: match[0], body, off: match.index, end: match.index + match[0].length });
+            if (match[0] === '') DELIMITED_MATH_SEGMENT_RE.lastIndex += 1;
+        }
+        MATHML_SEGMENT_RE.lastIndex = 0;
+        while ((match = MATHML_SEGMENT_RE.exec(src))) {
+            jobs.push({ raw: match[0], body: match[0], off: match.index, end: match.index + match[0].length });
+            if (match[0] === '') MATHML_SEGMENT_RE.lastIndex += 1;
+        }
+        jobs.sort((a, b) => a.off - b.off || b.end - a.end);
+        const nonOverlapping = [];
+        let coveredUntil = -1;
+        jobs.forEach((job) => {
+            if (job.off >= coveredUntil) {
+                nonOverlapping.push(job);
+                coveredUntil = job.end;
+            }
+        });
+        return nonOverlapping;
+    };
+    const _mathToSpeakable = async (raw, language, speechOptions = null) => {
         try {
             const src = String(raw == null ? '' : raw);
-            MATH_SEGMENT_RE.lastIndex = 0;
-            if (!MATH_SEGMENT_RE.test(src)) return raw;
-            if (!window.AlloMathSpeech && window.__alloLoadPlugin) { try { await window.__alloLoadPlugin('sre_loader.js'); } catch (_) {} }
-            if (!window.AlloMathSpeech || typeof window.AlloMathSpeech.toSpeech !== 'function') return raw;
-            const jobs = [];
-            src.replace(MATH_SEGMENT_RE, (m, disp, brk, par, inl, off) => {
-                const body = (disp || brk || par || inl || '').trim();
-                if (body && _mathLooksReal(body)) jobs.push({ m, body, off });
-                return m;
-            });
+            const jobs = _collectMathSpeechJobs(src);
             if (!jobs.length) return raw;
-            const spoken = await Promise.all(jobs.map(j => window.AlloMathSpeech.toSpeech(j.body, { lang: language, timeoutMs: 6000 })));
-            let out = ''; let cursor = 0;
-            jobs.forEach((j, i) => {
-                out += src.slice(cursor, j.off);
-                out += (spoken[i] && String(spoken[i]).trim()) ? (' ' + String(spoken[i]).trim() + ' ') : j.m;
-                cursor = j.off + j.m.length;
+            if (!window.AlloMathSpeech && window.__alloLoadPlugin) {
+                try { await window.__alloLoadPlugin('sre_loader.js'); } catch (_) {}
+            }
+            if (!window.AlloMathSpeech || typeof window.AlloMathSpeech.toSpeech !== 'function') return raw;
+            const sharedOptions = (speechOptions && typeof speechOptions === 'object') ? speechOptions : {};
+            const spoken = await Promise.all(jobs.map((job) => window.AlloMathSpeech.toSpeech(job.body, {
+                ...sharedOptions,
+                lang: language,
+                timeoutMs: Number(sharedOptions.timeoutMs) > 0 ? Number(sharedOptions.timeoutMs) : 6000
+            })));
+            let out = '';
+            let cursor = 0;
+            jobs.forEach((job, index) => {
+                out += src.slice(cursor, job.off);
+                out += (spoken[index] && String(spoken[index]).trim())
+                    ? (' ' + String(spoken[index]).trim() + ' ')
+                    : job.raw;
+                cursor = job.end;
             });
             out += src.slice(cursor);
             return out;
@@ -483,7 +513,7 @@ const createTTS = (deps) => {
         var _language = languageArg || _callOpts.language || getLeveledTextLanguage() || getCurrentUiLanguage() || 'English';
         var _isEnglish = typeof _language === 'string' && /^english$/i.test(_language.trim());
         // Spoken math pre-pass (no-op unless delimited math is present)
-        text = await _mathToSpeakable(text, _language);
+        text = await _mathToSpeakable(text, _language, _callOpts.mathSpeech || null);
         // Optional AbortSignal for per-call cancellation. AlloSpeechPlayer.stop()
         // aborts in-flight TTS so a fast click-to-stop doesn't keep burning the
         // Gemini quota for audio the user already cancelled. fetchTTSBytes
@@ -879,8 +909,15 @@ const createTTS = (deps) => {
     const callTTSDirect = async (text, voiceName, speed = 1, maxRetries = 2) => {
         if (isGlobalMuted()) return null;
         if (text == null || !String(text).trim()) { console.warn('[TTS] Skipped: empty text'); return null; }
-        // Spoken math pre-pass (no-op unless delimited math is present)
-        text = await _mathToSpeakable(text, getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
+        var _directOpts = (maxRetries && typeof maxRetries === 'object') ? maxRetries : {};
+        maxRetries = typeof maxRetries === 'number' ? maxRetries
+            : (typeof _directOpts.maxRetries === 'number' ? _directOpts.maxRetries : 2);
+        // Spoken math pre-pass (no-op unless delimited LaTeX or MathML is present).
+        text = await _mathToSpeakable(
+            text,
+            getLeveledTextLanguage() || getCurrentUiLanguage() || 'English',
+            _directOpts.mathSpeech || null
+        );
         voiceName = _resolveRequestedVoice(voiceName);
         // ─── Canvas: Gemini TTS first → Kokoro/Piper fallback (same cascade as callTTS) ─────
         if (_isCanvasEnv) {

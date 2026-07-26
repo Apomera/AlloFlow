@@ -62,6 +62,8 @@ afterEach(() => {
   delete window.__alloRegenerateSentenceAudio;
   delete window.__alloRemoveSentenceAudio;
   delete window.__alloStoreRecordedSentenceAudio;
+  delete window.__alloInspectReadAloudAudio;
+  delete window.__alloResolveReadAloudAudio;
   if (window.AlloModules) delete window.AlloModules.KaraokeAudioStore;
 });
 
@@ -193,6 +195,145 @@ describe('SimplifiedView Edit Audio mode', () => {
     expect(button('Generate audio for sentence 1')).toBeTruthy();
     expect(button('Play audio for sentence 1').disabled).toBe(true);
     expect(button('Remove saved audio for sentence 1')).toBeNull();
+  });
+
+  it('previews the exact saved stale clip without synthesizing replacement audio', async () => {
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+
+    const rawGet = vi.fn(() => 'blob:store-fallback');
+    const store = {
+      keyFor: (sentence) => String(sentence).toLowerCase(),
+      has: (sentence) => sentence === 'First sentence.',
+      get: rawGet,
+      sourceOf: () => 'ai-generated',
+      metadataOf: () => ({
+        voice: 'Puck',
+        speed: 0.9,
+        language: 'English',
+        voiceResolverVersion: 2,
+      }),
+    };
+    window.AlloModules.KaraokeAudioStore = {
+      current: store,
+      keyFor: store.keyFor,
+    };
+
+    window.__alloInspectReadAloudAudio = vi.fn((sentence) => sentence === 'First sentence.' ? {
+      status: 'stale',
+      url: null,
+      storedUrl: 'blob:saved-puck',
+      source: 'ai-generated',
+      metadata: {
+        voice: 'Puck',
+        speed: 0.9,
+        language: 'English',
+        voiceResolverVersion: 2,
+      },
+    } : {
+      status: 'missing',
+      url: null,
+      storedUrl: null,
+      source: null,
+      metadata: null,
+    });
+    window.__alloResolveReadAloudAudio = vi.fn(async () => 'blob:wrong-fresh-clip');
+    window.__alloRegenerateSentenceAudio = vi.fn(async () => 'blob:rebuilt');
+    window.__alloRemoveSentenceAudio = vi.fn(async () => true);
+    window.__alloStoreRecordedSentenceAudio = vi.fn(async () => true);
+    const callTTS = vi.fn(async () => 'blob:wrong-direct-tts');
+
+    mount(baseProps({ selectedVoice: 'Kore', voiceSpeed: 1, callTTS }));
+    act(() => { host.querySelector('button[aria-label^="Edit audio."]').click(); });
+
+    rawGet.mockClear();
+    window.__alloResolveReadAloudAudio.mockClear();
+    callTTS.mockClear();
+    await act(async () => {
+      button('Play audio for sentence 1').click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(audioInstances).toHaveLength(1);
+    expect(audioInstances[0].src).toBe('blob:saved-puck');
+    expect(audioInstances[0].play).toHaveBeenCalledTimes(1);
+    expect(window.__alloResolveReadAloudAudio).not.toHaveBeenCalled();
+    expect(callTTS).not.toHaveBeenCalled();
+    expect(rawGet).not.toHaveBeenCalled();
+    expect(host.textContent).toContain('Saved \u00b7 settings changed');
+  });
+
+  it('keeps an unreadable saved clip removable and offers to rebuild it', async () => {
+    audioInstances = [];
+    class UnreadableAudio extends FakeAudio {
+      constructor(src) {
+        super(src);
+        this.error = { code: 4 };
+        const error = new Error('The element has no supported sources.');
+        error.name = 'NotSupportedError';
+        this.play = vi.fn(async () => { throw error; });
+      }
+    }
+    global.Audio = window.Audio = UnreadableAudio;
+
+    const store = {
+      keyFor: (sentence) => String(sentence).toLowerCase(),
+      has: (sentence) => sentence === 'First sentence.',
+      get: vi.fn(() => 'blob:broken-saved-clip'),
+      sourceOf: () => 'ai-generated',
+      metadataOf: () => ({
+        voice: 'Kore',
+        speed: 1,
+        language: 'English',
+        voiceResolverVersion: 2,
+      }),
+    };
+    window.AlloModules.KaraokeAudioStore = {
+      current: store,
+      keyFor: store.keyFor,
+    };
+
+    window.__alloInspectReadAloudAudio = vi.fn((sentence) => sentence === 'First sentence.' ? {
+      status: 'ready',
+      url: 'blob:broken-saved-clip',
+      storedUrl: 'blob:broken-saved-clip',
+      source: 'ai-generated',
+      metadata: {
+        voice: 'Kore',
+        speed: 1,
+        language: 'English',
+        voiceResolverVersion: 2,
+      },
+    } : {
+      status: 'missing',
+      url: null,
+      storedUrl: null,
+      source: null,
+      metadata: null,
+    });
+    window.__alloResolveReadAloudAudio = vi.fn(async () => 'blob:wrong-fresh-clip');
+    window.__alloRegenerateSentenceAudio = vi.fn(async () => 'blob:rebuilt');
+    window.__alloRemoveSentenceAudio = vi.fn(async () => true);
+    window.__alloStoreRecordedSentenceAudio = vi.fn(async () => true);
+
+    mount(baseProps({ selectedVoice: 'Kore', voiceSpeed: 1 }));
+    act(() => { host.querySelector('button[aria-label^="Edit audio."]').click(); });
+
+    await act(async () => {
+      button('Play audio for sentence 1').click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(audioInstances).toHaveLength(1);
+    expect(audioInstances[0].src).toBe('blob:broken-saved-clip');
+    expect(host.textContent).toContain('Saved \u00b7 unreadable');
+    expect(button('Rebuild audio for sentence 1')).toBeTruthy();
+    expect(button('Remove saved audio for sentence 1')).toBeTruthy();
+    expect(host.textContent).toContain('1/2 saved');
+    expect(window.__alloRemoveSentenceAudio).not.toHaveBeenCalled();
+    expect(window.__alloResolveReadAloudAudio).not.toHaveBeenCalled();
   });
   it('shows saved voice settings, rebuild guidance, and capture-limit failures', async () => {
     const saved = new Set(['First sentence.']);

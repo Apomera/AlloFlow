@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-326-elementary-new-testament-greek",
+  "title": "Elementary New Testament Greek",
+  "description": "The need for this particular grammar arises from the peculiar shape of the MDiv curriculum at Asbury Theological Seminary. Several years ago the faculty adopted a curriculum that required one semester of Greek and one semester of Hebrew, each as preparatory for a basic exegesis course in each discipline. It became clear after several years of trial and error that a “lexical” or “tools” approach to learning Greek and Hebrew was inadequate, no matter how skilled the instructors or how motivated the students. In today's general vacuum of grammatical training in public education across the United States, students typically enter seminary training with no knowledge of how languages work. Any training we might give them in accessing grammatical information through the use of Bible software programs will, we learned, come to naught in the absence of an understanding of just what such information actually means. We agreed that we actually needed to “teach the language itself,” at least in some rudimentary fashion, if we hoped students would make sense of grammatical and linguistic issues involved biblical interpretation. The first 12 chapters of this grammar are designed to correspond to the first semester's instructional agenda. In these chapters we introduce all the parts of speech, explain and drill the basic elements of grammar, set forth the larger verb system (excluding the perfect system), teach the tenses of the Indicative Mood only (again, excluding the perfect system), and help students build a vocabulary of all NT words occurring 100 times or more. We also lead students into the NT itself with carefully chosen examples, while at the same time guiding them in each lesson to learn the use of the standard NT lexicon [BDAG] and an exegetical grammar [Wallace's Greek Grammar Beyond the Basics]. We are well aware of the limitations of this approach, but genuinely believe that some instruction along these lines is better than none, and that such an approach provide a foundation for students interested in moving beyond the first semester (into chapters 13-24) into a firmer grasp of the language of the NT.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages",
+    "Humanities"
+  ],
+  "authors": [
+    "Joseph R. Dongell - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "First Fruits Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/elementary-new-testament-greek"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The need for this particular grammar arises from the peculiar shape of the MDiv curriculum at Asbury Theological Seminary. Several years ago the faculty adopted a curriculum that required one semester of Greek and one semester of Hebrew, each as preparatory for a basic exegesis course in each discipline. It became clear after several years of trial and error that a “lexical” or “tools” approach to learning Greek and Hebrew was inadequate, no matter how skilled the instructors or how motivated the students. In today's general vacuum of grammatical training in public education across the United States, students typically enter seminary training with no knowledge of how languages work. Any training we might give them in accessing grammatical information through the use of Bible software programs will, we learned, come to naught in the absence of an understanding of just what such information actually means. We agreed that we actually needed to “teach the language itself,” at least in some rudimentary fashion, if we hoped students would make sense of grammatical and linguistic issues involved biblical interpretation. The first 12 chapters of this grammar are designed to correspond to the first semester's instructional agenda. In these chapters we introduce all the parts of speech, explain and drill the basic elements of grammar, set forth the larger verb system (excluding the perfect system), teach the tenses of the Indicative Mood only (again, excluding the perfect system), and help students build a vocabulary of all NT words occurring 100 times or more. We also lead students into the NT itself with carefully chosen examples, while at the same time guiding them in each lesson to learn the use of the standard NT lexicon [BDAG] and an exegetical grammar [Wallace's Greek Grammar Beyond the Basics]. We are well aware of the limitations of this approach, but genuinely believe that some instruction along these lines is better than none, and that such an approach provide a foundation for students interested in moving beyond the first semester (into chapters 13-24) into a firmer grasp of the language of the NT."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2014."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 368
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "326",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

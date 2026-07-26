@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1820-open-science-wie-sich-die-wissenschaft-offnet",
+  "title": "Open Science: Wie sich die Wissenschaft öffnet",
+  "description": "During the last years, many scientific disciplines have changed. There have been new journals, methods, initiatives, societies, structures, and many more. Researchers are calling these changes a crisis, revolution, a renaissance, or a reform. Together, these changes have led to a greater degree of openness and transparency and have changed the academic system. In this German textbook, I discuss the concept of openness, the origins of change, and the many facets of openness with an emphasis on the academic system, scientific methods, theories, and epistemological arguments. Examples and developments are primarily from the social sciences, particularly psychology.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Psychology"
+  ],
+  "authors": [
+    "Lukas Röseler - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Zenodo",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/open-science-wie-sich-die-wissenschaft-offnet"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "During the last years, many scientific disciplines have changed. There have been new journals, methods, initiatives, societies, structures, and many more. Researchers are calling these changes a crisis, revolution, a renaissance, or a reform. Together, these changes have led to a greater degree of openness and transparency and have changed the academic system. In this German textbook, I discuss the concept of openness, the origins of change, and the many facets of openness with an emphasis on the academic system, scientific methods, theories, and epistemological arguments. Examples and developments are primarily from the social sciences, particularly psychology."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 120
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1820",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

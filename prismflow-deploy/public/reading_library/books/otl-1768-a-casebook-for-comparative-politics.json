@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1768-a-casebook-for-comparative-politics",
+  "title": "A Casebook for Comparative Politics",
+  "description": "This book is intended to serve as a companion text for courses in Comparative Politics, Introduction to Political Science, and similar subjects. The target audience is lower-division undergraduates. Each chapter constitutes a single country (case), with material on seven (7) major topics: History, Identity, Culture and Civil Society, Participation, Formal Institutions, Political Economy, and Foreign Relations.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Political Science"
+  ],
+  "authors": [
+    "Mark L. Johnson - Author / Angela Pashayan - Author / Daniel I. Pedreira - Author / Matthew Schuster - Author / John Tures - Author / Cheryl Van Den Handel - Author / Helen Chang - Author / Petra Hendrickson - Author / Matthew Gritter - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Opendora",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-casebook-for-comparative-politics"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is intended to serve as a companion text for courses in Comparative Politics, Introduction to Political Science, and similar subjects. The target audience is lower-division undergraduates. Each chapter constitutes a single country (case), with material on seven (7) major topics: History, Identity, Culture and Civil Society, Participation, Formal Institutions, Political Economy, and Foreign Relations."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 79
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1768",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

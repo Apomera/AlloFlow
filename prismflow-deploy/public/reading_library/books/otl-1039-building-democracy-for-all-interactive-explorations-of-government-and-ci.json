@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1039-building-democracy-for-all-interactive-explorations-of-government-and-ci",
+  "title": "Building Democracy for All: Interactive Explorations of Government and Civic Life",
+  "description": "Designed as a core or supplementary text for upper elementary, middle and high school teachers and students, Building Democracy for All offers instructional ideas, interactive resources, multicultural content, and multimodal learning materials for interest-building explorations of United States government as well as students’ roles as citizens in a democratic society. It focuses on the importance of community engagement and social responsibility as understood and acted upon by middle and high school students—core themes in the 2018 Massachusetts 8th Grade Curriculum Framework, and which are found in many state history and social studies curriculum frameworks around the country. Building Democracy for All has been developed by a collaborative writing team of higher education faculty, public school teachers, educational librarians, and college students who are preparing to become history and social studies teachers. The primary editors and curators are from the University of Massachusetts Amherst College of Education. Contributing teachers come from school districts in the Connecticut River valley region of western Massachusetts (Amherst, Gateway, Westfield, Hampshire Regional, and Springfield). As an open resource, the book is being revised constantly by the members of the writing team to ensure timely inclusion of online resources and information.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Curriculum & Instruction",
+    "Education"
+  ],
+  "authors": [
+    "Robert W. Maloy - Author / Torrey Trust - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "EdTech Books",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/building-democracy-for-all-interactive-explorations-of-government-and-civic-life"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Designed as a core or supplementary text for upper elementary, middle and high school teachers and students, Building Democracy for All offers instructional ideas, interactive resources, multicultural content, and multimodal learning materials for interest-building explorations of United States government as well as students’ roles as citizens in a democratic society. It focuses on the importance of community engagement and social responsibility as understood and acted upon by middle and high school students—core themes in the 2018 Massachusetts 8th Grade Curriculum Framework, and which are found in many state history and social studies curriculum frameworks around the country. Building Democracy for All has been developed by a collaborative writing team of higher education faculty, public school teachers, educational librarians, and college students who are preparing to become history and social studies teachers. The primary editors and curators are from the University of Massachusetts Amherst College of Education. Contributing teachers come from school districts in the Connecticut River valley region of western Massachusetts (Amherst, Gateway, Westfield, Hampshire Regional, and Springfield). As an open resource, the book is being revised constantly by the members of the writing team to ensure timely inclusion of online resources and information."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 217
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1039",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

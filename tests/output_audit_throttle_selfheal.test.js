@@ -95,7 +95,7 @@ describe('auditOutputAccessibility throttle self-heal — multi-round recovery',
 describe('anti-drift: the multi-round self-heal ships in the engine', () => {
   it('tracks failed indices, loops bounded rounds re-trying only the still-failed, with a not-throttled early-out', () => {
     expect(dp).toContain('const _failedIdx = [];');
-    expect(dp).toContain('const _auditOneChunk = (chunk, chunkNum) =>');
+    expect(dp).toContain('const _auditOneChunk = async (chunk, chunkNum) =>');
     expect(dp).toMatch(/else _failedIdx\.push\(b \+ idx\)/);
     expect(dp).toContain('Throttle self-heal');
     expect(dp).toContain('const _SELFHEAL_MAX_ROUNDS = 3;');

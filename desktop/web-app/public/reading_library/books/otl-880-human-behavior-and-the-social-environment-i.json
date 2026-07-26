@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-880-human-behavior-and-the-social-environment-i",
+  "title": "Human Behavior and the Social Environment I",
+  "description": "That’s what we are here to find out – Human Behavior and the Social Environment (HBSE) – How do they connect? How does it shape us? Why do we think and feel the way we do? This will be explored throughout this course by examining human behavior throughout life stage developments and our interactions with the social environment. This course will explore theoretical perspectives in Social Work to help provide a foundation for organizing thoughts about client needs and issues they are seeking supports for. Theories will then be connected to important developmental, social, and cultural issues that present throughout each stage of life to create an overall picture of a client’s experience and how we can use this information to have a better understanding of how people we work with are influenced and why. Knowledge of typical development in each stage of life will also inform the Social Worker if any other supports, resources, or services may be needed.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Psychology"
+  ],
+  "authors": [
+    "Susan Tyler - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Arkansas",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/human-behavior-and-the-social-environment-i-tyler"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "That’s what we are here to find out – Human Behavior and the Social Environment (HBSE) – How do they connect? How does it shape us? Why do we think and feel the way we do? This will be explored throughout this course by examining human behavior throughout life stage developments and our interactions with the social environment. This course will explore theoretical perspectives in Social Work to help provide a foundation for organizing thoughts about client needs and issues they are seeking supports for. Theories will then be connected to important developmental, social, and cultural issues that present throughout each stage of life to create an overall picture of a client’s experience and how we can use this information to have a better understanding of how people we work with are influenced and why. Knowledge of typical development in each stage of life will also inform the Social Worker if any other supports, resources, or services may be needed."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 183
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "880",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

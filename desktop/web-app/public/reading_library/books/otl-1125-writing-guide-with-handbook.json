@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1125-writing-guide-with-handbook",
+  "title": "Writing Guide with Handbook",
+  "description": "Writing Guide with Handbook aligns to the goals, topics, and objectives of many first-year writing and composition courses. It is organized according to relevant genres, and focuses on the writing process, effective writing practices or strategies—including graphic organizers, writing frames, and word banks to support visual learning—and conventions of usage and style. The text includes an editing and documentation handbook, which provides information on grammar and mechanics, common usage errors, and citation styles. Writing Guide with Handbook breaks down barriers in the field of composition by offering an inviting and inclusive approach to students of all intersectional identities. To meet this goal, the text creates a reciprocal relationship between everyday rhetoric and the evolving world of academia. Writing Guide with Handbook builds on students’ life experiences and their participation in rhetorical communities within the familiar contexts of personal interaction and social media. The text seeks to extend these existing skills by showing students how to construct a variety of compelling compositions in a variety of formats, situations, and contexts. The authors conceived and developed Writing Guide with Handbook in 2020; its content and learning experiences reflect the instructional, societal, and individual challenges students have faced. The authors invite students and instructors to practice invitational, rather than confrontational, discussions even as they engage in verbal and written argument. Instructors will be empowered to emphasize meaning and voice and to teach empathy as a rhetorical strategy. Students will be empowered to negotiate their identities and their cultures through language as they join us in writing, discovering, learning, and creating.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Michelle Bachelor Robinson - Author / Maria Jerskey - Author / Toby Fulwiller - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/writing-guide-with-handbook"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Writing Guide with Handbook aligns to the goals, topics, and objectives of many first-year writing and composition courses. It is organized according to relevant genres, and focuses on the writing process, effective writing practices or strategies—including graphic organizers, writing frames, and word banks to support visual learning—and conventions of usage and style. The text includes an editing and documentation handbook, which provides information on grammar and mechanics, common usage errors, and citation styles. Writing Guide with Handbook breaks down barriers in the field of composition by offering an inviting and inclusive approach to students of all intersectional identities. To meet this goal, the text creates a reciprocal relationship between everyday rhetoric and the evolving world of academia. Writing Guide with Handbook builds on students’ life experiences and their participation in rhetorical communities within the familiar contexts of personal interaction and social media. The text seeks to extend these existing skills by showing students how to construct a variety of compelling compositions in a variety of formats, situations, and contexts. The authors conceived and developed Writing Guide with Handbook in 2020; its content and learning experiences reflect the instructional, societal, and individual challenges students have faced. The authors invite students and instructors to practice invitational, rather than confrontational, discussions even as they engage in verbal and written argument. Instructors will be empowered to emphasize meaning and voice and to teach empathy as a rhetorical strategy. Students will be empowered to negotiate their identities and their cultures through language as they join us in writing, discovering, learning, and creating."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 280
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1125",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1678-design-roadmapping-guidebook-for-future-foresight-techniques",
+  "title": "Design Roadmapping: Guidebook for Future Foresight Techniques",
+  "description": "DESIGN ROADMAPPING is for anyone interested in design, strategy and innovation, and its wonderful combinations. For those who dare to create a future vision, frame the time pacing and map the pathways towards it. This guidebook teaches you how to create a roadmap. It outlines the origins, design theories and science results. Strategic designers, innovation managers and professors share their roadmapping experiences, views and achievements, including venture CPOs, Head of Design, product and program managers of international companies such as Canon, Peerby, Ferrari, Philips, Victoria State Library and many more. By design roadmapping you devise creative responses to future strategic challenges. Guided by future foresight techniques, you uncover new trends, scout for new technologies and map the values and ideas on the roadmap. Through strong visualization, a design roadmap supports an organizational mindset on value innovations.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business",
+    "Engineering & Technology"
+  ],
+  "authors": [
+    "Lianne Simonse - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "TU Delft Open",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/design-roadmapping-guidebook-for-future-foresight-techniques"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "DESIGN ROADMAPPING is for anyone interested in design, strategy and innovation, and its wonderful combinations. For those who dare to create a future vision, frame the time pacing and map the pathways towards it. This guidebook teaches you how to create a roadmap. It outlines the origins, design theories and science results. Strategic designers, innovation managers and professors share their roadmapping experiences, views and achievements, including venture CPOs, Head of Design, product and program managers of international companies such as Canon, Peerby, Ferrari, Philips, Victoria State Library and many more. By design roadmapping you devise creative responses to future strategic challenges. Guided by future foresight techniques, you uncover new trends, scout for new technologies and map the values and ideas on the roadmap. Through strong visualization, a design roadmap supports an organizational mindset on value innovations."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 159
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1678",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

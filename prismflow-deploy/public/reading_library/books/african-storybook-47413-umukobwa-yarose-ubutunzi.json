@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47413-umukobwa-yarose-ubutunzi",
+  "title": "Umukobwa yarose ubutunzi",
+  "description": "Abana babiri b'abigeme bafashe urugendo baja kurondera ivyo kurya. Bariko baragenda baca bahura n'umutamakazi mu nzira, mugabo umwe muribo niwe yemeye kugira ico amufashije.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Salaama Wanale"
+  ],
+  "illustrators": [
+    "Mango Tree"
+  ],
+  "translators": [
+    "Fanuel Ndayishimiye"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Salaama Wanale",
+      "role": "Author"
+    },
+    {
+      "name": "Fanuel Ndayishimiye",
+      "role": "Translation"
+    },
+    {
+      "name": "Mango Tree",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Salaama Wanale (Author); Fanuel Ndayishimiye (Translation); Mango Tree (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47413",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-03baf3883e8e3ef9",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/9239.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9230.png",
+      "text": "Harabaye abana b'abakobwa babiri bavukana, amazina yabo ni Nelima na Nambuya. Bari impfuvyi. Baba ahantu h'ubugaragwa. Nta mvura yaharwa nta n'imirima. Uwari wese akeneye ibifungurwa yategerezwa kugenda urugendo rurerure kugira abironke.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413#page=1",
+      "sourceDigest": "sha256:38f7b863abfaeb862675fc6b7f282ab0adfaa7fc98942c21afcda2ee66c26eb1"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9231.png",
+      "text": "Nelima yari umukobwa aciye bugufi, avuga make kandi akunda gufasha abandi. Umuvukanyi wiwe Nambuya nawe yari umukobwa yiyemera kandi ntiyakunda kumviriza impanuro ahabwa. Ntiyitaho abandi bantu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413#page=2",
+      "sourceDigest": "sha256:933900689d0635c256fd89975304d2cc40871161624f096631dc9607a4ff5c1b"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9232.png",
+      "text": "Umusi umwe abo bakobwa bari babuze ivyo bafungura. Bategerezwa kubirondera. Nelima na Nambuya baca mu mihingo myinshi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413#page=3",
+      "sourceDigest": "sha256:06a4d4e02bf1c70b161ea0b252b83d94ced50be8efaaa5f4be1f15d28d309028"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9233.png",
+      "text": "Muri ako karere haraba umutamakazi yitwa Netasile. Yari umutamakazi azwi ko atanga ubutunzi. Yari agwaye imibembe kandi yagendana ibisebe vyinshi ku mubiri wiwe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413#page=4",
+      "sourceDigest": "sha256:37651ab09dd5cb74ccc82fab898b9bfbb0cec7b3f1ce7958f0b0cbdf90b64226"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9234.png",
+      "text": "Nambuya ashika kwa Netasile. Netasile aramubaza, \"Mukobwa wanje, umerewe gute? Uva he ukaja he?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413#page=5",
+      "sourceDigest": "sha256:fd34e1235331159a4216eed9f1898558605b722ed7885049cf1b6af6b7756613"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9235.png",
+      "text": "Nambuya aramwishura ku co yamubajije cose. Netasile aramubwira ati, \"Ingo umfashe gushika mu nzu iwanje, ndakubwira ico ukora.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413#page=6",
+      "sourceDigest": "sha256:0fa55c02fef126893fb8b19ad96e11a75fc9faec01974ddeb41f6006623c0e70"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9237.png",
+      "text": "Nambuya yaramukariye cane, aramubwira ati, \"Nopfuma mpfa hako nokora kuri ivyo bisebe vyawe.\" Netasile aca arihorera yipfuriza urugendo rwiza Nambuya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413#page=7",
+      "sourceDigest": "sha256:59eaa52a8394b29031732837369cc9af2c7a2cce1d5d93ac3a7d83548e153665"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9236.png",
+      "text": "Nambuya agenda igihe kirekire. Ashika mu kibanza kirimwo inzoka nyinshi, inyongori, ibikogoshi n'utundi dukoko. Nambuya yari arushe cane kandi adendebukiwe kubera inzara. Aricara kugira aruhuke, aca arasinzira. Udukoko dutangura kumurya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413#page=8",
+      "sourceDigest": "sha256:55cf213a886919a180220396de8482cb9880c483efbd1df757e1939883b75a6e"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9238.png",
+      "text": "Mu rugendo rwa Nelima nawe, ahura na wa mutamakazi Netasile. Yararyohewe cane kumubona kubera mu rugendo yagize bwari ubwa mbere ahuye n'umuntu. Netasile aramubaza utubazo nk'uko yabajije Nambuya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413#page=9",
+      "sourceDigest": "sha256:82d09fa6eeae391be43dab14b3c0fd8fe0da62f2ae1923ca3aa351e28b43d1ea"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9239.png",
+      "text": "Nelima aremera aramufasha. Wa mutamakazi Netasile aramubwira ati, \"Unkoreye ivyananiye abandi.\" Aca abwira Nelima gusubira imuhira. Ashitse I muhira yasanzeyo ivyo akeneye vyose.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413#page=10",
+      "sourceDigest": "sha256:1c4ab9d4f82d45d310bf06b3d1347a732e4aeafb7978aca12eb982ba1fa3fb35"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9240.png",
+      "text": "Nelima arashimira cane uwo mutamakazi. Ashitse muhira yasanzeho inzu nshasha nziza kandi ifise ibikwiye muri yo hamwe n'ivyo kurya vyinshi. Aca aba umutunzi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413#page=11",
+      "sourceDigest": "sha256:3d96f1e8e2526c6b32742e9b261e9ed2299012b8c59ff296af745f01b3d34f79"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9241.png",
+      "text": "Ariko Nelima yari afise umubabaro mwinshi wo kuba atakiri kumwe n'umuvukanyi wiwe Nambuya. Aribwira ati, \"Nyamubura ikimuhanura niwe nyamubura ikimuhamba.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47413#page=12",
+      "sourceDigest": "sha256:e7725c334b21451ae9aba960a549b1e6ef2070093e9d5eec9e864d1f9319566b"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 273
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:15c16a61f57e5ccb7a068903c9727d21cbef6f063674f75e00ffc8c2ac9314cc"
+  }
+}

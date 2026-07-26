@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1533-introduction-to-vacuum-technology",
+  "title": "Introduction to Vacuum Technology",
+  "description": "Vacuum systems are critical to many industries. They are vital to establishing required process pressures, establishing a clean process environment, and removing reaction by-products from the process chamber. This text, a revision and expansion of David Hata’s Introduction to Vacuum Technology published in 2008, addresses basic topics in vacuum technology for individuals tasked with maintaining vacuum systems and instructors teaching technician-level courses. The topics are carefully curated to the needs of technicians in a production environment and the types of vacuum systems used, and the accompanying laboratory manual and instructor’s guide support the delivery of lecture-laboratory courses. This book approaches vacuum systems from a pressure regime viewpoint, covering basic vacuum science, followed by the rough vacuum regime, including gas load, pumping mechanisms, pressure measurement, vacuum system construction, and basic troubleshooting concepts. The study of high vacuum systems follows and the same topics are revisited, and finally the topics of leak detection and residual gas analysis are discussed.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology - Electrical Engineering"
+  ],
+  "authors": [
+    "David M. Hata - Author / Elena V. Brewer - Author / Nancy J. Louwagie - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Milne Open Textbooks",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-vacuum-technology"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Vacuum systems are critical to many industries. They are vital to establishing required process pressures, establishing a clean process environment, and removing reaction by-products from the process chamber. This text, a revision and expansion of David Hata’s Introduction to Vacuum Technology published in 2008, addresses basic topics in vacuum technology for individuals tasked with maintaining vacuum systems and instructors teaching technician-level courses. The topics are carefully curated to the needs of technicians in a production environment and the types of vacuum systems used, and the accompanying laboratory manual and instructor’s guide support the delivery of lecture-laboratory courses. This book approaches vacuum systems from a pressure regime viewpoint, covering basic vacuum science, followed by the rough vacuum regime, including gas load, pumping mechanisms, pressure measurement, vacuum system construction, and basic troubleshooting concepts. The study of high vacuum systems follows and the same topics are revisited, and finally the topics of leak detection and residual gas analysis are discussed."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 180
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1533",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

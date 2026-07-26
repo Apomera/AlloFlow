@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-803-grammatical-theory-from-transformational-grammar-to-constraint-based-app",
+  "title": "Grammatical theory: From transformational grammar to constraint-based approaches",
+  "description": "This book introduces formal grammar theories that play a role in current linguistic theorizing (Phrase Structure Grammar, Transformational Grammar/Government & Binding, Generalized Phrase Structure Grammar, Lexical Functional Grammar, Categorial Grammar, Head-Driven Phrase Structure Grammar, Construction Grammar, Tree Adjoining Grammar). The key assumptions are explained and it is shown how the respective theory treats arguments and adjuncts, the active/passive alternation, local reorderings, verb placement, and fronting of constituents over long distances. The analyses are explained with German as the object language. The second part of the book compares these approaches with respect to their predictions regarding language acquisition and psycholinguistic plausibility. The nativism hypothesis, which assumes that humans posses genetically determined innate language-specific knowledge, is critically examined and alternative models of language acquisition are discussed. The second part then addresses controversial issues of current theory building such as the question of flat or binary branching structures being more appropriate, the question whether constructions should be treated on the phrasal or the lexical level, and the question whether abstract, non-visible entities should play a role in syntactic analyses. It is shown that the analyses suggested in the respective frameworks are often translatable into each other. The book closes with a chapter showing how properties common to all languages or to certain classes of languages can be captured.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Linguistics"
+  ],
+  "authors": [
+    "Stefan Müller - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Language Science Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/grammatical-theory-from-transformational-grammar-to-constraint-based-approaches"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book introduces formal grammar theories that play a role in current linguistic theorizing (Phrase Structure Grammar, Transformational Grammar/Government & Binding, Generalized Phrase Structure Grammar, Lexical Functional Grammar, Categorial Grammar, Head-Driven Phrase Structure Grammar, Construction Grammar, Tree Adjoining Grammar). The key assumptions are explained and it is shown how the respective theory treats arguments and adjuncts, the active/passive alternation, local reorderings, verb placement, and fronting of constituents over long distances. The analyses are explained with German as the object language. The second part of the book compares these approaches with respect to their predictions regarding language acquisition and psycholinguistic plausibility. The nativism hypothesis, which assumes that humans posses genetically determined innate language-specific knowledge, is critically examined and alternative models of language acquisition are discussed. The second part then addresses controversial issues of current theory building such as the question of flat or binary branching structures being more appropriate, the question whether constructions should be treated on the phrasal or the lexical level, and the question whether abstract, non-visible entities should play a role in syntactic analyses. It is shown that the analyses suggested in the respective frameworks are often translatable into each other. The book closes with a chapter showing how properties common to all languages or to certain classes of languages can be captured."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 238
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "803",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -51,7 +51,10 @@ describe('Live Remediation Review — no card dangles on "Fixing…" after the s
 
 describe('anti-drift: onSessionComplete resolves dangling working cards (not just sets active=false)', () => {
   it('the host onSessionComplete maps remaining working cards to a terminal AI-skipped state', () => {
-    expect(host).toMatch(/const onSessionComplete = \(\) => \{[\s\S]*?setLiveChunkSessionActive\(false\);/);
+    // The handler may accept the completion event so it can reject a stale
+    // document epoch; pin the terminal transition without forbidding that
+    // safety parameter.
+    expect(host).toMatch(/const onSessionComplete = \([^)]*\) => \{[\s\S]*?setLiveChunkSessionActive\(false\);/);
     expect(host).toMatch(/setLiveChunkStream\(prev => prev\.map\(c => c\.status === 'working'/);
     expect(host).toMatch(/status: 'complete', usedOriginal: true, aiVerified: false, integrityPassed: false, incomplete: true/);
   });

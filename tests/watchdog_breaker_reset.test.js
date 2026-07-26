@@ -18,7 +18,7 @@ describe('acl-1: the watchdog can actually stop the auto-continue loop', () => {
     // The fire() body must contain the stop-ref set; the controller abort alone is insufficient.
     const fireStart = host.indexOf('const fire = () => {');
     expect(fireStart).toBeGreaterThan(0);
-    const fireBody = host.slice(fireStart, fireStart + 1200);
+    const fireBody = host.slice(fireStart, fireStart + 3200);
     expect(fireBody).toMatch(/pdfAutoContinueAbortRef\.current = true;/);
     // ordering: the ref-set appears before the controller.abort() inside fire()
     expect(fireBody.indexOf('pdfAutoContinueAbortRef.current = true'))
@@ -27,10 +27,13 @@ describe('acl-1: the watchdog can actually stop the auto-continue loop', () => {
   it('runAutoFixLoop captures the run-gen at entry and bails per-round when it goes stale', () => {
     expect(host).toMatch(/const _myRunGen = \(typeof window !== 'undefined'\) \? \(window\.__alloPdfRunGen \|\| 0\) : 0;/);
     expect(host).toMatch(/const _genStale = \(\) => \(typeof window !== 'undefined'\) && \(\(window\.__alloPdfRunGen \|\| 0\) !== _myRunGen\)/);
-    expect(host).toMatch(/if \(pdfAutoContinueAbortRef\.current \|\| _genStale\(\)\) break;/);
+    expect(host).toMatch(/const _ownsRunSlot = \(\) => pdfAutoContinueAbortCtrlRef\.current === _abortCtrl;/);
+    expect(host).toMatch(/const _canPublish = \(\) => _ownsRunSlot\(\) && !_genStale\(\);/);
+    expect(host).toMatch(/const _canContinue = \(\) => _canPublish\(\)[\s\S]{0,180}!pdfAutoContinueAbortRef\.current/);
+    expect(host).toMatch(/if \(!_canContinue\(\)\) break;/);
     // The per-round write is guarded against both a stale run and an intervening
     // direct HTML edit; it reloads the authoritative ref before stopping.
-    expect(host).toMatch(/if \(_genStale\(\) \|\| pdfHtmlRevisionRef\.current !== _roundHtmlRevision\) \{\s*\n\s*cur = pdfFixResultRef\.current;\s*\n\s*break;\s*\n\s*\}\s*\n\s*\/\/ Sweep 2026-06-11 \[3\]/);
+    expect(host).toMatch(/if \(!_canContinue\(\) \|\| pdfHtmlRevisionRef\.current !== _roundHtmlRevision\) \{\s*cur = pdfFixResultRef\.current;\s*break;\s*\}/);
     expect(host).toContain('setPdfFixResult(snapshot);');
   });
 });
@@ -49,7 +52,7 @@ describe('CB-1: the Gemini breaker is reset at the start of each run', () => {
   it('fixAndVerifyPdf calls it in the per-run reset block (next to the telemetry reset)', () => {
     // M3 (2026-07-09): the reset is now gated on an IDLE gate — an overlapping run's live storm
     // state must not be zeroed under it — so the window widened past the old 400 chars.
-    const telemetry = pipe.indexOf('_pipelineStats.lastOpenStep = null;');
+    const telemetry = pipe.indexOf('const _runStats = _pipelineStats = {');
     const pacing = pipe.indexOf('// Heavy-doc PROACTIVE pacing', telemetry);
     expect(telemetry).toBeGreaterThan(0);
     expect(pacing).toBeGreaterThan(telemetry);
@@ -71,9 +74,11 @@ describe('CB-1: the Gemini breaker is reset at the start of each run', () => {
 
 describe('CB-2: recovery clears the stale cooldown', () => {
   it('_geminiNoteSuccess sets _geminiCooldownUntil = 0 before pumping on recovery', () => {
-    const s = pipe.indexOf('var _geminiNoteSuccess = function() {');
+    const s = pipe.indexOf('var _geminiNoteSuccess = function(');
     expect(s).toBeGreaterThan(0);
-    const body = pipe.slice(s, s + 1000);
+    const end = pipe.indexOf(String.fromCharCode(10) + '  };', s);
+    expect(end).toBeGreaterThan(s);
+    const body = pipe.slice(s, end);
     expect(body).toMatch(/_geminiCooldownUntil = 0;/);
     expect(body.indexOf('_geminiCooldownUntil = 0')).toBeLessThan(body.indexOf('_geminiPump()'));
   });

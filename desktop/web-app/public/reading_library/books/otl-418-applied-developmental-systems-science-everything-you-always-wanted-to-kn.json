@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-418-applied-developmental-systems-science-everything-you-always-wanted-to-kn",
+  "title": "Applied Developmental Systems Science: Everything You Always Wanted to Know About Theories, Meta-Theories, Methods, and Interventions but Didn't Realize You Needed to Ask. An Advanced Textbook",
+  "description": "This textbook provides a toolbox, a guidebook, and an instruction manual for researchers and interventionists who want to conceptualize and study applied problems from a developmental systems perspective, and for those who want to teach their graduate (or advanced undergraduate) students how to do this. It is designed to be useful to practitioners who focus on applied developmental problems, such as improving the important developmental contexts where people live, learn, and work, including the applied professions in education, social work, counseling, health care, community development, and business, all of which at their core are concerned with optimizing the development of their students, clients, patients, workers, citizens, and others whose lives they touch.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Religion",
+    "Social Sciences - Sociology"
+  ],
+  "authors": [
+    "Ellen Skinner - Author / Thomas Kindermann - Author / Robert W. Roeser - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Portland State University Library",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/applied-developmental-systems-science-everything-you-always-wanted-to-know-about-theories-meta-theories-methods-and-interventions-but-didn-t-realize-you-needed-to-ask-an-advanced-textbook"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This textbook provides a toolbox, a guidebook, and an instruction manual for researchers and interventionists who want to conceptualize and study applied problems from a developmental systems perspective, and for those who want to teach their graduate (or advanced undergraduate) students how to do this. It is designed to be useful to practitioners who focus on applied developmental problems, such as improving the important developmental contexts where people live, learn, and work, including the applied professions in education, social work, counseling, health care, community development, and business, all of which at their core are concerned with optimizing the development of their students, clients, patients, workers, citizens, and others whose lives they touch."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 135
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "418",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

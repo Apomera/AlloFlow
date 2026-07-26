@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-15904-phokojoe-e-lapileng-le-morara-o-bolila",
+  "title": "Phokojoe e lapileng le morara o bolila",
+  "description": "Phokojoe e lekang fihlela morara.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Kholeka Mabeta"
+  ],
+  "illustrators": [
+    "Benjamin Mitchley"
+  ],
+  "translators": [
+    "Khothatso Ranoosi, Marion Drew"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Kholeka Mabeta",
+      "role": "Author"
+    },
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Translation"
+    },
+    {
+      "name": "Benjamin Mitchley",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Kholeka Mabeta (Author); Khothatso Ranoosi, Marion Drew (Translation); Benjamin Mitchley (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=15904",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=15904",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://paleng.weebly.com/",
+    "editionId": "15904",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-7cd2451ca77ccf38",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/1775.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1776.png",
+      "text": "Khale khale hone ho ena le Phokojoe e lapileng haholo. E ne e lula e tsamaea ka morung e shebana le lijo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=15904#page=1",
+      "sourceDigest": "sha256:884c15d26d19b3e51aa57859a368991e25e2423dd86bc0a0cbf4c68f570ee985"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1775.png",
+      "text": "Eabe e fihla moo lifate tsa morara li lengoang teng. Ea bona lekala la morara le leketlileng le le holimo haholo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=15904#page=2",
+      "sourceDigest": "sha256:53df75dd84a31dbed9415be26da4d6dd05edd31cc136f7a0c72d5bff0811994c"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1777.png",
+      "text": "Ea inahanela hore, \"Ka 'nete ona morara o shebahala o le monate haholo.\" Ea chechela morao hanyane hore, etsebe hoea holimo-limo e qho'me ka mokhoa oo e ka khonang ka teng.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=15904#page=3",
+      "sourceDigest": "sha256:8ab82f266d9f78f72dee6e97b883f32cb37b74e8d529ef3795bccb6fbf86bbdd"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1778.png",
+      "text": "Morara o ne o le holimo-limo. Phokojoe ea oela ka mokokotlo e sa ts'oasa leha e se e le, moraranyana fela.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=15904#page=4",
+      "sourceDigest": "sha256:b08ce9b4440ae04ea4bffb66c2723693ff13d4ea959ec4a23c742a37ca246f44"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1779.png",
+      "text": "Phokojoe ea tsoha ea ea morao haholoanyane. Nakong ena e ne e se e pole'ne ho qhomela holimo-limo haholo. Ease khone ho qhomela holimo-limo haholo, empa ea oela ha bohloko haholoanyane ka mokokotlo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=15904#page=5",
+      "sourceDigest": "sha256:f5689a69970842028de669f6e83fd35eec6ed2f0d100339666f5dd94d5af8d83"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1780.png",
+      "text": "Phokojoe ena, ea leka eaba ea leka. Empa e sa fumana letho. Ea oala hangata-ngata fela. Ho fihleletse ho fihleletse mokokotlo oa eana o le bohloko haholo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=15904#page=6",
+      "sourceDigest": "sha256:31ac201734258ebb40f5413263200d209555bdd104ccf153d3563f0c6abe9e10"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1781.png",
+      "text": "Hofihleletse e be e tlohela, ea ngala ea tsamea.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=15904#page=7",
+      "sourceDigest": "sha256:38b9135c4823c4afcc7ff7e9e18a00681f64c2b80e5fd698be52104487711dca"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1782.png",
+      "text": "Phokojoe e ne e sa thaba hohang. Ea ema, ea hetla ho sheba morara ona hape. Ea inahana hore, \"Morara ono o bolila.\" Ea tsoela pele ka hotsamaea. Ene e se e lapile hofeta pele.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=15904#page=8",
+      "sourceDigest": "sha256:1a6ca78d95f30abeddee6e147672d7dcbb41e7e107549e66c95f3f2ec9d957c5"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 199
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:daaae1add43b75db352009a3f29841e5c520cd96c7fc463a09ec93887960636c"
+  }
+}

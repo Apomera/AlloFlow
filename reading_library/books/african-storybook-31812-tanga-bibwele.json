@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-31812-tanga-bibwele",
+  "title": "Tanga bibwele",
+  "description": "Ba bibwele nioso bazali malamu. Tango bango nioso ndenge bakokende komela mayi.",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Clare Verbeek, Thembani Dladla, Zanele Buthelezi"
+  ],
+  "illustrators": [
+    "Rob Owen"
+  ],
+  "translators": [
+    "Theresa Nyemba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi",
+      "role": "Author"
+    },
+    {
+      "name": "Theresa Nyemba",
+      "role": "Translation"
+    },
+    {
+      "name": "Rob Owen",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi (Author); Theresa Nyemba (Translation); Rob Owen (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31812",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31812",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://cae.ukzn.ac.za/resources/seedbooks.aspx",
+    "editionId": "31812",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-c7e63f0dba229d94",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/9651.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9652.png",
+      "text": "Nzoko moko akei komela mayi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31812#page=1",
+      "sourceDigest": "sha256:47a4337c611862022e6f8e5b05506a4f76f98fa3c14078352f2c9810cbd72b01"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9647.png",
+      "text": "Ba giraffe mibale bakei komela mayi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31812#page=2",
+      "sourceDigest": "sha256:4a5e93e54a4148e85e7620e454dac4e98c7706b46b112c32397bb8f2243bbae1"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9644.png",
+      "text": "Ba pakasa misato na ba ndeke minei bango pe bakei komela mayi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31812#page=3",
+      "sourceDigest": "sha256:98b21c4dae43bf1dcd97da93cfff8a77e136b69c6bff76ce07314a8d7823f4d5"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9646.png",
+      "text": "Ba mboloko mitano na bapanda motoba bazali kotambola na mayi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31812#page=4",
+      "sourceDigest": "sha256:182a5bb98d5ac7ef746c39cef47afc1adc018290a70fb82f9659019c74de2671"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9650.png",
+      "text": "Ba zebra sambo bazali kokima na mayi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31812#page=5",
+      "sourceDigest": "sha256:b5b40ebd2ba55a8be6b3fdafe0c309555b54be3df270df5fe0b459260a0f00ef"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9645.png",
+      "text": "Ba magonodo muambe na ba mbisi libwua bakosakana na mayi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31812#page=6",
+      "sourceDigest": "sha256:84d3b088dde5cc306848696efc5accc5517e09d645c58a3341026d53cbb4948f"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9651.png",
+      "text": "Nkosi moko, Ye pe alingi komela mayi. Nani akobanga nkosi?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31812#page=7",
+      "sourceDigest": "sha256:8a534cab411fd405b3cdc9803e67fbac9d65542c9d3f59df5a6a6848fa6262b8"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9648.png",
+      "text": "Nzoko moko akomela mayi ye na nkosi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31812#page=8",
+      "sourceDigest": "sha256:71caa4a9a2e99c4d180acdf906aae8d310833891309d40902f717635fc68467b"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 67
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:9a03b21692b6c2d561ad8b3f83a9bb2d4989f0127d75f1f0a53b517d7c7558a6"
+  }
+}

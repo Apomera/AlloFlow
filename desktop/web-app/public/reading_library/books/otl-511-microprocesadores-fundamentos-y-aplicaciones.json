@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-511-microprocesadores-fundamentos-y-aplicaciones",
+  "title": "Microprocesadores Fundamentos y Aplicaciones",
+  "description": "Este trabajo ha sido desarrollado gracias a la interacción como docente universitario en la enseñanza teórica y práctica de la materia de microprocesadores con diversos grupos de estudiantes por alrededor de 15 años. Es con sus exigencias, cuestionamientos y colaboraciones con sus proyectos prácticos implementados en los cursos dictados, que se ha podido construir una guía comprensiva, que trate de responder de una forma adecuada las múltiples dudas de los estudiantes en su proceso de aprendizaje. La disponibilidad de tiempo en el aula de clase muchas veces no es suficiente para responder las inquietudes de los estudiantes; así que, se espera que con este trabajo se contribuya a proporcionar al lector un cúmulo de información que le ayuden de una manera práctica y escalonada a comprender la base teórica de los microprocesadores de Intel y sus derivados (capítulos 1 al 15), con implementaciones prácticas básicas (capítulo 16). Al final se citan libros de referencia que pueden consultarse para profundizar los temas tratados.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science"
+  ],
+  "authors": [
+    "Carlos Valdivieso - Author / Ronald M. Solís - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "LATIn Project",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/microprocesadores-fundamentos-y-aplicaciones"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Este trabajo ha sido desarrollado gracias a la interacción como docente universitario en la enseñanza teórica y práctica de la materia de microprocesadores con diversos grupos de estudiantes por alrededor de 15 años. Es con sus exigencias, cuestionamientos y colaboraciones con sus proyectos prácticos implementados en los cursos dictados, que se ha podido construir una guía comprensiva, que trate de responder de una forma adecuada las múltiples dudas de los estudiantes en su proceso de aprendizaje. La disponibilidad de tiempo en el aula de clase muchas veces no es suficiente para responder las inquietudes de los estudiantes; así que, se espera que con este trabajo se contribuya a proporcionar al lector un cúmulo de información que le ayuden de una manera práctica y escalonada a comprender la base teórica de los microprocesadores de Intel y sus derivados (capítulos 1 al 15), con implementaciones prácticas básicas (capítulo 16). Al final se citan libros de referencia que pueden consultarse para profundizar los temas tratados."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 185
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "511",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

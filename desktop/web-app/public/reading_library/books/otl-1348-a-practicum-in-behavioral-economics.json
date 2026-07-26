@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1348-a-practicum-in-behavioral-economics",
+  "title": "A Practicum in Behavioral Economics",
+  "description": "A Practicum in Behavioral Economics is a practice-based textbook covering the broad field of behavioral economics. Because behavioral economics is foremost a “test-and-learn” field of scientific inquiry that evolves according to experimental outcomes, so too should students test-and-learn. As such, the book’s primary goal is to help students experience behavioral economics through participation in the same experiments and games that serve as the foundations for, and shape the contours of, the field. With the help of this book students learn behavioral economics firsthand, and in the process create their own experiences. They learn about themselves – about how they make private and public choices under experimental conditions – at the same time as they learn about the field of behavioral economics itself.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Economics"
+  ],
+  "authors": [
+    "Arthur J Caplan - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "UEN Digital Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-practicum-in-behavioral-economics"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A Practicum in Behavioral Economics is a practice-based textbook covering the broad field of behavioral economics. Because behavioral economics is foremost a “test-and-learn” field of scientific inquiry that evolves according to experimental outcomes, so too should students test-and-learn. As such, the book’s primary goal is to help students experience behavioral economics through participation in the same experiments and games that serve as the foundations for, and shape the contours of, the field. With the help of this book students learn behavioral economics firsthand, and in the process create their own experiences. They learn about themselves – about how they make private and public choices under experimental conditions – at the same time as they learn about the field of behavioral economics itself."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 142
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1348",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1045-fundamentals-function-and-form-theory-and-analysis-of-tonal-western-art-",
+  "title": "Fundamentals, Function, and Form: Theory and Analysis of Tonal Western Art Music",
+  "description": "Fundamentals, Function, and Form by Andre Mount—with editorial and pedagogical input from Lee Rothfarb—provides its readers with a comprehensive study of the theory and analysis of tonal Western art music. Mount begins by building a strong foundation in the understanding of rhythm, meter, and pitch as well as the notational conventions associated with each. From there, he guides the reader through an exploration of polyphony—the simultaneous sounding of multiple independent melodies—and an increasingly rich array of different sonorites that grow out of this practice. The book culminates with a discussion of musical form, engaging with artistic works in their entirety by considering the interaction of harmonic and thematic elements, but also such other musical dimensions as rhythm, meter, texture, and expression. Along the way, Mount supplements the text with over eight hundred musical examples which, in the online version of the text, include embedded audio files for immediate aural reinforcement of theoretical concepts. Most of these examples are drawn from the literature, including nearly 200 excerpts by women and other underrepresented groups. The reader is also given the opportunity to check their understanding of the text with interactive exercises at every step of the way. Fundamentals, Function, and Form was written with the undergraduate music student in mind, but self-guided readers would also be rewarded with a deep understanding of this musical tradition.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Arts"
+  ],
+  "authors": [
+    "Andre Mount - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Milne Open Textbooks",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/fundamentals-function-and-form-theory-and-analysis-of-tonal-western-art-music"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Fundamentals, Function, and Form by Andre Mount—with editorial and pedagogical input from Lee Rothfarb—provides its readers with a comprehensive study of the theory and analysis of tonal Western art music. Mount begins by building a strong foundation in the understanding of rhythm, meter, and pitch as well as the notational conventions associated with each. From there, he guides the reader through an exploration of polyphony—the simultaneous sounding of multiple independent melodies—and an increasingly rich array of different sonorites that grow out of this practice. The book culminates with a discussion of musical form, engaging with artistic works in their entirety by considering the interaction of harmonic and thematic elements, but also such other musical dimensions as rhythm, meter, texture, and expression. Along the way, Mount supplements the text with over eight hundred musical examples which, in the online version of the text, include embedded audio files for immediate aural reinforcement of theoretical concepts. Most of these examples are drawn from the literature, including nearly 200 excerpts by women and other underrepresented groups. The reader is also given the opportunity to check their understanding of the text with interactive exercises at every step of the way. Fundamentals, Function, and Form was written with the undergraduate music student in mind, but self-guided readers would also be rewarded with a deep understanding of this musical tradition."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 246
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1045",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

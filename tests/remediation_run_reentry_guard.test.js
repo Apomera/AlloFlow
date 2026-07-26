@@ -66,11 +66,35 @@ describe('one-click remediation re-entry guard', () => {
       isAlreadyRunning: true,
     });
     expect(starts).toBe(1);
-    expect(harness.warnings.some((line) => line.includes('Duplicate single-file start ignored'))).toBe(true);
+    expect(harness.warnings.some((line) => line.includes('Concurrent remediation start ignored'))).toBe(true);
     expect(harness.toasts).toHaveLength(1);
 
     finishFirst('first-result');
     await expect(first).resolves.toBe('first-result');
+  });
+
+  it('claims the exported pipeline lock before invoking the worker', async () => {
+    let starts = 0;
+    let nested;
+    let finishFirst;
+    let harness;
+    harness = createGuardHarness(() => {
+      starts += 1;
+      if (starts === 1) {
+        nested = harness.guarded({ base64: 'nested', auditResult: { score: 0 } });
+        return new Promise((resolvePromise) => { finishFirst = resolvePromise; });
+      }
+      return Promise.resolve('unexpected-second-worker');
+    });
+
+    const first = harness.guarded({ base64: 'outer', auditResult: { score: 0 } });
+    await expect(nested).rejects.toMatchObject({
+      name: 'RemediationAlreadyRunningError',
+      isAlreadyRunning: true,
+    });
+    expect(starts).toBe(1);
+    finishFirst('outer-result');
+    await expect(first).resolves.toBe('outer-result');
   });
 
   it('releases a stale lock after watchdog/new-document generation invalidation', async () => {
@@ -94,17 +118,32 @@ describe('one-click remediation re-entry guard', () => {
     await expect(replacement).resolves.toBe('replacement-result');
   });
 
-  it('uses explicit progress ownership for batch classification and bypasses the single-file lock', async () => {
+  it('serializes managed runs so shared telemetry cannot be reassigned mid-flight', async () => {
     let starts = 0;
-    const harness = createGuardHarness((windowLike) => {
+    let finishFirst;
+    const harness = createGuardHarness(() => {
       starts += 1;
+      if (starts === 1) return new Promise((resolvePromise) => { finishFirst = resolvePromise; });
       return Promise.resolve(`batch-${starts}`);
     });
 
-    await expect(Promise.all([
-      harness.guarded({ onProgress: () => {}, batchMode: true }),
-      harness.guarded({ onProgress: () => {}, batchMode: true }),
-    ])).resolves.toEqual(['batch-1', 'batch-2']);
+    const first = harness.guarded({ onProgress: () => {}, batchMode: true });
+    await expect(harness.guarded({ onProgress: () => {}, batchMode: true })).rejects.toMatchObject({
+      name: 'RemediationAlreadyRunningError',
+      isAlreadyRunning: true,
+    });
+    expect(starts).toBe(1);
+    expect(harness.toasts).toHaveLength(0);
+
+    finishFirst('batch-1');
+    await expect(first).resolves.toBe('batch-1');
+    await expect(harness.guarded({ onProgress: () => {}, batchMode: true })).resolves.toBe('batch-2');
+    expect(starts).toBe(2);
+    expect(pipelineSource).toContain('var _activeRemediationManaged = false;');
+    expect(pipelineSource).toContain('const _fixPromise = fixAndVerifyPdf({');
+    expect(pipelineSource).toContain("Promise.resolve(_fixPromise).then(() => null, () => null)");
+    expect(pipelineSource).toContain("ALLO_BATCH_REMEDIATION_DRAIN_TIMEOUT");
+    expect(pipelineSource).toContain('!_batchHandoffStopped && failedFiles.length > 0');
     expect(pipelineSource).toContain('const _isBatch = _silentMode || !!(batchOverrides && batchOverrides.batchMode === true);');
     expect(pipelineSource).not.toContain('const _isBatch = !!batchOverrides;');
   });
@@ -130,7 +169,7 @@ describe('one-click remediation re-entry guard', () => {
     ]) {
       const generated = readFileSync(resolve(root, path), 'utf8');
       expect(generated).toContain('RemediationAlreadyRunningError');
-      expect(generated).toContain('Duplicate single-file start ignored');
+      expect(generated).toContain('Concurrent remediation start ignored');
     }
     for (const path of [
       'view_pdf_audit_module.js',

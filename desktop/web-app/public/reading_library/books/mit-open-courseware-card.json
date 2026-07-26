@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "mit-open-courseware-card",
+  "title": "MIT OpenCourseWare",
+  "description": "Openly licensed notes, readings, assignments, and learning materials from MIT courses.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "mit-ocw",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "College",
+    "Course materials",
+    "STEM",
+    "Humanities"
+  ],
+  "authors": [
+    "Massachusetts Institute of Technology"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "MIT OpenCourseWare",
+  "license": "Mostly CC BY-NC-SA · link-only due third-party exceptions",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "mit-ocw",
+    "name": "MIT OpenCourseWare",
+    "url": "https://ocw.mit.edu/"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://mitocw.zendesk.com/hc/en-us/articles/4414756181403-How-is-all-rights-reserved-content-different-from-the-rest-of-OCW-content",
+    "reason": "MIT OCW includes marked third-party and all-rights-reserved materials. This card links out and copies no course content."
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Openly licensed notes, readings, assignments, and learning materials from MIT courses."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Open the official source to browse and read available materials."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "MIT OCW includes marked third-party and all-rights-reserved materials. This card links out and copies no course content."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 38
+  },
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://mitocw.zendesk.com/hc/en-us/articles/4414756181403-How-is-all-rights-reserved-content-different-from-the-rest-of-OCW-content",
+    "note": "MIT OCW includes marked third-party and all-rights-reserved materials. This card links out and copies no course content."
+  }
+}

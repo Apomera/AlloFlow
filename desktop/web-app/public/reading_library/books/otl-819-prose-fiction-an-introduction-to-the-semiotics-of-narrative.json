@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-819-prose-fiction-an-introduction-to-the-semiotics-of-narrative",
+  "title": "Prose Fiction: An Introduction to the Semiotics of Narrative",
+  "description": "This concise and highly accessible textbook outlines the principles and techniques of storytelling. It is intended as a high-school and college-level introduction to the central concepts of narrative theory – concepts that will aid students in developing their competence not only in analysing and interpreting short stories and novels, but also in writing them. This textbook prioritises clarity over intricacy of theory, equipping its readers with the necessary tools to embark on further study of literature, literary theory and creative writing. Building on a ‘semiotic model of narrative,’ it is structured around the key elements of narratological theory, with chapters on plot, setting, characterisation, and narration, as well as on language and theme – elements which are underrepresented in existing textbooks on narrative theory. The chapter on language constitutes essential reading for those students unfamiliar with rhetoric, while the chapter on theme draws together significant perspectives from contemporary critical theory (including feminism and postcolonialism). This textbook is engaging and easily navigable, with key concepts highlighted and clearly explained, both in the text and in a full glossary located at the end of the book. Throughout the textbook the reader is aided by diagrams, images, quotes from prominent theorists, and instructive examples from classical and popular short stories and novels (such as Jane Austen’s Pride and Prejudice, Franz Kafka’s ‘The Metamorphosis,’ J. K. Rowling’s Harry Potter, or Dostoyevsky’s The Brothers Karamazov, amongst many others). Prose Fiction: An Introduction to the Semiotics of Narrative can either be incorporated as the main textbook into a wider syllabus on narrative theory and creative writing, or it can be used as a supplementary reference book for readers interested in narrative fiction. The textbook is a must-read for beginning students of narratology, especially those with no or limited prior experience in this area. It is of especial relevance to English and Humanities major students in Asia, for whom it was conceived and written.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Ignasi Ribó - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Book Publishers",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/prose-fiction-an-introduction-to-the-semiotics-of-narrative"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This concise and highly accessible textbook outlines the principles and techniques of storytelling. It is intended as a high-school and college-level introduction to the central concepts of narrative theory – concepts that will aid students in developing their competence not only in analysing and interpreting short stories and novels, but also in writing them. This textbook prioritises clarity over intricacy of theory, equipping its readers with the necessary tools to embark on further study of literature, literary theory and creative writing. Building on a ‘semiotic model of narrative,’ it is structured around the key elements of narratological theory, with chapters on plot, setting, characterisation, and narration, as well as on language and theme – elements which are underrepresented in existing textbooks on narrative theory. The chapter on language constitutes essential reading for those students unfamiliar with rhetoric, while the chapter on theme draws together significant perspectives from contemporary critical theory (including feminism and postcolonialism). This textbook is engaging and easily navigable, with key concepts highlighted and clearly explained, both in the text and in a full glossary located at the end of the book. Throughout the textbook the reader is aided by diagrams, images, quotes from prominent theorists, and instructive examples from classical and popular short stories and novels (such as Jane Austen’s Pride and Prejudice, Franz Kafka’s ‘The Metamorphosis,’ J. K. Rowling’s Harry Potter, or Dostoyevsky’s The Brothers Karamazov, amongst many others). Prose Fiction: An Introduction to the Semiotics of Narrative can either be incorporated as the main textbook into a wider syllabus on narrative theory and creative writing, or it can be used as a supplementary reference book for readers interested in narrative fiction. The textbook is a must-read for beginning students of narratology, especially those with no or limited prior experience in this area. It is of especial relevance to English and Humanities major students in Asia, for whom it was conceived and written."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 340
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "819",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-197-precalculus",
+  "title": "Precalculus",
+  "description": "Precalculus is intended for college-level precalculus students. Since precalculus courses vary from one institution to the next, we have attempted to meet the needs of as broad an audience as possible, including all of the content that might be covered in any particular course. The result is a comprehensive book that covers more ground than an instructor could likely cover in a typical one- or two-semester course; but instructors should find, almost without fail, that the topics they wish to include in their syllabus are covered in the text. Many chapters of Openstax College Precalculus are suitable for other freshman and sophomore math courses such as College Algebra and Trigonometry; however, instructors of those courses might need to supplement or adjust the material. Openstax will also be releasing College Algebra and Algebra and Trigonometry titles tailored to the particular scope, sequence, and pedagogy of those courses. OpenStax College has compiled many resources for faculty and students, from faculty-only content to interactive homework and study guides.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Calculus",
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "Jay Abramson - Author / Valeree Falduto - Author / Rachael Grosss - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/precalculus-2014"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Precalculus is intended for college-level precalculus students. Since precalculus courses vary from one institution to the next, we have attempted to meet the needs of as broad an audience as possible, including all of the content that might be covered in any particular course. The result is a comprehensive book that covers more ground than an instructor could likely cover in a typical one- or two-semester course; but instructors should find, almost without fail, that the topics they wish to include in their syllabus are covered in the text. Many chapters of Openstax College Precalculus are suitable for other freshman and sophomore math courses such as College Algebra and Trigonometry; however, instructors of those courses might need to supplement or adjust the material. Openstax will also be releasing College Algebra and Algebra and Trigonometry titles tailored to the particular scope, sequence, and pedagogy of those courses. OpenStax College has compiled many resources for faculty and students, from faculty-only content to interactive homework and study guides."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2014."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 188
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "197",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

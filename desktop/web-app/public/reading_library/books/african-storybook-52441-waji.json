@@ -1,0 +1,162 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52441-waji",
+  "title": "Waji",
+  "description": "Baro qaybaha wajiga adigoo kaashanaya koox saaxiibo ah oo siqosol badan loo sawiray.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [
+    "Sue Beattie"
+  ],
+  "translators": [
+    "Ubah Ali"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Little Zebra Books",
+      "role": "Author"
+    },
+    {
+      "name": "Ubah Ali",
+      "role": "Translation"
+    },
+    {
+      "name": "Sue Beattie",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Little Zebra Books (Author); Ubah Ali (Translation); Sue Beattie (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52441",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52441",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52441",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-946b6514126d6fc4",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/26803.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26807.png",
+      "text": "Indho",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52441#page=1",
+      "sourceDigest": "sha256:b4056beb451af9ab9fec356b1dc22705e5906672740e3a74f2ffd54cbe170860"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26808.png",
+      "text": "Dhago",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52441#page=2",
+      "sourceDigest": "sha256:51939d52105c7e1e6806c7c4805ebc90bd1e0222b14eb11abf462960f6446414"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26802.png",
+      "text": "Af",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52441#page=3",
+      "sourceDigest": "sha256:3212878cd3e40efc4855c3b585fd2d8ca67bef9bab9c05b939606ca8c44b7317"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26800.png",
+      "text": "San",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52441#page=4",
+      "sourceDigest": "sha256:a2e6bdd3f1e66d873f27c18ff1618010aeacfd1e17aa0780952420cd34486410"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26801.png",
+      "text": "Gadh.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52441#page=5",
+      "sourceDigest": "sha256:55a114435104d5fa439f6d04ffc5b689ec801c623fa962bf0f268fe2c83b1eaa"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26755.png",
+      "text": "Ilko",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52441#page=6",
+      "sourceDigest": "sha256:0a6e89b13cc63eebbc615f72ae6edb57eb689fa2f67a50afea0ad0505e0a6814"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26810.png",
+      "text": "Carrab",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52441#page=7",
+      "sourceDigest": "sha256:fb14bffd6d0105a17f0bb233c100e0d2985c63b5a48fe31497442ea17c469321"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26809.png",
+      "text": "Caman",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52441#page=8",
+      "sourceDigest": "sha256:6852ec9b9f5d4b44299d6180de3919ede0dfbdcb5c9c853c6d8619c085a0570f"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26804.png",
+      "text": "Sunniyo",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52441#page=9",
+      "sourceDigest": "sha256:1fb9a3279b9acd281384c5c37bfbcad2baa67b5dedf98ed855df955f393e33b6"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26806.png",
+      "text": "Timo",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52441#page=10",
+      "sourceDigest": "sha256:b5d0fef13e58b8ff483025c79f3db4d7310ba372cb3893bc5bef65c9c8c6bcda"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 10
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:175e45570d086f65d04b73cb6b3ac8491a8a06dad1f8e00f7944e252d1f920b0"
+  }
+}

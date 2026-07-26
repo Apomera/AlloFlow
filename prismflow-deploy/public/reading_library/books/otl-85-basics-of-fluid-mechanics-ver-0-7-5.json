@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-85-basics-of-fluid-mechanics-ver-0-7-5",
+  "title": "Basics of Fluid Mechanics - ver. 0.7.5",
+  "description": "The topic of fluid mechanics is common to several disciplines: mechanical engineering, aerospace engineering, chemical engineering, and civil engineering. In fact, it is also related to disciplines like industrial engineering, and electrical engineering. While the emphasis is somewhat different in this book, the common material is presented and hopefully can be used by all. One can only admire the wonderful advances done by the previous geniuses who work in this field. In this book it is hoped to insert, what and when a certain model is suitable than other models. One of the difference in this book is the insertion of the introduction to multiphase flow. Clearly, multiphase is an advance topic. However, some minimal familiarity can be helpful for many engineers who have to deal with non pure single phase fluid. This book is the third book in the series of POTTO project books. POTTO project books are open content textbooks so everyone are welcome to joint in. The topic of fluid mechanics was chosen just to fill the introduction chapter to compressible flow. During the writing it became apparent that it should be a book in its own right. In writing the chapter on fluid statics, there was a realization that it is the best chapter written on this topic. It is hoped that the other chapters will be as good this one. This book is written in the spirit of my adviser and mentor E.R.G. Eckert. Eckert, aside from his research activity, wrote the book that brought a revolution in the education of the heat transfer. Up to Egret's book, the study of heat transfer was without any dimensional analysis. He wrote his book because he realized that the dimensional analysis utilized by him and his adviser (for the post doc), Ernst Schmidt, and their colleagues, must be taught in engineering classes. His book met strong criticism in which some called to \"burn\" his book. Today, however, there is no known place in world that does not teach according to Eckert's doctrine. It is assumed that the same kind of individual(s) who criticized Eckert's work will criticize this work. Indeed, the previous book, on compressible flow, met its opposition. For example, anonymous Wikipedia user name EMBaero claimed that the material in the book is plagiarizing, he just doesn't know from where and what. Maybe that was the reason that he felt that is okay to plagiarize the book on Wikipedia. These criticisms will not change the future or the success of the ideas in this work. As a wise person says \"don't tell me that it is wrong, show me what is wrong\"; this is the only reply. With all the above, it must be emphasized that this book is not expected to revolutionize the field but change some of the way things are taught. The book is organized into several chapters which, as a traditional textbook, deals with a basic introduction to the fluid properties and concepts (under construction). The second chapter deals with Thermodynamics. The third book chapter is a review of mechanics. The next topic is statics. When the Static Chapter was written, this author did not realize that so many new ideas will be inserted into this topic. As traditional texts in this field, ideal flow will be presented with the issue of added mass and added forces (under construction). The classic issue of turbulence (and stability) will be presented. An introduction to multi-phase flow, not a traditional topic, will be presented next (again under construction). The next two chapters will deal with open channel flow and gas dynamics. At this stage, dimensional analysis will be present (again under construction).",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology - Chemical Engineering",
+    "Engineering & Technology - Civil Engineering"
+  ],
+  "authors": [
+    "Genick Bar-Meir - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Potto Project",
+  "license": "CC0 1.0 catalog metadata · linked title: Free Documentation License (GNU)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/basics-of-fluid-mechanics"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Free Documentation License (GNU)"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The topic of fluid mechanics is common to several disciplines: mechanical engineering, aerospace engineering, chemical engineering, and civil engineering. In fact, it is also related to disciplines like industrial engineering, and electrical engineering. While the emphasis is somewhat different in this book, the common material is presented and hopefully can be used by all. One can only admire the wonderful advances done by the previous geniuses who work in this field. In this book it is hoped to insert, what and when a certain model is suitable than other models. One of the difference in this book is the insertion of the introduction to multiphase flow. Clearly, multiphase is an advance topic. However, some minimal familiarity can be helpful for many engineers who have to deal with non pure single phase fluid. This book is the third book in the series of POTTO project books. POTTO project books are open content textbooks so everyone are welcome to joint in. The topic of fluid mechanics was chosen just to fill the introduction chapter to compressible flow. During the writing it became apparent that it should be a book in its own right. In writing the chapter on fluid statics, there was a realization that it is the best chapter written on this topic. It is hoped that the other chapters will be as good this one. This book is written in the spirit of my adviser and mentor E.R.G. Eckert. Eckert, aside from his research activity, wrote the book that brought a revolution in the education of the heat transfer. Up to Egret's book, the study of heat transfer was without any dimensional analysis. He wrote his book because he realized that the dimensional analysis utilized by him and his adviser (for the post doc), Ernst Schmidt, and their colleagues, must be taught in engineering classes. His book met strong criticism in which some called to \"burn\" his book. Today, however, there is no known place in world that does not teach according to Eckert's doctrine. It is assumed that the same kind of individual(s) who criticized Eckert's work will criticize this work. Indeed, the previous book, on compressible flow, met its opposition. For example, anonymous Wikipedia user name EMBaero claimed that the material in the book is plagiarizing, he just doesn't know from where and what. Maybe that was the reason that he felt that is okay to plagiarize the book on Wikipedia. These criticisms will not change the future or the success of the ideas in this work. As a wise person says \"don't tell me that it is wrong, show me what is wrong\"; this is the only reply. With all the above, it must be emphasized that this book is not expected to revolutionize the field but change some of the way things are taught. The book is organized into several chapters which, as a traditional textbook, deals with a basic introduction to the fluid properties and concepts (under construction). The second chapter deals with Thermodynamics. The third book chapter is a review of mechanics. The next topic is statics. When the Static Chapter was written, this author did not realize that so many new ideas will be inserted into this topic. As traditional texts in this field, ideal flow will be presented with the issue of added mass and added forces (under construction). The classic issue of turbulence (and stability) will be presented. An introduction to multi-phase flow, not a traditional topic, will be presented next (again under construction). The next two chapters will deal with open channel flow and gas dynamics. At this stage, dimensional analysis will be present (again under construction)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Free Documentation License (GNU). Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 633
+  },
+  "linkedContentLicense": "Free Documentation License (GNU)",
+  "externalRecordId": "85",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

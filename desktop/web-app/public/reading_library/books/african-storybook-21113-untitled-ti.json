@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-21113-untitled-ti",
+  "title": "እታ በቅሊ",
+  "description": "ኣቡኣ ብዘይ ምኽባራ እያ በቅሊ ዘይትወልድ ዝብል ያታዊ ኣባህላ ኣሎ።እዚ ነበረያነበረ እውን በቅሊ ንምንታይ ከምዘይትወልድ ዝገልፅ ልማዳዊ ዛንታ እዩ ።",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Mesfin Habte-Mariam, Elizabeth Laird"
+  ],
+  "illustrators": [
+    "Marleen Visser"
+  ],
+  "translators": [
+    "Angesom Abadi"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Mesfin Habte-Mariam, Elizabeth Laird",
+      "role": "Author"
+    },
+    {
+      "name": "Angesom Abadi",
+      "role": "Translation"
+    },
+    {
+      "name": "Marleen Visser",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Mesfin Habte-Mariam, Elizabeth Laird (Author); Angesom Abadi (Translation); Marleen Visser (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "21113",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-adecfbdc4df6aec3",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/17977.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17968.png",
+      "text": "ሓንቲ ምሊት ትብሃል ፅብቕቲ በቅሊ ነይራ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=1",
+      "sourceDigest": "sha256:4cb41dab70ae435df3fdc9748a01ab0682bcc0cb79f9a9929316d9922f6e333c"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17969.png",
+      "text": "ሓደ ፅቡቕ ፈረስ “ንምሊት ናይ ግድን ክምርዐዋ ኣለኒ” በለ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=2",
+      "sourceDigest": "sha256:a7e0ff84ca5d906f8c39c4192a756bbfb8aefe44e7b7b4ff34ae2438cbc20924"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17970.png",
+      "text": "እቲ ፈረስ ንምሊት “ብሓደ ንሩባ ንኺድ” በላ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=3",
+      "sourceDigest": "sha256:f5bb50a109adf75282b9540ce3e383149102dda35455f0c4e01a58f658ffa055"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17971.png",
+      "text": "እቲ ፈረስ ንኽትምርዓዎ ጠየቓ። ምሊት ድማ እሺ በለት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=4",
+      "sourceDigest": "sha256:7698a6d668fb24f20aca0c66854cde2f502e7b38162c90e63f8508139fdd5650"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17972.png",
+      "text": "እቲ ፈረስ “ኣቦኽን ኣዴኽን መነ መን ይብሃሉ” ኢሉ ሓተታ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=5",
+      "sourceDigest": "sha256:b257cc64b6d7e373a939f862b827f544c92c9e7517836e75e6c53a2a43832e2f"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17973.png",
+      "text": "“ኣደይ ኣብ አንዳ ንጉስ እያ ትነብር” ኢላ መለሰትሉ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=6",
+      "sourceDigest": "sha256:51f270026be11a243e1364bf8b6ce5a0061991dc19281efa21add0d4c5772d9b"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17974.png",
+      "text": "“ሓፍተይ ኣብ ቀፅሪ ቤተ ክርስትያን እያ እትነበር፤ ኣይትፈልጣን?” በለቶ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=7",
+      "sourceDigest": "sha256:0bb2faaab1ea7631bfe0f88fbf2486915dca695443d4c64a32a768140da7ea79"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17975.png",
+      "text": "“እታ ፅብቕቲ ኣሞይ ምስ ዋና ኣማሓዳሪ እያ እትነበር” ኢላ ወሰኸትሉ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=8",
+      "sourceDigest": "sha256:a93ce0bf13f21e26faf97b96a70c41404e48df395f649702ca18df6a948a1fc9"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17976.png",
+      "text": "ሓደ ኣረጊት ኣድጊ ይሓልፍ ነይሩ። ኣቡኣ ንምሊት እዩ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=9",
+      "sourceDigest": "sha256:8a9f3ca0d634ebd1c7c58be059b3a42ac967ea8792a905c116b97fb50ad999c3"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17977.png",
+      "text": "ምሊት ንኣቡኣ ግልፅ ኢላ ኣይርኣየቶን፤ ሰላም እውን ኣይበለቶን።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=10",
+      "sourceDigest": "sha256:9268caeb3275380e4ea9acadd4bca2cad57f94c76bbfc9d28c2112c03d2180b7"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17978.png",
+      "text": "እቲ ኣረጊት ኣድጊ “እንታይ ኮንኪ እዛ ጓለይ” በላ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=11",
+      "sourceDigest": "sha256:ab2fa29c5ee2422e0c7e9a36455ed371803f2f342c45178854c4480fce51ecfc"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17979.png",
+      "text": "እቲ ፈረስ “መን እዩ እዚ ሕማቕ ኣድጊ?” በላ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=12",
+      "sourceDigest": "sha256:7f69202d92d9dd644f77c041c10a4d76462dc2bf4a98cada1fd55cd8d8ab8ae2"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17980.png",
+      "text": "“ፈፂመ ኣይፈልጦን” በለቶ ምሊት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=13",
+      "sourceDigest": "sha256:ab46121fbc60b7fb3a199a764ec2822b35475eeaab9786312b771e34bb2ed895"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17981.png",
+      "text": "እቲ ፈረስ ነቲ ኣረጊት ኣድጊ ረግሖ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=14",
+      "sourceDigest": "sha256:5ae311111e8c38f7bc8c82674d19059e0d00e5a6246578ba453d763f7194b28f"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17982.png",
+      "text": "እቲ ኣረጊት ኣድጊ ብጣዕሚ ሓዘነ፣ በኽዩ ድማ ሞተ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=15",
+      "sourceDigest": "sha256:b9c75175d184a009fdfeb67a50e76227e141e0c63a838e8462c628fb1e8313c3"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17984.png",
+      "text": "ምሊት ኣቡኣ ስለ ዘይኣኽበረት ክሳብ ሎሚ ዋላ ሓደ ቆልዓ ኣይወለደትን።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21113#page=16",
+      "sourceDigest": "sha256:3c30ccacf0f2ad7075426578aafb022a47cb60b0edd3ee0c58def32fb63b475c"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 126
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:2b7f1eb09416429eba64483c78f578d9902c9237151dfbec953c35441ea9a42f"
+  }
+}

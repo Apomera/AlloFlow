@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52117-xayawaan-la-tirinaayo",
+  "title": "Xayawaan la tirinaayo",
+  "description": "Xayawaankan oo dhammi was haraadanyihiin. Tiri markay soo cabbayaan.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Clare Verbeek, Thembani Dladla, Zanele Buthelezi"
+  ],
+  "illustrators": [
+    "Rob Owen"
+  ],
+  "translators": [
+    "Abdullahi Mohamed"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi",
+      "role": "Author"
+    },
+    {
+      "name": "Abdullahi Mohamed",
+      "role": "Translation"
+    },
+    {
+      "name": "Rob Owen",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi (Author); Abdullahi Mohamed (Translation); Rob Owen (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52117",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52117",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://cae.ukzn.ac.za/resources/seedbooks.aspx",
+    "editionId": "52117",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-c7e63f0dba229d94",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/9651.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9652.png",
+      "text": "Hal maroodi baa biyo soo cabbaaya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52117#page=1",
+      "sourceDigest": "sha256:f7b390bb78b84dba0f3b41346b31b821e566d07e99412aca57d5b0f0971ea59a"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9647.png",
+      "text": "Laba gerri baa biyo soo cabbaaya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52117#page=2",
+      "sourceDigest": "sha256:1ca6794cc0bfeb0d1eb73cb1dd9394d48d4cecdcf8bede5adbb2a58a53916c30"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9644.png",
+      "text": "Saddex gisi iyo afar shimbirood baa iyaguna biyo soo cabbaaya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52117#page=3",
+      "sourceDigest": "sha256:67205a1ba01c5afc9b01378f986ea0e3abfd74a7390de5eba7a2f3a5a6a7b2dd"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9646.png",
+      "text": "Shan deero iyo lix doofaar baa u socda si ay biyo u soo cabbaan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52117#page=4",
+      "sourceDigest": "sha256:1c883775577d8af7d9a4d69cfe37b0cf20d56bc947415832e7be125ef8dfb78a"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9650.png",
+      "text": "Todoba dameerfarow baa ordaaya si ay biyo u soo cabbaan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52117#page=5",
+      "sourceDigest": "sha256:42e05815ef24ad9edbd1c2778de5e6881f84fe13e0234be005e74a279fbd8be7"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9645.png",
+      "text": "Sideed rah iyo sagaal xabbo kalluuna ayaa biyo ku dabaalanaaya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52117#page=6",
+      "sourceDigest": "sha256:60f917c3856cdb02dff753c8e03591fb50f6321ac40426b25af5603e4e3a4859"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9651.png",
+      "text": "Libaax baa guuxey. Isaguna wuxuu rabaa inuu cabbo. Yaa ka cabsoonaaya libaaxa?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52117#page=7",
+      "sourceDigest": "sha256:ec33df457e127b55674ad2c058f3c20ddc7bfcefb12983381fc1345d57ec964d"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9648.png",
+      "text": "Hal maroodi ayaa libaaxa biyo la cabbaaya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52117#page=8",
+      "sourceDigest": "sha256:9fda74f74951faa541160c7bf7d75b149ebfb9c10cc1c07c86e340bb0f5d3cd8"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 75
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:bc68425ddeb18f8b3df6f393f87865830d9c86d0d9f3353ce6dbf360f9826251"
+  }
+}

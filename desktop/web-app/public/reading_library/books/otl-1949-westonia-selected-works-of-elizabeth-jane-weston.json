@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1949-westonia-selected-works-of-elizabeth-jane-weston",
+  "title": "Westonia: Selected Works of Elizabeth Jane Weston",
+  "description": "Elizabeth Jane Weston (1581-1612) was born in England, but spent most of her life in the intellectual hub of early-modern Europe: the imperial court of Rudolph II in Prague. She is remarkable for her determination to work professionally as a poet and to publish her writings, a path not generally open to women of the time. Her numerous Latin poems and letters were widely read and admired, both within the court and across the informal “republic of letters” that stretched across Europe. Although she became one of the most successful women poets in the history of Latin, her works have long been inaccessible to students in the absence of editions meant for the classroom. This volume presents, for the first time, a collection of Weston’s works in the original Latin alongside aids to her vocabulary and grammar.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Arts"
+  ],
+  "authors": [
+    "Bret Mulligan - Author / Mary Anna Ball - Author / Felix K. Bieneman - Author / Hannah Rebecca Cohen - Author / Erica S. Collin - Author / Harry Cottrell - Author / Rowan Killina - Author / Celia Levy - Author / Priya Nwakanma - Author / Claire Pettit - Author / Claudia van Vloten - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Pixelia Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/westonia-selected-works-of-elizabeth-jane-weston"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Elizabeth Jane Weston (1581-1612) was born in England, but spent most of her life in the intellectual hub of early-modern Europe: the imperial court of Rudolph II in Prague. She is remarkable for her determination to work professionally as a poet and to publish her writings, a path not generally open to women of the time. Her numerous Latin poems and letters were widely read and admired, both within the court and across the informal “republic of letters” that stretched across Europe. Although she became one of the most successful women poets in the history of Latin, her works have long been inaccessible to students in the absence of editions meant for the classroom. This volume presents, for the first time, a collection of Weston’s works in the original Latin alongside aids to her vocabulary and grammar."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 160
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1949",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

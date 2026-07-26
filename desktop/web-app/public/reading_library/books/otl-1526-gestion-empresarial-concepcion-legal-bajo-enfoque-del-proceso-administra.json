@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1526-gestion-empresarial-concepcion-legal-bajo-enfoque-del-proceso-administra",
+  "title": "Gestión Empresarial: Concepción Legal bajo enfoque del proceso administrativo. Apuntes desde la perspectiva académica.",
+  "description": "Los principios de gestión empresarial y la concepción jurídica de la empresa son dos aspectos cruciales para cualquier negocio exitoso. Mientras que los principios de la gestión empresarial se centran en el logro de los objetivos organizacionales mediante una planificación, organización y dirección eficaces, la concepción jurídica de la empresa se ocupa de los requisitos y regulaciones legales que las empresas deben cumplir. Comprender la intersección entre estas dos áreas es esencial para que cualquier propietario o gerente de negocio garantice el éxito de su empresa. En esta obra exploraremos los principios de la gestión empresarial, la concepción jurídica de la empresa y cómo se interrelacionan en su contenido. La gestión empresarial eficaz es esencial para lograr los objetivos organizacionales, maximizar las ganancias y mantener una ventaja competitiva. Los principios de la gestión empresarial incluyen la planificación, la organización y el liderazgo. La planificación implica definir objetivos, identificar recursos y crear estrategias para alcanzar las metas. Organizar implica crear estructuras organizativas, delegar responsabilidades y establecer canales de comunicación. Liderar implica motivar a los empleados, resolver conflictos y fomentar el trabajo en equipo. Estos tres principios son interdependientes y deben trabajar juntos para garantizar el éxito de cualquier negocio. Debiendo actuar de forma ética y apegado a derecho para su próspera gestión.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Management"
+  ],
+  "authors": [
+    "César Andrés Guerrero-Velástegui - Author / Xavier Alexander Godoy-Calvachi - Author / Leonardo Daniel Castro-Cruz - Author / Jimena Maribel Torres-Pérez - Author / Fernando Neptalí Terán-Guerrero - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/gestion-empresarial-concepcion-legal-bajo-enfoque-del-proceso-administrativo-apuntes-desde-la-perspectiva-academica"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Los principios de gestión empresarial y la concepción jurídica de la empresa son dos aspectos cruciales para cualquier negocio exitoso. Mientras que los principios de la gestión empresarial se centran en el logro de los objetivos organizacionales mediante una planificación, organización y dirección eficaces, la concepción jurídica de la empresa se ocupa de los requisitos y regulaciones legales que las empresas deben cumplir. Comprender la intersección entre estas dos áreas es esencial para que cualquier propietario o gerente de negocio garantice el éxito de su empresa. En esta obra exploraremos los principios de la gestión empresarial, la concepción jurídica de la empresa y cómo se interrelacionan en su contenido. La gestión empresarial eficaz es esencial para lograr los objetivos organizacionales, maximizar las ganancias y mantener una ventaja competitiva. Los principios de la gestión empresarial incluyen la planificación, la organización y el liderazgo. La planificación implica definir objetivos, identificar recursos y crear estrategias para alcanzar las metas. Organizar implica crear estructuras organizativas, delegar responsabilidades y establecer canales de comunicación. Liderar implica motivar a los empleados, resolver conflictos y fomentar el trabajo en equipo. Estos tres principios son interdependientes y deben trabajar juntos para garantizar el éxito de cualquier negocio. Debiendo actuar de forma ética y apegado a derecho para su próspera gestión."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 234
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1526",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

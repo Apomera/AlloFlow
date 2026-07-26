@@ -1,6 +1,6 @@
 # OpenStax operational rights policy
 
-Last audited: 2026-07-23
+Last audited: 2026-07-25
 
 AlloFlow treats OpenStax reading content as noncommercial CC BY-NC-SA 4.0
 material and follows the additional generative-AI notice displayed on current
@@ -16,7 +16,7 @@ OpenStax book pages.
 - Opening the official source page for the current section
 
 Every mirrored digital page and export must retain the book's required
-`Access for free at .../pages/1-introduction` attribution.
+`Access for free at` attribution using that title's official opening-page URL.
 
 ## Blocked without written permission
 
@@ -29,6 +29,7 @@ Every mirrored digital page and export must retain the book's required
 
 The importer fails closed if either the expected CC BY-NC-SA 4.0 license or
 the OpenStax generative-AI permission notice is missing from a section page.
+The reviewed manifest currently covers 221 chapters across eight textbooks.
 
 ## Permission request draft
 

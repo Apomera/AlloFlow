@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-53-writing-for-success",
+  "title": "Writing for Success",
+  "description": "Writing for Success is a text that provides instruction in steps, builds writing, reading, and critical thinking, and combines comprehensive grammar review with an introduction to paragraph writing and composition. Beginning with the sentence and its essential elements, this book addresses each concept with clear, concise and effective examples that are immediately reinforced with exercises and opportunities to demonstrate, and reinforce, learning. Each chapter allows your students to demonstrate mastery of the principles of quality writing. With its incremental approach, it can address a range of writing levels and abilities, helping each student in your course prepare for their next writing or university course. Constant reinforcement is provided through examples and exercises, and the text involves students in the learning process through reading, problem-solving, practicing, listening, and experiencing the writing process. Each chapter also has integrated examples that unify the discussion and form a common, easy-to-understand basis for discussion and exploration. This will put your students at ease, and allow for greater absorption of the material. Tips for effective writing are included in every chapter, as well. Thought-provoking scenarios provide challenges and opportunities for collaboration and interaction. These exercises are especially helpful if you incorporate group work in your course. Clear exercises teach sentence and paragraph writing skills that lead to common English composition and research essays. Features: Exercises are integrated in each segment. Each concept is immediately reinforced as soon as it is introduced to keep students on track. Exercises are designed to facilitate interaction and collaboration. This allows for peer-peer engagement, development of interpersonal skills, and promotion of critical thinking skills. Exercises that involve self-editing and collaborative writing are featured. This feature develops and promotes student interest in the areas and content. There are clear internal summaries and effective displays of information. This contributes to ease of access to information and increases the ability of your students to locate desired content. Rule explanations are simplified with clear, relevant, and theme-based examples. This feature provides context that will facilitate learning and increase knowledge retention. There is an obvious structure to the chapter and segment level. This allows for easy adaptation to your existing and changing course needs or assessment outcomes.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Open Textbook Library record"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Minnesota Libraries Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/writing-for-success"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Writing for Success is a text that provides instruction in steps, builds writing, reading, and critical thinking, and combines comprehensive grammar review with an introduction to paragraph writing and composition. Beginning with the sentence and its essential elements, this book addresses each concept with clear, concise and effective examples that are immediately reinforced with exercises and opportunities to demonstrate, and reinforce, learning. Each chapter allows your students to demonstrate mastery of the principles of quality writing. With its incremental approach, it can address a range of writing levels and abilities, helping each student in your course prepare for their next writing or university course. Constant reinforcement is provided through examples and exercises, and the text involves students in the learning process through reading, problem-solving, practicing, listening, and experiencing the writing process. Each chapter also has integrated examples that unify the discussion and form a common, easy-to-understand basis for discussion and exploration. This will put your students at ease, and allow for greater absorption of the material. Tips for effective writing are included in every chapter, as well. Thought-provoking scenarios provide challenges and opportunities for collaboration and interaction. These exercises are especially helpful if you incorporate group work in your course. Clear exercises teach sentence and paragraph writing skills that lead to common English composition and research essays. Features: Exercises are integrated in each segment. Each concept is immediately reinforced as soon as it is introduced to keep students on track. Exercises are designed to facilitate interaction and collaboration. This allows for peer-peer engagement, development of interpersonal skills, and promotion of critical thinking skills. Exercises that involve self-editing and collaborative writing are featured. This feature develops and promotes student interest in the areas and content. There are clear internal summaries and effective displays of information. This contributes to ease of access to information and increases the ability of your students to locate desired content. Rule explanations are simplified with clear, relevant, and theme-based examples. This feature provides context that will facilitate learning and increase knowledge retention. There is an obvious structure to the chapter and segment level. This allows for easy adaptation to your existing and changing course needs or assessment outcomes."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 384
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "53",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

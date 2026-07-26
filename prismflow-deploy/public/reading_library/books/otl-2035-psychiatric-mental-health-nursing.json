@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-2035-psychiatric-mental-health-nursing",
+  "title": "Psychiatric-Mental Health Nursing",
+  "description": "Psychiatric-Mental Health Nursing is designed to support a one-semester psychiatric-mental health nursing course offered at both two-year and four-year institutions. Serving students specializing in psychiatric nursing and those from other health disciplines, this learning resource integrates evidence-based practices with practical strategies for communication, readying students to build therapeutic relationships with patients and caregivers. Psychiatric-Mental Health Nursing uses a logical, thematic organization that breaks content down into manageable sections. Each unit is designed to foster a deep understanding of the biological, psychological, and social dimensions of mental health. The content helps students make meaningful connections between various psychiatric conditions and the corresponding nursing approaches. By focusing on tailored psychiatric interventions and emphasizing patient-centered approaches, Psychiatric-Mental Health Nursing equips students with the knowledge and skills necessary to navigate diverse mental health settings.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine - Nursing"
+  ],
+  "authors": [
+    "Rebecca Puchkors - Author / Jeanne Saunders - Author / David Sharp - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/psychiatric-mental-health-nursing"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Psychiatric-Mental Health Nursing is designed to support a one-semester psychiatric-mental health nursing course offered at both two-year and four-year institutions. Serving students specializing in psychiatric nursing and those from other health disciplines, this learning resource integrates evidence-based practices with practical strategies for communication, readying students to build therapeutic relationships with patients and caregivers. Psychiatric-Mental Health Nursing uses a logical, thematic organization that breaks content down into manageable sections. Each unit is designed to foster a deep understanding of the biological, psychological, and social dimensions of mental health. The content helps students make meaningful connections between various psychiatric conditions and the corresponding nursing approaches. By focusing on tailored psychiatric interventions and emphasizing patient-centered approaches, Psychiatric-Mental Health Nursing equips students with the knowledge and skills necessary to navigate diverse mental health settings."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 153
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "2035",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

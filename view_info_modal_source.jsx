@@ -39,6 +39,7 @@ const OSS_CREDITS = [
       { name: 'React & React DOM', use: 'user-interface framework', license: 'MIT', url: 'https://react.dev' },
       { name: 'Lucide', use: 'icon set', license: 'ISC', url: 'https://lucide.dev' },
       { name: 'Tailwind CSS', use: 'styling', license: 'MIT', url: 'https://tailwindcss.com' },
+      { name: 'Blockly', use: 'accessible visual block coding', license: 'Apache-2.0', url: 'https://developers.google.com/blockly' },
       { name: 'Firebase JS SDK', use: 'sign-in & class sync', license: 'Apache-2.0', url: 'https://firebase.google.com' },
     ],
   },

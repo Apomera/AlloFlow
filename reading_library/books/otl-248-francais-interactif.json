@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-248-francais-interactif",
+  "title": "Français interactif",
+  "description": "This textbook of classroom activities and homework accompanies Français interactif. Français interactif, the web-based French program developed and in use at the University of Texas since 2004, and its companion site, Tex's French Grammar (2000)are open access sites, free and open multimedia resources, which require neither password nor fees. Français interactif, used increasingly by students, teachers, and institutions throughout the world, includes 320 videos (American students in France, native French interviews, vocabulary and culture presentation videos) recorded vocabulary lists, phonetic lessons, online grammar lessons (600 pages) with self-correcting exercises and audio dialogues, online grammar tools (verb conjugation reference, verb practice), and diagnostic grammar tests.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages"
+  ],
+  "authors": [
+    "Karen Kelton - Author / Nancy Guilloteau - Author / Carl Blyth - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "COERLL",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/francais-interactif"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This textbook of classroom activities and homework accompanies Français interactif. Français interactif, the web-based French program developed and in use at the University of Texas since 2004, and its companion site, Tex's French Grammar (2000)are open access sites, free and open multimedia resources, which require neither password nor fees. Français interactif, used increasingly by students, teachers, and institutions throughout the world, includes 320 videos (American students in France, native French interviews, vocabulary and culture presentation videos) recorded vocabulary lists, phonetic lessons, online grammar lessons (600 pages) with self-correcting exercises and audio dialogues, online grammar tools (verb conjugation reference, verb practice), and diagnostic grammar tests."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 127
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "248",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

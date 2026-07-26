@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1074-advanced-academic-grammar-for-esl-students",
+  "title": "Advanced Academic Grammar for ESL Students",
+  "description": "This textbook was created for an advanced academic grammar course for ESL students. By the end of the course, students will recognize and demonstrate the appropriate use of advanced grammar structures. To meet these outcomes, students will listen to aural language that includes the target structures, identify and edit grammar errors in written language, read and analyze texts that include the target grammar structures, and demonstrate the correct and appropriate use of target structures in written and spoken language.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages"
+  ],
+  "authors": [
+    "Rebecca Al Haider - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Rebecca Al Haider",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/advanced-academic-grammar-for-esl-students"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This textbook was created for an advanced academic grammar course for ESL students. By the end of the course, students will recognize and demonstrate the appropriate use of advanced grammar structures. To meet these outcomes, students will listen to aural language that includes the target structures, identify and edit grammar errors in written language, read and analyze texts that include the target grammar structures, and demonstrate the correct and appropriate use of target structures in written and spoken language."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 102
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1074",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

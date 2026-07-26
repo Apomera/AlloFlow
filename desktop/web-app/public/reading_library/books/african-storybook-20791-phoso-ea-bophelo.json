@@ -1,0 +1,170 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-20791-phoso-ea-bophelo",
+  "title": "Phoso ea Bophelo",
+  "description": "Bophelo ke ntja e batlang ho ja lekhoaba. E leka ho etsa hore lekhoaba le theohe sefateng letla fats'e. Kamora nako e seng kae, lekhoaba la fofela fats'e, Bophelo ea leja. Mokhotsi oa lekhoaba leo, a koata haholo. La joetsa Bophelo hore, etla patala phoso ea eona.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Khothatso Ranoosi, Marion Drew"
+  ],
+  "illustrators": [
+    "Marion Drew"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Author"
+    },
+    {
+      "name": "Marion Drew",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Khothatso Ranoosi, Marion Drew (Author); Marion Drew (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "20791",
+    "bookType": "1",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-0c189ebd1d1672dd",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/25209.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25213.png",
+      "text": "Bophelo ke ntja. E rata hoja nama. Ea bona lekhoaba le leholo le lekhoaba le lenyane holima sefate. Eare, \"Mm.\" \"Makhoaba ana amabeli, a shebahala a le monate. Ke nahana ketla ats'oara ebe kea aja.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791#page=1",
+      "sourceDigest": "sha256:adf56a9b88b4052345f442565f4289bb70a20ce3e4d2d6ab6de8ddbacc0f0ef8"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25209.png",
+      "text": "Ea lula tlasa sefate. Ea sheba makhoaba amabeli a holima sefate. Ea abitsa eare, \"Tlohong fats'e bakhotsi baka.\" Lekhoaba le lenyane la botsa, \"Hobaneng?\" Bophelo eare, \"ke batla hobona masiba a lona amatle.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791#page=2",
+      "sourceDigest": "sha256:69b2af90d7292466840964f44d4702479315cf10608aee5971a64704c8bd15c2"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25211.png",
+      "text": "La bososela lekhoaba le leholo. Lare, “Ohhhh eea, ka’nete kena le masiba amatle.” “Ketla fofela fats’e. Ketla bonts’a Bophelo masiba aka.” Lekhoaba le lenyane lare, “Seke oaba sethoto tjena oena. E tla oja Bophelo.” Lekhoaba le leholo lare, “Oho.” Hakena fofela fats’e ho Bophelo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791#page=3",
+      "sourceDigest": "sha256:ee0d51dbdd7369a411b6ea57aa891708626ed9d9c12dd1d1d0f19f997ff9cb9e"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25212.png",
+      "text": "Bophelo ea bitsa makhoaba ana amabeli hape. Eare, “Tlohong fats’e bakhotsi baka.” Labotsa lekhoaba le lenyane lare, “ Hobaneng?” Bophelo eare, “Ke batla ho lesheba mahlo amatle a lona a masehla.”",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791#page=4",
+      "sourceDigest": "sha256:8d9dabf4090f6f37c25743c4c268143a87aa05c62e3129bf513065b9ad7686f3"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25214.png",
+      "text": "Labososela lekhoaba le leholo. Lare, “Ohhhh eea, ka’nete kena le mahlo amatle amasehla.” “Ketla fofela fats’e, ke bonts’e Bophelo mahlo aka amasehla.” Lekhoaba le lenyane lare, “Seke oaba sethoto tjena oena. Etla oja Bophelo.” Lekhoaba le leholo lare, “Oho.” Hakena fofela fats’e ho Bophelo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791#page=5",
+      "sourceDigest": "sha256:88cf7a0a75c32aac83823f52c743e1609bd6f86dd776527852408d9e9ab291c1"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25215.png",
+      "text": "Bophelo ea bitsa makhoaba ana amabeli hape. Eare, “Tlohong fats’e bakhotsi baka.” Labotsa lekhoaba le lenyane, “Hobaneng?” Bophelo eare, “Kebatla houtloa pina ea lona e monate.”",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791#page=6",
+      "sourceDigest": "sha256:b26d3ccba5621014b5399e58bf813c92f9c8c9dec19d8ebc644d1d138cf7b8ef"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25216.png",
+      "text": "Labososela lekhoaba le leholo. Lare, “Ohhhh eea, ka’nete kena le pina eaka e monate.” “Ketla fofela fat’se, kelo binela Bophelo.” Lekhoaba le lenyane lare, “Seke oaba sethoto tjena oena. Etla oja Bophelo.”",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791#page=7",
+      "sourceDigest": "sha256:eea6c915229e62bb807a5632476355f7b6323f4a753822525eb5123a5fc05347"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25217.png",
+      "text": "Lekhoaba le leholo, le lekhoaba le lenyane a lutse holima sefate. Lekhoaba le leholo la nahana. Bophelo entse e eme eona.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791#page=8",
+      "sourceDigest": "sha256:c94284b638d2bfa726a6878a8fa0ed49cf59fcb44a612187d8e9b79067da8ac0"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25218.png",
+      "text": "Lekhoaba le leholo lare, “ketla fofela fats’e ho Bophelo.” Labotsa lekhoaba le lenyane, “Hobaneng?” Lekhoaba le leholo lare, “Bophelo e batla hobona masiba aka amatle. Ebatla hobona mahlo aka amatle amasehla. Ebatla houtloa pina eaka a monate.”",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791#page=9",
+      "sourceDigest": "sha256:f754d7d4a60c535a982895accf34e407d4b2b9f35dc2a05f6961a42cfab44990"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25219.png",
+      "text": "Lekhoaba le leholo la fofela fats’e. Bophelo ea lets’oara. Ealeja lekhoaba le leholo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791#page=10",
+      "sourceDigest": "sha256:652b4fede82c90eb0df6f945cdd694702875565c4b7ff6917f308cce2df060f8"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25220.png",
+      "text": "Lekhoaba le lenyane la koata. Lapotapota Bophelo lentse lefofa. Lalla, “Aieee, Bophelo. Ojele abuti oaka!” Bophelo ea seke ea mamela letho. Eaea hae.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791#page=11",
+      "sourceDigest": "sha256:2683314c1bd4f8c5fe45858a76cff649ef149f42f57bcae57ba7fc112e3870cd"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25221.png",
+      "text": "Lekhoaba le lenyane la esala morao. Lare, “Bophelo, ojele abuti oaka. Hotloha hona joale hoea hoile ketla o ruta motloang oa pula.” Ke kahona le letsating lena, o bonang makhoaba aja lintja tse shoeleng mebileng. Joale, thuto ea pale ena ke hore: hlokomela batho ba o joetsang lintho tse monate, ho etsa hore o etse seo se batloang ke bona.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=20791#page=12",
+      "sourceDigest": "sha256:0090d72ef6b995b9bb384c02524cb2c28b135f1d0c60e5a24bb53ef23183bb53"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 399
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:7c076ff94b2536c05ef962d1fc873000b368c75afbde980f3bc634322dda6b32"
+  }
+}

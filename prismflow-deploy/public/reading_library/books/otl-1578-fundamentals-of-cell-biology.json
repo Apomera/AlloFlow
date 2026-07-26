@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1578-fundamentals-of-cell-biology",
+  "title": "Fundamentals of Cell Biology",
+  "description": "This textbook is focused specifically on the principles and concepts of a foundational Cell Biology course. The book takes a more conceptual approach that highlights how scientists study cells, and how to analyze and interpret experimental results. Rather than focusing primarily on historical experiments that were key to our understanding of cells, the book explores a range of more modern experimental techniques so that students can begin to understand how cells are studied now, in the 21st century. The book includes over 200 newly created illustrations and animations, that were specifically designed for this book, as well as review questions at the end of each chapter, to help students explore and understand the material.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology"
+  ],
+  "authors": [
+    "Lauren Dalton - Author / Robin Young - Author / Heather Ng-Cornish - Illustrator"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oregon State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/fundamentals-of-cell-biology"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This textbook is focused specifically on the principles and concepts of a foundational Cell Biology course. The book takes a more conceptual approach that highlights how scientists study cells, and how to analyze and interpret experimental results. Rather than focusing primarily on historical experiments that were key to our understanding of cells, the book explores a range of more modern experimental techniques so that students can begin to understand how cells are studied now, in the 21st century. The book includes over 200 newly created illustrations and animations, that were specifically designed for this book, as well as review questions at the end of each chapter, to help students explore and understand the material."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 137
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1578",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

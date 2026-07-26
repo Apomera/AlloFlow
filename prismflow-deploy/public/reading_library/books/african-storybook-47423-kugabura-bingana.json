@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47423-kugabura-bingana",
+  "title": "Kugabura bingana!",
+  "description": "Inkuru y'ibiharuro ijanye no kusabikanya, naho bitoroshe kugabura tukanganya! Ico gitabo c'inkuru y'ibiharuro cabonetse kumfashanyo ivuye muri Oppenheimer Memorial Trust.).",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "5",
+  "readingLevelLabel": "Read aloud",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Penelope Smith"
+  ],
+  "illustrators": [
+    "Magriet Brink"
+  ],
+  "translators": [
+    "Gilbert Nzosaba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Penelope Smith",
+      "role": "Author"
+    },
+    {
+      "name": "Gilbert Nzosaba",
+      "role": "Translation"
+    },
+    {
+      "name": "Magriet Brink",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Penelope Smith (Author); Gilbert Nzosaba (Translation); Magriet Brink (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47423",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-63cde8deb92f67c1",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/16497.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16494.png",
+      "text": "Hari ku wagatandatatu mu gitondo, kuzuba ry'agasusuruko. Mariza, Dukuze na Dusabe bari gufasha nyina kubagarira umurima w'imboga. Abo bana bari bafise akamenyero ko gufasha abavyeyi ibikorwa vyo mundimiro mu masaha yo mu Gatondo. Bashira ifumbire mu murima, bakabagara, bakavomera imbuto hanyuma bagasarura imboga zeze. Uyu munsi, umwana wese aratahana inkere, imboga za epinari na karoti yasaruye mu murima.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=1",
+      "sourceDigest": "sha256:2583b08aa13c8dcd279c34035292ee312ba8c2ec4c438ed01a4a2ee814dfd7ca"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16495.png",
+      "text": "Imisi yose kabanyana aha abana biwe agashimwe kuko baba bamufashije. Hari igihe abaha umukate, akabagurira imbombo zo kugati. Rimwe na Rimwe abaha amapera, imyembe n'imicungwe. Igihe cose kabanyana abaha amategeko agira ati, \"Mugabure munganye!\" Abana baraza neza ko bategerezwa kugabura ubushimwe ku buryo bose banganya atawuhenze uwundi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=2",
+      "sourceDigest": "sha256:b498bb33e3d9b92a4c66346ec006a482fdf0001fb9f4a0f7fdb84aa08effdc98"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16496.png",
+      "text": "Uyu musi kabanyana yakoze umukate ashirako inkere yasaruye mu murima iwe. Abana bicaye ku ntebe inyuma y'inzu barindiriye agahembo kabo. Nuko kabanyana aza atwenga cane ati, \"Nimwakira agahembo kanyu Ariko mwibuke ko mugomba kutwara ibingana. Mugabure muringanize kandi ntimutate!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=3",
+      "sourceDigest": "sha256:dade6ba5e28f0c8cfbfad3c4f0d643aee9b48f9b6537c7116cc78f44fa265a6b"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16497.png",
+      "text": "Mariza ni we yatanguye kugabura aha bagenzi be gato. Afashe imbugita aca uturongo kuri wa mukate hejuru. Abandi bamuhanze amaso. Ntabandanije akata kuko abanza kwemeranya na bagenzi biwe ko bingana. Nuko Mariza arabanza arabereka ati, \"Ngiye gukata ibisate bibiri gutya.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=4",
+      "sourceDigest": "sha256:1585f39d50bcbe610f70fc9cf992b08840ff2290e4f2954d72a21fe7ac0fa59b"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16498.png",
+      "text": "Dukuze aravuga ati, \"Reka da! Kiriya kimanyu co hagati ni kinini cane.\" Dusabe nawe azunguza umutwe. Mariza aratwenga, aduza udutugu abwira Dukuze ngo nawe aze agerageze kugabura.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=5",
+      "sourceDigest": "sha256:f43759165ee06d7d288afe2ba75f142d929168981065ab2147eee1e95e81a714"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16499.png",
+      "text": "Dukuze avuga anezerewe ati, \"Ivyo biroroshe. Mpereza iyo mbugita biroroshe!\" Abanza guhanagura uturongo Mariza yari yaciye, maze yirigata intoke.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=6",
+      "sourceDigest": "sha256:471234961282050c7ff1446a89c2633a96b698f4e33e40cfbba6b99055467f51"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16500.png",
+      "text": "Nuko nawe aca utundi turongo tugaragaza ibisate bitatu ati, \"Ehe raba ibice bitatu tuca tugabura uko bingana!\" Mariza na Dusabe bavugira rimwe bati, \"Oya, ntibingana!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=7",
+      "sourceDigest": "sha256:53932c5305b672cfc6b106151c2316472255db814dfb8a522ba7b68709db023d"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16501.png",
+      "text": "Dusabe arasubira ati, \"Tugabure ku buryo tunganya, ibisate bitegerezwa kuba bingana kandi biteye kumwe.\" Dukuze aramubwira ati, \"Ehe nawe gerageza utugaburire tunganye. Gusa! Ndabizi ntiwbishobora.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=8",
+      "sourceDigest": "sha256:9ca912f628b86f82f09af223dc7ce8aaf3aa355d8ddc046372396fd8a1622e19"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16502.png",
+      "text": "Dusabe ariyumvira aravuga ati, \"Iyo iba yari urukiramende canke ikwadarato, vyari kworoha!\" Mariza nawe ati, \"Canke iyo tuza kuba turi bane ngo tugabure uyu mukate navyo vyari kworoha.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=9",
+      "sourceDigest": "sha256:a01d0c57d425c9d1869a975e6e8372ad7528a68dbc28dad4ae759f3fb8fd0f1a"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16503.png",
+      "text": "Nuko Dasabe ariyumvira. Yibuka akamenyetso kari kumdoka yase itukura. Buri ndwi yose afasha Se guhanagura imodoka. Aravuga ati, \"Ndabitoye! Ndabitoye! Natotoye uko ndayigabura.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=10",
+      "sourceDigest": "sha256:654719c20062c2a4eb23cc0c2a5d1cce3fe3dc4fa700c1d2d652fd6fa9366e50"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16504.png",
+      "text": "Abanza akoresha imbugita mu guhanagura uturongo Dukuze yaciye hejuru ku Mukate. Nuko aca utundi turongo dutatu kuri wa mukate. Twari tumeze neza nka kakamenyetso kari kumodoka ya se, gafise ibice bitatu bingana.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=11",
+      "sourceDigest": "sha256:3c08025d83b6a775a784673cd45a85a66a3009a41fc161a1bd068b86c4d284cc"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16505.png",
+      "text": "Dukuze n'umunezero ati, \"Uradutangaje Dusa!\" Mariza nawe arabaza ati, \"Ubigenje ute?\" Dusabe aratwenga. Ryari ibanga yari yabitse ngo aribwire se.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=12",
+      "sourceDigest": "sha256:44c940339e0f029eba2c8c70ee312c1fce8354165d0cecab590e5c5c9de72740"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16506.png",
+      "text": "Ako kanya Kabanyana asohoka ava munzu. Yari azanye isahani irimwo birahuri birimwo umutobe w'inkere. Mariza aramubwira ati, \"Raba Mama! Raba Dusabe yashoboye kugabura wa mukate mu bisate bitatu bingana.\" Nawe ati, \"Aho sha Dusa! Ibisate bitatu bingana! mwagabuye muringaniza, muranezereje mwese! Ni mukate gato murye munywe n'umutobe w'inkere.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=13",
+      "sourceDigest": "sha256:90816d7b8d56abc1ceb3020977824ace4e5d96786f0c8c38be692933e5ce4150"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16507.png",
+      "text": "Mariza akata gato akurikije uturongo Dusabe yaciye kugira ngo havemwo ibisate bitatu bingana. Mu buryo bwo kunezerwa, abo bana bagerekeranya ibisate vya wa mukate kugirango barabe ko bingana koko. Baravuga bati, \"Nivyo birangana,\" nuko bafata imikate yabo bararya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=14",
+      "sourceDigest": "sha256:4441c79ecd08a6c5fbf547b3c3b34c568aa9549681fe4bfeefcb75e18ef7b017"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16508.png",
+      "text": "Se wa Dusabe aza gutora abana biwe, Dusabe agenda yiruka guhura nawe. Ntiyashobora kwihangana ukuntu kakamenyetso kabafashije gutora inyishu yikibazo gikomeye!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=15",
+      "sourceDigest": "sha256:3d6d84badafc918a7a7515d4e318e42c55991066545e845316cf60b66cdcfa6a"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16509.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47423#page=16",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 490
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:dc05a755c0798a5f8ab1c5037f4e6aaba3435df9f71ece7240f235cfabac5462"
+  }
+}

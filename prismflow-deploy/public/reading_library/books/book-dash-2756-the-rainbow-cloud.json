@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-2756-the-rainbow-cloud",
+  "title": "The Rainbow Cloud",
+  "description": "Born a twin that must be sacrificed, Mkabayi faces a bully and scary ghosts. Will the bond with her sister Mmama save her?",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Heritage, diversity, and inclusivity",
+    "Powerful female characters"
+  ],
+  "authors": [
+    "Zanele Dlamini"
+  ],
+  "illustrators": [
+    "Selina Morulane"
+  ],
+  "contributors": [
+    {
+      "name": "Sibusiso Mkhwanazi",
+      "role": "Designer"
+    },
+    {
+      "name": "Selina Morulane",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Glynis Lloyd",
+      "role": "Editor"
+    },
+    {
+      "name": "Zanele Dlamini",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/the-rainbow-cloud/",
+    "attributionUrl": "https://bookdash.org/books/the-rainbow-cloud/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=the-rainbow-cloud"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2017/02/the-rainbow-cloud_english_20161230_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2017/02/the-rainbow-cloud_english_20161230_cover.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Born a twin that must be sacrificed, Mkabayi faces a bully and scary ghosts. Will the bond with her sister Mmama save her?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Sibusiso Mkhwanazi (Designer); Selina Morulane (Illustrator); Glynis Lloyd (Editor); Zanele Dlamini (Writer)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=the-rainbow-cloud"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 89
+  }
+}

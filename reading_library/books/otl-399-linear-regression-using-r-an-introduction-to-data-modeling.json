@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-399-linear-regression-using-r-an-introduction-to-data-modeling",
+  "title": "Linear Regression Using R: An Introduction to Data Modeling",
+  "description": "Linear Regression Using R: An Introduction to Data Modeling presents one of the fundamental data modeling techniques in an informal tutorial style. Learn how to predict system outputs from measured data using a detailed step-by-step process to develop, train, and test reliable regression models. Key modeling and programming concepts are intuitively described using the R programming language. All of the necessary resources are freely available online.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "David J. Lilja - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Minnesota Libraries Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/linear-regression-using-r-an-introduction-to-data-modeling"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Linear Regression Using R: An Introduction to Data Modeling presents one of the fundamental data modeling techniques in an informal tutorial style. Learn how to predict system outputs from measured data using a detailed step-by-step process to develop, train, and test reliable regression models. Key modeling and programming concepts are intuitively described using the R programming language. All of the necessary resources are freely available online."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 89
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "399",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

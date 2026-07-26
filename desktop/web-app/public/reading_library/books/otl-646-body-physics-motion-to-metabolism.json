@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-646-body-physics-motion-to-metabolism",
+  "title": "Body Physics: Motion to Metabolism",
+  "description": "Body Physics sticks to the basic functioning of the human body, from motion to metabolism, as a common theme through which fundamental physics topics are introduced. Related practice, reinforcement and Lab activities are included. See the front matter for more details. Additional supplementary material, activities, and information can be found at: https://openoregon.pressbooks.pub/bpsupmat/",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology",
+    "Natural Sciences - Physics"
+  ],
+  "authors": [
+    "Lawrence Davis - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Oregon Educational Resources",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/body-physics-motion-to-metabolism"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Body Physics sticks to the basic functioning of the human body, from motion to metabolism, as a common theme through which fundamental physics topics are introduced. Related practice, reinforcement and Lab activities are included. See the front matter for more details. Additional supplementary material, activities, and information can be found at: https://openoregon.pressbooks.pub/bpsupmat/"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 75
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "646",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

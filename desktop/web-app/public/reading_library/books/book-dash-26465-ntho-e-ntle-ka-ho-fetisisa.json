@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-26465-ntho-e-ntle-ka-ho-fetisisa",
+  "title": "Ntho e ntle ka ho fetisisa",
+  "description": "Muzi o rata ho aha ka dibapadiswa tsa hae. Empa ha a di siya hae ha a ilo etela ha Nkgono, o fumana ho hong ho kgethehileng haholo mabapi le lefatshe. Mme o ithuta ho hong ho hotjha mabapi le boyena ba hae.",
+  "language": "Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Let's go on an adventure",
+    "Let's learn!"
+  ],
+  "authors": [
+    "Melissa Fagan"
+  ],
+  "illustrators": [
+    "Lauren Nel"
+  ],
+  "contributors": [
+    {
+      "name": "Stefania Origgi",
+      "role": "Designer"
+    },
+    {
+      "name": "Melissa Fagan",
+      "role": "Writer"
+    },
+    {
+      "name": "Lauren Nel",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Helen Moffett",
+      "role": "Editor"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/ntho-e-ntle-ka-ho-fetisisa/",
+    "attributionUrl": "https://bookdash.org/books/ntho-e-ntle-ka-ho-fetisisa/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=the-best-thing-ever"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/08/the-best-thing-ever_st_20210801_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/08/the-best-thing-ever_st_20210801_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Muzi o rata ho aha ka dibapadiswa tsa hae. Empa ha a di siya hae ha a ilo etela ha Nkgono, o fumana ho hong ho kgethehileng haholo mabapi le lefatshe. Mme o ithuta ho hong ho hotjha mabapi le boyena ba hae."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Stefania Origgi (Designer); Melissa Fagan (Writer); Lauren Nel (Illustrator); Helen Moffett (Editor)\n\nLanguage: Sesotho. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=the-best-thing-ever"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 109
+  }
+}

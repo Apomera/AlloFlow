@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47409-urumuri-rw-ubumwe-muri-afurika",
+  "title": "Urumuri rw'ubumwe muri Afurika",
+  "description": "Iyi nkuru ivuga ku bantu babiri bakiri bato birutse muri Afurika bashaka gukwiragiza ubutumwa bw'amahoro. Bagenda n'abandi bantu bifatanije na bo mw'ihiganwa.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Ursula Nafula, Nina Orange"
+  ],
+  "illustrators": [
+    "Brian Wambi"
+  ],
+  "translators": [
+    "Selemani Sindakira"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Ursula Nafula, Nina Orange",
+      "role": "Author"
+    },
+    {
+      "name": "Selemani Sindakira",
+      "role": "Translation"
+    },
+    {
+      "name": "Brian Wambi",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Ursula Nafula, Nina Orange (Author); Selemani Sindakira (Translation); Brian Wambi (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47409",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-fd9c80eae0199c6b",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/19868.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19860.png",
+      "text": "Rukundo na Murenzi ni abagenzi. Bakunda kwiruka. Buri munsi biruka bari kumwe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=1",
+      "sourceDigest": "sha256:33bab6cd02dad9f8af3837335d55e29309448a6713ac780513cf5d03dbbc047c"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19861.png",
+      "text": "Umunsi umwe, Rukundo yavuze ati, \"Reka tuzunguruke umugabane wacu. Twiruke mu rwego rwo gushigikira igiciyumviro cy'ubumwe bwa Afurika!\" Murenzi ati, \"Ahubwo twacerewe! Tugende!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=2",
+      "sourceDigest": "sha256:36cd90536fa18a3d2d1f3d23b039d23e98e1b2466b5a36da125b871bf528c5d2"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19862.png",
+      "text": "Bafashe ingingo yo kwitwaza urumuri rw'ubumwe mu rugendo rwabo. Batanguriye ihiganwa iyo kure mu bumanuko bw'umuji wa Kepu Tawuni (Afurika yepfo).",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=3",
+      "sourceDigest": "sha256:37dc2a87dee02e958b8534155436623e545f08ed35fb06db67438984d7592321"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19863.png",
+      "text": "Baje bava muri Afurika y'Epfo babandanya baja muburengero. Baca muri Namibiya, Angola, Repubulika Ihananira Demokarasi ya Kongo na Kameruni. Baruhukira Abuja.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=4",
+      "sourceDigest": "sha256:609b62c0ebe51f257257de888d7e89ae5d1e31a033f9faa085598d7c82bd251f"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19864.png",
+      "text": "Abahiganwa bo muri Afurika y'uburengero bifatanije na bo bageze muri Nijeriya. Babandanya hamwe, bakurikira uruzi rwa Nijeri babandanya mu burengero.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=5",
+      "sourceDigest": "sha256:0351572cc3495044c34949578f650c1f3eed5f6dea0ca0be5c78fa0c7604d6c6"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19865.png",
+      "text": "Umuyaga wo mu bugaragwa muri Mali ubabera intambamyi. Murenzi ni we yarusha inguvu abandi. Hama arabatwara babandanya urugendo atangorane.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=6",
+      "sourceDigest": "sha256:c031fdfafa50c95f543d4e9cf498d63e47443772a2452952add5f459fcf9caa6"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19866.png",
+      "text": "Ku rubibe rwa Gineya muri Konakiri abiruka bari bazuye ivumbi baja kwoga mu kiyaga. Baca babandanya muri Maroke baciye muri Senegari na Moritaniya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=7",
+      "sourceDigest": "sha256:c12bb44ecf4445933adbd531b1bdd9b8175850650198b25bf67c2747075b703a"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19867.png",
+      "text": "I Kasaburanka abiruka bakinye n'urundi rwungano ku rubibe rw'ikiyaga. Baca, barahaguruka batumbera mu buseruko bwa Afurika.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=8",
+      "sourceDigest": "sha256:c6d8724b4bc8ac62bac625726bf011111ada445f6e9343292a8c45d8c02c384b"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19868.png",
+      "text": "Baciye muri Arijeriya na Ribiya bahagarara mu Misiri kugira ngo barabe ama piramide. Babandanya baja I buseruko, bakurikiye uruzi rwa Nili baja muri Uganda.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=9",
+      "sourceDigest": "sha256:46f6837acfe59aa7d8541c6bfc283842e1a0ba8c37f47a5ddadeaa0893d05485"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19869.png",
+      "text": "Barirukanze baca mu bugaragwa na parike zitandukanye. Urundi rwaruka rwifatanyije na bo bageze i Kampala. Nuko iryo higanwa ryose ribandaniriza muri Kenya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=10",
+      "sourceDigest": "sha256:ca4f48dd7564857287c8bba0dc0b857e7400641b380f8672d3b7541092bb6b88"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19870.png",
+      "text": "I Mombasa bicaye ku mucanga barya umuceri n'amafi. Hama Murenzi avuga ati, \"Reka dufate urumuri rw'ubumwe turujane ku musozi wa Kirimanjaro.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=11",
+      "sourceDigest": "sha256:c3aacfbbb4d8315a14d879bf761e512a68313ff50c591957926a01cd7d830fa4"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19871.png",
+      "text": "Hama berekeza muri Tanzaniya Murenzi yituye hasi kubera uburuhe. Abiruka bose barahagarara basubira inyuma ngo bamutabare.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=12",
+      "sourceDigest": "sha256:4a75fca7fd40afebed5cc54e03231ceea557baebbff731993d7855a73bd84129"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19872.png",
+      "text": "Murenzi ahereza Rukundo rwa rumuri. Avuga ati, \"Jana uru rumuri ku musozi wa Kilimanjaro. Mucane urumuri rw'ubumwe bwa Afurika.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=13",
+      "sourceDigest": "sha256:36b670b2c6ba2289c9fc7e120298f79874cb54de42b8ba96fc34cfbc8a2bc1ed"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19873.png",
+      "text": "Abantu berekanye ivyishimo abahiganwa bagira bati, \"Muri intwari zacu!\" Bakimara gucana urumuri rw'ubumwe mu mpinga ya Kilimanjaro, abahiganywe basubira mu mamajepfo ya Afurika.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=14",
+      "sourceDigest": "sha256:8512c75b89f7e3c9cd3f6e2fa4b1849a04365b75bac245a9515c406b1ee9a5bc"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19874.png",
+      "text": "Bahagaze gato boga mu kiyaga ca Marawi. Rukundo abwira Murenzi ati, \"Twavuye mu majepfo tuja mu majaruguru none turagarutse. Urugendo rwacu ruri hafi guhera.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=15",
+      "sourceDigest": "sha256:bbcad6f96bd277084f413328ced5a42df323ebe8dca4c5ff9584acd76e83348a"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19875.png",
+      "text": "Abahiganwa mu rwego rwo gushigikira ubumwe bwa Afurika vyaheze bajana urumuri muri Zimbabwe. Abantu benshi bahuriye aha hantu. Murenzi aratwenga ati, \"Mbega ihiganwa!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47409#page=16",
+      "sourceDigest": "sha256:43eea319fc0556934ec2d7d0410b4876f015441004ed822877a5359bd44a2d33"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 327
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:3e69c32ea216c4bd91b09388b76dc5e9061dc5f6d3933abeac89f2d27556dee2"
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-2820-why-is-there-a-hole-in-the-wall",
+  "title": "Why is there a hole in the wall?",
+  "description": "“Why is there a hole in the wall?” Lungisa asks. He gets lots of interesting answers…but he keeps on asking.",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Emotions and life skills",
+    "Heritage, diversity, and inclusivity",
+    "Positive male role models"
+  ],
+  "authors": [
+    "Kirsty Paxton"
+  ],
+  "illustrators": [
+    "Amy Slatem"
+  ],
+  "contributors": [
+    {
+      "name": "Kirsty Paxton",
+      "role": "Writer"
+    },
+    {
+      "name": "Danielle Botha",
+      "role": "Designer"
+    },
+    {
+      "name": "Catherine Parkinson",
+      "role": "Editor"
+    },
+    {
+      "name": "Amy Slatem",
+      "role": "Illustrator"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/why-is-there-a-hole-in-the-wall/",
+    "attributionUrl": "https://bookdash.org/books/why-is-there-a-hole-in-the-wall/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=why-is-there-a-hole-in-the-wall"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2017/02/why-is-there-a-hole-in-the-wall_english_20170208_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2017/02/why-is-there-a-hole-in-the-wall_english_20170208_cover.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "“Why is there a hole in the wall?” Lungisa asks. He gets lots of interesting answers…but he keeps on asking."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Kirsty Paxton (Writer); Danielle Botha (Designer); Catherine Parkinson (Editor); Amy Slatem (Illustrator)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=why-is-there-a-hole-in-the-wall"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 86
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-49035-nin-aad-u-dheer",
+  "title": "Nin Aad U Dheer",
+  "description": "Ninka ay sheekadani ku saabsantahay si xad dhaaf ah ayuu u dheeryahay, taas oo keentay inay waxa ku wareegsan oo idil aad u gaabnaadaan ama aad u yaraadaan. Dhibaatadaan wuxuu ku xalliyay inuu suubiyo waxyaabo dheerarkiisa u dhigma.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Cornelius Wambi Gulere"
+  ],
+  "illustrators": [
+    "Catherine Groenewald"
+  ],
+  "translators": [
+    "Dr. Abdisalam Adam"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Cornelius Wambi Gulere",
+      "role": "Author"
+    },
+    {
+      "name": "Dr. Abdisalam Adam",
+      "role": "Translation"
+    },
+    {
+      "name": "Catherine Groenewald",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Cornelius Wambi Gulere (Author); Dr. Abdisalam Adam (Translation); Catherine Groenewald (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=49035",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=49035",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "49035",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-578ba7bacc1e830e",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/309.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/309.png",
+      "text": "Yaambadiisu aad bay u gaabnayd.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=49035#page=1",
+      "sourceDigest": "sha256:7c7ba2163c3ace28ac48085e0e8dc8b7beac3086ee61773c7f1b460d7ae2afca"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/310.png",
+      "text": "Furitaanka albaabkiisu aad bay u hooseeysay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=49035#page=2",
+      "sourceDigest": "sha256:5563a65da836f25f3f0ce6c375ed353090635967706d5f6df911bfb36a1185ee"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/311.png",
+      "text": "Sariirtiisu aad bay u gaabanayd.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=49035#page=3",
+      "sourceDigest": "sha256:6fd90045d8d8fcd2a4b955a8e14a28ea800e54094bd972f64638b63071e27c84"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/314.png",
+      "text": "Baaskiilkiisu aad buu u gaabnaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=49035#page=4",
+      "sourceDigest": "sha256:411e2c3c8742e2b1a851fdda913eb5088533605a177df6f0994a31e29469bf22"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/313.png",
+      "text": "Ninkani si xad dhaaf ah ayuu u dheeraa!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=49035#page=5",
+      "sourceDigest": "sha256:d90498c5a20c45b431587079a13ff91ac83c000f2908dfd217d0849c47980d7a"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/316.png",
+      "text": "Wuxuu sameeyay yaambo daab aad u dheer leh.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=49035#page=6",
+      "sourceDigest": "sha256:65c0f6522d71353adba218b6caa7fabf532537ce773b4df9cd1ec23c67fa5fb0"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/315.png",
+      "text": "Wuxuu sameeyay albaab irrid aad u dheer leh.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=49035#page=7",
+      "sourceDigest": "sha256:d59619da62e7bcab2712895ef02ecceb7679b8432527b27b6ad3ecb51d3b1f6f"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/317.png",
+      "text": "Wuxuu sameeyay sariir aad u dheer",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=49035#page=8",
+      "sourceDigest": "sha256:7366b2648f5494562098fdf1fdf0f64ee86e7aa43dd665a3fc803433e885f769"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/318.png",
+      "text": "Wuxuu iibsaday baaskiil aad kor ugu dheer.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=49035#page=9",
+      "sourceDigest": "sha256:43c8d1111a8f622fc8149b1733b7a1a26f59899903f99b9f06352f1540c119f1"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/319.png",
+      "text": "Wuxuu ku fariistay kursi aad u dheer. Wuxuu wax ku cunay fargeeto aad u dheer.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=49035#page=10",
+      "sourceDigest": "sha256:7066c032fa3db8480c5b899ad885fc6a72206724a865c5399028def4ef1253ee"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/320.png",
+      "text": "Wuu ka tagay gurigiisii oo wuxuu ku noolaa keyn wayn. Sannadyo badan ayuu noolaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=49035#page=11",
+      "sourceDigest": "sha256:5de7994592448a034b9c64d647b610fc6f736eb1fe15003e76f98b775602239b"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 87
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:f9db6b21e8ac3191f93a90ee45947e106f1877c2f5de6f85edeec664879d96b2"
+  }
+}

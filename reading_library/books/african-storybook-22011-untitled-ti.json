@@ -1,0 +1,170 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-22011-untitled-ti",
+  "title": "ምኽሪ ወላዲ",
+  "description": "ዓበይቲ ወለዲ ዝህብዎ ምኽሪ ብጣዕሚ ጠቃሚ ምዃኑን ክነተግብሮ ከምዝግባእን",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "ዮሱፍ መሓመድያሲን, ጀማል ዓብደልቃድር"
+  ],
+  "illustrators": [
+    "Adonay Gebru"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "ዮሱፍ መሓመድያሲን, ጀማል ዓብደልቃድር",
+      "role": "Author"
+    },
+    {
+      "name": "Adonay Gebru",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "ዮሱፍ መሓመድያሲን, ጀማል ዓብደልቃድር (Author); Adonay Gebru (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "22011",
+    "bookType": "1",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-ac86d79541ab0d66",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/25669.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25667.png",
+      "text": "ሓደ እዋን ኣይተ ይሕደጎን ወይዘሮ ትዕበን ዝበሃሉ ኣዝዮም ዝፋተዉ ሰብ ሓዳር ነይሮም፡፡ ብሓባር እንትነብሩ ሓያል ድርቂ የጋጥም እሞ ዝብላዕ ይስእኑ፡፡ በዚ ምኽንያት ኣቶ ይሕደጎ ንባዓልቲ ቤቶም ኣዶ ሓደ ቆልዓን ነብሰ ፁርን እነዳሃለወት ገዲፎሞን ናብ ስደት ከዱ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011#page=1",
+      "sourceDigest": "sha256:4d83ff29ca2422d6a8e87e7846c0ab164c13747b6614cea9dcd70d5ca2875f79"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25668.png",
+      "text": "ኣቶ ይሕደጎ ኣብ ስደት ብጣዕሚ ነዊሕ እዋን ድሕሪ ምፅናሕ ናብ ዓዶም ክምለሱ ወሰኑ፡፡ ሽዑ ኣብቲ ከባቢ ናብ ዝነበሩ ዓብዪ ዓዲ ሽማግለ ከማኽርዎም ከዱ፡፡ እቶም ወላዲ ድማ እቲ ጡጥ ዝመስል ፀጉሮም ሰንቲሮም ፣ ጋቢኦም ደሪቦም፣ሙርኩሶም ብየማናይ ኢዶም ሒዞም ፣ ብዕንጨትን ምራንን ኣብ ዝተሰርሐ ወንበር ኮፍ ኢሎም ፀሓይ እናተፀለዉ ረኸብዎም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011#page=2",
+      "sourceDigest": "sha256:35c36073665c6ec24a6e3cc9ef0b93060de962f6591b6ff3037b80b1a3168d75"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25669.png",
+      "text": "ኣቶ ይሕደጎ ግቡእ ሰላምታ ብምቕራብ እቲ ዘምፅኦም ጉዳይ ከምዚ ክብሉ ገለፁሎም፤ «እሞ ጎይታይ ናባኹም መፂአ ዘለኹ ካብ ገዛይ ካብዝወፅእ ነዊሕ እዋን ኣቑፂረ እየ፡፡ሐዚ ግን ንዓደይ ክምለስ ሓሲበሞ ክተማኽሩንን ክትምሩቕንን እየ መፂአ» በልዎም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011#page=3",
+      "sourceDigest": "sha256:e6521ff974053d871be54dc3adda9508e8553fef20caa68d0b8fc91b5beadce9"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25670.png",
+      "text": "እቶም ወላዲ ድማ ፅን ኢሎም ድሕሪ ምድማፅ ርእሶም ንቕድሚትን ንድሕሪትን ንቕንቕ ኣቢሎም ፣ ምኽሮም ቀፀሉ፡፡ «በል ዝወደይ ሰናይ ጉዕዞ ይግበረልካ እሞ ኣነ ዝመኽረካ ሓደ፣ ኣቋራፅ መንገዲ ዝበሃል ኣይትጓዓዝ፣ካልኣይ ኣብዘይምልከተካ ጉዳይ ኣይትእቶ፣ ሳልሳይ ድማ ተናዲድካ እናሃለኻ ኣይትወስን። ሓደራ ዝወዳይ! እዚአን ኣብ ተግባር ኣውዕለን» ኢሎም መሪቖም ሰደድዎም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011#page=4",
+      "sourceDigest": "sha256:353b98eee0d43ca52aa3c10e17ee9bca487cef2d83e81a2c5ffc40f7ce6ef7e9"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25680.png",
+      "text": "ብድሕሪ እዙይ አቶ ይሕደጎ እናተጓዓዙ እናሃለዉ ኣርባዕተ ነጋዶ ረኸቡ፡፡ እቶም ነጋዶ እኽሊ ኣብ ኣእዱግ ፅዒኖም ይጓዓዙ ነበሩ፡፡ ብሓደ እንትጓዓዙ ክልተ መንገዲ ረኸቡ፡፡ እቶም ነጋዶ በሉ በዛ ኣቋራፅ ንኺድ ኢሎም ብኡ ከዱ፡፡ ኣቶ ይሕደጎ ምስኦም ክኸዱ እንትጅምሩ እታ «ኣቋራፅ መንገዲ ኣይትጓዓዝ» ዝበልዎም ዘኪሮም በታ ነዋሕ መንገዲ ከዱ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011#page=5",
+      "sourceDigest": "sha256:331b33bad27987627ca2f954b09a1ff8bf5fe433e5571fe91b56b6a782a6c449"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25672.png",
+      "text": "ነቶም በቲ ኣቋራፅ ዝኸዱ ነጋዶ ሸፋቱ ንብረቶም ኣሕዲጎም ቀተልዎም፡፡ ኣቶ ይሕደጎ እዚ ወረ ሰሚዖም ብጣዕሚ ተገረሙ፡፡ ትጉዕዝ ውዒሎም ድማ ምሸት ኣብ ሓደ ዓዲ በፅሑ፡ እናዘሩ መሕደሪ እንተሓተቱ መሕደሪ ሰኣኑ፡፡ ድሕሪ ቡዙሕ ከርተት ሓደ ሽማግለ «ዝወደይ ኣብዚ ዓዲ ምሸት ዝመፀ ኣይነሕድርን፤ ምናልባት ኣብቲኣ እስቲ ሕተት» ኢሎም ብየማናይ ኢዶም ፣ ሓባሪት ኣፃብዕቶም ኣመልከትዎም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011#page=6",
+      "sourceDigest": "sha256:c1559acb7fe63a513bfa7cf875109e3e178ee18627430e381c395ad2b64487cd"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25673.png",
+      "text": "ኣቶ ይሕደጎ ናብታ ዝተሓበረትሎም ገዛ ከዱ፡፡ ግን ዘይፈለጡ እምበር እቲ ገዛ እንዳንጉስ እዩ፡፡ ኣብኡ ዝኣተወ ድማ ኣይምለስን ፤ ይሕረድ እዩ፡፡ ናብቲ ገዛ ምስ ኣተዉ ድማ ዝብላዕ ዝስተ እንጀራ ብዝግንን ሜስን ቀረበሎም፡፡ እናበልዑ ናብቲ ገዛ እንተጠመቱ ወርቂ ብወርቂ ምዃኑ ተዓዘቡ፡፡ እታ ሰበይቲ ንጉስ ብጣዕሚ ፅብቕቲ እያ ነይራ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011#page=7",
+      "sourceDigest": "sha256:be47e4b990949828e19288edd2e7a0cf15d90e6b6412fe48b6afed05e29bacca"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25674.png",
+      "text": "ኣቶ ይሕደጎ ነዚ ኩነታት ሪኦም «ነዚ ገዛ ከመይ ገይርኩም ሰሪሕኩሞ? ኣቤት! ሰበይቲ ክፅብቓ! ክብሉ ይደልዩ፤ «ኣብ ዘይምልከተካ ኣይትእቶ» ዘኪሮም ሱቕ በሉ፡፡ድሓር መደቀሲ ክፍሊ ሃብዎም ፡፡ እቲ ገዛ ብትሕቲኡ ዝተሃደመ ጉድጓድ ስለዝነበሮ ናይቲ ጉድጓድ ኣፍ ሪኦም «እዚ እንታይ እዩ?» ክብሉ ይደልዩ፤ እቲ ምኽሪ ዘኪሮም «ይትረፈኒ» ኢሎም፤ ሱቕ ኢሎም ሓደሩ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011#page=8",
+      "sourceDigest": "sha256:ac6110a5c0af33ad2cd075fceb9ad609b132b2adf0cc4b38b6063676eaf11089"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25675.png",
+      "text": "ንጉሆ ወፂኦም ክኸዱ እንትብሉ «ፅናሕ እሞ» በሎም እቲ ንጉስ «ካልኦት ናብዚ ገዛ ዝኣትዉ ዝነበሩ ንገዛይ ይጥምቱ ፣ ንሰበይተይ ይጥምቱ፣ ኣብ ዘይምልከቶም ይኣትዉ ፤ በዚ ድማ ኩሎም ተሓሪዶም ኣብዚ ጉድጓደ እዮም ዘለዉ፡፡ ንስኻ ግን ምንም ዘይምባልካ ፈጣሪ ዝለኣኸካ ኢኻ ትመስል» ኢሉ ፤ወርቂ ዝመልአ ሳንዱቕ፣ እኽልን ሰለስተ ኣባቕልን ሂቡ ብመዓርግ ሰነዮ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011#page=9",
+      "sourceDigest": "sha256:f12da76c5538049a9d1ba03688bcf83d4a58db7962e4afb59601c36894ab4457"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25676.png",
+      "text": "ኣቶ ይሕደጎ ትጉዕዝ ቀንዮም ምስይ ምስበለ ገዝኦም ኣተዉ፤ማዕፆ ኳሕኲሖም ዝኸፍቶም ኣይረኸቡን፡፡ እቲ ማዕፆ ካብ ኦም ዝተሰርሐ ስለዝነበረ ዓይኖም ፀቂጦም ብነዃል ንውሽጢ ጠመቱ፡፡ በዓልቲ ቤቶም ኣብ መንጎ ክልተ መናእሰይ ደቂሰን ረኣይወን፡፡ ሽጉጦም ኣውፂኦም ክቐትልዎም እንትብሉ «ተናዲድካ እናሃለኻ ኣይትወስን» ትብል ምኽሪ ዘኪሮም ፤ገዲፎሞም ኣብ ገበላ ደቂሶም ሓደሩ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011#page=10",
+      "sourceDigest": "sha256:df7939b63582d2aeb3819a16fdd050d690eb878cabaa07dc5283dac02716ca28"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25677.png",
+      "text": "ወይዘሮ ትዕበ ንጉሆ ተሲአን ማዕፆ ክፍት ኣቢለን እንተወፃ ንበዓል ገዛአን ረኣይኦም ፤ «ዕልልል!» እናበላ «እዞም ደቀይ ንዑ ኣቦኹም መፂኡ ሰላም በልዎ» በላኦም ፡፡ ብምቕፃል «እዚ እቲ ህፃን ዝገደፍካዮ፣ እዚ ድማ ተጠኒሱ ዝነበረ እዩ» ምስ በላኦም ተሓቋቊፎም ንገዛኦም ኣተዉ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011#page=11",
+      "sourceDigest": "sha256:d252d79b2312e7aa18731c998bc014ca980b2115a1356e892fc05d72cf515abf"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25678.png",
+      "text": "ኣቶ ይሕደጎ ሳላ ምኽሪ እቶም ወላዲ ቡዙሕ ጊዜ ሂወቶም ካብ ሞት ድሒኖም፡፡ ብተወሳኺ ድማ ሂወት እተን ዝፈትዉወን በዓልቲ ቤቶምን ደቆምን ካብ ሞት ኣትሪፎም፡፡ብድሕሪ ዙይ ዘምፅኡዎ ሃፍቲ ምስ ደቆምን በዓልቲ ቤቶምን እናተጠቐሙ ሕጉስ መነባብሮ ነበሩ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22011#page=12",
+      "sourceDigest": "sha256:7735e9c1c27336a5db57036c8c14af2c8420dddaf09a04fe864cb474135e6c8a"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 518
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:33e1d10c2edd37986cfa54849276ea3783fe48b344155a4fdb5a368eed5ed092"
+  }
+}

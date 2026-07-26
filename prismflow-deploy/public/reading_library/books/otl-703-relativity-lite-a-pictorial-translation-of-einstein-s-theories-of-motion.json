@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-703-relativity-lite-a-pictorial-translation-of-einstein-s-theories-of-motion",
+  "title": "Relativity Lite: A Pictorial Translation of Einstein’s Theories of Motion and Gravity",
+  "description": "Relativity Lite is designed for courses like my 100-student General Astronomy sequence. Relativity Lite translates the mathematical equations conventional relativity texts rely upon into pictures that are readily understood and contain within them the mathematical essentials. This new book would provide the comprehensive coverage needed to understand, in sufficient depth, these three linked areas of our reality.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Physics",
+    "Natural Sciences - Space Sciences"
+  ],
+  "authors": [
+    "Jack C. Straton - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Portland State University Library",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/relativity-lite"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Relativity Lite is designed for courses like my 100-student General Astronomy sequence. Relativity Lite translates the mathematical equations conventional relativity texts rely upon into pictures that are readily understood and contain within them the mathematical essentials. This new book would provide the comprehensive coverage needed to understand, in sufficient depth, these three linked areas of our reality."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 80
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "703",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

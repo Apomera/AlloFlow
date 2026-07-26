@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-18757-skilpad-soek-sy-huis",
+  "title": "Skilpad Soek Sy Huis",
+  "description": "Skilpad soek sy huis. Weet jy dalk waar hy hom kan kry?",
+  "language": "Afrikaans",
+  "langCode": "afr",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Family, friends, and home"
+  ],
+  "authors": [
+    "Maya Fowler"
+  ],
+  "illustrators": [
+    "Katrin Coetzer"
+  ],
+  "contributors": [
+    {
+      "name": "Katrin Coetzer",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Damian Gibbs",
+      "role": "Designer"
+    },
+    {
+      "name": "Maya Fowler",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/skilpad-soek-sy-huis/",
+    "attributionUrl": "https://bookdash.org/books/skilpad-soek-sy-huis/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=tortoise-finds-his-home"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/02/tortoise-finds-his-home_af_20200908_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/02/tortoise-finds-his-home_af_20200908_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Skilpad soek sy huis. Weet jy dalk waar hy hom kan kry?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Katrin Coetzer (Illustrator); Damian Gibbs (Designer); Maya Fowler (Writer)\n\nLanguage: Afrikaans. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=tortoise-finds-his-home"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 75
+  }
+}

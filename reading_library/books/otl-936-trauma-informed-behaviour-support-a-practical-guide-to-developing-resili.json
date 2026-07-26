@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-936-trauma-informed-behaviour-support-a-practical-guide-to-developing-resili",
+  "title": "Trauma Informed Behaviour Support: A Practical Guide to Developing Resilient Learners",
+  "description": "If we want to impact the world of children who have experienced trauma then we must change not only ourselves and our classroom, but we must change our schools, our organisations, and our systems of care for children. We must all speak out for these children who have no voice to bring awareness of new educational and mental health approaches to children who will become tomorrow’s failed adults unless they receive our understanding and our help. For whatever reason you have been attracted to this book, you have come to the right place. You may at times put it down and wonder if the challenge is too great, but trust me it is not. If you stay engaged with this book and with a child who has experienced trauma then you will learn new understandings, new ideas and new ways to reach the mind, the heart and the soul of young people who need our support and our love.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education",
+    "Education - Early Childhood"
+  ],
+  "authors": [
+    "Kay Ayre - Author / Govind Krishnamoorthy - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Southern Queensland",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/trauma-informed-behaviour-support-a-practical-guide-to-developing-resilient-learners"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "If we want to impact the world of children who have experienced trauma then we must change not only ourselves and our classroom, but we must change our schools, our organisations, and our systems of care for children. We must all speak out for these children who have no voice to bring awareness of new educational and mental health approaches to children who will become tomorrow’s failed adults unless they receive our understanding and our help. For whatever reason you have been attracted to this book, you have come to the right place. You may at times put it down and wonder if the challenge is too great, but trust me it is not. If you stay engaged with this book and with a child who has experienced trauma then you will learn new understandings, new ideas and new ways to reach the mind, the heart and the soul of young people who need our support and our love."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 182
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "936",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

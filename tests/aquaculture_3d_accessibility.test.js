@@ -116,7 +116,7 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     const routerEnd = source.indexOf("h('div', null, 'Unknown tab')));", routerStart);
     const router = source.slice(routerStart, routerEnd);
     const routeIds = [...router.matchAll(/tab === '([^']+)'/g)].map((match) => match[1]);
-    expect(topicIds).toHaveLength(140);
+    expect(topicIds).toHaveLength(142);
     expect(new Set(topicIds).size).toBe(topicIds.length);
     expect(new Set(routeIds).size).toBe(routeIds.length);
     expect([...new Set(routeIds)].sort()).toEqual([...new Set(topicIds)].sort());

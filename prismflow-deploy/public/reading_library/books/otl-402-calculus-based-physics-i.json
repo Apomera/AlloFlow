@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-402-calculus-based-physics-i",
+  "title": "Calculus-Based Physics I",
+  "description": "Calculus-Based Physics is an introductory physics textbook designed for use in the two-semester introductory physics course typically taken by science and engineering students.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Physics",
+    "Mathematics - Calculus"
+  ],
+  "authors": [
+    "Jeffrey Schnick - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Jeffrey W. Schnick",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/calculus-based-physics-i"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Calculus-Based Physics is an introductory physics textbook designed for use in the two-semester introductory physics course typically taken by science and engineering students."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2008."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 46
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "402",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

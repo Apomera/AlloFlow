@@ -133,6 +133,13 @@
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
 
       var _win = React.useRef(null);
+
+      React.useEffect(function () {
+        var popup = _win.current;
+        if (!popup || popup.closed) return;
+        var activeTheme = ctx.theme === 'light' || ctx.theme === 'contrast' ? ctx.theme : 'dark';
+        try { popup.postMessage({ type: 'alloflow-theme-change', theme: activeTheme }, '*'); } catch (_) {}
+      }, [ctx.theme]);
       var _aiBusy = React.useRef(false);
       var _st = React.useState('idle'); var popupState = _st[0], setPopupState = _st[1];
 

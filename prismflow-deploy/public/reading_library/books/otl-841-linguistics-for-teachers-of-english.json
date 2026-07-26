@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-841-linguistics-for-teachers-of-english",
+  "title": "Linguistics for Teachers of English",
+  "description": "The primary goals of this text are to acquaint prospective teachers of English with certain aspects of the history, structure, and use of the English Language. Through considering the nature of the English language; how language and culture are interconnected as well as how it is acquired and how and why it changes, readers will come to a fuller understanding of sociolinguistics. This text discusses the nature of language, as well as how it is acquired; how and why languages change, and how the English language in particular has changed (and continues to change); why different varieties of English have developed, and why they continue to be used; how linguists have attempted to account for the (ir)regularities of English; how language and culture are related; and how linguistics can be used as a tool in the classroom. This text presents important topics for English teachers to know: the relationship between “standard” and “nonstandard” dialects, how and why language varies, how we can make informed decisions about what is “right” and “wrong” in language use, and generally how a sound knowledge of how language works can inform and benefit the pedagogical strategies needed to develop as a teacher. Ultimately, I want readers to think about language in ways not thought of before: objectively, passionately, critically, analytically, and logically. This allows readers to move beyond memorization of facts to original thought (which is sort of like the difference between knowing how to add and subtract, and being able to balance a checkbook).",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Linguistics"
+  ],
+  "authors": [
+    "Carol Russell - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "New Prairie Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/linguistics-for-teachers-of-english-russell"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The primary goals of this text are to acquaint prospective teachers of English with certain aspects of the history, structure, and use of the English Language. Through considering the nature of the English language; how language and culture are interconnected as well as how it is acquired and how and why it changes, readers will come to a fuller understanding of sociolinguistics. This text discusses the nature of language, as well as how it is acquired; how and why languages change, and how the English language in particular has changed (and continues to change); why different varieties of English have developed, and why they continue to be used; how linguists have attempted to account for the (ir)regularities of English; how language and culture are related; and how linguistics can be used as a tool in the classroom. This text presents important topics for English teachers to know: the relationship between “standard” and “nonstandard” dialects, how and why language varies, how we can make informed decisions about what is “right” and “wrong” in language use, and generally how a sound knowledge of how language works can inform and benefit the pedagogical strategies needed to develop as a teacher. Ultimately, I want readers to think about language in ways not thought of before: objectively, passionately, critically, analytically, and logically. This allows readers to move beyond memorization of facts to original thought (which is sort of like the difference between knowing how to add and subtract, and being able to balance a checkbook)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 273
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "841",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

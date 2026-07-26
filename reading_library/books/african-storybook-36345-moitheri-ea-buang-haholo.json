@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-36345-moitheri-ea-buang-haholo",
+  "title": "Moitheri ea buang haholo",
+  "description": "Moitheri o mosa ebile o labalabela ho tseba, mme o rata ho bua. Sena se mo kenya kahare, empa hape se mo thusa ho baleha. O ithuta eng ho Moitheri?",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Gaspah Juma"
+  ],
+  "illustrators": [
+    "Jesse Breytenbach"
+  ],
+  "translators": [
+    "Khothatso Ranoosi, Marion Drew"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Gaspah Juma",
+      "role": "Author"
+    },
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Translation"
+    },
+    {
+      "name": "Jesse Breytenbach",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Gaspah Juma (Author); Khothatso Ranoosi, Marion Drew (Translation); Jesse Breytenbach (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "36345",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-a35a6a8f7c2cfdec",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/9449.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9393.png",
+      "text": "Khale-khale ho ne ho na le ngoanana eo lebitso la hae e neng e le Moitheri. Moitheri e ne e le ngoanana ea buang haholo. Leha e le hore 'm'e oa hae o ne a mo hlokomelisa hore a se bue haholo. Moitheri ha a ka a mamela.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=1",
+      "sourceDigest": "sha256:e4d26d0d6890ecda41e1aaf429b7b006987a857113d3576ff02129c19c9a4518"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9392.png",
+      "text": "Rakhali oa Moitheri o ne a lula ka mose ho khohloana e ka lehlakoreng la motse oa bo Moitheri. Ka tsatsi le leng eaba o oa kula. Ho ne ho sena motho ea mo hlokomelang.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=2",
+      "sourceDigest": "sha256:60d8b8535ea7f027e6584ee445fded6cfd87bc4bbd34e8aae38cf26851758764"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9394.png",
+      "text": "'M'e oa Moitheri o ne a phathahane. Nako e ne e se e ile e le bosiu ha a fa Moitheri lijo hore a li ise ho rakhali oa hae ea kulang.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=3",
+      "sourceDigest": "sha256:700919e6a5448ee5cc7217fffcd1e05a0efc7ea454530775320a7cb7a185cb8f"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9395.png",
+      "text": "Tseleng, Motheri a kopana le Khokho. Khokho e ne e le lefirits'oane le neng le iphethotse motho.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=4",
+      "sourceDigest": "sha256:2e6efc285b0a4367729acf07c18d802087a5e2c4d80ee2d149c3d05ff59dc119"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9448.png",
+      "text": "Khokho ea botsa Moitheri, \"U nkileng?\" Moitheri a araba, \"Ke nkile nama, mahe le lebese.\" 'M'e oa Moitheri o ne a ile a hlokomelisa Moitheri hore a seke a bua na o nkileng.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=5",
+      "sourceDigest": "sha256:e8dc33e6df67ab7d1999cbfd1397cc57368918443f6e5612fed4d64ac73d429c"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9449.png",
+      "text": "Moitheri a boela a re, \"Ke isa lijo ho rakhali oa ka ea kulang.\" Khokho a nyeka molomo oa hae ka ho nahana ka nama eo Moitheri a e nkileng.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=6",
+      "sourceDigest": "sha256:51960c47bac7518f2d47774809fc5057073cbbab39f31c75bec13e4f6505ca59"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9450.png",
+      "text": "Khokho a matha ka potlako pele ho Moitheri ho ea ntlong ea rakhali oa hae.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=7",
+      "sourceDigest": "sha256:986c1d21457418efe1137da27db448dc3d76cad608e395bd6e0e50d5374f17e9"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9445.png",
+      "text": "A koenya rakhali oa Moitheri a ba a ikoahela ka kobo ea hae.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=8",
+      "sourceDigest": "sha256:6b2fae439d517cc7ebd83c1e52f5a39afe8c79320d625e8be3ccc2d54138af1e"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9447.png",
+      "text": "Ha Moitheri a fihla, ho ne ho thotse ka tlung. O ile a kena kahare, eaba oa hoelehetsa, \"Rakhali u hokae?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=9",
+      "sourceDigest": "sha256:cd56346c0714a150e7acdbe3fc823adb5368d788be756bafc031e95ba2344e07"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9446.png",
+      "text": "Moitheri a se ke a utloa lentsoe la rakhali oa hae. Moitheri a kena ka kamoreng e kahare moo rakhali oa hae a neng a robala. O ile a makala ha a bona motho ea ikupelitseng ka kobo e kholo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=10",
+      "sourceDigest": "sha256:c2936e62ad4146ae6feb7432b2410890652ba23f441080a51b8e0968386ea0c6"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9451.png",
+      "text": "Moitheri a botsa, \"Rakhali, hobaneng litsebe tsa hau li le kholo tsatsing lee?\" Khokho ea arabela e le ka tlasa kobo e kholo. \"Hore ke khone ho u utloa hantle.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=11",
+      "sourceDigest": "sha256:3f03427242ffafbfa63a0a83371c56bf04be950119a05c67710e0238002fb5da"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9452.png",
+      "text": "Moitheri a botsa hape, \"Rakhali, hobaneng mahlo a hau a le maholo tsatsing lee?\" Khokho ea arabela, \"Hore ke khone ho u bona hantle.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=12",
+      "sourceDigest": "sha256:4fb374ca4bf0005c5fd9ebbda7ad50dea0119f0ec9f47e38fa62eca795266476"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9453.png",
+      "text": "Moitheri a botsa lekhetlo la hoqetela, \"Rakhali, hobaneng molomo oa hau o le moholo tsatsing lee?\" Khokho ea arabela, \"Hore ke khone ho u ja ke u koenye!\" Ea qhoma ho tsoa betheng eaba e koenya Moitheri.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=13",
+      "sourceDigest": "sha256:9469154b351d084105c8d6d505e89dec7040993e33faaf76ee239de837cd950e"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9522.png",
+      "text": "Moitheri a 'na a tsoela pele ho bua leha a se a le ka mpeng ea Khokho. O ne a botsa lipotso tse ngata.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=14",
+      "sourceDigest": "sha256:27d13604b3c3c38810d12e1072fc97078f65272354f03d4eb3e27159f18e5ae1"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9523.png",
+      "text": "Qetellong, Khokho ea khathala ke lipotso tse ngata tsa Moitheri. Ea khetha ho mo hlatsa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=15",
+      "sourceDigest": "sha256:4920b4ddd8666952f3f683286e3e9ab79326889a5e2791e109d31140a5556f73"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9455.png",
+      "text": "Moitheri le rakhali oa hae ba ile ba pholosoa ke baahi ba motse. Ho tloha tsatsing leo, Moitheri ha a ka a hlola a bua haholo le batho bao a sa ba tsebeng.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36345#page=16",
+      "sourceDigest": "sha256:b90c09161f8b4e0dc903ff1cc78db828ae2d5370d294071fcaca01bc7132601d"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 447
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:3557bdeaebfd0869f8dd5fd1f9b34fcaaa43b20ee6d11e00e04568e5dd450cc0"
+  }
+}

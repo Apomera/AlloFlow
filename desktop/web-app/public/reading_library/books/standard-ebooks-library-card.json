@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "standard-ebooks-library-card",
+  "title": "Standard Ebooks",
+  "description": "Carefully proofread and semantically structured public-domain ebook editions.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "standard-ebooks",
+  "contentType": "public-domain-source-card",
+  "subjects": [
+    "Public domain",
+    "Literature",
+    "Classics",
+    "Accessible EPUB"
+  ],
+  "authors": [
+    "Standard Ebooks contributors"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Standard Ebooks",
+  "license": "Public domain and CC0 · link-only catalog card",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "standard-ebooks",
+    "name": "Standard Ebooks",
+    "url": "https://standardebooks.org/ebooks"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://standardebooks.org/",
+    "reason": "Standard Ebooks editions are public-domain/CC0, but bulk catalog feeds require project access. This card links to the official library."
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Carefully proofread and semantically structured public-domain ebook editions."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Open the official source to browse and read available materials."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Standard Ebooks editions are public-domain/CC0, but bulk catalog feeds require project access. This card links to the official library."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 37
+  },
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://standardebooks.org/",
+    "note": "Standard Ebooks editions are public-domain/CC0, but bulk catalog feeds require project access. This card links to the official library."
+  }
+}

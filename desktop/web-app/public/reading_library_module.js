@@ -42,7 +42,7 @@
     'https://alloflow-cdn.pages.dev/reading_library/',
     'https://raw.githubusercontent.com/Apomera/AlloFlow/main/reading_library/',
   ];
-  var VISIBLE_BOOK_BATCH = 240;
+  var VISIBLE_BOOK_BATCH = 80;
 
   // StoryWeaver reading levels with their approximate grade bands (their own
   // guidance: L1 emergent, L2 early, L3 fluent-ish, L4 confident). Bands are a
@@ -69,6 +69,17 @@
     openstax: 'OpenStax',
     libretexts: 'LibreTexts',
     ck12: 'CK-12',
+    'open-textbook-library': 'Open Textbook Library',
+    wikibooks: 'Wikibooks',
+    'core-knowledge': 'Core Knowledge',
+    pressbooks: 'Pressbooks',
+    'standard-ebooks': 'Standard Ebooks',
+    'book-dash': 'Book Dash',
+    'open-rn': 'Open RN',
+    oapen: 'OAPEN',
+    doab: 'DOAB',
+    'mit-ocw': 'MIT OpenCourseWare',
+    'ncbi-bookshelf': 'NCBI Bookshelf',
     unknown: 'Other source',
   };
 
@@ -76,9 +87,9 @@
     {
       id: 'stories',
       label: 'Stories',
-      sourceLine: 'StoryWeaver & Bloom Library picture books',
-      summary: 'Leveled picture books for early and multilingual readers.',
-      sourceIds: ['storyweaver', 'bloom'],
+      sourceLine: 'StoryWeaver, Bloom Library & Book Dash picture books',
+      summary: 'Leveled picture books and attributed open-book discovery for early and multilingual readers.',
+      sourceIds: ['storyweaver', 'bloom', 'book-dash'],
       defaultLanguage: 'English',
       accent: 'emerald',
     },
@@ -103,10 +114,14 @@
     {
       id: 'study',
       label: 'Textbooks & study guides',
-      sourceLine: 'OpenStax chapters & CK-12 FlexBook links',
-      summary: 'Accessible open-textbook chapters plus curated course-aligned study links.',
-      sourceIds: ['openstax', 'libretexts', 'ck12'],
-      defaultLanguage: 'English',
+      sourceLine: 'OpenStax, Open RN, OTL, Wikibooks, Core Knowledge & more',
+      summary: 'Accessible open-textbook chapters plus rights-aware links to textbooks, courses, and research books.',
+      sourceIds: [
+        'openstax', 'open-rn', 'libretexts', 'ck12', 'open-textbook-library', 'wikibooks',
+        'core-knowledge', 'pressbooks', 'standard-ebooks',
+        'oapen', 'doab', 'mit-ocw', 'ncbi-bookshelf'
+      ],
+      defaultLanguage: '',
       accent: 'indigo',
     },
     {
@@ -142,6 +157,7 @@
     if (raw.indexOf('loc.gov') !== -1 || raw.indexOf('library of congress') !== -1) return 'loc';
     if (raw.indexOf('gutenberg') !== -1) return 'gutenberg';
     if (raw.indexOf('openstax') !== -1) return 'openstax';
+    if (raw.indexOf('open resources for nursing') !== -1 || raw.indexOf('open rn') !== -1) return 'open-rn';
     if (raw.indexOf('libretexts') !== -1) return 'libretexts';
     if (raw.indexOf('ck-12') !== -1 || raw.indexOf('ck12') !== -1) return 'ck12';
     if (book && book.file && String(book.file).indexOf('books/') === 0) return 'storyweaver';
@@ -1151,6 +1167,7 @@
     var externalSourceText = allowsAi ? selectedSource.text : '';
     var linkOnly = usagePolicy.access === 'link-only';
     var isMirroredOpenStax = bookSourceId(book) === 'openstax' && !isCardContent(book);
+    var isMirroredOpenRn = bookSourceId(book) === 'open-rn' && !isCardContent(book);
 
     // Reading-support derivations. Theme colors go on the page area + text;
     // font class re-applies the accessibility font inside this fixed modal.
@@ -1590,6 +1607,8 @@
       if (typeof props.onPracticeLanguage !== 'function') return;
       props.onPracticeLanguage({
         text: externalSourceText,
+        wholeText: displayPlainText,
+        wholeLabel: tr('readinglib_scope_whole', 'Whole text'),
         title: displayTitle,
         selectionLabel: selectedSource.label,
         language: displayLanguage || book.language || '',
@@ -2161,6 +2180,8 @@
             '🔗 ' + tr('readinglib_card_notice', 'This is a source card — a short overview with a link to the real thing. Use “Open original” above to read the full text at the source.')) :
           isMirroredOpenStax ? e('div', { className: 'mb-3 mx-auto max-w-xl text-[12px] text-indigo-900 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 text-center' },
             '✓ ' + tr('readinglib_openstax_mirror_notice', 'Accessibility-ready OpenStax chapter mirror · CC BY-NC-SA 4.0 · reading and non-AI accessibility stay available · Extract to Source and generative-AI handoffs are blocked unless OpenStax grants permission.')) : null,
+          isMirroredOpenRn ? e('div', { className: 'mb-3 mx-auto max-w-xl text-[12px] text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-center' },
+            '✓ ' + tr('readinglib_open_rn_mirror_notice', book.medicalNotice || 'Accessibility-ready Open RN chapter mirror · CC BY 4.0 · educational material only. Follow current clinical policy, instructor guidance, and professional standards for patient-care decisions.')) : null,
           // Same work, other languages (multilingual Bloom records) — one tap
           // switches editions, so a family can read in both languages.
           (props.editions && props.editions.length) ? e('div', { className: 'mb-3 mx-auto max-w-xl flex flex-wrap items-center justify-center gap-1 text-[12px]' },
@@ -2894,9 +2915,9 @@
     var _fm = useState(false); var findMoreOpen = _fm[0]; var setFindMoreOpen = _fm[1];
     var _collection = useState(null); var selectedCollectionId = _collection[0]; var setSelectedCollectionId = _collection[1];
     var _visible = useState(VISIBLE_BOOK_BATCH); var visibleLimit = _visible[0]; var setVisibleLimit = _visible[1];
-    // Lazy catalog cards: the core index omits the ~895 Gutenberg link-out
-    // stubs; they are fetched from index.cardsFile only when a card-bearing
-    // view needs them (History / All shelves, or any search). extraCards holds
+    // Lazy catalog cards: the core index omits the large link-out discovery
+    // sets; they are fetched from index.cardsFile only when a card-bearing
+    // view needs them (History / Study / All shelves, or any search). extraCards holds
     // them once loaded; cardsStatus gates the one-shot fetch.
     var _cards = useState(null); var extraCards = _cards[0]; var setExtraCards = _cards[1];
     var _cardsStatus = useState('unloaded'); var cardsStatus = _cardsStatus[0]; var setCardsStatus = _cardsStatus[1];
@@ -2959,10 +2980,10 @@
         .catch(function () { setCardsStatus('unloaded'); }); // stay retryable
     }, [cardsStatus, index.data, index.status, index.base]);
 
-    // The catalog cards only appear on the History and All shelves, and in any
-    // search (searches always span the whole library so a stub is findable by
-    // subject). Pull them in the moment the reader enters such a view.
-    var viewNeedsCards = selectedCollectionId === 'history' || selectedCollectionId === 'all' ||
+    // Load catalog cards for shelves that contain lazy discovery sources and
+    // for searches, which always span the complete library.
+    var viewNeedsCards = selectedCollectionId === 'history' || selectedCollectionId === 'study' ||
+      selectedCollectionId === 'all' ||
       filters.searchAll || filters.search.trim() !== '';
     useEffect(function () {
       if (viewNeedsCards && cardsStatus === 'unloaded' && index.status === 'ok') loadCards();
@@ -3031,7 +3052,7 @@
     // as the catalog grows and only appears where the shelf is multilingual.
     var homeLanguages = useMemo(function () {
       return languages
-        .filter(function (l) { return l.name !== 'English'; })
+        .filter(function (l) { return l.name !== 'English' && l.name !== 'Not specified'; })
         .sort(function (a, b) { return b.count - a.count; })
         .slice(0, 10);
     }, [languages]);

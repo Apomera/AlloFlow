@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-35995-die-berg-brand",
+  "title": "Die berg brand",
+  "description": "Thuli en haar maats speel graag “Die berg brand”. Maar op ’n dag is daar regtig ’n brand op die berg en al die pragtige plante word deur die vlamme vernietig. Thuli en haar maats is baie hartseer … totdat hulle klein rooi en groen spriete sien opkom. Wat kan dit wees?",
+  "language": "Afrikaans",
+  "langCode": "afr",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Let's learn!",
+    "Nature and looking after our planet"
+  ],
+  "authors": [
+    "Kirsty Paxton"
+  ],
+  "illustrators": [
+    "Julie Smith-Belton"
+  ],
+  "contributors": [
+    {
+      "name": "Nadene Reignier",
+      "role": "Designer"
+    },
+    {
+      "name": "Margot Bertelsmann",
+      "role": "Editor"
+    },
+    {
+      "name": "Kirsty Paxton",
+      "role": "Writer"
+    },
+    {
+      "name": "Julie Smith-Belton",
+      "role": "Illustrator"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/die-berg-brand/",
+    "attributionUrl": "https://bookdash.org/books/die-berg-brand/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=theres-a-fire-on-the-mountain"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2024/09/theres-a-fire-on-the-mountain_af_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2024/09/theres-a-fire-on-the-mountain_af_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Thuli en haar maats speel graag “Die berg brand”. Maar op ’n dag is daar regtig ’n brand op die berg en al die pragtige plante word deur die vlamme vernietig. Thuli en haar maats is baie hartseer … totdat hulle klein rooi en groen spriete sien opkom. Wat kan dit wees?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Nadene Reignier (Designer); Margot Bertelsmann (Editor); Kirsty Paxton (Writer); Julie Smith-Belton (Illustrator)\n\nLanguage: Afrikaans. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=theres-a-fire-on-the-mountain"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 118
+  }
+}

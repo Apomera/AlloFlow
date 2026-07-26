@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1522-comprendiendo-la-lectura-del-nivel-literal-al-critico-en-estudiantes-de-",
+  "title": "Comprendiendo la Lectura: Del Nivel Literal al Crítico en Estudiantes de EBA",
+  "description": "Este libro de investigación trata sobre que los momentos de la lectura mejoran la comprensión lectora en los niveles literal, inferencial y crítico de los estudiantes del segundo grado “E” del ciclo avanzado del CEBA “Politécnico Regional del Centro”- Huancayo, es de naturaleza cuantitativa, tipo aplicada, diseño pre experimental, con pre test y pos test en un solo grupo, muestra no probabilística. Se aplicó un pre test para diagnosticar su comprensión de textos, luego una propuesta experimental basada en la estrategia los momentos de la lectura de Isabel Solé y un post test para determinar los efectos. Se demostró estadísticamente que la aplicación de esta estrategia permite mejorar significativamente la comprensión lectora en el nivel literal, inferencial y crítico. Esto se fundamenta porque en el pre test la mayoría de estudiantes alcanzó calificaciones inferiores a 10 (escala vigesimal); pero, en el post test la mayoría superó este promedio en estos niveles. En el calculó se evidenció que existen diferencias significativas entre las puntuaciones del pre y post test de 6,6 puntos p < 0,05.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Elementary Education"
+  ],
+  "authors": [
+    "Amancia María Pacheco-Altamirano - Author / Alvaro Ignacio Camposano-Córdova - Author / Christian Luis Torres-Acevedo - Author / Juan José Oré-Rojas - Author / Júber Amílcar Gavidia-Anticona - Author / Yeni Yauri-Huiza - Author / Ángel Epifanio Rojas-Quispe - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/comprendiendo-la-lectura-del-nivel-literal-al-critico-en-estudiantes-de-eba"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Este libro de investigación trata sobre que los momentos de la lectura mejoran la comprensión lectora en los niveles literal, inferencial y crítico de los estudiantes del segundo grado “E” del ciclo avanzado del CEBA “Politécnico Regional del Centro”- Huancayo, es de naturaleza cuantitativa, tipo aplicada, diseño pre experimental, con pre test y pos test en un solo grupo, muestra no probabilística. Se aplicó un pre test para diagnosticar su comprensión de textos, luego una propuesta experimental basada en la estrategia los momentos de la lectura de Isabel Solé y un post test para determinar los efectos. Se demostró estadísticamente que la aplicación de esta estrategia permite mejorar significativamente la comprensión lectora en el nivel literal, inferencial y crítico. Esto se fundamenta porque en el pre test la mayoría de estudiantes alcanzó calificaciones inferiores a 10 (escala vigesimal); pero, en el post test la mayoría superó este promedio en estos niveles. En el calculó se evidenció que existen diferencias significativas entre las puntuaciones del pre y post test de 6,6 puntos p < 0,05."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 197
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1522",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

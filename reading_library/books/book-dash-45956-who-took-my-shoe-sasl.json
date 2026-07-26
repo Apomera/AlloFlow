@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-45956-who-took-my-shoe-sasl",
+  "title": "Who Took My Shoe? (SASL)",
+  "description": "Jabulani has lost his school shoe. He can’t find it anywhere. Where can it be?",
+  "language": "South African Sign Language",
+  "langCode": "sgn",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Let's learn!"
+  ],
+  "authors": [
+    "Elana Bregin"
+  ],
+  "illustrators": [
+    "Nicki Blackbeard"
+  ],
+  "contributors": [
+    {
+      "name": "Mariam Mahomed",
+      "role": "Editor"
+    },
+    {
+      "name": "Nicki Blackbeard",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Kathryn Elliott",
+      "role": "Designer"
+    },
+    {
+      "name": "Elana Bregin",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/who-took-my-shoe-sasl/",
+    "attributionUrl": "https://bookdash.org/books/who-took-my-shoe-sasl/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=who-took-my-shoe"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2025/10/who-took-my-shoe_cover_sasl-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2025/10/who-took-my-shoe_cover_sasl-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Jabulani has lost his school shoe. He can’t find it anywhere. Where can it be?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Mariam Mahomed (Editor); Nicki Blackbeard (Illustrator); Kathryn Elliott (Designer); Elana Bregin (Writer)\n\nLanguage: South African Sign Language. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=who-took-my-shoe"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 84
+  }
+}

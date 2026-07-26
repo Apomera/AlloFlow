@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-975-her-sey-bir-merhaba-ile-baslar",
+  "title": "Her Şey Bir Merhaba ile Başlar!",
+  "description": "Her Şey Bir Merhaba ile Başlar! was developed for intermediate level Turkish language courses at the University of Texas at Austin. Intermediate learners and their instructors may use it for different purposes: self-study, classroom instruction, tutoring, or as a pastime. The lessons in Her Şey Bir Merhaba ile Başlar! integrate reading, listening and viewing comprehension, writing and speaking practice, grammar, vocabulary, and cultural activities. Dozens of audio and video clips of Turkish speakers describing their lives, their culture, and their country support and enhance these activities. The Her Şey Bir Merhaba ile Başlar! textbook, interactive H5P exercises, and YouTube channel comprise a media-rich open educational resource (OER) developed by Dr. Jeannette Okur at the University of Texas at Austin and published by the Center for Open Educational Resources and Language Learning under the U.S. Department of Education Title VI Grant #P229A180003, with additional support from the UT Liberal Arts Instructional Technology Services and the UT Center for Middle Eastern Studies.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages",
+    "Social Sciences - Cultural & Ethnic Studies"
+  ],
+  "authors": [
+    "Jeannette Okur - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "COERLL",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/her-sey-bir-merhaba-ile-baslar"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Her Şey Bir Merhaba ile Başlar! was developed for intermediate level Turkish language courses at the University of Texas at Austin. Intermediate learners and their instructors may use it for different purposes: self-study, classroom instruction, tutoring, or as a pastime. The lessons in Her Şey Bir Merhaba ile Başlar! integrate reading, listening and viewing comprehension, writing and speaking practice, grammar, vocabulary, and cultural activities. Dozens of audio and video clips of Turkish speakers describing their lives, their culture, and their country support and enhance these activities. The Her Şey Bir Merhaba ile Başlar! textbook, interactive H5P exercises, and YouTube channel comprise a media-rich open educational resource (OER) developed by Dr. Jeannette Okur at the University of Texas at Austin and published by the Center for Open Educational Resources and Language Learning under the U.S. Department of Education Title VI Grant #P229A180003, with additional support from the UT Liberal Arts Instructional Technology Services and the UT Center for Middle Eastern Studies."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 183
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "975",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -413,7 +413,8 @@ async function main() {
     };
   }
   for (const [reference, detail] of Object.entries(catalog)) {
-    if (new URL(reference).hostname.toLowerCase() === 'pubmed.ncbi.nlm.nih.gov') {
+    if (new URL(reference).hostname.toLowerCase() === 'pubmed.ncbi.nlm.nih.gov'
+      && detail.metadataSource !== 'pack-authored') {
       detail.organization = organizationFor(reference);
       detail.credibility = credibilityFor(reference, detail.organization);
     }
@@ -421,6 +422,19 @@ async function main() {
     detail.organization = cleanText(detail.organization);
     detail.summary = shorten(detail.summary);
     detail.credibility = shorten(detail.credibility);
+  }
+  const epppBankPath = path.join(root, 'test_prep', 'eppp_native_items.json');
+  if (fs.existsSync(epppBankPath)) {
+    const epppItems = JSON.parse(fs.readFileSync(epppBankPath, 'utf8'));
+    for (const item of epppItems) {
+      const curated = item.sourceReviewBasis === 'item-specific-authoritative-source-review'
+        || /^eppp-option-feedback-wave-/.test(item.optionFeedbackRefinementWave || '');
+      if (!curated) continue;
+      for (const detail of item.sourceDetails || []) {
+        if (!detail.url || !detail.title || !detail.organization || !detail.summary || !detail.credibility) continue;
+        catalog[detail.url] = { ...detail, metadataSource: 'pack-authored' };
+      }
+    }
   }
   const ordered = Object.fromEntries(Object.entries(catalog).sort(([a], [b]) => a.localeCompare(b)));
   fs.mkdirSync(path.dirname(deployOutput), { recursive: true });

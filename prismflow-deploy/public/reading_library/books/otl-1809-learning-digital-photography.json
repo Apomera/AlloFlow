@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1809-learning-digital-photography",
+  "title": "Learning Digital Photography",
+  "description": "This textbook is designed to guide you through the essential skills and techniques needed to become a proficient photographer. Over the course of this book, you will learn how to: Understand Your Camera: Get to know the functions and features of your camera, from basic DSLR models to advanced DSLRs and mirrorless systems. Control Exposure: Learn how to use aperture, shutter speed, and ISO to achieve the perfect exposure in any lighting condition. Harness Light: Explore the different qualities of natural and artificial light, and how to manipulate them to enhance your photographs. Master Composition: Discover the rules and guidelines that can help you create visually compelling images, including the rule of thirds, leading lines, and symmetry. Color Theory: Understand some of the basic color relationships and how to use them effectively in your images. Thinking Creatively: Exercise the creative side of your brain to see the world in a new way and develop creative ways to make your vision into pictures. Develop Your Style: Find your unique photographic voice by experimenting with different genres, from landscape and portrait photography to macro and street photography.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Arts"
+  ],
+  "authors": [
+    "Eric Demattos - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "North Idaho College",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/learning-digital-photography"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This textbook is designed to guide you through the essential skills and techniques needed to become a proficient photographer. Over the course of this book, you will learn how to: Understand Your Camera: Get to know the functions and features of your camera, from basic DSLR models to advanced DSLRs and mirrorless systems. Control Exposure: Learn how to use aperture, shutter speed, and ISO to achieve the perfect exposure in any lighting condition. Harness Light: Explore the different qualities of natural and artificial light, and how to manipulate them to enhance your photographs. Master Composition: Discover the rules and guidelines that can help you create visually compelling images, including the rule of thirds, leading lines, and symmetry. Color Theory: Understand some of the basic color relationships and how to use them effectively in your images. Thinking Creatively: Exercise the creative side of your brain to see the world in a new way and develop creative ways to make your vision into pictures. Develop Your Style: Find your unique photographic voice by experimenting with different genres, from landscape and portrait photography to macro and street photography."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 208
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1809",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

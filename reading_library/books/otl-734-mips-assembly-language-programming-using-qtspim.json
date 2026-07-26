@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-734-mips-assembly-language-programming-using-qtspim",
+  "title": "MIPS Assembly Language Programming using QtSpim",
+  "description": "There are a number of excellent, comprehensive, and in-depth texts on MIPS assembly language programming. This is not one of them.The purpose of this text is to provide a simple and free reference for university level programming and architecture units that include a brief section covering MIPS assembly language programming. The text assumes usage of the QtSpim simulator. An appendix is included that covers the download, installation, and basic use of the QtSpim simulator.The scope of this text addresses basic MIPS assembly language programming including instruction set usage, stacks, procedure/function calls, QtSpim simulator system services, multiple dimension arrays, and basic recursion.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science - Programming Languages"
+  ],
+  "authors": [
+    "Ed Jorgensen - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ed Jorgensen",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/mips-assembly-language-programming-using-qtspim"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "There are a number of excellent, comprehensive, and in-depth texts on MIPS assembly language programming. This is not one of them.The purpose of this text is to provide a simple and free reference for university level programming and architecture units that include a brief section covering MIPS assembly language programming. The text assumes usage of the QtSpim simulator. An appendix is included that covers the download, installation, and basic use of the QtSpim simulator.The scope of this text addresses basic MIPS assembly language programming including instruction set usage, stacks, procedure/function calls, QtSpim simulator system services, multiple dimension arrays, and basic recursion."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 124
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "734",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

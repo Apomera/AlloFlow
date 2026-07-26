@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1962-introduction-to-the-principles-of-veterinary-pharmacology-first-edition",
+  "title": "Introduction to the Principles of Veterinary Pharmacology - First Edition",
+  "description": "Advances in drug development over the past 50 years for human diseases have facilitated an increase in prescribed drugs in veterinary medicine. This textbook reorients the general principles of pharmacology from humans to animals to better engage veterinary students and practitioners. It explores the general principles of pharmacodynamics and pharmacokinetics before applying them to clinical pharmacology, dose calculations, and toxicity. Terminology is presented simply, and drug examples are omitted to maintain clarity and focus.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine - Veterinary Medicine"
+  ],
+  "authors": [
+    "Carl Ruby - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oregon State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-the-principles-of-veterinary-pharmacology-first-edition"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Advances in drug development over the past 50 years for human diseases have facilitated an increase in prescribed drugs in veterinary medicine. This textbook reorients the general principles of pharmacology from humans to animals to better engage veterinary students and practitioners. It explores the general principles of pharmacodynamics and pharmacokinetics before applying them to clinical pharmacology, dose calculations, and toxicity. Terminology is presented simply, and drug examples are omitted to maintain clarity and focus."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2026."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 97
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1962",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

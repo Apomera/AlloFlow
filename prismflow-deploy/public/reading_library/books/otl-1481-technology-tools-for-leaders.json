@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1481-technology-tools-for-leaders",
+  "title": "Technology Tools for Leaders",
+  "description": "With the vast and varied technologies available to leaders, it is no doubt managing these technologies can be challenging. Yet, leaders must have a sense of which technologies will help the organization and its members to be successful. While an organizational leader does not need to be a technology expert, having an awareness of the impact technology has on an organization is important.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education"
+  ],
+  "authors": [
+    "Andrea Bearman - Author / Jill Noyes - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Palni Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/technology-tools-for-leaders"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "With the vast and varied technologies available to leaders, it is no doubt managing these technologies can be challenging. Yet, leaders must have a sense of which technologies will help the organization and its members to be successful. While an organizational leader does not need to be a technology expert, having an awareness of the impact technology has on an organization is important."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 86
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1481",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

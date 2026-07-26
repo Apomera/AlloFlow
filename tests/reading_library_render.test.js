@@ -147,8 +147,9 @@ describe('browse view', () => {
     // the grid defaults to the English language filter
     const langSelect = host.querySelector('select[aria-label="Language"]');
     expect(langSelect.value).toBe('English');
-    // language filter carries every language (+ the "All languages" option)
-    expect(langSelect.querySelectorAll('option').length).toBe(index.languages.length + 1);
+    // language filter carries every language on this shelf (+ All languages)
+    const storyLanguages = new Set(storyEntries.map((entry) => entry.language));
+    expect(langSelect.querySelectorAll('option').length).toBe(storyLanguages.size + 1);
     // switch to All languages: the Stories shelf counts only StoryWeaver books
     selectLang(''); await flush();
     expect(textOf(host)).toContain(storyEntries.length + ' ');

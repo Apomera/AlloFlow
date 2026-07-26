@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-2026-a-natural-history-of-the-anthropocene",
+  "title": "A Natural History of the Anthropocene",
+  "description": "Organized into three sections, this book—an introduction to our planet—is written in the spirt of a natural history guide. The prologue includes a chapter that outlines the basic concept of biodiversity. How we are changing biodiversity is a theme that runs through the book. The second section contains several chapters that explore the natural history of our now human-dominated world. The last section explores our changing relationship with nature.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Earth Sciences"
+  ],
+  "authors": [
+    "John Lambrinos - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oregon State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-natural-history-of-the-anthropocene"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Organized into three sections, this book—an introduction to our planet—is written in the spirt of a natural history guide. The prologue includes a chapter that outlines the basic concept of biodiversity. How we are changing biodiversity is a theme that runs through the book. The second section contains several chapters that explore the natural history of our now human-dominated world. The last section explores our changing relationship with nature."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 92
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "2026",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

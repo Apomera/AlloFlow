@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-673-yet-another-introductory-number-theory-textbook-cryptology-emphasis-vers",
+  "title": "Yet Another Introductory Number Theory Textbook (Cryptology Emphasis Version)",
+  "description": "This version of YAINTT has a particular emphasis on connections to cryptology. The cryptologic material appears in Chapter 4 and §§5.5 and 5.6, arising naturally (I hope) out of the ambient number theory. The main cryptologic applications – being the RSA cryptosystem, Diffie-Hellman key exchange, and the ElGamal cryptosystem – come out so naturally from considerations of Euler’s Theorem, primitive roots, and indices that it renders quite ironic G.H. Hardy’s assertion [Har05] of the purity and eternal inapplicability of number theory. Note, however, that once we broach the subject of these cryptologic algorithms, we take the time to make careful definitions for many cryptological concepts and to develop some related ideas of cryptology which have much more tenuous connections to the topic of number theory. This material therefore has something of a different flavor from the rest of the text – as is true of all scholarly work in cryptology (indeed, perhaps in all of computer science), which is clearly a discipline with a different culture from that of “pure”mathematics. Obviously, these sections could be skipped by an uninterested reader, or remixed away by an instructor for her own particular class approach.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science - Cryptography",
+    "Mathematics - Applied"
+  ],
+  "authors": [
+    "Jonathan A. Poritz - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Jonathan Poritz",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/yet-another-introductory-number-theory-textbook-cryptology-emphasis-version"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This version of YAINTT has a particular emphasis on connections to cryptology. The cryptologic material appears in Chapter 4 and §§5.5 and 5.6, arising naturally (I hope) out of the ambient number theory. The main cryptologic applications – being the RSA cryptosystem, Diffie-Hellman key exchange, and the ElGamal cryptosystem – come out so naturally from considerations of Euler’s Theorem, primitive roots, and indices that it renders quite ironic G.H. Hardy’s assertion [Har05] of the purity and eternal inapplicability of number theory. Note, however, that once we broach the subject of these cryptologic algorithms, we take the time to make careful definitions for many cryptological concepts and to develop some related ideas of cryptology which have much more tenuous connections to the topic of number theory. This material therefore has something of a different flavor from the rest of the text – as is true of all scholarly work in cryptology (indeed, perhaps in all of computer science), which is clearly a discipline with a different culture from that of “pure”mathematics. Obviously, these sections could be skipped by an uninterested reader, or remixed away by an instructor for her own particular class approach."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2014."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 215
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "673",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

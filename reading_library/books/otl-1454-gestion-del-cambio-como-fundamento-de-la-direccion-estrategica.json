@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1454-gestion-del-cambio-como-fundamento-de-la-direccion-estrategica",
+  "title": "Gestión del Cambio como Fundamento de la Dirección Estratégica",
+  "description": "El libro es una obra completa que examina la integración vital de la dirección estratégica y la gestión del cambio. El primer capítulo argumenta que el cambio estratégico es un componente crucial de la dirección estratégica, destacando la necesidad de anticipar y adaptarse a las fluctuaciones en el entorno de negocio. El segundo capítulo presenta la dirección estratégica como un modelo de cambio, subrayando la importancia de alinear la estrategia con la visión y los objetivos de la empresa para impulsar el cambio efectivo. El capítulo final analiza las competencias esenciales necesarias para la dirección estratégica, enfatizando en habilidades como el liderazgo, la toma de decisiones informada y la gestión de la incertidumbre. Esta obra es una guía esencial para aquellos que buscan comprender y aplicar efectivamente la gestión del cambio en un marco estratégico.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Management"
+  ],
+  "authors": [
+    "Fernando Neptalí Terán-Guerrero - Author / Mercy Elizabeth Guerrero-Espinosa - Author / Viviana de Lourdes Vizcaíno-Villavicencio - Author / John Steet Gaibor-Mendoza - Author / Juan Carlos Pico-Lescano - Author / Marco Vinicio Sandoval-Cárdenas - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/gestion-del-cambio-como-fundamento-de-la-direccion-estrategica"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "El libro es una obra completa que examina la integración vital de la dirección estratégica y la gestión del cambio. El primer capítulo argumenta que el cambio estratégico es un componente crucial de la dirección estratégica, destacando la necesidad de anticipar y adaptarse a las fluctuaciones en el entorno de negocio. El segundo capítulo presenta la dirección estratégica como un modelo de cambio, subrayando la importancia de alinear la estrategia con la visión y los objetivos de la empresa para impulsar el cambio efectivo. El capítulo final analiza las competencias esenciales necesarias para la dirección estratégica, enfatizando en habilidades como el liderazgo, la toma de decisiones informada y la gestión de la incertidumbre. Esta obra es una guía esencial para aquellos que buscan comprender y aplicar efectivamente la gestión del cambio en un marco estratégico."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 158
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1454",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

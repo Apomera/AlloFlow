@@ -8,7 +8,7 @@ const expected = new Map([
   ['eppp-b013-cognitive-1', 'Selectively enhances processing within a limited spatial region'],
   ['eppp-b015-intervention-1', 'Help clients describe concrete signs that the preferred future has occurred'],
   ['eppp-b016-intervention-1', 'Adaptive information and action tendencies that can also become maladaptive'],
-  ['eppp-b016-professional-1', 'Maintain impartiality and focus on the child’s psychological best interests'],
+  ['eppp-b016-professional-1', 'Clarify the fair and impartial forensic function, resist outcome advocacy, monitor threats to objectivity, and honor the authorized referral scope'],
   ['eppp-b017-assessment-1', 'People with the condition who test positive'],
   ['eppp-b017-intervention-1', 'Thoughts, emotions, behavior, physiology, and context interact and can be changed'],
   ['eppp-b017-professional-1', 'Avoid or minimize reasonably foreseeable harm where possible'],

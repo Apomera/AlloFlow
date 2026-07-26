@@ -2,6 +2,205 @@
 // handleGenerate and curriculum-audit helpers — the resource-generation dispatcher.
 // Switch-on-type router for simplified/glossary/quiz/outline/image/etc.
 
+const ADAPTED_CITATION_AUDIT_VERSION = 1;
+const ADAPTED_REFERENCES_HEADER_RE = /(?:^|\r?\n)[ \t]*#{1,6}[ \t]+(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|(?:Referenced|Verified)\s+Sources|Sources?(?:[ \t]*\/[^\r\n]*)?|References|Bibliography|Works\s+Cited|Références|Sources\s+du\s+texte|Referencias|Quellen)[ \t]*:?[ \t]*(?=\r?\n|$)/i;
+const ADAPTED_CITATION_START_RE = /\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g;
+
+function isAdaptationOffsetInsideFence(text, offset) {
+  const lines = String(text || '').slice(0, Math.max(0, offset)).split(/\r?\n/);
+  let openFence = '';
+  for (const line of lines) {
+    const marker = line.match(/^[ \t]*(`{3,}|~{3,})/);
+    if (!marker) continue;
+    const fenceChar = marker[1][0];
+    if (!openFence) openFence = fenceChar;
+    else if (openFence === fenceChar) openFence = '';
+  }
+  return !!openFence;
+}
+
+function findAdaptationMatchOutsideFences(text, pattern) {
+  let offset = 0;
+  while (offset <= text.length) {
+    const match = pattern.exec(text.slice(offset));
+    if (!match) return null;
+    const absoluteIndex = offset + match.index;
+    if (!isAdaptationOffsetInsideFence(text, absoluteIndex)) {
+      match.index = absoluteIndex;
+      return match;
+    }
+    offset = absoluteIndex + Math.max(1, match[0].length);
+  }
+  return null;
+}
+
+function splitAdaptationReferences(value) {
+  const text = String(value || '');
+  const match = findAdaptationMatchOutsideFences(text, ADAPTED_REFERENCES_HEADER_RE);
+  if (!match) return { body: text, references: '', header: '' };
+  const leadingBreak = /^(?:\r?\n)/.exec(match[0]);
+  const headerStart = match.index + (leadingBreak ? leadingBreak[0].length : 0);
+  const header = text.slice(headerStart, match.index + match[0].length).trim();
+  const bodyBeforeReferences = text.slice(0, match.index).trim();
+  let references = text.slice(headerStart).trim();
+  let body = bodyBeforeReferences;
+
+  // Older bilingual resources placed references between the target text and
+  // the English delimiter. Detach only the reference portion and keep the
+  // already-generated English block in the body so the final composer can
+  // migrate the references to the true document trailer.
+  const legacyEnglish = findAdaptationMatchOutsideFences(references, /(?:^|\r?\n)[ \t]*--- ENGLISH TRANSLATION ---[ \t]*(?:\r?\n|$)/i);
+  if (legacyEnglish) {
+    const englishTrailer = references.slice(legacyEnglish.index).trim();
+    references = references.slice(0, legacyEnglish.index).trim();
+    body = [bodyBeforeReferences, englishTrailer].filter(Boolean).join('\n\n');
+  }
+
+  return {
+    body,
+    references,
+    header
+  };
+}
+
+function extractAdaptationCitationLedgerLocal(value) {
+  const text = String(value || '');
+  const entries = [];
+  ADAPTED_CITATION_START_RE.lastIndex = 0;
+  let match;
+  while ((match = ADAPTED_CITATION_START_RE.exec(text)) !== null) {
+    const start = match.index;
+    const urlStart = ADAPTED_CITATION_START_RE.lastIndex;
+    let depth = 1;
+    let escaped = false;
+    let end = -1;
+    for (let i = urlStart; i < text.length; i++) {
+      const ch = text[i];
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (ch === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (ch === '(') depth++;
+      if (ch === ')' && --depth === 0) {
+        end = i + 1;
+        break;
+      }
+    }
+    if (end < 0) continue;
+    const marker = text.slice(start, end);
+    entries.push({
+      marker,
+      label: match[0].slice(1, match[0].indexOf(']')),
+      url: text.slice(urlStart, end - 1).trim(),
+      start,
+      end
+    });
+    ADAPTED_CITATION_START_RE.lastIndex = end;
+  }
+  return { version: ADAPTED_CITATION_AUDIT_VERSION, entries };
+}
+
+function validateAdaptationCitationConservation(before, after) {
+  const beforeLedger = extractAdaptationCitationLedgerLocal(before);
+  const afterLedger = extractAdaptationCitationLedgerLocal(after);
+  const count = (entries) => {
+    const result = new Map();
+    entries.forEach(({ marker }) => result.set(marker, (result.get(marker) || 0) + 1));
+    return result;
+  };
+  const beforeCounts = count(beforeLedger.entries);
+  const afterCounts = count(afterLedger.entries);
+  const missing = [];
+  const unexpected = [];
+  beforeCounts.forEach((expected, marker) => {
+    const actual = afterCounts.get(marker) || 0;
+    for (let i = actual; i < expected; i++) missing.push(marker);
+  });
+  afterCounts.forEach((actual, marker) => {
+    const expected = beforeCounts.get(marker) || 0;
+    for (let i = expected; i < actual; i++) unexpected.push(marker);
+  });
+  const orderChanged = missing.length === 0
+    && unexpected.length === 0
+    && beforeLedger.entries.some((entry, index) => entry.marker !== afterLedger.entries[index]?.marker);
+  const localResult = {
+    valid: missing.length === 0 && unexpected.length === 0 && !orderChanged,
+    beforeCount: beforeLedger.entries.length,
+    afterCount: afterLedger.entries.length,
+    missing,
+    unexpected,
+    orderChanged
+  };
+
+  // Newer helper modules perform the same check centrally. Require the local
+  // exact-marker result as well so an older/looser CDN helper can never turn a
+  // changed URL into a successful audit during a rolling deployment.
+  try {
+    const shared = typeof window !== 'undefined'
+      && window.AlloModules
+      && window.AlloModules.TextPipelineHelpers
+      && window.AlloModules.TextPipelineHelpers.validateCitationConservation;
+    if (typeof shared === 'function') {
+      const sharedResult = shared(before, after);
+      const sharedValid = typeof sharedResult === 'boolean'
+        ? sharedResult
+        : !!(sharedResult && (sharedResult.valid ?? sharedResult.ok ?? sharedResult.conserved));
+      return { ...localResult, valid: localResult.valid && sharedValid, shared: sharedResult };
+    }
+  } catch (_) {}
+  return localResult;
+}
+
+function protectAdaptationCitations(value) {
+  const text = String(value || '');
+  const ledger = extractAdaptationCitationLedgerLocal(text);
+  if (ledger.entries.length === 0) return { text, citations: [], original: text };
+  let cursor = 0;
+  let protectedText = '';
+  const citations = ledger.entries.map((entry, index) => {
+    let token = `⟦ALLOFLOW_CITATION_${String(index + 1).padStart(4, '0')}⟧`;
+    while (text.includes(token)) token = token.replace('⟧', '_X⟧');
+    protectedText += text.slice(cursor, entry.start) + token;
+    cursor = entry.end;
+    return { token, marker: entry.marker };
+  });
+  protectedText += text.slice(cursor);
+  return { text: protectedText, citations, original: text };
+}
+
+function restoreProtectedAdaptationCitations(envelope, transformedValue) {
+  const transformed = String(transformedValue || '');
+  if (!envelope || !Array.isArray(envelope.citations) || envelope.citations.length === 0) {
+    const conservation = validateAdaptationCitationConservation(envelope?.original || '', transformed);
+    return { text: transformed, valid: conservation.valid, conservation };
+  }
+  let restored = transformed;
+  let tokenValid = true;
+  envelope.citations.forEach(({ token, marker }) => {
+    const occurrences = restored.split(token).length - 1;
+    if (occurrences !== 1) tokenValid = false;
+    restored = restored.split(token).join(marker);
+  });
+  if (/⟦ALLOFLOW_CITATION_[^⟧]*⟧/.test(restored)) tokenValid = false;
+  const conservation = validateAdaptationCitationConservation(envelope.original, restored);
+  return { text: restored, valid: tokenValid && conservation.valid, conservation, tokenValid };
+}
+
+function composeAdaptedLeveledText(targetText, englishText, referencesText, isBilingual) {
+  const sections = [String(targetText || '').trim()].filter(Boolean);
+  const english = String(englishText || '').trim();
+  if (isBilingual && english) {
+    sections.push(`--- ENGLISH TRANSLATION ---\n\n${english}`);
+  }
+  const references = String(referencesText || '').trim();
+  if (references) sections.push(references);
+  return sections.join('\n\n');
+}
+
 // ─── Plan O Step 1: Vocabulary fit (deterministic) ──────────────────────
 // Common 7+ letter words that should NOT count as Tier 2 academic vocab.
 // Beck/McKeown defines Tier 2 as "high-utility academic words found across
@@ -1333,23 +1532,25 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             ''
         );
     let textToProcess = textOverride;
+    let carriedInputReferences = '';
     if (textToProcess === null) {
         const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
         if (type !== 'analysis' && latestAnalysis?.data?.originalText) {
             const rawText = latestAnalysis.data.originalText;
-            const citationSeparator = "### Accuracy Check References";
-            if (rawText.includes(citationSeparator)) {
-                textToProcess = rawText.split(citationSeparator)[0].trim();
-            } else {
-                textToProcess = rawText;
-            }
+            const analysisReferenceParts = splitAdaptationReferences(rawText);
+            textToProcess = analysisReferenceParts.body;
+            carriedInputReferences = analysisReferenceParts.references;
         } else {
             textToProcess = inputText;
         }
     }
     if (!textToProcess || !textToProcess.trim()) return;
     if (textToProcess.includes('--- ENGLISH TRANSLATION ---')) {
-        const extracted = extractSourceTextForProcessing(textToProcess, true); // prefer English
+        const bilingualReferenceParts = splitAdaptationReferences(textToProcess);
+        if (!carriedInputReferences && bilingualReferenceParts.references) {
+            carriedInputReferences = bilingualReferenceParts.references;
+        }
+        const extracted = extractSourceTextForProcessing(bilingualReferenceParts.body, true); // prefer English
         if (extracted.isBilingual) {
             textToProcess = extracted.englishBlock || extracted.text;
             warnLog('[Generate] Bilingual source detected — using English block for ' + type + ' generation (' + textToProcess.length + ' chars)');
@@ -1878,25 +2079,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             - Ensure the story has a clear beginning, middle, and end.
             `;
         }
-      let textWithoutRefs = textToProcess;
-      let extractedReferences = "";
-      const refHeaders = [
-          "### Source Text References",
-          "### Accuracy Check References",
-          "### Verified Sources"
-      ];
-      for (const header of refHeaders) {
-          if (textToProcess.includes(header)) {
-              const parts = textToProcess.split(header);
-              if (parts.length > 1) {
-                  textWithoutRefs = parts[0].trim();
-                  let rawRefs = parts.slice(1).join(header).trim();
-                  rawRefs = rawRefs.replace(/\s+(?=\d+\.\s*\[)/g, '\n');
-                  extractedReferences = header + '\n' + rawRefs;
-              }
-              break;
-          }
-      }
+      const referenceParts = splitAdaptationReferences(textToProcess);
+      const textWithoutRefs = referenceParts.body.trim();
+      const extractedReferences = referenceParts.references || carriedInputReferences;
       const chunks = chunkText(textWithoutRefs, usesLocalTextBackend ? 3500 : 9000);
       const isMultiChunk = chunks.length > 1;
       if (isMultiChunk) {
@@ -1906,11 +2091,41 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
       const _initialMeta = `${effectiveGrade} - ${effectiveLanguage} ${textFormat !== 'Standard Text' ? `(${textFormat})` : ''}${isMultiChunk ? ` (${t('meta.multi_part') || 'Multi-part'})` : ''}`;
       metaInfo = _initialMeta;
+      const citationAudit = {
+          version: ADAPTED_CITATION_AUDIT_VERSION,
+          policy: 'exact-marker-sequence-with-protected-tokens',
+          enabled: !!keepCitations,
+          sourceCitationCount: extractAdaptationCitationLedgerLocal(textWithoutRefs).entries.length,
+          hasReferenceTrailer: !!extractedReferences,
+          status: 'valid',
+          fallbackCount: 0,
+          stages: []
+      };
+      const recordCitationStage = (stage, result, action, attempts = 1) => {
+          if (!keepCitations) return;
+          citationAudit.stages.push({
+              stage,
+              valid: !!result?.valid,
+              beforeCount: Number(result?.conservation?.beforeCount ?? result?.beforeCount ?? 0),
+              afterCount: Number(result?.conservation?.afterCount ?? result?.afterCount ?? 0),
+              action,
+              attempts
+          });
+          if (!result?.valid) {
+              citationAudit.status = 'fallback-used';
+              citationAudit.fallbackCount++;
+          }
+      };
+      const citationAuditSnapshot = () => ({
+          ...citationAudit,
+          stages: citationAudit.stages.map(stage => ({ ...stage }))
+      });
       const _itemConfig = {
           grade: effectiveGrade,
           language: effectiveLanguage,
           standards: standardsPromptString || "",
           interests: studentInterests,
+          citationAudit: citationAuditSnapshot(),
           ...(configOverride.rosterGroupId ? {
               rosterGroupId: configOverride.rosterGroupId,
               rosterGroupName: configOverride.rosterGroupName,
@@ -1933,7 +2148,59 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       }
       let fullTargetText = "";
       let fullEnglishText = "";
-      const delimiter = "--- ENGLISH TRANSLATION ---";
+      let bilingualTranslationValid = true;
+      let citationWarningShown = false;
+      const cleanModelText = (value) => String(value || "")
+          .replace(/^```[a-zA-Z]*\n/i, '')
+          .replace(/^```\s*/, '')
+          .replace(/```\s*$/, '')
+          .trim();
+      const warnCitationFallback = (stage) => {
+          warnLog(`[CitationConservation] ${stage} changed or removed a citation; retained the last verified text instead.`);
+          if (!citationWarningShown) {
+              citationWarningShown = true;
+              addToast('A rewrite changed a source citation, so AlloFlow kept the last citation-safe text.', 'warning');
+          }
+      };
+      const runCitationGuardedTransform = async (sourceText, transform, stage, fallbackText = sourceText) => {
+          const original = String(sourceText || '');
+          const envelope = keepCitations
+              ? protectAdaptationCitations(original)
+              : { text: original, citations: [], original };
+          const maxAttempts = keepCitations ? 2 : 1;
+          let finalCheck = null;
+          for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+              const raw = await transform(envelope.text, attempt > 1);
+              const cleaned = cleanModelText(raw);
+              if (!keepCitations) {
+                  return { text: cleaned, valid: true, attempts: attempt };
+              }
+              const restored = restoreProtectedAdaptationCitations(envelope, cleaned);
+              finalCheck = restored;
+              if (restored.valid) {
+                  recordCitationStage(stage, restored, 'accepted', attempt);
+                  return { text: restored.text, valid: true, attempts: attempt };
+              }
+          }
+          recordCitationStage(stage, finalCheck || {
+              valid: false,
+              conservation: validateAdaptationCitationConservation(original, '')
+          }, 'pre-transform-fallback', maxAttempts);
+          warnCitationFallback(stage);
+          return { text: String(fallbackText || original), valid: false, attempts: maxAttempts };
+      };
+      const translateCitationSafe = async (sourceText, stage) => {
+          return runCitationGuardedTransform(sourceText, async (protectedText, isRetry) => callGemini(`
+              Translate the following ${effectiveLanguage} text into English.
+              Maintain the formatting, tone, emojis, and every protected citation token exactly.
+              Each token matching ⟦ALLOFLOW_CITATION_####⟧ must appear exactly once.
+              Do not add, remove, duplicate, reorder, translate, or alter a citation token.
+              Return ONLY the English translation.
+              ${isRetry ? 'RETRY: The prior response failed citation validation. Copy every protected token exactly once.' : ''}
+              Text to Translate:
+              "${protectedText}"
+          `), stage, sourceText);
+      };
       for (let i = 0; i < chunks.length; i++) {
           const isLast = i === chunks.length - 1;
           if (isMultiChunk) {
@@ -1948,61 +2215,56 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           const chunkIntro = isMultiChunk
               ? `Rewrite the following PART ${i+1} of ${chunks.length} of a text for ${effectiveGrade} level in ${effectiveLanguage}.`
               : `Rewrite the following text for ${effectiveGrade} level in ${effectiveLanguage}.`;
-          const chunkTargetPrompt = `
-            ${chunkIntro}
-            ${complexityGuide}
-            ${lengthInstruction}
-            ${formatInstruction}
-            ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
-            ${useEmojis ? '- Use emojis liberally throughout the text to provide visual cues and engagement (e.g., "The sun ☀️ is a star ⭐").' : '- Do not use emojis.'}
-            ${keepCitations ? '- CITATION PRESERVATION (CRITICAL): The source text uses specific markdown citations like [⁽¹⁾](url). You MUST retain this exact format (Superscript in brackets + Link). Do NOT convert to [1], (1), or loose text. Ensure links remain clickable.' : '- Remove all hyperlinks and citations.'}
-            - DO NOT emit any "Sources", "References", "Bibliography", "Verified Sources", "Références", "Sources du texte", "Referencias", "Quellen", or equivalent section. The references list is appended automatically by the app — any references section you produce will be discarded and may cause duplicates.
-            ${includeCharts ? `- DATA VISUALIZATION: Analyze the text for structured data.
-            1. If quantitative comparisons exist, insert a Chart on its own line (NO line breaks inside brackets):
-               [[CHART: { "type": "bar", "title": "Title", "data": [{"label": "A", "value": 10}, {"label": "B", "value": 20}] }]]
-            2. If a single percentage is highlighted, use a Donut Chart:
-               [[CHART: { "type": "donut", "title": "Title", "percentage": 75, "label": "75%" }]]
-            3. If qualitative data exists, use a Markdown Table.
-            4. You may include both if appropriate.` : ''}
-            ${studentInterests.length > 0 ? `- CRITICAL: Explain key concepts using analogies and examples related to: "${studentInterests.join(', ')}" to increase engagement and relevance.` : ''}
-            ${standardsPromptString ? `- CRITICAL: Align the text complexity and skill focus to meet Target Standards: "${standardsPromptString}".` : ''}
-            ${dokLevel ? `- Target Webb's Depth of Knowledge (DOK): ${dokLevel}` : ''}
-            ${dialectInstruction}
-            ${differentiationContext}
-            CRITICAL: Return ONLY the ${effectiveLanguage} text. Do NOT provide an English translation yet.
-            Text Segment: "${chunks[i]}"
-          `;
-          let targetResult = await callGemini(chunkTargetPrompt);
+          const targetTransform = await runCitationGuardedTransform(chunks[i], async (protectedSegment, isRetry) => callGemini(`
+              ${chunkIntro}
+              ${complexityGuide}
+              ${lengthInstruction}
+              ${formatInstruction}
+              ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
+              ${useEmojis ? '- Use emojis liberally throughout the text to provide visual cues and engagement (e.g., "The sun ☀️ is a star ⭐").' : '- Do not use emojis.'}
+              ${keepCitations
+                  ? '- CITATION PRESERVATION (CRITICAL): Citations are protected as tokens matching ⟦ALLOFLOW_CITATION_####⟧. Copy every token exactly once. Do not add, remove, duplicate, reorder, translate, or alter a token. The app restores the links after validation.'
+                  : '- Remove all hyperlinks and citations.'}
+              - DO NOT emit any "Sources", "References", "Bibliography", "Verified Sources", "Références", "Sources du texte", "Referencias", "Quellen", or equivalent section. The references list is appended automatically by the app — any references section you produce will be discarded and may cause duplicates.
+              ${includeCharts ? `- DATA VISUALIZATION: Analyze the text for structured data.
+              1. If quantitative comparisons exist, insert a Chart on its own line (NO line breaks inside brackets):
+                 [[CHART: { "type": "bar", "title": "Title", "data": [{"label": "A", "value": 10}, {"label": "B", "value": 20}] }]]
+              2. If a single percentage is highlighted, use a Donut Chart:
+                 [[CHART: { "type": "donut", "title": "Title", "percentage": 75, "label": "75%" }]]
+              3. If qualitative data exists, use a Markdown Table.
+              4. You may include both if appropriate.` : ''}
+              ${studentInterests.length > 0 ? `- CRITICAL: Explain key concepts using analogies and examples related to: "${studentInterests.join(', ')}" to increase engagement and relevance.` : ''}
+              ${standardsPromptString ? `- CRITICAL: Align the text complexity and skill focus to meet Target Standards: "${standardsPromptString}".` : ''}
+              ${dokLevel ? `- Target Webb's Depth of Knowledge (DOK): ${dokLevel}` : ''}
+              ${dialectInstruction}
+              ${differentiationContext}
+              ${isRetry ? 'RETRY: The prior response failed citation validation. Copy every protected token exactly once.' : ''}
+              CRITICAL: Return ONLY the ${effectiveLanguage} text. Do NOT provide an English translation yet.
+              Text Segment: "${protectedSegment}"
+          `), `adapt-section-${i + 1}`, chunks[i]);
+          let targetResult = targetTransform.text;
           if (!isMultiChunk && usesLocalTextBackend) {
               setGenerationTaskProgress(1, 1, t('status_steps.adapting_text'));
           }
-          targetResult = String(targetResult || "").replace(/^```[a-zA-Z]*\n/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
           fullTargetText += targetResult + "\n\n";
           if (effectiveLanguage !== 'English') {
               if (isMultiChunk) setGenerationStep(`Translating section ${i + 1} of ${chunks.length}...`);
               else setGenerationStep(t('status_steps.translating') || 'Translating...');
-              const chunkTransPrompt = `
-                Translate the following ${effectiveLanguage} text into English.
-                Maintain the formatting, tone, emojis, and citation markers exactly.
-                Return ONLY the English translation.
-                Text to Translate:
-                "${targetResult}"
-              `;
-              let transResult = await callGemini(chunkTransPrompt);
-              transResult = String(transResult || "").replace(/^```[a-zA-Z]*\n/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
-              fullEnglishText += transResult + "\n\n";
+              const translation = await translateCitationSafe(targetResult, `translate-section-${i + 1}`);
+              if (translation.valid && bilingualTranslationValid) {
+                  fullEnglishText += translation.text + "\n\n";
+              } else {
+                  bilingualTranslationValid = false;
+                  fullEnglishText = "";
+              }
           } else {
               fullEnglishText += targetResult + "\n\n";
           }
           let currentTargetDisplay = fullTargetText.trim();
           let currentEnglishDisplay = fullEnglishText.trim();
-          if (isLast && extractedReferences && keepCitations) {
-              currentTargetDisplay += `\n\n${extractedReferences}`;
-          }
-          let currentTotal = currentTargetDisplay;
           if (keepCitations) {
-              currentTotal = sanitizeTruncatedCitations(currentTotal);
-              currentTotal = normalizeCitationPlacement(currentTotal);
+              currentTargetDisplay = sanitizeTruncatedCitations(currentTargetDisplay);
+              currentTargetDisplay = normalizeCitationPlacement(currentTargetDisplay);
               if (effectiveLanguage !== 'English') {
                   currentEnglishDisplay = sanitizeTruncatedCitations(currentEnglishDisplay);
                   currentEnglishDisplay = normalizeCitationPlacement(currentEnglishDisplay);
@@ -2016,12 +2278,19 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           // fallback tolerates a stale helpers module during CDN skew.
           const _mdBounds = (window.AlloModules && window.AlloModules.TextPipelineHelpers
               && window.AlloModules.TextPipelineHelpers.normalizeMarkdownBlockBoundaries) || ((s) => s);
-          currentTotal = _mdBounds(currentTotal);
+          currentTargetDisplay = _mdBounds(currentTargetDisplay);
           currentEnglishDisplay = _mdBounds(currentEnglishDisplay);
-          if (effectiveLanguage !== 'English') {
-              currentTotal += `\n\n${delimiter}\n\n${currentEnglishDisplay}`;
-          }
-          const updatedItem = { ...tempItem, data: currentTotal };
+          const currentTotal = composeAdaptedLeveledText(
+              currentTargetDisplay,
+              currentEnglishDisplay,
+              isLast && keepCitations ? extractedReferences : '',
+              effectiveLanguage !== 'English' && bilingualTranslationValid
+          );
+          const updatedItem = {
+              ...tempItem,
+              data: currentTotal,
+              config: { ..._itemConfig, citationAudit: citationAuditSnapshot() }
+          };
           if (switchView || (generatedContent && generatedContent.id === newId)) {
               setGeneratedContent(updatedItem);
           }
@@ -2035,24 +2304,51 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           const maxWords = targetWords * LENGTH_THRESHOLDS.MAX_VARIANCE;
           let repaired = null;
           const repairCtx = `Grade: ${effectiveGrade}, Topic: ${sourceTopic || "General"}, Format: ${textFormat}`;
+          let repairIssue = null;
           if (wc < minWords) {
               setGenerationStep(t('status.text_expanding'));
-              repaired = await repairGeneratedText(trimmedTarget, 'too_short', targetWords, repairCtx, keepCitations);
+              repairIssue = 'too_short';
           } else if (wc > maxWords) {
               setGenerationStep(t('status.text_condensing') || 'Condensing text...');
-              repaired = await repairGeneratedText(trimmedTarget, 'too_long', targetWords, repairCtx, keepCitations);
+              repairIssue = 'too_long';
+          }
+          if (repairIssue) {
+              const guardedRepair = await runCitationGuardedTransform(
+                  trimmedTarget,
+                  (protectedText, isRetry) => repairGeneratedText(
+                      protectedText,
+                      repairIssue,
+                      targetWords,
+                      `${repairCtx}. Protected citation tokens matching ⟦ALLOFLOW_CITATION_####⟧ must each remain exactly once.${isRetry ? ' This is a retry after citation validation failed.' : ''}`,
+                      false
+                  ),
+                  `length-repair-${repairIssue}`,
+                  trimmedTarget
+              );
+              if (guardedRepair.valid && guardedRepair.text.trim() !== trimmedTarget) {
+                  repaired = guardedRepair.text.trim();
+              }
+          }
+          if (repaired) {
+              let repairedEnglish = '';
+              if (effectiveLanguage !== 'English') {
+                  setGenerationStep(t('status_steps.translating') || 'Translating refined text...');
+                  const repairedTranslation = await translateCitationSafe(repaired, 'length-repair-translation');
+                  if (repairedTranslation.valid) {
+                      repairedEnglish = repairedTranslation.text;
+                  } else {
+                      // Keep the previously validated target/English pair. Never
+                      // combine a repaired target with a stale English translation.
+                      repaired = null;
+                  }
+              }
           }
           if (repaired) {
               fullTargetText = repaired;
-              let repairedTarget = fullTargetText.trim();
-              let repairedEnglish = fullEnglishText.trim();
-              if (extractedReferences && keepCitations) {
-                  repairedTarget += `\n\n${extractedReferences}`;
-              }
-              let repairedTotal = repairedTarget;
+              let repairedTarget = repaired.trim();
               if (keepCitations) {
-                  repairedTotal = sanitizeTruncatedCitations(repairedTotal);
-                  repairedTotal = normalizeCitationPlacement(repairedTotal);
+                  repairedTarget = sanitizeTruncatedCitations(repairedTarget);
+                  repairedTarget = normalizeCitationPlacement(repairedTarget);
                   if (effectiveLanguage !== 'English') {
                       repairedEnglish = sanitizeTruncatedCitations(repairedEnglish);
                       repairedEnglish = normalizeCitationPlacement(repairedEnglish);
@@ -2061,13 +2357,21 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               // Same structural Markdown repair as the streamed path above.
               const _mdBoundsRepair = (window.AlloModules && window.AlloModules.TextPipelineHelpers
                   && window.AlloModules.TextPipelineHelpers.normalizeMarkdownBlockBoundaries) || ((s) => s);
-              repairedTotal = _mdBoundsRepair(repairedTotal);
+              repairedTarget = _mdBoundsRepair(repairedTarget);
               repairedEnglish = _mdBoundsRepair(repairedEnglish);
-              if (effectiveLanguage !== 'English') {
-                  repairedTotal += `\n\n${delimiter}\n\n${repairedEnglish}`;
-              }
+              const repairedTotal = composeAdaptedLeveledText(
+                  repairedTarget,
+                  repairedEnglish,
+                  keepCitations ? extractedReferences : '',
+                  effectiveLanguage !== 'English'
+              );
               metaInfo = `${effectiveGrade} - ${effectiveLanguage} ${textFormat !== 'Standard Text' ? `(${textFormat})` : ''} (Refined)`;
-              const refinedItem = { ...tempItem, data: repairedTotal, meta: metaInfo };
+              const refinedItem = {
+                  ...tempItem,
+                  data: repairedTotal,
+                  meta: metaInfo,
+                  config: { ..._itemConfig, citationAudit: citationAuditSnapshot() }
+              };
               if (switchView || (generatedContent && generatedContent.id === newId)) {
                   setGeneratedContent(refinedItem);
               }
@@ -5203,4 +5507,12 @@ Return ONLY JSON:
 };
 
 window.AlloModules = window.AlloModules || {};
-window.AlloModules.GenDispatcher = { handleGenerate };
+window.AlloModules.GenDispatcher = {
+  handleGenerate,
+  splitAdaptationReferences,
+  extractAdaptationCitationLedgerLocal,
+  validateAdaptationCitationConservation,
+  protectAdaptationCitations,
+  restoreProtectedAdaptationCitations,
+  composeAdaptedLeveledText
+};

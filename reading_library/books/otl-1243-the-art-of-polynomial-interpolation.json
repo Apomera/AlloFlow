@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1243-the-art-of-polynomial-interpolation",
+  "title": "The Art of Polynomial Interpolation",
+  "description": "The inspiration for this text grew out of a simple question that emerged over a number of years of teaching math to Middle School, High School and College students. Practically speaking, what is the origin of a particular polynomial? So much time is spent analyzing, factoring, simplifying and graphing polynomials that it is easy to lose sight of the fact that polynomials have a wealth of practical uses. Exploring the techniques of interpolating data allows us to view the development and birth of a polynomial. This text is focused on laying a foundation for understanding and applying several common forms of polynomial interpolation. The principal goals of the text are: Breakdown the process of developing polynomials to demonstrate and give the student a feel for the process and meaning of developing estimates of the trend (s) a collection of data may represent. Introduce basic matrix algebra to assist students with understanding the process without getting bogged down in purely manual calculations. Some manual calculations have been included, however, to assist with understanding the concept. Assist students in building a basic foundation allowing them to add additional techniques, of which there are many, not covered in this text.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Analysis",
+    "Mathematics - Applied"
+  ],
+  "authors": [
+    "Stuart Murphy - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Pennsylvania State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-art-of-polynomial-interpolation"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The inspiration for this text grew out of a simple question that emerged over a number of years of teaching math to Middle School, High School and College students. Practically speaking, what is the origin of a particular polynomial? So much time is spent analyzing, factoring, simplifying and graphing polynomials that it is easy to lose sight of the fact that polynomials have a wealth of practical uses. Exploring the techniques of interpolating data allows us to view the development and birth of a polynomial. This text is focused on laying a foundation for understanding and applying several common forms of polynomial interpolation. The principal goals of the text are: Breakdown the process of developing polynomials to demonstrate and give the student a feel for the process and meaning of developing estimates of the trend (s) a collection of data may represent. Introduce basic matrix algebra to assist students with understanding the process without getting bogged down in purely manual calculations. Some manual calculations have been included, however, to assist with understanding the concept. Assist students in building a basic foundation allowing them to add additional techniques, of which there are many, not covered in this text."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 217
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1243",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

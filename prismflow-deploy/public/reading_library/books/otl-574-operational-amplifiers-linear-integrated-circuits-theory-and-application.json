@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-574-operational-amplifiers-linear-integrated-circuits-theory-and-application",
+  "title": "Operational Amplifiers & Linear Integrated Circuits: Theory and Application - 3e",
+  "description": "The goal of this text, as its name implies, is to allow the reader to become proficient in the analysis and design of circuits utilizing modern linear ICs. It progresses from the fundamental circuit building blocks through to analog/digital conversion systems. The text is intended for use in a second year Operational Amplifiers course at the Associate level, or for a junior level course at the Baccalaureate level. In order to make effective use of this text, students should have already taken a course in basic discrete transistor circuits, and have a solid background in algebra and trigonometry, along with exposure to phasors. Calculus is used in certain sections of the text, but for the most part, its use is kept to a minimum. For students without a calculus background, these sections may be skipped without a loss of continuity. (The sole exception to this being Chapter Ten, Integrators and Differentiators, which hinges upon knowledge of calculus.) There is also a lab manual for this textbook.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology - Electrical Engineering"
+  ],
+  "authors": [
+    "James Fiore - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "dissidents",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/operational-amplifiers-linear-integrated-circuits-theory-and-application-3e"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The goal of this text, as its name implies, is to allow the reader to become proficient in the analysis and design of circuits utilizing modern linear ICs. It progresses from the fundamental circuit building blocks through to analog/digital conversion systems. The text is intended for use in a second year Operational Amplifiers course at the Associate level, or for a junior level course at the Baccalaureate level. In order to make effective use of this text, students should have already taken a course in basic discrete transistor circuits, and have a solid background in algebra and trigonometry, along with exposure to phasors. Calculus is used in certain sections of the text, but for the most part, its use is kept to a minimum. For students without a calculus background, these sections may be skipped without a loss of continuity. (The sole exception to this being Chapter Ten, Integrators and Differentiators, which hinges upon knowledge of calculus.) There is also a lab manual for this textbook."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 189
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "574",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

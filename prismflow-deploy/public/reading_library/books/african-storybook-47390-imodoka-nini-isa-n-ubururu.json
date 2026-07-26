@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47390-imodoka-nini-isa-n-ubururu",
+  "title": "Imodoka nini isa n' ubururu",
+  "description": "Kabura na nyina wiwe bari barindiriye imodoka nini isa n'ubururu kugira ibatware mu gisagara.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Mecelin Kakoro"
+  ],
+  "illustrators": [
+    "Mango Tree"
+  ],
+  "translators": [
+    "Frédérique Butoyi"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Mecelin Kakoro",
+      "role": "Author"
+    },
+    {
+      "name": "Frédérique Butoyi",
+      "role": "Translation"
+    },
+    {
+      "name": "Mango Tree",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Mecelin Kakoro (Author); Frédérique Butoyi (Translation); Mango Tree (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47390",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-67a5b2aaa51bac83",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/11446.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11446.png",
+      "text": "Hariho imodoka imwe gusa mu kigwati kwa Kabura. Yari imodoka nini isa n' ubururu. Yarahinda cane gose.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=1",
+      "sourceDigest": "sha256:60dd81977457da5e4b32cbe84680f5314ddfc63446c3ffa18a55da3358c8a8c9"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11447.png",
+      "text": "Nyina aramubwira Kabura ati, \"Ejo tuzogenda mu Gisagara. Nzokugurira umwambaro w'shuri.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=2",
+      "sourceDigest": "sha256:98c5d7933664e621c94d9a20c1f8ac14d0e0d9d354538e0b946cad79a0636962"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11448.png",
+      "text": "Kabura yararyohewe cane. Bipfuza gufata urugendo m'imodoka nini isa n'ubururu. Muri iryo joro, Kabura ntiyaraye asinziriye na gato.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=3",
+      "sourceDigest": "sha256:f0173c75c63e1416e8251c84094e96dd54371321ec339a574c7780b53a666fe7"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11449.png",
+      "text": "Mugatondo nyina wiwe aje kumuvyura ngo bagende, Kabura yasanze yamaze kwambara.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=4",
+      "sourceDigest": "sha256:538afde2d5236ca2445061ce2c36b307879394cb602147b5701a0b618ec78b4c"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11450.png",
+      "text": "Kabura na nyina wiwe baragenda gutegera ku gituro c'imodoka. Barayirindiye ariko imodoka ntiyaje.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=5",
+      "sourceDigest": "sha256:5277f167248a1a0a08a3e85feece5a116136909ce56e9592170c8fb58ba1f0d5"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11451.png",
+      "text": "Abandi bantu baraje ku gituro c'imodoka. Baridoga kuko imodoka yatevye. Babazanya bati, \"Imodoka iri hehe?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=6",
+      "sourceDigest": "sha256:0cac1131b627359b2a7ef2ee899a6569c85bf55dcb3d4167eb87cea7ee1f8cfa"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11452.png",
+      "text": "Kabura yari yihebuye. Yariyumvira ati, \"Ntitugishoboye kuja mu gisagara. Sinzoshobora kuronka umwambaro w'ishure.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=7",
+      "sourceDigest": "sha256:ea383eb031aa762801b06908b1f3f8f223673961f962ff79dd4541b8b4be3e98"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11453.png",
+      "text": "Abantu bamwe barabihevye bagenda muhira. Kabura ararira cane. Ntiyashaka kugenda. Nyina wiwe acaramubwira ati, \"Reka tuyirindire akanya gato.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=8",
+      "sourceDigest": "sha256:caaac2a25bd070afa2aa9571a807e53bf8d7c915883f8a08f806495bfb47ef33"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11454.png",
+      "text": "Buno nyene bumva igihinda. Babona ivumbi hejuru. Imodoka yariko iraza!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=9",
+      "sourceDigest": "sha256:4f45b76090770b866fcca311d1db8ed98954d533b78564a9bab3ab95aa3c68c7"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11455.png",
+      "text": "Ariko imodoka ntiyasa n'ubururu. Yari is n'ibara ritukura kandi ntoyi. Abantu ntibashaka kwinjira mu modoka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=10",
+      "sourceDigest": "sha256:a57c8a746f9d2663786349802721c25926aa61f72fe8af4f8bf98b7a48c48d99"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11456.png",
+      "text": "\"Injira! Injira!\" umushoferi asemerera. \"Twacerewe cane uno munsi,\" arahamagara.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=11",
+      "sourceDigest": "sha256:2bc75526ee0adf28c6c4048b7fe22d74a9db4a6ccf71224c5cd2983eec1a8217"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11457.png",
+      "text": "Kabura na nyina wiwe binjiye ubwambere. Munyuma n'abandi baciye binjira muri ya modoka itukura kandi ntoyi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=12",
+      "sourceDigest": "sha256:d01821ee5ce6374dd3a46f013513549274f22f9f9b6e4d7d2b7805c1886b67ab"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11458.png",
+      "text": "Kabura yarabira mw'idirisha. Akabona abantu benshi ku gituro c'imodoka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=13",
+      "sourceDigest": "sha256:dffe4fd8bab96ed352988b167cb493178e899390a5a0a9c178285ce1bf45cd2f"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11459.png",
+      "text": "Abantu benshi bariko bariruka kurondera imodoka. Kandi bari bacerewe cane. Imodoka itukura yari yuzuye. Yabandanije mu gisagara.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=14",
+      "sourceDigest": "sha256:d8fdc699a22c4c5578d7a1bf5801185f8e348066689b99e38a62a29d03585227"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11460.png",
+      "text": "Nyina wa Kabura abaza umushoferi ati, \"Ya modoka nini isa n'ubururu iri hehe?\" Umushoferie arishura ati, \"Yarakwamye, turiko tuirayikora, izoza ejo.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=15",
+      "sourceDigest": "sha256:e557f779a589dfc9c7307b53a1d815573e180b66c46103e2f0c3953c7388b6f2"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11461.png",
+      "text": "Kabura ntiyaranezwe nukwo isa. Ntiyaranezwe nuko ingana. Muri vyose, yararajwe ishinga nuko yabandanije mu gisagara!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47390#page=16",
+      "sourceDigest": "sha256:6057c5a230a182659ad3fb387d20d75f3e9355a1455e9ada7c17d2fce624b327"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 228
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:492bfe85b5e122df419218f8d11720d5e3bdd2181c2f51d3b65c2016e70f0413"
+  }
+}

@@ -42,6 +42,37 @@ const canonicalAuditRawDed = new Function(
     + '\nreturn _canonicalAuditRawDed;'
 )();
 
+const coordinatorStart = source.indexOf('  const _createAutoFixChunkStateCoordinator = (options) => {');
+const coordinatorEnd = source.indexOf('\n  const _cloneChunkStateForInvocation', coordinatorStart);
+if (coordinatorStart < 0 || coordinatorEnd < 0) throw new Error('auto-fix chunk-state coordinator markers missing');
+const createAutoFixChunkStateCoordinator = new Function(
+  source.slice(coordinatorStart, coordinatorEnd) + '\nreturn _createAutoFixChunkStateCoordinator;'
+)();
+const normalizeEpochStart = source.indexOf('  var _normalizeDocumentEpoch = function (value) {');
+const normalizeEpochEnd = source.indexOf('\n  var _readCurrentDocumentEpoch', normalizeEpochStart);
+const cloneStateStart = source.indexOf('  const _cloneChunkStateForInvocation = (state) =>');
+const cloneStateEnd = source.indexOf('\n  const _autoFixChunkStateCoordinator', cloneStateStart);
+const refixLeaseStart = source.indexOf('  const _createRefixChunkStateLease = (options) => {');
+const refixLeaseEnd = source.indexOf('\n\n  // Cheap fingerprint', refixLeaseStart);
+const fingerprintStart = source.indexOf('  const _docFingerprint = (html) =>');
+const fingerprintEnd = source.indexOf('\n', fingerprintStart);
+const selectVersionStart = source.indexOf('  const selectChunkVersion = (chunkIndex, version, options = {}) => {');
+const retireStateStart = source.indexOf('  const retireChunkState = (options = {}) => {');
+const selectVersionEnd = retireStateStart;
+const retireStateEnd = source.indexOf('\n\n  //', retireStateStart);
+if ([normalizeEpochStart, normalizeEpochEnd, cloneStateStart, cloneStateEnd, refixLeaseStart, refixLeaseEnd, fingerprintStart, fingerprintEnd, selectVersionStart, selectVersionEnd, retireStateStart, retireStateEnd].some((value) => value < 0)) {
+  throw new Error('chunk selection harness markers missing');
+}
+const createChunkSelectionHarness = new Function('initialState', 'readEpoch',
+  source.slice(normalizeEpochStart, normalizeEpochEnd) + '\n'
+    + 'let _chunkState = initialState;\nconst _readCurrentDocumentEpoch = readEpoch;\n'
+    + source.slice(cloneStateStart, cloneStateEnd) + '\n'
+    + source.slice(refixLeaseStart, refixLeaseEnd) + '\n'
+    + source.slice(fingerprintStart, fingerprintEnd) + '\n'
+    + source.slice(selectVersionStart, selectVersionEnd) + '\n'
+    + source.slice(retireStateStart, retireStateEnd)
+    + '\nreturn { selectChunkVersion, retireChunkState, readState: () => _chunkState };'
+);
 const validInitial = {
   score: 85,
   summary: 'The document has complete evidence for the required audit fields.',
@@ -60,6 +91,132 @@ const validInitial = {
 };
 
 describe('deep remediation pipeline regression fixes', () => {
+  it('publishes chunk state only from the latest live auto-fix invocation', () => {
+    let liveEpoch = 7;
+    let published = { tag: 'seed' };
+    const coordinator = createAutoFixChunkStateCoordinator({
+      getDocumentEpoch: () => liveEpoch,
+      setState: (next) => { published = next; },
+    });
+    const first = coordinator.begin({ documentEpoch: 7 });
+    const second = coordinator.begin({ documentEpoch: 7 });
+    expect(first.signal.aborted).toBe(true);
+    expect(coordinator.publish(first, { tag: 'old' })).toBe(false);
+    expect(coordinator.publish(second, { tag: 'new' })).toBe(true);
+    expect(published).toEqual({ tag: 'new' });
+    coordinator.release(first);
+    expect(coordinator.publish(second, { tag: 'still-current' })).toBe(true);
+    liveEpoch = 8;
+    expect(coordinator.publish(second, { tag: 'wrong-epoch' })).toBe(false);
+    const external = new AbortController();
+    const third = coordinator.begin({ documentEpoch: 8, signal: external.signal });
+    external.abort();
+    expect(third.signal.aborted).toBe(true);
+    expect(coordinator.publish(third, { tag: 'aborted' })).toBe(false);
+    const missingEpoch = coordinator.begin({ documentEpoch: null });
+    expect(coordinator.publish(missingEpoch, { tag: 'unstamped' })).toBe(false);
+
+    const autoFixStart = source.indexOf('  const autoFixAxeViolations = async ');
+    const autoFixEnd = source.indexOf('\n  const refixChunk = async', autoFixStart);
+    expect(autoFixStart).toBeGreaterThan(-1);
+    expect(autoFixEnd).toBeGreaterThan(autoFixStart);
+    const autoFixBlock = source.slice(autoFixStart, autoFixEnd);
+    expect(autoFixBlock).toContain('let _invocationChunkState =');
+    expect(autoFixBlock).toContain('let _stateToPublish = _pendingChunkState || (usedSelectiveRefix ? _invocationChunkState : null);');
+    expect(autoFixBlock).toContain('_autoFixChunkStateCoordinator.publish(_chunkStateOwner, _stateToPublish)');
+    expect(autoFixBlock).toContain('_chunkSessionCompletion && _chunkInvocationIsCurrent()');
+    expect(autoFixBlock).toContain('chunkState: _chunkResultIsCurrent ? _invocationChunkState : null');
+    expect(autoFixBlock).toContain('const _callChunkGemini = async function()');
+    expect(autoFixBlock).toContain('stale: true,');
+    expect(autoFixBlock).not.toContain('_chunkState = _pendingChunkState');
+  });
+  it('selects live section versions atomically without exposing shared state aliases', () => {
+    let liveEpoch = 11;
+    const initialState = {
+      documentEpoch: 11, runId: 'run-11', runSequence: 11,
+      preamble: '<html><body>', postamble: '</body></html>',
+      originalChunks: ['<p>original A</p>', '<p>original B</p>'],
+      fixedChunks: ['<p>fixed A</p>', '<p>fixed B</p>'],
+      chunkResults: [
+        { html: '<p>fixed A</p>', score: 90, integrityCheck: { passed: true, reason: 'ok' } },
+        { html: '<p>fixed B</p>', score: 91, integrityCheck: { passed: true, reason: 'ok' } },
+      ],
+      violationInstructions: '', timestamp: 1,
+    };
+    const harness = createChunkSelectionHarness(initialState, () => liveEpoch);
+    const currentHtml = '<html><body>\n<p>fixed A</p>\n<p>fixed B</p>\n</body></html>';
+    const rejected = harness.selectChunkVersion(0, 'original', { currentHtml, documentEpoch: 11 });
+    expect(rejected.stale).toBe(false);
+    expect(rejected.html).toContain('<p>original A</p>');
+    expect(harness.readState().fixedChunks[0]).toBe('<p>original A</p>');
+    rejected.chunkState.fixedChunks[1] = '<p>external mutation</p>';
+    rejected.chunkState.chunkResults[0].integrityCheck.passed = false;
+    expect(harness.readState().fixedChunks[1]).toBe('<p>fixed B</p>');
+    expect(harness.readState().chunkResults[0].integrityCheck.passed).toBe(true);
+    const restored = harness.selectChunkVersion(0, 'fixed', { currentHtml: rejected.html, documentEpoch: 11 });
+    expect(restored.stale).toBe(false);
+    expect(restored.html).toBe(currentHtml);
+    expect(harness.selectChunkVersion(0, 'original', { currentHtml: rejected.html, documentEpoch: 11 })).toMatchObject({ stale: true, reason: 'html-mismatch' });
+    liveEpoch = 12;
+    expect(harness.selectChunkVersion(0, 'original', { currentHtml, documentEpoch: 11 })).toMatchObject({ stale: true, reason: 'stale-owner' });
+    const oldEpochHarness = createChunkSelectionHarness({ ...initialState, documentEpoch: 10 }, () => 11);
+    expect(oldEpochHarness.selectChunkVersion(0, 'original', { currentHtml, documentEpoch: 11 })).toMatchObject({ stale: true, reason: 'epoch-mismatch' });
+    const unstampedHarness = createChunkSelectionHarness(initialState, () => null);
+    expect(unstampedHarness.selectChunkVersion(0, 'original', { currentHtml, documentEpoch: null })).toMatchObject({ stale: true, reason: 'stale-owner' });
+  });
+  it('retires stale chunk geometry without letting it block a live non-chunk repair', () => {
+    const staleEpochState = {
+      documentEpoch: 10,
+      preamble: '<html><body>',
+      postamble: '</body></html>',
+      originalChunks: ['<p>old</p>'],
+      fixedChunks: ['<p>old</p>'],
+      chunkResults: [{ html: '<p>old</p>' }],
+      violationInstructions: '',
+      timestamp: 1,
+    };
+    const staleEpochHarness = createChunkSelectionHarness(staleEpochState, () => 11);
+    expect(staleEpochHarness.retireChunkState({ currentHtml: '<html><body><p>live</p></body></html>', documentEpoch: 11 }))
+      .toEqual({ chunkState: null, stale: false });
+    expect(staleEpochHarness.readState()).toBeNull();
+
+    const staleHtmlHarness = createChunkSelectionHarness({ ...staleEpochState, documentEpoch: 11 }, () => 11);
+    expect(staleHtmlHarness.retireChunkState({ currentHtml: '<html><body><p>newer</p></body></html>', documentEpoch: 11 }))
+      .toEqual({ chunkState: null, stale: false });
+    expect(staleHtmlHarness.readState()).toBeNull();
+
+    const staleOwnerHarness = createChunkSelectionHarness({ ...staleEpochState, documentEpoch: 11 }, () => 12);
+    expect(staleOwnerHarness.retireChunkState({ currentHtml: '<html><body><p>live</p></body></html>', documentEpoch: 11 }))
+      .toMatchObject({ stale: true, reason: 'stale-owner' });
+    expect(staleOwnerHarness.readState()).not.toBeNull();
+  });
+  it('fails closed across refix, retry, resume, and fidelity-repair ownership boundaries', () => {
+    const refixStart = source.indexOf('  const refixChunk = async');
+    const refixEnd = source.indexOf('\n  //', refixStart + 10);
+    const refixBlock = source.slice(refixStart, refixEnd);
+    expect(refixBlock).toContain("Object.prototype.hasOwnProperty.call(options, 'documentEpoch')");
+    expect(refixBlock).toContain('getDocumentEpoch: _readCurrentDocumentEpoch');
+    expect(refixBlock).toContain('_normalizeDocumentEpoch(_refixLease.base.documentEpoch) === _refixDocumentEpoch');
+
+    const retargetStart = source.indexOf('  const retargetMissingWordsViaGemini = async');
+    const retargetEnd = source.indexOf('\n  //', retargetStart + 10);
+    const retargetBlock = source.slice(retargetStart, retargetEnd);
+    expect(retargetBlock).toContain('const summarizeRecovery = (candidateHtml) => {');
+    expect(retargetBlock).toContain("{ mode: 'faithful' }");
+    expect(retargetBlock).toContain('if (!_retargetLease.commit(null)) return _retargetStaleResult();');
+    expect(retargetBlock).toContain('chunkState: _cloneChunkStateForInvocation(_retargetChunkState)');
+    expect(source).toContain('return stateEpoch !== null && stateEpoch === liveEpoch');
+
+    expect(host).toContain('const _pdfFidelityRepairAbortCtrlRef = useRef(null);');
+    expect(host).toContain('isPdfHtmlCommitTokenCurrent(_repairToken)');
+    expect(host).toContain('signal: _repairAbortCtrl && _repairAbortCtrl.signal');
+    expect(host).toContain('if (_pdfFidelityRepairAbortCtrlRef.current) _pdfFidelityRepairAbortCtrlRef.current.abort()');
+    expect(host).toContain("htmlChars: String(nextHtml || '').length");
+    expect(source).toContain('htmlChars: result.html.length');
+    expect(source).toContain('chunkReport: null,');
+    const resumeAvailable = source.indexOf("window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-available'");
+    expect(source.lastIndexOf('_throwIfChunkInvocationStale();', resumeAvailable)).toBeGreaterThan(-1);
+  });
   it('rejects malformed initial audit objects instead of recalculating them to 100', () => {
     expect(() => validators.initial('{}')).toThrow(/missing required/i);
     expect(() => validators.initial('{"score":100}')).toThrow(/missing required/i);
@@ -91,7 +248,7 @@ describe('deep remediation pipeline regression fixes', () => {
     expect(canonicalAuditRawDed({ minor: [{ ruleId: 'form-label', issue: 'Repeated.', severity: 'minor', count: 4 }] })).toBe(30);
     expect(source).toContain('_requireStrictOutputAudit(parseAuditJson(result))');
     expect(source).toContain('_requireStrictOutputAudit(parseAuditJson(r))');
-    expect(source).toContain('_auditChunkMemo.delete(_shortKey)');
+    expect(source).toContain('_auditMemoDelete(_shortKey, _shortPrompt)');
     expect(validators.initial(JSON.stringify({ ...validInitial, score: undefined, documentLanguage: 'zh-Hant-TW' }))).toMatchObject({ documentLanguage: 'zh-Hant-TW' });
     expect(validators.initial(JSON.stringify({ ...validInitial, documentLanguage: 'und' }))).toMatchObject({ documentLanguage: 'und' });
     expect(() => validators.initial(JSON.stringify({ ...validInitial, documentLanguage: 'english' }))).toThrow(/metadata/i);
@@ -165,21 +322,23 @@ describe('deep remediation pipeline regression fixes', () => {
 
   it('re-audits any HTML mutation after the authoritative AI audit or downgrades it', () => {
     expect(source).toContain("const _htmlChangedAfterFinalAiAudit = typeof _finalAiAuditedHtml === 'string' && _finalAiAuditedHtml !== accessibleHtml;");
-    expect(source).toContain('try { _postMutationAudit = await auditOutputAccessibility(accessibleHtml); }');
+    expect(source).toContain('_postMutationAudit = await auditOutputAccessibility(accessibleHtml, { signal: _runAbortSignal });');
     expect(source).toContain("_finalAuditIncompleteReason = 'post-audit-html-changed';");
-    expect(source).toContain('|| _finalAiAuditedHtml !== accessibleHtml;');
+    expect(source).toContain('&& _finalAiAuditedHtml === accessibleHtml;');
   });
 
   it('owns batch reentry, host invalidation, interruption, retry, and cleanup as one generation', () => {
     expect(source).toContain('let _activeBatchRun = null;');
     expect(source).toContain('window.__alloPdfBatchGen');
-    expect(source).toContain('window.__alloPdfDocumentEpoch');
+    expect(source).toContain("Object.prototype.hasOwnProperty.call(w, '__alloPdfDocumentEpoch')");
+    expect(source).toContain('const _batchDocumentEpoch = () => {');
+    expect(source).toContain('return _readCurrentDocumentEpoch();');
     expect(host).toContain('window.__alloPdfBatchGen = (window.__alloPdfBatchGen || 0) + 1;');
     expect(host).toContain('window.__alloPdfDocumentEpoch = documentIntakeEpoch;');
     expect(host).toContain('if (window.__alloPdfBatchAbortCtrl) window.__alloPdfBatchAbortCtrl.abort();');
     expect(source).toContain('const _batchRunIsCurrent = () => _batchOwnerIsCurrent(owner);');
     expect(source).toContain('if (!_batchRunIsCurrent()) return;');
-    expect(source).toContain('if (!_batchAbortCtrl.signal.aborted && !_quotaStopped && failedFiles.length > 0)');
+    expect(source).toContain('if (!_batchAbortCtrl.signal.aborted && !_quotaStopped && !_batchHandoffStopped && failedFiles.length > 0)');
     expect(source).not.toContain('failedFiles.length < queue.length');
     expect(source).toContain("status: 'pending', error: null, interrupted: true");
     expect(source).toContain('pending: pending.length');
@@ -221,15 +380,18 @@ describe('deep remediation pipeline regression fixes', () => {
     expect(source).toContain('documentEpoch: _chunkDocumentEpoch');
     expect(source).toContain('window.__alloPdfFixAbortCtrl = _singleFixAbortCtrl;');
     expect(source).toContain('window.__alloPdfAbortSignal = _singleFixAbortCtrl.signal;');
-    expect(source).toContain('window.__alloPdfDocumentEpoch != null');
+    expect(source).toContain('if (_runDocumentEpoch === null)');
+    expect(source).toContain("ownershipError.code = 'ALLO_DOCUMENT_EPOCH_REQUIRED';");
     expect(source).toContain('seedId: _selectedSeedId, documentEpoch: _runDocumentEpoch');
   });
 
   it('keeps scores, cache identity, and disjoint slice counts evidence-bound', () => {
     expect(source).toContain("const _PIPELINE_PROMPT_VERSION = '20260723-1';");
     expect(source).toContain("const _auditMemoNamespace = () => _PIPELINE_PROMPT_VERSION + '|' + _cacheBackendId() + '|';");
-    expect(source).toContain('const _shortKey = _auditMemoNamespace() + _auditMemoHash(_shortPrompt);');
-    expect(source).toContain('const _memoKey = _auditMemoNamespace() + _auditMemoHash(prompt);');
+    expect(source).toContain('const _shortKey = await _auditMemoKey(_shortPrompt);');
+    expect(source).toContain('const _memoKey = await _auditMemoKey(prompt);');
+    expect(source).toContain("return _auditMemoNamespace() + (digest ? 'sha256:' + digest + ':' + exact.length : 'exact:' + exact);");
+    expect(source).toContain('rec && rec.prompt === prompt');
     expect(source).toContain(".replace(/<td class=\"fail\">\\u2014<\\/td>/g, '<td>\\u2014</td>')");
     expect(source).toContain('documentDigest: _runDocumentDigest');
     expect(source).toContain('triangulated.documentDigest = _runDocumentDigest;');

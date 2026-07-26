@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52459-khilaaf-u-dhexeeya-xirfadayaasha",
+  "title": "Khilaaf u dhexeeya xirfadayaasha",
+  "description": "Ma jiraan shaqooyin ka muhiimsan kuwo kale?",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Beatrice Inzikuru"
+  ],
+  "illustrators": [
+    ", Wiehan de Jager"
+  ],
+  "translators": [
+    "Mohamuud Mohamuud"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Beatrice Inzikuru",
+      "role": "Author"
+    },
+    {
+      "name": "Mohamuud Mohamuud",
+      "role": "Translation"
+    },
+    {
+      "name": ", Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Beatrice Inzikuru (Author); Mohamuud Mohamuud (Translation); , Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52459",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52459",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52459",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-cc90ce331a212b48",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/10274.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10274.png",
+      "text": "Tuulo gudaheeda waxaa ka jiray khilaaf u dhexeeya dadka xirfadaha kala duwan leh. Qof walba wuxuu u maleeyay in shaqadiisu tahay tan ugu muhiimsan!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52459#page=1",
+      "sourceDigest": "sha256:ed6bff016185ce624d5968f5105a748ed8a4188482be8fe0361b5541ff1b0692"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10278.png",
+      "text": "Macallinku wuxuu yiri inuu leeyahay xirfadda ugu muhiimsan. \"Haddii macallimiin la waayo ma tegi kartaan dugsi oo ma baran kartaan.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52459#page=2",
+      "sourceDigest": "sha256:3cfc6c93aad3d1886e4f94814aeaa20e01a2d54e38ac104ed72a50df5489ac05"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10276.png",
+      "text": "Dhismeeyuhu wuxuu yiri inuu leeyahay xirfadda ugu muhiimsan. \"Haddii dhismeeyayaal la waayo, ma heli lahaydeen dugsiyo aad ku barato ama guryo aad ku seexato.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52459#page=3",
+      "sourceDigest": "sha256:b35f62bfadc168ee2ae3b7b34e07dda58d59e546278be5e176929cba9f7a1b48"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10279.png",
+      "text": "Albaab-sameeyuhu wuxuu yiri inuu leeyahay xirfadda ugu muhiimsan. \"Haddii albaab-sameeyayaal la waayo, guryihiina iyo dugsiyadiina ma lahaan lahaayeen alaab.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52459#page=4",
+      "sourceDigest": "sha256:78f1108795d479caaa0a59b4d0497719484d14c32e8262a0dd29a601ac413206"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10277.png",
+      "text": "Dhakhtarku wuxuu sheegay inuu leeyahay xirfadda ugu muhiimsan. \"Haddii dhakhaatiir iyo kalkaaliyeyaal la waayo, waad xanuunsan lahaydeen oo waad dhiman lahaydeen.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52459#page=5",
+      "sourceDigest": "sha256:13fd70aac4fd281efae89086d409153af1566b2470939e4abdaf14d6629c42fd"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10275.png",
+      "text": "Beeraleydu waxay sheegtay inay leedahay xirfadda ugu muhiimsan. \"Haddii beeraley la waayo, cuntada aad cuni lahaydeen ma jirto.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52459#page=6",
+      "sourceDigest": "sha256:12b7efdbba23b3de013d6d47aefa7e7dd7e48a332b1e850ad1426d989b195dde"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10280.png",
+      "text": "Ardaygu wuxuu ku dooday in ardaydu leeyihiin shaqada ugu muhiimsan. \"Haddii arday la waayo, ma jiri lahaayeen macallimiin, dhismeeyayaal, dhakhaatiir, beeraley, ama albaab-sameeyayaal.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52459#page=7",
+      "sourceDigest": "sha256:5acc59f0671f4657bc12337a563c199958e13c07f656adf3d237e5f13d13461a"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10281.png",
+      "text": "Ugu dambeyntii, qof walba wuxuu ku heshiiyay in dhammaan xirfadaha ay muhiim yihiin. Waxaan u baahanahay macallimiin, dhismeeyayaal, dhakhaatiir, beeraley, iyo albaab-sameeyayaal. Laakiin qof walba waa inuu marka hore noqdaa arday!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52459#page=8",
+      "sourceDigest": "sha256:4d32d99417bce8e2e63e5015fcce3427bcae8a9d167adde185dfae137b584ab5"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 180
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:81f5e1c642accebddf1e9a0acaa98e69e033f3f7bf8e42f511ffa754c8d7dfaf"
+  }
+}

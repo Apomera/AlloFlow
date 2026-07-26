@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-33812-eloko-moko-te-ekokoma",
+  "title": "Eloko moko te ekokoma",
+  "description": "Mokomi lisapo oyo azali elenge oyo akomituna po etali libota naye. (Lisapo na bandakisa esalemaki na sanza ya motoba na mobu tuku mibale na zomi libwa na tango ya bopemi ya mosala, na lisalisi ya Sophia town Community Psychological Services, na Johannesburg).",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Suzette T"
+  ],
+  "illustrators": [
+    "Suzette T"
+  ],
+  "translators": [
+    "Guillain Sompa, Theresa Nyemba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Suzette T",
+      "role": "Author"
+    },
+    {
+      "name": "Guillain Sompa, Theresa Nyemba",
+      "role": "Translation"
+    },
+    {
+      "name": "Suzette T",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Suzette T (Author); Guillain Sompa, Theresa Nyemba (Translation); Suzette T (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33812",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33812",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "33812",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-e52ed0eba845fd78",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/91400163.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Mama na ngayi azalaki kosolola na telefoni.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33812#page=1",
+      "sourceDigest": "sha256:1706e6e58a6163879ba987bcc52006ba81f4427c6fdfd14eaf37c1be736d23dd"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/91400161.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33812#page=2",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Ayokaki ke koko na ngayi ya mwasi akufaki. Azalaki kolela mingi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33812#page=3",
+      "sourceDigest": "sha256:3f7f3bc1372c52847845990c6bf79115c2e030ea688658d573439147f9b78add"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/91400162.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33812#page=4",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Nayokaki penza, penza, penza, mawa. Biso nionso tobandaki kolela. Koko ya mwasi azaki malamu na biso, tango moto mokote alakisaki biso bolamu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33812#page=5",
+      "sourceDigest": "sha256:381c88c1d0625089f3a1951a0c6fce7ccecc7f37421b90d86abb30104a088cb0"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/91400163.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33812#page=6",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Bana naye nioso bayaki kotiya ye nase na mabele. Tobandaki kosambela. Eloko moko te ekoma na Libota na biso oyo etikali.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33812#page=7",
+      "sourceDigest": "sha256:e00fa32524caebbfae088b99fcf33b157c7d917ccf3724e111272fe05a866b0b"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/91400164.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33812#page=8",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 61
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:849f6fb6df551ed6513f8e0303b99b8942f8962f66428f78a46fa74ba66be3df"
+  }
+}

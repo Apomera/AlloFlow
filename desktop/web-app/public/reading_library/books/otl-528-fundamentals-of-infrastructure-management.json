@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-528-fundamentals-of-infrastructure-management",
+  "title": "Fundamentals of Infrastructure Management",
+  "description": "The authors believe this free of charge book, Fundamentals of Infrastructure Management, will expand the impact of the material and help improve the practice of infrastructure management. By ‘free of charge,' we mean that the material can be freely obtained, but readers should devote time and effort to mastering the material. We have provided problem assignments for various chapters, and we strongly urge readers to undertake the problems as a learning experience. This book grew out of a decade of co-teaching a course entitled ‘Infrastructure Management' at Carnegie Mellon University. Our teaching philosophy was to prepare students for work in the field of infrastructure management. We believe that infrastructure management is a professional endeavor and an attractive professional career. The book is co-authored by two accomplished engineers - each representing professional practice, academic research and theoretical evaluation. Their collective strengths are presented throughout the text and serve to support both the practice of infrastructure management and a role for infrastructure management inquiry and search. Importantly, both co-authors have academic research interests (and a number of research publications) on various topics of infrastructure management. That said, the primary audience for this book is expected to be professionals intending to practice infrastructure management, and only secondarily individuals who intend to pursue a career of research in the area. The text draws examples and discusses a wide variety of infrastructure systems, including roadways, telecommunications, power generation, buildings and systems of infrastructure. We have found that some common fundamentals of asset management, analysis tools and informed decision-making are useful for a variety of such systems. Certainly, many infrastructure managers encounter a variety of infrastructure types during their professional careers. Moreover, due to the functional inter-dependencies of different infrastructure systems, it is certainly advantageous for managers of one infrastructure type to understand other types of infrastructure. For example, roadway managers rely upon the power grid for traffic signal operation.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Management",
+    "Engineering & Technology - Civil Engineering"
+  ],
+  "authors": [
+    "Donald Coffelt - Author / Chris Hendrickson - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Donald Coffelt and Chris Hendrickson",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/fundamentals-of-infrastructure-management"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The authors believe this free of charge book, Fundamentals of Infrastructure Management, will expand the impact of the material and help improve the practice of infrastructure management. By ‘free of charge,' we mean that the material can be freely obtained, but readers should devote time and effort to mastering the material. We have provided problem assignments for various chapters, and we strongly urge readers to undertake the problems as a learning experience. This book grew out of a decade of co-teaching a course entitled ‘Infrastructure Management' at Carnegie Mellon University. Our teaching philosophy was to prepare students for work in the field of infrastructure management. We believe that infrastructure management is a professional endeavor and an attractive professional career. The book is co-authored by two accomplished engineers - each representing professional practice, academic research and theoretical evaluation. Their collective strengths are presented throughout the text and serve to support both the practice of infrastructure management and a role for infrastructure management inquiry and search. Importantly, both co-authors have academic research interests (and a number of research publications) on various topics of infrastructure management. That said, the primary audience for this book is expected to be professionals intending to practice infrastructure management, and only secondarily individuals who intend to pursue a career of research in the area. The text draws examples and discusses a wide variety of infrastructure systems, including roadways, telecommunications, power generation, buildings and systems of infrastructure. We have found that some common fundamentals of asset management, analysis tools and informed decision-making are useful for a variety of such systems. Certainly, many infrastructure managers encounter a variety of infrastructure types during their professional careers. Moreover, due to the functional inter-dependencies of different infrastructure systems, it is certainly advantageous for managers of one infrastructure type to understand other types of infrastructure. For example, roadway managers rely upon the power grid for traffic signal operation."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 337
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "528",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -112,7 +112,7 @@ const LIVE_ACTIVITY_KINDS = new Set([
 ]);
 const LIVE_ACTIVITY_PHASES = new Set(['collecting', 'paused', 'review', 'revealed', 'closed']);
 const LIVE_ACTIVITY_PARTICIPANT_STATUSES = new Set(['waiting', 'working', 'submitted', 'revised']);
-const LIVE_ACTIVITY_EXTRA_COUNT_KEYS = ['connected', 'approved', 'hidden', 'revealed', 'feedbackSent', 'guesses'];
+const LIVE_ACTIVITY_EXTRA_COUNT_KEYS = ['connected', 'approved', 'hidden', 'revealed', 'feedbackSent', 'guesses', 'showcased', 'votesCast'];
 
 function boundedLiveActivityText(value, maxLength = 96) {
   return String(value || '').trim().slice(0, maxLength);
@@ -223,6 +223,266 @@ function selectLiveActivityPulse(snapshots) {
     || null;
 }
 
+const LIVE_ATTENTION_SIGNAL_FRESH_MS = 10 * 60 * 1000;
+const LIVE_ATTENTION_WAIT_GRACE_MS = 45 * 1000;
+const LIVE_ATTENTION_WORKING_LONG_MS = 3 * 60 * 1000;
+const LIVE_ATTENTION_RESOURCE_GRACE_MS = 30 * 1000;
+
+function buildLiveActivityTimeline(snapshots, limit = 8) {
+  const byId = new Map();
+  (Array.isArray(snapshots) ? snapshots : []).forEach(input => {
+    const safe = sanitizeLiveActivitySnapshot(input);
+    if (!safe) return;
+    const existing = byId.get(safe.activityId);
+    if (!existing || safe.updatedAt >= existing.updatedAt) byId.set(safe.activityId, safe);
+  });
+  return Array.from(byId.values())
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .slice(0, Math.max(1, Math.min(20, Number(limit) || 8)))
+    .map(item => ({
+      activityId: item.activityId,
+      family: item.family,
+      kind: item.kind,
+      phase: item.phase,
+      counts: {
+        invited: item.counts.invited,
+        working: item.counts.working,
+        submitted: item.counts.submitted,
+        revised: item.counts.revised,
+        showcased: item.counts.showcased,
+        votesCast: item.counts.votesCast,
+      },
+      startedAt: item.startedAt,
+      updatedAt: item.updatedAt,
+      endedAt: item.endedAt,
+      durationMs: item.durationMs,
+    }));
+}
+
+function resolveLiveAttentionTarget(uid, entry, groups, currentResourceId, sessionMode) {
+  if (entry && entry.resourceId) {
+    return { resourceId: entry.resourceId, assignedAt: boundedLiveActivityCount(entry.resourceAt, Number.MAX_SAFE_INTEGER) };
+  }
+  const group = entry && entry.groupId && groups && groups[entry.groupId];
+  if (group && group.resourceId) {
+    return { resourceId: group.resourceId, assignedAt: boundedLiveActivityCount(group.resourceAt, Number.MAX_SAFE_INTEGER) };
+  }
+  if (sessionMode === 'sync' && currentResourceId) return { resourceId: currentResourceId, assignedAt: 0 };
+  return { resourceId: null, assignedAt: 0 };
+}
+
+function buildLiveAttentionQueue(input) {
+  const source = input && typeof input === 'object' ? input : {};
+  const roster = source.roster && typeof source.roster === 'object' ? source.roster : {};
+  const groups = source.groups && typeof source.groups === 'object' ? source.groups : {};
+  const requestedNow = Number(source.now);
+  const now = boundedLiveActivityCount(
+    Number.isFinite(requestedNow) ? requestedNow : Date.now(),
+    Number.MAX_SAFE_INTEGER
+  );
+  const requestedSignalFreshMs = Number(source.signalFreshMs);
+  const signalFreshMs = boundedLiveActivityCount(
+    Number.isFinite(requestedSignalFreshMs) && requestedSignalFreshMs > 0
+      ? requestedSignalFreshMs
+      : LIVE_ATTENTION_SIGNAL_FRESH_MS,
+    60 * 60 * 1000
+  );
+  const activityPulse = selectLiveActivityPulse(source.activitySnapshots);
+  const activityElapsed = activityPulse && activityPulse.startedAt
+    ? Math.max(0, now - activityPulse.startedAt)
+    : 0;
+  const queue = [];
+
+  Object.entries(roster).slice(0, 250).forEach(([rawUid, rawEntry]) => {
+    const uid = boundedLiveActivityText(rawUid, 128);
+    const entry = rawEntry && typeof rawEntry === 'object' ? rawEntry : {};
+    if (!uid) return;
+    const reasons = [];
+    const addReason = (code, weight) => {
+      if (!reasons.some(reason => reason.code === code)) reasons.push({ code, weight });
+    };
+
+    const signalAge = entry.signalAt ? Math.max(0, now - Number(entry.signalAt)) : Number.POSITIVE_INFINITY;
+    if (entry.signal && entry.signal !== 'ready' && signalAge < signalFreshMs) {
+      if (entry.signal === 'stuck') addReason('signal_stuck', 120);
+      else if (entry.signal === 'repeat') addReason('signal_repeat', 112);
+      else if (entry.signal === 'slow') addReason('signal_slow', 104);
+    }
+
+    if (entry.lastSeen) {
+      const seenAge = Math.max(0, now - Number(entry.lastSeen));
+      if (seenAge >= 200000) addReason('presence_disconnected', 94);
+      else if (seenAge >= 95000) addReason('presence_quiet', 58);
+    }
+
+    const activityStatus = activityPulse && activityPulse.participantStatus[uid];
+    if (activityPulse && activityPulse.phase === 'collecting') {
+      if (activityStatus === 'waiting' && activityElapsed >= LIVE_ATTENTION_WAIT_GRACE_MS) {
+        addReason('activity_waiting', 76);
+      } else if (activityStatus === 'working' && activityElapsed >= LIVE_ATTENTION_WORKING_LONG_MS) {
+        addReason('activity_working_long', 68);
+      }
+    }
+
+    const target = resolveLiveAttentionTarget(
+      uid,
+      entry,
+      groups,
+      source.currentResourceId,
+      source.sessionMode
+    );
+    if (target.resourceId && target.assignedAt && entry.viewingResourceId !== target.resourceId) {
+      const viewingAt = boundedLiveActivityCount(entry.viewingAt, Number.MAX_SAFE_INTEGER);
+      const assignmentAcknowledged = viewingAt >= target.assignedAt;
+      const assignmentIsLate = now - target.assignedAt >= LIVE_ATTENTION_RESOURCE_GRACE_MS;
+      // Only explicit individual/group sends have an assignment timestamp.
+      // This avoids flagging an entire teacher-paced class during an ordinary
+      // step transition, and avoids re-flagging a consumed one-time push after
+      // the student later navigates elsewhere.
+      if (!assignmentAcknowledged && assignmentIsLate) {
+        addReason(entry.viewingResourceId ? 'resource_elsewhere' : 'resource_unopened', entry.viewingResourceId ? 52 : 62);
+      }
+    }
+
+    if (reasons.length === 0) return;
+    reasons.sort((a, b) => b.weight - a.weight);
+    queue.push({
+      uid,
+      score: reasons.reduce((sum, reason) => sum + reason.weight, 0),
+      reasons: reasons.map(reason => reason.code),
+      activityStatus: LIVE_ACTIVITY_PARTICIPANT_STATUSES.has(activityStatus) ? activityStatus : null,
+      targetResourceId: target.resourceId,
+    });
+  });
+
+  return queue
+    .sort((a, b) => b.score - a.score || a.uid.localeCompare(b.uid))
+    .slice(0, 12);
+}
+
+function liveAttentionReasonLabel(code) {
+  return ({
+    signal_stuck: 'asked for help',
+    signal_repeat: 'needs that repeated',
+    signal_slow: 'needs more time',
+    presence_disconnected: 'connection may be lost',
+    presence_quiet: 'connection quiet',
+    activity_waiting: 'awaiting activity response',
+    activity_working_long: 'working for a while',
+    resource_unopened: 'assigned resource not opened',
+    resource_elsewhere: 'on a different resource',
+  })[code] || 'needs attention';
+}
+
+function formatLiveActivityDuration(durationMs) {
+  const ms = boundedLiveActivityCount(durationMs, 24 * 60 * 60 * 1000);
+  if (!ms) return '';
+  const minutes = Math.max(1, Math.round(ms / 60000));
+  return minutes < 60 ? `${minutes}m` : `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+}
+
+/**
+ * Builds the quiz family's shared, privacy-safe coordination view from the
+ * existing merged quiz state. The caller remains responsible for merging the
+ * P2P answer channel with its fallback store; this helper never retains raw
+ * answers, correctness, prompts, codenames, or grading data.
+ */
+function buildLiveQuizActivitySnapshot(input) {
+  const source = input && typeof input === 'object' ? input : {};
+  const quizState = source.quizState && typeof source.quizState === 'object'
+    ? source.quizState
+    : {};
+  const roster = source.roster && typeof source.roster === 'object'
+    ? source.roster
+    : {};
+  const startedAt = boundedLiveActivityCount(
+    quizState.startedAt || source.startedAt,
+    Number.MAX_SAFE_INTEGER
+  );
+  const storedActivityId = boundedLiveActivityText(quizState.activityId, 120);
+  const isActive = quizState.isActive === true;
+
+  // The canonical session shape always has an inactive quizState. Do not turn
+  // that placeholder into a phantom completed quiz before a quiz was launched.
+  if (!isActive && !storedActivityId && !startedAt) return null;
+
+  const sessionCode = boundedLiveActivityText(source.sessionCode, 48) || 'session';
+  const activityId = storedActivityId
+    || `quiz:${sessionCode}:${startedAt || 'legacy-active'}`;
+  const audienceUids = Object.keys(roster)
+    .map(uid => boundedLiveActivityText(uid, 128))
+    .filter(Boolean)
+    .slice(0, 250);
+  const allResponses = quizState.allResponses && typeof quizState.allResponses === 'object'
+    ? quizState.allResponses
+    : {};
+  const currentResponses = quizState.responses && typeof quizState.responses === 'object'
+    ? quizState.responses
+    : {};
+  const currentQuestionIndex = Number.isInteger(quizState.currentQuestionIndex)
+    && quizState.currentQuestionIndex >= 0
+    ? quizState.currentQuestionIndex
+    : 0;
+  const questionCount = boundedLiveActivityCount(
+    quizState.questionCount || source.questionCount,
+    1000
+  );
+  const rawPhase = boundedLiveActivityText(quizState.phase, 40);
+  const questionIsLive = rawPhase === 'answering'
+    || rawPhase === 'revealed'
+    || rawPhase === 'boss-defeated'
+    || rawPhase === 'class-defeated';
+  const participantStatus = {};
+
+  audienceUids.forEach(uid => {
+    const bucket = allResponses[uid] && typeof allResponses[uid] === 'object'
+      ? allResponses[uid]
+      : {};
+    const records = Object.values(bucket);
+    const completion = records.some(record => (
+      record && typeof record === 'object' && record.itemType === 'assessment-complete'
+    )) || (
+      questionCount > 0
+      && bucket[questionCount]
+      && bucket[questionCount].itemType === 'assessment-complete'
+    );
+    const hasCurrentAnswer = Object.prototype.hasOwnProperty.call(currentResponses, uid)
+      || Object.prototype.hasOwnProperty.call(bucket, String(currentQuestionIndex));
+    const hasAnyWork = records.some(record => record !== null && record !== undefined)
+      || hasCurrentAnswer;
+
+    participantStatus[uid] = completion || (questionIsLive && hasCurrentAnswer)
+      ? 'submitted'
+      : hasAnyWork
+        ? 'working'
+        : 'waiting';
+  });
+
+  const phase = !isActive
+    ? 'closed'
+    : rawPhase === 'answering'
+      ? 'collecting'
+      : rawPhase === 'revealed' || rawPhase === 'boss-defeated' || rawPhase === 'class-defeated'
+        ? 'revealed'
+        : 'paused';
+  const now = boundedLiveActivityCount(source.now || Date.now(), Number.MAX_SAFE_INTEGER);
+
+  return sanitizeLiveActivitySnapshot({
+    activityId,
+    family: 'quiz',
+    kind: 'quiz',
+    phase,
+    audienceUids,
+    participantStatus,
+    startedAt,
+    updatedAt: now,
+    endedAt: phase === 'closed' || phase === 'revealed'
+      ? boundedLiveActivityCount(quizState.endedAt || now, Number.MAX_SAFE_INTEGER)
+      : 0,
+    durationMs: startedAt ? Math.max(0, now - startedAt) : 0,
+  });
+}
+
 function liveActivityKindLabel(kind) {
   return ({
     rating: 'Rating poll',
@@ -261,13 +521,19 @@ function LiveLessonRunPanel(props) {
     onOpenResource,
     onSendToGroup,
     onSendToStudent,
+    onSendToStudents,
     activitySnapshots = [],
     onOpenActivity,
+    now = Date.now(),
+    signalFreshMs = LIVE_ATTENTION_SIGNAL_FRESH_MS,
     t = key => key,
   } = props || {};
 
   const [selectedStepId, setSelectedStepId] = React.useState(null);
   const [audienceKey, setAudienceKey] = React.useState('class');
+  const [attentionSelectedUids, setAttentionSelectedUids] = React.useState([]);
+  const [attentionSending, setAttentionSending] = React.useState(false);
+  const [attentionSendStatus, setAttentionSendStatus] = React.useState('');
   const steps = React.useMemo(
     () => buildLiveLessonSteps(history, getStudentSafeResources),
     [history, getStudentSafeResources]
@@ -301,20 +567,54 @@ function LiveLessonRunPanel(props) {
   const focusIsCurrent = currentIndex >= 0 && focusIndex === currentIndex;
 
   const activityPulse = selectLiveActivityPulse(activitySnapshots);
-  const pulseParticipantRows = activityPulse
-    ? activityPulse.audienceUids.map(uid => {
-      const rosterEntry = roster[uid] || {};
-      return {
-        uid,
-        name: String(rosterEntry.name || 'Student'),
-        groupId: rosterEntry.groupId || null,
-        status: activityPulse.participantStatus[uid] || 'waiting',
-      };
-    })
-    : [];
-  const pulseNeedsAttention = pulseParticipantRows
-    .filter(entry => entry.status === 'waiting' || entry.status === 'working')
-    .slice(0, 8);
+  const attentionQueue = React.useMemo(() => buildLiveAttentionQueue({
+    roster,
+    groups,
+    activitySnapshots,
+    currentResourceId,
+    sessionMode,
+    now,
+    signalFreshMs,
+  }), [roster, groups, activitySnapshots, currentResourceId, sessionMode, now, signalFreshMs]);
+  const activityTimeline = React.useMemo(
+    () => buildLiveActivityTimeline(activitySnapshots, 8),
+    [activitySnapshots]
+  );
+  const attentionUidSet = new Set(attentionQueue.map(item => item.uid));
+  const validAttentionSelectedUids = attentionSelectedUids.filter(uid => attentionUidSet.has(uid));
+
+  const toggleAttentionSelection = uid => {
+    setAttentionSendStatus('');
+    setAttentionSelectedUids(current => current.includes(uid)
+      ? current.filter(item => item !== uid)
+      : current.concat([uid]).slice(0, 12));
+  };
+
+  const sendAttentionSelection = async () => {
+    if (!focusItem || validAttentionSelectedUids.length === 0 || attentionSending) return;
+    setAttentionSending(true);
+    setAttentionSendStatus('');
+    try {
+      if (typeof onSendToStudents === 'function') {
+        const result = await onSendToStudents(validAttentionSelectedUids, focusItem);
+        const sent = result && Number.isFinite(Number(result.sent))
+          ? Number(result.sent)
+          : validAttentionSelectedUids.length;
+        const failed = result && Number.isFinite(Number(result.failed)) ? Number(result.failed) : 0;
+        setAttentionSendStatus(failed > 0
+          ? `${sent} sent; ${failed} could not be sent.`
+          : `Sent to ${sent} student${sent === 1 ? '' : 's'}.`);
+      } else if (typeof onSendToStudent === 'function') {
+        await Promise.all(validAttentionSelectedUids.map(uid => onSendToStudent(uid, focusItem)));
+        setAttentionSendStatus(`Sent to ${validAttentionSelectedUids.length} student${validAttentionSelectedUids.length === 1 ? '' : 's'}.`);
+      }
+      setAttentionSelectedUids([]);
+    } catch (error) {
+      setAttentionSendStatus('Could not send that resource. Please try again.');
+    } finally {
+      setAttentionSending(false);
+    }
+  };
 
   const selectAt = index => {
     const item = steps[index];
@@ -451,6 +751,9 @@ function LiveLessonRunPanel(props) {
             {activityPulse.counts.revised > 0
               ? ` · ${activityPulse.counts.revised} ${t('live_lesson.revised') || 'revised'}`
               : ''}
+            {activityPulse.counts.votesCast > 0
+              ? ` / ${activityPulse.counts.votesCast} ${t('live_lesson.votes') || 'votes'}`
+              : ''}
           </div>
           <div
             aria-hidden="true"
@@ -484,64 +787,176 @@ function LiveLessonRunPanel(props) {
               {t('live_lesson.open_activity_dashboard') || 'Open activity dashboard'}
             </button>
           )}
-          {pulseNeedsAttention.length > 0 && (
-            <details style={{ marginTop: 6 }}>
-              <summary style={{ color: '#3730a3', cursor: 'pointer', fontSize: '0.66rem', fontWeight: 800 }}>
-                {pulseNeedsAttention.length} {t('live_lesson.awaiting_submission') || 'awaiting submission'}
-              </summary>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 5 }}>
-                {pulseNeedsAttention.map(entry => (
-                  <div
-                    key={entry.uid}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 5,
-                      padding: '0.3rem 0.4rem',
-                      borderRadius: 7,
-                      background: 'white',
-                      border: '1px solid #c7d2fe',
-                      fontSize: '0.64rem',
-                    }}
-                  >
-                    <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 800 }}>
-                      {entry.name}
-                    </span>
-                    <span style={{ color: '#64748b' }}>
-                      {entry.status === 'working'
-                        ? (t('live_lesson.working') || 'working')
-                        : (t('live_lesson.waiting') || 'waiting')}
-                    </span>
-                    {focusItem && typeof onSendToStudent === 'function' && (
-                      <button
-                        type="button"
-                        onClick={() => onSendToStudent(entry.uid, focusItem)}
-                        aria-label={`${t('live_lesson.send_selected_step_to') || 'Send selected step to'} ${entry.name}`}
-                        style={{
-                          marginLeft: 'auto',
-                          border: '1px solid #818cf8',
-                          borderRadius: 6,
-                          background: '#eef2ff',
-                          color: '#3730a3',
-                          padding: '0.22rem 0.38rem',
-                          fontFamily: 'inherit',
-                          fontSize: '0.6rem',
-                          fontWeight: 900,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {t('live_lesson.send_selected_step') || 'Send step'}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </details>
-          )}
+
           <p style={{ margin: '0.45rem 0 0', color: '#6366f1', fontSize: '0.59rem', lineHeight: 1.35 }}>
             {t('live_lesson.activity_pulse_privacy') || 'Status and counts only; student responses remain in the activity owner.'}
           </p>
         </div>
+      )}
+
+      {Object.keys(roster).length > 0 && (
+        <section
+          aria-label={t('live_lesson.attention_queue') || 'Teacher attention queue'}
+          style={{
+            marginTop: 7,
+            padding: '0.55rem',
+            border: '1px solid ' + (attentionQueue.length ? '#fbbf24' : '#86efac'),
+            borderRadius: 9,
+            background: attentionQueue.length ? '#fffbeb' : '#f0fdf4',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span aria-hidden="true">{attentionQueue.length ? '!' : 'OK'}</span>
+            <strong style={{ color: attentionQueue.length ? '#92400e' : '#166534', fontSize: '0.72rem' }}>
+              {t('live_lesson.needs_attention') || 'Needs attention'}
+            </strong>
+            <span style={{ marginLeft: 'auto', fontSize: '0.62rem', fontWeight: 900, color: attentionQueue.length ? '#92400e' : '#166534' }}>
+              {attentionQueue.length}
+            </span>
+          </div>
+          {attentionQueue.length === 0 ? (
+            <p role="status" style={{ margin: '0.35rem 0 0', color: '#166534', fontSize: '0.64rem' }}>
+              {t('live_lesson.no_attention_signals') || 'No immediate attention signals.'}
+            </p>
+          ) : (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 5 }}>
+                <span style={{ color: '#78350f', fontSize: '0.6rem' }}>
+                  {t('live_lesson.attention_ranked_hint') || 'Ranked from signals, presence, activity status, and delivery.'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setAttentionSelectedUids(
+                    validAttentionSelectedUids.length === attentionQueue.length
+                      ? []
+                      : attentionQueue.map(item => item.uid)
+                  )}
+                  style={{ border: 'none', background: 'transparent', color: '#92400e', padding: 2, fontSize: '0.6rem', fontWeight: 900, cursor: 'pointer' }}
+                >
+                  {validAttentionSelectedUids.length === attentionQueue.length
+                    ? (t('common.clear') || 'Clear')
+                    : (t('common.select_all') || 'Select all')}
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4, maxHeight: 190, overflowY: 'auto' }}>
+                {attentionQueue.map(item => {
+                  const entry = roster[item.uid] || {};
+                  const name = String(entry.name || 'Student');
+                  const selected = validAttentionSelectedUids.includes(item.uid);
+                  return (
+                    <div
+                      key={item.uid}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'auto minmax(0, 1fr) auto',
+                        alignItems: 'center',
+                        gap: 5,
+                        padding: '0.32rem 0.4rem',
+                        borderRadius: 7,
+                        background: 'white',
+                        border: '1px solid #fde68a',
+                        fontSize: '0.63rem',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={() => toggleAttentionSelection(item.uid)}
+                        aria-label={`Select ${name} for a resource send`}
+                      />
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 900, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {name}
+                        </div>
+                        <div style={{ color: '#92400e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {liveAttentionReasonLabel(item.reasons[0])}
+                          {item.reasons.length > 1 ? ` +${item.reasons.length - 1}` : ''}
+                        </div>
+                      </div>
+                      {focusItem && typeof onSendToStudent === 'function' && (
+                        <button
+                          type="button"
+                          onClick={() => onSendToStudent(item.uid, focusItem)}
+                          aria-label={`${t('live_lesson.send_selected_step_to') || 'Send selected step to'} ${name}`}
+                          style={{ border: '1px solid #f59e0b', borderRadius: 6, background: '#fff7ed', color: '#92400e', padding: '0.2rem 0.35rem', fontFamily: 'inherit', fontSize: '0.58rem', fontWeight: 900, cursor: 'pointer' }}
+                        >
+                          {t('live_lesson.send_selected_step') || 'Send step'}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <button
+                type="button"
+                disabled={!focusItem || validAttentionSelectedUids.length === 0 || attentionSending}
+                onClick={sendAttentionSelection}
+                aria-label={`Send selected lesson step to ${validAttentionSelectedUids.length} student${validAttentionSelectedUids.length === 1 ? '' : 's'}`}
+                style={{
+                  ...(focusItem && validAttentionSelectedUids.length > 0 && !attentionSending ? buttonBase : disabledButton),
+                  width: '100%',
+                  marginTop: 6,
+                  borderColor: '#d97706',
+                  background: focusItem && validAttentionSelectedUids.length > 0 && !attentionSending ? '#d97706' : '#f8fafc',
+                  color: focusItem && validAttentionSelectedUids.length > 0 && !attentionSending ? 'white' : '#94a3b8',
+                }}
+              >
+                {attentionSending
+                  ? (t('common.sending') || 'Sending...')
+                  : `${t('live_lesson.send_selected_step') || 'Send step'} (${validAttentionSelectedUids.length})`}
+              </button>
+              {attentionSendStatus && (
+                <p role="status" aria-live="polite" style={{ margin: '0.35rem 0 0', color: '#78350f', fontSize: '0.61rem' }}>
+                  {attentionSendStatus}
+                </p>
+              )}
+            </>
+          )}
+          <p style={{ margin: '0.4rem 0 0', color: '#78716c', fontSize: '0.57rem', lineHeight: 1.3 }}>
+            {t('live_lesson.attention_privacy') || 'Uses status metadata only; no response content is copied into this queue.'}
+          </p>
+        </section>
+      )}
+
+      {activityTimeline.length > 0 && (
+        <details
+          aria-label={t('live_lesson.activity_timeline') || 'Activity timeline'}
+          style={{ marginTop: 7, padding: '0.45rem 0.5rem', border: '1px solid #cbd5e1', borderRadius: 9, background: '#f8fafc' }}
+        >
+          <summary style={{ color: '#334155', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 900 }}>
+            {t('live_lesson.recent_activity') || 'Recent activity'} ({activityTimeline.length})
+          </summary>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 5 }}>
+            {activityTimeline.map(item => {
+              const duration = formatLiveActivityDuration(
+                item.durationMs || (item.startedAt && item.updatedAt ? item.updatedAt - item.startedAt : 0)
+              );
+              return (
+                <div key={item.activityId} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '0.3rem 0.38rem', background: 'white', border: '1px solid #e2e8f0', borderRadius: 7, fontSize: '0.61rem' }}>
+                  <span style={{ minWidth: 0, flex: 1, color: '#0f172a', fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {liveActivityKindLabel(item.kind)}
+                  </span>
+                  <span style={{ color: '#64748b', whiteSpace: 'nowrap' }}>
+                    {item.counts.submitted}/{item.counts.invited}{item.counts.votesCast > 0 ? ` / ${item.counts.votesCast} ${t('live_lesson.votes') || 'votes'}` : ''}{duration ? ` · ${duration}` : ''}
+                  </span>
+                  <span style={{ color: '#475569', fontWeight: 800, whiteSpace: 'nowrap' }}>
+                    {liveActivityPhaseLabel(item.phase)}
+                  </span>
+                  {typeof onOpenActivity === 'function' && item.phase !== 'closed' && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenActivity(item)}
+                      aria-label={`Open ${liveActivityKindLabel(item.kind)} dashboard`}
+                      style={{ border: '1px solid #94a3b8', borderRadius: 5, background: '#f8fafc', color: '#334155', padding: '0.12rem 0.3rem', fontSize: '0.56rem', fontWeight: 900, cursor: 'pointer' }}
+                    >
+                      {t('common.open') || 'Open'}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </details>
       )}
 
       {steps.length === 0 ? (

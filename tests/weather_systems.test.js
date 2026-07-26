@@ -163,6 +163,87 @@ describe('Weather Systems science kernel', () => {
     expect(kernel.geographicOrientationSummary(200)).toEqual({ bearing: -160, northRotation: 160, label: 'North is 160\u00B0 right of screen top.' });
   });
 
+  it('normalizes hourly weather and selects an explicit observed or forecast hour', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const live = {
+      label: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568,
+      observedAt: '2026-07-25T12:00', timezone: 'EDT', temperature: 20, humidity: 70,
+      precipitation: 0, weatherCode: 2, cloudCover: 50, pressure: 1012,
+      windSpeed: 10, windDir: 180, visibility: 10000
+    };
+    const timeline = kernel.normalizeHourlyWeatherTimeline({
+      hourly: {
+        time: ['2026-07-25T11:00', '2026-07-25T12:00', '2026-07-25T13:00', '2026-07-25T14:00'],
+        temperature_2m: [19, 20, 22, 24],
+        relative_humidity_2m: [74, 70, 65, 60],
+        precipitation: [0, 0, 0.4, 1.2],
+        weather_code: [2, 2, 61, 95],
+        cloud_cover: [45, 50, 78, 92],
+        surface_pressure: [1013, 1012, 1010, 1007],
+        wind_speed_10m: [8, 10, 16, 24],
+        wind_direction_10m: [170, 180, 200, 220],
+        visibility: [10000, 10000, 8500, 6000]
+      }
+    }, live);
+    expect(timeline.map((point) => point.role)).toEqual(['earlier', 'current', 'forecast', 'forecast']);
+    expect(timeline.map((point) => point.offsetHours)).toEqual([-1, 0, 1, 2]);
+    expect(kernel.weatherTimelineCurrentIndex(timeline)).toBe(1);
+    const selected = kernel.activeLiveWeather({ liveWeather: live, liveWeatherTimeline: timeline, liveWeatherTimelineIndex: 3 });
+    expect(selected).toEqual(expect.objectContaining({
+      validAt: '2026-07-25T14:00', timelineRole: 'forecast', timelineOffsetHours: 2,
+      temperature: 24, precipitation: 1.2, condition: 'Thunderstorms', windDir: 220
+    }));
+    expect(kernel.weatherTimelineLabel(selected, 'EDT')).toBe('+2 h forecast | 2026-07-25 14:00 EDT');
+    expect(kernel.geographicTerrainEvidenceStatus({ location: live.label, validAt: selected.validAt }, selected).current).toBe(true);
+    expect(kernel.geographicTerrainEvidenceStatus({ location: live.label, validAt: '2026-07-25T13:00' }, selected).code).toBe('observation');
+  });
+
+
+  it('builds a normalized 25-point regional model field with truthful valid-time status', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const coordinates = kernel.regionalWeatherGridCoordinates(43.6591, -70.2568, 25, 5);
+    expect(coordinates).toHaveLength(25);
+    expect(coordinates[0].bounds).toHaveLength(4);
+    const payload = coordinates.map((point, index) => ({
+      hourly: {
+        time: ['2026-07-25T14:00'], temperature_2m: [18 + index / 4], precipitation: [index % 4 / 10],
+        cloud_cover: [40 + index], surface_pressure: [1005 + index / 5],
+        wind_speed_10m: [8 + index / 2], wind_direction_10m: [180 + index]
+      }
+    }));
+    const field = kernel.normalizeRegionalWeatherField(payload, coordinates, '2026-07-25T14:00');
+    Object.assign(field, { latitude: 43.6591, longitude: -70.2568, location: 'Portland, Maine' });
+    expect(field.sampleCount).toBe(25);
+    expect(field.stats.temperature.max).toBe(24);
+    const geo = kernel.regionalWeatherFieldGeoJSON(field, 'temperature');
+    expect(geo.polygons.features).toHaveLength(25);
+    expect(geo.points.features).toHaveLength(25);
+    expect(geo.legend).toEqual(expect.objectContaining({ label: 'Temperature', unit: '\u00B0C' }));
+    const active = { latitude: 43.6591, longitude: -70.2568, validAt: '2026-07-25T14:00' };
+    expect(kernel.regionalWeatherFieldStatus(field, active).code).toBe('ready');
+    expect(kernel.regionalWeatherFieldStatus(field, { ...active, validAt: '2026-07-25T15:00' }).code).toBe('time');
+  });
+
+  it('compares a saved forecast checkpoint with the matching later observation', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const checkpoint = {
+      latitude: 43.6591, longitude: -70.2568, validAt: '2026-07-25T14:00',
+      predicted: { temperature: 24, precipitation: 1.2, pressure: 1007, windSpeed: 24, windDir: 220, weatherCode: 95 }
+    };
+    const live = { latitude: 43.6591, longitude: -70.2568 };
+    const pending = kernel.forecastCheckpointStatus(checkpoint, [{ time: checkpoint.validAt, role: 'forecast' }], live);
+    expect(pending.code).toBe('pending');
+    const result = kernel.forecastCheckpointStatus(checkpoint, [{
+      time: checkpoint.validAt, role: 'earlier', temperature: 22, precipitation: 0.7,
+      pressure: 1009, windSpeed: 18, windDir: 200, weatherCode: 61
+    }], live);
+    expect(result.code).toBe('verified');
+    expect(result.metrics.temperature.error).toBe(2);
+    expect(result.metrics.pressure.error).toBe(-2);
+    expect(result.metrics.windDirection.error).toBe(20);
+    expect(result.conditionMatch).toBe(false);
+  });
+
   it('accepts decimal and hemisphere coordinate location formats', () => {
     const kernel = window.WeatherSystemsKernel;
     expect(kernel.parseLocationCoordinates('42.3601, -71.0589')).toEqual({ latitude: 42.3601, longitude: -71.0589 });
@@ -337,7 +418,7 @@ it('returns a sequenced immersive investigation tour step', () => {
     const savedTerrain = { location: 'Portland, Maine, United States', latitude: 43.6591, longitude: -70.2568, observedAt: '2026-07-16T14:00' };
     const matchingLive = { label: 'Portland, Maine, United States', latitude: 43.6591, longitude: -70.2568, observedAt: '2026-07-16T14:00' };
     expect(kernel.geographicTerrainEvidenceStatus(savedTerrain, matchingLive)).toEqual(expect.objectContaining({ current: true, code: 'current', label: 'Current location and observation' }));
-    expect(kernel.geographicTerrainEvidenceStatus(savedTerrain, Object.assign({}, matchingLive, { observedAt: '2026-07-16T15:00' }))).toEqual(expect.objectContaining({ current: false, code: 'observation', label: 'Older observation evidence' }));
+    expect(kernel.geographicTerrainEvidenceStatus(savedTerrain, Object.assign({}, matchingLive, { observedAt: '2026-07-16T15:00' }))).toEqual(expect.objectContaining({ current: false, code: 'observation', label: 'Different weather hour' }));
     expect(kernel.geographicTerrainEvidenceStatus(savedTerrain, Object.assign({}, matchingLive, { latitude: 42.3601, longitude: -71.0589, label: 'Boston, Massachusetts' }))).toEqual(expect.objectContaining({ current: false, code: 'location', label: 'Stale location evidence' }));
     expect(kernel.geographicTerrainEvidenceStatus(savedTerrain, null)).toEqual(expect.objectContaining({ current: true, code: 'saved', label: 'Saved evidence provenance' }));
     expect(kernel.geographicObservationSummary({
@@ -528,6 +609,105 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('aria-label="Immersive weather layer guide"');
   });
 
+  it('renders accessible observed-to-forecast playback controls and selected-hour conditions', () => {
+    const html = renderTool('weatherSystems', {
+      _threeLoaded: true,
+      weatherSystems: {
+        tab: 'immersive', immersiveDataSource: 'live', liveWeatherTimelineIndex: 2,
+        liveWeather: {
+          label: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568,
+          observedAt: '2026-07-25T12:00', timezone: 'EDT', temperature: 20, humidity: 70,
+          precipitation: 0, weatherCode: 2, condition: 'Partly cloudy', cloudCover: 50,
+          pressure: 1012, windSpeed: 10, windDir: 180, visibility: 10000
+        },
+        liveWeatherTimeline: [
+          { time: '2026-07-25T11:00', role: 'earlier', offsetHours: -1, temperature: 19, humidity: 74, precipitation: 0, weatherCode: 2, condition: 'Partly cloudy', cloudCover: 45, pressure: 1013, windSpeed: 8, windDir: 170, visibility: 10000 },
+          { time: '2026-07-25T12:00', role: 'current', offsetHours: 0, temperature: 20, humidity: 70, precipitation: 0, weatherCode: 2, condition: 'Partly cloudy', cloudCover: 50, pressure: 1012, windSpeed: 10, windDir: 180, visibility: 10000 },
+          { time: '2026-07-25T14:00', role: 'forecast', offsetHours: 2, temperature: 24, humidity: 60, precipitation: 1.2, weatherCode: 95, condition: 'Thunderstorms', cloudCover: 92, pressure: 1007, windSpeed: 24, windDir: 220, visibility: 6000 }
+        ]
+      }
+    }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('data-weather-hourly-timeline');
+    expect(html).toContain('Hourly weather timeline');
+    expect(html).toContain('+2 h forecast | 2026-07-25 14:00 EDT');
+    expect(html).toContain('id="weather-hourly-timeline-range"');
+    expect(html).toContain('aria-valuetext="+2 h forecast');
+    expect(html).toContain('aria-label="Hourly weather playback controls"');
+    expect(html).toContain('aria-label="Previous weather hour"');
+    expect(html).toContain('aria-label="Next weather hour"');
+    expect(html).toContain('Forecast model hour | Thunderstorms | 24\u00B0C | SW 24 km/h | 1.2 mm precipitation');
+    expect(html).toContain('data-weather-source-freshness="forecast"');
+    expect(html).toContain('data-weather-scene-hud');
+    expect(html).toContain('Forecast valid');
+    expect(html).toContain('aria-label="+2 h forecast | 2026-07-25 14:00 EDT. Temperature 24 degrees Celsius.');
+    expect(html).toContain('+2H');
+  });
+
+
+  it('renders a synchronized professional regional weather layer stack in geographic 3D', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const coordinates = kernel.regionalWeatherGridCoordinates(43.6591, -70.2568, 25, 5);
+    const field = kernel.normalizeRegionalWeatherField(coordinates.map((point, index) => ({ hourly: {
+      time: ['2026-07-25T14:00'], temperature_2m: [20 + index / 5], precipitation: [index / 20],
+      cloud_cover: [50 + index], surface_pressure: [1008 + index / 10],
+      wind_speed_10m: [10 + index / 2], wind_direction_10m: [190 + index]
+    } })), coordinates, '2026-07-25T14:00');
+    Object.assign(field, { latitude: 43.6591, longitude: -70.2568, location: 'Portland, Maine', timezone: 'EDT', source: 'Open-Meteo multi-location model grid' });
+    const html = renderTool('weatherSystems', {
+      _threeLoaded: true,
+      weatherSystems: {
+        tab: 'immersive', immersiveSceneMode: 'geographic', immersiveDataSource: 'live', geographicMapReady: true,
+        geographicWeatherLayer: 'temperature', geographicWeatherLayerOpacity: 0.6, geographicWeatherField: field,
+        liveGeography: { label: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568, elevation: 19 },
+        liveWeather: { label: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568, observedAt: '2026-07-25T12:00', timezone: 'EDT', temperature: 20, humidity: 70, precipitation: 0, weatherCode: 2, condition: 'Partly cloudy', cloudCover: 50, pressure: 1012, windSpeed: 10, windDir: 180, visibility: 10000 },
+        liveWeatherTimelineIndex: 1,
+        liveWeatherTimeline: [
+          { time: '2026-07-25T12:00', role: 'current', offsetHours: 0, temperature: 20, humidity: 70, precipitation: 0, weatherCode: 2, condition: 'Partly cloudy', cloudCover: 50, pressure: 1012, windSpeed: 10, windDir: 180, visibility: 10000 },
+          { time: '2026-07-25T14:00', role: 'forecast', offsetHours: 2, temperature: 24, humidity: 60, precipitation: 1.2, weatherCode: 95, condition: 'Thunderstorms', cloudCover: 92, pressure: 1007, windSpeed: 24, windDir: 220, visibility: 6000 }
+        ]
+      }
+    }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('data-weather-regional-layer-stack');
+    expect(html).toContain('Professional layer stack');
+    expect(html).toContain('Regional model field');
+    expect(html).toContain('Temperature');
+    expect(html).toContain('Precipitation');
+    expect(html).toContain('Cloud cover');
+    expect(html).toContain('Surface pressure');
+    expect(html).toContain('Wind field');
+    expect(html).toContain('data-weather-regional-field-sync="ready"');
+    expect(html).toContain('data-weather-regional-map-legend');
+    expect(html).toContain('Valid 2026-07-25T14:00 EDT');
+    expect(html).toContain('model-grid samples, not live radar or official warning boundaries');
+    expect(html).toContain('data-weather-save-forecast-checkpoint');
+  });
+
+  it('renders signed forecast-versus-observation errors in the verification studio', () => {
+    const html = renderTool('weatherSystems', {
+      weatherSystems: {
+        tab: 'forecast',
+        liveWeather: { label: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568, observedAt: '2026-07-25T15:00', timezone: 'EDT' },
+        liveWeatherTimeline: [{ time: '2026-07-25T14:00', role: 'earlier', offsetHours: -1, temperature: 22, precipitation: 0.7, pressure: 1009, windSpeed: 18, windDir: 200, weatherCode: 61, condition: 'Rain' }],
+        liveForecastCheckpoints: [{
+          id: 'portland-14', location: 'Portland, Maine', latitude: 43.6591, longitude: -70.2568,
+          issuedAt: '2026-07-25T12:00', validAt: '2026-07-25T14:00', timezone: 'EDT', offsetHours: 2,
+          predicted: { temperature: 24, precipitation: 1.2, pressure: 1007, windSpeed: 24, windDir: 220, weatherCode: 95, condition: 'Thunderstorms' }
+        }]
+      }
+    }, { gradeLevel: '10th Grade' });
+    expect(html).toContain('data-weather-forecast-verification-studio');
+    expect(html).toContain('Forecast Verification Studio');
+    expect(html).toContain('data-weather-checkpoint-status="verified"');
+    expect(html).toContain('Forecast error = forecast minus observation');
+    expect(html).toContain('Temperature error');
+    expect(html).toContain('+2\u00B0C');
+    expect(html).toContain('Pressure error');
+    expect(html).toContain('-2 hPa');
+    expect(html).toContain('Wind-direction error');
+    expect(html).toContain('+20\u00B0');
+    expect(html).toContain('Condition category differed from the observation.');
+  });
+
   it('renders an opt-in open geographic terrain mode with attribution and fallback', () => {
     const html = renderTool('weatherSystems', {
       _threeLoaded: true,
@@ -599,17 +779,17 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('Tilt 58');
     expect(html).toContain('Bearing -18');
     expect(html).toContain('data-weather-geographic-hud');
-    expect(html).toContain('Observation command display');
+    expect(html).toContain('Weather command display');
     expect(html).toContain('data-weather-observation-freshness="stale"');
     expect(html).toContain('Saved observation');
     expect(html).toContain('refresh before making a current-conditions claim');
     expect(html).toContain('43.6591, -70.2568 | Site 19 m');
     expect(html).toContain('aria-label="Portland, Maine, United States | Thunderstorms | 28.4\u00B0C | 74% RH | SW 22.1 km/h wind | 1004.6 hPa"');
     expect(html).toContain('data-weather-wind-compass');
-    expect(html).toContain('Observed wind compass');
+    expect(html).toContain('Selected-hour wind compass');
     expect(html).toContain('Wind arrives from SW and flows toward NE at 22.1 kilometers per hour.');
     expect(html).toContain('data-weather-observation-instruments');
-    expect(html).toContain('aria-label="Live observation instruments"');
+    expect(html).toContain('aria-label="Selected-hour weather instruments"');
     expect(html).toContain('Relative humidity');
     expect(html).toContain('FROM SW 22.1 km/h');
     expect(html).toContain('TO NE');
@@ -1600,6 +1780,35 @@ describe('Weather Systems geographic map loader resilience', () => {
     'stem_lab/stem_tool_weathersystems.js',
     'desktop/web-app/public/stem_lab/stem_tool_weathersystems.js',
   ];
+
+  it('requests a bounded hourly weather window for temporal playback', () => {
+    const source = readFileSync(resolve(process.cwd(), PATHS[0]), 'utf8');
+    expect(source).toContain("'&hourly=' + fields + '&past_hours=6&forecast_hours=25&timezone=auto'");
+    expect(source).toContain('normalizeHourlyWeatherTimeline(payload, live)');
+    expect(source).toContain('geographicRuntimeRef.current.refreshWeatherOverlays = refreshGeographicWeather');
+    expect(source).toContain('geographicTerrainProfileWeather: { validAt: terrainProfileWeather.validAt');
+  });
+
+
+  it('loads a multi-location regional field and registers synchronized MapLibre layers', () => {
+    const source = readFileSync(resolve(process.cwd(), PATHS[0]), 'utf8');
+    expect(source).toContain("var coordinates = regionalWeatherGridCoordinates(active.latitude, active.longitude, radius, 5)");
+    expect(source).toContain("'&hourly=' + fields + '&past_hours=6&forecast_hours=25&timezone=auto'");
+    expect(source).toContain("map.addSource('weather-regional-field-cells'");
+    expect(source).toContain("id: 'weather-regional-field-fill'");
+    expect(source).toContain("id: 'weather-regional-wind-arrow'");
+    expect(source).toContain('function refreshRegionalWeatherField(field, layerId, opacity, activeWeather)');
+    expect(source).toContain('regionalWeatherFieldStatus(field, activeWeather)');
+    expect(source).toContain('Cells visualize model-grid samples, not live radar or official warning boundaries.');
+  });
+
+  it('persists future-hour checkpoints for later observation comparison', () => {
+    const source = readFileSync(resolve(process.cwd(), PATHS[0]), 'utf8');
+    expect(source).toContain('function saveLiveForecastCheckpoint()');
+    expect(source).toContain('liveForecastCheckpoints: checkpoints');
+    expect(source).toContain('forecastCheckpointStatus(checkpoint, timeline, d.liveWeather)');
+    expect(source).toContain('Forecast error = forecast minus observation');
+  });
 
   it('tries multiple CDNs with a timeout instead of a single point of failure', () => {
     PATHS.forEach((filePath) => {

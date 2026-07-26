@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1512-international-libraries-an-open-textbook",
+  "title": "International Libraries: An Open Textbook",
+  "description": "International Libraries: An Open Textbook is a reference sourcebook about the libraries and the field of librarianship in non-North American countries around the world. Each chapter in this volume includes a profile of a featured country’s variety of libraries, its library histories, its systems of library education, and its library practices, laws, and professional associations. Graduate students in the University at Buffalo’s Department of Information Science authored these chapters for the LIS 503: International Librarianship course during the summer term of 2019. The text was developed under the a Creative Commons license (CC BY-NC-SA 4.0) as an open educational resource that can be adapted for future sections of the International Librarianship course or for similar courses offered in library and information programs at other institutions.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Library Science and Museum Studies"
+  ],
+  "authors": [
+    "Amanda B. Reed - Author / Sarah M.H. Johnson - Author / Heather Severson - Author / Michael Green - Author / Melissa L. Rubin - Author / Anne Windholz - Author / Celia J. Dehais - Author / Hannah Taylor - Author / Sioban Gilligan - Author / Mien Wong - Author / Laura E. Cernik - Author / Matthew C. Davis - Author / Christine E. Gates - Author / Mallory S. Quinn - Author / Deanna K. Roberts - Author / Emily Wejchert - Author / Kathleen Lynch - Author / Sarah R. Harrington - Author / Anita Duka - Author / Tara E.M. Montini - Author / Sally Schaefer - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "The University at Buffalo",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/international-libraries-an-open-textbook"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "International Libraries: An Open Textbook is a reference sourcebook about the libraries and the field of librarianship in non-North American countries around the world. Each chapter in this volume includes a profile of a featured country’s variety of libraries, its library histories, its systems of library education, and its library practices, laws, and professional associations. Graduate students in the University at Buffalo’s Department of Information Science authored these chapters for the LIS 503: International Librarianship course during the summer term of 2019. The text was developed under the a Creative Commons license (CC BY-NC-SA 4.0) as an open educational resource that can be adapted for future sections of the International Librarianship course or for similar courses offered in library and information programs at other institutions."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 148
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1512",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

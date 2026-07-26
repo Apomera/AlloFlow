@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-639-british-literature-i-anthology-from-the-middle-ages-to-neoclassicism-and",
+  "title": "British Literature I Anthology: From the Middle Ages to Neoclassicism and the Eighteenth Century",
+  "description": "The University of North Georgia Press and Affordable Learning Georgia bring you British Literature I: From the Middle Ages to Neoclassicism and the Eighteenth Century. Featuring over 50 authors and full texts of their works, this anthology follows the shift of monarchic to parliamentarian rule in Britain, and the heroic epic to the more egalitarian novel as genre. Features: Original introductions to The Middle Ages; The Sixteenth Century: The Tudor Age; The Seventeenth Century: The Age of Revolution; and Neoclassicism and the Eighteenth Century Over 100 historical images Instructional Design, including Reading and Review Questions and Key Terms Forthcoming ancillary with open-enabled pedagogy, allowing readers to contribute to the project This textbook is an Open Access Resource. It can be reused, remixed, and reedited freely without seeking permission.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Bonnie J. Robinson - Editor / Laura J. Getty - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of North Georgia Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/british-literature-i-anthology-from-the-middle-ages-to-neoclassicism-and-the-eighteenth-century"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The University of North Georgia Press and Affordable Learning Georgia bring you British Literature I: From the Middle Ages to Neoclassicism and the Eighteenth Century. Featuring over 50 authors and full texts of their works, this anthology follows the shift of monarchic to parliamentarian rule in Britain, and the heroic epic to the more egalitarian novel as genre. Features: Original introductions to The Middle Ages; The Sixteenth Century: The Tudor Age; The Seventeenth Century: The Age of Revolution; and Neoclassicism and the Eighteenth Century Over 100 historical images Instructional Design, including Reading and Review Questions and Key Terms Forthcoming ancillary with open-enabled pedagogy, allowing readers to contribute to the project This textbook is an Open Access Resource. It can be reused, remixed, and reedited freely without seeking permission."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 151
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "639",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

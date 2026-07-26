@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-51080-macalinkayga",
+  "title": "Macalinkayga",
+  "description": "Inanta yar waxay jeceshahay macalimaddeeda, waxa ayna doonaysaa in ay side ayada oo kale noqoto.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Hlengiwe Zondi, Zimbili Dlamini"
+  ],
+  "illustrators": [
+    "Jesse Pietersen"
+  ],
+  "translators": [
+    "Osman Egal"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Hlengiwe Zondi, Zimbili Dlamini",
+      "role": "Author"
+    },
+    {
+      "name": "Osman Egal",
+      "role": "Translation"
+    },
+    {
+      "name": "Jesse Pietersen",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Hlengiwe Zondi, Zimbili Dlamini (Author); Osman Egal (Translation); Jesse Pietersen (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51080",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51080",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "51080",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-bbbbf3e5615caa67",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/8513.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8509.png",
+      "text": "Waan jeclahay macalinkayga.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51080#page=1",
+      "sourceDigest": "sha256:52a0f666bc2f9ad155603f4957390a226839795a867b9923264dcd189a8cfdea"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8510.png",
+      "text": "Waa macallimad wanaagsan. Waa naxariis badan tahay oo dulqaad leh.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51080#page=2",
+      "sourceDigest": "sha256:c2d8c5a10e5d321e9953be6809865042da8ad39ebc5148bfcbc5e08080e707c5"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8511.png",
+      "text": "Timaheeda si qurux badan ayay u tidcan tahay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51080#page=3",
+      "sourceDigest": "sha256:04c7361159f647247f8bd71ecf6896ffb74a004d67f23f3dbea2b30d6fc747c1"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8512.png",
+      "text": "Waxay ku samaysatay kuulo midabo leh.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51080#page=4",
+      "sourceDigest": "sha256:48b9acb8dbcaa33bb2a03b1e3a3fefcae7a4a3e9f1390382e7dfa900420a35a0"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8513.png",
+      "text": "Kuusheedu waa cagaar, cadaan, casaan, iyo jaalle.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51080#page=5",
+      "sourceDigest": "sha256:cd3afb3d00b7e28e0fa5b185882eabfc5e10cd6416d8dc06ba1a1a69aeb89b6a"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8514.png",
+      "text": "Hooyo fadlan ma ii tidic sida macalimadayda?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51080#page=6",
+      "sourceDigest": "sha256:958560f3fb823703e4a86538edd9eb9a903c1a3ee95144881ebc0a12c2ea6a71"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8515.png",
+      "text": "Markaan waynaado waxaan timahayga galin doonaa kuusha.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51080#page=7",
+      "sourceDigest": "sha256:84402f01176d504efdb8551adc64238c5aad1460c7f63651c2b85056fb0a9c1b"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8516.png",
+      "text": "Markaan koro si aan u noqdo sida macallinkayga!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51080#page=8",
+      "sourceDigest": "sha256:237c9e17245f49284b26b93eafc9c51a74334baad72c141c6c111c9ea95efe9b"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 56
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:2f6f3e6c33853bd9e7f8d87db1b34d20b255e1692654971d94b5cdb2d2cee6e5"
+  }
+}

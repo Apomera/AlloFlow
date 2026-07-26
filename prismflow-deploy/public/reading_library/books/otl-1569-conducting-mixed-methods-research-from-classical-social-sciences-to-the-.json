@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1569-conducting-mixed-methods-research-from-classical-social-sciences-to-the-",
+  "title": "Conducting Mixed-Methods Research: From Classical Social Sciences to the Age of Big Data and Analytics",
+  "description": "Scholars in the social sciences are increasingly expected to incorporate both quantitative and qualitative techniques and methods into their research. The growth of “mixed-methods” research is evident in social science disciplines ranging from psychology and management to marketing and information systems. This book is designed to provide principles, strategies, and guidance specifically for researchers in these disciplines so that they can use mixed-methods research more effectively. In thirteen chapters, Conducting Mixed-Methods Research takes readers through the research process, from defining research questions to writing articles using a mixed-methods approach. For those who are well trained in either qualitative or quantitative methods, the book shows them how to think about the purposes of mixed-methods research, design mixed-methods studies, and develop meta-inferences by integrating findings from both methods. Throughout, the discussion is grounded in examples taken from published research, carefully chosen to highlight best practices, thus opening a window into a broad body of mixed-methods research applications.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education"
+  ],
+  "authors": [
+    "Viswanath Venkatesh - Author / Susan (Sue) Brown - Author / Yulia Sullivan - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Virginia Tech Libraries",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/conducting-mixed-methods-research-from-classical-social-sciences-to-the-age-of-big-data-and-analytics"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Scholars in the social sciences are increasingly expected to incorporate both quantitative and qualitative techniques and methods into their research. The growth of “mixed-methods” research is evident in social science disciplines ranging from psychology and management to marketing and information systems. This book is designed to provide principles, strategies, and guidance specifically for researchers in these disciplines so that they can use mixed-methods research more effectively. In thirteen chapters, Conducting Mixed-Methods Research takes readers through the research process, from defining research questions to writing articles using a mixed-methods approach. For those who are well trained in either qualitative or quantitative methods, the book shows them how to think about the purposes of mixed-methods research, design mixed-methods studies, and develop meta-inferences by integrating findings from both methods. Throughout, the discussion is grounded in examples taken from published research, carefully chosen to highlight best practices, thus opening a window into a broad body of mixed-methods research applications."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 178
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1569",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

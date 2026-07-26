@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-21106-untitled-ti",
+  "title": "እናሓጎይ፣ ማንቲለን ሓርማዝን",
+  "description": "እናሓጎኦም ምሸት ምሸት ከመይ ነበረያነበረ ትነግሮም ከም ዝነበረት ሓደ ቖልዓ ዝተዛረቦ።",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Mutai Chepkoech"
+  ],
+  "illustrators": [
+    "Marleen Visser"
+  ],
+  "translators": [
+    "Angesom Abadi"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Mutai Chepkoech",
+      "role": "Author"
+    },
+    {
+      "name": "Angesom Abadi",
+      "role": "Translation"
+    },
+    {
+      "name": "Marleen Visser",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Mutai Chepkoech (Author); Angesom Abadi (Translation); Marleen Visser (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "21106",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-821cefb9cab6d15b",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/18842.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18819.png",
+      "text": "እናሓጎይ “ማንቲለን ሓርማዝን ቐደም ጎረቤትን ኣዕርኽትን እዮም ነይሮም” ኢላ ጀመረት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106#page=1",
+      "sourceDigest": "sha256:4d7eec8e2acd86d59b45c294b399f2a92e61cb043264dabb7dad777f17a08184"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18831.png",
+      "text": "ማንቲለ ቅንጥሻራ ብጣዕሚ ይፈቱ፣ ማሕረስ ግን ዘይፈቱ ሰነፍ እዩ ነይሩ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106#page=2",
+      "sourceDigest": "sha256:04da6d0a70da83fcb17a50436bab48f291eb8d998a2cdd3b2b82a064405f3858"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18832.png",
+      "text": "ማንቲለ ቅንጥሻራ ስለዘይነበሮ፣ ካብ ሓርማዝ በናና ምስራቕ ጀሚሩ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106#page=3",
+      "sourceDigest": "sha256:a4350a797646e67537902e7902120035de5e66abe2265b85b5773fd2c57bb278"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18833.png",
+      "text": "ሓርማዝ “ክረኽቦ እየ እቲ ሌባ” እናበለ ደሪፉ። ማንቲለ ድማ ፈሪሑ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106#page=4",
+      "sourceDigest": "sha256:04cf4b62e7a43db3f15e4ab46c6c91d047cd58de9180e23c9cac5a2bbaf9a8f2"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18834.png",
+      "text": "ህበይ እቲ ሕርሻ ምሕላው ጀሚራ ፤ ማንቲለ ግን ኣይሰረቐን።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106#page=5",
+      "sourceDigest": "sha256:c809d1ce772e41083288992a56548d8cb783560da5cd4265629e889f6fa16ae9"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18835.png",
+      "text": "ሓርማዝ ከፃሪ ናብ ሕርሸኡ ከይዱ። ማንቲለ ኣብ ቖፅሊ ዱባ ተሓቢኡ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106#page=6",
+      "sourceDigest": "sha256:f07826d35ee4c6b7762a02e8c82d448ae0a364a1b766cd52808bfe95de3bd08f"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18836.png",
+      "text": "ሓርማዝ ኣብ ኩሉ ኣንፈት ደልዩ ፤ እቲ ሌባ ግን ክረኽቦ ኣይክኣለን።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106#page=7",
+      "sourceDigest": "sha256:cfac42e74b807eb616d97f9b076783c7bdf9feecdca4f4f37ab84ab7920a5bfe"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18837.png",
+      "text": "ካሊእ ግዜ፣ ማንቲለ ኣብ ውሽጢ ዓብይ ዱባ ተሓብአ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106#page=8",
+      "sourceDigest": "sha256:598ca0e88f6d7ceb78ec51d9c25dadb1afcd67b2f643f126c92badb31184fd7b"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18839.png",
+      "text": "ሓርማዝ ነቲ ዓብይ ዱባ ምስ ርኣዮ ወሓጦ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106#page=9",
+      "sourceDigest": "sha256:97aa693dfde8ff1a1767e166a19ae1ced66154a9efa1eede94f8e72b536fb52d"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18840.png",
+      "text": "እቲ ዱባ ኣብ ውሽጢ ከብዲ ሓርማዝ ተገላበጠ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106#page=10",
+      "sourceDigest": "sha256:3293122f67b563fdecdef10957a0ccc5f6e42b0f24bc20a0b76af6d2e808e734"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18841.png",
+      "text": "ሓርማዝ ነቲ ዱባ እንትፍ ኢልዎ። ማንቲለ ድማ ጎይዩ ኣምለጠ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106#page=11",
+      "sourceDigest": "sha256:f97d9a61d6ef6d8a65e5b168d95aadad2246c2904d372994e0269c17b148e54f"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18842.png",
+      "text": "እናሓጎይ “እዚ ናይቲ ነበረያነበረ መወዳእታ እዩ” በለትና።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21106#page=12",
+      "sourceDigest": "sha256:094f9824b722be63d301dc8ac39e25a3a3aeb112324207a6182a942285bf9ee6"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 106
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:873918fc81cd8d009d2d53244f0a1b4a337415b22987cf0697b64e7eb215638b"
+  }
+}

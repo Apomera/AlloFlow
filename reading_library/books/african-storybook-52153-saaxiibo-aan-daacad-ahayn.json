@@ -1,0 +1,142 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52153-saaxiibo-aan-daacad-ahayn",
+  "title": "Saaxiibo aan daacad ahayn",
+  "description": "sheeko ku saabsan labo saaxiib iyo kolsooni darada ka dhexjirtay xiriirkooda.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Garba Yahaya"
+  ],
+  "illustrators": [],
+  "translators": [
+    "Osman Egal"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Garba Yahaya",
+      "role": "Author"
+    },
+    {
+      "name": "Osman Egal",
+      "role": "Translation"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Garba Yahaya (Author); Osman Egal (Translation)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52153",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52153",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52153",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-e67158760e65e21f",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/42892001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/42892002.png",
+      "text": "Tuulo Africaan ah oo lagu nool yahay, Ndabe, daanyeerka iyo Ndakoro meerkat waxay ahaayeen saaxiibo isku dhaw. Way wada ciyaari jireen, wanaa cuni jireen, waxayna isku ballanqaadeen, \"Waan wadaagi doonaa marwalba wax walba!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52153#page=1",
+      "sourceDigest": "sha256:4f39d0644c8ae830c6eb864d30039bafdb12e069b30cf6f92c5da7ccb3e8cc2d"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/42892003.png",
+      "text": "Maalin, maalmaha ka mid ah, ayay heleen geed cambe ah, \"Aan qaybsano miraha si cadaalad ah!\" buu yiri Ndabè. Laakiin Ndakòrò si hoose u yiri, \"Anigu waxaa xaq uleeyahay in badan.\" Wuxuu ku qariyay godkii cambihii dheeraadka ahaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52153#page=2",
+      "sourceDigest": "sha256:2d6f5a8eac136d1cb2c25ad6044d536fc81e2fc2b2d3753d82c5ede156a2cb98"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/42892004.png",
+      "text": "\"Muxuu cambeheygu u yar yihiin?\" Ndabè ayaa waydiiyay. Ndakòrò been buu sheegay, \"Shimbiraha ayaa xaday!\" Ndabè wuu tuhmay, balse wuu aaminay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52153#page=3",
+      "sourceDigest": "sha256:256f13e2143e61d537fa2bb61a329945e3bedba288c7964c09cd5abfd1163fc3"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/42892005.png",
+      "text": "Markii danbe, Tuma ayaa weeraray shinida godkeeda. \"Ila lawadaaga malabka!\" Ndabè ayaa ku dhawaaqay. \"Shinihii kama tagin wax malab ah!\" Ayuu Ndakòrò ayaa ku dooday, isagoo faraha malabka leefahaya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52153#page=4",
+      "sourceDigest": "sha256:2098ba1fc24bc3649a48d2d60b30ea3301c36c117b8942c71276a925c4b7f84c"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/42892006.png",
+      "text": "Ndabè shaki ayaa ku kordhay. Waxay dhigtay Dabin. \"Hadiyad ka timid shinida!\" Ndakòrò ayaa soo dhuuntay habaynkii--THUD! wuxuu ku dhacay godka!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52153#page=5",
+      "sourceDigest": "sha256:41929e5bb417eb3cbbad4079dcec48571b5e35ca7d55eaf19223d04117f00f96"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/42892007.png",
+      "text": "\"Maxaad beenta u sheegtay?\" buu Ndabè waydiiyay. Ndakòrò wuu ooyay, \"Wax badan ayaan naftayda u rabay!\" Ndabè wuu taahay, \"Daacad la'aantu waxay burburisaa kalsoonida.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52153#page=6",
+      "sourceDigest": "sha256:e9b0ef37956b5996e435222323cd1360b30969b52539cd9ba60959abbc775fbd"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/42892008.png",
+      "text": "Ndakòrò wuu soo celiyay waxkasta oo uu xaday, I cafi ayuu ka baryay. Reer tuulaadkii waxay ku ganuunanaceen, \"Ma is badali doonaa?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52153#page=7",
+      "sourceDigest": "sha256:dfa4a10ce9a40e35c8de462cace4ef3e8750c1823cbc8fe04d63747e7ff312ad"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/42892009.png",
+      "text": "Ndakòrò si adag ayuu u shaqeeyay si uu dib ugu dhiso kalsoonida. Ndabè ayaa dhoolla cadeeyay \"Saaxiibtinimada dhabta ahi waxay u baahan tahay daacadnimo.\" Waxay ballan adag qaadeen inaysan mar dambe wax qarin ama been sheegin.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52153#page=8",
+      "sourceDigest": "sha256:dac12e6c8aba19149d88f231984f1a495e3841f84d3396b66a4f90a27b37dc22"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 224
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:b70aff77f1e3b3c3fd889e7674e1da8311b11d864e5684c29408fd2851234972"
+  }
+}

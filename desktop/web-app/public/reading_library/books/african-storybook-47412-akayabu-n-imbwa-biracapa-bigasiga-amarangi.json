@@ -1,0 +1,211 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47412-akayabu-n-imbwa-biracapa-bigasiga-amarangi",
+  "title": "Akayabu n'Imbwa biracapa bigasiga amarangi",
+  "description": "Akayabu n'Imbwa ni abagenzi. Biraryoherwa kandi biranezerwa no gukorera ibintu vyose hamwe.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Elke and René Leisink"
+  ],
+  "illustrators": [
+    "Elke and René Leisink"
+  ],
+  "translators": [
+    "Fanuel Ndayishimiye"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Elke and René Leisink",
+      "role": "Author"
+    },
+    {
+      "name": "Fanuel Ndayishimiye",
+      "role": "Translation"
+    },
+    {
+      "name": "Elke and René Leisink",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Elke and René Leisink (Author); Fanuel Ndayishimiye (Translation); Elke and René Leisink (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47412",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-4684db7f738e8c9c",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/18659.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18660.png",
+      "text": "Aka ni Akayabu. Iyi ni Imbwa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=1",
+      "sourceDigest": "sha256:f15115c4699d11b4997832b284bfb8865cee7459302dd3f3bf27b83c22763326"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18661.png",
+      "text": "Akayabu n'Imbwa bigomba gucapa. Akayabu n'Imbwa bigomba gusiga amarangi. Akayabu n'Imbwa bishaka gukora ibijanye n'ubuhinga. Imbwa iratangura. Ifata ikaramu ry'igiti n'urukaratasi. Urukaratasi rumeze nk'ikwadarato.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=2",
+      "sourceDigest": "sha256:600955a2f20ee64f7be4ac07e879dfe1383f847e16faad782b9e3acdde22e784"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18662.png",
+      "text": "Ubwa mbere, Imbwa icapa umuzingi. Uwo muzingi umeze nk'umubiri w'Akayabu. Neza cane, ivyo biroroshe!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=3",
+      "sourceDigest": "sha256:a6d4bffd5907b4296d3c48c2a14f2ab0796d29870527f0e1b2d383ea43d2cde2"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18663.png",
+      "text": "Hanyuma icapa inyabutatu zibiri mu mpera hejuru ya wa muzingi. Izo nyabutatu nizo matwi y'Akayabu yongera icapa inyabutatu yirabura mu muzingi. Iyo nyabutatu niryo zuru ry'Akayabu ica icapa umurongo hejuru y'izuru.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=4",
+      "sourceDigest": "sha256:7779f4018416a1c632a9315de2f3d64dc6144b3b34a8404f0a9eb0e6a72e9487"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18664.png",
+      "text": "Ubu naho icafye amaso n'ingohe z'Akayabu. Amaso ni utuburungu. Ingohe ni uturongo tubiri. Neza cane, ivyo biroroshe!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=5",
+      "sourceDigest": "sha256:971934259e8c6fa5953204fc3a148e56f47dd8d4c639f1536ca71fcec3cd026d"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18665.png",
+      "text": "Hanyuma icapa umunwa w'Akayabu. Umunwa ni akarongo. Umeze nk'indome 'w' yongera icapa ubwoya bw'Akayabu. Utwoya dutatu idushira ku ruhande rw'ibubamfu, utundi twoya ku ruhande rw' iburyo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=6",
+      "sourceDigest": "sha256:2eb6c798b76dabaec9a28438f807ec7167b48926d22a9970fa3bbd1ca3abe650"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18666.png",
+      "text": "Igikorwa co gucapa gisa n'igiheze. Ica icapa amaboko n'amaguru vy'Akayabu. Inzara ni utuzingi, ica icapa umurizo w'Akayabu. Umurizo ni umurongo muremure.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=7",
+      "sourceDigest": "sha256:2998781ff2c94bc9c969ca9c5c998ee4d0a365c9c597c0cb06af9dc3f235060e"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18667.png",
+      "text": "Ubwa nyuma icapa imirongo ku mubiri w'Akayabu. Yongera isiga umubiri w'akayabu mw'ibara ry'umuhondo. Igikorwa co gucapa kiba kirarangiye. Neza cane, ni vyiza!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=8",
+      "sourceDigest": "sha256:308875fff603b21905a380e886ac5ed5941d68204ab75a16fbfd3df2d5ec7ffe"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18668.png",
+      "text": "Ubu naho haramukiwe Akayabu. Karafashe ikaramu ry'igiti n'urukaratasi. Urukaratasi rumeze nk'urukiramende.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=9",
+      "sourceDigest": "sha256:75d3b9b7b1bbbd8fc1dffba83cbb39e3cc619ef79df4e8a15a74dab928d45af6"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18669.png",
+      "text": "Ubwa mbere Akayabu karacapa umuzingi. Uwo muzingi niwo mubiri w'Imbwa. Neza cane, ni vyiza!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=10",
+      "sourceDigest": "sha256:47091aeda962a631c709300acd89ff8e07e0646029ac4412b8e93a9339aba14e"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18670.png",
+      "text": "Akayabu karacapa utumenyetso tubiri mu mfuruka y'umuzingi. Utwo tumenyetso tubiri nitwo matwi y'Imbwa, gacapa n'akazingi kirabura mu muzingi. Ako kazingi kirabura niryo zuru ry'Imbwa, kaca gacapa umurongo hejuru y'izuru.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=11",
+      "sourceDigest": "sha256:94178845356fe9bfaa18337995796c61be3036824c6d0b2d63af6133561ae7ad"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18671.png",
+      "text": "Ubu naho gaca gacapa amaso n'ingohe z'imbwa. Amaso ni utuburungu tubiri. Ingohe ni uturongo tubiri. Ni vyiza cane!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=12",
+      "sourceDigest": "sha256:332062ae5ad914ce033f4960212ccc870c492bab4ddc047daba724eadeea8579"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18672.png",
+      "text": "Ubu naho gaca gacapa umunwa w'Imbwa. Umunwa ni akarongo. N'ubu nyene, umunwa umeze nk'indome 'w' gaca gacapa utuburungu iruhande rw'umunwa w'Imbwa. Utuburungu dutatu ku ruhande rw'ibubamfu, utundi dutatu ku ruhande rw'Iburyo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=13",
+      "sourceDigest": "sha256:8914f5d120db810d6e22059ed7a283ca4984e0405b582f3ef2a7bdeff8ff2d59"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18673.png",
+      "text": "Igikorwa co gucapa gisa n'igiheze. Akayabu gaca gacapa amaboko n'amaguru vy'Imbwa. Amaboko n'amaguru ni uturongo, gaca gacapa amano y'Imbwa. Amano y'Imbwa ni utuzingi, kaca gacapa umurizo w'Imbwa. Umurizo w'imbwa umeze nk'ishurwe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=14",
+      "sourceDigest": "sha256:498f6ed73635d9499c2059a5a15d61637c55de01a79acb21461b635a934cbe44"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18674.png",
+      "text": "Ubwa nyuma, gacapa utuzingi twirabura ku mubiri w'Imbwa, gaca gasiga umubiri w'imbwa mw'irangi ryirabura. Igikorwa co gucapa kiba kirarangiye. Neza cane!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=15",
+      "sourceDigest": "sha256:dcfdbdd72822ed5800a646edc2c4c46d87c00c37ea9febf137318defa41023ee"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18675.png",
+      "text": "Tuzosubira Kayabu. Tuzongera igikorwa co gucapa inyabu. Tuzosubira wa Mbwa. Tuzosubira igikorwa co gucapa Imbwa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=16",
+      "sourceDigest": "sha256:cf40d700ecef99f86ca021d6fab8720b1b7ec113bb8df721032117a30365206f"
+    },
+    {
+      "n": 17,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18782.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47412#page=17",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "stats": {
+    "pages": 17,
+    "words": 331
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:dbb7156923ef4c54e2c863ed37c83cd2f43a6a6e40cf8d3392d54d3e9412cde9"
+  }
+}

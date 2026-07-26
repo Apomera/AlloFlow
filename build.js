@@ -580,6 +580,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'AccessibilityEvidence',
+        filename: 'accessibility_evidence_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'AccessibilityLab',
         filename: 'accessibility_lab_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1252,6 +1257,7 @@ const COMPANION_ASSET_DIRS = [
     'alphafold_explorer',
     'circuit_shelf',
     'molecule_shelf',
+    'sre-assets',
     'sim_shelf',
     'timeline_studio',
     'zoom_gallery'
@@ -1307,6 +1313,7 @@ function simplePureCompilePair(name, fileBase, guardKey) {
 }
 
 const COMPILE_PAIRS = [
+    simplePureCompilePair('AccessibilityEvidence', 'accessibility_evidence', 'AccessibilityEvidenceModule'),
     simplePureCompilePair('VerificationPolicy', 'verification_policy', 'VerificationPolicyModule'),
     simplePureCompilePair('DocBuilderRenderer', 'doc_builder_renderer', 'DocBuilderRendererModule'),
     {
@@ -1901,7 +1908,9 @@ if (dryRun) {
         'stem_lab/stem_lab_module.js',
         'stem_lab/stem_lumen_evidence.js',
         'stem_lab/stem_lumen_documents.js',
-        'stem_lab/stem_lumen_study.js'
+        'stem_lab/stem_lumen_study.js',
+        // Lazy-loaded visual coding runtime (self-hosted for offline/CSP use)
+        'stem_lab/blockly_runtime.bundle.js'
     ];
     let copyCount = 0;
     modulesToCopy.forEach(f => {

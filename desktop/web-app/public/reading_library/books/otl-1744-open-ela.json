@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1744-open-ela",
+  "title": "Open ELA",
+  "description": "Open ELA is a complete course in Reading and Language Arts for instructors and self-directed learners in Adult Basic Education settings. These materials are designed to aid students in completing the GED exam and to support college and career pathways. This course includes resources for the Reading and Language Arts, Social Studies, and Science portions of the GED exam. It also includes GED Study Guides and lessons contextualized to college and career exploration and readiness. Open ELA covers six units of study: Understanding Literature, Intro to Communications, Metacognitive Reading, Film & Television Studies, Reading for Science & Social Studies, and Journalism.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education"
+  ],
+  "authors": [
+    "Alexander Greengaard - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Pima Community College",
+  "license": "CC0 1.0 catalog metadata · linked title: No Rights Reserved",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/open-ela"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "No Rights Reserved"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Open ELA is a complete course in Reading and Language Arts for instructors and self-directed learners in Adult Basic Education settings. These materials are designed to aid students in completing the GED exam and to support college and career pathways. This course includes resources for the Reading and Language Arts, Social Studies, and Science portions of the GED exam. It also includes GED Study Guides and lessons contextualized to college and career exploration and readiness. Open ELA covers six units of study: Understanding Literature, Intro to Communications, Metacognitive Reading, Film & Television Studies, Reading for Science & Social Studies, and Journalism."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: No Rights Reserved. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 126
+  },
+  "linkedContentLicense": "No Rights Reserved",
+  "externalRecordId": "1744",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

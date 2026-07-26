@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-125-developing-new-products-and-services",
+  "title": "Developing New Products and Services",
+  "description": "Developing New Products and Services by Sanders is an outstanding contribution to market research. The book focuses on the upfront activities and ideas for new product and service development. A central theme of Developing New Products and Services is that there is, or should be, a constant struggle going on in every organization, business, and system between delivering feature-rich versions of products and services using extravagant engineering and delivering low-cost versions of products and services using frugal engineering. Students will come away with this notion and how to manifest it as a contributing employee at any company. A number of powerful concepts and tools are presented so your students can better understand how to facilitate new product development. For example, three templates are featured that facilitate new product and service development. The FAD (features, attributes, and design) template is used to identify the features and attributes that can be used for product and service differentiation. The Ten–Ten planning process contains two templates: an Organizational and Industry Analysis template and the Business Plan Overview template. These two templates coupled with the FAD template can be used to develop a full-blown business plan. In addition, Developing New Products and Services includes the following topics: entrepreneurship, technology and product life cycles, product and service versioning, product line optimization, creativity, lock-in real options, business valuation, and project management. Evaluate Developing New Products and Services by Sanders for your marketing courses today.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Management",
+    "Engineering & Technology"
+  ],
+  "authors": [
+    "G. Lawrence Sanders - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Saylor Foundation",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/developing-new-products-and-services"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Developing New Products and Services by Sanders is an outstanding contribution to market research. The book focuses on the upfront activities and ideas for new product and service development. A central theme of Developing New Products and Services is that there is, or should be, a constant struggle going on in every organization, business, and system between delivering feature-rich versions of products and services using extravagant engineering and delivering low-cost versions of products and services using frugal engineering. Students will come away with this notion and how to manifest it as a contributing employee at any company. A number of powerful concepts and tools are presented so your students can better understand how to facilitate new product development. For example, three templates are featured that facilitate new product and service development. The FAD (features, attributes, and design) template is used to identify the features and attributes that can be used for product and service differentiation. The Ten–Ten planning process contains two templates: an Organizational and Industry Analysis template and the Business Plan Overview template. These two templates coupled with the FAD template can be used to develop a full-blown business plan. In addition, Developing New Products and Services includes the following topics: entrepreneurship, technology and product life cycles, product and service versioning, product line optimization, creativity, lock-in real options, business valuation, and project management. Evaluate Developing New Products and Services by Sanders for your marketing courses today."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2012."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 260
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "125",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

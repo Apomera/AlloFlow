@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1687-abordaje-integral-de-la-obesidad",
+  "title": "Abordaje Integral de la Obesidad",
+  "description": "El libro aborda la obesidad desde diversas perspectivas, comenzando con un análisis global en el Capítulo I sobre factores socioeconómicos y culturales, y la influencia de la globalización en los hábitos alimentarios. Se examina la situación específica en Ecuador en el Capítulo II, donde se destaca la alta prevalencia de obesidad en adultos y su relación con el consumo de alimentos procesados. Los siguientes capítulos se centran en aspectos médicos, bioquímicos y nutricionales de la obesidad, así como en intervenciones dietéticas y de actividad física. Se subraya la importancia de la intervención psicológica y se analiza la influencia de las redes sociales y el marketing en los hábitos alimentarios. Se discuten también las complicaciones musculoesqueléticas y se detalla el papel crucial de los desequilibrios hormonales en la obesidad y sus implicaciones metabólicas. El libro proporciona una visión integral de la obesidad y sugiere enfoques multidisciplinarios para su prevención y control.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine - Nutrition"
+  ],
+  "authors": [
+    "Noemí Judith Tayupanda-Cuvi - Author / Carmen Patricia Viteri-Robayo - Author / Katherine Yaritza Girón-Saltos - Author / María Fernanda Marizande-Lozada - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/abordaje-integral-de-la-obesidad"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "El libro aborda la obesidad desde diversas perspectivas, comenzando con un análisis global en el Capítulo I sobre factores socioeconómicos y culturales, y la influencia de la globalización en los hábitos alimentarios. Se examina la situación específica en Ecuador en el Capítulo II, donde se destaca la alta prevalencia de obesidad en adultos y su relación con el consumo de alimentos procesados. Los siguientes capítulos se centran en aspectos médicos, bioquímicos y nutricionales de la obesidad, así como en intervenciones dietéticas y de actividad física. Se subraya la importancia de la intervención psicológica y se analiza la influencia de las redes sociales y el marketing en los hábitos alimentarios. Se discuten también las complicaciones musculoesqueléticas y se detalla el papel crucial de los desequilibrios hormonales en la obesidad y sus implicaciones metabólicas. El libro proporciona una visión integral de la obesidad y sugiere enfoques multidisciplinarios para su prevención y control."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 173
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1687",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

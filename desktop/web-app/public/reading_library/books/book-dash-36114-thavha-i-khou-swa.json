@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-36114-thavha-i-khou-swa",
+  "title": "Thavha i Khou Swa",
+  "description": "Thuli na khonani dzawe vha funa u tamba “Thavha i Khou Swa”. Fhedzi ḓuvha ḽiṅwe ndi musi thavha i tshi swa zwa vhukuma nahone zwimela zwoṱhe zwo nakaho zwi re thavhani zwa swa ha sala miora. Thuli na khonani dzawe vha ṱungufhala … u swika vha tshi vhona mitomba miṱuku mutswuku na midala. Hu nga vha hu mini?",
+  "language": "Tshivenḓa",
+  "langCode": "ven",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Let's learn!",
+    "Nature and looking after our planet"
+  ],
+  "authors": [
+    "Kirsty Paxton"
+  ],
+  "illustrators": [
+    "Julie Smith-Belton"
+  ],
+  "contributors": [
+    {
+      "name": "Nadene Reignier",
+      "role": "Designer"
+    },
+    {
+      "name": "Margot Bertelsmann",
+      "role": "Editor"
+    },
+    {
+      "name": "Kirsty Paxton",
+      "role": "Writer"
+    },
+    {
+      "name": "Julie Smith-Belton",
+      "role": "Illustrator"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/thavha-i-khou-swa/",
+    "attributionUrl": "https://bookdash.org/books/thavha-i-khou-swa/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=theres-a-fire-on-the-mountain"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2024/09/theres-a-fire-on-the-mountain_ve_cover-1-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2024/09/theres-a-fire-on-the-mountain_ve_cover-1-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Thuli na khonani dzawe vha funa u tamba “Thavha i Khou Swa”. Fhedzi ḓuvha ḽiṅwe ndi musi thavha i tshi swa zwa vhukuma nahone zwimela zwoṱhe zwo nakaho zwi re thavhani zwa swa ha sala miora. Thuli na khonani dzawe vha ṱungufhala … u swika vha tshi vhona mitomba miṱuku mutswuku na midala. Hu nga vha hu mini?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Nadene Reignier (Designer); Margot Bertelsmann (Editor); Kirsty Paxton (Writer); Julie Smith-Belton (Illustrator)\n\nLanguage: Tshivenḓa. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=theres-a-fire-on-the-mountain"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 124
+  }
+}

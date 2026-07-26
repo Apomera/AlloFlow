@@ -180,6 +180,34 @@ describe('Guided Mode improvement wiring', () => {
     expect(app).toContain('openGuidedHistoryItem={handleRestoreView}');
   });
 
+  it('builds a validated, review-first AI Guided path with a local fallback', () => {
+    expect(app).toContain('const generateGuidedPlanFromGoal = async (rawGoal, refinementContext = null) =>');
+    expect(app).toContain("const validStepIds = new Set(selectableSteps.map(step => step.id))");
+    expect(app).toContain("stepIds.filter(id => validStepIds.has(id))");
+    expect(app).toContain("deliverySetting: allowedSettings.has(raw.deliverySetting)");
+    expect(app).toContain("return { ...fallbackPlan(), fallbackReason:");
+    expect(app).toContain("const refinement = cleanText(refinementContext?.refinement, 500)");
+    expect(app).toContain("CURRENT REVIEWED PLAN:");
+    expect(app).toContain("TEACHER'S NEW REFINEMENT:");
+    expect(app).toContain('generateGuidedPlanFromGoal={generateGuidedPlanFromGoal}');
+    expect(banner).toContain("t('guided.ai_plan_privacy')");
+    expect(banner).toContain('applyGuidedPreset({ id: \'ai-plan\'');
+    expect(banner).toContain('setPendingAiPlanApply(true)');
+    expect(banner).toContain('requestAiPlanRefinement');
+    expect(banner).toContain('guided-ai-roadmap-title');
+    expect(banner).toContain('const getAiPlannerQuestions = (goal) =>');
+    expect(banner).toContain('return questions.slice(0, 2)');
+    expect(banner).toContain('const aiPlanReadinessItems = (() =>');
+    expect(banner).toContain("aiPlanDeliveryRecommendation.primary.includes('QTI')");
+    expect(banner).toContain('role="dialog" aria-modal="true"');
+    expect(banner).toContain("localStorage.setItem('allo_guided_saved_plans'");
+    expect(banner).toContain("localStorage.setItem('allo_guided_planner_draft'");
+    expect(banner).toContain('const summarizeAiPlanChanges = (previous, next) =>');
+    expect(banner).toContain('const estimateAiPlanMinutes = (stepIds) =>');
+    expect(banner).toContain("requestAiGuidedPlan('best-judgment')");
+    expect(banner).toContain('guided-planner-recovery-title');
+    expect(banner).toContain('guided-ai-changes-title');
+  });
   it('adds outcome phases, assignment directions, and comprehensive delivery as real milestones', () => {
     expect(app).toContain('const GUIDED_PHASES = [');
     expect(app).toContain("{ id: 'directions', phase: 'assign'");
@@ -233,9 +261,9 @@ describe('Guided Mode controlled-journey safeguards', () => {
 
   it('locks all generation variants and requires the source/final bookends', () => {
     expect(app).toContain('isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting}');
-    expect(app).toContain("new Set(['source-input', ...raw.selectedIds.filter(id => valid.has(id)), 'package-deliver', '_final'])");
-    expect(app).toContain("if (id === 'source-input' || id === 'package-deliver' || id === '_final') return");
-    expect(banner).toContain("const locked = s.id === 'source-input' || s.id === 'package-deliver' || s.id === '_final'");
+    expect(app).toContain("new Set(['source-input', ...raw.selectedIds.filter(id => valid.has(id)), 'directions', 'package-deliver', '_final'])");
+    expect(app).toContain("if (id === 'source-input' || id === 'directions' || id === 'package-deliver' || id === '_final') return");
+    expect(banner).toContain("const locked = s.id === 'source-input' || s.id === 'directions' || s.id === 'package-deliver' || s.id === '_final'");
   });
 
   it('counts entered source text as completed and ignores panel-shell clicks', () => {

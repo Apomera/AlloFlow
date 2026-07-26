@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-987-integrated-and-open-interpreter-education",
+  "title": "Integrated and Open Interpreter Education",
+  "description": "This Open Educational Resource (OER) on interpreting offers authors and readers free and open access to current, relevant, easy-to-access, and free materials. The editors have created a space where emerging scholars in the field of signed language interpreting make contributions with the ability to revise as the interpreting studies discipline and the scholars, themselves, develop and change. This OER provides faculty and students readings and practical application experiences that connect program specific coursework and concepts across the interpreter education curriculum emphasizing the holistic nature of the field of interpreting.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Student Success"
+  ],
+  "authors": [
+    "Elisa Maroney - Author / Amanda Smith - Author / Sarah Hewlett - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Oregon Educational Resources",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/integrated-and-open-interpreter-education"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This Open Educational Resource (OER) on interpreting offers authors and readers free and open access to current, relevant, easy-to-access, and free materials. The editors have created a space where emerging scholars in the field of signed language interpreting make contributions with the ability to revise as the interpreting studies discipline and the scholars, themselves, develop and change. This OER provides faculty and students readings and practical application experiences that connect program specific coursework and concepts across the interpreter education curriculum emphasizing the holistic nature of the field of interpreting."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 112
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "987",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

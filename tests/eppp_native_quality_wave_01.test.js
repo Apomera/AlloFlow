@@ -8,6 +8,11 @@ const json = (relativePath) => JSON.parse(read(relativePath));
 const mojibake = /[ÃÂ]|â[€†€™œž“”–—‰ˆ]|ðŸ|ï¿½/u;
 const staleKey = /\bCorrect\s*:\s*\([A-D]\)/i;
 const stackedModifiers = /\b(?:strictly|selectively|explicitly|primarily|exclusively|uniquely|purely|definitively|significantly|essentially|completely|absolutely|formally|objectively|rigorously|correctly|effectively|structurally|totally|solely|strongly|conclusively|perfectly|entirely|currently|actively)\b(?:[\s,]+\b(?:strictly|selectively|explicitly|primarily|exclusively|uniquely|purely|definitively|significantly|essentially|completely|absolutely|formally|objectively|rigorously|correctly|effectively|structurally|totally|solely|strongly|conclusively|perfectly|entirely|currently|actively)\b){2,}/i;
+const supersedingReviewWaveById = new Map([
+  ['eppp-v3-intervention-060', 'eppp-native-quality-wave-16'],
+  ['eppp-v2-biological-014', 'eppp-native-quality-wave-13'],
+  ['eppp-v2-biological-045', 'eppp-native-quality-wave-14'],
+]);
 
 describe('EPPP native quality repair wave 01', () => {
   it('records the exact completed repair scope and the honest follow-up queue', () => {
@@ -50,8 +55,12 @@ describe('EPPP native quality repair wave 01', () => {
     const byId = new Map(bank.map((item) => [item.id, item]));
     for (const id of audit.rewrittenItemIds) {
       const item = byId.get(id);
+      const supersedingWave = supersedingReviewWaveById.get(id);
       expect(item).toBeTruthy();
-      expect(item).toMatchObject({ wordingReviewStatus: 'editorial-rewrite-pass', wordingReviewWave: 'eppp-native-quality-wave-01' });
+      expect(item).toMatchObject({
+        wordingReviewStatus: supersedingWave ? 'editorial-deep-rewrite-pass' : 'editorial-rewrite-pass',
+        wordingReviewWave: supersedingWave || 'eppp-native-quality-wave-01',
+      });
       expect(item.choices).toHaveLength(4);
       expect(item.choiceRationales).toHaveLength(4);
       expect(item.choiceRationales.every((feedback) => feedback.length >= 60)).toBe(true);

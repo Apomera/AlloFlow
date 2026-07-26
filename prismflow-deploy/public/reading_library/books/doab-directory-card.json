@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "doab-directory-card",
+  "title": "Directory of Open Access Books",
+  "description": "Discovery service for peer-reviewed open-access books and publishers.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "doab",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Scholarly books",
+    "Peer review",
+    "Open access",
+    "Research"
+  ],
+  "authors": [
+    "DOAB Foundation"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Directory of Open Access Books",
+  "license": "Directory discovery · linked title licenses vary",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "doab",
+    "name": "Directory of Open Access Books",
+    "url": "https://www.doabooks.org/"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.doabooks.org/en/doab",
+    "reason": "DOAB indexes open-access books with title-level licenses. This card does not copy book content."
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Discovery service for peer-reviewed open-access books and publishers."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Open the official source to browse and read available materials."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "DOAB indexes open-access books with title-level licenses. This card does not copy book content."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 32
+  },
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://www.doabooks.org/en/doab",
+    "note": "DOAB indexes open-access books with title-level licenses. This card does not copy book content."
+  }
+}

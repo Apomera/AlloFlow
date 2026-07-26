@@ -1,6 +1,6 @@
 # EPPP native pack editorial QA report
 
-Generated: 2026-07-23T21:02:34.419Z
+Generated: 2026-07-25T22:31:03.939Z
 
 Pack: EPPP Part 1 — Source-Reviewed Practice Bank v3.1.0
 
@@ -610,7 +610,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-v2-cognitive-affective-032 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-cognitive-affective-033 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-cognitive-affective-034 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
-| eppp-v2-cognitive-affective-035 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
+| eppp-v2-cognitive-affective-035 | cognitive-affective | legacy-seeded-re-authored | pass | 2 |
 | eppp-v2-cognitive-affective-036 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-cognitive-affective-037 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-cognitive-affective-038 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
@@ -912,7 +912,7 @@ Editorial QA confirms cited answer support, one-best-answer structure, distinct 
 | eppp-v2-research-011 | research | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-research-012 | research | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-research-013 | research | legacy-seeded-re-authored | pass | 1 |
-| eppp-v2-research-014 | research | legacy-seeded-re-authored | pass | 1 |
+| eppp-v2-research-014 | research | legacy-seeded-re-authored | pass | 2 |
 | eppp-v2-research-015 | research | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-research-016 | research | legacy-seeded-re-authored | pass | 1 |
 | eppp-v2-research-017 | research | legacy-seeded-re-authored | pass | 1 |

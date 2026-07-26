@@ -1,7 +1,7 @@
 # AlloFlow Evidence Graph and Inquiry Interoperability
 
-Status: Evidence Graph schema v1 / generator v1.0.0  
-Implemented: 2026-07-23
+Status: Evidence Graph schema v2 / generator v1.1.0  
+Implemented: 2026-07-23; integrity and recovery revision: 2026-07-25
 
 ## Purpose
 
@@ -22,7 +22,8 @@ Each graph contains:
 
 - `schemaVersion`
 - `generatorVersion`
-- `generatedAt`
+- `snapshotId` (stable for the same portfolio content)
+- `generatedAt` (derived from the portfolio revision time, not wall-clock render time)
 - `questionNodeId`
 - `nodes[]`
 - `edges[]`
@@ -62,7 +63,10 @@ The graph reports, but does not grade:
 - claims without explicit support;
 - supporting links without warrants;
 - inquiries without complicating or contradictory evidence;
-- evidence that has been collected but not connected to an argument.
+- evidence that has been collected but not connected to an argument;
+- missing, ambiguous, duplicate, or self-referential record identifiers;
+- cycles in `derivedFrom` provenance;
+- duplicate citation records.
 
 The Research Hub’s existing argument audit incorporates missing-warrant and unlinked-evidence counts. These prompts are revision aids, not automated evaluation.
 
@@ -74,7 +78,21 @@ The Research Hub can download:
 2. **W3C Web Annotation JSON-LD** — close-reading annotations represented as `AnnotationPage` / `Annotation` objects with `TextualBody` bodies and `TextQuoteSelector` targets.
 3. **CSL-JSON** — source and tool-citation records for citation processors.
 4. **RO-Crate 1.3 metadata** — `ro-crate-metadata.json` describing the inquiry entities, graph edges, and provenance. The metadata file should be kept with the portfolio and artifact files it describes.
-5. **Complete interoperability bundle** — a bounded JSON object containing all four representations.
+5. **Complete interoperability bundle** — a validated, bounded JSON object containing all four representations plus a privacy-redacted portable portfolio for round-trip import.
+
+Exports are checked before download. The graph and annotation-page identities are content-stable; `exportedAt` records the separate act of downloading a bundle. JSON Schemas live in `docs/schemas/` for the graph, portfolio, and bundle.
+
+## Repair, import, and recovery
+
+The Evidence Workbench lets learners add, revise, or remove explicit relationships without deleting the underlying claim or evidence. Warrant prompts adapt to the selected developmental level.
+
+Portfolio and bundle imports are previewed before mutation. Learners choose **merge** or **replace**, and AlloFlow writes a recovery snapshot first. Import accepts portfolio schema versions 1–6 and migrates recognized fields into the current v6 substrate. Unknown future schemas fail closed.
+
+Large audio and image data URLs are first saved inline, then copied to IndexedDB and replaced in localStorage with stable media references. If IndexedDB is unavailable, the original localStorage behavior remains. Missing detached media is reported without discarding textual records.
+
+## Citation fidelity
+
+CSL-JSON export supports structured names, issued/accessed dates, container title, publisher and place, DOI, ISBN, ISSN, volume, issue, page/locator, language, and URL. Duplicate DOI, normalized URL, or title/date records are reported and deduplicated at export.
 
 The RO-Crate export is metadata, not a ZIP archive. It does not silently copy source texts or large tool payloads into the crate.
 

@@ -59,15 +59,18 @@
 
   var PREVIEW_SUPPORTED_TYPES = ['analysis', 'glossary', 'quiz', 'outline', 'sentence-frames', 'word-sounds', 'simplified'];
   var REVIEW_SCORECARD_STORAGE_KEY = 'alloflow_accessibility_review_scorecards_v1';
+  var REVIEW_SCORECARD_VERSION = 3;
+  var ACCESSIBILITY_RENDERER_REVISION = 'alloflow-workspace-2026-07-25-v1';
+  var REVIEW_HISTORY_LIMIT = 20;
   var REVIEW_CHECKS = [
-    { id: 'keyboard', label: 'Keyboard-only task completion', hint: 'Complete the primary task without a mouse or touch input.' },
-    { id: 'focus', label: 'Focus order and visibility', hint: 'Focus stays visible, follows a logical order, and is never trapped.' },
-    { id: 'reflow', label: 'Reflow and zoom', hint: 'At narrow width or high zoom, content remains usable without loss or two-axis scrolling.' },
-    { id: 'text_spacing', label: 'Text-spacing resilience', hint: 'Increased line, paragraph, word, and letter spacing does not hide or overlap content.' },
-    { id: 'errors', label: 'Instructions, errors, and feedback', hint: 'Required input, errors, and feedback are specific, perceivable, and actionable.' },
-    { id: 'motion', label: 'Reduced motion', hint: 'The task remains understandable and usable when motion is reduced.' },
-    { id: 'media', label: 'Media alternatives and controls', hint: 'Relevant audio or video has accessible controls and equivalent alternatives, or is not applicable.' },
-    { id: 'assistive_tech', label: 'Real assistive-technology task', hint: 'Complete the task with an appropriate screen reader or other required assistive technology.' },
+    { id: 'keyboard', wcag: '2.1.1', severity: 'serious', label: 'Keyboard-only task completion', hint: 'Complete the primary task without a mouse or touch input.' },
+    { id: 'focus', wcag: '2.4.3, 2.4.7, 2.4.11', severity: 'serious', label: 'Focus order and visibility', hint: 'Focus stays visible, follows a logical order, and is never trapped.' },
+    { id: 'reflow', wcag: '1.4.10', severity: 'serious', label: 'Reflow and zoom', hint: 'At narrow width or high zoom, content remains usable without loss or two-axis scrolling.' },
+    { id: 'text_spacing', wcag: '1.4.12', severity: 'moderate', label: 'Text-spacing resilience', hint: 'Increased line, paragraph, word, and letter spacing does not hide or overlap content.' },
+    { id: 'errors', wcag: '3.3.1, 3.3.2, 4.1.3', severity: 'serious', label: 'Instructions, errors, and feedback', hint: 'Required input, errors, and feedback are specific, perceivable, and actionable.' },
+    { id: 'motion', wcag: '2.2.2, 2.3.3', severity: 'serious', label: 'Reduced motion', hint: 'The task remains understandable and usable when motion is reduced.' },
+    { id: 'media', wcag: '1.2', severity: 'serious', label: 'Media alternatives and controls', hint: 'Relevant audio or video has accessible controls and equivalent alternatives, or is not applicable.' },
+    { id: 'assistive_tech', wcag: '4.1.2', severity: 'serious', label: 'Real assistive-technology task', hint: 'Complete the task with an appropriate screen reader or other required assistive technology.' },
   ];
 
   function reviewItemKey(item) {
@@ -76,33 +79,233 @@
     return String(item.type || 'artifact') + ':' + String(item.title || 'untitled');
   }
 
+  function stableSerialize(value, seen) {
+    if (value === null) return 'null';
+    var type = typeof value;
+    if (type === 'string') return JSON.stringify(value);
+    if (type === 'number') return Number.isFinite(value) ? String(value) : JSON.stringify(String(value));
+    if (type === 'boolean') return value ? 'true' : 'false';
+    if (type === 'undefined') return '"[undefined]"';
+    if (type === 'function' || type === 'symbol') return '"[' + type + ']"';
+    if (value instanceof Date) return JSON.stringify(value.toISOString());
+    seen = seen || [];
+    if (seen.indexOf(value) >= 0) return '"[circular]"';
+    var nextSeen = seen.concat([value]);
+    if (Array.isArray(value)) {
+      return '[' + value.map(function (entry) { return stableSerialize(entry, nextSeen); }).join(',') + ']';
+    }
+    var keys = Object.keys(value).sort();
+    return '{' + keys.map(function (key) {
+      return JSON.stringify(key) + ':' + stableSerialize(value[key], nextSeen);
+    }).join(',') + '}';
+  }
+
+  function getAccessibilityEvidence() {
+    return window.AlloModules && window.AlloModules.AccessibilityEvidence;
+  }
+
+  function artifactEvidencePayload(item) {
+    item = item && typeof item === 'object' ? item : {};
+    return {
+      type: item.type || null,
+      title: item.title || null,
+      data: item.data === undefined ? null : item.data,
+      text: item.text === undefined ? null : item.text,
+      content: item.content === undefined ? null : item.content,
+      config: item.config === undefined ? null : item.config,
+      lessonPlanConfig: item.lessonPlanConfig === undefined ? null : item.lessonPlanConfig,
+      lessonPlanSequence: item.lessonPlanSequence === undefined ? null : item.lessonPlanSequence,
+      wsPreloadedWords: item.wsPreloadedWords === undefined ? null : item.wsPreloadedWords,
+      toolId: item.toolId || null,
+      isProbeMode: !!item.isProbeMode,
+      probeActivity: item.probeActivity || null,
+    };
+  }
+
+  function artifactEvidenceBinding(item) {
+    var evidence = getAccessibilityEvidence();
+    if (!evidence || typeof evidence.createArtifactBinding !== 'function') return null;
+    return evidence.createArtifactBinding(artifactEvidencePayload(item), {
+      rendererRevision: ACCESSIBILITY_RENDERER_REVISION,
+      scope: 'interactive-artifact',
+    });
+  }
+
+  function artifactFingerprint(item) {
+    var evidence = getAccessibilityEvidence();
+    var binding = artifactEvidenceBinding(item);
+    if (binding && evidence && typeof evidence.bindingFingerprint === 'function') {
+      var sharedFingerprint = evidence.bindingFingerprint(binding);
+      if (sharedFingerprint) return sharedFingerprint;
+    }
+    var input = stableSerialize(Object.assign({ rendererRevision: ACCESSIBILITY_RENDERER_REVISION }, artifactEvidencePayload(item)));
+    var hash = 2166136261;
+    for (var i = 0; i < input.length; i += 1) {
+      hash ^= input.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return 'afp1-' + ('00000000' + (hash >>> 0).toString(16)).slice(-8);
+  }
+
   function emptyReviewChecks() {
     var checks = {};
     REVIEW_CHECKS.forEach(function (check) { checks[check.id] = 'untested'; });
     return checks;
   }
 
-  function normalizeReviewScorecard(raw, item) {
-    raw = raw && typeof raw === 'object' ? raw : {};
+  function normalizeChecks(rawChecks) {
     var checks = emptyReviewChecks();
-    if (raw.checks && typeof raw.checks === 'object') {
+    if (rawChecks && typeof rawChecks === 'object') {
       REVIEW_CHECKS.forEach(function (check) {
-        var value = raw.checks[check.id];
+        var value = rawChecks[check.id];
         if (['untested', 'pass', 'fail', 'not_applicable'].indexOf(value) >= 0) checks[check.id] = value;
       });
     }
+    return checks;
+  }
+
+  function canonicalizeReviewFinding(finding, defaults) {
+    var evidence = getAccessibilityEvidence();
+    if (evidence && typeof evidence.canonicalizeFinding === 'function') return evidence.canonicalizeFinding(finding, defaults);
+    finding = finding && typeof finding === 'object' ? finding : {};
+    defaults = defaults || {};
+    return Object.assign({}, finding, {
+      source: String(finding.source || defaults.source || 'manual'),
+      ruleId: String(finding.ruleId || defaults.ruleId || 'other'),
+      issue: String(finding.issue || finding.description || defaults.description || ''),
+      description: String(finding.description || finding.issue || defaults.description || ''),
+      wcag: String(finding.wcag || defaults.wcag || ''),
+      severity: String(finding.severity || defaults.severity || 'moderate'),
+      status: String(finding.status || defaults.status || 'open'),
+      count: Math.max(1, Math.floor(Number(finding.count) || 1)),
+    });
+  }
+
+  function normalizeReviewFindings(rawFindings, checks, fingerprint) {
+    var normalized = Array.isArray(rawFindings) ? rawFindings.map(function (finding) {
+      return canonicalizeReviewFinding(finding, { source: finding && finding.source || 'manual' });
+    }) : [];
+    var nonManual = normalized.filter(function (finding) { return finding.source !== 'manual'; });
+    var manual = [];
+    REVIEW_CHECKS.forEach(function (check) {
+      var ruleId = 'manual:' + check.id;
+      var existing = normalized.find(function (finding) { return finding.source === 'manual' && finding.ruleId === ruleId; });
+      var status = checks && checks[check.id];
+      if (status === 'fail') {
+        manual.push(canonicalizeReviewFinding(Object.assign({}, existing || {}, {
+          source: 'manual', ruleId: ruleId, checkId: check.id, status: 'open',
+          issue: check.label, description: check.hint, wcag: check.wcag, severity: check.severity,
+          artifactFingerprint: fingerprint,
+        })));
+      } else if (existing && (status === 'pass' || status === 'not_applicable')) {
+        manual.push(canonicalizeReviewFinding(Object.assign({}, existing, {
+          status: status === 'pass' ? 'verified' : 'accepted-risk',
+          artifactFingerprint: fingerprint,
+        })));
+      }
+    });
+    return nonManual.concat(manual).slice(0, 500);
+  }
+
+  function deriveLabVerification(card) {
+    var evidence = getAccessibilityEvidence();
+    if (!evidence || typeof evidence.deriveProfileVerificationState !== 'function') return null;
+    var summary = summarizeReviewScorecard(card);
+    return evidence.deriveProfileVerificationState({
+      evidence: {
+        manual: {
+          executed: summary.untested === 0 && !summary.stale,
+          partial: summary.untested > 0 || summary.stale,
+          findingCount: summary.fail,
+          reviewCount: 0,
+        },
+        axe: card && card.automated ? {
+          executed: true,
+          findingCount: Number(card.automated.violationRules) || 0,
+          reviewCount: Number(card.automated.needsReview) || 0,
+        } : null,
+      },
+    }, 'accessibility-lab');
+  }
+  function reviewSnapshot(raw, fallbackFingerprint) {
+    if (!raw || !raw.lastReviewedAt) return null;
     return {
-      version: 1,
+      reviewedFingerprint: raw.reviewedFingerprint || fallbackFingerprint || null,
+      reviewedBinding: raw.reviewedBinding || null,
+      lastReviewedAt: raw.lastReviewedAt,
+      checks: normalizeChecks(raw.checks),
+      notes: typeof raw.notes === 'string' ? raw.notes : '',
+      automated: raw.automated && typeof raw.automated === 'object' ? raw.automated : null,
+      findings: Array.isArray(raw.findings) ? raw.findings.slice(0, 500) : [],
+      artifactType: String(raw.artifactType || ''),
+      artifactTitle: String(raw.artifactTitle || ''),
+    };
+  }
+
+  function normalizeReviewHistory(rawHistory) {
+    if (!Array.isArray(rawHistory)) return [];
+    return rawHistory.filter(function (entry) { return entry && entry.lastReviewedAt; }).slice(0, REVIEW_HISTORY_LIMIT).map(function (entry) {
+      return {
+        reviewedFingerprint: entry.reviewedFingerprint || null,
+        reviewedBinding: entry.reviewedBinding || null,
+        lastReviewedAt: String(entry.lastReviewedAt),
+        checks: normalizeChecks(entry.checks),
+        notes: typeof entry.notes === 'string' ? entry.notes : '',
+        automated: entry.automated && typeof entry.automated === 'object' ? entry.automated : null,
+        findings: Array.isArray(entry.findings) ? entry.findings.slice(0, 500) : [],
+        artifactType: String(entry.artifactType || ''),
+        artifactTitle: String(entry.artifactTitle || ''),
+      };
+    });
+  }
+
+  function normalizeReviewScorecard(raw, item, fingerprintOverride) {
+    raw = raw && typeof raw === 'object' ? raw : {};
+    var currentBinding = item ? artifactEvidenceBinding(item) : (raw.currentBinding || null);
+    var evidence = getAccessibilityEvidence();
+    var sharedFingerprint = currentBinding && evidence && typeof evidence.bindingFingerprint === 'function'
+      ? evidence.bindingFingerprint(currentBinding)
+      : '';
+    var currentFingerprint = fingerprintOverride || sharedFingerprint || (item ? artifactFingerprint(item) : String(raw.currentFingerprint || ''));
+    var reviewedFingerprint = typeof raw.reviewedFingerprint === 'string' ? raw.reviewedFingerprint : null;
+    var lastReviewedAt = typeof raw.lastReviewedAt === 'string' ? raw.lastReviewedAt : null;
+    var isStale = !!lastReviewedAt && (!reviewedFingerprint || !currentFingerprint || reviewedFingerprint !== currentFingerprint);
+    var history = normalizeReviewHistory(raw.reviewHistory);
+    if (isStale && lastReviewedAt && !history.some(function (entry) { return entry.lastReviewedAt === lastReviewedAt; })) {
+      var prior = reviewSnapshot(raw, reviewedFingerprint);
+      if (prior) history.unshift(prior);
+    }
+    history = history.slice(0, REVIEW_HISTORY_LIMIT);
+    var workingOnCurrentRevision = !isStale || raw.workingFingerprint === currentFingerprint;
+    var automated = raw.automated && typeof raw.automated === 'object' ? raw.automated : null;
+    if (automated && (!automated.artifactFingerprint || automated.artifactFingerprint !== currentFingerprint)) automated = null;
+    var checks = workingOnCurrentRevision ? normalizeChecks(raw.checks) : emptyReviewChecks();
+    var findings = workingOnCurrentRevision ? normalizeReviewFindings(raw.findings, checks, currentFingerprint) : [];
+    var normalizedCard = {
+      version: REVIEW_SCORECARD_VERSION,
+      evidenceSchemaVersion: evidence && evidence.schemaVersion || null,
+      evidenceProfile: 'accessibility-lab',
       artifactId: reviewItemKey(item) || String(raw.artifactId || ''),
       artifactType: item && item.type ? String(item.type) : String(raw.artifactType || ''),
       artifactTitle: item && item.title ? String(item.title) : String(raw.artifactTitle || ''),
+      rendererRevision: ACCESSIBILITY_RENDERER_REVISION,
+      currentBinding: currentBinding,
+      reviewedBinding: raw.reviewedBinding || null,
+      currentFingerprint: currentFingerprint,
+      workingFingerprint: currentFingerprint,
+      reviewedFingerprint: reviewedFingerprint,
+      isStale: isStale,
       checks: checks,
-      notes: typeof raw.notes === 'string' ? raw.notes : '',
-      startedAt: typeof raw.startedAt === 'string' ? raw.startedAt : null,
-      lastReviewedAt: typeof raw.lastReviewedAt === 'string' ? raw.lastReviewedAt : null,
+      findings: findings,
+      notes: workingOnCurrentRevision && typeof raw.notes === 'string' ? raw.notes : '',
+      startedAt: workingOnCurrentRevision && typeof raw.startedAt === 'string' ? raw.startedAt : null,
+      lastReviewedAt: lastReviewedAt,
       updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : null,
-      automated: raw.automated && typeof raw.automated === 'object' ? raw.automated : null,
+      automated: automated,
+      reviewHistory: history,
     };
+    normalizedCard.verification = deriveLabVerification(normalizedCard);
+    return normalizedCard;
   }
 
   function summarizeReviewScorecard(card) {
@@ -113,8 +316,32 @@
       if (!Object.prototype.hasOwnProperty.call(counts, value)) value = 'untested';
       counts[value] += 1;
     });
-    counts.complete = counts.untested === 0;
+    counts.stale = !!(card && card.isStale);
+    counts.complete = counts.untested === 0 && !counts.stale;
     return counts;
+  }
+
+  function completeReviewScorecard(card, completedAt) {
+    if (!card || summarizeReviewScorecard(card).untested > 0) return null;
+    var timestamp = completedAt || new Date().toISOString();
+    var history = normalizeReviewHistory(card.reviewHistory);
+    if (card.lastReviewedAt && !history.some(function (entry) { return entry.lastReviewedAt === card.lastReviewedAt; })) {
+      var prior = reviewSnapshot(card, card.reviewedFingerprint);
+      if (prior) history.unshift(prior);
+    }
+    var completed = Object.assign({}, card, {
+      version: REVIEW_SCORECARD_VERSION,
+      reviewedBinding: card.currentBinding || null,
+      reviewedFingerprint: card.currentFingerprint,
+      workingFingerprint: card.currentFingerprint,
+      isStale: false,
+      startedAt: card.startedAt || timestamp,
+      lastReviewedAt: timestamp,
+      updatedAt: timestamp,
+      reviewHistory: history.slice(0, REVIEW_HISTORY_LIMIT),
+    });
+    completed.verification = deriveLabVerification(completed);
+    return completed;
   }
 
   function loadReviewScorecards() {
@@ -552,6 +779,10 @@
     var selectedReviewKey = reviewItemKey(selectedItem);
     var scorecard = selectedItem ? normalizeReviewScorecard(reviewStore[selectedReviewKey], selectedItem) : null;
     var scoreSummary = summarizeReviewScorecard(scorecard);
+    var reviewVerification = scorecard && (scorecard.verification || deriveLabVerification(scorecard));
+    var openFindings = scorecard && Array.isArray(scorecard.findings) ? scorecard.findings.filter(function (finding) {
+      return finding && finding.status !== 'verified' && finding.status !== 'accepted-risk';
+    }) : [];
 
     function saveScorecard(nextCard) {
       if (!selectedReviewKey || !nextCard) return;
@@ -583,14 +814,12 @@
     function markReviewComplete() {
       if (!scorecard) return;
       var summary = summarizeReviewScorecard(scorecard);
-      if (summary.untested > 0) {
+      var completed = completeReviewScorecard(scorecard);
+      if (!completed) {
         addToast && addToast(tr('a11y_lab.review.incomplete', 'Complete or mark every check not applicable before finishing the review.'), 'info');
         return;
       }
-      saveScorecard(Object.assign({}, scorecard, {
-        startedAt: scorecard.startedAt || new Date().toISOString(),
-        lastReviewedAt: new Date().toISOString(),
-      }));
+      saveScorecard(completed);
       addToast && addToast(summary.fail > 0
         ? tr('a11y_lab.review.completed_with_findings', 'Review saved with accessibility findings to address.')
         : tr('a11y_lab.review.completed', 'Accessibility review completed and saved.'), summary.fail > 0 ? 'info' : 'success');
@@ -603,7 +832,12 @@
       }
       try {
         if (scorecard && !scorecard.startedAt) saveScorecard(Object.assign({}, scorecard, { startedAt: new Date().toISOString() }));
-        var openResult = props.onOpenAuthenticView(selectedItem);
+        var openResult = props.onOpenAuthenticView(selectedItem, {
+          artifactFingerprint: scorecard && scorecard.currentFingerprint ? scorecard.currentFingerprint : artifactFingerprint(selectedItem),
+          artifactBinding: scorecard && scorecard.currentBinding ? scorecard.currentBinding : artifactEvidenceBinding(selectedItem),
+          evidenceProfile: 'accessibility-lab',
+          rendererRevision: ACCESSIBILITY_RENDERER_REVISION,
+        });
         if (openResult && typeof openResult.then === 'function') {
           openResult.catch(function (err) {
             addToast && addToast(tr('a11y_lab.preview.authentic_error', 'Could not open the authentic workspace view: ') + (err && err.message), 'error');
@@ -656,10 +890,13 @@
                   }, supportsStatic
                     ? tr('a11y_lab.preview.static_available', 'Static accommodation preview available')
                     : tr('a11y_lab.preview.authentic_required', 'Authentic workspace view required')),
-                  savedSummary && e('span', { className: 'text-[11px] text-slate-600' },
-                    savedSummary.fail + ' ' + tr('a11y_lab.review.findings_short', 'findings') + ' · ' +
-                    savedSummary.pass + ' ' + tr('a11y_lab.review.passed_short', 'passed') + ' · ' +
-                    savedSummary.untested + ' ' + tr('a11y_lab.review.untested_short', 'untested')),
+                  savedSummary && (savedCard.isStale
+                    ? e('span', { className: 'text-[11px] font-bold text-amber-700' },
+                        tr('a11y_lab.review.needs_rereview', 'Needs re-review') + ' · ' + savedSummary.untested + ' ' + tr('a11y_lab.review.untested_short', 'untested'))
+                    : e('span', { className: 'text-[11px] text-slate-600' },
+                        savedSummary.fail + ' ' + tr('a11y_lab.review.findings_short', 'findings') + ' · ' +
+                        savedSummary.pass + ' ' + tr('a11y_lab.review.passed_short', 'passed') + ' · ' +
+                        savedSummary.untested + ' ' + tr('a11y_lab.review.untested_short', 'untested'))),
                   item.meta && e('span', { className: 'text-xs text-slate-500 truncate w-full' }, asString(item.meta))
                 );
               })
@@ -698,7 +935,11 @@
         }, tr('a11y_lab.preview.open_authentic', 'Open in authentic workspace view'))
       ),
 
-      e('section', { className: 'border border-slate-200 rounded-xl overflow-hidden', 'data-a11y-review-scorecard': selectedReviewKey },
+      e('section', {
+        className: 'border border-slate-200 rounded-xl overflow-hidden',
+        'data-a11y-review-scorecard': selectedReviewKey,
+        'data-a11y-evidence-profile': 'accessibility-lab',
+      },
         e('div', { className: 'flex flex-col md:flex-row md:items-center gap-3 px-4 py-3 bg-slate-50 border-b border-slate-200' },
           e('div', { className: 'flex-1' },
             e('h4', { className: 'font-bold text-sm text-slate-900' }, tr('a11y_lab.review.heading', 'Artifact accessibility scorecard')),
@@ -714,8 +955,22 @@
             e('span', { className: 'px-2 py-1 rounded bg-emerald-100 text-emerald-800' }, scoreSummary.pass + ' ' + tr('a11y_lab.review.passed_short', 'passed')),
             e('span', { className: 'px-2 py-1 rounded bg-rose-100 text-rose-800' }, scoreSummary.fail + ' ' + tr('a11y_lab.review.findings_short', 'findings')),
             e('span', { className: 'px-2 py-1 rounded bg-slate-200 text-slate-700' }, scoreSummary.untested + ' ' + tr('a11y_lab.review.untested_short', 'untested')),
-            scoreSummary.not_applicable > 0 && e('span', { className: 'px-2 py-1 rounded bg-blue-100 text-blue-800' }, scoreSummary.not_applicable + ' ' + tr('a11y_lab.review.na_short', 'N/A'))
+            scoreSummary.not_applicable > 0 && e('span', { className: 'px-2 py-1 rounded bg-blue-100 text-blue-800' }, scoreSummary.not_applicable + ' ' + tr('a11y_lab.review.na_short', 'N/A')),
+            scorecard.isStale && e('span', { className: 'px-2 py-1 rounded bg-amber-200 text-amber-900' }, tr('a11y_lab.review.stale_badge', 'Needs re-review')),
+            openFindings.length > 0 && e('span', { className: 'px-2 py-1 rounded bg-rose-200 text-rose-900' }, openFindings.length + ' ' + tr('a11y_lab.review.open_findings', 'open findings')),
+            reviewVerification && e('span', {
+              className: 'px-2 py-1 rounded ' + (reviewVerification.verificationState === 'complete' ? 'bg-emerald-200 text-emerald-900' : 'bg-violet-100 text-violet-900'),
+              title: tr('a11y_lab.review.evidence_profile_tip', 'Shared evidence profile: axe plus manual task review'),
+            }, tr('a11y_lab.review.verification_prefix', 'Evidence: ') + reviewVerification.verificationState)
           )
+        ),
+        scorecard.isStale && e('div', {
+          role: 'status',
+          'data-a11y-review-stale': 'true',
+          className: 'px-4 py-3 bg-amber-50 border-b border-amber-200 text-sm text-amber-950',
+        },
+          e('strong', null, tr('a11y_lab.review.stale_heading', 'This artifact changed since its last completed review.')),
+          ' ', tr('a11y_lab.review.stale_body', 'The previous evidence is preserved in Review history, and every manual check has been reset for this revision.')
         ),
         e('fieldset', { className: 'p-4 space-y-3' },
           e('legend', { className: 'sr-only' }, tr('a11y_lab.review.checks_legend', 'Manual accessibility review checks')),
@@ -750,6 +1005,38 @@
               placeholder: tr('a11y_lab.review.notes_placeholder', 'Record the task, assistive technology, browser, observed problem, and reproduction steps.'),
               className: 'w-full px-3 py-2 text-sm border border-slate-300 rounded-lg resize-y',
             })
+          ),
+          scorecard.findings.length > 0 && e('details', {
+            className: 'rounded-lg border border-rose-200 bg-rose-50 p-3',
+            'data-a11y-review-findings': 'true',
+          },
+            e('summary', { className: 'cursor-pointer text-sm font-semibold text-rose-950' },
+              tr('a11y_lab.review.finding_records', 'Finding records') + ' (' + scorecard.findings.length + ')'),
+            e('ul', { className: 'mt-3 space-y-2' }, scorecard.findings.map(function (finding, index) {
+              return e('li', { key: (finding.findingKey || finding.ruleId || 'finding') + '-' + index, className: 'rounded border border-rose-200 bg-white p-2 text-xs text-slate-700' },
+                e('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                  e('strong', { className: 'text-slate-900' }, finding.issue || finding.description || finding.ruleId),
+                  e('span', { className: 'rounded bg-slate-100 px-1.5 py-0.5 font-semibold' }, finding.severity || 'moderate'),
+                  e('span', { className: 'rounded bg-indigo-50 px-1.5 py-0.5 text-indigo-800' }, finding.status || 'open')
+                ),
+                finding.wcag && e('div', { className: 'mt-1 text-slate-600' }, 'WCAG ' + finding.wcag),
+                e('div', { className: 'mt-1 text-slate-500' }, (finding.source || 'manual') + (finding.count > 1 ? ' · ' + finding.count + ' occurrences' : ''))
+              );
+            }))
+          ),          scorecard.reviewHistory.length > 0 && e('details', { className: 'rounded-lg border border-slate-200 bg-slate-50 p-3' },
+            e('summary', { className: 'cursor-pointer text-sm font-semibold text-slate-800' },
+              tr('a11y_lab.review.history_heading', 'Review history') + ' (' + scorecard.reviewHistory.length + ')'),
+            e('ol', { className: 'mt-3 space-y-2' }, scorecard.reviewHistory.map(function (entry, index) {
+              var priorSummary = summarizeReviewScorecard(entry);
+              return e('li', { key: entry.lastReviewedAt + '-' + index, className: 'rounded border border-slate-200 bg-white p-2 text-xs text-slate-700' },
+                e('div', { className: 'font-semibold text-slate-900' }, new Date(entry.lastReviewedAt).toLocaleString()),
+                e('div', { className: 'mt-0.5' },
+                  priorSummary.pass + ' ' + tr('a11y_lab.review.passed_short', 'passed') + ' · ' +
+                  priorSummary.fail + ' ' + tr('a11y_lab.review.findings_short', 'findings') + ' · ' +
+                  priorSummary.not_applicable + ' ' + tr('a11y_lab.review.na_short', 'N/A')),
+                entry.reviewedFingerprint && e('code', { className: 'block mt-1 text-[10px] text-slate-500' }, entry.reviewedFingerprint)
+              );
+            }))
           ),
           e('div', { className: 'flex flex-col sm:flex-row sm:items-center gap-2 pt-2 border-t border-slate-200' },
             e('div', { className: 'flex-1 text-xs text-slate-600' },
@@ -1342,6 +1629,42 @@
   }
 
 
+  function axeFindingWcag(violation) {
+    var tags = violation && Array.isArray(violation.tags) ? violation.tags : [];
+    return tags.filter(function (tag) { return /^wcag\d+$/i.test(String(tag)); }).map(function (tag) {
+      return String(tag).replace(/^wcag/i, '').split('').join('.');
+    }).join(', ');
+  }
+
+  function mergeAutomatedFindings(priorFindings, violations, fingerprint, runAt) {
+    priorFindings = Array.isArray(priorFindings) ? priorFindings : [];
+    var manual = priorFindings.filter(function (finding) { return finding && finding.source !== 'axe'; });
+    var priorAxe = priorFindings.filter(function (finding) { return finding && finding.source === 'axe'; });
+    var current = violations.map(function (violation) {
+      return canonicalizeReviewFinding({
+        source: 'axe',
+        ruleId: 'axe:' + String(violation && violation.id || 'unknown'),
+        issue: String(violation && (violation.help || violation.description || violation.id) || 'Automated accessibility finding'),
+        description: String(violation && (violation.description || violation.help) || ''),
+        wcag: axeFindingWcag(violation),
+        severity: violation && violation.impact || 'moderate',
+        count: violation && Array.isArray(violation.nodes) ? violation.nodes.length : 1,
+        helpUrl: violation && violation.helpUrl || null,
+        status: 'open',
+        artifactFingerprint: fingerprint,
+        detectedAt: runAt,
+      });
+    });
+    var currentKeys = new Set(current.map(function (finding) { return finding.findingKey || finding.ruleId; }));
+    var resolved = priorAxe.filter(function (finding) {
+      return !currentKeys.has(finding.findingKey || finding.ruleId);
+    }).map(function (finding) {
+      return canonicalizeReviewFinding(Object.assign({}, finding, {
+        status: 'verified', resolvedAt: finding.resolvedAt || runAt, artifactFingerprint: fingerprint,
+      }));
+    });
+    return manual.concat(current, resolved).slice(0, 500);
+  }
   function persistAutomatedAuditForReview(reviewSession, axeResult, axeVersion) {
     if (!reviewSession || !reviewSession.itemId || !axeResult) return null;
     var item = {
@@ -1351,7 +1674,8 @@
     };
     var key = reviewItemKey(item);
     var store = loadReviewScorecards();
-    var card = normalizeReviewScorecard(store[key], item);
+    var fingerprint = reviewSession.artifactFingerprint || (store[key] && store[key].currentFingerprint) || artifactFingerprint(item);
+    var card = normalizeReviewScorecard(store[key], item, fingerprint);
     var violations = Array.isArray(axeResult.violations) ? axeResult.violations : [];
     var automated = {
       runAt: new Date().toISOString(),
@@ -1363,12 +1687,18 @@
       passedRules: Array.isArray(axeResult.passes) ? axeResult.passes.length : 0,
       needsReview: Array.isArray(axeResult.incomplete) ? axeResult.incomplete.length : 0,
       ruleIds: violations.map(function (violation) { return violation && violation.id; }).filter(Boolean).slice(0, 100),
+      artifactFingerprint: card.currentFingerprint,
+      artifactBinding: card.currentBinding || reviewSession.artifactBinding || null,
+      evidenceProfile: 'accessibility-lab',
+      rendererRevision: reviewSession.rendererRevision || ACCESSIBILITY_RENDERER_REVISION,
     };
     var next = Object.assign({}, card, {
       automated: automated,
+      findings: mergeAutomatedFindings(card.findings, violations, card.currentFingerprint, automated.runAt),
       startedAt: card.startedAt || reviewSession.startedAt || automated.runAt,
       updatedAt: automated.runAt,
     });
+    next.verification = deriveLabVerification(next);
     store[key] = next;
     persistReviewScorecards(store);
     return next;
@@ -2506,7 +2836,9 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
     getScreenReaderDescription: getScreenReaderDescription,
     getElementLabel: getElementLabel, scanKeyboardAccessibility: scanKeyboardAccessibility,
     buildScreenReaderQueue: buildScreenReaderQueue,
-    reviewItemKey: reviewItemKey, normalizeReviewScorecard: normalizeReviewScorecard,
+    reviewItemKey: reviewItemKey, artifactFingerprint: artifactFingerprint, artifactEvidenceBinding: artifactEvidenceBinding,
+    normalizeReviewFindings: normalizeReviewFindings, deriveLabVerification: deriveLabVerification,
+    normalizeReviewScorecard: normalizeReviewScorecard, completeReviewScorecard: completeReviewScorecard,
     summarizeReviewScorecard: summarizeReviewScorecard, loadReviewScorecards: loadReviewScorecards,
     persistAutomatedAuditForReview: persistAutomatedAuditForReview,
   };

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1548-estrategias-activas-para-el-aprendizaje-autonomo-un-enfoque-en-alumnos-d",
+  "title": "Estrategias activas para el aprendizaje autónomo: Un enfoque en Alumnos de Secundaria",
+  "description": "El manuscrito presenta un enfocado en evaluar el desarrollo del aprendizaje autónomo en alumnos de secundaria. A través de pruebas aplicadas antes y después de intervenciones educativas, se recopilaron datos para las alumnas y un grupo control. Los resultados evidencian una evolución positiva en la autonomía de aprendizaje, destacando mejoras en la autoevaluación, la planificación, la autorregulación y las habilidades comunicativas y sociales. Las estrategias de motivación demostraron ser un componente crucial, potenciando la confianza y la motivación intrínseca de los estudiantes para aprender y gestionar sus emociones efectivamente. Los hallazgos resaltan la importancia de fomentar un entorno educativo que apoye el desarrollo de habilidades autodirigidas, sugiriendo que tales enfoques pueden influir significativamente en la capacidad del estudiantado para aprender de manera independiente y eficaz.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences"
+  ],
+  "authors": [
+    "Karina Eddmy Madrid-Gómez - Author / Jesús Mery Arias-Huánuco - Author / Ysabel Zevallos-Parave - Author / Maura Natalia Alfaro-Saavedra - Author / Alvaro Ignacio Camposano-Córdova - Author / Russbelt Yaulilahua-Huacho - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/estrategias-activas-para-el-aprendizaje-autonomo-un-enfoque-en-alumnos-de-secundaria"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "El manuscrito presenta un enfocado en evaluar el desarrollo del aprendizaje autónomo en alumnos de secundaria. A través de pruebas aplicadas antes y después de intervenciones educativas, se recopilaron datos para las alumnas y un grupo control. Los resultados evidencian una evolución positiva en la autonomía de aprendizaje, destacando mejoras en la autoevaluación, la planificación, la autorregulación y las habilidades comunicativas y sociales. Las estrategias de motivación demostraron ser un componente crucial, potenciando la confianza y la motivación intrínseca de los estudiantes para aprender y gestionar sus emociones efectivamente. Los hallazgos resaltan la importancia de fomentar un entorno educativo que apoye el desarrollo de habilidades autodirigidas, sugiriendo que tales enfoques pueden influir significativamente en la capacidad del estudiantado para aprender de manera independiente y eficaz."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 148
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1548",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

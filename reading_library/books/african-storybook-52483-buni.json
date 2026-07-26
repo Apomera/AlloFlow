@@ -1,0 +1,169 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52483-buni",
+  "title": "Buni",
+  "description": "Buuggan waxaa uu ka kooban yahay weedho sharaxaad ah oo wata sawirro muujinaya walxo maalinle ah oo bunni ah",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Reviva Schermbrucker"
+  ],
+  "illustrators": [
+    "Sue Kramer"
+  ],
+  "translators": [
+    "Zahra Nooh"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Reviva Schermbrucker",
+      "role": "Author"
+    },
+    {
+      "name": "Zahra Nooh",
+      "role": "Translation"
+    },
+    {
+      "name": "Sue Kramer",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY-NC 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/3.0/",
+  "attribution": "Reviva Schermbrucker (Author); Zahra Nooh (Translation); Sue Kramer (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52483",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52483",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://www.littlehandstrust.com/books.html",
+    "editionId": "52483",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution. This edition is restricted to noncommercial use."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY-NC 3.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-295b1d42a2ef85c3",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/2617.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2618.png",
+      "text": "Qoryo bunni ah oo dillacsan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52483#page=1",
+      "sourceDigest": "sha256:5bcdee90dfd8d65cf3256b25d5fbfef843719a384e95c475b4ab2af03c8fd709"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2619.png",
+      "text": "Libaax bunni ah oo la rinjiyeeyay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52483#page=2",
+      "sourceDigest": "sha256:284a5e8183617d010f6de7a347e02fae11cf4be4505e3386984d50d73cc729f7"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2620.png",
+      "text": "Rooti bunni ah oo jilicsan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52483#page=3",
+      "sourceDigest": "sha256:8781f842a6394fba8512f175f9ebe9de6fd97a910ee00edf85b70d2bfe854a97"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2621.png",
+      "text": "Doolshe bunni ah oo macaan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52483#page=4",
+      "sourceDigest": "sha256:7093fd68a04826b42317ee063580925f2676266112104dfc3671904b36d20c8c"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2622.png",
+      "text": "Buut bunni ah oo duugg ah",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52483#page=5",
+      "sourceDigest": "sha256:6d4948eb5d4c714ccf21ee1f9888b727c56661b9959987e6a1f452c22eb955a7"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2624.png",
+      "text": "Lo' gisi bunni ah oo dhalaalaya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52483#page=6",
+      "sourceDigest": "sha256:95420fdf9f95eb732acb91b236caae9a51002712eeece73f58bc78153ff6e011"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2625.png",
+      "text": "Koofiyad bunni ah oo dhogor ah.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52483#page=7",
+      "sourceDigest": "sha256:9ae2b994d15a57d6e26856ee4bc3019d9655acfc0fe049cae2bfc70e26a6831e"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2626.png",
+      "text": "Eey bunni ah oo siman.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52483#page=8",
+      "sourceDigest": "sha256:c4e863d6ca01806e73978e2cbd50c3ffe6baec16937994f8794532ef9e7d33dc"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2627.png",
+      "text": "Ciid bunni ah oo wasakh ah.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52483#page=9",
+      "sourceDigest": "sha256:7630928fc6f89026223370909f9bb1f798567edc9dc0077f1fd3eb2ae755e428"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2628.png",
+      "text": "Jir bunni ah oo qoyan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52483#page=10",
+      "sourceDigest": "sha256:a5e71100baeb910f5fa132338ac77fc765f0232a80db489f5b2c05445b79c796"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2629.png",
+      "text": "Tani maxay tahay? Waji nadiif ah oo ka dhex muuqda muraayad wasakh ah.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52483#page=11",
+      "sourceDigest": "sha256:6798f8c5759a6aa7fe5290ca30911ea25c0c63bbd3e82b8f39ce8468e310bf0d"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 68
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:b4c3694b8f161e834551236b220a0dceab8159e5eb3d7955c12aa46bc432cb2e"
+  }
+}

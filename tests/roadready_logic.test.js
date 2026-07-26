@@ -212,6 +212,193 @@ describe('physical road layouts', () => {
     expect(oneMeterAhead.y - worldPoint.y).toBeCloseTo(Math.sin(positiveHeading), 8);
   });
 
+  it('uses one road-local frame for curved main-road and rotated cross-street traffic', () => {
+    const heading = 0.38;
+    const spline = {
+      centerAt: (station) => 48 + Math.tan(heading) * station,
+      headingAt: () => heading,
+      heightAt: () => 0
+    };
+    const world = { profile: { roadHalfWidth: 6.5, lanesPerDirection: 2 }, spline };
+    const mainPoint = (station, lateral) => ({
+      x: spline.centerAt(station) + lateral * Math.cos(heading),
+      y: station - lateral * Math.sin(heading)
+    });
+    const mainA = { ...mainPoint(10, -4.65), heading: Math.PI / 2 - heading };
+    const mainB = { ...mainPoint(24, -4.65), heading: Math.PI / 2 - heading };
+    expect(RR.trafficRelativeRoadPosition(world, mainA, mainB)).toMatchObject({
+      sameCorridor: true, sameDirection: true
+    });
+    expect(RR.trafficRelativeRoadPosition(world, mainA, mainB).ahead).toBeCloseTo(14, 3);
+
+    const pose = RR.crossStreetPose(48, 64, heading, 6.5, RR.CROSS_STREET_LENGTH);
+    const crossAWorld = RR.crossStreetWorldPoint(pose, -18, 1.5);
+    const crossBWorld = RR.crossStreetWorldPoint(pose, -7, 1.5);
+    const crossA = { ...crossAWorld, heading: RR.crossStreetTravelHeading(pose, 1),
+      crossStreet: true, _crossPose: pose, _crossDirection: 1, _chunk: 2 };
+    const crossB = { ...crossBWorld, heading: RR.crossStreetTravelHeading(pose, 1),
+      crossStreet: true, _crossPose: pose, _crossDirection: 1, _chunk: 2 };
+    const crossRel = RR.trafficRelativeRoadPosition(world, crossA, crossB);
+    expect(crossRel).toMatchObject({ sameCorridor: true, sameDirection: true });
+    expect(crossRel.ahead).toBeCloseTo(11, 8);
+    expect(crossRel.lateral).toBeCloseTo(0, 8);
+    expect(RR.trafficRelativeRoadPosition(world, mainA, crossA).sameCorridor).toBe(false);
+  });
+
+  it('reserves conflicting intersection paths while allowing separated opposing lanes', () => {
+    const mainSouth = RR.intersectionMovementPath('main', 1, 'straight');
+    const mainNorth = RR.intersectionMovementPath('main', -1, 'straight');
+    const crossEast = RR.intersectionMovementPath('cross', 1, 'straight');
+    expect(RR.intersectionMovementsConflict(mainSouth, mainNorth)).toBe(false);
+    expect(RR.intersectionMovementsConflict(mainSouth, crossEast)).toBe(true);
+
+    const book = {};
+    expect(RR.requestIntersectionReservation(book, 'junction', 'south', mainSouth, 10, 3)).toBe(true);
+    expect(RR.requestIntersectionReservation(book, 'junction', 'north', mainNorth, 10, 3)).toBe(true);
+    expect(RR.requestIntersectionReservation(book, 'junction', 'east', crossEast, 10, 3)).toBe(false);
+    expect(RR.requestIntersectionReservation(book, 'junction', 'east', crossEast, 13.1, 3)).toBe(true);
+  });
+
+  it('keeps extended branch asphalt physically driveable and rejoins offscreen traffic', () => {
+    const world = RR.createScenarioWorld({ id: 'residential', speedLimit: 25 });
+    const chunk = world.getChunk(0);
+    const centerY = chunk.intersectionY;
+    const pose = RR.crossStreetPose(world.spline.centerAt(centerY), centerY,
+      world.spline.headingAt(centerY), 6.5, RR.CROSS_STREET_LENGTH);
+    const branchPoint = RR.crossStreetWorldPoint(pose, RR.MAP_SIZE * 0.62, 1.5);
+    expect(RR.crossStreetCorridorAt(world, branchPoint.x, branchPoint.y, 0)).toBeTruthy();
+    expect(world.getCell(branchPoint.x, branchPoint.y)).toBe(0);
+
+    const exitPoint = RR.crossStreetWorldPoint(pose, pose.length * 0.5 + 3, 1.5);
+    const vehicle = {
+      ...exitPoint, heading: RR.crossStreetTravelHeading(pose, 1), speed: 8,
+      crossStreet: true, _turnedFromMain: true, _crossPose: pose,
+      _crossDirection: 1, _chunk: 0, laneOffset: 1.5
+    };
+    expect(RR.recycleBranchVehicleToMain(
+      world, vehicle, 100, RR.CONTINUOUS_SCENARIO_PROFILES.suburban
+    )).toBe(true);
+    expect(vehicle.crossStreet).toBe(false);
+    expect(vehicle._crossPose).toBe(null);
+    expect(vehicle.y).toBeGreaterThan(100);
+    const local = RR.mainRoadLocalPoint(world, vehicle.x, vehicle.y);
+    expect(local.lateral).toBeCloseTo(-4.65, 1);
+  });
+
+  it('assigns turning movements to authored inner and outer lanes', () => {
+    const suburban = RR.CONTINUOUS_SCENARIO_PROFILES.suburban;
+    expect(RR.intersectionLaneTurnPermissions(suburban, 'main', 1, -1.55))
+      .toEqual(['left', 'straight']);
+    expect(RR.intersectionLaneTurnPermissions(suburban, 'main', 1, -4.65))
+      .toEqual(['straight', 'right']);
+    expect(RR.intersectionLaneTurnPermissions(suburban, 'main', -1, 1.55))
+      .toEqual(['left', 'straight']);
+    expect(RR.intersectionLaneTurnPermissions(suburban, 'main', -1, 4.65))
+      .toEqual(['straight', 'right']);
+    expect(RR.intersectionLaneTurnPermissions(
+      RR.CONTINUOUS_SCENARIO_PROFILES.residential, 'main', 1, -1.5
+    )).toEqual(['left', 'straight', 'right']);
+  });
+
+  it('distinguishes protected arrows, permissive left turns, and pedestrian countdowns', () => {
+    const signal = {
+      type: 'light', state: 'red', _crossState: 'red',
+      _phase: 'main_left_green', timer: 1, greenDur: 8, redDur: 6,
+      yellowDur: 3, arrowDur: 4, protectedMainTurns: true
+    };
+    expect(RR.trafficSignalMovementIndication(signal, 'main', 'left')).toBe('green_arrow');
+    expect(RR.trafficSignalMovementIndication(signal, 'main', 'straight')).toBe('red');
+    signal._phase = 'main_green';
+    signal.state = 'green';
+    expect(RR.trafficSignalMovementIndication(signal, 'main', 'left')).toBe('flashing_yellow');
+    expect(RR.trafficSignalMovementIndication(signal, 'main', 'straight')).toBe('green');
+    signal._phase = 'cross_green';
+    signal.state = 'red';
+    signal._crossState = 'green';
+    signal.timer = 2.2;
+    expect(RR.pedestrianSignalState(signal, 'cross')).toEqual({
+      walk: true, clearance: false, countdown: 4, indication: 'green'
+    });
+  });
+
+  it('inserts a protected-left interval after all-red clearance', () => {
+    const signal = {
+      type: 'light', state: 'red', _crossState: 'red',
+      _phase: 'all_red_to_main', timer: 1.01,
+      greenDur: 8, redDur: 6, yellowDur: 3,
+      allRedDur: 1, arrowDur: 4, protectedMainTurns: true
+    };
+    RR.updateSignals([signal], 0.01);
+    expect(signal).toMatchObject({
+      _phase: 'main_left_green', state: 'red', _crossState: 'red'
+    });
+    RR.updateSignals([signal], 4.01);
+    expect(signal).toMatchObject({
+      _phase: 'main_green', state: 'green', _crossState: 'red'
+    });
+  });
+
+  it('holds an approach when its receiving lane lacks room to clear the junction', () => {
+    const world = {
+      profile: RR.CONTINUOUS_SCENARIO_PROFILES.suburban,
+      spline: { centerAt: () => 48, headingAt: () => 0, heightAt: () => 0 }
+    };
+    const signal = { x: 48, y: 40 };
+    const movement = RR.intersectionMovementPath('main', 1, 'straight');
+    const exit = RR.intersectionMovementWorldPoint(
+      world, signal, movement.points.at(-1)
+    );
+    expect(RR.intersectionExitClear(world, signal, movement, [], 'self', 6)).toBe(true);
+    expect(RR.intersectionExitClear(world, signal, movement, [
+      { id: 'queue', x: exit.x, y: exit.y, heading: Math.PI / 2, speed: 0 }
+    ], 'self', 6)).toBe(false);
+  });
+
+  it('publishes the player path so later conflicting AI reservations wait', () => {
+    const book = {};
+    const main = RR.intersectionMovementPath('main', 1, 'straight');
+    const cross = RR.intersectionMovementPath('cross', 1, 'straight');
+    expect(RR.requestIntersectionReservation(book, 'j', 'main-ai', main, 5, 4)).toBe(true);
+    expect(RR.publishPlayerIntersectionReservation(book, 'j', cross, 5, 3)).toBe(true);
+    expect(book.j.some((entry) => entry.vehicleId === 'player')).toBe(true);
+    expect(RR.requestIntersectionReservation(book, 'j', 'cross-ai', cross, 5.1, 3)).toBe(false);
+  });
+
+  it('builds smooth cross-street turns into the correct main-road receiving lane', () => {
+    const world = {
+      profile: RR.CONTINUOUS_SCENARIO_PROFILES.suburban,
+      spline: { centerAt: () => 48, headingAt: () => 0, heightAt: () => 0 }
+    };
+    const signal = { x: 48, y: 40 };
+    const pose = RR.crossStreetPose(48, 40, 0, 6.5, RR.CROSS_STREET_LENGTH);
+    const start = RR.crossStreetWorldPoint(pose, -5, 1.5);
+    const vehicle = {
+      ...start, heading: RR.crossStreetTravelHeading(pose, 1),
+      crossStreet: true, _crossPose: pose, _crossDirection: 1
+    };
+    const right = RR.createCrossToMainTurnPath(world, signal, vehicle, 'right');
+    expect(right).toMatchObject({ destinationRoad: 'main', direction: 1 });
+    expect(right.laneOffset).toBeCloseTo(-4.65, 6);
+    expect(RR.intersectionTurnPoint(right, 1)).toMatchObject({
+      x: right.p3.x, y: right.p3.y
+    });
+    const left = RR.createCrossToMainTurnPath(world, signal, vehicle, 'left');
+    expect(left.direction).toBe(-1);
+    expect(left.laneOffset).toBeCloseTo(4.65, 6);
+  });
+
+  it('requires permissive left turns to wait for an opposing approach', () => {
+    const world = {
+      profile: RR.CONTINUOUS_SCENARIO_PROFILES.suburban,
+      spline: { centerAt: () => 48, headingAt: () => 0, heightAt: () => 0 }
+    };
+    const signal = { x: 48, y: 40 };
+    const self = { id: 'self', x: 46.5, y: 34, heading: Math.PI / 2, speed: 4 };
+    const opposing = { id: 'opp', x: 49.5, y: 47, heading: -Math.PI / 2, speed: 6 };
+    expect(RR.opposingApproachClear(world, [self], self, signal, null)).toBe(true);
+    expect(RR.opposingApproachClear(world, [self, opposing], self, signal, null)).toBe(false);
+  });
+
   it('grounds cross-street vehicles to terrain instead of extending main-road bank', () => {
     const world = RR.createScenarioWorld({ id: 'rural', speedLimit: 45 });
     const chunk = world.getChunk(0);

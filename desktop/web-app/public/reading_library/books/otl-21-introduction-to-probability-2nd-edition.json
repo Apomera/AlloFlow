@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-21-introduction-to-probability-2nd-edition",
+  "title": "Introduction to Probability - 2nd edition",
+  "description": "Probability theory began in seventeenth century France when the two great French mathematicians, Blaise Pascal and Pierre de Fermat, corresponded over two problems from games of chance. Problems like those Pascal and Fermat solved continuedto influence such early researchers as Huygens, Bernoulli, and DeMoivre in establishing a mathematical theory of probability. Today, probability theory is a wellestablished branch of mathematics that finds applications in every area of scholarlyactivity from music to physics, and in daily experience from weather prediction topredicting the risks of new medical treatments. This text is designed for an introductory probability course taken by sophomores,juniors, and seniors in mathematics, the physical and social sciences, engineering,and computer science. It presents a thorough treatment of probability ideas andtechniques necessary for a form understanding of the subject. The text can be usedin a variety of course lengths, levels, and areas of emphasis. For use in a standard one-term course, in which both discrete and continuousprobability is covered, students should have taken as a prerequisite two terms ofcalculus, including an introduction to multiple integrals. In order to cover Chapter 11, which contains material on Markov chains, some knowledge of matrix theoryis necessary. The text can also be used in a discrete probability course. The material has beenorganized in such a way that the discrete and continuous probability discussions arepresented in a separate, but parallel, manner. This organization dispels an overlyrigorous or formal view of probability and o?ers some strong pedagogical valuein that the discrete discussions can sometimes serve to motivate the more abstractcontinuous probability discussions. For use in a discrete probability course, studentsshould have taken one term of calculus as a prerequisite. Very little computing background is assumed or necessary in order to obtain fullbenefits from the use of the computing material and examples in the text. All ofthe programs that are used in the text have been written in each of the languagesTrueBASIC, Maple, and Mathematica.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Applied",
+    "Engineering & Technology"
+  ],
+  "authors": [
+    "Charles M. Grinstead - Author / J. Laurie Snell - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "American Mathematical Society",
+  "license": "CC0 1.0 catalog metadata · linked title: Free Documentation License (GNU)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-probability"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Free Documentation License (GNU)"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Probability theory began in seventeenth century France when the two great French mathematicians, Blaise Pascal and Pierre de Fermat, corresponded over two problems from games of chance. Problems like those Pascal and Fermat solved continuedto influence such early researchers as Huygens, Bernoulli, and DeMoivre in establishing a mathematical theory of probability. Today, probability theory is a wellestablished branch of mathematics that finds applications in every area of scholarlyactivity from music to physics, and in daily experience from weather prediction topredicting the risks of new medical treatments. This text is designed for an introductory probability course taken by sophomores,juniors, and seniors in mathematics, the physical and social sciences, engineering,and computer science. It presents a thorough treatment of probability ideas andtechniques necessary for a form understanding of the subject. The text can be usedin a variety of course lengths, levels, and areas of emphasis. For use in a standard one-term course, in which both discrete and continuousprobability is covered, students should have taken as a prerequisite two terms ofcalculus, including an introduction to multiple integrals. In order to cover Chapter 11, which contains material on Markov chains, some knowledge of matrix theoryis necessary. The text can also be used in a discrete probability course. The material has beenorganized in such a way that the discrete and continuous probability discussions arepresented in a separate, but parallel, manner. This organization dispels an overlyrigorous or formal view of probability and o?ers some strong pedagogical valuein that the discrete discussions can sometimes serve to motivate the more abstractcontinuous probability discussions. For use in a discrete probability course, studentsshould have taken one term of calculus as a prerequisite. Very little computing background is assumed or necessary in order to obtain fullbenefits from the use of the computing material and examples in the text. All ofthe programs that are used in the text have been written in each of the languagesTrueBASIC, Maple, and Mathematica."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Free Documentation License (GNU). Copyright year: 2006."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 342
+  },
+  "linkedContentLicense": "Free Documentation License (GNU)",
+  "externalRecordId": "21",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

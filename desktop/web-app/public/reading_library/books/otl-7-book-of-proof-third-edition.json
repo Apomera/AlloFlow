@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-7-book-of-proof-third-edition",
+  "title": "Book of Proof - Third Edition",
+  "description": "This is a book about how to prove theorems. Until this point in your education, you may have regarded mathematics primarily as a computational discipline. You have learned to solve equations, compute derivatives and integrals, multiply matrices and find determinants; and you have seen how these things can answer practical questions about the real world. In this setting, your primary goal in using mathematics has been to compute answers. But there is another approach to mathematics that is more theoretical than computational. In this approach, the primary goal is to understand mathematical structures, to prove mathematical statements, and even to invent or discover new mathematical theorems and theories. The mathematical techniques and procedures that you have learned and used up until now have their origins in this theoretical side of mathematics. For example, in computing the area under a curve, you use the fundamental theorem of calculus. It is because this theorem is true that your answer is correct. However, in your calculus class you were probably far more concerned with how that theorem could be applied than in understanding why it is true. But how do we know it is true? How can we convince ourselves or others of its validity? Questions of this nature belong to the theoretical realm of mathematics. This book is an introduction to that realm. This book will initiate you into an esoteric world. You will learn and apply the methods of thought that mathematicians use to verify theorems,explore mathematical truth and create new mathematical theories. This will prepare you for advanced mathematics courses, for you will be better able to understand proofs, write your own proofs and think critically and inquisitively about mathematics. This text has been used in classes at: Virginia Commonwealth University, Lebanon Valley College, University of California - San Diego, Colorado State University, Westminster College, South Dakota State University, PTEK College - Brunei, Christian Brothers High School, University of Texas Pan American, Schola Europaea, James Madison University, Heriot-Watt University, Prince of Songkla University, Queen Mary University of London, University of Nevada - Reno, University of Georgia - Athens, Saint Peter's University, California State University,Bogaziçi University, Pennsylvania State University, University of Notre Dame",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "Richard Hammack - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Richard Hammack",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NoDerivs",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/book-of-proof"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NoDerivs"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This is a book about how to prove theorems. Until this point in your education, you may have regarded mathematics primarily as a computational discipline. You have learned to solve equations, compute derivatives and integrals, multiply matrices and find determinants; and you have seen how these things can answer practical questions about the real world. In this setting, your primary goal in using mathematics has been to compute answers. But there is another approach to mathematics that is more theoretical than computational. In this approach, the primary goal is to understand mathematical structures, to prove mathematical statements, and even to invent or discover new mathematical theorems and theories. The mathematical techniques and procedures that you have learned and used up until now have their origins in this theoretical side of mathematics. For example, in computing the area under a curve, you use the fundamental theorem of calculus. It is because this theorem is true that your answer is correct. However, in your calculus class you were probably far more concerned with how that theorem could be applied than in understanding why it is true. But how do we know it is true? How can we convince ourselves or others of its validity? Questions of this nature belong to the theoretical realm of mathematics. This book is an introduction to that realm. This book will initiate you into an esoteric world. You will learn and apply the methods of thought that mathematicians use to verify theorems,explore mathematical truth and create new mathematical theories. This will prepare you for advanced mathematics courses, for you will be better able to understand proofs, write your own proofs and think critically and inquisitively about mathematics. This text has been used in classes at: Virginia Commonwealth University, Lebanon Valley College, University of California - San Diego, Colorado State University, Westminster College, South Dakota State University, PTEK College - Brunei, Christian Brothers High School, University of Texas Pan American, Schola Europaea, James Madison University, Heriot-Watt University, Prince of Songkla University, Queen Mary University of London, University of Nevada - Reno, University of Georgia - Athens, Saint Peter's University, California State University,Bogaziçi University, Pennsylvania State University, University of Notre Dame"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NoDerivs. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 385
+  },
+  "linkedContentLicense": "Attribution-NoDerivs",
+  "externalRecordId": "7",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

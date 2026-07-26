@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-50828-i-don-and-8217-t-want-to-go-to-sleep-sasl",
+  "title": "I don’t want to go to sleep! (SASL)",
+  "description": "Nandi doesn’t want to go to sleep. No way! She wants to go on an adventure. Join Nandi as she lets her imagination run wild and free.",
+  "language": "South African Sign Language",
+  "langCode": "sgn",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Let's go on an adventure",
+    "My body, identity, and daily routines"
+  ],
+  "authors": [
+    "Sarah McGregor"
+  ],
+  "illustrators": [
+    "Subi Bosa"
+  ],
+  "contributors": [
+    {
+      "name": "Subi Bosa",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Sarah McGregor",
+      "role": "Writer"
+    },
+    {
+      "name": "Anna Stroud",
+      "role": "Editor"
+    },
+    {
+      "name": "Alexia Greeff",
+      "role": "Designer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/i-dont-want-to-go-to-sleep-sasl/",
+    "attributionUrl": "https://bookdash.org/books/i-dont-want-to-go-to-sleep-sasl/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=i-dont-want-to-go-to-sleep"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2026/05/i-dont-want-to-go-to-sleep_sasl-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2026/05/i-dont-want-to-go-to-sleep_sasl-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Nandi doesn’t want to go to sleep. No way! She wants to go on an adventure. Join Nandi as she lets her imagination run wild and free."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Subi Bosa (Illustrator); Sarah McGregor (Writer); Anna Stroud (Editor); Alexia Greeff (Designer)\n\nLanguage: South African Sign Language. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=i-dont-want-to-go-to-sleep"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 96
+  }
+}

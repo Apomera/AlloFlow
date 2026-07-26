@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47422-magorwa",
+  "title": "Magorwa",
+  "description": "Umuhungu yisanze mw'ibarabara n'abandi bana . N'inkuru ibabaje ijanye n'ubuzima bwiwe bitoroshe nukwo bwatanguye guhinduka kuba bwiza.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "5",
+  "readingLevelLabel": "Read aloud",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Lesley Koyi"
+  ],
+  "illustrators": [
+    "Wiehan de Jager"
+  ],
+  "translators": [
+    "Gilbert Nzosaba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Lesley Koyi",
+      "role": "Author"
+    },
+    {
+      "name": "Gilbert Nzosaba",
+      "role": "Translation"
+    },
+    {
+      "name": "Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Lesley Koyi (Author); Gilbert Nzosaba (Translation); Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47422",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-882f239c18258985",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/12937.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12931.png",
+      "text": "Mugisagara, kure y'imuhira, haba umugwi w'abahungu batagira uburaro. Bari babayeho nabi. Umusi umwe, abo bahungu bazinze imatera zabo, bari baraye mw'ibarabara hakanye. Bacana umucanwa kugira barwanye imbeho. Murabo harimwo Magorwa. Ni we yari muto muri bo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=1",
+      "sourceDigest": "sha256:4edf470add849b478828b69bb009aa7394b33127c82ec29e7f351cd6a434e0bf"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12932.png",
+      "text": "Igihe abavyeyi ba Magorwa bapfa, yarafise imyaka itanu gusa. Yaciye aja kubana na sewabo. Uwo mugabo ntiyamwitaho. Ntiyamuha infungurwa zikwiye. Yamuha ibikorwa biruhisha.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=2",
+      "sourceDigest": "sha256:cebcddb4d9c40faaabeb0d9e12695979048fe41eb7bc2093c5a1e1cd820fd1b3"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12933.png",
+      "text": "Iyo Magorwa yidoze canke akagira ico asaba, sewabo yaca amukubita. Igihe asavye ko yoja kw'ishure, yaca amukubita akamubwira, \"Uri ikijuju ntanakimwe womenya.\" Inyuma y'imyaka itatu bamufata nabi aca aromoka. Aca atangura kuba mw'ibarabara.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=3",
+      "sourceDigest": "sha256:817f48dba84ca277193180b7c364a033c845b591f8652c6eb99826d08be60153"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12935.png",
+      "text": "Ubuzima bwo mw'ibarabara ntibwari bworoshe kandi benshi muri abo bana ntivyaborohera kuronka ivyo kurya. Rimwe na rimwe barabahagarika, ahandi bagakubitwa. Igihe barwaye, ntanumwe yabafasha. Abo bahungu babaho basabiriza, bagurisha uducupa bataye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=4",
+      "sourceDigest": "sha256:ad610a5f5aae6a50790c85b76fbf49962619806a4087eed3c8895553ab89470d"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12936.png",
+      "text": "Umusi umwe, Magorwa yariko arondera mw'I yarara. Asanga igitabo gishaje catabaguritse. Aragihanura agishira mu gasakoshi. Imisi yose, yafata ca gitabo akaraba amafoto. Ntiyarazi gusoma.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=5",
+      "sourceDigest": "sha256:5ab9a9f2d97f7bbd3b1197d08347cda6801e6236cb949d8ca5394a81882faf6e"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12937.png",
+      "text": "Izo foto zavuga umuhungu yakuze aba umushoferi w'indege. Magorwa atangura kwiyumvira ari umushoferi w'indege. Rimwe na rimwe, yaribwira ko aruwo muhungu avugwa mu gitabo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=6",
+      "sourceDigest": "sha256:726da72234c3cc67bd0cfa9ad85494c1970bab9afff74e7ef1c8169356b2d03f"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12938.png",
+      "text": "Hari hakanye kandi Magorwa yari ahagaze asega. Umuntu umwe aramwegera, \"Yambu, nitwa Toma. Nkora ahantu woshobora kuronka ivyo kurya.\" Toma yerekana inzu yari hafi. \"Ndizera ko wogenda harya uraronka ivyo kurya.\" Magorwa aritegereza uwo muntu, hanyuma iyo nzu. \"Birashoboka,\" aca arigira.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=7",
+      "sourceDigest": "sha256:d6e856f6aeaadb2f0c1e63a8d4487e12c465f15e8a3be9672a1929a7353eec2b"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12939.png",
+      "text": "Mu mezi yakurikiye, Magorwa asubira kubona Toma hafi yaho ari. Yakunda kuvugana n'abantu, cane cane n'abantu baba mw'i barabara. Toma yumviriza inkuru z'ubuzima bw'abantu. Yari umuntu y'itonda kandi yubaha. Bamwe murabo bana batanguye kugenda kuri yanzu isa n'umuhondo kugira baronke ivyo kurya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=8",
+      "sourceDigest": "sha256:a6a2c45cdb1d6ddb4c15d39a885fa1f7fa208de67f9280371e527a3d8ffd9208"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12940.png",
+      "text": "Magorwa yari yicaye araba amafoto muri cagitabo ciwe, igihe Toma yari yicaye hasi hafi yiwe. Toma aramubaza, \"Iyo nkuru ivuga iki?\" Magorwa aramubwira, \"Nibaza ko ivuga kumuhungu yabaye umushoferi w'indege.\" Toma aramubaza, \"Uwo muhungu yitwa nde?\" Magorwa aramwishura, \"Ntavyo nzi, sinzi gusoma.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=9",
+      "sourceDigest": "sha256:dda32986c0e869d5936bfc6fff867edd2b365e4ae379e3dda1846dac420044d8"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12941.png",
+      "text": "Ako kanya, magorwa atangura kubwira toma inkuru ziwe. Amubwira inkuru za sewabo nuko yavuye iwe. Toma ntiyavuga menshi. Ntiyabwira Magorwa ico yokora, yaramwumviriza cane.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=10",
+      "sourceDigest": "sha256:c4ce98a84ce9c4d2b2a91d2bd956244c388355b6aebba9521bcbacb98be2b9be"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12942.png",
+      "text": "Magorwa akwije imyaka cumi. Toma yaciye amuha igitabo gishasha. Yari inkuru yerekeye umuhungu w'iwabo yakuze ari umukinyi w'umupira w'amaguru akomeye. Toma asomera incuro nyinshi Magorwa inkuru yo murico gitabo. Kugeza aho umusi umwe yabwiye Magorwa ko yoja kw'ishure akiga gusoma. \"Ati uvyiyumvira kw'iki?\" Toma aramubwira ko hariho ahantu azi abana bashobora kwiga kandi babayo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=11",
+      "sourceDigest": "sha256:0f806c4a9a9ee38b8b10ad008c61e75948b9da1c47a239d5136128fd5f8e8145"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12943.png",
+      "text": "Magorwa, yiyumvira aho hantu aba, no kuja kw'ishure. Mbe ubwo Sewabo ntiyoba yavuga ukuri ko ari ikijuju atoshobora kwiga ikintu nakimwe. Mbega hamwe bo mukubitira aho naho? Yarafise ubwoba, \"Vyoba vyiza nigumiye nibera mw'ibarabara.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=12",
+      "sourceDigest": "sha256:f80fccdf28cce3191d069525a7fdd738879ee18f137e34893e0419131731d2a4"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12944.png",
+      "text": "Aca abwira Toma ikimuteye ubwoba. Ariko Toma yaguma amwizeza ko ubuzima buzohinduka niyemera kuja kw'ishure.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=13",
+      "sourceDigest": "sha256:e53a04013e23a335d73403bf0b9f3e822585355653c049667e07f76b6db38b1c"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12945.png",
+      "text": "Nuko Magorwa yungururiza muriyo nzu, asangira icumba n'abandi bahungu babiri. Bari abana cumi babana mur'iyo nzu. Babana na inasenge n'umgugabo, imbwa zitatu, akayabu, n'impene ishaje.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=14",
+      "sourceDigest": "sha256:4eef79b7a277ffe308cdaa046a15dfa761e3ab182d5abf24c5e622e392e455e7"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12946.png",
+      "text": "Magorwa atangura ishure bitoroshe. Yarafise vyinshi vyo kwiga. Yagomba no kubivamwo. Mugabo akiyumvira ya nkuru y' umushoferi w'indege, na wamukinyi w'umupira. Abibutse, ntiyigeze adebukirwa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=15",
+      "sourceDigest": "sha256:c1e870bfe0c3f309daf8ec7fdff1276a6a4b08c3b7876f930fbffdffd1965085"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12947.png",
+      "text": "Magorwa yari yicaye ku mbuga aho yaba, asoma igitabo co kw'ishure. Toma aragaruka yicara iruhande ya Magorwa. Aramubaza, \"Inkuru yerekeye iki?\" Magorwa arishura \"Havugwamwo umuhungu yabaye umwigisha.\" Toma arabaza, \"Uwo mwana yitwa nde?\" \"Izina ni Magorwa,\" Magorwa abivuga amwenyura.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47422#page=16",
+      "sourceDigest": "sha256:7b485e3efb0666f335ea032544c3ce71246b19d16f0af1c912a434a6306a81d0"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 511
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:98378316901a66b277660eaf0e5d8890ba0229d182c624fef7b29a8c81c199b4"
+  }
+}

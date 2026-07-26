@@ -8,6 +8,176 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+  // Blockly is intentionally a separate local bundle. Capture this tool's URL
+  // while the plugin script is evaluating so CDN and offline desktop paths work.
+  var _codingToolScriptUrl = (function() {
+    if (typeof document === 'undefined') return '';
+    var current = document.currentScript;
+    return current && current.src ? current.src : '';
+  })();
+  var _codingBlocklyPromise = null;
+  (function injectCodingBlocklyStyles() {
+    if (typeof document === 'undefined' || document.getElementById('allo-coding-blockly-css')) return;
+    var style = document.createElement('style');
+    style.id = 'allo-coding-blockly-css';
+    style.textContent = '@media (max-width: 960px) {' +
+      '[data-coding-tool="true"] { grid-template-columns: minmax(0, 1fr) !important; }' +
+      '[data-coding-tool="true"] > .col-span-2 { grid-column: 1 !important; }' +
+      '[data-coding-tool="true"] .coding-robot-layout { grid-template-columns: minmax(0, 1fr) !important; }' +
+      '}';
+    if (document.head) document.head.appendChild(style);
+  })();
+
+  function loadCodingBlocklyRuntime() {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return Promise.reject(new Error('Visual Blocks requires a browser.'));
+    }
+    if (window.AlloBlocklyRuntime) return Promise.resolve(window.AlloBlocklyRuntime);
+    if (_codingBlocklyPromise) return _codingBlocklyPromise;
+    _codingBlocklyPromise = new Promise(function(resolve, reject) {
+      var prior = document.getElementById('allo-coding-blockly-runtime');
+      function finish() {
+        if (window.AlloBlocklyRuntime) resolve(window.AlloBlocklyRuntime);
+        else {
+          _codingBlocklyPromise = null;
+          var failedScript = document.getElementById('allo-coding-blockly-runtime');
+          if (failedScript && failedScript.parentNode) failedScript.parentNode.removeChild(failedScript);
+          reject(new Error('The Visual Blocks runtime did not initialise.'));
+        }
+      }
+      if (prior) {
+        prior.addEventListener('load', finish, { once: true });
+        prior.addEventListener('error', function() {
+          _codingBlocklyPromise = null;
+          reject(new Error('The Visual Blocks runtime could not be loaded.'));
+        }, { once: true });
+        return;
+      }
+      var script = document.createElement('script');
+      script.id = 'allo-coding-blockly-runtime';
+      script.async = true;
+      try {
+        script.src = _codingToolScriptUrl
+          ? new URL('blockly_runtime.bundle.js', _codingToolScriptUrl).href
+          : new URL('stem_lab/blockly_runtime.bundle.js', document.baseURI).href;
+      } catch (e) {
+        script.src = './stem_lab/blockly_runtime.bundle.js';
+      }
+      script.onload = finish;
+      script.onerror = function() {
+        _codingBlocklyPromise = null;
+        if (script.parentNode) script.parentNode.removeChild(script);
+        reject(new Error('The Visual Blocks runtime could not be loaded.'));
+      };
+      document.head.appendChild(script);
+    });
+    return _codingBlocklyPromise;
+  }
+
+  function codingProgramSignature(program) {
+    try { return JSON.stringify(program || []); } catch (e) { return '[]'; }
+  }
+
+  function CodingBlocklyWorkspace(props) {
+    var React = props.React;
+    var hostRef = React.useRef(null);
+    var workspaceRef = React.useRef(null);
+    var runtimeRef = React.useRef(null);
+    var programRef = React.useRef(props.program || []);
+    var onProgramChangeRef = React.useRef(props.onProgramChange);
+    var lastSignatureRef = React.useRef(codingProgramSignature(props.program));
+    var changeTimerRef = React.useRef(null);
+    var _statusState = React.useState('loading');
+    var status = _statusState[0];
+    var setStatus = _statusState[1];
+    var _retryState = React.useState(0);
+    var retry = _retryState[0];
+    var setRetry = _retryState[1];
+
+    programRef.current = props.program || [];
+    onProgramChangeRef.current = props.onProgramChange;
+
+    React.useEffect(function() {
+      var cancelled = false;
+      var resizeObserver = null;
+      var workspace = null;
+      setStatus('loading');
+      loadCodingBlocklyRuntime().then(function(runtime) {
+        if (cancelled || !hostRef.current) return;
+        runtimeRef.current = runtime;
+        workspace = runtime.mount(hostRef.current, {
+          domain: props.domain,
+          program: programRef.current
+        });
+        workspaceRef.current = workspace;
+        lastSignatureRef.current = codingProgramSignature(programRef.current);
+        workspace.addChangeListener(function(event) {
+          if (!runtime.isProgramChange(event)) return;
+          if (changeTimerRef.current) clearTimeout(changeTimerRef.current);
+          changeTimerRef.current = setTimeout(function() {
+            if (cancelled || !workspaceRef.current) return;
+            var next = runtime.readProgram(workspaceRef.current, props.domain);
+            var nextSignature = codingProgramSignature(next);
+            if (nextSignature === lastSignatureRef.current) return;
+            lastSignatureRef.current = nextSignature;
+            onProgramChangeRef.current(next);
+          }, 120);
+        });
+        if (typeof ResizeObserver !== 'undefined') {
+          resizeObserver = new ResizeObserver(function() { runtime.resize(workspace); });
+          resizeObserver.observe(hostRef.current);
+        }
+        setStatus('ready');
+      }).catch(function() {
+        if (!cancelled) setStatus('error');
+      });
+      return function() {
+        cancelled = true;
+        if (changeTimerRef.current) clearTimeout(changeTimerRef.current);
+        if (resizeObserver) resizeObserver.disconnect();
+        if (workspace) workspace.dispose();
+        workspaceRef.current = null;
+        runtimeRef.current = null;
+      };
+    }, [props.domain, retry]);
+
+    React.useEffect(function() {
+      var signature = codingProgramSignature(props.program);
+      if (!workspaceRef.current || !runtimeRef.current || signature === lastSignatureRef.current) return;
+      lastSignatureRef.current = signature;
+      runtimeRef.current.loadProgram(workspaceRef.current, props.domain, props.program || []);
+    }, [props.program, props.domain]);
+
+    return React.createElement("section", {
+      className: "relative min-h-[470px] overflow-hidden rounded-xl border border-indigo-400/40 bg-slate-900",
+      "aria-label": props.domain === 'robot' ? 'Robot visual block editor' : 'Turtle visual block editor'
+    },
+      React.createElement("p", { className: "sr-only" },
+        "Visual block editor. Use Tab to enter the workspace and Blockly keyboard commands to select, connect, move, and edit blocks. Choose Accessible Outline for a linear editor."
+      ),
+      React.createElement("div", {
+        ref: hostRef,
+        className: "h-[470px] w-full",
+        style: { minHeight: '470px' }
+      }),
+      status === 'loading' && React.createElement("div", {
+        role: "status",
+        className: "absolute inset-0 flex items-center justify-center bg-slate-900 text-sm font-semibold text-indigo-200"
+      }, "Loading Visual Blocks\u2026"),
+      status === 'error' && React.createElement("div", {
+        role: "alert",
+        className: "absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-900 p-6 text-center text-sm text-slate-200"
+      },
+        React.createElement("p", null, "Visual Blocks could not load. Your program is safe; use Accessible Outline or try again."),
+        React.createElement("button", {
+          type: "button",
+          onClick: function() { setRetry(function(value) { return value + 1; }); },
+          className: "min-h-11 rounded-lg bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-500"
+        }, "Try again")
+      )
+    );
+  }
+
   // ── Coding Playground Audio ──
   var _codeAC = null;
   var _codeRunToken = 0, _codeStepTimer = null, _codeRobotTimer = null;
@@ -643,7 +813,8 @@
           var drawnLines = d.lines || [];
           var running = d.running || false;
           var stepIdx = d.stepIdx != null ? d.stepIdx : -1;
-          var codeMode = d.codeMode || 'blocks';
+          var rawCodeMode = d.codeMode || 'visual';
+          var codeMode = rawCodeMode === 'text' || rawCodeMode === 'outline' ? rawCodeMode : 'visual';
           var workspaceTab = d.workspaceTab || 'build';
           var textCode = d.textCode || '';
           var challengeIdx = d.challengeIdx != null ? d.challengeIdx : -1;
@@ -1788,14 +1959,11 @@
             if (codeMode === 'text') upd('textCode', blocksToText(updated));
           }
 
-          function toggleMode() {
-            if (codeMode === 'blocks') {
-              upd('textCode', blocksToText(blocks));
-              upd('codeMode', 'text');
-            } else {
-              upd('blocks', textToBlocks(textCode));
-              upd('codeMode', 'blocks');
-            }
+          function switchCodeMode(nextMode) {
+            if (nextMode === codeMode) return;
+            if (nextMode === 'text') upd('textCode', blocksToText(blocks));
+            if (codeMode === 'text' && nextMode !== 'text') upd('blocks', textToBlocks(textCode));
+            upd('codeMode', nextMode);
           }
 
           function moveBlock(idx, dir) {
@@ -1993,7 +2161,7 @@
           return React.createElement("div", {
             "data-coding-tool": "true",
             className: "grid gap-4 relative",
-            style: { gridTemplateColumns: '220px 1fr', gridTemplateRows: 'auto auto' }
+            style: { gridTemplateColumns: codeMode === 'visual' && playgroundMode === 'turtle' ? 'minmax(480px, 1.25fr) minmax(320px, 1fr)' : '220px 1fr', gridTemplateRows: 'auto auto' }
           },
             React.createElement(CodingActivityCleanup, { React: React }),
             pendingReplacement && pendingReplacementName && React.createElement(CodingReplacementDialog, {
@@ -2225,14 +2393,22 @@
                   }, tab.icon + " " + tab.label);
                 })
               ),
-              // Mode toggle
-              React.createElement("button", { "aria-label": t('stem.coding.toggle_mode', "Toggle Mode"),
-                onClick: toggleMode,
-                className: "coding-mode-toggle flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all " +
-                  (codeMode === 'blocks' ? 'bg-indigo-900/50 text-indigo-200 hover:bg-indigo-900/70' : 'bg-amber-700 text-white hover:bg-amber-600')
-              },
-                React.createElement("span", null, codeMode === 'blocks' ? '🧩' : '📝'),
-                codeMode === 'blocks' ? 'Switch to Code' : 'Switch to Blocks'
+              // Editor view selector
+              React.createElement("div", { role: "group", "aria-label": "Editor view", className: "coding-mode-toggle flex overflow-hidden rounded-lg border border-white/20" },
+                [
+                  { key: 'visual', icon: '🧩', label: 'Visual Blocks' },
+                  { key: 'outline', icon: '☷', label: 'Accessible Outline' },
+                  { key: 'text', icon: '📝', label: 'Code' }
+                ].filter(function(view) { return playgroundMode === 'turtle' || view.key !== 'text'; }).map(function(view) {
+                  return React.createElement("button", {
+                    key: view.key,
+                    type: "button",
+                    "aria-pressed": codeMode === view.key,
+                    onClick: function() { switchCodeMode(view.key); },
+                    className: "min-h-11 px-3 py-2 text-xs font-bold transition-colors " +
+                      (codeMode === view.key ? 'bg-white text-indigo-800' : 'bg-indigo-900/50 text-indigo-100 hover:bg-indigo-900/80')
+                  }, view.icon + " " + view.label);
+                })
               ),
               // Speed
               React.createElement("select", {
@@ -2408,9 +2584,14 @@
             // ══════════════════════════
             // ROBOT GRID MODE UI
             // ══════════════════════════
-            playgroundMode === 'robot' && React.createElement("div", { className: "col-span-2 grid gap-4", style: { gridTemplateColumns: "200px 1fr 260px" } },
+            playgroundMode === 'robot' && React.createElement("div", { className: "coding-robot-layout col-span-2 grid gap-4", style: { gridTemplateColumns: codeMode === 'visual' ? "minmax(480px, 1.25fr) minmax(320px, 1fr) 260px" : "200px 1fr 260px" } },
               // Robot Toolbox
-              React.createElement("div", { className: "coding-toolbox bg-slate-800/80 backdrop-blur-sm rounded-xl p-3 border border-slate-700/60 shadow-lg", style: { maxHeight: '500px', overflowY: 'auto' } },
+              codeMode === 'visual' ? React.createElement(CodingBlocklyWorkspace, {
+                React: React,
+                domain: 'robot',
+                program: robotBlocks,
+                onProgramChange: function(nextProgram) { upd('robotBlocks', nextProgram); }
+              }) : React.createElement("div", { className: "coding-toolbox bg-slate-800/80 backdrop-blur-sm rounded-xl p-3 border border-slate-700/60 shadow-lg", style: { maxHeight: '500px', overflowY: 'auto' } },
                 React.createElement("h3", { className: "text-xs font-bold text-slate-300 uppercase tracking-wider mb-2" }, t('stem.coding.robot_commands', "\uD83E\uDD16 Robot Commands")),
                 React.createElement("div", { className: "space-y-1" },
                   ROBOT_BLOCKS.map(function(rb) {
@@ -2516,7 +2697,7 @@
                   })
                 ),
                 // Robot Program
-                React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-700/50", style: { maxHeight: '200px', overflowY: 'auto' } },
+                codeMode !== 'visual' && React.createElement("div", { className: "bg-slate-800/60 rounded-xl p-3 border border-slate-700/50", style: { maxHeight: '200px', overflowY: 'auto' } },
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("h3", { className: "text-xs font-bold text-slate-300 uppercase tracking-wider" }, "\uD83D\uDCDD Program (" + robotBlocks.length + ")"),
                     React.createElement("div", { className: "flex gap-1" },
@@ -2600,8 +2781,16 @@
 
             // ── Left panel: Toolbox + Program (TURTLE MODE) ──
             playgroundMode === 'turtle' && React.createElement("div", { className: "coding-toolbox flex flex-col gap-3 max-h-[600px] overflow-y-auto" },
-              // Toolbox
-              React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700" },
+              codeMode === 'visual' && React.createElement(CodingBlocklyWorkspace, {
+                React: React,
+                domain: 'turtle',
+                program: blocks,
+                onProgramChange: function(nextProgram) {
+                  updMulti({ blocks: nextProgram, textCode: blocksToText(nextProgram) });
+                }
+              }),
+              // Accessible linear toolbox
+              codeMode === 'outline' && React.createElement("div", { className: "bg-slate-800 rounded-xl p-3 border border-slate-700" },
                 React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" }, t('stem.coding.toolbox', "🧰 Toolbox")),
                 React.createElement("div", { className: "flex flex-col gap-1" },
                   BLOCK_TYPES.map(function (bt) {
@@ -2617,7 +2806,7 @@
               ),
 
               // Program (blocks mode)
-              codeMode === 'blocks' && React.createElement("div", { className: "coding-program bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
+              codeMode === 'outline' && React.createElement("div", { className: "coding-program bg-slate-800 rounded-xl p-3 border border-slate-700 flex-1" },
                 React.createElement("h3", { className: "text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2" },
                   "📋 Program (" + blocks.length + " blocks)"
                 ),
@@ -2836,7 +3025,7 @@
               React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
                 React.createElement("button", { type: "button", "aria-label": "Run turtle program",
                   onClick: handleRun,
-                  disabled: running || (codeMode === 'blocks' ? blocks.length === 0 : !textCode.trim()),
+                  disabled: running || (codeMode === 'text' ? !textCode.trim() : blocks.length === 0),
                   className: "coding-run-btn min-h-11 flex items-center gap-1 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all " +
                     (running ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 active:scale-95 shadow-lg hover:shadow-green-500/30')
                 }, t('stem.coding.run', "▶ Run")),

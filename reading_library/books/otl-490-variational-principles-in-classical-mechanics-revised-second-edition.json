@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-490-variational-principles-in-classical-mechanics-revised-second-edition",
+  "title": "Variational Principles in Classical Mechanics - Revised Second Edition",
+  "description": "Two dramatically different philosophical approaches to classical mechanics were proposed during the 17th – 18th centuries. Newton developed his vectorial formulation that uses time-dependent differential equations of motion to relate vector observables like force and rate of change of momentum. Euler, Lagrange, Hamilton, and Jacobi, developed powerful alternative variational formulations based on the assumption that nature follows the principle of least action. These variational formulations now play a pivotal role in science and engineering. This book introduces variational principles and their application to classical mechanics. The relative merits of the intuitive Newtonian vectorial formulation, and the more powerful variational formulations are compared. Applications to a wide variety of topics illustrate the intellectual beauty, remarkable power, and broad scope provided by use of variational principles in physics. This second edition adds discussion of the use of variational principles applied to the following topics: Systems subject to initial boundary conditions The hierarchy of the related formulations based on action, Lagrangian, Hamiltonian, and equations of motion, to systems that involve symmetries Non-conservative systems. Variable-mass systems. The General Theory of Relativity. The first edition of this book can be downloaded at the publisher link.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Physics"
+  ],
+  "authors": [
+    "Douglas Cline - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Rochester River Campus Libraries",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/variational-principles-in-classical-mechanics"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Two dramatically different philosophical approaches to classical mechanics were proposed during the 17th – 18th centuries. Newton developed his vectorial formulation that uses time-dependent differential equations of motion to relate vector observables like force and rate of change of momentum. Euler, Lagrange, Hamilton, and Jacobi, developed powerful alternative variational formulations based on the assumption that nature follows the principle of least action. These variational formulations now play a pivotal role in science and engineering. This book introduces variational principles and their application to classical mechanics. The relative merits of the intuitive Newtonian vectorial formulation, and the more powerful variational formulations are compared. Applications to a wide variety of topics illustrate the intellectual beauty, remarkable power, and broad scope provided by use of variational principles in physics. This second edition adds discussion of the use of variational principles applied to the following topics: Systems subject to initial boundary conditions The hierarchy of the related formulations based on action, Lagrangian, Hamiltonian, and equations of motion, to systems that involve symmetries Non-conservative systems. Variable-mass systems. The General Theory of Relativity. The first edition of this book can be downloaded at the publisher link."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 213
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "490",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

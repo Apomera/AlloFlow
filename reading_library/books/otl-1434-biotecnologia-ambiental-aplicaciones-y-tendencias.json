@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1434-biotecnologia-ambiental-aplicaciones-y-tendencias",
+  "title": "Biotecnología Ambiental, Aplicaciones y Tendencias",
+  "description": "La Biotecnología Ambiental emplea el uso de organismos para la prevención, monitoreo y remediación de los ecosistemas, al mismo tiempo permite la generación de bioproductos y energía limpia. El libro consistió en tres capítulos, en el primero se establece los fundamentos de la Biotecnología Ambiental y sus aplicaciones en entornos terrestre, acuático y aéreo; además, se presentan herramientas aplicadas como los biosensores en el monitoreo ambiental, la fitorremediación en varios contextos de América Latina y el fortalecimiento de la agricultura sustentable. En el segundo capítulo se describe la importancia de un estudio bibliométrico y el enfoque para las diversas investigaciones, se detalla un manual de uso, que permite su replicabilidad en otros contextos. Además de presentar un caso de estudio aplicado al tema central de este libro, que sistematiza los temas más estudiados, las tendencias, revistas y países con mayores contribuciones. En el tercer capítulo se presentan varias prácticas de laboratorio y una sección de preguntas, que pueden ser empleadas en otras instituciones educativas o de manera autónoma. En conclusión, los capítulos son complementarios entre sí, facilitando la comprensión e interés del lector. El área de mayor relevancia corresponde a la biorremediación en suelos contaminados por hidrocarburos y metales pesados, los grupos más frecuentes en la revisión fueron hongos, cianobacterias y organismos genéticamente modificados. Finalmente, existe una oportunidad del uso y la potencial combinación de las técnicas basadas en metagenómica, ADN ambiental, inteligencia artificial para el desarrollo de las nuevas tendencias de la Biotecnología Ambiental",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology"
+  ],
+  "authors": [
+    "Cristhian David Chicaiza-Ortiz - Author / Virginia del Carmen Rivadeneira-Arias - Author / Robinson Jasmany Herrera-Feijoo - Author / Jean Carlo Andrade - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/biotecnologia-ambiental-aplicaciones-y-tendencias"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "La Biotecnología Ambiental emplea el uso de organismos para la prevención, monitoreo y remediación de los ecosistemas, al mismo tiempo permite la generación de bioproductos y energía limpia. El libro consistió en tres capítulos, en el primero se establece los fundamentos de la Biotecnología Ambiental y sus aplicaciones en entornos terrestre, acuático y aéreo; además, se presentan herramientas aplicadas como los biosensores en el monitoreo ambiental, la fitorremediación en varios contextos de América Latina y el fortalecimiento de la agricultura sustentable. En el segundo capítulo se describe la importancia de un estudio bibliométrico y el enfoque para las diversas investigaciones, se detalla un manual de uso, que permite su replicabilidad en otros contextos. Además de presentar un caso de estudio aplicado al tema central de este libro, que sistematiza los temas más estudiados, las tendencias, revistas y países con mayores contribuciones. En el tercer capítulo se presentan varias prácticas de laboratorio y una sección de preguntas, que pueden ser empleadas en otras instituciones educativas o de manera autónoma. En conclusión, los capítulos son complementarios entre sí, facilitando la comprensión e interés del lector. El área de mayor relevancia corresponde a la biorremediación en suelos contaminados por hidrocarburos y metales pesados, los grupos más frecuentes en la revisión fueron hongos, cianobacterias y organismos genéticamente modificados. Finalmente, existe una oportunidad del uso y la potencial combinación de las técnicas basadas en metagenómica, ADN ambiental, inteligencia artificial para el desarrollo de las nuevas tendencias de la Biotecnología Ambiental"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 268
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1434",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

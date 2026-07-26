@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1828-proteccion-de-las-tortugas-charapa-en-el-parque-nacional-yasuni-y-sus-al",
+  "title": "Protección de las tortugas charapa en el Parque Nacional Yasuní y sus alrededores",
+  "description": "La tortuga charapa (Podocnemis unifilis), especie emblemática de la Amazonía, enfrenta amenazas significativas en el Parque Nacional Yasuní, un enclave de biodiversidad crucial para su conservación. Este estudio se enfoca en identificar las amenazas que afectan a la especie, analizar estrategias de manejo y explorar el rol comunitario en su protección. Se empleó una metodología basada en la revisión de literatura científica, entrevistas a actores locales y análisis de datos sobre la población de tortugas y su hábitat. Los resultados destacan que las amenazas principales incluyen la recolección intensiva de huevos, la caza y la degradación del hábitat debido a actividades humanas como la deforestación y la explotación petrolera. Además, el cambio climático agrava la situación, alterando los ciclos reproductivos y la proporción de sexos en las crías. Las estrategias de conservación implementadas, como la reubicación de nidos y la sensibilización comunitaria, han mostrado ser eficaces, aunque enfrentan limitaciones de recursos y coordinación. Se concluye que la participación activa de las comunidades indígenas y la integración del conocimiento tradicional con enfoques científicos son esenciales para la sostenibilidad de los esfuerzos de conservación. Estas acciones son fundamentales no solo para proteger a P. unifilis, sino también para preservar los ecosistemas acuáticos del Yasuní.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine",
+    "Social Sciences"
+  ],
+  "authors": [
+    "Juan Manuel Guerrero-Calero - Author / Laura Cristina Merchán-Nieto - Author / José Daniel Zambrano-Molina - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/proteccion-de-las-tortugas-charapa-en-el-parque-nacional-yasuni-y-sus-alrededores"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "La tortuga charapa (Podocnemis unifilis), especie emblemática de la Amazonía, enfrenta amenazas significativas en el Parque Nacional Yasuní, un enclave de biodiversidad crucial para su conservación. Este estudio se enfoca en identificar las amenazas que afectan a la especie, analizar estrategias de manejo y explorar el rol comunitario en su protección. Se empleó una metodología basada en la revisión de literatura científica, entrevistas a actores locales y análisis de datos sobre la población de tortugas y su hábitat. Los resultados destacan que las amenazas principales incluyen la recolección intensiva de huevos, la caza y la degradación del hábitat debido a actividades humanas como la deforestación y la explotación petrolera. Además, el cambio climático agrava la situación, alterando los ciclos reproductivos y la proporción de sexos en las crías. Las estrategias de conservación implementadas, como la reubicación de nidos y la sensibilización comunitaria, han mostrado ser eficaces, aunque enfrentan limitaciones de recursos y coordinación. Se concluye que la participación activa de las comunidades indígenas y la integración del conocimiento tradicional con enfoques científicos son esenciales para la sostenibilidad de los esfuerzos de conservación. Estas acciones son fundamentales no solo para proteger a P. unifilis, sino también para preservar los ecosistemas acuáticos del Yasuní."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 225
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1828",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

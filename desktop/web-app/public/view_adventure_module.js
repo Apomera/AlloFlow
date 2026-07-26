@@ -213,6 +213,7 @@ function AdventureView(props) {
   var handleToggleImmersiveShowChoices = props.handleToggleImmersiveShowChoices;
   var handleUseItem = props.handleUseItem;
   var toggleDemocracyMode = props.toggleDemocracyMode;
+  var openAdventureActionVote = props.openAdventureActionVote;
   // Pure helpers
   var renderFormattedText = props.renderFormattedText;
   var formatInteractiveText = props.formatInteractiveText;
@@ -538,7 +539,7 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }), " ", /*#__PURE__*/React.createElement("span", {
     className: "hidden xl:inline"
-  }, t('adventure.edit_options_btn'))), activeSessionCode && /*#__PURE__*/React.createElement("button", {
+  }, t('adventure.edit_options_btn'))), isTeacherMode && activeSessionCode && !adventureFreeResponseEnabled && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "democracy_toggle",
     onClick: toggleDemocracyMode,
@@ -1426,7 +1427,25 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }), " ", t('adventure.retry_action'))) : adventureState.currentScene && (adventureFreeResponseEnabled ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3"
-  }, renderStrategyHintCard(true), /*#__PURE__*/React.createElement("textarea", {
+  }, !isTeacherMode && activeSessionCode ? /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    className: "rounded-xl border border-indigo-300 bg-indigo-950/80 p-4 text-sm text-indigo-100"
+  }, /*#__PURE__*/React.createElement("strong", {
+    className: "block text-white"
+  }, t('adventure.teacher_controls_live') || 'The teacher controls this class adventure.'), /*#__PURE__*/React.createElement("span", {
+    className: "mt-1 block"
+  }, t('adventure.wait_for_action_round') || 'When a class-action round opens, submit your idea in the private live prompt. Free responses and votes are sent peer to peer.')) : /*#__PURE__*/React.createElement(React.Fragment, null, isTeacherMode && activeSessionCode && typeof openAdventureActionVote === 'function' ? /*#__PURE__*/React.createElement("div", {
+    className: "rounded-xl border border-emerald-300 bg-emerald-950/70 p-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: openAdventureActionVote,
+    className: "min-h-11 w-full rounded-lg border border-emerald-300 bg-emerald-700 px-3 py-2 text-sm font-black text-white hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+  }, /*#__PURE__*/React.createElement(Users, {
+    size: 16,
+    "aria-hidden": "true"
+  }), " ", t('adventure.collect_class_actions') || 'Collect and vote on class actions'), /*#__PURE__*/React.createElement("p", {
+    className: "m-0 mt-2 text-[11px] leading-snug text-emerald-100"
+  }, t('adventure.collect_class_actions_privacy') || 'Student proposals and votes use the existing peer-to-peer Live Polling channel and are not written to the session document.')) : null, renderStrategyHintCard(true), /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('adventure.aria_free_response') || 'Type your adventure action',
     "data-help-key": "adventure_input_field",
     value: adventureTextInput,
@@ -1449,7 +1468,7 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement(Send, {
     size: 16,
     "aria-hidden": "true"
-  }), " ", t('adventure.send_action')), renderStrategyHintButton(true)) : /*#__PURE__*/React.createElement("div", {
+  }), " ", t('adventure.send_action')), renderStrategyHintButton(true))) : /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 md:grid-cols-2 gap-3"
   }, (() => {
     const mainTextParagraphs = adventureState.currentScene.text.split(/\n{2,}/);

@@ -42,7 +42,7 @@ describe('hands-off auto-retry — Make Accessible retries bounded, progress-gat
     expect(onclick).toContain('waitForGeminiCalm');           // burst → breaker-aware wait, not a blind sleep
     expect(onclick).toMatch(/offline|cdn|mirror|failed to|load timeout/); // A3-MED fallback regex retained
     // …and a FAILED run can no longer adopt a stale pdfFixResultRef as instant success:
-    expect(onclick).toContain('if (!_handsErr) { for (let _w = 0;');
+    expect(onclick).toMatch(/if\s*\(!_handsErr\)\s*\{\s*for\s*\(let _w = 0;\s*_w < 6 && !\(_res \|\| pdfFixResultRef\.current\);[\s\S]{0,500}_res = _res \|\| pdfFixResultRef\.current;/);
   });
   it('honors the user STOP across the retry boundary (A3-HIGH — must not relaunch the loop after Stop)', () => {
     expect(onclick).toContain('const _stopped = () => !!(pdfAutoContinueAbortRef && pdfAutoContinueAbortRef.current);');

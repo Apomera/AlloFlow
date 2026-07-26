@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-9-college-success",
+  "title": "College Success",
+  "description": "Our primary goal in writing College Success is to help you succeed in college. According to Department of Education data, 30 percent of college freshmen leave school in their first year and as many as 50 percent never graduate. College Success is designed to help change that. College Success has a student-friendly format arranged to help you develop the essential skills and provide the information you need to succeed in college. This is not a textbook full of theory and extensive detail that merely discusses student success; rather, this is a how-to manual for succeeding in college. The book provides realistic, practical guidance ranging from study skills to personal health, from test taking to managing time and money. Furthermore, College Success is accessible—information is presented concisely and as simply as possible. College Success has the following features to help you achieve your goals: Each chapter asks you to evaluate yourself because success starts with recognizing your strengths and weaknesses, your hopes and desires, and your own personal, individual realities. You'll develop your own goals based on these self-assessments, determining what success in college really means for you as an individual. Throughout the book, you will find numerous interactive activities created to help you improve your skills. To assist you with this, the material is presented in easily digestible “chunks” of information so you can begin applying it immediately in your own life—and get the most out of your college education.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Student Success"
+  ],
+  "authors": [
+    "Open Textbook Library record"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Minnesota Libraries Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/college-success"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Our primary goal in writing College Success is to help you succeed in college. According to Department of Education data, 30 percent of college freshmen leave school in their first year and as many as 50 percent never graduate. College Success is designed to help change that. College Success has a student-friendly format arranged to help you develop the essential skills and provide the information you need to succeed in college. This is not a textbook full of theory and extensive detail that merely discusses student success; rather, this is a how-to manual for succeeding in college. The book provides realistic, practical guidance ranging from study skills to personal health, from test taking to managing time and money. Furthermore, College Success is accessible—information is presented concisely and as simply as possible. College Success has the following features to help you achieve your goals: Each chapter asks you to evaluate yourself because success starts with recognizing your strengths and weaknesses, your hopes and desires, and your own personal, individual realities. You'll develop your own goals based on these self-assessments, determining what success in college really means for you as an individual. Throughout the book, you will find numerous interactive activities created to help you improve your skills. To assist you with this, the material is presented in easily digestible “chunks” of information so you can begin applying it immediately in your own life—and get the most out of your college education."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 263
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "9",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

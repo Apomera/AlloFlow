@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1118-making-and-being",
+  "title": "Making and Being",
+  "description": "Making and Being offers a framework for teaching art that emphasizes contemplation, collaboration, and political economy. Authors Susan Jahoda and Caroline Woolard, two visual arts educators and members of the collective BFAMFAPhD*, share ideas and teaching strategies that they have adapted to spaces of learning which range widely, from self-organized workshops for professional artists to Foundations BFA and MFA thesis classes. This hands-on guide includes activities, worksheets, and assignments and is a critical resource for artists and art educators today. Making and Being is a book, a series of videos, a deck of cards, and an interactive website with freely downloadable content (click on links below to download worksheets, activities, and chapters as PDFs and editable Google Docs). *BFAMFAPhD is a collective that formed in 2012 to make art, reports, and teaching tools to advocate for cultural equity in the United States. The work of the collective is to bring people together to analyze and reimagine relationships of power in the arts. BFAMFAPhD core members are: Susan Jahoda, Emilio Martínez Poppe, Agnes Szanyi, Emily Tareila, Vicky Virgin, and Caroline Woolard. We wrote this book for those of you who want a holistic art education that includes how to be both more fully present with yourself and with others. The term holistic means that the parts of any given system are intimately interconnected; that they are understandable only in relation to the whole system. How can you talk about making a new project without talking about labor conditions? How can you talk about labor conditions without talking about payment? It’s time to address your artistic labor, your budgets your storage units, your gifts, and your well-being.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Curriculum & Instruction",
+    "Humanities - Arts"
+  ],
+  "authors": [
+    "Susan Jahoda - Author / Caroline Woolard - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Pioneer Works Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/making-and-being"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Making and Being offers a framework for teaching art that emphasizes contemplation, collaboration, and political economy. Authors Susan Jahoda and Caroline Woolard, two visual arts educators and members of the collective BFAMFAPhD*, share ideas and teaching strategies that they have adapted to spaces of learning which range widely, from self-organized workshops for professional artists to Foundations BFA and MFA thesis classes. This hands-on guide includes activities, worksheets, and assignments and is a critical resource for artists and art educators today. Making and Being is a book, a series of videos, a deck of cards, and an interactive website with freely downloadable content (click on links below to download worksheets, activities, and chapters as PDFs and editable Google Docs). *BFAMFAPhD is a collective that formed in 2012 to make art, reports, and teaching tools to advocate for cultural equity in the United States. The work of the collective is to bring people together to analyze and reimagine relationships of power in the arts. BFAMFAPhD core members are: Susan Jahoda, Emilio Martínez Poppe, Agnes Szanyi, Emily Tareila, Vicky Virgin, and Caroline Woolard. We wrote this book for those of you who want a holistic art education that includes how to be both more fully present with yourself and with others. The term holistic means that the parts of any given system are intimately interconnected; that they are understandable only in relation to the whole system. How can you talk about making a new project without talking about labor conditions? How can you talk about labor conditions without talking about payment? It’s time to address your artistic labor, your budgets your storage units, your gifts, and your well-being."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 298
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "1118",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

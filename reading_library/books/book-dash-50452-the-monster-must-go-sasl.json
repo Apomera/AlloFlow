@@ -1,0 +1,90 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-50452-the-monster-must-go-sasl",
+  "title": "The monster must go! (SASL)",
+  "description": "There’s a monster in our house. It’s noisy, messy and smelly. And it’s time for the monster to GO!",
+  "language": "South African Sign Language",
+  "langCode": "sgn",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Emotions and life skills",
+    "Family, friends, and home",
+    "Let's play!"
+  ],
+  "authors": [
+    "Murray Hunter"
+  ],
+  "illustrators": [
+    "Nicola Anne Smith"
+  ],
+  "contributors": [
+    {
+      "name": "Katinka Joubert",
+      "role": "Designer"
+    },
+    {
+      "name": "Nicola Anne Smith",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Murray Hunter",
+      "role": "Writer"
+    },
+    {
+      "name": "Ester Levinrad",
+      "role": "Editor"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/the-monster-must-go-sasl/",
+    "attributionUrl": "https://bookdash.org/books/the-monster-must-go-sasl/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=the-monster-must-go"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2026/05/the-monster-must-go_sasl-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2026/05/the-monster-must-go_sasl-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "There’s a monster in our house. It’s noisy, messy and smelly. And it’s time for the monster to GO!"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Katinka Joubert (Designer); Nicola Anne Smith (Illustrator); Murray Hunter (Writer); Ester Levinrad (Editor)\n\nLanguage: South African Sign Language. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=the-monster-must-go"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 89
+  }
+}

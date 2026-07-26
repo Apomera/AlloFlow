@@ -3254,7 +3254,7 @@
     var _adding = useState(false);
     var adding = _adding[0];
     var setAdding = _adding[1];
-    var _newSrc = useState({ citation: "", notes: "", kind: "web_article" });
+    var _newSrc = useState({ citation: "", notes: "", kind: "web_article", title: "", author: "", publicationDate: "", containerTitle: "", publisher: "", doi: "", isbn: "", locator: "" });
     var newSrc = _newSrc[0];
     var setNewSrc = _newSrc[1];
     var _targetId = useState(null);
@@ -3276,6 +3276,22 @@
           kind: newSrc.kind,
           citation: newSrc.citation.trim(),
           notes: newSrc.notes.trim(),
+          title: newSrc.title.trim(),
+          publicationDate: newSrc.publicationDate.trim(),
+          doi: newSrc.doi.trim(),
+          isbn: newSrc.isbn.trim(),
+          locator: newSrc.locator.trim(),
+          citationData: {
+            title: newSrc.title.trim(),
+            author: newSrc.author.trim() ? [{ literal: newSrc.author.trim() }] : [],
+            publicationDate: newSrc.publicationDate.trim(),
+            containerTitle: newSrc.containerTitle.trim(),
+            publisher: newSrc.publisher.trim(),
+            DOI: newSrc.doi.trim(),
+            ISBN: newSrc.isbn.trim(),
+            page: newSrc.locator.trim(),
+            URL: /^https?:\/\//i.test(newSrc.citation.trim()) ? newSrc.citation.trim() : ""
+          },
           sift: { tier: "unvetted", stop: {}, investigate: { whoMadeItFacts: [] }, find: { independentCoverageSourceIds: [] }, trace: {}, tierHistory: [] },
           provenance: {},
           humanitiesContext: {
@@ -3292,7 +3308,7 @@
         }]);
         return next;
       });
-      setNewSrc({ citation: "", notes: "", kind: "web_article" });
+      setNewSrc({ citation: "", notes: "", kind: "web_article", title: "", author: "", publicationDate: "", containerTitle: "", publisher: "", doi: "", isbn: "", locator: "" });
       setAdding(false);
     };
     var removeSource = function(id) {
@@ -3445,7 +3461,23 @@
       /* @__PURE__ */ React.createElement("option", { value: "interview" }, "interview"),
       /* @__PURE__ */ React.createElement("option", { value: "archival" }, "archival"),
       /* @__PURE__ */ React.createElement("option", { value: "other" }, "other")
-    ), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("details", { style: { border: "1px solid #e2e8f0", borderRadius: "8px", background: "#f8fafc" } }, /* @__PURE__ */ React.createElement("summary", { style: { minHeight: "44px", boxSizing: "border-box", padding: "11px", cursor: "pointer", fontSize: "12px", fontWeight: 800, color: "#475569" } }, "Structured citation details (recommended)"), /* @__PURE__ */ React.createElement("div", { style: { padding: "0 10px 10px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: "8px" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", color: "#334155" } }, "Title", /* @__PURE__ */ React.createElement("input", { type: "text", value: newSrc.title, maxLength: 300, onChange: function(e) {
+      setNewSrc(Object.assign({}, newSrc, { title: e.target.value }));
+    }, style: { display: "block", width: "100%", boxSizing: "border-box", minHeight: "44px", marginTop: "3px", padding: "7px", borderRadius: "6px", border: "1px solid #94a3b8", fontSize: "13px" } })), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", color: "#334155" } }, "Author or creator", /* @__PURE__ */ React.createElement("input", { type: "text", value: newSrc.author, maxLength: 300, onChange: function(e) {
+      setNewSrc(Object.assign({}, newSrc, { author: e.target.value }));
+    }, style: { display: "block", width: "100%", boxSizing: "border-box", minHeight: "44px", marginTop: "3px", padding: "7px", borderRadius: "6px", border: "1px solid #94a3b8", fontSize: "13px" } })), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", color: "#334155" } }, "Publication date", /* @__PURE__ */ React.createElement("input", { type: "text", value: newSrc.publicationDate, maxLength: 40, placeholder: "YYYY or YYYY-MM-DD", onChange: function(e) {
+      setNewSrc(Object.assign({}, newSrc, { publicationDate: e.target.value }));
+    }, style: { display: "block", width: "100%", boxSizing: "border-box", minHeight: "44px", marginTop: "3px", padding: "7px", borderRadius: "6px", border: "1px solid #94a3b8", fontSize: "13px" } })), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", color: "#334155" } }, "Journal, archive, or collection", /* @__PURE__ */ React.createElement("input", { type: "text", value: newSrc.containerTitle, maxLength: 240, onChange: function(e) {
+      setNewSrc(Object.assign({}, newSrc, { containerTitle: e.target.value }));
+    }, style: { display: "block", width: "100%", boxSizing: "border-box", minHeight: "44px", marginTop: "3px", padding: "7px", borderRadius: "6px", border: "1px solid #94a3b8", fontSize: "13px" } })), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", color: "#334155" } }, "Publisher", /* @__PURE__ */ React.createElement("input", { type: "text", value: newSrc.publisher, maxLength: 240, onChange: function(e) {
+      setNewSrc(Object.assign({}, newSrc, { publisher: e.target.value }));
+    }, style: { display: "block", width: "100%", boxSizing: "border-box", minHeight: "44px", marginTop: "3px", padding: "7px", borderRadius: "6px", border: "1px solid #94a3b8", fontSize: "13px" } })), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", color: "#334155" } }, "DOI", /* @__PURE__ */ React.createElement("input", { type: "text", value: newSrc.doi, maxLength: 200, onChange: function(e) {
+      setNewSrc(Object.assign({}, newSrc, { doi: e.target.value }));
+    }, style: { display: "block", width: "100%", boxSizing: "border-box", minHeight: "44px", marginTop: "3px", padding: "7px", borderRadius: "6px", border: "1px solid #94a3b8", fontSize: "13px" } })), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", color: "#334155" } }, "ISBN", /* @__PURE__ */ React.createElement("input", { type: "text", value: newSrc.isbn, maxLength: 80, onChange: function(e) {
+      setNewSrc(Object.assign({}, newSrc, { isbn: e.target.value }));
+    }, style: { display: "block", width: "100%", boxSizing: "border-box", minHeight: "44px", marginTop: "3px", padding: "7px", borderRadius: "6px", border: "1px solid #94a3b8", fontSize: "13px" } })), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", color: "#334155" } }, "Page, chapter, or locator", /* @__PURE__ */ React.createElement("input", { type: "text", value: newSrc.locator, maxLength: 80, onChange: function(e) {
+      setNewSrc(Object.assign({}, newSrc, { locator: e.target.value }));
+    }, style: { display: "block", width: "100%", boxSizing: "border-box", minHeight: "44px", marginTop: "3px", padding: "7px", borderRadius: "6px", border: "1px solid #94a3b8", fontSize: "13px" } })))), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: newSrc.notes,

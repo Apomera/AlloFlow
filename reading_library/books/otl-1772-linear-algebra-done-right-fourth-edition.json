@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1772-linear-algebra-done-right-fourth-edition",
+  "title": "Linear Algebra Done Right - Fourth Edition",
+  "description": "Now available in Open Access, this best-selling textbook for a second course in linear algebra is aimed at undergraduate math majors and graduate students. The fourth edition gives an expanded treatment of the singular value decomposition and its consequences. It includes a new chapter on multilinear algebra, treating bilinear forms, quadratic forms, tensor products, and an approach to determinants via alternating multilinear forms. This new edition also increases the use of the minimal polynomial to provide cleaner proofs of multiple results. Also, over 250 new exercises have been added. The novel approach taken here banishes determinants to the end of the book. The text focuses on the central goal of linear algebra: understanding the structure of linear operators on finite-dimensional vector spaces. The author has taken unusual care to motivate concepts and simplify proofs. A variety of interesting exercises in each chapter helps students understand and manipulate the objects of linear algebra. Beautiful formatting creates pages with an unusually student-friendly appearance in both print and electronic versions. No prerequisites are assumed other than the usual demand for suitable mathematical maturity. The text starts by discussing vector spaces, linear independence, span, basis, and dimension. The book then deals with linear maps, eigenvalues, and eigenvectors. Inner-product spaces are introduced, leading to the finite-dimensional spectral theorem and its consequences. Generalized eigenvectors are then used to provide insight into the structure of a linear operator.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Algebra"
+  ],
+  "authors": [
+    "Sheldon Axler - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Springer",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/linear-algebra-done-right"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Now available in Open Access, this best-selling textbook for a second course in linear algebra is aimed at undergraduate math majors and graduate students. The fourth edition gives an expanded treatment of the singular value decomposition and its consequences. It includes a new chapter on multilinear algebra, treating bilinear forms, quadratic forms, tensor products, and an approach to determinants via alternating multilinear forms. This new edition also increases the use of the minimal polynomial to provide cleaner proofs of multiple results. Also, over 250 new exercises have been added. The novel approach taken here banishes determinants to the end of the book. The text focuses on the central goal of linear algebra: understanding the structure of linear operators on finite-dimensional vector spaces. The author has taken unusual care to motivate concepts and simplify proofs. A variety of interesting exercises in each chapter helps students understand and manipulate the objects of linear algebra. Beautiful formatting creates pages with an unusually student-friendly appearance in both print and electronic versions. No prerequisites are assumed other than the usual demand for suitable mathematical maturity. The text starts by discussing vector spaces, linear independence, span, basis, and dimension. The book then deals with linear maps, eigenvalues, and eigenvectors. Inner-product spaces are introduced, leading to the finite-dimensional spectral theorem and its consequences. Generalized eigenvectors are then used to provide insight into the structure of a linear operator."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 254
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1772",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

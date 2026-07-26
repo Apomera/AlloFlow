@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1426-threshold-concepts-in-biochemistry",
+  "title": "Threshold Concepts in Biochemistry",
+  "description": "Biochemistry (and Molecular Biology) represent one of the fastest-growing fields of scientific research and technical innovation and the resulting biotechnology is increasingly applied to other fields of study. So, an understanding of Biochemistry is increasingly important for students in all biological disciplines. However, at the same time, the content is inherently complex, highly abstract, and often deeply rooted in the pure sciences – mathematics, chemistry, and physics. This makes it difficult to both learn and to teach. This book is designed as a succinct and focused resource, specifically aimed to help students grasp key threshold concepts in Biochemistry. Due to their troublesome nature, understanding threshold concepts is a cognitively demanding task. By using a series of thematically linked case studies that accompany theory, the cognitive load will be reduced. This will free up students to focus on learning concepts rather than distracting them with unnecessary specifics.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology",
+    "Natural Sciences - Chemistry"
+  ],
+  "authors": [
+    "Julian Pakay - Author / Hendrika Duivenvoorden - Author / Thomas Shafee - Author / Kaitlin Clarke - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "La Trobe University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/threshold-concepts-in-biochemistry"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Biochemistry (and Molecular Biology) represent one of the fastest-growing fields of scientific research and technical innovation and the resulting biotechnology is increasingly applied to other fields of study. So, an understanding of Biochemistry is increasingly important for students in all biological disciplines. However, at the same time, the content is inherently complex, highly abstract, and often deeply rooted in the pure sciences – mathematics, chemistry, and physics. This makes it difficult to both learn and to teach. This book is designed as a succinct and focused resource, specifically aimed to help students grasp key threshold concepts in Biochemistry. Due to their troublesome nature, understanding threshold concepts is a cognitively demanding task. By using a series of thematically linked case studies that accompany theory, the cognitive load will be reduced. This will free up students to focus on learning concepts rather than distracting them with unnecessary specifics."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 169
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1426",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

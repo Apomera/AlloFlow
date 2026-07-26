@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-198-apex-calculus",
+  "title": "APEX Calculus",
+  "description": "This text comprises a three–text series on Calculus. The first part covers material taught in many “Calc 1” courses: limits, derivatives, and the basics of integration, found in Chapters 1 through 6.1. The second text covers material often taught in “Calc 2:” integration and its applications, along with an introduction to sequences, series and Taylor Polynomials, found in Chapters 5 through 8. The third text covers topics common in “Calc 3” or “multivariable calc:” parametric equations, polar coordinates, vector–valued functions, and functions of more than one variable, found in Chapters 9 through 14. More information, including free downloads of .pdf versions of the text, is available at www.apexcalculus.com.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Calculus",
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "Gregory Hartman - Author / Brian Heinold - Author / Troy Siemers - Author / Dimplekumar Chalishajar - Author / Jennifer Bowen - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "APEX Calculus",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/apex-calculus"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This text comprises a three–text series on Calculus. The first part covers material taught in many “Calc 1” courses: limits, derivatives, and the basics of integration, found in Chapters 1 through 6.1. The second text covers material often taught in “Calc 2:” integration and its applications, along with an introduction to sequences, series and Taylor Polynomials, found in Chapters 5 through 8. The third text covers topics common in “Calc 3” or “multivariable calc:” parametric equations, polar coordinates, vector–valued functions, and functions of more than one variable, found in Chapters 9 through 14. More information, including free downloads of .pdf versions of the text, is available at www.apexcalculus.com."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2014."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 131
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "198",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

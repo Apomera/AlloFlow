@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1468-transformando-la-ganaderia-evaluacion-de-las-explotaciones-de-vacunos",
+  "title": "Transformando la Ganadería: Evaluación de las Explotaciones de Vacunos",
+  "description": "El estudio se realizó en 18 distritos de la provincia de Huancavelica, encuestando a 426 productores de bovino durante 2020. Los productores, con un nivel educativo primario o sin educación en su mayoría, se dedican principalmente a la agricultura y la ganadería, y no suelen recibir sueldo por su trabajo. La raza principal de ganado es la Brown Swiss (37.6%), y los productores mantienen un promedio de 6.5 cabezas de vacuno, con un sistema de producción semi extensivo. El objetivo principal de la crianza de bovinos es la producción de leche (46.9%) y doble propósito (44.1%), aunque la mayoría de los productores no puede determinar el peso vivo del bovino que vende. Aunque se practica el pastoreo y la suplementación con sal común, no se conservan pastos para la temporada seca, y la mayoría de los productores tiene dificultades para detectar el celo y determinar la edad al primer servicio. Predomina la monta natural, sin mejoramiento genético, y no se realiza un manejo adecuado de enfermedades como la mastitis y la fasciola. Los productores carecen de equipos y maquinarias, no reciben asistencia técnica adecuada y no siguen un calendario sanitario. Se concluye que la administración y la asistencia técnica en áreas como la reproducción, la sanidad, el mejoramiento genético y la alimentación son deficientes.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences"
+  ],
+  "authors": [
+    "Hebert Ernesto Ramos-Acuña - Author / Pedro Antonio Palomino-Pastrana - Author / Russbelt Yaulilahua-Huacho - Author / Nelly Olga Zela-Payi - Author / Liliana Asunción Sumarriva-Bustinza - Author / María Soledad Porras-Roque - Author / Alvaro Ignacio Camposano-Córdova - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/transformando-la-ganaderia-evaluacion-de-las-explotaciones-de-vacunos"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "El estudio se realizó en 18 distritos de la provincia de Huancavelica, encuestando a 426 productores de bovino durante 2020. Los productores, con un nivel educativo primario o sin educación en su mayoría, se dedican principalmente a la agricultura y la ganadería, y no suelen recibir sueldo por su trabajo. La raza principal de ganado es la Brown Swiss (37.6%), y los productores mantienen un promedio de 6.5 cabezas de vacuno, con un sistema de producción semi extensivo. El objetivo principal de la crianza de bovinos es la producción de leche (46.9%) y doble propósito (44.1%), aunque la mayoría de los productores no puede determinar el peso vivo del bovino que vende. Aunque se practica el pastoreo y la suplementación con sal común, no se conservan pastos para la temporada seca, y la mayoría de los productores tiene dificultades para detectar el celo y determinar la edad al primer servicio. Predomina la monta natural, sin mejoramiento genético, y no se realiza un manejo adecuado de enfermedades como la mastitis y la fasciola. Los productores carecen de equipos y maquinarias, no reciben asistencia técnica adecuada y no siguen un calendario sanitario. Se concluye que la administración y la asistencia técnica en áreas como la reproducción, la sanidad, el mejoramiento genético y la alimentación son deficientes."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 237
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1468",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

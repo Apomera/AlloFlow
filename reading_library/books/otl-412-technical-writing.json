@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-412-technical-writing",
+  "title": "Technical Writing",
+  "description": "This open textbook offers students of technical writing an introduction to the processes and products involved in professional, workplace, and technical writing. The text is broken up into sections reflecting key components of researching, developing, and producing a technical report. Readers will also learn about other professional communication, designing documents, and creating and integrating graphics. Written especially for an academic setting, this book provides readers with guidance on information literacy and documenting sources. This book was collected, adapted, and edited from multiple openly licensed sources.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Annemarie Hamlin - Author / Chris Rubio - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Oregon Educational Resources",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/technical-writing-2016"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This open textbook offers students of technical writing an introduction to the processes and products involved in professional, workplace, and technical writing. The text is broken up into sections reflecting key components of researching, developing, and producing a technical report. Readers will also learn about other professional communication, designing documents, and creating and integrating graphics. Written especially for an academic setting, this book provides readers with guidance on information literacy and documenting sources. This book was collected, adapted, and edited from multiple openly licensed sources."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 108
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "412",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

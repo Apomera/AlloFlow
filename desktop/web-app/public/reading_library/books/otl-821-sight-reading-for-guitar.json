@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-821-sight-reading-for-guitar",
+  "title": "Sight-Reading for Guitar",
+  "description": "Sight-Reading for Guitar: The Keep Going Method Book and Video Series teaches guitar players from all musical backgrounds to understand, read and play modern staff notation in real time. The Keep Going Method is designed to impart the knowledge, skills and attitudes needed for sight-reading with efficiency, fun and encouragement. The skill of sight-reading is a difficult to develop, primarily because it is traditionally taught inefficiently. Further, students encounter high levels of emotional discomfort in the beginning stages of skill acquisition. The method in this book is designed to impart the knowledge, skills and attitudes needed for sight-reading with efficiency, clarity and encouragement. All types of guitars apply: electric, steel-string and nylon-string. Each unit contains brief descriptions of musical symbols, play-along duet exercises and compositions, encouragement and methods for self-assessment. The series contains 20 units that start at the beginner level and progress to the intermediate/advanced level. At the completion of the series guitarists will be able to sight-read most rhythms, pitches and other notations relevant to guitar notation. The series also features 30 original duet compositions, of varying styles, created exclusively for this series!",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Arts"
+  ],
+  "authors": [
+    "Chelsea Green - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Rebus Community",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/sight-reading-for-guitar"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Sight-Reading for Guitar: The Keep Going Method Book and Video Series teaches guitar players from all musical backgrounds to understand, read and play modern staff notation in real time. The Keep Going Method is designed to impart the knowledge, skills and attitudes needed for sight-reading with efficiency, fun and encouragement. The skill of sight-reading is a difficult to develop, primarily because it is traditionally taught inefficiently. Further, students encounter high levels of emotional discomfort in the beginning stages of skill acquisition. The method in this book is designed to impart the knowledge, skills and attitudes needed for sight-reading with efficiency, clarity and encouragement. All types of guitars apply: electric, steel-string and nylon-string. Each unit contains brief descriptions of musical symbols, play-along duet exercises and compositions, encouragement and methods for self-assessment. The series contains 20 units that start at the beginner level and progress to the intermediate/advanced level. At the completion of the series guitarists will be able to sight-read most rhythms, pitches and other notations relevant to guitar notation. The series also features 30 original duet compositions, of varying styles, created exclusively for this series!"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 208
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "821",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

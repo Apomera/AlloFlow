@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52406-hooyaday",
+  "title": "Hooyaday",
+  "description": "Sheekou u qoray wiil daryeel iyo fikar wayn leh oo uu ugu dabaal dagayo hooyadii. ( Sheekadan waxaa laga sameeyay barnaamijka fasax ee maamusho Adeegyada Cilmi-nafsiga Bulshada ee Sophiatwon ee Johannesburg ee Luuliyo, 2018.).",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Merville Mabula"
+  ],
+  "illustrators": [
+    "Merville Mabula"
+  ],
+  "translators": [
+    "Abdikadir Ibrahim"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Merville Mabula",
+      "role": "Author"
+    },
+    {
+      "name": "Abdikadir Ibrahim",
+      "role": "Translation"
+    },
+    {
+      "name": "Merville Mabula",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Merville Mabula (Author); Abdikadir Ibrahim (Translation); Merville Mabula (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52406",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52406",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52406",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-686e093341916837",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/27543.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27544.png",
+      "text": "Kanu waa aniga.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52406#page=1",
+      "sourceDigest": "sha256:399fdb8e10b0017c51180db9a8a3a04c416d0318c814b249e9533817d8905f1a"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27545.png",
+      "text": "Waxaan la noolahay hooyaday, walaalkay iyo walaashay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52406#page=2",
+      "sourceDigest": "sha256:eabe297ce7eceeb9ceb4c511c6253f6de01bbecc47576dda702878d762677160"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27546.png",
+      "text": "Hooyaday waxay jeceshahay cunta karinta.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52406#page=3",
+      "sourceDigest": "sha256:f8e49d7d532fac56f3477191d005f2b1dbef3bc31cd60cb4462a60999ab4e8bb"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27547.png",
+      "text": "Mararka qaar hooyaday waxay booqataa saaxiibadeed.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52406#page=4",
+      "sourceDigest": "sha256:7dcc73d4538741a60000c55d0b251c785c092d6b644fe54f067c707cc7fb86e8"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27548.png",
+      "text": "Markay maqantahay, gurigaan nadiifiyaa, weelkana waan dhaqaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52406#page=5",
+      "sourceDigest": "sha256:e36a24bdc977eca606dbb52017187899d11813e647c8520f0e62902e082ff30b"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27549.png",
+      "text": "Markay habeenkii tahay, hooyaday waxay noo sheegtaa in aan tukano.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52406#page=6",
+      "sourceDigest": "sha256:0654e052d78c86ab7622aea1181d081280b0f2d4d7fbe2c9cec048624ace361c"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27550.png",
+      "text": "Markay tahay dhalashadayda, hooyaday waxbay ii keentaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52406#page=7",
+      "sourceDigest": "sha256:470a8226ccb313ccf2e151cd9cb3b03bb83d17fa38f11e132895107b64bdbf4d"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27543.png",
+      "text": "Waan jeclahay hooyaday.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52406#page=8",
+      "sourceDigest": "sha256:e6291c7334b016f8899f9fe4acc7dd95a702cb689d22aa574be40eae1f6978c6"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 48
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:dd4b9e5c78397b637728421f91577e5d314df267346b9d004685f25b826edf5e"
+  }
+}

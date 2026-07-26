@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1288-writing-for-digital-media",
+  "title": "Writing for Digital Media",
+  "description": "This textbook focuses on writing and digital media. Increasingly, writing is published on digital platforms like social media, websites, and blogs, and this online writing performs a variety of personal, professional, academic, and civic functions. The textbook discusses these functions from a critical and rhetorical perspective and provides practical skills and strategies that students can put into practice in their own digital writing.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Journalism, Media Studies & Communications"
+  ],
+  "authors": [
+    "Cara Miller - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "PALNI",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/writing-for-digital-media"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This textbook focuses on writing and digital media. Increasingly, writing is published on digital platforms like social media, websites, and blogs, and this online writing performs a variety of personal, professional, academic, and civic functions. The textbook discusses these functions from a critical and rhetorical perspective and provides practical skills and strategies that students can put into practice in their own digital writing."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 86
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1288",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

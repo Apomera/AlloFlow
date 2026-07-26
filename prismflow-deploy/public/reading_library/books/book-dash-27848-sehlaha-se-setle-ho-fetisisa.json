@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-27848-sehlaha-se-setle-ho-fetisisa",
+  "title": "Sehlaha Se Setle Ho Fetisisa",
+  "description": "Dinonyana tse pedi di tswa ho ya batlana le sehlaha se setle ka ho fetisisa.",
+  "language": "Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Family, friends, and home"
+  ],
+  "authors": [
+    "Crystal Warren"
+  ],
+  "illustrators": [
+    "Megan Naudé"
+  ],
+  "contributors": [
+    {
+      "name": "Megan Naudé",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Ashlyn Atkinson",
+      "role": "Designer"
+    },
+    {
+      "name": "David Mann",
+      "role": "Editor"
+    },
+    {
+      "name": "Crystal Warren",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/sehlaha-se-setle-ho-fetisisa/",
+    "attributionUrl": "https://bookdash.org/books/sehlaha-se-setle-ho-fetisisa/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=the-best-nest"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2022/01/the-best-nest_st_20211214_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2022/01/the-best-nest_st_20211214_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Dinonyana tse pedi di tswa ho ya batlana le sehlaha se setle ka ho fetisisa."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Megan Naudé (Illustrator); Ashlyn Atkinson (Designer); David Mann (Editor); Crystal Warren (Writer)\n\nLanguage: Sesotho. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=the-best-nest"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 81
+  }
+}

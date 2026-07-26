@@ -56,15 +56,15 @@ These are the *de facto* machines in the code. Anything not on an edge below is 
 ```
 idle ──startClassSession()──▶ live ──(session modal "End")──▶ hard-ended (doc DELETED)
                                 │──(quiz controls "End")────▶ soft-ended (isActive:false, status:'ended', doc kept)
-                                │──(tab close/pagehide)─────▶ hard-ended (best-effort deleteDoc)
+                                │──(tab close/pagehide)─────▶ live (session preserved; standard session resumes)
                                 └──(tab crash / network)────▶ orphaned (doc lingers; students stuck until they leave)
 ```
 
 - Creation is a full-overwrite `setDoc` (phase_o `startClassSession`), so a reused code never
   inherits `status:'ended'` from a previous life.
 - **Invariant:** every end path must be *observable by students*. Hard end → doc-not-found.
-  Soft end → terminal fields. Both are now handled (§2.2). The orphaned path has no signal —
-  see §8 roadmap (presence heartbeat).
+  Soft end → terminal fields. Both are now handled (§2.2). A teacher crash still has no
+  terminal signal; the shipped student heartbeat reports student presence, not host liveness.
 
 ### 2.2 Student session
 
@@ -285,7 +285,7 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
 | Teacher closes panel | poll/round clears (terminal event) | presence marker / round metadata re-opens flow |
 | Teacher soft-ends session | toast "session ended", full session exit | terminal-state check (§2.2) |
 | Teacher hard-ends / tab close | same, via doc-not-found | existing behavior |
-| Teacher tab crashes | overlays clear on channel death via bounded rejoin → failed + Retry | heartbeat [ROADMAP] for faster/cleaner signal |
+| Teacher tab crashes | overlays clear on channel death via bounded rejoin → failed + Retry | host-liveness/lease remains open; student heartbeat does not solve host death |
 | UDP blocked (school network) | polling: file-export fallback; pictionary: failed + Retry | TURN server [ROADMAP §8] |
 
 ---
@@ -327,9 +327,11 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
    `window.__alloRtcConfig` at connection time, so adding TURN is config, not code. The actual
    relay + short-lived-credential minting is an infrastructure decision — see
    `docs/LIVE_SESSION_HARDENING_PROPOSAL.md` §4. Keep the file-export fallback regardless.
-4. **Presence heartbeat + roster status** — roster entries persist forever; teacher cannot tell
-   connected/disconnected/stuck outside the polling panel. Add `roster.{uid}.lastSeenAt` (Tier-1)
-   written on a slow cadence, and a teacher roster view with derived status.
+4. **Presence heartbeat + roster status** — [SHIPPED 2026-07-16] students stamp
+   Tier-1 `roster.{uid}.lastSeen` on a jittered slow cadence and on tab return; the
+   Live Session Center derives connected/quiet/disconnected bands without storing
+   navigation history or response content. A host-liveness lease remains separate open
+   work: student heartbeats cannot prove that a crashed teacher client is still present.
 5. **Live resource updates through the manifest path** (§4 gap) — stop silently dropping oldest
    resources on the trim-guard path.
 6. **Live Session Center** — [PARTIALLY SHIPPED 2026-07-01] one teacher dock now replaces the
@@ -346,6 +348,19 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
    only submitted, teacher-approved boards can be anonymously revealed to that round's
    participant snapshot. The gallery reuses the established individual/group resource
    delivery callbacks for differentiated follow-up.
+   **Sketch Review Cycle** [SHIPPED 2026-07-25] extends that same Sketch Response
+   owner rather than adding an AI-whiteboard or voting transport. A teacher-authored
+   success criterion travels only to selected peers. Submitted boards can receive
+   private teacher feedback and one bounded revision over the existing data channel;
+   optional AI polish receives only the teacher's observation note, prompt, and
+   criterion—never the sketch bitmap, strokes, uid, or codename. After collection
+   closes, the teacher can freeze 2-6 approved boards into an anonymous gallery.
+   Candidate payloads remove owner identity, identify the local author's own board
+   only with a boolean self-vote guard, accept changeable P2P votes, and reveal only
+   aggregate totals on close. Raw strokes, feedback, votes, and author mappings stay
+   in device memory; Activity Pulse receives only revised, feedback-sent, showcased,
+   and votes-cast aggregates. Existing individual/group resource follow-up remains
+   the differentiation path.
    **Feedback Response** [SHIPPED 2026-07-23] is a teacher-controlled mode of
    the existing free-text poll. It adds connected class/group/individual
    audience targeting, status-only drafting progress, criteria-aligned AI
@@ -355,22 +370,62 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
    AI generation sends the bounded response + criteria without uid/codename to
    the teacher's configured AI provider; this is disclosed in the teacher UI.
    Gallery follow-up uses the established individual/group resource callbacks.
-   **Activity Pulse** [SHIPPED 2026-07-23] refines the existing Lesson path:
-   Polling/Word Cloud/Feedback Response and Pictionary/Sketch Response publish
-   one allowlisted teacher-memory snapshot containing only activity
-   family/kind/phase, audience uids, waiting/working/submitted/revised status,
-   aggregate moderation counts, and timing metadata. The coordinator strips
-   prompts, answers, guesses, strokes, feedback, codenames, and arbitrary
-   fields. Pulse follow-up calls the established individual resource handler
-   with the currently selected student-safe Lesson path item. At explicit
-   session end, the existing device-local roster summary stores aggregate
-   activity evidence and codename-matched participation counts; activity ids,
-   live uids, and raw work are omitted. No new Firestore field, WebRTC message,
-   Class Mailbox payload, or reporting stream was added.
-   **Help signals** shipped with it: students send an enum-only status (`stuck`/`slow`/`repeat`/
-   `ready`) as Tier-1 `roster.{uid}.signal` + `signalAt`; the dock lists fresh (<10 min) signals
-   with clear buttons. Still open for the full vision: quiz state surface, roster
-   connected/disconnected status (needs #4), activity history, per-card privacy badges.
+   **Peer Showcase + Voting** [SHIPPED 2026-07-25] extends the standard
+   free-text poll rather than registering another activity. Responses remain
+   private on the teacher device until individually held, approved, or hidden;
+   the teacher freezes 2-8 approved exemplars and opens one criterion-driven
+   vote over the existing polling RTC channel. Candidate payloads omit uid and
+   codename, each author sees only a local self-vote guard, votes may be changed
+   until close, and candidate totals remain hidden from students until the
+   teacher reveals aggregate results. Votes and author mappings are device
+   memory only, never session-document fields. The teacher result view reuses
+   existing individual and group resource callbacks for follow-up; Activity
+   Pulse receives only showcased and votes-cast counts.
+   **Adventure Class Actions** [SHIPPED 2026-07-25] refines the existing
+   Adventure free-response mode instead of adding an Adventure transport. In a
+   teacher-controlled live scene, the teacher can seed the existing free-text
+   Live Polling composer with bounded scene context, collect proposals over its
+   WebRTC data channels, moderate exemplars, and run the existing anonymous
+   peer-showcase vote. Selecting a result returns only anonymous response text
+   to the teacher's Adventure action composer for review; author identity stays
+   inside the polling panel and proposals/votes never enter
+   `democracy.votes` or another session-document field. The legacy
+   `democracy.votes.{uid}` path remains scoped to teacher-authored,
+   fixed-option choices. Students no longer see a nonfunctional Adventure text
+   box during teacher-controlled sessions; they wait for the private P2P
+   proposal prompt.
+   **Activity Pulse** [SHIPPED 2026-07-23; Live Quiz owner 2026-07-25] refines
+   the existing Lesson path: Polling/Word Cloud/Feedback Response,
+   Pictionary/Sketch Response, and Live Quiz publish one allowlisted
+   teacher-memory snapshot containing only activity family/kind/phase,
+   audience uids, waiting/working/submitted/revised status, aggregate
+   moderation counts, and timing metadata. Live Quiz derives this view from
+   the existing merged P2P/fallback response map; it does not create another
+   answer store. The coordinator strips prompts, answers, correctness, scores,
+   guesses, strokes, feedback, codenames, and arbitrary fields. Pulse
+   follow-up calls the established individual resource handler with the
+   currently selected student-safe Lesson path item. At explicit session end,
+   the existing device-local roster summary stores aggregate activity evidence
+   and codename-matched participation counts; activity ids, live uids, and raw
+   work are omitted. Quiz launches add lifecycle-only fields to the existing
+   `quizState` (`activityId`, `startedAt`, `endedAt`, `questionCount`) and
+   clear the prior attempt's response maps/current question so relaunches are
+   clean; no answer is duplicated into Pulse, a new WebRTC message, or a new
+   reporting stream.
+   **Teacher Attention Queue + Activity Timeline** [SHIPPED 2026-07-25] replaces
+   the Pulse-only waiting list with one ranked, teacher-memory view over existing
+   signal enums, heartbeat freshness, active-activity status, and resource-delivery
+   acknowledgments. A 45-second wait grace and three-minute working threshold avoid
+   flagging ordinary think time. Teachers can send the selected student-safe Lesson
+   path item individually or to up to 12 selected queue students; the shell performs
+   one atomic Tier-1 resource patch (capped at 25 students / 50 fields, below the
+   mailbox ceiling). The recent timeline rebuilds counts/timing from allowlisted
+   snapshots and omits uid maps, activity prompts, answers, scores, and codenames.
+   The queue reuses the already-shipped **Help signals**: students send an enum-only status
+   (`stuck`/`slow`/`repeat`/`ready`) as Tier-1 `roster.{uid}.signal` + `signalAt`; the
+   dock lists fresh (<10 min) signals with clear buttons. Still open for the full vision:
+   roster connected/disconnected
+   per-card privacy badges and longer-term cross-session activity analysis.
 7. **Shared `LiveTransport` extraction** — when the third WebRTC activity appears, lift the
    duplicated host/guest classes (signaling, timeout, re-offer, terminal events, state-sync replay)
    into one module with the §5 envelope. Two implementations is duplication; three is a law.
@@ -398,6 +453,10 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
 
 - `tests/live_polling.test.js` — pure helpers: routing rules, rating scales, anonymous summaries
   (codenames/free text never leak into shared results), dedup, stale-close.
+- `tests/live_polling_peer_showcase.test.js` — bounded teacher moderation,
+  2-8 candidate freezing, identity-free personalized candidate payloads,
+  self-vote rejection, change-vote deduplication, aggregate-only reveal,
+  audience scoping, RTC-only traffic, follow-up resource reuse, and Pulse counts.
 - `tests/live_polling_wordcloud.test.js` — normalization, latest-response aggregation,
   hold/approve/hide moderation, privacy-safe reveal summaries, bounded student input, and the
   Live Session Center preset.
@@ -410,8 +469,9 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
 - `tests/live_polling_feedback_response_ui.test.js` — runtime hydration of the Live Center
   preset inside the existing free-text HostPanel.
 - `tests/live_activity_pulse.test.js` — snapshot allowlist/privacy boundary,
-  active-pulse selection, evidence-to-resource reuse, both existing host
-  emitters, and uid/raw-content exclusion from device-local session history.
+  active-pulse selection, evidence-to-resource reuse, Polling/Pictionary/Quiz
+  owner wiring, clean quiz-attempt lifecycle, and uid/raw-content exclusion
+  from device-local session history.
 - `tests/concept_pictionary.test.js` — protocol smoke (concept only to drawers, stroke ownership,
   late-join replay, timer auto-resolve) + the same reconnect suite.
 - `tests/concept_pictionary_sketch_response.test.js` — private per-student stroke isolation,

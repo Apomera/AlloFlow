@@ -1,0 +1,86 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-17662-igolide-likamkhulu",
+  "title": "Igolide likaMkhulu",
+  "description": "Abantwana bezilwane babekhuluma ngomkhulu babo…",
+  "language": "isiZulu",
+  "langCode": "zul",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Family, friends, and home",
+    "Let's play!"
+  ],
+  "authors": [
+    "Kerry Saadien-Raad"
+  ],
+  "illustrators": [
+    "Elsabé Milandri"
+  ],
+  "contributors": [
+    {
+      "name": "Mathilde de Blois",
+      "role": "Designer"
+    },
+    {
+      "name": "Kerry Saadien-Raad",
+      "role": "Writer"
+    },
+    {
+      "name": "Elsabé Milandri",
+      "role": "Illustrator"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/igolide-likamkhulu/",
+    "attributionUrl": "https://bookdash.org/books/igolide-likamkhulu/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=grandpas-gold"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/02/grandpas-gold_isizulu_20171015_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/02/grandpas-gold_isizulu_20171015_cover.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Abantwana bezilwane babekhuluma ngomkhulu babo…"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Mathilde de Blois (Designer); Kerry Saadien-Raad (Writer); Elsabé Milandri (Illustrator)\n\nLanguage: isiZulu. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=grandpas-gold"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 69
+  }
+}

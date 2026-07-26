@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1275-elementary-new-testament-greek",
+  "title": "Elementary New Testament Greek",
+  "description": "This open-access textbook helps students learn to read New Testament Greek at the elementary level. It includes clear, concise explanations of grammar and syntax, helpful examples, and essential vocabulary, with no assumption of previous language study, and it does not require accents for most forms. At the end of each of its twenty chapters, students will find short Greek-language episodes from the life of a fictional early Christian family of Jewish ancestry, short readings from the Greek New Testament and Septuagint, and review/homework exercises that can help reinforce new concepts and vocabulary. This book can help students prepare to read Nijay Gupta and Jonah Sandford’s Intermediate Greek Reader: Galatians and Related Texts, also available as an open-access textbook.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages",
+    "Humanities"
+  ],
+  "authors": [
+    "Owen Ewald - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Seattle Pacific University Library",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/elementary-new-testament-greek-2022"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This open-access textbook helps students learn to read New Testament Greek at the elementary level. It includes clear, concise explanations of grammar and syntax, helpful examples, and essential vocabulary, with no assumption of previous language study, and it does not require accents for most forms. At the end of each of its twenty chapters, students will find short Greek-language episodes from the life of a fictional early Christian family of Jewish ancestry, short readings from the Greek New Testament and Septuagint, and review/homework exercises that can help reinforce new concepts and vocabulary. This book can help students prepare to read Nijay Gupta and Jonah Sandford’s Intermediate Greek Reader: Galatians and Related Texts, also available as an open-access textbook."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2022."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 141
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1275",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

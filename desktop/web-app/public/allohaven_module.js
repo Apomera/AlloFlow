@@ -929,7 +929,7 @@
     // when it ends).
     arcade: {
       minutesPerToken: 5,         // teacher-configurable conversion rate
-      session: null               // { modeId, startedAt, minutes, endsAt }
+      session: null               // { modeId, startedAt, minutes, endsAt, timerPaused, pausedRemainingMs }
     },
 
     // ── Boss Encounter history (Phase 3b.history) ──
@@ -12023,7 +12023,8 @@
       // active so any mm:ss / elapsed displays smoothly refresh.
       var pomActive = !!(state.pomodoroState && state.pomodoroState.active);
       var breatheActive = state.activeModal === 'breathe';
-      var arcadeActive = !!(state.arcade && state.arcade.session);
+      var arcadeSession = state.arcade && state.arcade.session;
+      var arcadeActive = !!(arcadeSession && !arcadeSession.timerPaused);
       if (!pomActive && !breatheActive && !arcadeActive) return;
       var iv = setInterval(function() { setNowTick(Date.now()); }, 250);
       return function() { clearInterval(iv); };
@@ -12035,6 +12036,7 @@
     // boundary instead of every 250ms.
     useEffect(function() {
       if (!state.arcade || !state.arcade.session) return;
+      if (state.arcade.session.timerPaused) return;
       var endsMs = new Date(state.arcade.session.endsAt).getTime();
       if (isNaN(endsMs)) return;
       var msLeft = endsMs - Date.now();
@@ -12042,7 +12044,10 @@
       var t = setTimeout(function() { endArcadeSession('expired'); }, msLeft + 50);
       return function() { clearTimeout(t); };
       // eslint-disable-next-line
-    }, [state.arcade && state.arcade.session && state.arcade.session.endsAt]);
+    }, [
+      state.arcade && state.arcade.session && state.arcade.session.endsAt,
+      state.arcade && state.arcade.session && state.arcade.session.timerPaused
+    ]);
 
     // ── Ambient soundscape (Phase 2g) ──
     // Procedural Web Audio noise — no external assets. A 5-second buffer
@@ -20322,6 +20327,15 @@
     // close the AlloHaven modal and rely on the host's persistent
     // session to remember the timer.
     // ─────────────────────────────────────────────────
+    function getArcadeRemainingMs(session) {
+      if (!session) return 0;
+      if (session.timerPaused) {
+        return Math.max(0, Number(session.pausedRemainingMs) || 0);
+      }
+      var endsMs = new Date(session.endsAt).getTime();
+      return isNaN(endsMs) ? 0 : Math.max(0, endsMs - Date.now());
+    }
+
     function launchArcadeMode(modeId, minutes) {
       // Look up the mode + sanity-check the minutes vs. token balance.
       var mode = window.AlloHavenArcade && window.AlloHavenArcade._registry && window.AlloHavenArcade._registry[modeId];
@@ -20352,12 +20366,47 @@
             modeId: modeId,
             startedAt: new Date(nowMs).toISOString(),
             minutes: minutesAsked,
-            endsAt: new Date(endsAt).toISOString()
+            endsAt: new Date(endsAt).toISOString(),
+            timerPaused: false,
+            pausedRemainingMs: null
           }
         })
       });
       addToast('🎮 ' + (mode.label || modeId) + ' · ' + minutesAsked + ' min · -' + tokensNeeded + ' 🪙');
       return true;
+    }
+
+    function pauseArcadeTimer() {
+      if (!state.arcade || !state.arcade.session || state.arcade.session.timerPaused) return;
+      var remainingMs = getArcadeRemainingMs(state.arcade.session);
+      if (remainingMs <= 0) {
+        endArcadeSession('expired');
+        return;
+      }
+      setStateField('arcade', Object.assign({}, state.arcade, {
+        session: Object.assign({}, state.arcade.session, {
+          timerPaused: true,
+          pausedRemainingMs: remainingMs
+        })
+      }));
+      addToast('Arcade timer paused with ' + Math.ceil(remainingMs / 60000) + ' minutes remaining.');
+    }
+
+    function resumeArcadeTimer() {
+      if (!state.arcade || !state.arcade.session || !state.arcade.session.timerPaused) return;
+      var remainingMs = getArcadeRemainingMs(state.arcade.session);
+      if (remainingMs <= 0) {
+        endArcadeSession('expired');
+        return;
+      }
+      setStateField('arcade', Object.assign({}, state.arcade, {
+        session: Object.assign({}, state.arcade.session, {
+          endsAt: new Date(Date.now() + remainingMs).toISOString(),
+          timerPaused: false,
+          pausedRemainingMs: null
+        })
+      }));
+      addToast('Arcade timer resumed with ' + Math.ceil(remainingMs / 60000) + ' minutes remaining.');
     }
 
     function endArcadeSession(reason) {
@@ -20491,11 +20540,11 @@
       var mpt = (state.arcade && state.arcade.minutesPerToken) || 5;
       var session = state.arcade && state.arcade.session;
       // Ms remaining if a session is active
-      var remainingMs = 0;
-      if (session && session.endsAt) {
-        remainingMs = Math.max(0, new Date(session.endsAt).getTime() - Date.now());
-      }
+      var remainingMs = getArcadeRemainingMs(session);
       var remainingMin = Math.ceil(remainingMs / 60000);
+      var timerLabel = session && session.timerPaused
+        ? 'Arcade timer paused with ' + remainingMin + ' minutes remaining'
+        : 'Active arcade session, ' + remainingMin + ' minutes remaining';
 
       function close() { setStateField('activeModal', null); }
 
@@ -20535,8 +20584,6 @@
 
           // Active session banner
           session ? h('div', {
-            role: 'status',
-            'aria-live': 'polite',
             style: {
               padding: '10px 14px',
               background: palette.surface,
@@ -20550,15 +20597,32 @@
             }
           },
             h('div', { style: { flex: 1, minWidth: 0 } },
-              h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
-                '⏱ Active session · ' + remainingMin + ' min left'),
+              h('div', {
+                role: 'timer',
+                'aria-live': 'off',
+                'aria-atomic': 'true',
+                'aria-label': timerLabel,
+                style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px' }
+              }, session.timerPaused
+                ? '\u23f8 Timer paused \u00b7 ' + remainingMin + ' min remaining'
+                : '\u23f1 Active session \u00b7 ' + remainingMin + ' min left'),
               h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.4' } },
                 'You\'re currently playing ' + ((window.AlloHavenArcade._registry[session.modeId] && window.AlloHavenArcade._registry[session.modeId].label) || session.modeId) + '.')
             ),
-            h('button', {
-              onClick: function() { endArcadeSession('forfeit'); },
-              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
-            }, 'End early')
+            h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+              h('button', {
+                onClick: session.timerPaused ? resumeArcadeTimer : pauseArcadeTimer,
+                style: Object.assign({}, secondaryBtnStyle(palette), {
+                  minHeight: '44px', minWidth: '44px', padding: '8px 12px', fontSize: '12px'
+                })
+              }, session.timerPaused ? 'Resume timer' : 'Pause timer'),
+              h('button', {
+                onClick: function() { endArcadeSession('forfeit'); },
+                style: Object.assign({}, secondaryBtnStyle(palette), {
+                  minHeight: '44px', minWidth: '44px', padding: '8px 12px', fontSize: '12px'
+                })
+              }, 'End early')
+            )
           ) : null,
 
           // Token balance row

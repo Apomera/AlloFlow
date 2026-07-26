@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47424-kanyange",
+  "title": "Kanyange",
+  "description": "Aho nyina wa kanyange apfiriye, kanyange na se bakorera ibintu hamwe. Bari bahimbawe gushika aho se wa kanyange yifuza kurongora uwundi mugore. Uwo mugore agafata nabi Kanyange, kanyange aromoka.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "5",
+  "readingLevelLabel": "Read aloud",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Rukia Nantale"
+  ],
+  "illustrators": [
+    "Benjamin Mitchley"
+  ],
+  "translators": [
+    "Gilbert Nzosaba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Rukia Nantale",
+      "role": "Author"
+    },
+    {
+      "name": "Gilbert Nzosaba",
+      "role": "Translation"
+    },
+    {
+      "name": "Benjamin Mitchley",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Rukia Nantale (Author); Gilbert Nzosaba (Translation); Benjamin Mitchley (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47424",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-bba40d9687f2b5ce",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/1682.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1675.png",
+      "text": "Igihe nyina yapfa, Kanyange yarababaye cane. Se yaragerageje kumwitaho. Uko imisi yahera niko kanyange yagenda amenyera naho nyina yari atakiriho. Buri musi Kanyange na se barayaga ibiza gukorwa ku musi. Buri mugorobo barasangira. Bahejeje bakoza ivyombo, se yamufasha ibikorwa yatahanye vyo kw'ishure.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=1",
+      "sourceDigest": "sha256:6964b062f1948e22aa1840753dd17381223e5d45b4a737c4c06ca82987c93a66"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1676.png",
+      "text": "Umusi umwe, se yashitse i muhira atevye nkuko bisanzwe. Arahamagara ati, \"Mwana wanje urihe?\" Kanyange yiruka asanganira se. Abona se afashe ukuboko umugore arahagarara. Se amubwira mwenyura ati, \"Nshaka ko ubona umuntu adasanzwe mwana. Uyu yitwa Anita.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=2",
+      "sourceDigest": "sha256:2c3dda893f9ad63d85a0916b09d60363de61e590a563e39716e604e98dc02ea2"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1677.png",
+      "text": "Anita aravuga ati, \"Bite Kanyange, se yambwiye vyinshi kuri wewe.\" Ariko ntiyigeze atwenga canko ngo amufate ukuboko. Se wa Kanyange yari anezerewe. Atangura kubayagira babanye hamwe ari batatu uko vyomera. Avuga ati, \"Mwana wanje, nizeye yuko uzofata Anita nka nyoko.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=3",
+      "sourceDigest": "sha256:956785aa6b96f93f36520cc19e3774c82f97ca90831fa731f4db1341781161dd"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1678.png",
+      "text": "Kuva ico gihe ubuzima bwa Kanyange burahinduka. Ntiyasubiye kubona umwanya wo kwicarana na se mu gitondo. Anita yamutuma ibikorwa vyinshi bikamuruhisha ntakore ibikorwa vyo kw'ishure. Yaca aja kuryama ahejeje gufungura mw'ijoro. Ikintu camuruhura n'uburengeti bw'amabara yasigiwe na nyina. Se wa Kanyange we wamenga ntabona ko umukobwa wiwe atanezerewe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=4",
+      "sourceDigest": "sha256:f3a116906c51f1aaf17d6947f57bba1a1459454d08e35600caf6add9d5d55eb4"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1679.png",
+      "text": "Inyuma y'amezi make, se wa Kanyange ababwira ko atazoba ari muhira muriyo misi ati, \"Ngira nje murugendo rw'akazi. Nizere ko atakibazo muzogira.\" Mu maso ha Kanyange harahinduka ariko se ntiyabibona. Anita ntaco yavuze. Ntiyaranezerewe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=5",
+      "sourceDigest": "sha256:8b8190366b3fdc889ded69bedcc8f66837d0e5b1762854e5bc59448068f3c16c"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1680.png",
+      "text": "Guhera ico gihe, ibintu ntivyoroshe kuri Kanyange. Iyo adahejeje ibikorwa canke akidoga, Anita yaramukubita. Hageze ko bafungura mw'ijoro, Anita yarya indya nyinshi akamusigira dukeya. Burijoro Kanyange yarara ararira apfumbatiye uburengeti yasigiwe na nyina.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=6",
+      "sourceDigest": "sha256:d28b13bd06d527ba322ca76f0478acc52936c83a40a0f488dc075e8590b9ab62"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1681.png",
+      "text": "Igitondo kimwe, Kanyange avyuka atevye. Anita aca umubwira ati, \"We mukobwa w' umunebwe!\" Akwega Kanyange umukura ku gitanda. Bwa burengeti bwa nyina bufatwa n'umusumari butabukamwo kabiri.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=7",
+      "sourceDigest": "sha256:4f96c5aa12747f7fadb15de8dd0c91c1ddb8e308fcde4eaf7178511c1b741d9f"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1674.png",
+      "text": "Kanyange biramubabaza cane. Aca yigir'inama yokuva i wabo arahunga. Afata vya bice vy'uburengeti, atekera imfungurwa aca aragenda. Afata inzira se yajanye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=8",
+      "sourceDigest": "sha256:3d3eac038907f2842fb3800ce74c19e8bd72f354c06a33c9093e3a3ad128d929"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1682.png",
+      "text": "Hageze mw'ijoro yurira igiti kirekire cari hafi y'umugezi, asasa mu mashami yaco. Imbere yo gusinzira araririmba: Maama, maama, Maama, waransize! Waransize kandi ntuzogaruka. Data ntakinkunda! Mama, ni ryari uzogaruka? Waransize.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=9",
+      "sourceDigest": "sha256:0cfd0ebb179182651152c08c087b20bcb0b824c8672ebd48b4b74bd8e2e2995f"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1683.png",
+      "text": "Bukeye bwaho, Kanyange arongera araririmba ya ndirimbo. Abagore baje Kumesa kw'iriba bumva indirimbo y'agahinda iva mu bushorishori bw'igiti. Bagira ngo n'umuyaga uhuha ibibabi. Babandanya kumesa. Ariko umwe muribo atega amatwi iyo ndirimbo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=10",
+      "sourceDigest": "sha256:a6905b3d2912413e4d74b7a515d81fefc05c8b18abe75659c891d63a851f41be"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1685.png",
+      "text": "Uwo mugore araba hejuru mu giti. Abona umukobwa n'uduce tw'uburengeti. Ararira ati, \"Kanyange musengezana wanje.\" Abandi bagore bahagarika kumesa hama bafasha Kanyange kururuka igiti. Inasenge aramuhobera ac'aranamuhumuriza.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=11",
+      "sourceDigest": "sha256:15bc475b1c248e24d814ba55d4b1e7560f26c26a2a4064b94cb14d0e828a46ab"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1686.png",
+      "text": "Inasenge afata umwana amutwara i muhira iwe. Amuha ivyokurya bishushe amuryamika kuburiri na bwa burengeti. Iryo joro kanyange ararira agiye kuryama, ariko yaramarira yihumure. Yari azi ko Inasenge agiye kumwitaho.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=12",
+      "sourceDigest": "sha256:549c47e71c817ebb614c363c3bb821129716d59e8fddbb419cf7473ddda29a2a"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2483.png",
+      "text": "Se wa Kanyange agarutse muhira asanga icumba ca kanyange kigaragara. N' ishavu ryinshi abaza Anita ati, \"Ni iki cabaye?\" Umugore amubwira ko Kanyange yomotse. Amubajije icatumye yomoka, aramubwira ati, \"Nashaka ko anyubaha. Ariko kumbure nararengeje.\" Se wa kanyana arasohoka agenda ajana ku mugezi. Arabandanya yerekeza kwa mushikiwe kuraba yuko yobona Kanyange.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=13",
+      "sourceDigest": "sha256:e6d78b6dbfcea8623b651915ba6248a7ab4ff66f15c027a5c9efae2aaab89727"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1688.png",
+      "text": "Kanyange yariko arakina na bavyara be igihe yabonera Se kure. Kanyange aratinya yibaza ko se yoba ashavuye, yiruka munzu kwinyegeza. Mugabo se aramwegera aramubwira ati, \"Kanyange, waronse umuvyeyi mwiza. Umwe agukunda kandi akanagutahura. Unteye umunezero kandi ndagukunda.\" Bemeranya ko Kanyange yogumana na isasenge igihe cose ashaka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=14",
+      "sourceDigest": "sha256:a9bcf497dfec602826c849621299a1b8cde9ad0f0f2c64af0338905b2b362116"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1690.png",
+      "text": "Se yamugendera imisi yose. Umusi umwe azanana na Anita. Anita akiramutsa Kanyange. Ararira, \"Mbabarira narakosheje. Wompa ayandi mahirwe?\" Kanyange araba se ababaye mu maso. Atambuka yegera Anita aramuhobera.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=15",
+      "sourceDigest": "sha256:67e059312e0ca480f8e9f4d925a51348d5593b727d54fa878b636df9e7d1dfa2"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1691.png",
+      "text": "Indwi ikurikira, Anita atumira Kanyange na bavyara biwe inasenge kuza gufungura. Mbega imfungurwa! Anita yateguye indya zose Kanyange akunda, bose barafungura barahaga. Abana barakina, abakuze nabo baraganira. Kanyange yaranezerewe cane. Kuva ic gihe, yiyemeza kugaruka mu rugo kubana na se na muka se.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47424#page=16",
+      "sourceDigest": "sha256:a117b338c2508f1426a6a0c48d7586dc4eb717f8a602f5459ceaf472d05d1288"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 568
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:8471af111547463e53b27de35f3e91c69491f055c2f1f3b4e20b991370fcee25"
+  }
+}

@@ -1,0 +1,170 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-22015-untitled-ti",
+  "title": "ጐራሕ ብዃርያ",
+  "description": "ተንኮል ምፍሓስ ተመሊሱ ንርእስኻ እዩ፡፡ (This story was developed at a teacher workshop in Adwa in 2017.)",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "ሃይለማርያም ተኽለመድህን , ገብረሚካኤል ገብረኪዳን"
+  ],
+  "illustrators": [
+    "Abraham Muzee"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "ሃይለማርያም ተኽለመድህን , ገብረሚካኤል ገብረኪዳን",
+      "role": "Author"
+    },
+    {
+      "name": "Abraham Muzee",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "ሃይለማርያም ተኽለመድህን , ገብረሚካኤል ገብረኪዳን (Author); Abraham Muzee (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "22015",
+    "bookType": "1",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-3f60159a084be72a",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/25720.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25717.png",
+      "text": "ቀደም ኣብ ሓደ ዓዲ ኣንበሳ፣ ብዃርያ፣ ወዓግን ዝብእን ብሓባር ይነብሩ ነይሮም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015#page=1",
+      "sourceDigest": "sha256:0b50655ddb20b37fff5559eff2642c18012e76c0019b0a8c06b1773438cf73cc"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25718.png",
+      "text": "ብሓባር እንትነብሩ ወዓግን ዝብእን ብዃርያ ንምጥፋእ ተንኮል ሓሰቡ ፡፡ ንኣያ ኣንበሳ ድማ ብሚስጥር ረኺቦም ኣዘራረብዎ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015#page=2",
+      "sourceDigest": "sha256:0fae6d10f430a1155c5b394f6da318c5de5c69467f4e963dc1e7abbd649ec246"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25719.png",
+      "text": "ወዓግን ዝብእን ናብ ኣያ ኣንበሳ ቀሪቦም ፣\" ኣያ ኣንበሳ፥ ንስኻ ብጣዕሚ ክቡር ኢኻ ፡፡ ክሳብ ሎሚ ግና ስለ ምንታይ ብዘይ ጫማ ትጓዓዝ ኣለኻ?\" በልዎ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015#page=3",
+      "sourceDigest": "sha256:3a2f63f964e861c1288b68ac9f8e26e916bdb0b6c28ab632e84ddd3748dd1b3f"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25720.png",
+      "text": "ኣያ ኣንበሳ ድማ ዝበልዎ ሰሚዑ ፣\" እሞ ኣነ ጫማ የድልየኒ ነይሩ፣ ሓቅኹም ፤ግና መን ይሰርሓለይ?\" ክብል ሓተቶም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015#page=4",
+      "sourceDigest": "sha256:27eac047cf32844de82cb3d47c239fab42e6e5375e010b39e00abf4ed1d60bec"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25721.png",
+      "text": "ወዓግ ኣስዕብ ኣቢሉ ፣\" ኣያ ኣንበሳ! ወይዘሪት ብዃሪያ ጫማ ብዝግባእ ምስራሕ ትኽእል እያ\" ኢሉ ገለፀሉ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015#page=5",
+      "sourceDigest": "sha256:ff9f74fd5f495320849b90882547af8f454f32a14bd0c2066aa59d445bad242b"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25722.png",
+      "text": "ኣያ ኣንበሳ ፣\" በሉ ሕዚ ንብዃሪያ ፀውዑለይ\" በሎም፡፡ ወዓግን ዝብእን ድማ ንብዃሪያ ፀዊዖም ኣምፅእዋ፡፡ ኣያ ኣንበሳ ድማ ጫማ ክትሰርሐሉ ኣዘዘ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015#page=6",
+      "sourceDigest": "sha256:697d57bb01f592826c28a908a4e4eb57adca442693e7ba6dac55397ef50e1b43"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25723.png",
+      "text": "ብዃሪያ ትእዛዝ ኣንበሳ ድሕሪ ምቅባል ብሚስጢር ከምዚ ኢላ ኣዘራረበቶ ፣ \"እሞ ዝበለፀ ጫማ ዝስራሕ ካብ ናይ ወዓግን ዝብእን ቆርበት ምዃኑ ኸ ትፈልጥ ዶ?\" በለቶ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015#page=7",
+      "sourceDigest": "sha256:009119ebfd189644caa13ab9e4fe964bc023f595bd1cd69e40f4af7630137f88"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25724.png",
+      "text": "ኣያ ኣንበሳ ድማ ዝበለፀ ጫማ ክትሰርሓሉ ብምሕሳብ \"ጥራሕ ስርሕለይ እምበር ከምፃኣልኪ እየ በላ፡፡ ከየዱ ድማ ንወዓግን ዝብእን ቀቲሉ ፣ ቆርበቶም ገፊፉ፣ኣምፂኡ፣ ኣረከባ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015#page=8",
+      "sourceDigest": "sha256:e5a462b08a216f977c9816fc14d107823479d31ec79c6232e0020238873b1d53"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25725.png",
+      "text": "ብዃሪያ ንኣያ ኣንበሳ እንተዘይሰሪሓትሉ ከም ዝቐትላ ስለ እትፈልጥ ፈርሐት፤ ተንኮል ድማ ሓሰበት ፡፡ እቲ ቆርበት ድማ ናብ ዓብዪ ቃላይ ወሲዳ ኣጥለቐቶ፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015#page=9",
+      "sourceDigest": "sha256:30da9d89b1aa37f5ecd9e495211ca4fc8cc5ab0f5cc4a9bb8da55fe3109b0636"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25726.png",
+      "text": "ኣያ ኣንበሳ እቲ ጫማ ዘንጊዒኽኒ ኢሉ ኣፈራርሓ ፡፡ እቲ ቆርበት ምእንቲ ክልስልስ ናብ ቃላይ ከም ዘእተወቶ ፣ ሕዚ ግና ከይዳ ከምፆኦ እየ ኢላ መለሰትሉ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015#page=10",
+      "sourceDigest": "sha256:fe3c968902826d470bfad421f38b2dfd1bd206d8f70dd9436d0a6b092b0cc36c"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25727.png",
+      "text": "ብዃሪያ ናብቲ ሩባ ከይዳ ድሕሪ ዝተወሰነ ግዘ ናብ ኣንበሳ ተመለሰት ፡፡ ብምቅፃል ፣ \"ኣብቲ ውሽጢ ቃላይ ንዓኻ ዝመስል ኣንበሳ እቲ ቆርበት ከይወስዶ ከሊኡኒ፣ ጥርሐይ ተመሊሰ\" በለቶ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015#page=11",
+      "sourceDigest": "sha256:3e579c478ca93b814c518958b2135472acd7ac0172e614265b7a0c662ea9460a"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25728.png",
+      "text": "ኣያ ኣንበሳ ብቑጠዐ ምስ ብዃሪያ ናብቲ ወሰን ቃላይ እናጎየየ ከደ ፡፡ ኣብ ውሽጢ ቃላይ ነፀብራቕ ምስሉ ረኣየ፡፡ ዘሊሉ ክጎብጦ ብምሕሳብ ናብቲ ቃላይ ኣትዩ ተሰርኒቑ ሞተ ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22015#page=12",
+      "sourceDigest": "sha256:a0cafbc65e2e2fd03cbd01f6aab06d08f6aad2d431119836104f9a88ec69ef3c"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 245
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:f522a9cfd33d847ca3b23717525db12e1753997066c6a7eaf4a784f190e61be8"
+  }
+}

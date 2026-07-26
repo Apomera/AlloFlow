@@ -3659,6 +3659,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const [furnishing, setFurnishing] = React.useState(null);   // {done, total} | null
     const [nonce, setNonce] = React.useState(0);
     const [current, setCurrent] = React.useState(null);         // {id, label, mnemonic, idx, total}
+    const [nearbyEmpty, setNearbyEmpty] = React.useState(null); // proximity-driven customization card
+    const nearbyEmptyRef = React.useRef(null);
     const currentRef = React.useRef(null);
     // Freshest memoryPalace store — sequential async gens (furnish/sculpt) and the
     // recall finish read THIS at persist time, so a late write merges into the CURRENT
@@ -3795,11 +3797,29 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 if (!locus) return;
                 currentRef.current = locus;
                 setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1, entry: locus.id === '__entry' });
+                if (quickCreateRef.current && quickCreateRef.current.id !== locus.id && quickCreateRef.current.status !== 'generating') setQuickCreate(null);
                 // Re-surface earned hints when revisiting a struggled locus.
                 const r = recallResultsRef.current[locus.id];
                 setRecallHint(r && r.attempts >= 2 && locus.mnemonic && !r.correct && !r.revealed ? locus.mnemonic : null);
                 setCanReveal(!!(r && r.attempts >= 3 && !r.correct && !r.revealed));
                 setTypedAnswer('');
+            },
+            onEmptyLocusApproach: (locus, near, idx, total, reason) => {
+                if (!locus || recall) return;
+                if (!near) {
+                    if (nearbyEmptyRef.current === locus.id) nearbyEmptyRef.current = null;
+                    setNearbyEmpty((shown) => shown && shown.id === locus.id ? null : shown);
+                    if (reason === 'departed') {
+                        setQuickCreate((shown) => shown && shown.id === locus.id && shown.status !== 'generating' ? null : shown);
+                    }
+                    return;
+                }
+                currentRef.current = locus;
+                setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1, entry: false });
+                if (quickCreateRef.current && quickCreateRef.current.id !== locus.id && quickCreateRef.current.status !== 'generating') setQuickCreate(null);
+                nearbyEmptyRef.current = locus.id;
+                setNearbyEmpty({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1 });
+                setCustomizeOpen(true);
             },
         });
         return () => {
@@ -4107,6 +4127,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const [directPrompt, setDirectPrompt] = React.useState('');
     const [directEval, setDirectEval] = React.useState(null);      // {verdict, reason, enhancedPrompt} | null
     const [directBusy, setDirectBusy] = React.useState(null);      // 'evaluating' | 'generating' | null
+    const [quickCreate, setQuickCreate] = React.useState(null);    // {id,label,mnemonic,type,status,previous}
+    const quickCreateRef = React.useRef(null);
+    quickCreateRef.current = quickCreate;
     const [refinePrompt, setRefinePrompt] = React.useState('');    // "tell the AI what to change" for the current sculpture
     const [refineBusy, setRefineBusy] = React.useState(false);
     // ── Voice input for Direct-the-AI (hands-free / accessible making): walk to a
@@ -4352,6 +4375,92 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         step(0);
     };
 
+    // One-click generation for exactly the approached locus. The snapshot makes
+    // preview/Undo lossless across images, relief, sculptures, and named stamps.
+    const _quickSnapshot = (id) => ({
+        image: mpRef.current?.images?.[id],
+        depth: mpRef.current?.depths?.[id],
+        object: mpRef.current?.objects?.[id],
+        stamp: mpRef.current?.stamps?.[id],
+    });
+    const handleQuickCreate = (type, locus, originalPrevious) => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        if (!locus || locus.id === '__entry' || !persist || quickCreateRef.current?.status === 'generating') return;
+        if (type === 'image' && !canImagen) return;
+        if (type === 'sculpture' && (!P3D || typeof window.callGemini !== 'function')) return;
+        const previous = originalPrevious || _quickSnapshot(locus.id);
+        const subject = locus.mnemonic || locus.label;
+        const session = { ...locus, type, status: 'generating', previous };
+        setQuickCreate(session);
+        if (handleRef.current?.setLocusBusy) handleRef.current.setLocusBusy(locus.id, true);
+        const fail = () => {
+            if (handleRef.current?.setLocusBusy) handleRef.current.setLocusBusy(locus.id, false);
+            if (aliveRef.current) setQuickCreate(null);
+            if (addToast) addToast(t('memory_palace.quick_failed') || 'Could not create that cue. Please try again.', 'error');
+        };
+        const finish = (value, depthValue) => {
+            if (!aliveRef.current || !value) { fail(); return; }
+            const live = handleRef.current;
+            if (type === 'image') {
+                if (depthValue && live?.setLocusRelief) live.setLocusRelief(locus.id, value, depthValue);
+                else if (live?.setLocusImage) live.setLocusImage(locus.id, value);
+                const nx = { ...(mpRef.current || {}), images: { ...(mpRef.current?.images || {}), [locus.id]: value } };
+                if (depthValue) nx.depths = { ...(mpRef.current?.depths || {}), [locus.id]: depthValue };
+                else if (nx.depths?.[locus.id]) { const d = { ...nx.depths }; delete d[locus.id]; nx.depths = d; }
+                if (nx.stamps?.[locus.id]) { const s = { ...nx.stamps }; delete s[locus.id]; nx.stamps = s; }
+                persist(nx, 'memoryPalace');
+            } else {
+                if (live?.setLocusObject) live.setLocusObject(locus.id, value);
+                persist({ ...(mpRef.current || {}), objects: { ...(mpRef.current?.objects || {}), [locus.id]: value } }, 'memoryPalace');
+            }
+            if (live?.setLocusBusy) live.setLocusBusy(locus.id, false);
+            setQuickCreate(nearbyEmptyRef.current === locus.id ? { ...session, status: 'ready' } : null);
+            if (addToast) addToast(t('memory_palace.quick_ready') || '✨ Preview ready at this locus.', 'success');
+        };
+        if (type === 'sculpture') {
+            Promise.resolve(window.callGemini(P3D.buildRecipePrompt(subject), true))
+                .then((res) => {
+                    const raw = typeof res === 'string' ? res : ((res && (res.text || res.output || res.response)) || '');
+                    finish(P3D.parseRecipe(raw));
+                })
+                .catch(fail);
+            return;
+        }
+        const imagePrompt = 'A vivid, memorable, slightly surreal illustration: ' + subject + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.';
+        callImagen(imagePrompt, 400)
+            .then((base64) => {
+                if (base64 && reliefOn && MP?.buildDepthPrompt) {
+                    return callImagen(MP.buildDepthPrompt(subject), 400).catch(() => null)
+                        .then((depth64) => finish(base64, depth64 || null));
+                }
+                finish(base64, null);
+            })
+            .catch(fail);
+    };
+    const handleQuickUndo = () => {
+        const session = quickCreateRef.current;
+        if (!session || session.status !== 'ready' || !persist) return;
+        const prev = session.previous || {};
+        const nx = { ...(mpRef.current || {}) };
+        [['images', prev.image], ['depths', prev.depth], ['objects', prev.object], ['stamps', prev.stamp]].forEach(([key, value]) => {
+            const bucket = { ...(nx[key] || {}) };
+            if (value === undefined) delete bucket[session.id];
+            else bucket[session.id] = value;
+            nx[key] = bucket;
+        });
+        const live = handleRef.current;
+        if (live?.clearLocus) live.clearLocus(session.id);
+        if (prev.image && prev.depth && live?.setLocusRelief) live.setLocusRelief(session.id, prev.image, prev.depth);
+        else if (prev.image && live?.setLocusImage) live.setLocusImage(session.id, prev.image);
+        if (prev.object && live?.setLocusObject) live.setLocusObject(session.id, prev.object);
+        persist(nx, 'memoryPalace');
+        setQuickCreate(null);
+        if (!prev.image && !prev.object) setNearbyEmpty({ id: session.id, label: session.label, mnemonic: session.mnemonic, idx: session.idx, total: session.total });
+        if (addToast) addToast(t('memory_palace.quick_undone') || 'Undo complete. The previous locus cue is restored.', 'info');
+    };
+    const proximityLocus = quickCreate || nearbyEmpty;
+
     return (
         <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
@@ -4551,6 +4660,96 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     </div>
                 ) : (
                     <div ref={hostRef} className="absolute inset-0" />
+                )}
+                {!recall && proximityLocus && persist && !failed && (
+                    <div
+                        className="absolute z-20 left-3 right-3 bottom-3 mx-auto max-w-3xl rounded-2xl border-2 border-indigo-300 bg-white/95 supports-[backdrop-filter]:bg-white/90 backdrop-blur-md shadow-2xl px-4 py-3"
+                        role="region"
+                        aria-label={t('memory_palace.empty_options_aria') || 'Customization options for this gallery spot'}
+                        aria-live="polite"
+                        aria-busy={quickCreate?.status === 'generating' ? 'true' : 'false'}
+                    >
+                        <div className="flex items-start gap-3">
+                            <div className={'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl text-white shadow-md ' + (quickCreate?.status === 'ready' ? 'bg-emerald-600' : 'bg-gradient-to-br from-violet-600 to-indigo-600')} aria-hidden="true">
+                                {quickCreate?.status === 'generating' ? '•••' : quickCreate?.status === 'ready' ? '✓' : '+'}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <div className="text-sm font-extrabold text-slate-900">
+                                    {quickCreate?.status === 'generating'
+                                        ? (t('memory_palace.quick_creating') || 'Creating a {type} for {label}…').replace('{type}', quickCreate.type).replace('{label}', quickCreate.label)
+                                        : quickCreate?.status === 'ready'
+                                            ? (t('memory_palace.quick_preview') || 'Preview ready: {label}').replace('{label}', quickCreate.label)
+                                            : (t('memory_palace.empty_nearby') || 'Empty gallery spot: {label}').replace('{label}', proximityLocus.label)}
+                                </div>
+                                <div className="mt-0.5 text-xs font-medium text-slate-700">
+                                    {quickCreate?.status === 'generating'
+                                        ? (t('memory_palace.quick_creating_help') || 'Watch the frame—the progress cue will change as soon as your new memory cue is ready.')
+                                        : quickCreate?.status === 'ready'
+                                            ? (t('memory_palace.quick_preview_help') || 'Look at the frame, then keep it, regenerate another version, or restore what was here before.')
+                                            : (t('memory_palace.empty_nearby_help') || 'Make this stop memorable with one quick cue, or open the full creative controls.')}
+                                </div>
+                                {quickCreate?.status === 'generating' ? (
+                                    <div className="mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 text-xs font-extrabold text-indigo-800">
+                                        <span className="motion-safe:animate-pulse" aria-hidden="true">●</span>
+                                        {t('memory_palace.quick_working') || 'Creating at this locus…'}
+                                    </div>
+                                ) : quickCreate?.status === 'ready' ? (
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                        <button type="button" onClick={() => { setQuickCreate(null); setNearbyEmpty(null); }}
+                                            className="min-h-[44px] rounded-xl bg-emerald-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">
+                                            ✓ {t('memory_palace.quick_keep') || 'Keep it'}
+                                        </button>
+                                        <button type="button" onClick={() => handleQuickCreate(quickCreate.type, quickCreate, quickCreate.previous)}
+                                            className="min-h-[44px] rounded-xl bg-indigo-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700">
+                                            ↻ {t('memory_palace.quick_regenerate') || 'Regenerate'}
+                                        </button>
+                                        <button type="button" onClick={handleQuickUndo}
+                                            className="min-h-[44px] rounded-xl border border-slate-400 bg-white px-3 py-2 text-xs font-extrabold text-slate-800 shadow-sm hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700">
+                                            ↶ {t('memory_palace.quick_undo') || 'Undo'}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                        {canImagen && (
+                                            <button type="button" onClick={() => handleQuickCreate('image', proximityLocus)}
+                                                disabled={!!furnishing || !!sculpting || !!directBusy}
+                                                className="min-h-[44px] rounded-xl bg-indigo-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700">
+                                                🖼 {t('memory_palace.quick_image_here') || 'Quick image here'}
+                                            </button>
+                                        )}
+                                        {typeof window.callGemini === 'function' && !!(window.AlloModules && window.AlloModules.Prim3D) && (
+                                            <button type="button" onClick={() => handleQuickCreate('sculpture', proximityLocus)}
+                                                disabled={!!sculpting || !!furnishing || !!directBusy}
+                                                className="min-h-[44px] rounded-xl bg-slate-800 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-800">
+                                                🗿 {t('memory_palace.quick_sculpture_here') || 'Quick sculpture here'}
+                                            </button>
+                                        )}
+                                        <button type="button"
+                                            onClick={() => { setDecorMode(true); setDirectMode(false); setNearbyEmpty(null); setQuickCreate(null); setCustomizeOpen(true); }}
+                                            className="min-h-[44px] rounded-xl bg-emerald-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">
+                                            🎁 {t('memory_palace.empty_use_builtins') || 'Use built-in cues'}
+                                        </button>
+                                        {typeof window.callGemini === 'function' && (
+                                            <button type="button"
+                                                onClick={() => { setDirectMode(true); setDecorMode(false); setDirectEval(null); setNearbyEmpty(null); setQuickCreate(null); setCustomizeOpen(true); }}
+                                                className="min-h-[44px] rounded-xl border border-fuchsia-400 bg-white px-3 py-2 text-xs font-extrabold text-fuchsia-800 shadow-sm hover:bg-fuchsia-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-700">
+                                                ✍️ {t('memory_palace.empty_direct_ai') || 'Advanced prompt'}
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => { setNearbyEmpty(null); setQuickCreate(null); }}
+                                disabled={quickCreate?.status === 'generating'}
+                                aria-label={t('common.close') || 'Close'}
+                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl font-bold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+                            >
+                                ×
+                            </button>
+                        </div>
+                    </div>
                 )}
             </div>
             {!recall && !directMode && current && !current.entry && (

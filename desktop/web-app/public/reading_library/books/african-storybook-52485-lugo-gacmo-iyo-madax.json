@@ -1,0 +1,162 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52485-lugo-gacmo-iyo-madax",
+  "title": "Lugo, Gacmo, iyo Madax",
+  "description": "Baadh shanta dareen iyo mucjisada jirkeena iyo maskaxdeena.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Bukheye Mulongo Christopher"
+  ],
+  "illustrators": [
+    "Kathy Arbuckle, Marleen Visser, Wiehan de Jager"
+  ],
+  "translators": [
+    "Zahra Nooh"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Bukheye Mulongo Christopher",
+      "role": "Author"
+    },
+    {
+      "name": "Zahra Nooh",
+      "role": "Translation"
+    },
+    {
+      "name": "Kathy Arbuckle, Marleen Visser, Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Bukheye Mulongo Christopher (Author); Zahra Nooh (Translation); Kathy Arbuckle, Marleen Visser, Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52485",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52485",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52485",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-0a95d7e6b9503411",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/13338.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14908.png",
+      "text": "Waxaan lugahayga u adeegsadaa inaan ku ordo, ku boodo, kuna laado.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52485#page=1",
+      "sourceDigest": "sha256:da2e24315efb8c33ec24a8b3a391e634b7a8e109acf1cb324cb3f93099518969"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13658.png",
+      "text": "Waxaan indhahayga u adeegsadaa inaan wax ku arko, ku akhriyo, kuna barto.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52485#page=2",
+      "sourceDigest": "sha256:172c19f3cdca67dfd8d0d6f69fffc260f711c72761dc55ba8c450b3f8fbfe823"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14715.png",
+      "text": "Waxaan isticmaalaa gacmahayga si aan qoyskayga u caawiyo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52485#page=3",
+      "sourceDigest": "sha256:ae1a587e87a226dd037399947195114ef522e6076ca21147c384895de644a488"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1714.png",
+      "text": "Waxaan isticmaalaa gacmahayga si aan wax ugu cuno oo ugu shaqeeyo. Laakiin madaxa ayaa ka muhiimsan lugaha iyo gacmaha.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52485#page=4",
+      "sourceDigest": "sha256:0616565ae55d864f6a33447beaed56a8d5c27ceffa7ca603a91343f878b3e849"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14998.png",
+      "text": "Madaxu wuxuu leeyahay indho. Indhaha wax baan ku arkaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52485#page=5",
+      "sourceDigest": "sha256:c5c6c482c72b105c22a35d08516cbeabb9d86a6b1ea4f0b300b7d1725ea51d76"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15128.png",
+      "text": "Madaxa waxa ku yaal sanka. Sankaygaan waxbaan ku uriyaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52485#page=6",
+      "sourceDigest": "sha256:8a39a8ce4326a46d3a3db1c80452f2c4ec22fb7c451b2038802c07588de54a5e"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16533.png",
+      "text": "Madaxa waxa kuyal dhagaha. Dhegaha waxbaan ku maqlaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52485#page=7",
+      "sourceDigest": "sha256:c2e70566ba0ecf0a0aab929cff8d060790287839cedadb645a3f9faf13da23c3"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1500.png",
+      "text": "Madaxa waxa ku yaal carrabka. Carrabka ayaan ku dhadhamiyaa cusbada iyo macaanka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52485#page=8",
+      "sourceDigest": "sha256:68d096a657b1a8823d9e3a4c665ca5720b49ff993085f48214b3d64e67577e44"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10976.png",
+      "text": "Madaxa afka ayuu leeyahay. Afkayga ayaan ku hadlaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52485#page=9",
+      "sourceDigest": "sha256:dc9ea1264bd5540edf31d2ca8d6a14ab0492e3019c986bb9c9aa3c508f73e566"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16534.png",
+      "text": "Madaxa ayaa maamula jirka oo dhan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52485#page=10",
+      "sourceDigest": "sha256:7cfa2e318fdca629901022ae1b4b0fa552958e7363716f2a80514ee9a4c1dc42"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 102
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:160f2d7b6f93471f115bbf996ca523eabff09f77dc5acdde1055ed6c6ce306af"
+  }
+}

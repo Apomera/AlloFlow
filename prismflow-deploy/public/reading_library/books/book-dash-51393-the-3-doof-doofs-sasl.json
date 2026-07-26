@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-51393-the-3-doof-doofs-sasl",
+  "title": "The 3 Doof-Doofs (SASL)",
+  "description": "Have you ever wondered what goes doof-doof-doof in the night? A noisy bedtime story for a quiet night’s sleep.",
+  "language": "South African Sign Language",
+  "langCode": "sgn",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Let's play!",
+    "My body, identity, and daily routines"
+  ],
+  "authors": [
+    "Claudi Potter"
+  ],
+  "illustrators": [
+    "Stephen Wallace"
+  ],
+  "contributors": [
+    {
+      "name": "Wynand Botha",
+      "role": "Designer"
+    },
+    {
+      "name": "Stephen Wallace",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Margot Bertelsmann",
+      "role": "Editor"
+    },
+    {
+      "name": "Claudi Potter",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/the-3-doof-doofs-sasl/",
+    "attributionUrl": "https://bookdash.org/books/the-3-doof-doofs-sasl/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=the-three-doof-doofs"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2026/06/the-three-doof-doofs_sasl-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2026/06/the-three-doof-doofs_sasl-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Have you ever wondered what goes doof-doof-doof in the night? A noisy bedtime story for a quiet night’s sleep."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Wynand Botha (Designer); Stephen Wallace (Illustrator); Margot Bertelsmann (Editor); Claudi Potter (Writer)\n\nLanguage: South African Sign Language. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=the-three-doof-doofs"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 88
+  }
+}

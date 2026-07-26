@@ -1,0 +1,330 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52498-miraha-iyo-qudaarta",
+  "title": "Miraha iyo Qudaarta",
+  "description": "Baro magacyada miraha iyo khudaarta caadiga ah buug si fudud loo akhrin karo.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [
+    "Sue Beattie"
+  ],
+  "translators": [
+    "Fosiyo Mohamud"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Little Zebra Books",
+      "role": "Author"
+    },
+    {
+      "name": "Fosiyo Mohamud",
+      "role": "Translation"
+    },
+    {
+      "name": "Sue Beattie",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Little Zebra Books (Author); Fosiyo Mohamud (Translation); Sue Beattie (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52498",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-9929aa71c70d246a",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/28182.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28112.png",
+      "text": "Chilli Peppers",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=1",
+      "sourceDigest": "sha256:25a6651bddd64df16268aad3897ad5095a7829aee558ed24960313b51de568a4"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28131.png",
+      "text": "Kaabash",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=2",
+      "sourceDigest": "sha256:3ce36f2993adfb8f10735486f21eeb85c0dc53e7cc4298cc4691cbbad873e561"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28109.png",
+      "text": "Bocor",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=3",
+      "sourceDigest": "sha256:5a90a7ec27f11106c89d8b52e7adeb5e0f087e1bef34396fccee2d9915a394aa"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28114.png",
+      "text": "Digir",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=4",
+      "sourceDigest": "sha256:7e0e0b122d5a1a6233793befd1f1e39c2e7ba52827ff70de80761f1a0ee6188d"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28115.png",
+      "text": "Khawkh",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=5",
+      "sourceDigest": "sha256:a6212f60f08bdf35bb322b666612136bcba15179ee0d87314692735e9dec4b32"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28135.png",
+      "text": "Moos",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=6",
+      "sourceDigest": "sha256:aa5938302e66c4a155cb3342bff87b6087894c7e127691706e683fe79c8cc160"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28106.png",
+      "text": "Istrawberry",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=7",
+      "sourceDigest": "sha256:7b77f866f9497a6e13baf50642026c0a5d04e91b63190923886ab925ce4608fc"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28101.png",
+      "text": "Qare",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=8",
+      "sourceDigest": "sha256:6647589a3efa598c8974461a635655de226804f14e3492ed89769bdaf3561d17"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28116.png",
+      "text": "Miraha Rumman Yar",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=9",
+      "sourceDigest": "sha256:aff80026d947d671f465ca87c8e94fd6fdf99bc310bccadca87b8e761bfa61ad"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28124.png",
+      "text": "Digir Cagaaran",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=10",
+      "sourceDigest": "sha256:67078f75ba0fcebe9d4442aa7df61b21f568924467b7a5b8380b5dcab8d38a47"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28134.png",
+      "text": "Barbarooni",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=11",
+      "sourceDigest": "sha256:8cb9235828ebc723c5393feaac98ff476581ae1934dec9c9d7a1adf466c393ab"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28119.png",
+      "text": "Baamiye",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=12",
+      "sourceDigest": "sha256:53d30bca3429a481bb5224d8e2c52c1e16cbd1089f29c44f700ccc1071c19269"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28193.png",
+      "text": "Cansalaato",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=13",
+      "sourceDigest": "sha256:6918493e56c31bd9dbb67888ce5c99649cbab476109e3985b1895e682b6aacab"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28128.png",
+      "text": "Galleey",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=14",
+      "sourceDigest": "sha256:b6f835228ba97a7a58462eba5c1e4376c4dd7b83602b9195ad3ba39b2cfe39e2"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28137.png",
+      "text": "Baadiinjaan",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=15",
+      "sourceDigest": "sha256:1247274aef39a70a6b45c42c28db1889d07b72301b61a0b555f942e8b4d706b8"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28103.png",
+      "text": "Yaanyo",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=16",
+      "sourceDigest": "sha256:15f940f0bd0910c1fb5fc987bdc36d0dfd6b6bf8853afbed4b9ea739416872e6"
+    },
+    {
+      "n": 17,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28130.png",
+      "text": "Karooto",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=17",
+      "sourceDigest": "sha256:9e0aa01b1a39715c9d72c048b49968bdf7f3e00d95151b6cd2786c4e4e268e83"
+    },
+    {
+      "n": 18,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28111.png",
+      "text": "Cananaas",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=18",
+      "sourceDigest": "sha256:669b72333064e0caa793d719293d927c380486656a2b515ce5bb4885d277280c"
+    },
+    {
+      "n": 19,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28117.png",
+      "text": "Babaay",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=19",
+      "sourceDigest": "sha256:78ad40da96c9cfe4673a7cdb4f7abc629b8e455eee19f429f00f255b06084bfb"
+    },
+    {
+      "n": 20,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28136.png",
+      "text": "Afakaadho",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=20",
+      "sourceDigest": "sha256:c2965e97ed3639b5b352abe6f1a7e0238ac232c19ee8e9715786595cabae41b3"
+    },
+    {
+      "n": 21,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28120.png",
+      "text": "Cambo",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=21",
+      "sourceDigest": "sha256:7f71e37543b8809f817859daff5cfcae3b279417c5560cde059b01fc1cd4d0fc"
+    },
+    {
+      "n": 22,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28138.png",
+      "text": "Tufaax",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=22",
+      "sourceDigest": "sha256:45ef61cf092a4922ad4c792488c08426b89b1f1bf607719c63281f12f025b9ae"
+    },
+    {
+      "n": 23,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28123.png",
+      "text": "Seeytuun",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=23",
+      "sourceDigest": "sha256:c6926599d404820f00c7858fbdf3f6726bbd1f723683dafe2ffa3d0f465651a5"
+    },
+    {
+      "n": 24,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28105.png",
+      "text": "Baradho Macaan",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=24",
+      "sourceDigest": "sha256:a730e3b375be9973d337b02002ef6d58082da7c87a3bc966532bd87cbe01d01b"
+    },
+    {
+      "n": 25,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28126.png",
+      "text": "Sinjibiil",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=25",
+      "sourceDigest": "sha256:85fe2fc7e8118cd3486fcf506cd5cbcf42e4c354888dc360fe60e70151d32dec"
+    },
+    {
+      "n": 26,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28192.png",
+      "text": "Toon",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=26",
+      "sourceDigest": "sha256:2562fd93265d32143922a3085716562c6bc7730bf561f6d49a78274785a85b6f"
+    },
+    {
+      "n": 27,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28108.png",
+      "text": "Basal",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=27",
+      "sourceDigest": "sha256:32f7a774a1d5334e7dbe93d41e36283ec48029f03d9f05dcf76b3682cb1e2656"
+    },
+    {
+      "n": 28,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28110.png",
+      "text": "Baradho",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=28",
+      "sourceDigest": "sha256:673d1d9e77277e30be16ad33e59e8ae1702c9dbb4837c466f72dd12566220a73"
+    },
+    {
+      "n": 29,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28118.png",
+      "text": "Liin",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=29",
+      "sourceDigest": "sha256:d95065f5f5a2f0fde9442ffbb9b5bc7ad91bfb5294bda3f58c5d2953103ab31d"
+    },
+    {
+      "n": 30,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28122.png",
+      "text": "Liin dhanaan",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=30",
+      "sourceDigest": "sha256:84815871ad269af100730beea346479e184e67ccf2c4357ed27fbd05f7798605"
+    },
+    {
+      "n": 31,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28107.png",
+      "text": "Dabocase",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=31",
+      "sourceDigest": "sha256:233f659b6d15cbbb5a2a949312f2e2b2366c968698eda1b60da8a4496efe0e96"
+    },
+    {
+      "n": 32,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28104.png",
+      "text": "Liin Macaan",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=32",
+      "sourceDigest": "sha256:3f6096d0691d857c66d1e021c2654a632e683f6034fd56d7e43c2bcb2bc4a39a"
+    },
+    {
+      "n": 33,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28129.png",
+      "text": "Sheeri",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=33",
+      "sourceDigest": "sha256:a596f2afad26e8d427f6c433d40c42e8888b39b7705ba6414378bdcc45eed4f5"
+    },
+    {
+      "n": 34,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28125.png",
+      "text": "Canab",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52498#page=34",
+      "sourceDigest": "sha256:95505ccbabbcce9cca35dee62d1879138b7e142b1e32fa609d708d2163e7a382"
+    }
+  ],
+  "stats": {
+    "pages": 34,
+    "words": 41
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:33b8c550721f1647370786646efe3d7bdd5d50d71e665c45556ee80c91838caf"
+  }
+}

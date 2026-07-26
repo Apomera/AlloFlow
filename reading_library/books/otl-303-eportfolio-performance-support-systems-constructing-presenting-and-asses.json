@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-303-eportfolio-performance-support-systems-constructing-presenting-and-asses",
+  "title": "ePortfolio Performance Support Systems: Constructing, Presenting, and Assessing Portfolios",
+  "description": "ePortfolio Performance Support Systems: Constructing, Presenting, and Assessing Portfolios addresses theories and practices advanced by some of the most innovative and active proponents of ePortfolios. Editors Katherine V. Wills and Rich Rice interweave twelve essays that address the ways in which ePortfolios can facilitate sustainable and measureable writing-related student development, assessment and accountability, learning and knowledge transfer, and principles related to universal design for learning, just-in-time support, interaction design, and usability testing.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education",
+    "Humanities"
+  ],
+  "authors": [
+    "Katherine V. Wills - Editor / Rich Rice - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "WAC Clearinghouse",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-NoDerivs",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/eportfolio-performance-support-systems-constructing-presenting-and-assessing-portfolios"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-NoDerivs"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "ePortfolio Performance Support Systems: Constructing, Presenting, and Assessing Portfolios addresses theories and practices advanced by some of the most innovative and active proponents of ePortfolios. Editors Katherine V. Wills and Rich Rice interweave twelve essays that address the ways in which ePortfolios can facilitate sustainable and measureable writing-related student development, assessment and accountability, learning and knowledge transfer, and principles related to universal design for learning, just-in-time support, interaction design, and usability testing."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-NoDerivs. Copyright year: 2013."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 95
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-NoDerivs",
+  "externalRecordId": "303",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

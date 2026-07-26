@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-66-introduction-to-criminal-law",
+  "title": "Introduction to Criminal Law",
+  "description": "Criminal Law uses a two-step process to augment learning, called the applied approach. First, after building a strong foundation from scratch, Criminal Law introduces you to crimes and defenses that have been broken down into separate components. It is so much easier to memorize and comprehend the subject matter when it is simplified this way. However, becoming proficient in the law takes more than just memorization. You must be trained to take the laws you have studied and apply them to various fact patterns. Most students are expected to do this automatically, but application must be seen, experienced, and practiced before it comes naturally. Thus the second step of the applied approach is reviewing examples of the application of law to facts after dissecting and analyzing each legal concept. Some of the examples come from cases, and some are purely fictional. All the examples are memorable, even quirky, so they will stick in your mind and be available when you need them the most (like during an exam). After a few chapters, you will notice that you no longer obsess over an explanation that doesn't completely make sense the first time you read it—you will just skip to the example. The examples clarify the principles for you, lightening the workload significantly.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law"
+  ],
+  "authors": [
+    "Open Textbook Library record"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Minnesota Libraries Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/criminal-law"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Criminal Law uses a two-step process to augment learning, called the applied approach. First, after building a strong foundation from scratch, Criminal Law introduces you to crimes and defenses that have been broken down into separate components. It is so much easier to memorize and comprehend the subject matter when it is simplified this way. However, becoming proficient in the law takes more than just memorization. You must be trained to take the laws you have studied and apply them to various fact patterns. Most students are expected to do this automatically, but application must be seen, experienced, and practiced before it comes naturally. Thus the second step of the applied approach is reviewing examples of the application of law to facts after dissecting and analyzing each legal concept. Some of the examples come from cases, and some are purely fictional. All the examples are memorable, even quirky, so they will stick in your mind and be available when you need them the most (like during an exam). After a few chapters, you will notice that you no longer obsess over an explanation that doesn't completely make sense the first time you read it—you will just skip to the example. The examples clarify the principles for you, lightening the workload significantly."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 234
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "66",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

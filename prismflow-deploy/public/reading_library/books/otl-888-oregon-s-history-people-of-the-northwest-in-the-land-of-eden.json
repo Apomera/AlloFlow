@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-888-oregon-s-history-people-of-the-northwest-in-the-land-of-eden",
+  "title": "Oregon’s History: People of the Northwest in the Land of Eden",
+  "description": "This “open textbook” is a social and cultural history of the people of Oregon representing powerful figures from the dominant Euro-American culture, the marginalized and oppressed, and social and political reformers who shaped the historical legacy of the state. It is a story of the diverse array of immigrants who helped build the state and strengthen it. The title is a recollection of the racial fantasies that European-American settlers created in their expansionist vision of the West and the state of Oregon. Initially the Oregon Territory was built on intolerance and racial exclusivity, but eventually Oregon embraces its diversity, but not without struggle and heartache. Our journey through the past starts with an essential question, “Who are the people of Oregon?”",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - History"
+  ],
+  "authors": [
+    "Athanasios Michaels - Author / Kaitlin Hakanson - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Oregon Educational Resources",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/oregon-s-history-people-of-the-northwest-in-the-land-of-eden"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This “open textbook” is a social and cultural history of the people of Oregon representing powerful figures from the dominant Euro-American culture, the marginalized and oppressed, and social and political reformers who shaped the historical legacy of the state. It is a story of the diverse array of immigrants who helped build the state and strengthen it. The title is a recollection of the racial fantasies that European-American settlers created in their expansionist vision of the West and the state of Oregon. Initially the Oregon Territory was built on intolerance and racial exclusivity, but eventually Oregon embraces its diversity, but not without struggle and heartache. Our journey through the past starts with an essential question, “Who are the people of Oregon?”"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 144
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "888",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

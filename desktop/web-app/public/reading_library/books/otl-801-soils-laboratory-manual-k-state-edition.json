@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-801-soils-laboratory-manual-k-state-edition",
+  "title": "Soils Laboratory Manual - K-State Edition",
+  "description": "The Soils Laboratory Manual, K-State Edition is designed for students in undergraduate, introductory soil science courses, and highlights the many aspects of soil science, including: soil genesis and classification, soil physical properties, soil-water interaction, soil biology, soil chemistry, and soil fertility. The lab manual includes 15 different laboratories, each one starting with an introduction and pre-lab assignment, followed by in-lab activities, and complimented by post-lab assignment. In-lab activities involve field trips, experiments, observation stations, or problem sets. Post-lab assignments include online quizzes, problem sets, or laboratory summary reports.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Earth Sciences"
+  ],
+  "authors": [
+    "Colby J. Moorberg - Author / David A. Crouse - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "New Prairie Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/soils-laboratory-manual-k-state-edition"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Soils Laboratory Manual, K-State Edition is designed for students in undergraduate, introductory soil science courses, and highlights the many aspects of soil science, including: soil genesis and classification, soil physical properties, soil-water interaction, soil biology, soil chemistry, and soil fertility. The lab manual includes 15 different laboratories, each one starting with an introduction and pre-lab assignment, followed by in-lab activities, and complimented by post-lab assignment. In-lab activities involve field trips, experiments, observation stations, or problem sets. Post-lab assignments include online quizzes, problem sets, or laboratory summary reports."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 111
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "801",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

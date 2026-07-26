@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-847-vaccine-practice-for-health-professionals-1st-canadian-edition",
+  "title": "Vaccine Practice for Health Professionals - 1st Canadian Edition",
+  "description": "This open access textbook is intended to guide best practices in vaccine delivery in Canada. This resource is designed for students in post-secondary health profession programs, including nursing. It may also be useful for graduate students and healthcare providers. This textbook provides information related to clinical practice, including the administration of vaccine, and communication with clients.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine - Public Health"
+  ],
+  "authors": [
+    "Oona St-Amant - Author / Jennifer Lapum - Author / Kim English - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ryerson University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/vaccine-practice-for-health-professionals-1st-canadian-edition-st-amant"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This open access textbook is intended to guide best practices in vaccine delivery in Canada. This resource is designed for students in post-secondary health profession programs, including nursing. It may also be useful for graduate students and healthcare providers. This textbook provides information related to clinical practice, including the administration of vaccine, and communication with clients."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 79
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "847",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

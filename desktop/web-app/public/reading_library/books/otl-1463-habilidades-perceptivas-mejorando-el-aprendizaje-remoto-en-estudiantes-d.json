@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1463-habilidades-perceptivas-mejorando-el-aprendizaje-remoto-en-estudiantes-d",
+  "title": "Habilidades Perceptivas: Mejorando el Aprendizaje Remoto en Estudiantes de 5 años",
+  "description": "La presente investigación tuvo como objetivo determinar el nivel de relación entre las habilidades perceptivas y el aprendizaje de la matemática de los niños y las niñas de 5 años de una Institución Educativa de Huancavelica, en la educación remota. El diseño empleado fue el correlacional y la muestra lo conformaron 46 estudiantes de 5 años de una institución de educación inicial de Huancavelica. Los instrumentos empleados fueron, la lista de cotejo para cada variable con 30 ítems. Los resultados evidencian que existe relación estadísticamente significativa entre las habilidades perceptivas y el aprendizaje de la matemática en los estudiantes de 5 años de una institución educativa de Huancavelica, en la educación remota. Estos resultados cuantitativos, con un r=0.75, representan una correlación positiva moderada, según el cuadro de índices de correlación de Hernández, Fernández y Baptista (2018)",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Early Childhood"
+  ],
+  "authors": [
+    "Esther Glory Terrazo-Luna - Author / Daker Riveros-Anccasi - Author / Christian Luis Torres-Acevedo - Author / Angel Epifanio Rojas-Quispe - Author / Abraham Cencho-Pari - Author / Jessica Coronel-Capani - Author / Russbelt Yaulilahua-Huacho - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/habilidades-perceptivas-mejorando-el-aprendizaje-remoto-en-estudiantes-de-5-anos"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "La presente investigación tuvo como objetivo determinar el nivel de relación entre las habilidades perceptivas y el aprendizaje de la matemática de los niños y las niñas de 5 años de una Institución Educativa de Huancavelica, en la educación remota. El diseño empleado fue el correlacional y la muestra lo conformaron 46 estudiantes de 5 años de una institución de educación inicial de Huancavelica. Los instrumentos empleados fueron, la lista de cotejo para cada variable con 30 ítems. Los resultados evidencian que existe relación estadísticamente significativa entre las habilidades perceptivas y el aprendizaje de la matemática en los estudiantes de 5 años de una institución educativa de Huancavelica, en la educación remota. Estos resultados cuantitativos, con un r=0.75, representan una correlación positiva moderada, según el cuadro de índices de correlación de Hernández, Fernández y Baptista (2018)"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 159
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1463",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

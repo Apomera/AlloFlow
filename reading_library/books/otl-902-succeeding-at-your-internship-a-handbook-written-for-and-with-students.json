@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-902-succeeding-at-your-internship-a-handbook-written-for-and-with-students",
+  "title": "Succeeding at Your Internship: A Handbook Written for and with Students",
+  "description": "There are several textbooks for students whose majors include internships in human services, broadly defined, such as case management, counseling, criminal justice, and social work. Most of these books are written in an academic format. Typically, it involves an introduction to a theoretical orientation that concerns working with others followed by a series of chapters devoted to learning professional skills associated with a given discipline. This approach is fine, as far as it goes, but also has two drawbacks. One is that the texts are usually sold by main stream publishers, which means they are expensive. Another is that they seldom address what might be described as the experiential dimension of the internship that most beginners face on their own. This new book addresses both concerns. The fact that it is offered as a free text addresses the first issue, of course, but the second one requires a new approach. It began with asking students to talk about what they experienced when going through their first internship and what they would tell others about how to make it a successful one. That work led to a structured narrative about basic practical topics, such as finding an internship, getting started there, making effective use of supervision, understanding ethics, appreciating cultural diversity, becoming competent, and completing the internship. The text includes descriptions, suggestions, and exercises. It may be used as either a primary course text or, due to its relative brevity, a supplemental one. Although the lead editor is an experienced clinician and professor who has supervised internships for a variety of human services majors over many years, the book was written with and for students to make it more readable and more useful.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Student Success"
+  ],
+  "authors": [
+    "Christopher J. Mruk - Editor / John C. Moor - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bowling Green State University Libraries",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/succeeding-at-your-internship-a-handbook-written-for-and-with-students"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "There are several textbooks for students whose majors include internships in human services, broadly defined, such as case management, counseling, criminal justice, and social work. Most of these books are written in an academic format. Typically, it involves an introduction to a theoretical orientation that concerns working with others followed by a series of chapters devoted to learning professional skills associated with a given discipline. This approach is fine, as far as it goes, but also has two drawbacks. One is that the texts are usually sold by main stream publishers, which means they are expensive. Another is that they seldom address what might be described as the experiential dimension of the internship that most beginners face on their own. This new book addresses both concerns. The fact that it is offered as a free text addresses the first issue, of course, but the second one requires a new approach. It began with asking students to talk about what they experienced when going through their first internship and what they would tell others about how to make it a successful one. That work led to a structured narrative about basic practical topics, such as finding an internship, getting started there, making effective use of supervision, understanding ethics, appreciating cultural diversity, becoming competent, and completing the internship. The text includes descriptions, suggestions, and exercises. It may be used as either a primary course text or, due to its relative brevity, a supplemental one. Although the lead editor is an experienced clinician and professor who has supervised internships for a variety of human services majors over many years, the book was written with and for students to make it more readable and more useful."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 305
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "902",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

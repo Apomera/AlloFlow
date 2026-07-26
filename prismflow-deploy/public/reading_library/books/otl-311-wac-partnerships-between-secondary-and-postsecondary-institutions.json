@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-311-wac-partnerships-between-secondary-and-postsecondary-institutions",
+  "title": "WAC Partnerships Between Secondary and Postsecondary Institutions",
+  "description": "Working with educators at all academic levels involved in WAC partnerships, the authors and editors of this collection demonstrate successful models of collaboration between schools and institutions so others can emulate and promote this type of collaboration. The chapters in this collection describe and reflect on collaborative partnerships among middle schools, high schools, colleges, and universities that are designed to prepare students for the kinds of work and civic engagement required to succeed in and contribute to society. The WAC partnerships celebrated in this collection include frameworks to build connectivity between institutions while addressing Common Core State Standards, academic and non-academic collaborations around science education, WAC partnerships in Argentina and Germany, and both long- and short-term collaborations.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education",
+    "Education - Higher Education"
+  ],
+  "authors": [
+    "Jacob Blumner - Editor / Pamela Childers - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "WAC Clearinghouse",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-NoDerivs",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/wac-partnerships-between-secondary-and-postsecondary-institutions"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-NoDerivs"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Working with educators at all academic levels involved in WAC partnerships, the authors and editors of this collection demonstrate successful models of collaboration between schools and institutions so others can emulate and promote this type of collaboration. The chapters in this collection describe and reflect on collaborative partnerships among middle schools, high schools, colleges, and universities that are designed to prepare students for the kinds of work and civic engagement required to succeed in and contribute to society. The WAC partnerships celebrated in this collection include frameworks to build connectivity between institutions while addressing Common Core State Standards, academic and non-academic collaborations around science education, WAC partnerships in Argentina and Germany, and both long- and short-term collaborations."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-NoDerivs. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 140
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-NoDerivs",
+  "externalRecordId": "311",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1755-the-alchemy-of-assessment-and-evaluation",
+  "title": "The Alchemy of Assessment and Evaluation",
+  "description": "This comprehensive guide illuminates the art and science of educational assessment, blending ancient alchemical wisdom with modern AI innovations. Part one lays the foundation, exploring essential principles of assessment and evaluation and its pivotal role in shaping learning outcomes. Part two delves into diverse assessment types, from formative assessments driving real-time adjustments to summative evaluations measuring overall achievement. Part three offers expert guidance on crafting effective assessment designs, ensuring authenticity and inclusivity. Part four examines the alchemy of feedback and grading, empowering educators with strategies for constructive engagement and growth. Part five focuses on evaluations, showcasing methods to assess program effectiveness and student progress over time. Whether you’re an educator refining assessment practices or an instructional designer harnessing AI’s potential, this book equips you to turn every educational challenge into a golden opportunity.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education"
+  ],
+  "authors": [
+    "Jessica Kahlow - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Mavs Open Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-alchemy-of-assessment-and-evaluation"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This comprehensive guide illuminates the art and science of educational assessment, blending ancient alchemical wisdom with modern AI innovations. Part one lays the foundation, exploring essential principles of assessment and evaluation and its pivotal role in shaping learning outcomes. Part two delves into diverse assessment types, from formative assessments driving real-time adjustments to summative evaluations measuring overall achievement. Part three offers expert guidance on crafting effective assessment designs, ensuring authenticity and inclusivity. Part four examines the alchemy of feedback and grading, empowering educators with strategies for constructive engagement and growth. Part five focuses on evaluations, showcasing methods to assess program effectiveness and student progress over time. Whether you’re an educator refining assessment practices or an instructional designer harnessing AI’s potential, this book equips you to turn every educational challenge into a golden opportunity."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 156
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1755",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

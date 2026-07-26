@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-62-introduction-to-sociology-3e",
+  "title": "Introduction to Sociology - 3e",
+  "description": "Introduction to Sociology 3e aligns to the topics and objectives of many introductory sociology courses. It is arranged in a manner that provides foundational sociological theories and contexts, then progresses through various aspects of human and societal interactions. The new edition is focused on driving meaningful and memorable learning experiences related to critical thinking about society and culture. The text includes comprehensive coverage of core concepts, discussions and data relevant to a diverse audience, and features that draw learners into the discipline in powerful and personal ways. Overall, Introduction to Sociology 3e aims to center the course and discipline as crucial elements for understanding relationships, society, and civic engagement; the authors seek to lay the foundation for students to apply what they learn throughout their lives and careers. The authors, reviewers, and the entire team worked to build understanding of the causes and impacts of discrimination and prejudice. Introduction to Sociology 3e contains dozens of examples of discrimination and its outcomes regarding social science, society, institutions, and individuals. The text seeks to strike a balance between confronting the damaging aspects of our culture and history and celebrating those who have driven change and overcome challenges. The core discussion of these topics are present in Chapter 11 on Race and Ethnicity, and Chapter 12 on Gender, Sex, and Sexuality, but their causes and effects are extensively discussed in the context of other topics, including education, law enforcement, government, healthcare, the economy, and so on. Together and when connected by an instructor, these elements have potential for deep and lasting effects.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Religion",
+    "Social Sciences - Sociology"
+  ],
+  "authors": [
+    "Tonja R. Conerly - Author / Kathleen Holmes - Author / Asha Lal Tamang - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-sociology-3e"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Introduction to Sociology 3e aligns to the topics and objectives of many introductory sociology courses. It is arranged in a manner that provides foundational sociological theories and contexts, then progresses through various aspects of human and societal interactions. The new edition is focused on driving meaningful and memorable learning experiences related to critical thinking about society and culture. The text includes comprehensive coverage of core concepts, discussions and data relevant to a diverse audience, and features that draw learners into the discipline in powerful and personal ways. Overall, Introduction to Sociology 3e aims to center the course and discipline as crucial elements for understanding relationships, society, and civic engagement; the authors seek to lay the foundation for students to apply what they learn throughout their lives and careers. The authors, reviewers, and the entire team worked to build understanding of the causes and impacts of discrimination and prejudice. Introduction to Sociology 3e contains dozens of examples of discrimination and its outcomes regarding social science, society, institutions, and individuals. The text seeks to strike a balance between confronting the damaging aspects of our culture and history and celebrating those who have driven change and overcome challenges. The core discussion of these topics are present in Chapter 11 on Race and Ethnicity, and Chapter 12 on Gender, Sex, and Sexuality, but their causes and effects are extensively discussed in the context of other topics, including education, law enforcement, government, healthcare, the economy, and so on. Together and when connected by an instructor, these elements have potential for deep and lasting effects."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 282
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "62",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

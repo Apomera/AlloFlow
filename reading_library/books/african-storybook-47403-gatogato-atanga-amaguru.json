@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47403-gatogato-atanga-amaguru",
+  "title": "Gatogato atanga amaguru",
+  "description": "Gatogato ahisemwo gutanga amaguru kubikoko vyose kugira bize bitambuka nk'abantu.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Mutugi Kamundi"
+  ],
+  "illustrators": [
+    "Wiehan de Jager"
+  ],
+  "translators": [
+    "Selemani Sindakira"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Mutugi Kamundi",
+      "role": "Author"
+    },
+    {
+      "name": "Selemani Sindakira",
+      "role": "Translation"
+    },
+    {
+      "name": "Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Mutugi Kamundi (Author); Selemani Sindakira (Translation); Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47403",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-b411a8e73e8b8a38",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/13910.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13904.png",
+      "text": "Kuva kera narindi, ibikoko ntamaguru vyagira. Vyakwega inda hasi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=1",
+      "sourceDigest": "sha256:69b1ed86dfbb82deb805a7ec7aa245668d6735775d122760eb629e47ffefc88c"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13905.png",
+      "text": "Abantu bari bafise amaguru, bahawe na Gatogato.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=2",
+      "sourceDigest": "sha256:8f11d8248b01c63d51c62cdef5b645c8cd35269c91297afd9a6356f06369ebcf"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13906.png",
+      "text": "Umunsi umwe, Gatogato ahitamwo guha ibikoko vyose. Yashaka ko bitambuka. Acabibwira ko agiye kubiha amaguru.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=3",
+      "sourceDigest": "sha256:8c47357f8db76d313d96b3d3deee17d48a4f2b55a31c74875ca025261dd7a123"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13907.png",
+      "text": "Ibikoko birishura, \"Bizoba bimeze neza dufise amaguru.\" Biraririmba vyongera biratamba.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=4",
+      "sourceDigest": "sha256:0277a732a54ad873f8f364700a7b3e12c8115c3b179a600b10ae22448e9f05c8"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13908.png",
+      "text": "Ibikoko bivuga ko vyari bigoye gukuba inda hasi. Vyarababara.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=5",
+      "sourceDigest": "sha256:e554c691e916036dc59736c9aed1c91aaad106425b2fe4254dae8bf1c908d096"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13909.png",
+      "text": "Umunsi ushitse, ibikoko vyose bija kwa Gatogato. Umusumbarengwe, intare,inzovu, udukwavu, ingona hamwe n'inyoni zitonze k'umurongo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=6",
+      "sourceDigest": "sha256:33b8859f7bbb599d15381a2fc5f7e5b518d945d7723c9ae063cedb91e6682e90"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13910.png",
+      "text": "Igikoko kimwe cose cahawe amaguru ane. Inyoni zahawe amaguru abiri imwe imwe yose.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=7",
+      "sourceDigest": "sha256:c4242a9f6edc9d2d43226ac0b62390bee01aad982833dba30befe962d52486e7"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13911.png",
+      "text": "Ibintu vyarahindutse ibikoko bimaze kuronka amaguru. Bimwe vyaratamvye n'umunezero. Ibindi vyikubita hasi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=8",
+      "sourceDigest": "sha256:9d70af339fa302a1fa5a575824ecd351bb1ae7da51d8430e78dd8be2f1d07ed7"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13912.png",
+      "text": "Bigenda kwereka abantu. Ibikoko biravuga, \"Ntituzongera gukuba inda hasi.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=9",
+      "sourceDigest": "sha256:bfaf64e0df471bdd9e7d868f15168dd05be6046ac94f0e3f8ed80452cc61f899"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13913.png",
+      "text": "Igikoko canyuma yari Inyongori. Gatogato arabaza, \"Hari igikoko gisigaye inyuma yawe?\" Inyongori irishura, \"Oya, ni jewe uwanyuma.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=10",
+      "sourceDigest": "sha256:42ad353dc8739deb098d9ea8023d0c14947ef39f74f148da0ba1b917c94ce9f3"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13914.png",
+      "text": "Gatogato aribaza, \"Iki cicanyuma. Nigiki nzokoza amaguru asigaye?\" Gatogato ahereza Inyongori amaguru yose yarasigaye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=11",
+      "sourceDigest": "sha256:f05c1c195fe2aa62fc59887b63497807165b55a7d4734f0e77eacd01dd6d6eea"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13915.png",
+      "text": "Inyongori yari inezerewe cane. Iravuga, \"Nzotambuka nyarutsa gusumba abandi.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=12",
+      "sourceDigest": "sha256:511cec7bda3e97713467eb6c5fe75c417a70561b64b9dd7d47f34d96a8bafac3"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13916.png",
+      "text": "Inyongori imaze kugenda, Inzoka iraza kwa Gatogato. Iravuga, \"Mbabarira unyongere ayandi maguru.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=13",
+      "sourceDigest": "sha256:45ed01bf9ac7f39fd0b87f9e1eca0346f7b0004e45740994cb01c951952961ee"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13917.png",
+      "text": "Gatogato arayishura, \"Natanze amaguru yose. Wewe wari hehe?\" Inzoka irishura, \"Nari naryamiriye.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=14",
+      "sourceDigest": "sha256:4bb70149e13d5915b228e78a90dc3cf8ed493f367036e7584d780ad9f2c429f5"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13918.png",
+      "text": "Gatogato araraba ko haramaguru yoba asigaye. Ntiyabona nakumwe. Abwira Inzoka, \"Mbabarira. Ntayandi maguru asigaye.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=15",
+      "sourceDigest": "sha256:9c0e542700064391b5fc9045d94e44ea12ed71459d95a2641a478fee7b1bf885"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13919.png",
+      "text": "Inzoka ikuba inda hasi irataha muhira atamaguru. Kuva uwo munsi, Inzoka ntisinzira cane. Iguma irindira ko yoba yambere k'umurongo wo kuronka amaguru.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47403#page=16",
+      "sourceDigest": "sha256:67641e91469d5be9d6501ca192f9d385754e3767fe253f40364c22f33f8dbef5"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 199
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:6f036b8567040cff945c497f7b419e69acaada9351639aff68115e65a1cbe722"
+  }
+}

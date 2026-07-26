@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-37-risk-management-for-enterprises-and-individuals",
+  "title": "Risk Management for Enterprises and Individuals",
+  "description": "This book is intended for the Risk Management and Insurance course where Risk Management is emphasized. When we think of large risks, we often think in terms of natural hazards such as hurricanes, earthquakes or tornados. Perhaps man-made disasters come to mind such as the terrorist attacks in the U.S. on September 11, 2001. Typically we have overlooked financial crises, such as the credit crisis of 2008. However, these types of man-made disasters have the potential to devastate the global marketplace. Losses in multiple trillions of dollars and in much human suffering and insecurity are already being totaled, and the global financial markets are collapsing as never before seen. We can attribute the 2008 collapse to financially risky behavior of a magnitude never before experienced. The 2008 U.S. credit markets were a financial house of cards. A basic lack of risk management (and regulators' inattention or inability to control these overt failures) lay at the heart of the global credit crisis. This crisis started with lack of improperly underwritten mortgages and excessive debt. Companies depend on loans and lines of credit to conduct their routine business. If such credit lines dry up, production slows down and brings the global economy to the brink of deep recession—or even depression. The snowballing effect of this failure to manage the risk associated with providing mortgage loans to unqualified home buyers have been profound, indeed. When the mortgages failed because of greater risk- taking on the Street, the entire house of cards collapsed. Probably no other risk-related event has had, and will continue to have, as profound an impact world wide as this risk management failure. How was risk in this situation so badly managed? What could firms and individuals have done to protect themselves? How can government measure such risks (beforehand) to regulate and control them? These and other questions come to mind when we contemplate the consequences of this risk management fiasco. Standard risk management practice would have identified sub-prime mortgages and their bundling into mortgage-backed-securities as high risk. People would have avoided these investments or would have put enough money into reserve to be able to withstand defaults. This did not happen. Accordingly, this book may represent one of the most critical topics of study that the student of the 21st century could ever undertake. Risk management will be a major focal point of business and societal decision—making in the 21st century. A separate focused field of study, it draws on core knowledge bases from law, engineering, finance, economics, medicine, psychology, accounting, mathematics, statistics and other fields to create a holistic decision-making framework that is sustainable and value- enhancing. This is the subject of this book.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Management"
+  ],
+  "authors": [
+    "Etti Baranoff - Author / Patrick Lee Brockett - Author / Yehuda Kahane - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Saylor Foundation",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/risk-management-for-enterprises-and-individuals"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is intended for the Risk Management and Insurance course where Risk Management is emphasized. When we think of large risks, we often think in terms of natural hazards such as hurricanes, earthquakes or tornados. Perhaps man-made disasters come to mind such as the terrorist attacks in the U.S. on September 11, 2001. Typically we have overlooked financial crises, such as the credit crisis of 2008. However, these types of man-made disasters have the potential to devastate the global marketplace. Losses in multiple trillions of dollars and in much human suffering and insecurity are already being totaled, and the global financial markets are collapsing as never before seen. We can attribute the 2008 collapse to financially risky behavior of a magnitude never before experienced. The 2008 U.S. credit markets were a financial house of cards. A basic lack of risk management (and regulators' inattention or inability to control these overt failures) lay at the heart of the global credit crisis. This crisis started with lack of improperly underwritten mortgages and excessive debt. Companies depend on loans and lines of credit to conduct their routine business. If such credit lines dry up, production slows down and brings the global economy to the brink of deep recession—or even depression. The snowballing effect of this failure to manage the risk associated with providing mortgage loans to unqualified home buyers have been profound, indeed. When the mortgages failed because of greater risk- taking on the Street, the entire house of cards collapsed. Probably no other risk-related event has had, and will continue to have, as profound an impact world wide as this risk management failure. How was risk in this situation so badly managed? What could firms and individuals have done to protect themselves? How can government measure such risks (beforehand) to regulate and control them? These and other questions come to mind when we contemplate the consequences of this risk management fiasco. Standard risk management practice would have identified sub-prime mortgages and their bundling into mortgage-backed-securities as high risk. People would have avoided these investments or would have put enough money into reserve to be able to withstand defaults. This did not happen. Accordingly, this book may represent one of the most critical topics of study that the student of the 21st century could ever undertake. Risk management will be a major focal point of business and societal decision—making in the 21st century. A separate focused field of study, it draws on core knowledge bases from law, engineering, finance, economics, medicine, psychology, accounting, mathematics, statistics and other fields to create a holistic decision-making framework that is sustainable and value- enhancing. This is the subject of this book."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2009."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 468
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "37",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

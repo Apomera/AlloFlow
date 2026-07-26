@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1608-principles-of-strategic-management-accounting",
+  "title": "Principles of Strategic Management Accounting",
+  "description": "This textbook explains the economic and sociological principles that underpin the use of strategic management accounting practices in organisations. Each chapter of the first part starts with a gentle, conversational introduction to the insights of one strand of academic literature and applies the insights to modern performance measurement and evaluation practices. The following parts apply the principles to specific accounting tools such as the budget, cost accounting, and the balanced scorecard. The textbook can be used in an advanced management accounting undergraduate unit or a post-graduate unit to give students a firm grounding to analyse measurement and evaluation practices in modern organisations. The textbook is meant to be a jumping off point for students and prepare them to analyse case studies and technical articles on strategic management accounting.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Accounting"
+  ],
+  "authors": [
+    "Stijn Masschelein - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Western Australia",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/principles-of-strategic-management-accounting"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This textbook explains the economic and sociological principles that underpin the use of strategic management accounting practices in organisations. Each chapter of the first part starts with a gentle, conversational introduction to the insights of one strand of academic literature and applies the insights to modern performance measurement and evaluation practices. The following parts apply the principles to specific accounting tools such as the budget, cost accounting, and the balanced scorecard. The textbook can be used in an advanced management accounting undergraduate unit or a post-graduate unit to give students a firm grounding to analyse measurement and evaluation practices in modern organisations. The textbook is meant to be a jumping off point for students and prepare them to analyse case studies and technical articles on strategic management accounting."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 151
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1608",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

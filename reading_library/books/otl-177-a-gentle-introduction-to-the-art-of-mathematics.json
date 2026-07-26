@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-177-a-gentle-introduction-to-the-art-of-mathematics",
+  "title": "A Gentle Introduction to the Art of Mathematics",
+  "description": "This book is designed for the transition course between calculus and differential equations and the upper division mathematics courses with an emphasis on proof and abstraction. The book has been used by the author and several other faculty at Southern Connecticut State University. There are nine chapters and more than enough material for a semester course. Student reviews are favorable. It is written in an informal, conversational style with a large number of interesting examples and exercises, so that a student learns to write proofs while working on engaging problems.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "Joseph E. Fields - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Southern Connecticut State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Free Documentation License (GNU)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-gentle-introduction-to-the-art-of-mathematics-177"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Free Documentation License (GNU)"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is designed for the transition course between calculus and differential equations and the upper division mathematics courses with an emphasis on proof and abstraction. The book has been used by the author and several other faculty at Southern Connecticut State University. There are nine chapters and more than enough material for a semester course. Student reviews are favorable. It is written in an informal, conversational style with a large number of interesting examples and exercises, so that a student learns to write proofs while working on engaging problems."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Free Documentation License (GNU). Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 116
+  },
+  "linkedContentLicense": "Free Documentation License (GNU)",
+  "externalRecordId": "177",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

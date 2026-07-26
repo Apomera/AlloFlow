@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1046-microbiology-a-laboratory-experience",
+  "title": "Microbiology: A Laboratory Experience",
+  "description": "As a group of organisms that are too small to see and best known for being agents of disease and death, microbes are not always appreciated for the numerous supportive and positive contributions they make to the living world. Designed to support a course in microbiology, Microbiology: A Laboratory Experience permits a glimpse into both the good and the bad in the microscopic world. The laboratory experiences are designed to engage and support student interest in microbiology as a topic, field of study, and career. This text provides a series of laboratory exercises compatible with a one-semester undergraduate microbiology or bacteriology course with a three- or four-hour lab period that meets once or twice a week. The design of the lab manual conforms to the American Society for Microbiology curriculum guidelines and takes a ground-up approach — beginning with an introduction to biosafety and containment practices and how to work with biological hazards. From there the course moves to basic but essential microscopy skills, aseptic technique and culture methods, and builds to include more advanced lab techniques. The exercises incorporate a semester-long investigative laboratory project designed to promote the sense of discovery and encourage student engagement. The curriculum is rigorous but manageable for a single semester and incorporates best practices in biology education.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology"
+  ],
+  "authors": [
+    "Holly Ahern - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Milne Open Textbooks",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/microbiology-a-laboratory-experience"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "As a group of organisms that are too small to see and best known for being agents of disease and death, microbes are not always appreciated for the numerous supportive and positive contributions they make to the living world. Designed to support a course in microbiology, Microbiology: A Laboratory Experience permits a glimpse into both the good and the bad in the microscopic world. The laboratory experiences are designed to engage and support student interest in microbiology as a topic, field of study, and career. This text provides a series of laboratory exercises compatible with a one-semester undergraduate microbiology or bacteriology course with a three- or four-hour lab period that meets once or twice a week. The design of the lab manual conforms to the American Society for Microbiology curriculum guidelines and takes a ground-up approach — beginning with an introduction to biosafety and containment practices and how to work with biological hazards. From there the course moves to basic but essential microscopy skills, aseptic technique and culture methods, and builds to include more advanced lab techniques. The exercises incorporate a semester-long investigative laboratory project designed to promote the sense of discovery and encourage student engagement. The curriculum is rigorous but manageable for a single semester and incorporates best practices in biology education."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 236
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1046",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

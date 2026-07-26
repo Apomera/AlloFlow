@@ -128,6 +128,21 @@
           "school_counselor_5422_batch3.review.json"
         ]
       }
+    ],
+    "school_psychologist_5403": [
+      {
+        "id": "independent-diagnostic-batch-3",
+        "label": "Assistant-reviewed independent diagnostic bank 3",
+        "reviewedAt": "2026-07-25",
+        "expectedPackId": "praxis-school-psychologist-5403",
+        "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
+        "files": [
+          "school_psychologist_5403_batch3.json"
+        ],
+        "reviewReports": [
+          "school_psychologist_5403_batch3.review.json"
+        ]
+      }
     ]
   },
   "legacyReviewEvidencePacks": []

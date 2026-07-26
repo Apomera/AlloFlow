@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-16",
+  "reviewedAt": "2026-07-25",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next eight unreviewed items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "domainsCovered": 3,
+    "appliedOrAnalysisItems": 8,
+    "keyPositionsPreserved": 8,
+    "optionSpecificExplanations": 32,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 142,
+      "asymmetricExtremeDistractorCandidates": 301,
+      "advancedDirectRecallCandidates": 19,
+      "semanticConceptDuplicatePairs": 258,
+      "semanticConceptDuplicateClusters": 124,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 141,
+      "asymmetricExtremeDistractorCandidates": 295,
+      "advancedDirectRecallCandidates": 18,
+      "semanticConceptDuplicatePairs": 240,
+      "semanticConceptDuplicateClusters": 120,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v2-intervention-031",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-dbt-module-selection-by-immediate-function",
+      "sourceCheck": "The review identifies four DBT skills modules and describes distress tolerance as including crisis-survival and acceptance strategies. The scenario requires selecting that function while acknowledging that mindfulness, emotion regulation, and interpersonal effectiveness can contribute at other points.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b015-cognitive-1",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "cognitive-state-dependent-retrieval-versus-related-context-effects",
+      "sourceCheck": "The foundational experiment compared learning and recall across matched and mismatched internal conditions and reported state-dependent effects. The revised item transfers that interaction logic to arousal while excluding content valence, external setting, and processing-task explanations.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-intervention-060",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-act-flexibility-processes-in-valued-action",
+      "sourceCheck": "The review presents defusion, acceptance, values, and committed action as interrelated psychological-flexibility processes and contrasts them with control or elimination of private events. Each element appears behaviorally in the scenario rather than as a definition-completion cue.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b016-cognitive-1",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "cognitive-transfer-appropriate-study-operation-selection",
+      "sourceCheck": "The experiment found that semantic acquisition performed better on a standard recognition test while rhyme acquisition performed better on a rhyming test. The item applies that operation-match principle and distinguishes it from external-context and internal-state reinstatement.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-007",
+      "domainId": "cognitive-affective",
+      "difficulty": "advanced",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "cognitive-transfer-appropriate-processing-interaction-analysis",
+      "sourceCheck": "The original study reported the precise reversal summarized in the scenario: semantic acquisition led on standard recognition, whereas rhyme acquisition led on rhyme recognition. The revised advanced item asks the learner to reject a depth-only account and interpret the interaction.",
+      "diagnosticsBefore": [
+        "advanced-direct-recall",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b016-professional-1",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-custody-evaluator-impartial-role-and-bias-monitoring",
+      "sourceCheck": "The 2022 APA guidelines direct custody evaluators to function fairly and impartially, monitor bias and conflicts, clarify professional roles, and stay within the authorized scope. The scenario tests that role boundary without treating the guideline as a jurisdiction-specific legal command.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b027-professional-4",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "professional-custody-evaluation-conflicting-data-integration",
+      "sourceCheck": "The APA guidelines emphasize proportionate information gathering, multiple relevant methods and sources, alternative hypotheses, transparent limits, and conclusions supported by the integrated record. This item tests evidence handling rather than repeating the separate impartial-role item.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-intervention-006",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-mst-social-ecological-fit-and-caregiver-agency",
+      "sourceCheck": "The review states that youth are embedded in reciprocal family, peer, school, and community systems and describes home-based work guided by fit factors and caregiver empowerment. The keyed plan operationalizes those features instead of merely listing system names.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

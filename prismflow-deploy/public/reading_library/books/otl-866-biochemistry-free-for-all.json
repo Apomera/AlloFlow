@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-866-biochemistry-free-for-all",
+  "title": "Biochemistry: Free For All",
+  "description": "We are happy to welcome you to our second Open Educational Resource (OER) textbook, Biochemistry Free For All. Biochemistry is a relatively young science, but its rate of growth has been truly impressive. The rapid pace of discoveries, which shows no sign of slowing, is reflected in the steady increase in the size of biochemistry textbooks. Growing faster than the size of biochemistry books have been the skyrocketing costs of higher education and the even faster rising costs of college textbooks. These unfortunate realities have created a situation where the costs of going to college are beyond the means of increasing numbers of students.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology",
+    "Natural Sciences - Chemistry"
+  ],
+  "authors": [
+    "Kevin Ahern - Author / Indira Rajagopal - Author / Taralyn Tan - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oregon State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/biochemistry-free-for-all-ahern"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "We are happy to welcome you to our second Open Educational Resource (OER) textbook, Biochemistry Free For All. Biochemistry is a relatively young science, but its rate of growth has been truly impressive. The rapid pace of discoveries, which shows no sign of slowing, is reflected in the steady increase in the size of biochemistry textbooks. Growing faster than the size of biochemistry books have been the skyrocketing costs of higher education and the even faster rising costs of college textbooks. These unfortunate realities have created a situation where the costs of going to college are beyond the means of increasing numbers of students."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 127
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "866",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

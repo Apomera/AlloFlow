@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1001-fundamentals-of-aerospace-engineering",
+  "title": "Fundamentals of Aerospace Engineering",
+  "description": "Fundamentals of Aerospace Engineering covers an undergraduate, introductory course to aeronautical engineering and aims at combining theory and practice to provide a comprehensive, thorough introduction to the fascinating, yet complex discipline of aerospace engineering. This book is the ulterior result of three year of teaching a course called Aerospace Engineering in the first year of a degree in aerospace engineering (with a minor in air navigation) at the Universidad Rey Juan Carlos, in Madrid, Spain.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Space Sciences"
+  ],
+  "authors": [
+    "Manuel Soler Arnedo - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Manuel Fernando Soler Arnedo",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/fundamentals-of-aerospace-engineering"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Fundamentals of Aerospace Engineering covers an undergraduate, introductory course to aeronautical engineering and aims at combining theory and practice to provide a comprehensive, thorough introduction to the fascinating, yet complex discipline of aerospace engineering. This book is the ulterior result of three year of teaching a course called Aerospace Engineering in the first year of a degree in aerospace engineering (with a minor in air navigation) at the Universidad Rey Juan Carlos, in Madrid, Spain."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2014."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 98
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "1001",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

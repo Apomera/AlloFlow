@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52428-yaase-noqon-doona-hogaamiyaha-xiga",
+  "title": "Yaase noqon doona hogaamiyaha xiga?",
+  "description": "Yaase noqon doona boqorka xayawaanka kadib markuu dhinto boqor shabeel?",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Athieno Gertrude, Owino Ogot"
+  ],
+  "illustrators": [
+    ", Salim Kasamba"
+  ],
+  "translators": [
+    "Mohamuud Mohamuud"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Athieno Gertrude, Owino Ogot",
+      "role": "Author"
+    },
+    {
+      "name": "Mohamuud Mohamuud",
+      "role": "Translation"
+    },
+    {
+      "name": ", Salim Kasamba",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Athieno Gertrude, Owino Ogot (Author); Mohamuud Mohamuud (Translation); , Salim Kasamba (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52428",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-0de02e571d1aaab1",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/25319.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25317.png",
+      "text": "Boqor Shabeel ayaa ahaa mid duqoobay. Sidee buu u dooran doonaa boqorka xiga?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=1",
+      "sourceDigest": "sha256:7f513a30f98198cc8e4b677da080f566d65bef3bf6f1204798ec3317f7f4be4b"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25318.png",
+      "text": "Boqor Shabeel wuxuu xaflad uguwacay xayawaanadii. Wuxuu ku dhawaaqi lahaa qorshihiisa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=2",
+      "sourceDigest": "sha256:fd87b84e8bd71b7a17d38e1a322a7cfe1ccfc7b67402f455b51ab06952107698"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25319.png",
+      "text": "Xaflada kadib, Boqor Shabeel wuu hadlay. Xayawaanadiina weey dhageysteen.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=3",
+      "sourceDigest": "sha256:18be33b593d78a94b1a9426eaeed30e44ae8846d679ffc8e18305956ca9282db"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25320.png",
+      "text": "Wuxuu yiri, \"Tartanku wuxuu go'aamin doonaa boqorka xiga.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=4",
+      "sourceDigest": "sha256:676b629019108342410b09dae4d5cbf724d55575468fad0091a97749dc74ff07"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25321.png",
+      "text": "Qofkii tiriya ilaa toban ka hor inta aanin la tuurin seefta, wuxuu noqon doonaa boqor.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=5",
+      "sourceDigest": "sha256:7af6c89bdc887014d29ea263ba923b63bd68567e51cec70ab90872ac4d373948"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25322.png",
+      "text": "Maroodigu wuxuu dhinac iskaga riixay dhamaantood. \"Anigu waxaan ahay kan ugu weyn. Waa inaan noqdaa boqor.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=6",
+      "sourceDigest": "sha256:aeab207aa19aa050690cda55353e10af31d382a7cc565c74c194748da1c4053e"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25323.png",
+      "text": "Maroodigu wuxuu kaliya tiriyey ilaa afar. Seeftii ayaa dhacday.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=7",
+      "sourceDigest": "sha256:10f6bb05b4a475ea6ca45c8abf2dd3ade91dc909c5ff57d4d268409f36515a9a"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25324.png",
+      "text": "Doofaar Jilibeeygii wuxuu dhinac iskaga riixay dhamaantood, \"Anigu waxaan ahay kan ugu xoog badan. Waa inaan noqdaa boqor.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=8",
+      "sourceDigest": "sha256:57f777a0d7b88435f1aae3ec04e134ed83f63fe36c14621ec14263f813581f0d"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25325.png",
+      "text": "Doofaar Jilibeeygii wuxuu tiriyey ilaa lix, kadibna seeftiiayaa dhacday. Wuu iskatagay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=9",
+      "sourceDigest": "sha256:7a39f5e99b153c846067de7e724928334e8f87ef76ba7a50acfb9942f9b98628"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25326.png",
+      "text": "Dhammaan waxay yiraahdeen, \"Maroodigii weynaa iyo doofaar Jilibeeygii ayaa ku fashilmay. Yaa ku guuleysan kara?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=10",
+      "sourceDigest": "sha256:803e780f9dd533f1888a560f4b12df3b52360f7dc374fbad60ee4db3ee112826"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25327.png",
+      "text": "Gorillihii wuu tiriyey, \"Hal! Laba! Saddex! Afar! Shan! Lix! Todoba!\" Wuu ooyay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=11",
+      "sourceDigest": "sha256:3a7d7fc50de4b58b42cfcbf321dc102ed6cbd20adf5d121a8289d8fbdb886a05"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25328.png",
+      "text": "Boqor Shabeel wuxuu yiri, \"Gorilloow, waxaad haysataa hal fursad oo kaliya.\" Gorillihii wuu tagay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=12",
+      "sourceDigest": "sha256:e78e4c72f6b1723d0a510a9905116f048c4cfd7d52d9df08ff7610a6e050a42e"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25329.png",
+      "text": "Xayawaanadii qaarkood ayaa bilaabay inay baxaan. Markaas, Dibis yar ayaa tiri, \"Aan isku dayo.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=13",
+      "sourceDigest": "sha256:73b86e4ba169ef5367ee5af51d16c96dbd388482ec67474b6f761da03d216e72"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25330.png",
+      "text": "Boqor Shabeel baa wuxuu ku qayliyey, \"Siiya Dibista fursad. Ha isku daydo.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=14",
+      "sourceDigest": "sha256:fdbe1d6dfa9397444b82a334f42b5bdf5a10279e226d1765c9551fe661105056"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25331.png",
+      "text": "Dibistii waxay tiri, \"Shan iyo shan waa toban.\" Seeftii ayaa dhacday.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=15",
+      "sourceDigest": "sha256:833167ab6fa9fee5870f4a52a0222115390acf4f566b127e6b899422da20f60b"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25332.png",
+      "text": "Tartanku wuxuu muujiyey xayawaanka ugu caqliga badan. Dibistii waxay noqotay boqorad kadib shabeelka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52428#page=16",
+      "sourceDigest": "sha256:0ef13cd519672e2f31d5b1b7c636c44ca59dd1d984f5fda12c4e4e10ada06eb3"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 201
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:d5dfb35df932590e1d3f9c2c4235de8158b18f2685d3d0f4bed03974dc68aa5c"
+  }
+}

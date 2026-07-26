@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1549-entre-el-autoconocimiento-y-la-autoestima-explorando-el-programa-subete-",
+  "title": "Entre el Autoconocimiento y la Autoestima: Explorando el Programa “Súbete a mi Auto” en el ámbito Universitario",
+  "description": "El libro de investigación tuvo como objetivo determinar la influencia del Programa “Súbete a mi Auto” en autoestima en los estudiantes universitarios, la investigación fue tipo aplicada de nivel explicativo, diseño cuasi experimental. La muestra de estudio es de 25 estudiantes para el grupo experimental y 25 estudiantes para el grupo de control con técnicas de psicometría e instrumentos como el cuestionario; los resultados: Basado en las mediciones de la autoestima en las fases del pre test y post test, en efecto los resultados de la autoestima total en el pre test el nivel muy bajo el grupo de control tiene un 3,7% de casos y el 7.4% el grupo experimental y en el nivel muy alto el grupo de control tiene un 7,4% de casos y el 25,9% el grupo experimental; resultados de la autoestima general en el pre test en el nivel muy bajo el grupo control tiene un 25,9% de casos y el 33,3% el grupo experimental y en el nivel muy alto el grupo control tiene un 0,0% de casos y el 0,0% el grupo experimental. Resultados de la autoestima total en el post test En el nivel muy bajo el grupo control tiene un 0,0% de casos y el 0,0% el grupo experimental y en el nivel muy alto el grupo control tiene un 37,0% de casos y el 55,6% el grupo experimental; resultados de la autoestima general en el post test En el nivel muy bajo el grupo control tiene un 3,7% de casos y el 0,0% el grupo experimental en el nivel muy bajo el grupo control tiene un 3,7% de casos y el 0,0% el grupo experimental y en el nivel muy alto el grupo control tiene un 11,1% de casos y el 18,5% el grupo experimental. Se concluye el programa mejora la autoestima en los estudiantes mostrando resultados favorables en más del 95%.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences"
+  ],
+  "authors": [
+    "Karina Eddmy Madrid-Gómez - Author / Jesús Mery Arias Huánuco - Author / Ysabel Zevallos Parave - Author / Alvaro Ignacio Camposano Córdova - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/entre-el-autoconocimiento-y-la-autoestima-explorando-el-programa-subete-a-mi-auto-en-el-ambito-universitario"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "El libro de investigación tuvo como objetivo determinar la influencia del Programa “Súbete a mi Auto” en autoestima en los estudiantes universitarios, la investigación fue tipo aplicada de nivel explicativo, diseño cuasi experimental. La muestra de estudio es de 25 estudiantes para el grupo experimental y 25 estudiantes para el grupo de control con técnicas de psicometría e instrumentos como el cuestionario; los resultados: Basado en las mediciones de la autoestima en las fases del pre test y post test, en efecto los resultados de la autoestima total en el pre test el nivel muy bajo el grupo de control tiene un 3,7% de casos y el 7.4% el grupo experimental y en el nivel muy alto el grupo de control tiene un 7,4% de casos y el 25,9% el grupo experimental; resultados de la autoestima general en el pre test en el nivel muy bajo el grupo control tiene un 25,9% de casos y el 33,3% el grupo experimental y en el nivel muy alto el grupo control tiene un 0,0% de casos y el 0,0% el grupo experimental. Resultados de la autoestima total en el post test En el nivel muy bajo el grupo control tiene un 0,0% de casos y el 0,0% el grupo experimental y en el nivel muy alto el grupo control tiene un 37,0% de casos y el 55,6% el grupo experimental; resultados de la autoestima general en el post test En el nivel muy bajo el grupo control tiene un 3,7% de casos y el 0,0% el grupo experimental en el nivel muy bajo el grupo control tiene un 3,7% de casos y el 0,0% el grupo experimental y en el nivel muy alto el grupo control tiene un 11,1% de casos y el 18,5% el grupo experimental. Se concluye el programa mejora la autoestima en los estudiantes mostrando resultados favorables en más del 95%."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 335
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1549",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -113,6 +113,7 @@
 
       // Card wrapper
       return h('div', {
+        'aria-labelledby': 'sage-launcher-title',
         style: {
           padding: '12px 14px',
           background: palette.surface || '#1e293b',
@@ -124,8 +125,10 @@
         h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '10px' } },
           h('span', { 'aria-hidden': 'true', style: { fontSize: '32px', lineHeight: 1 } }, '⚔️'),
           h('div', { style: { flex: 1, minWidth: 0 } },
-            h('div', { style: { fontSize: '15px', fontWeight: 700, color: palette.text || '#e2e8f0' } },
-              'AlloBot Sage'),
+            h('h4', {
+              id: 'sage-launcher-title',
+              style: { margin: 0, fontSize: '15px', fontWeight: 700, color: palette.text || '#e2e8f0' }
+            }, 'AlloBot Sage'),
             h('div', {
               style: {
                 fontSize: '11px',
@@ -150,13 +153,14 @@
             marginBottom: '10px',
             lineHeight: 1.4
           }
-        }, '⏱ Sage session active. The arcade timer ticks even while you\'re in STEM Lab.') : null,
+        }, '⏱ Sage session active. Reopen Arcade to pause or resume your session timer.') : null,
 
         // Time picker + launch row
         h('div', {
           style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }
         },
           h('label', {
+            htmlFor: 'sage-launcher-minutes',
             style: {
               fontSize: '11px',
               color: palette.textMute || '#a3a3a3',
@@ -166,15 +170,18 @@
             }
           }, 'Minutes'),
           h('select', {
+            id: 'sage-launcher-minutes',
+            className: 'ah-prominent-input',
             value: minutes,
             onChange: function (e) {
               var n = parseInt(e.target.value, 10);
               if (!isNaN(n)) setMinutes(n);
             },
             disabled: disabled,
-            'aria-label': 'Minutes to launch',
             style: {
-              padding: '4px 8px',
+              minHeight: '44px',
+              minWidth: '44px',
+              padding: '8px 10px',
               background: palette.bg || '#0f172a',
               border: '1px solid ' + (palette.border || '#334155'),
               color: palette.text || '#e2e8f0',
@@ -204,6 +211,8 @@
               color: disabled ? (palette.textMute || '#a3a3a3') : (palette.onAccent || '#0f172a'),
               border: 'none',
               borderRadius: '8px',
+              minHeight: '44px',
+              minWidth: '44px',
               padding: '8px 16px',
               fontSize: '13px',
               fontWeight: 700,

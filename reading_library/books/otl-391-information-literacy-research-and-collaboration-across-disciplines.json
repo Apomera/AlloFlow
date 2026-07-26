@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-391-information-literacy-research-and-collaboration-across-disciplines",
+  "title": "Information Literacy: Research and Collaboration across Disciplines",
+  "description": "This collection brings together scholarship and pedagogy from multiple perspectives and disciplines, offering nuanced and complex perspectives on Information Literacy in the second decade of the 21st century. Taking as a starting point the concerns that prompted the Association of Research Libraries (ACRL) to review the Information Literacy Standards for Higher Education and develop the Framework for Information Literacy for Higher Education (2015), the chapters in this collection consider six frameworks that place students in the role of both consumer and producer of information within today's collaborative information environments. Contributors respond directly or indirectly to the work of the ACRL, providing a bridge between past/current knowledge and the future and advancing the notion that faculty, librarians, administrators, and external stakeholders share responsibility and accountability for the teaching, learning, and research of Information Literacy.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Higher Education"
+  ],
+  "authors": [
+    "Barbara J. D'Angelo - Editor / Sandra Jamieson - Editor / Barry Maid - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "WAC Clearinghouse",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-NoDerivs",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/information-literacy-research-and-collaboration-across-disciplines"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-NoDerivs"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This collection brings together scholarship and pedagogy from multiple perspectives and disciplines, offering nuanced and complex perspectives on Information Literacy in the second decade of the 21st century. Taking as a starting point the concerns that prompted the Association of Research Libraries (ACRL) to review the Information Literacy Standards for Higher Education and develop the Framework for Information Literacy for Higher Education (2015), the chapters in this collection consider six frameworks that place students in the role of both consumer and producer of information within today's collaborative information environments. Contributors respond directly or indirectly to the work of the ACRL, providing a bridge between past/current knowledge and the future and advancing the notion that faculty, librarians, administrators, and external stakeholders share responsibility and accountability for the teaching, learning, and research of Information Literacy."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-NoDerivs. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 156
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-NoDerivs",
+  "externalRecordId": "391",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

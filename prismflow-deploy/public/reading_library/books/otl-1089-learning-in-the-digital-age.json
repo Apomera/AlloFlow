@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1089-learning-in-the-digital-age",
+  "title": "Learning in the Digital Age",
+  "description": "This book is designed to serve as a textbook for classes exploring the nature of learning in the digital age. The genesis of this book is a desire to use OERs in all my teachings, coupled with the realization that the resources that I was looking for were not available and as such I needed to contribute in creating them. It is thus a small attempt to contribute to the vast repository of Open Educational Resources. When discussing learning in the digital age, most focus on the technology first. However, the emphasis made in this book is that it’s about the learner not just the technology. One of the things that is easy to lose track of when talking about learning in the digital age is the learner. Technology is important and it has significant impact but it is still about the person who is using the technology. Many people conflate learning in the digital age with technology in today’s age. This important misconception is common and results from our failure to examine our understanding of what “learning” really is. Of course, Most of this depends on a person’s epistemology. There are numerous definitions of what learning is and often they come to how a person sees the world. Some argue that learning is about a change in behavior due to experiences, others state simply that learning is being able to do something new that you were not able to do before. Regardless of what side you choose, to understand what learning in the digital age is, one has to understand what learning itself is. I am immensely thankful to the authors for sharing their ideas freely and for the reviewers who volunteered their time to give feedback.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Curriculum & Instruction",
+    "Education - Distance Education"
+  ],
+  "authors": [
+    "Tutaleni Asino - Editor / Rebecca Bayeck - Author / Wilmon Brown - Author / Raymond W. Francis - Author / Tammi Kolski - Author / Kathy Essmiller - Author / Cathy L. Green - Author / Sarah L. Lewis - Author / Corrine McCabe - Author / Josephine Shikongo - Author / Tammy Wise - Author / Jose Fulgencio - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oklahoma State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/learning-in-the-digital-age"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is designed to serve as a textbook for classes exploring the nature of learning in the digital age. The genesis of this book is a desire to use OERs in all my teachings, coupled with the realization that the resources that I was looking for were not available and as such I needed to contribute in creating them. It is thus a small attempt to contribute to the vast repository of Open Educational Resources. When discussing learning in the digital age, most focus on the technology first. However, the emphasis made in this book is that it’s about the learner not just the technology. One of the things that is easy to lose track of when talking about learning in the digital age is the learner. Technology is important and it has significant impact but it is still about the person who is using the technology. Many people conflate learning in the digital age with technology in today’s age. This important misconception is common and results from our failure to examine our understanding of what “learning” really is. Of course, Most of this depends on a person’s epistemology. There are numerous definitions of what learning is and often they come to how a person sees the world. Some argue that learning is about a change in behavior due to experiences, others state simply that learning is being able to do something new that you were not able to do before. Regardless of what side you choose, to understand what learning in the digital age is, one has to understand what learning itself is. I am immensely thankful to the authors for sharing their ideas freely and for the reviewers who volunteered their time to give feedback."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 311
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1089",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

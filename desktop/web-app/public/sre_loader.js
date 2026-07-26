@@ -1,173 +1,332 @@
 /**
- * sre_loader.js — AlloFlow spoken math (Speech Rule Engine)
+ * sre_loader.js - AlloFlow spoken math (Speech Rule Engine)
  *
- * Upgrades AlloFlow's spoken-math surfaces from the hand-rolled ~75-line
- * LaTeX→English converter (_alloLatexToSpeakable in doc_pipeline) to Speech
- * Rule Engine — the Apache-2.0 math-to-speech engine behind MathJax's
- * accessibility extensions (ClearSpeak/MathSpeak rules, multiple locales).
+ * Converts LaTeX or MathML to deterministic spoken text before AlloFlow routes
+ * that text to Gemini, Kokoro, Piper, an OpenAI-compatible provider, or browser
+ * speech synthesis.
  *
- * Exposes a single fallback-safe entry point:
- *     window.AlloMathSpeech.toSpeech(input, opts) -> Promise<string|null>
- * `input` is LaTeX (with or without $ / \( \) / \[ \] delimiters) OR a MathML
- * string (detected by a <math …> tag). Resolves to a spoken-English (or
- * localized) rendering, or NULL on ANY problem (offline, load failure, parse
- * error, timeout). Callers MUST keep their existing behaviour when this
- * returns null — worst case is exactly today's output, never a regression.
- * opts: { lang: 'Spanish'|'es'|…, timeoutMs: number }.
+ * Offline-first: pinned SRE 4.1.4, locale maps, and Temml 0.10.34 assets ship
+ * in ./sre-assets. Pinned CDN URLs are optional recovery sources for incomplete
+ * web deployments and can be disabled with configure().
  *
- * Lazy: the ~360 KB SRE bundle + per-locale mathmaps JSON are fetched only on
- * the first call, never at page load. LaTeX input additionally lazy-loads
- * temml (MIT) for LaTeX→MathML — the same pinned build doc_pipeline already
- * uses — because SRE consumes MathML natively.
- *
- * NOTE (2026-07-05): written against verified CDN artifacts
- * (speech-rule-engine@4.1.4/lib/sre.js UMD global `SRE`; setupEngine /
- * engineReady / toSpeech confirmed present in the bundle; mathmaps en/es/fr/
- * de/it + nemeth confirmed 200) but NOT yet browser-smoke-tested. If SRE
- * fails to initialise every caller silently keeps its current behaviour.
+ * SRE configuration is process-global. All engine configuration and rendering
+ * is serialized so concurrent requests in different languages cannot race.
  */
 (function () {
   'use strict';
   if (window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === 'function') return;
 
+  var SRE_VERSION = '4.1.4';
+  var TEMML_VERSION = '0.10.34';
+  var SETTINGS_KEY = 'alloflow_math_speech_v1';
+
+  function loaderBaseUrl() {
+    try {
+      var current = document.currentScript && document.currentScript.src;
+      if (current) return new URL('.', current).href;
+    } catch (_) {}
+    try { return new URL('./', window.location.href).href; }
+    catch (_) { return './'; }
+  }
+
+  var LOCAL_ASSET_BASE = loaderBaseUrl() + 'sre-assets/';
   var SRE_URLS = [
+    LOCAL_ASSET_BASE + 'sre.js',
     'https://cdn.jsdelivr.net/npm/speech-rule-engine@4.1.4/lib/sre.js',
     'https://unpkg.com/speech-rule-engine@4.1.4/lib/sre.js'
   ];
-  var MATHMAPS_URL = 'https://cdn.jsdelivr.net/npm/speech-rule-engine@4.1.4/lib/mathmaps';
+  var MATHMAPS_URLS = [
+    LOCAL_ASSET_BASE + 'mathmaps',
+    'https://cdn.jsdelivr.net/npm/speech-rule-engine@4.1.4/lib/mathmaps',
+    'https://unpkg.com/speech-rule-engine@4.1.4/lib/mathmaps'
+  ];
   var TEMML_URLS = [
+    LOCAL_ASSET_BASE + 'temml.min.js',
     'https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/temml.min.js',
     'https://unpkg.com/temml@0.10.34/dist/temml.min.js'
   ];
-  // Locales verified to exist in speech-rule-engine@4.1.4/lib/mathmaps/.
-  // Anything unmapped falls back to English rules — still far better than
-  // reading raw LaTeX punctuation aloud.
-  var SUPPORTED_LOCALES = { en: 1, es: 1, fr: 1, de: 1, it: 1 };
-  var LANG_NAME_TO_LOCALE = { english: 'en', spanish: 'es', french: 'fr', german: 'de', italian: 'it' };
+
+  // Every speech locale included in the pinned SRE release.
+  var SUPPORTED_LOCALES = {
+    af: 1, ca: 1, da: 1, de: 1, en: 1, es: 1, fr: 1,
+    hi: 1, it: 1, ko: 1, nb: 1, nn: 1, sv: 1
+  };
+  var LANG_NAME_TO_LOCALE = {
+    afrikaans: 'af', catalan: 'ca', danish: 'da', german: 'de',
+    english: 'en', spanish: 'es', french: 'fr', hindi: 'hi',
+    italian: 'it', korean: 'ko', norwegian: 'nb',
+    'norwegian bokmal': 'nb', 'norwegian bokmaal': 'nb',
+    'norwegian nynorsk': 'nn', swedish: 'sv'
+  };
+  var DEFAULT_SETTINGS = {
+    domain: 'clearspeak',
+    style: 'default',
+    unsupportedLocale: 'passthrough',
+    allowRemoteFallback: true
+  };
 
   var _scriptPromise = null;
   var _temmlPromise = null;
-  var _enginePromise = null;
-  var _engineLocale = null;
+  var _engineQueue = Promise.resolve();
+  var _engineSignature = null;
+  var _engineMapBase = null;
+  var _engineProfile = null;
+  var _sreSource = null;
+  var _temmlSource = null;
+
+  function readStoredSettings() {
+    try {
+      var parsed = JSON.parse(window.localStorage.getItem(SETTINGS_KEY) || 'null');
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (_) { return {}; }
+  }
+
+  function normalizeSettings(input) {
+    var src = input && typeof input === 'object' ? input : {};
+    var domain = String(src.domain || DEFAULT_SETTINGS.domain).toLowerCase();
+    if (domain !== 'mathspeak' && domain !== 'clearspeak') domain = DEFAULT_SETTINGS.domain;
+    var style = String(src.style || src.verbosity || DEFAULT_SETTINGS.style).toLowerCase();
+    if (style === 'superbrief' || style === 'super-brief') style = 'sbrief';
+    if (style === 'detailed' || style === 'verbose') style = 'default';
+    if (style !== 'default' && style !== 'brief' && style !== 'sbrief') style = 'default';
+    return {
+      domain: domain,
+      style: style,
+      unsupportedLocale: src.unsupportedLocale === 'english' ? 'english' : 'passthrough',
+      allowRemoteFallback: src.allowRemoteFallback !== false
+    };
+  }
+
+  var _settings = normalizeSettings(readStoredSettings());
+
+  function settingsCopy() {
+    return {
+      domain: _settings.domain,
+      style: _settings.style,
+      unsupportedLocale: _settings.unsupportedLocale,
+      allowRemoteFallback: _settings.allowRemoteFallback
+    };
+  }
+
+  function effectiveSettings(opts) {
+    var merged = settingsCopy();
+    var src = opts && typeof opts === 'object' ? opts : {};
+    Object.keys(src).forEach(function (key) { merged[key] = src[key]; });
+    return normalizeSettings(merged);
+  }
+
+  function sourceUrls(urls, settings) {
+    return settings.allowRemoteFallback ? urls.slice() : urls.slice(0, 1);
+  }
 
   function loadScriptChain(urls, isReady) {
     return new Promise(function (resolve, reject) {
-      (function tryAt(i) {
-        if (isReady()) { resolve(); return; }
-        if (i >= urls.length) { reject(new Error('all sources failed')); return; }
-        var s = document.createElement('script');
-        s.src = urls[i];
-        s.async = true;
-        s.onload = function () { isReady() ? resolve() : tryAt(i + 1); };
-        s.onerror = function () { try { s.remove(); } catch (_) {} tryAt(i + 1); };
-        document.head.appendChild(s);
+      (function tryAt(index) {
+        if (isReady()) { resolve({ url: 'preloaded', index: -1 }); return; }
+        if (index >= urls.length) { reject(new Error('all script sources failed')); return; }
+        var script = document.createElement('script');
+        script.src = urls[index];
+        script.async = true;
+        script.onload = function () {
+          if (isReady()) resolve({ url: urls[index], index: index });
+          else { try { script.remove(); } catch (_) {} tryAt(index + 1); }
+        };
+        script.onerror = function () {
+          try { script.remove(); } catch (_) {}
+          tryAt(index + 1);
+        };
+        document.head.appendChild(script);
       })(0);
     });
   }
 
-  function ensureSreScript() {
-    if (window.SRE && typeof window.SRE.toSpeech === 'function') return Promise.resolve();
+  function ensureSreScript(settings) {
+    if (window.SRE && typeof window.SRE.toSpeech === 'function' &&
+        typeof window.SRE.setupEngine === 'function') return Promise.resolve();
     if (_scriptPromise) return _scriptPromise;
-    _scriptPromise = loadScriptChain(SRE_URLS, function () {
-      return !!(window.SRE && typeof window.SRE.toSpeech === 'function' && typeof window.SRE.setupEngine === 'function');
-    }).catch(function (e) { _scriptPromise = null; throw e; }); // allow a later retry
+    _scriptPromise = loadScriptChain(sourceUrls(SRE_URLS, settings), function () {
+      return !!(window.SRE && typeof window.SRE.toSpeech === 'function' &&
+        typeof window.SRE.setupEngine === 'function');
+    }).then(function (result) {
+      _sreSource = result.url;
+    }).catch(function (error) {
+      _scriptPromise = null;
+      throw error;
+    });
     return _scriptPromise;
   }
 
-  function ensureTemml() {
+  function ensureTemml(settings) {
     if (window.temml && typeof window.temml.renderToString === 'function') return Promise.resolve();
     if (_temmlPromise) return _temmlPromise;
-    _temmlPromise = loadScriptChain(TEMML_URLS, function () {
+    _temmlPromise = loadScriptChain(sourceUrls(TEMML_URLS, settings), function () {
       return !!(window.temml && typeof window.temml.renderToString === 'function');
-    }).catch(function (e) { _temmlPromise = null; throw e; });
+    }).then(function (result) {
+      _temmlSource = result.url;
+    }).catch(function (error) {
+      _temmlPromise = null;
+      throw error;
+    });
     return _temmlPromise;
   }
 
-  function resolveLocale(lang) {
-    if (!lang) return 'en';
-    var s = String(lang).toLowerCase().trim();
-    if (LANG_NAME_TO_LOCALE[s]) return LANG_NAME_TO_LOCALE[s];
-    var code = s.slice(0, 2);
-    return SUPPORTED_LOCALES[code] ? code : 'en';
+  function normalizedLanguageName(lang) {
+    var value = String(lang || '').toLowerCase().trim();
+    try { value = value.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
+    return value.replace(/[_-].*$/, '').replace(/\s+/g, ' ');
   }
 
-  // (Re)configure the engine for a locale. setupEngine may or may not return
-  // a promise depending on the SRE build path; engineReady() is the reliable
-  // settle signal. If the ClearSpeak domain is rejected for a locale, retry
-  // with SRE's defaults rather than failing the whole call.
-  function ensureEngine(locale) {
-    if (_enginePromise && _engineLocale === locale) return _enginePromise;
-    _engineLocale = locale;
-    _enginePromise = ensureSreScript().then(function () {
-      var setup = function (features) {
-        return Promise.resolve()
-          .then(function () { return window.SRE.setupEngine(features); })
-          .then(function () { return window.SRE.engineReady(); });
-      };
-      return setup({ json: MATHMAPS_URL, locale: locale, domain: 'clearspeak', modality: 'speech' })
-        .catch(function () { return setup({ json: MATHMAPS_URL, locale: locale }); });
-    }).catch(function (e) { _enginePromise = null; _engineLocale = null; throw e; });
-    return _enginePromise;
+  function resolveLocale(lang, settings) {
+    if (!lang) return 'en';
+    var name = normalizedLanguageName(lang);
+    if (LANG_NAME_TO_LOCALE[name]) return LANG_NAME_TO_LOCALE[name];
+    var code = name.slice(0, 2);
+    if (SUPPORTED_LOCALES[code]) return code;
+    return settings.unsupportedLocale === 'english' ? 'en' : null;
+  }
+
+  function settleEngine(features) {
+    return Promise.resolve()
+      .then(function () { return window.SRE.setupEngine(features); })
+      .then(function () { return window.SRE.engineReady(); });
+  }
+
+  function setupProfiles(locale, settings, mapBase) {
+    var base = { json: mapBase, locale: locale, modality: 'speech' };
+    var profiles = [
+      { json: mapBase, locale: locale, modality: 'speech', domain: settings.domain, style: settings.style },
+      { json: mapBase, locale: locale, modality: 'speech', domain: settings.domain },
+      base
+    ];
+    return (function tryProfile(index) {
+      if (index >= profiles.length) return Promise.reject(new Error('math speech profile unavailable'));
+      return settleEngine(profiles[index]).then(function () {
+        _engineProfile = profiles[index];
+      }).catch(function () { return tryProfile(index + 1); });
+    })(0);
+  }
+
+  function setupEngineAt(locale, settings, mapUrls, index) {
+    if (index >= mapUrls.length) return Promise.reject(new Error('all mathmaps sources failed'));
+    var mapBase = mapUrls[index];
+    return setupProfiles(locale, settings, mapBase).then(function () {
+      _engineMapBase = mapBase;
+      _engineSignature = [locale, settings.domain, settings.style, mapBase].join('|');
+    }).catch(function () { return setupEngineAt(locale, settings, mapUrls, index + 1); });
+  }
+
+  function ensureEngine(locale, settings) {
+    return ensureSreScript(settings).then(function () {
+      var expectedPrefix = [locale, settings.domain, settings.style].join('|') + '|';
+      if (_engineSignature && _engineSignature.indexOf(expectedPrefix) === 0) {
+        return window.SRE.engineReady();
+      }
+      return setupEngineAt(locale, settings, sourceUrls(MATHMAPS_URLS, settings), 0);
+    });
+  }
+
+  function withEngine(locale, settings, render) {
+    var task = _engineQueue.catch(function () { return null; })
+      .then(function () { return ensureEngine(locale, settings); })
+      .then(render);
+    _engineQueue = task.catch(function () { return null; });
+    return task;
   }
 
   function stripLatexDelims(src) {
-    var s = String(src).trim();
-    s = s.replace(/^\$\$([\s\S]*)\$\$$/, '$1');
-    s = s.replace(/^\$([\s\S]*)\$$/, '$1');
-    s = s.replace(/^\\\[([\s\S]*)\\\]$/, '$1');
-    s = s.replace(/^\\\(([\s\S]*)\\\)$/, '$1');
-    return s.trim();
+    var value = String(src).trim();
+    value = value.replace(/^\$\$([\s\S]*)\$\$$/, '$1');
+    value = value.replace(/^\$([\s\S]*)\$$/, '$1');
+    value = value.replace(/^\\\[([\s\S]*)\\\]$/, '$1');
+    value = value.replace(/^\\\(([\s\S]*)\\\)$/, '$1');
+    return value.trim();
   }
 
   function extractMathElement(src) {
-    var m = String(src).match(/<math[\s>][\s\S]*?<\/math>/i);
-    return m ? m[0] : null;
+    var match = String(src).match(/<math[\s>][\s\S]*?<\/math>/i);
+    return match ? match[0] : null;
   }
 
-  function latexToMathML(latex) {
-    return ensureTemml().then(function () {
+  function latexToMathML(latex, settings) {
+    return ensureTemml(settings).then(function () {
       var html = window.temml.renderToString(latex, { displayMode: true });
       if (!html || html.indexOf('<math') === -1) return null;
-      // temml renders parse problems inline rather than throwing — a spoken
-      // form derived from an error node would be nonsense, so treat as failure.
       if (/temml-error|<merror/i.test(html)) return null;
       return extractMathElement(html);
     });
   }
 
+  function withTimeout(work, timeoutMs) {
+    return new Promise(function (resolve) {
+      var settled = false;
+      var timer = setTimeout(function () {
+        if (!settled) { settled = true; resolve(null); }
+      }, timeoutMs);
+      Promise.resolve(work).then(function (value) {
+        if (!settled) { settled = true; clearTimeout(timer); resolve(value); }
+      }, function () {
+        if (!settled) { settled = true; clearTimeout(timer); resolve(null); }
+      });
+    });
+  }
+
   window.AlloMathSpeech = {
-    /**
-     * LaTeX or MathML → spoken text. Resolves to a string, or NULL if SRE is
-     * unavailable / input unparseable / timeout — callers keep their fallback.
-     */
     toSpeech: function (input, opts) {
-      var o = opts || {};
+      var options = opts || {};
       var src = String(input == null ? '' : input).trim();
       if (!src) return Promise.resolve(null);
-      var locale = resolveLocale(o.lang || o.locale);
-      var timeoutMs = (typeof o.timeoutMs === 'number' && o.timeoutMs > 0) ? o.timeoutMs : 10000;
-      var work = Promise.resolve().then(function () {
-        var mmlPromise = /<math[\s>]/i.test(src)
-          ? Promise.resolve(extractMathElement(src))
-          : latexToMathML(stripLatexDelims(src));
-        return mmlPromise.then(function (mml) {
-          if (!mml) return null;
-          return ensureEngine(locale).then(function () {
-            var out = window.SRE.toSpeech(mml);
-            out = String(out == null ? '' : out).trim();
-            return out.length ? out : null;
-          });
+      var settings = effectiveSettings(options);
+      var locale = resolveLocale(options.lang || options.locale, settings);
+      if (!locale) return Promise.resolve(null);
+      var timeoutMs = typeof options.timeoutMs === 'number' && options.timeoutMs > 0
+        ? options.timeoutMs : 10000;
+      var mathml = /<math[\s>]/i.test(src)
+        ? Promise.resolve(extractMathElement(src))
+        : latexToMathML(stripLatexDelims(src), settings);
+      var work = mathml.then(function (value) {
+        if (!value) return null;
+        return withEngine(locale, settings, function () {
+          var spoken = String(window.SRE.toSpeech(value) || '').trim();
+          return spoken || null;
         });
-      }).catch(function () { return null; });
-      // Hard timeout so a slow CDN can never wedge a caller (the TTS pre-pass
-      // sits directly in front of speech synthesis).
-      var timer = new Promise(function (resolve) { setTimeout(function () { resolve(null); }, timeoutMs); });
-      return Promise.race([work, timer]);
+      });
+      return withTimeout(work, timeoutMs);
     },
     ready: function () {
       return !!(window.SRE && typeof window.SRE.toSpeech === 'function');
+    },
+    preload: function (opts) {
+      var options = opts || {};
+      var settings = effectiveSettings(options);
+      var locale = resolveLocale(options.lang || options.locale || 'en', settings) || 'en';
+      return Promise.all([
+        ensureTemml(settings),
+        withEngine(locale, settings, function () { return true; })
+      ]).then(function () { return true; }).catch(function () { return false; });
+    },
+    configure: function (next) {
+      _settings = effectiveSettings(next || {});
+      _engineSignature = null;
+      try { window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings)); } catch (_) {}
+      return settingsCopy();
+    },
+    settings: settingsCopy,
+    diagnostics: function () {
+      return {
+        ready: !!(window.SRE && typeof window.SRE.toSpeech === 'function'),
+        sreVersion: SRE_VERSION,
+        temmlVersion: TEMML_VERSION,
+        sreSource: _sreSource,
+        temmlSource: _temmlSource,
+        mathmapsSource: _engineMapBase,
+        engineSignature: _engineSignature,
+        engineProfile: _engineProfile,
+        localAssetBase: LOCAL_ASSET_BASE,
+        settings: settingsCopy(),
+        supportedLocales: Object.keys(SUPPORTED_LOCALES)
+      };
     }
   };
 
-  console.log('[AlloMathSpeech] sre_loader.js ready — window.AlloMathSpeech.toSpeech(latex|mathml) (lazy ClearSpeak)');
+  console.log('[AlloMathSpeech] offline-first SRE ' + SRE_VERSION + ' ready (lazy ' + _settings.domain + ')');
 })();

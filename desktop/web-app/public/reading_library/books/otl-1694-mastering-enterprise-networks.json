@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1694-mastering-enterprise-networks",
+  "title": "Mastering Enterprise Networks",
+  "description": "Mastering Enterprise Networks, is a comprehensive guide to building, defending, and attacking enterprise networks. It covers a wide range of topics, from network fundamentals to advanced security concepts. The book is well-organized and easy to follow, making it a valuable resource for both beginners and experienced network professionals. One of the strengths of this book is its focus on hands-on learning. The book includes 50 chapters of labs that allow readers to practice the concepts they have learned. These labs are a great way to reinforce your understanding of enterprise networks while developing practical skills.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science - Information Systems"
+  ],
+  "authors": [
+    "Mathew J. Heath Van Horn - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Embry-Riddle Aeronautical University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/mastering-enterprise-networks"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Mastering Enterprise Networks, is a comprehensive guide to building, defending, and attacking enterprise networks. It covers a wide range of topics, from network fundamentals to advanced security concepts. The book is well-organized and easy to follow, making it a valuable resource for both beginners and experienced network professionals. One of the strengths of this book is its focus on hands-on learning. The book includes 50 chapters of labs that allow readers to practice the concepts they have learned. These labs are a great way to reinforce your understanding of enterprise networks while developing practical skills."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 118
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1694",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

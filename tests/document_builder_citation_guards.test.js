@@ -33,6 +33,11 @@ describe('B7 — validateAndRepairCitations never repairs to the wrong (last) so
     expect(out).not.toContain('⁽⁹⁾');        // orphan stripped (it matches no bibliography entry), not left dangling
     expect(out).not.toContain('](https://'); // and certainly not linked to a wrong source
   });
+  it('strips a complete linked out-of-range citation before accepting its URL', () => {
+    const out = validateAndRepairCitations('Bad link [⁽⁹⁾](https://bad.test/path_(x)).', CHUNKS);
+    expect(out).toBe('Bad link .');
+    expect(out).not.toContain('bad.test');
+  });
   it('empty / no-chunk inputs pass through unchanged', () => {
     expect(validateAndRepairCitations('', CHUNKS)).toBe('');
     expect(validateAndRepairCitations('text ⁽¹⁾', [])).toBe('text ⁽¹⁾');

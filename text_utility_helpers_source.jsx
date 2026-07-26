@@ -171,6 +171,72 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
           return part;
       });
 };
+const _extractRepairCitationMarkers = (value) => {
+    const text = String(value || '');
+    const markers = [];
+    const readBalanced = (line, start, openChar, closeChar) => {
+        if (line[start] !== openChar) return null;
+        let depth = 0;
+        let escaped = false;
+        for (let i = start; i < line.length; i++) {
+            const ch = line[i];
+            if (escaped) {
+                escaped = false;
+                continue;
+            }
+            if (ch === '\\') {
+                escaped = true;
+                continue;
+            }
+            if (ch === openChar) depth++;
+            else if (ch === closeChar && --depth === 0) {
+                return { end: i + 1, content: line.slice(start + 1, i) };
+            }
+        }
+        return null;
+    };
+    const pieces = text.split(/(\r\n|\n|\r)/);
+    let inFence = false;
+    let fenceChar = '';
+    let fenceLength = 0;
+    for (let pieceIndex = 0; pieceIndex < pieces.length; pieceIndex += 2) {
+        const line = pieces[pieceIndex] || '';
+        const fence = line.match(/^[ \t]{0,3}(`{3,}|~{3,})(.*)$/);
+        if (inFence) {
+            if (fence && fence[1][0] === fenceChar && fence[1].length >= fenceLength && !fence[2].trim()) {
+                inFence = false;
+                fenceChar = '';
+                fenceLength = 0;
+            }
+            continue;
+        }
+        if (fence) {
+            inFence = true;
+            fenceChar = fence[1][0];
+            fenceLength = fence[1].length;
+            continue;
+        }
+        for (let cursor = 0; cursor < line.length;) {
+            const start = line.indexOf('[', cursor);
+            if (start < 0) break;
+            const label = readBalanced(line, start, '[', ']');
+            if (!label || line[label.end] !== '(' ||
+                !/^\u207d[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+\u207e$/.test(label.content)) {
+                cursor = start + 1;
+                continue;
+            }
+            const destination = readBalanced(line, label.end, '(', ')');
+            if (!destination) {
+                cursor = start + 1;
+                continue;
+            }
+            markers.push(line.slice(start, destination.end));
+            cursor = destination.end;
+        }
+    }
+    return markers;
+};
+
 
 const repairGeneratedText = async (originalText, issue, targetLength, context, preserveCitations = false, deps) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms, repairGeneratedText, getReadableContent, generateHelpfulHint } = deps;
@@ -179,22 +245,9 @@ const repairGeneratedText = async (originalText, issue, targetLength, context, p
       const citationRule = preserveCitations ? '\n                - CRITICAL: Preserve all citation markers in the format [⁽¹⁾](url). Keep them exactly as-is — do not remove, merge, or reformat them. They are important hyperlinks.' : '';
 
       const citationRegex = /\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\([^)]+\)/g;
-      let extractedCitations = [];
-      if (preserveCitations) {
-          let m;
-          while ((m = citationRegex.exec(originalText)) !== null) {
-              const beforeSlice = originalText.substring(Math.max(0, m.index - 120), m.index);
-              const afterSlice = originalText.substring(m.index + m[0].length, Math.min(originalText.length, m.index + m[0].length + 60));
-              const contextWords = (beforeSlice + ' ' + afterSlice)
-                  .replace(/[^\w\s]/g, ' ')
-                  .split(/\s+/)
-                  .filter(w => w.length >= 4)
-                  .map(w => w.toLowerCase());
-              extractedCitations.push({ marker: m[0], contextWords, before: beforeSlice.trim() });
-          }
-          if (extractedCitations.length > 0) {
-              debugLog(`[CitationRecovery] Extracted ${extractedCitations.length} citations before repair`);
-          }
+      const originalCitationSequence = preserveCitations ? _extractRepairCitationMarkers(originalText) : [];
+      if (originalCitationSequence.length > 0) {
+          debugLog(`[CitationIntegrity] Extracted ${originalCitationSequence.length} citation occurrence(s) before repair`);
       }
 
       try {
@@ -228,39 +281,15 @@ const repairGeneratedText = async (originalText, issue, targetLength, context, p
           let result = await callGemini(prompt);
           if (!result) return originalText;
 
-          if (preserveCitations && extractedCitations.length > 0) {
-              const survivedCount = extractedCitations.filter(c => result.includes(c.marker)).length;
-              const lostCitations = extractedCitations.filter(c => !result.includes(c.marker));
-              debugLog(`[CitationRecovery] ${survivedCount}/${extractedCitations.length} citations survived repair, ${lostCitations.length} lost`);
-
-              if (lostCitations.length > 0) {
-                  const sentences = (result.match(/[^.!?]*[.!?]+[\s]*/g) || [result]).map(s => s.trim()).filter(Boolean);
-                  for (const lost of lostCitations) {
-                      let bestIdx = -1;
-                      let bestScore = 0;
-                      sentences.forEach((sentence, idx) => {
-                          const sentenceWords = sentence.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/);
-                          const overlap = lost.contextWords.filter(w => sentenceWords.includes(w)).length;
-                          if (overlap > bestScore) {
-                              bestScore = overlap;
-                              bestIdx = idx;
-                          }
-                      });
-                      if (bestIdx >= 0 && bestScore >= 2) {
-                          const sentence = sentences[bestIdx];
-                          const punctMatch = sentence.match(/([.!?])\s*$/);
-                          if (punctMatch) {
-                              sentences[bestIdx] = sentence.replace(/([.!?])\s*$/, ` ${lost.marker}$1`);
-                          } else {
-                              sentences[bestIdx] = sentence + ' ' + lost.marker;
-                          }
-                          debugLog(`[CitationRecovery] Re-inserted ${lost.marker} at sentence ${bestIdx} (score: ${bestScore})`);
-                      } else {
-                          warnLog(`[CitationRecovery] Could not find match for ${lost.marker} (best score: ${bestScore})`);
-                      }
-                  }
-                  result = sentences.join(' ');
+          if (preserveCitations) {
+              const repairedSequence = _extractRepairCitationMarkers(result);
+              const preservedExactly = originalCitationSequence.length === repairedSequence.length
+                  && originalCitationSequence.every((marker, index) => marker === repairedSequence[index]);
+              if (!preservedExactly) {
+                  warnLog(`[CitationIntegrity] Repair changed, removed, reordered, or duplicated citations; retaining the original text.`);
+                  return originalText;
               }
+              debugLog(`[CitationIntegrity] ${originalCitationSequence.length} citation occurrence(s) preserved exactly through repair`);
           }
 
           return result;

@@ -392,7 +392,9 @@ const prewarmSequenceAudio = (text, opts) => {
             const r = resolveAdventureSentenceVoice(sentences, i, activeSpeaker, voiceMap, selectedVoice);
             activeSpeaker = r.nextSpeaker;
             if (_kokoroPrewarmSkip.test(String(r.currentVoice || ''))) continue;
-            try { Promise.resolve(callTTS(sanitizeTtsText(sentences[i]), r.currentVoice)).catch(() => {}); warmed++; } catch (_) {}
+            const spokenText = sanitizeTtsText(sentences[i]);
+            if (!spokenText) continue;
+            try { Promise.resolve(callTTS(spokenText, r.currentVoice)).catch(() => {}); warmed++; } catch (_) {}
         }
         return warmed;
     } catch (_) { return 0; }
@@ -405,15 +407,6 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
           if (playbackSessionRef.current === sessionId) stopPlayback('ended', contentId, sessionId);
           return;
       }
-      setPlaybackState(prev => {
-          const personaRange = mode === 'persona' && prev.chunkRanges ? prev.chunkRanges[index] : null;
-          return {
-              ...prev,
-              currentIdx: index,
-              ...(personaRange ? { currentSentenceIdx: personaRange[0] } : {})
-          };
-      });
-      if (!preloadedAudio) setIsGeneratingAudio(true);
       try {
           let currentVoice = activeSpeaker || selectedVoice;
           let nextSpeaker = activeSpeaker;
@@ -452,7 +445,31 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               const speakingChar = resolvePersonaSpeakingChar(personaState, activeSpeaker, speakerName);
               textToSpeak = preparePersonaTtsText(textToSpeak, speakingChar, activeSpeaker, selectedVoice, _isCanvasEnv, _ttsState);
           }
-           if (mode !== 'persona') textToSpeak = sanitizeTtsText(textToSpeak);
+          if (mode !== 'persona') textToSpeak = sanitizeTtsText(textToSpeak);
+          // Sentence boundaries are also display/highlight boundaries, so keep
+          // their indexes stable. A raw unit can nevertheless become empty
+          // after markdown/citation cleanup (for example a standalone "[6]").
+          // Do not ask TTS for it, do not highlight it, and never pass a bogus
+          // preloaded Audio(null) into the next sequence step.
+          if (!String(textToSpeak || '').trim()) {
+              _pkTrace('pk:skip-empty-spoken', { idx: index, mode, contentId: _pkTraceId(contentId) });
+              try {
+                  if (preloadedAudio && typeof preloadedAudio.pause === 'function') preloadedAudio.pause();
+              } catch (_) {}
+              if (playbackSessionRef.current === sessionId) {
+                  playSequence(index + 1, sentences, sessionId, mode, voiceMap, nextSpeaker, null, 0, speakerName, deps, contentId);
+              }
+              return;
+          }
+          setPlaybackState(prev => {
+              const personaRange = mode === 'persona' && prev.chunkRanges ? prev.chunkRanges[index] : null;
+              return {
+                  ...prev,
+                  currentIdx: index,
+                  ...(personaRange ? { currentSentenceIdx: personaRange[0] } : {})
+              };
+          });
+          if (!preloadedAudio) setIsGeneratingAudio(true);
           const personaTtsLanguage = mode === 'persona'
               ? resolvePersonaTtsLanguage(currentUiLanguage, leveledTextLanguage)
               : null;
@@ -690,6 +707,10 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
                   textToPreload = preparePersonaTtsText(targetText, preloadChar, targetVoice, selectedVoice, _isCanvasEnv, _ttsState);
               }
               if (mode !== 'persona') textToPreload = sanitizeTtsText(textToPreload);
+              if (!String(textToPreload || '').trim()) {
+                  _pkTrace('pk:preload-skip-empty', { idx: targetIdx, mode, contentId: _pkTraceId(contentId) });
+                  continue;
+              }
               const nextBufferKey = sequenceBufferKey(targetIdx, targetVoice, textToPreload, personaSynthesisIdentity);
               const storedPreloadUrl = isReadAloudStorePlayback
                   ? getStoredReadAloudUrl(sentences[targetIdx], textToPreload, targetVoice)
@@ -728,6 +749,7 @@ const playSequence = async (index, sentences, sessionId, mode = 'standard', voic
               if (offset === 1) {
                   nextAudioElementPromise = audioBufferRef.current[nextBufferKey]
                       .then(url => {
+                          if (!url) return null;
                           const a = new Audio(url);
                           a.playbackRate = playbackRateRef.current;
                           a.preload = 'auto';

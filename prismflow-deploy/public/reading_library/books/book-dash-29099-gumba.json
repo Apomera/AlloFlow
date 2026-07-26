@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-29099-gumba",
+  "title": "Gumba",
+  "description": "Ngweṋa, Tshibode, Phengwini na Khuhu zwo wana gumba. Ndi gumba ḽazwo naa? ‘Gumba ḽashu,’ hu amba mme na baba nga u ḓihudza mafhedziseloni. Wanani uri ndi gumba ḽa nnyi.",
+  "language": "Tshivenḓa",
+  "langCode": "ven",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Family, friends, and home"
+  ],
+  "authors": [
+    "Mirna Lawrence"
+  ],
+  "illustrators": [
+    "Megan Naudé"
+  ],
+  "contributors": [
+    {
+      "name": "Nabeela Kalla",
+      "role": "Editor"
+    },
+    {
+      "name": "Mirna Lawrence",
+      "role": "Writer"
+    },
+    {
+      "name": "Megan Naudé",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Georgia Demertzis",
+      "role": "Designer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/gumba/",
+    "attributionUrl": "https://bookdash.org/books/gumba/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=egg"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2022/09/egg_ve_978-1-77632-463-7-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2022/09/egg_ve_978-1-77632-463-7-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Ngweṋa, Tshibode, Phengwini na Khuhu zwo wana gumba. Ndi gumba ḽazwo naa? ‘Gumba ḽashu,’ hu amba mme na baba nga u ḓihudza mafhedziseloni. Wanani uri ndi gumba ḽa nnyi."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Nabeela Kalla (Editor); Mirna Lawrence (Writer); Megan Naudé (Illustrator); Georgia Demertzis (Designer)\n\nLanguage: Tshivenḓa. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=egg"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 95
+  }
+}

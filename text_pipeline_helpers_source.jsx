@@ -258,51 +258,423 @@ const sanitizeTruncatedCitations = (text) => {
     return text;
 };
 
-const normalizeCitationPlacement = (text) => {
-    if (!text) return text;
-    const CIT = '\\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\\]\\([^)]+\\)';
-    const CIT_RE = new RegExp(CIT, 'g');
-    // Step 1: Move citation groups that appear BEFORE sentence-ending punctuation to AFTER it.
-    // Pattern: "text [⁽¹⁾](url) [⁽²⁾](url) ." → "text. [⁽¹⁾](url) [⁽²⁾](url)"
-    // Handles one or more citations with optional whitespace before a period/exclamation/question.
-    const citGroupBeforePunct = new RegExp(
-        '((?:\\s*' + CIT + ')+)\\s*([.!?])', 'g'
-    );
-    let result = text.replace(citGroupBeforePunct, (match, cits, punct) => {
-        return punct + ' ' + cits.trim();
-    });
-    // Step 2: Normalize "text  ." or "text .  " patterns (extra spaces before/around punctuation)
-    result = result.replace(/\s+([.!?])(\s|$)/g, '$1$2');
-    // Step 3: Ensure exactly one space between punctuation and following citation
-    result = result.replace(/([.!?])\s*(\[⁽)/g, '$1 $2');
-    // Step 4: Normalize spacing between adjacent citations (remove commas between them, just use spaces)
-    result = result.replace(
-        new RegExp('(' + CIT + ')\\s*,?\\s*(?=' + CIT.replace(/\\/g, '\\') + ')', 'g'),
-        '$1 '
-    );
-    // Step 5: Remove duplicate adjacent citations (same superscript number in same group)
-    result = result.replace(
-        new RegExp('((?:' + CIT + '\\s*){2,})', 'g'),
-        (match) => {
-            const allCits = [...match.matchAll(new RegExp('(\\[⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾\\]\\([^)]+\\))', 'g'))];
-            const seen = new Set();
-            const unique = [];
-            for (const c of allCits) {
-                const num = c[2]; // superscript digits
-                if (!seen.has(num)) {
-                    seen.add(num);
-                    unique.push(c[1]); // full [⁽N⁾](url)
-                }
-            }
-            return unique.join(' ');
+const _SUPERSCRIPT_TO_DIGIT = {
+    '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
+    '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
+};
+
+// Markdown destinations may contain balanced parentheses and escaped
+// delimiters. Regexes such as `[^)]+` silently truncate those URLs, so all
+// citation/reference parsing shares this small balanced scanner.
+const _readBalancedSpan = (text, start, openChar, closeChar) => {
+    if (typeof text !== 'string' || text[start] !== openChar) return null;
+    let depth = 0;
+    let escaped = false;
+    for (let i = start; i < text.length; i++) {
+        const char = text[i];
+        if (escaped) {
+            escaped = false;
+            continue;
         }
+        if (char === '\\') {
+            escaped = true;
+            continue;
+        }
+        if (char === openChar) depth++;
+        else if (char === closeChar) {
+            depth--;
+            if (depth === 0) return { start, end: i + 1, content: text.slice(start + 1, i) };
+        }
+    }
+    return null;
+};
+
+const _readCitationAt = (text, start) => {
+    const labelSpan = _readBalancedSpan(text, start, '[', ']');
+    if (!labelSpan || text[labelSpan.end] !== '(') return null;
+    const labelMatch = labelSpan.content.match(/^⁽([⁰¹²³⁴⁵⁶⁷⁸⁹]+)⁾$/);
+    if (!labelMatch) return null;
+    const destinationSpan = _readBalancedSpan(text, labelSpan.end, '(', ')');
+    if (!destinationSpan) return null;
+    const superscript = labelMatch[1];
+    const number = superscript.split('').map(char => _SUPERSCRIPT_TO_DIGIT[char] || char).join('');
+    return {
+        start,
+        end: destinationSpan.end,
+        raw: text.slice(start, destinationSpan.end),
+        number,
+        superscript,
+        url: destinationSpan.content,
+    };
+};
+
+// Run a line-local transform only outside Markdown fenced code. Keeping the
+// line ending separate ensures two-space Markdown hard breaks survive exactly.
+const _mapOutsideMarkdownFences = (text, transformLine) => {
+    const source = String(text);
+    const pieces = source.split(/(\r\n|\n|\r)/);
+    let inFence = false;
+    let fenceChar = '';
+    let fenceLength = 0;
+    let absoluteOffset = 0;
+    let output = '';
+    for (let i = 0; i < pieces.length; i += 2) {
+        const line = pieces[i] || '';
+        const newline = pieces[i + 1] || '';
+        const fenceMatch = line.match(/^[ \t]{0,3}(`{3,}|~{3,})(.*)$/);
+        let transformed = line;
+        if (inFence) {
+            if (fenceMatch && fenceMatch[1][0] === fenceChar &&
+                fenceMatch[1].length >= fenceLength && !fenceMatch[2].trim()) {
+                inFence = false;
+                fenceChar = '';
+                fenceLength = 0;
+            }
+        } else if (fenceMatch) {
+            inFence = true;
+            fenceChar = fenceMatch[1][0];
+            fenceLength = fenceMatch[1].length;
+        } else {
+            transformed = transformLine(line, absoluteOffset);
+        }
+        output += transformed + newline;
+        absoluteOffset += line.length + newline.length;
+    }
+    return output;
+};
+
+// Return the spans occupied by Markdown inline-code runs. A closer must use
+// the same number of backticks as its opener, which keeps literal citation
+// examples opaque without treating unmatched prose backticks as code.
+const _inlineCodeSpans = (line) => {
+    const spans = [];
+    let cursor = 0;
+    while (cursor < line.length) {
+        const start = line.indexOf('`', cursor);
+        if (start === -1) break;
+        let openerEnd = start + 1;
+        while (line[openerEnd] === '`') openerEnd++;
+        const runLength = openerEnd - start;
+        let search = openerEnd;
+        let closeEnd = -1;
+        while (search < line.length) {
+            const closeStart = line.indexOf('`', search);
+            if (closeStart === -1) break;
+            let candidateEnd = closeStart + 1;
+            while (line[candidateEnd] === '`') candidateEnd++;
+            if (candidateEnd - closeStart === runLength) {
+                closeEnd = candidateEnd;
+                break;
+            }
+            search = candidateEnd;
+        }
+        if (closeEnd === -1) {
+            cursor = openerEnd;
+            continue;
+        }
+        spans.push({ start, end: closeEnd });
+        cursor = closeEnd;
+    }
+    return spans;
+};
+
+const _citationTokensInLine = (line) => {
+    const tokens = [];
+    const inlineCodeSpans = _inlineCodeSpans(line);
+    let spanIndex = 0;
+    let cursor = 0;
+    while (cursor < line.length) {
+        const start = line.indexOf('[', cursor);
+        if (start === -1) break;
+        while (spanIndex < inlineCodeSpans.length && inlineCodeSpans[spanIndex].end <= start) {
+            spanIndex++;
+        }
+        if (spanIndex < inlineCodeSpans.length &&
+            start >= inlineCodeSpans[spanIndex].start &&
+            start < inlineCodeSpans[spanIndex].end) {
+            cursor = inlineCodeSpans[spanIndex].end;
+            continue;
+        }
+        const citation = _readCitationAt(line, start);
+        if (citation) {
+            tokens.push(citation);
+            cursor = citation.end;
+        } else {
+            cursor = start + 1;
+        }
+    }
+    return tokens;
+};
+
+const normalizeCitationPlacement = (text) => {
+    if (!text || typeof text !== 'string') return text;
+    return _mapOutsideMarkdownFences(text, (line) => {
+        const tokens = _citationTokensInLine(line);
+        if (tokens.length === 0) return line;
+        const replacements = [];
+        for (let i = 0; i < tokens.length;) {
+            let j = i;
+            while (j + 1 < tokens.length) {
+                const between = line.slice(tokens[j].end, tokens[j + 1].start);
+                if (!/^[ \t]*[,;]?[ \t]*$/.test(between)) break;
+                j++;
+            }
+
+            const first = tokens[i];
+            const last = tokens[j];
+            const citations = tokens.slice(i, j + 1).map(token => token.raw).join(' ');
+            let start = first.start;
+            let end = last.end;
+            let replacement = citations;
+            while (start > 0 && /[ \t]/.test(line[start - 1])) start--;
+
+            const after = line.slice(end);
+            const trailingPunctuation = after.match(/^[ \t]*([.!?;:])/);
+            if (trailingPunctuation) {
+                // "claim [cite], [cite]." -> "claim. [cite] [cite]"
+                replacement = trailingPunctuation[1] + ' ' + citations;
+                end += trailingPunctuation[0].length;
+                if (end < line.length && !/[ \t]/.test(line[end])) replacement += ' ';
+            } else if (start > 0) {
+                replacement = ' ' + citations;
+            }
+
+            replacements.push({ start, end, replacement });
+            i = j + 1;
+        }
+
+        let result = line;
+        for (let i = replacements.length - 1; i >= 0; i--) {
+            const item = replacements[i];
+            result = result.slice(0, item.start) + item.replacement + result.slice(item.end);
+        }
+        return result;
+    });
+};
+
+const extractCitationLedger = (text) => {
+    const occurrences = [];
+    if (typeof text !== 'string' || !text) {
+        return { occurrences, byKey: {}, byNumber: {} };
+    }
+    _mapOutsideMarkdownFences(text, (line, absoluteOffset) => {
+        _citationTokensInLine(line).forEach(token => {
+            const key = JSON.stringify([token.number, token.url]);
+            occurrences.push({
+                key,
+                number: token.number,
+                superscript: token.superscript,
+                url: token.url,
+                raw: token.raw,
+                index: absoluteOffset + token.start,
+                end: absoluteOffset + token.end,
+            });
+        });
+        return line;
+    });
+
+    const byKey = {};
+    const byNumber = {};
+    occurrences.forEach(occurrence => {
+        if (!byKey[occurrence.key]) {
+            byKey[occurrence.key] = {
+                key: occurrence.key,
+                number: occurrence.number,
+                url: occurrence.url,
+                count: 0,
+                occurrences: [],
+            };
+        }
+        byKey[occurrence.key].count++;
+        byKey[occurrence.key].occurrences.push(occurrence);
+        if (!byNumber[occurrence.number]) {
+            byNumber[occurrence.number] = { number: occurrence.number, urls: [], count: 0 };
+        }
+        if (!byNumber[occurrence.number].urls.includes(occurrence.url)) {
+            byNumber[occurrence.number].urls.push(occurrence.url);
+        }
+        byNumber[occurrence.number].count++;
+    });
+    return { occurrences, byKey, byNumber };
+};
+
+const validateCitationConservation = (original, candidate) => {
+    const originalLedger = extractCitationLedger(original);
+    const candidateLedger = extractCitationLedger(candidate);
+    const missing = [];
+    const extra = [];
+    const keys = new Set([
+        ...Object.keys(originalLedger.byKey),
+        ...Object.keys(candidateLedger.byKey),
+    ]);
+    keys.forEach(key => {
+        const originalEntry = originalLedger.byKey[key];
+        const candidateEntry = candidateLedger.byKey[key];
+        const originalCount = originalEntry?.count || 0;
+        const candidateCount = candidateEntry?.count || 0;
+        if (candidateCount < originalCount) {
+            missing.push({
+                number: originalEntry.number,
+                url: originalEntry.url,
+                count: originalCount - candidateCount,
+            });
+        } else if (candidateCount > originalCount) {
+            extra.push({
+                number: candidateEntry.number,
+                url: candidateEntry.url,
+                count: candidateCount - originalCount,
+            });
+        }
+    });
+
+    const conflictingMappings = [];
+    const numbers = new Set([
+        ...Object.keys(originalLedger.byNumber),
+        ...Object.keys(candidateLedger.byNumber),
+    ]);
+    numbers.forEach(number => {
+        const originalUrls = originalLedger.byNumber[number]?.urls || [];
+        const candidateUrls = candidateLedger.byNumber[number]?.urls || [];
+        const sameUrls = originalUrls.length === candidateUrls.length &&
+            originalUrls.every(url => candidateUrls.includes(url));
+        if (!sameUrls || originalUrls.length > 1 || candidateUrls.length > 1) {
+            conflictingMappings.push({ number, originalUrls, candidateUrls });
+        }
+    });
+
+    const valid = missing.length === 0 && extra.length === 0 && conflictingMappings.length === 0;
+    return {
+        valid,
+        ok: valid,
+        missing,
+        extra,
+        conflictingMappings,
+        conflicts: conflictingMappings,
+        originalLedger,
+        candidateLedger,
+    };
+};
+
+const _REFERENCE_HEADER_LINE_RE = /^(#{1,6})[ \t]+(?:Source[ \t]+Text[ \t]+References|Accuracy[ \t]+Check[ \t]+References|Verified[ \t]+Sources|Referenced[ \t]+Sources|Sources|References|Bibliography|Works[ \t]+Cited|R\u00e9f\u00e9rences|Sources[ \t]+du[ \t]+texte|Referencias|Quellen)[ \t]*:?[ \t]*$/i;
+const _BILINGUAL_DELIMITER_LINE_RE = /^[ \t]*---[ \t]+ENGLISH[ \t]+TRANSLATION[ \t]+---[ \t]*$/i;
+
+const _findMarkdownLineOutsideFences = (source, linePattern, fromIndex = 0) => {
+    let found = null;
+    _mapOutsideMarkdownFences(source, (line, absoluteOffset) => {
+        if (found || absoluteOffset < fromIndex) return line;
+        const match = line.match(linePattern);
+        if (match) {
+            found = {
+                index: absoluteOffset + (match.index || 0),
+                text: match[0],
+            };
+        }
+        return line;
+    });
+    return found;
+};
+
+const splitReferencesFromBody = (text) => {
+    if (!text) return { body: text || '', references: '' };
+    const source = String(text);
+    const header = _findMarkdownLineOutsideFences(source, _REFERENCE_HEADER_LINE_RE);
+    if (!header) return { body: source, references: '' };
+
+    const delimiter = _findMarkdownLineOutsideFences(
+        source,
+        _BILINGUAL_DELIMITER_LINE_RE,
+        header.index + header.text.length
     );
-    // Step 6: Clean up multiple spaces
-    result = result.replace(/ {2,}/g, ' ');
-    // Step 7: Fix edge case where a line starts with a lone period from step 1 repositioning
-    // "text\n. [⁽¹⁾](url)" should be "text.\n[⁽¹⁾](url)" or merged
-    result = result.replace(/\n\s*\.\s+(\[⁽)/g, '.\n$1');
-    return result;
+    const referencesEnd = delimiter ? delimiter.index : source.length;
+    const references = source.slice(header.index, referencesEnd).trim();
+    const before = source.slice(0, header.index).trim();
+    const after = delimiter ? source.slice(delimiter.index).trim() : '';
+    const body = before && after ? `${before}\n\n${after}` : (before || after);
+    return { body, references };
+};
+
+const _readMarkdownLinkAt = (text, start) => {
+    const titleSpan = _readBalancedSpan(text, start, '[', ']');
+    if (!titleSpan || text[titleSpan.end] !== '(') return null;
+    const destinationSpan = _readBalancedSpan(text, titleSpan.end, '(', ')');
+    if (!destinationSpan) return null;
+    return {
+        start,
+        end: destinationSpan.end,
+        title: titleSpan.content,
+        url: destinationSpan.content,
+        raw: text.slice(start, destinationSpan.end),
+    };
+};
+
+const parseReferenceItems = (referencesText) => {
+    if (!referencesText) return [];
+    const source = String(referencesText);
+    const items = [];
+    const occupied = [];
+    const isOccupied = (index) => occupied.some(range => index >= range.start && index < range.end);
+
+    // Accept both one-entry-per-line and model-glued "1. [...] 2. [...]"
+    // output. Every occurrence is retained with its original visible number.
+    const numberedPrefix = /(^|[\r\n]|[ \t])(\d+)\.[ \t]*/gm;
+    let match;
+    while ((match = numberedPrefix.exec(source)) !== null) {
+        const linkStart = match.index + match[0].length;
+        const link = _readMarkdownLinkAt(source, linkStart);
+        if (!link) continue;
+        items.push({
+            num: match[2],
+            title: link.title.trim(),
+            url: link.url.trim(),
+            raw: source.slice(match.index + match[1].length, link.end),
+            index: match.index + match[1].length,
+        });
+        occupied.push({ start: match.index, end: link.end });
+        numberedPrefix.lastIndex = link.end;
+    }
+
+    // Preserve numbered plain-text references too. Do not deduplicate: doing
+    // so changes the visible number-to-source contract.
+    const lines = source.match(/[^\r\n]*(?:\r\n|\n|\r|$)/g) || [];
+    let lineOffset = 0;
+    lines.forEach(rawLine => {
+        const line = rawLine.replace(/(?:\r\n|\n|\r)$/, '');
+        const plain = line.match(/^[ \t]*(\d+)\.[ \t]+(.+?)[ \t]*$/);
+        if (plain && !isOccupied(lineOffset + line.indexOf(plain[1]))) {
+            items.push({
+                num: plain[1],
+                title: plain[2].trim(),
+                url: '',
+                raw: line.trim(),
+                index: lineOffset + line.indexOf(plain[1]),
+            });
+            occupied.push({ start: lineOffset, end: lineOffset + line.length });
+        }
+        lineOffset += rawLine.length;
+    });
+
+    // Finally retain unnumbered Markdown-link entries that are not part of an
+    // already parsed numbered item.
+    for (let cursor = 0; cursor < source.length;) {
+        const start = source.indexOf('[', cursor);
+        if (start === -1) break;
+        const link = _readMarkdownLinkAt(source, start);
+        if (!link) {
+            cursor = start + 1;
+            continue;
+        }
+        if (!isOccupied(start)) {
+            items.push({
+                num: '',
+                title: link.title.trim(),
+                url: link.url.trim(),
+                raw: link.raw,
+                index: start,
+            });
+        }
+        cursor = link.end;
+    }
+    return items.sort((a, b) => a.index - b.index);
 };
 
 // ── Markdown block-boundary repair (2026-07-17) ───────────────────────────
@@ -331,21 +703,55 @@ const normalizeMarkdownBlockBoundaries = (text) => {
 
 const filterEducationalSources = (chunks) => {
     if (!chunks || !Array.isArray(chunks)) return chunks;
-    const rejectUrl = [/youtube\.com\/watch/i, /youtu\.be\//i, /imdb\.com/i, /spotify\.com/i, /tiktok\.com/i, /instagram\.com/i, /facebook\.com/i, /twitter\.com|x\.com/i, /reddit\.com/i, /pinterest\.com/i, /amazon\.com\/(?!science)/i, /ebay\.com/i, /yelp\.com/i, /tripadvisor\.com/i, /rottentomatoes\.com/i, /fandom\.com/i, /letterboxd\.com/i];
+    const rejectedHosts = [
+        'youtu.be', 'imdb.com', 'spotify.com', 'tiktok.com', 'instagram.com',
+        'facebook.com', 'twitter.com', 'x.com', 'reddit.com', 'pinterest.com',
+        'ebay.com', 'yelp.com', 'tripadvisor.com', 'rottentomatoes.com',
+        'fandom.com', 'letterboxd.com',
+    ];
+    const hostnameMatches = (hostname, domain) =>
+        hostname === domain || hostname.endsWith(`.${domain}`);
+    const rejectSourceUrl = (uri) => {
+        if (!uri || typeof uri !== 'string') return false;
+        let parsed;
+        try {
+            parsed = new URL(uri);
+        } catch (_error) {
+            try {
+                parsed = new URL(`https://${uri}`);
+            } catch (_invalidUrl) {
+                return false;
+            }
+        }
+        const hostname = parsed.hostname.toLowerCase().replace(/\.$/, '');
+        if (hostnameMatches(hostname, 'youtube.com') &&
+            /^\/watch(?:\/|$)/i.test(parsed.pathname)) return true;
+        if (hostnameMatches(hostname, 'amazon.com') &&
+            !/^\/science(?:\/|$)/i.test(parsed.pathname)) return true;
+        return rejectedHosts.some(domain => hostnameMatches(hostname, domain));
+    };
     const rejectTitle = [/official\s*(music\s*)?video/i, /\(official\s*video\)/i, /\blyrics?\b/i, /\bremaster(ed)?\b/i, /\bmovie\s*trailer\b/i, /\bfull\s*movie\b/i];
     return chunks.filter(chunk => {
         const uri = chunk?.web?.uri || '';
         const title = chunk?.web?.title || '';
-        for (const p of rejectUrl) { if (p.test(uri)) return false; }
+        if (rejectSourceUrl(uri)) return false;
         for (const p of rejectTitle) { if (p.test(title)) return false; }
         return true;
     });
 };
 
+const _educationalSourceEntries = (chunks) => {
+    if (!Array.isArray(chunks)) return [];
+    const accepted = new Set(filterEducationalSources(chunks));
+    return chunks
+        .map((chunk, originalIndex) => ({ chunk, originalIndex }))
+        .filter(entry => accepted.has(entry.chunk));
+};
+
 const generateBibliographyString = (metadata, citationStyle = 'Links Only', title = 'Referenced Sources') => {
     if (!metadata || !metadata.groundingChunks || metadata.groundingChunks.length === 0) return "";
-    const chunks = filterEducationalSources(metadata.groundingChunks);
-    if (chunks.length === 0) return "";
+    const entries = _educationalSourceEntries(metadata.groundingChunks);
+    if (entries.length === 0) return "";
     // Honesty (2026-06-24): these are raw AI-search grounding chunks — Gemini can ground on a mismatched
     // page and the links are often ephemeral redirects. NOT "Verified Sources" (the old default — it
     // overclaimed); carry a verify-before-citing caveat so a teacher never hands a student an unverified
@@ -353,8 +759,8 @@ const generateBibliographyString = (metadata, citationStyle = 'Links Only', titl
     // this module, so the caveat is the English source string (the content_engine path carries the i18n key).
     const _caveat = 'These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it.';
     let bib = `\n\n### ${title}\n\n*${_caveat}*\n\n`;
-    chunks.forEach((chunk, i) => {
-        const num = i + 1;
+    entries.forEach(({ chunk, originalIndex }) => {
+        const num = originalIndex + 1;
         const title = chunk.web?.title || "Unknown Source";
         const uri = chunk.web?.uri || "#";
         bib += `${num}. [${title}](${uri})\n\n`;
@@ -362,177 +768,184 @@ const generateBibliographyString = (metadata, citationStyle = 'Links Only', titl
     return bib;
 };
 
-// processGrounding inserts citation markers ⁽¹⁾⁽²⁾ into AI-generated text using
-// Gemini's groundingSupports + groundingChunks metadata, then optionally appends
-// a Verified Sources bibliography. Two paths:
-//   (a) hasSupports=false → fall back to one citation cluster per paragraph
-//   (b) hasSupports=true → use endIndex offsets, walk past trailing punctuation
-//       and existing markdown links, snap to sentence end (non-JSON) so the
-//       cite reads as "...claim.[¹]" not "...cl[¹]aim."
-// Pure: no React state, no DOM. Depends on filterEducationalSources +
-// generateBibliographyString (in this module) and toSuperscript (file head).
-const processGrounding = (text, metadata, citationStyle = 'Links Only', isJson = false, includeBibliography = true) => {
-    if (!metadata) return text;
-    const hasChunks = metadata.groundingChunks && metadata.groundingChunks.length > 0;
-    const hasSupports = metadata.groundingSupports && metadata.groundingSupports.length > 0;
-    if (!hasChunks) return text;
-    let newText = text;
-    const chunks = filterEducationalSources(metadata.groundingChunks);
-    if (chunks.length === 0) return text;
-    if (!hasSupports) {
-        const paragraphs = text.split(/\n\n+/);
-        const citationsPerParagraph = Math.max(1, Math.ceil(chunks.length / paragraphs.length));
-        let chunkIdx = 0;
-        newText = paragraphs.map((para, pIdx) => {
-            if (!para.trim() || para.trim().startsWith('#')) return para;
-            const citationsForPara = [];
-            for (let i = 0; i < citationsPerParagraph && chunkIdx < chunks.length; i++, chunkIdx++) {
-                const chunk = chunks[chunkIdx];
-                const uri = chunk?.web?.uri;
-                const label = `⁽${toSuperscript(chunkIdx + 1)}⁾`;
-                citationsForPara.push(uri ? `[${label}](${uri})` : label);
-            }
-            if (citationsForPara.length === 0) return para;
-            const trimmed = para.trimEnd();
-            const marker = ' ' + citationsForPara.join(' ');
-            return trimmed + marker;
-        }).join('\n\n');
-        if (includeBibliography) {
-            newText += generateBibliographyString(metadata, citationStyle);
-        }
-        return newText;
+// Gemini Segment offsets are UTF-8 byte offsets scoped to a content part.
+// Convert only exact byte boundaries; an offset in the middle of a multibyte
+// code point is invalid and must never be guessed.
+const _utf8ByteLength = (value) => {
+    const text = String(value || '');
+    let bytes = 0;
+    for (let i = 0; i < text.length;) {
+        const codePoint = text.codePointAt(i);
+        if (codePoint <= 0x7f) bytes += 1;
+        else if (codePoint <= 0x7ff) bytes += 2;
+        else if (codePoint <= 0xffff) bytes += 3;
+        else bytes += 4;
+        i += codePoint > 0xffff ? 2 : 1;
     }
-    let supports = metadata.groundingSupports.map(s => ({ ...s, adjustedIndex: s.segment.endIndex }));
-    if (!isJson) {
-        supports.forEach(support => {
-            let idx = support.adjustedIndex;
-            if (idx === undefined) return;
-            let lineStart = text.lastIndexOf('\n', idx - 1);
-            if (lineStart === -1) lineStart = 0;
-            else lineStart += 1;
-            let lineEnd = text.indexOf('\n', idx);
-            if (lineEnd === -1) lineEnd = text.length;
-            const lineContent = text.substring(lineStart, lineEnd);
-            const isList = /^[\s]*([-*•]|\d+\.)/.test(lineContent);
-            const isDefinition = /^[\s]*(\*\*|').+?(\*\*|'):/.test(lineContent) || /^[\s]*[^:\n]+:/.test(lineContent);
-            if (isList || isDefinition) {
-                 let newIdx = lineEnd;
-                 while (newIdx > lineStart && /\s/.test(text[newIdx - 1])) {
-                     newIdx--;
-                 }
-                 support.adjustedIndex = newIdx;
-            }
-        });
-    }
-    const insertionMap = new Map();
-    supports.forEach(support => {
-        if (!support.groundingChunkIndices || support.groundingChunkIndices.length === 0) return;
-        let idx = support.adjustedIndex;
-        const originalLen = text.length;
-        if (idx !== undefined && idx <= originalLen) {
-            while (idx < originalLen && /[\wÀ-ÿ]/.test(text[idx])) {
-                idx++;
-            }
-            if (idx < originalLen && text[idx] === ']') {
-                    if (idx + 1 < originalLen && text[idx+1] === '(') {
-                        let tempIdx = idx + 2;
-                        let openParens = 1;
-                        while (tempIdx < originalLen && openParens > 0) {
-                            if (text[tempIdx] === '(') openParens++;
-                            if (text[tempIdx] === ')') openParens--;
-                            tempIdx++;
-                        }
-                        idx = tempIdx;
-                    }
-            }
-            let scanning = true;
-            while (scanning && idx < originalLen) {
-                const char = text[idx];
-                if (isJson && char === '"') {
-                    if (idx === 0 || text[idx-1] !== '') {
-                        scanning = false;
-                        break;
-                    }
-                }
-                if (/[.,;!?:)\]'"”’“*#_]/.test(char)) {
-                    idx++;
-                } else if (char === ' ') {
-                    let nextIdx = idx + 1;
-                    while (nextIdx < originalLen && text[nextIdx] === ' ') nextIdx++;
-                    if (nextIdx < originalLen && /[.,;!?:)\]'"”’“*#_]/.test(text[nextIdx])) {
-                        idx = nextIdx;
-                    } else {
-                        scanning = false;
-                    }
-                } else {
-                    scanning = false;
-                }
-            }
-            if (!isJson) {
-                const lineEnd = text.indexOf('\n', idx);
-                const searchBoundary = lineEnd === -1 ? originalLen : lineEnd;
-                let sentenceEndIdx = idx;
-                while (sentenceEndIdx < searchBoundary) {
-                    const char = text[sentenceEndIdx];
-                    if (/[.!?]/.test(char)) {
-                        const nextChar = text[sentenceEndIdx + 1];
-                        if (!nextChar || /[\s\n"')}\]]/.test(nextChar)) {
-                            let finalIdx = sentenceEndIdx + 1;
-                            while (finalIdx < searchBoundary && /['"")}\]_*]/.test(text[finalIdx])) {
-                                finalIdx++;
-                            }
-                            idx = finalIdx;
-                            break;
-                        }
-                    }
-                    sentenceEndIdx++;
-                }
-            }
-            if (isJson) {
-                const charAtPos = text[idx];
-                if (/[\s,}\]]/.test(charAtPos)) {
-                    let backTrack = idx - 1;
-                    while (backTrack >= 0 && /\s/.test(text[backTrack])) {
-                        backTrack--;
-                    }
-                    if (backTrack >= 0 && text[backTrack] === '"') {
-                        idx = backTrack;
-                    }
-                }
-            }
-            if (!isJson) {
-                let lineStart = text.lastIndexOf('\n', idx - 1);
-                if (lineStart === -1) lineStart = 0;
-                else lineStart += 1;
-                const linePrefix = text.substring(lineStart, idx);
-                if (/^\s*#/.test(linePrefix)) {
-                    return;
-                }
-            }
-            if (!insertionMap.has(idx)) {
-                insertionMap.set(idx, new Set());
-            }
-            const set = insertionMap.get(idx);
-            support.groundingChunkIndices.forEach(i => set.add(i));
-        }
-    });
-    const sortedInsertions = Array.from(insertionMap.entries()).sort((a, b) => b[0] - a[0]);
-    sortedInsertions.forEach(([idx, chunkIndicesSet]) => {
-        const chunkIndices = Array.from(chunkIndicesSet).sort((a, b) => a - b);
-        const marker = chunkIndices.map(i => {
-            const chunk = chunks[i];
-            const uri = chunk?.web?.uri;
-            const label = `⁽${toSuperscript(i + 1)}⁾`;
-            return uri ? `[${label}](${uri})` : label;
-        }).join(' ');
-        newText = newText.slice(0, idx) + marker + newText.slice(idx);
-    });
-    if (includeBibliography) {
-        newText += generateBibliographyString(metadata, citationStyle);
-    }
-    return newText;
+    return bytes;
 };
 
+const _utf8ByteOffsetToCodeUnitIndex = (value, byteOffset) => {
+    if (!Number.isSafeInteger(byteOffset) || byteOffset < 0) return null;
+    const text = String(value || '');
+    let bytes = 0;
+    for (let i = 0; i < text.length;) {
+        if (bytes === byteOffset) return i;
+        const codePoint = text.codePointAt(i);
+        const codePointBytes = codePoint <= 0x7f ? 1 :
+            (codePoint <= 0x7ff ? 2 : (codePoint <= 0xffff ? 3 : 4));
+        if (bytes + codePointBytes > byteOffset) return null;
+        bytes += codePointBytes;
+        i += codePoint > 0xffff ? 2 : 1;
+    }
+    return bytes === byteOffset ? text.length : null;
+};
+
+const _resolveGroundingParts = (text, metadata, textParts) => {
+    const source = String(text || '');
+    const suppliedParts = Array.isArray(textParts) ? textParts :
+        (Array.isArray(metadata?.__textParts) ? metadata.__textParts : null);
+    if (!suppliedParts) {
+        return { valid: true, partTexts: [source], partPrefixes: [0], explicit: false };
+    }
+
+    const partTexts = [];
+    let valid = true;
+    suppliedParts.forEach((part, arrayIndex) => {
+        const partIndex = Number.isSafeInteger(part?.partIndex) ? part.partIndex : arrayIndex;
+        if (partIndex < 0 || partTexts[partIndex] !== undefined) {
+            valid = false;
+            return;
+        }
+        partTexts[partIndex] = typeof part === 'string' ? part :
+            (typeof part?.text === 'string' ? part.text : '');
+    });
+    for (let i = 0; i < partTexts.length; i++) {
+        if (partTexts[i] === undefined) partTexts[i] = '';
+    }
+
+    const partPrefixes = [];
+    let prefix = 0;
+    partTexts.forEach((partText, index) => {
+        partPrefixes[index] = prefix;
+        prefix += partText.length;
+    });
+    if (partTexts.join('') !== source) valid = false;
+    return { valid, partTexts, partPrefixes, explicit: true };
+};
+
+const _advanceGroundingBoundary = (partText, initialIndex, isJson) => {
+    let index = initialIndex;
+    if (isJson) {
+        // Keep the marker inside a JSON string; punctuation is part of the
+        // supported segment contract and must not be searched for heuristically.
+        return index;
+    }
+
+    // If Gemini supports the visible label of an immediately following
+    // Markdown link, move over that one balanced destination only.
+    if (partText[index] === ']' && partText[index + 1] === '(') {
+        const destination = _readBalancedSpan(partText, index + 1, '(', ')');
+        if (destination) index = destination.end;
+    }
+
+    // Consume only punctuation/closing delimiters contiguous with the exact
+    // supported span. Never cross whitespace or scan for a later sentence end.
+    while (index < partText.length && /[.,;!?:]/.test(partText[index])) index++;
+    const supportedEndsWithPunctuation = index > initialIndex || /[.,;!?:]$/.test(partText.slice(0, initialIndex));
+    if (supportedEndsWithPunctuation) {
+        while (index < partText.length && /['"”’)}\]_*]/.test(partText[index])) index++;
+    }
+    return index;
+};
+
+const _validatedSupportInsertionIndex = (support, partResolution, isJson) => {
+    if (!partResolution.valid || !support?.segment) return null;
+    const segment = support.segment;
+    const partIndex = segment.partIndex === undefined ? 0 : segment.partIndex;
+    if (!Number.isSafeInteger(partIndex) || partIndex < 0 || partIndex >= partResolution.partTexts.length) return null;
+    if (!partResolution.explicit && partIndex !== 0) return null;
+
+    const partText = partResolution.partTexts[partIndex];
+    const endByte = segment.endIndex;
+    const endIndex = _utf8ByteOffsetToCodeUnitIndex(partText, endByte);
+    if (endIndex === null) return null;
+
+    let startByte = segment.startIndex;
+    if (startByte === undefined && typeof segment.text === 'string') {
+        startByte = endByte - _utf8ByteLength(segment.text);
+    }
+    if (startByte !== undefined) {
+        const startIndex = _utf8ByteOffsetToCodeUnitIndex(partText, startByte);
+        if (startIndex === null || startIndex > endIndex) return null;
+        if (typeof segment.text === 'string' && partText.slice(startIndex, endIndex) !== segment.text) return null;
+    } else if (typeof segment.text === 'string') {
+        return null;
+    }
+
+    const adjustedPartIndex = _advanceGroundingBoundary(partText, endIndex, isJson);
+    return partResolution.partPrefixes[partIndex] + adjustedPartIndex;
+};
+
+// Insert citations only where Gemini supplied a validated support span. If a
+// search provider supplies sources without supports, retain any explicit
+// [Source N] tokens for the content engine and optionally append the source
+// list; never fabricate claim-level attribution by distributing links.
+const processGrounding = (text, metadata, citationStyle = 'Links Only', isJson = false, includeBibliography = true, textParts) => {
+    if (!metadata || typeof text !== 'string') return text;
+    const rawChunks = Array.isArray(metadata.groundingChunks) ? metadata.groundingChunks : [];
+    if (rawChunks.length === 0) return text;
+    const entries = _educationalSourceEntries(rawChunks);
+    if (entries.length === 0) return text;
+    const entriesByOriginalIndex = new Map(entries.map(entry => [entry.originalIndex, entry]));
+    const supports = Array.isArray(metadata.groundingSupports) ? metadata.groundingSupports : [];
+
+    if (supports.length === 0) {
+        return includeBibliography ? text + generateBibliographyString(metadata, citationStyle) : text;
+    }
+
+    const partResolution = _resolveGroundingParts(text, metadata, textParts);
+    const insertionMap = new Map();
+    supports.forEach(support => {
+        const insertionIndex = _validatedSupportInsertionIndex(support, partResolution, isJson);
+        if (insertionIndex === null || insertionIndex < 0 || insertionIndex > text.length) return;
+        if (!isJson) {
+            const lineStart = text.lastIndexOf('\n', Math.max(0, insertionIndex - 1)) + 1;
+            if (/^\s*#/.test(text.slice(lineStart, insertionIndex))) return;
+        }
+        const supportedIndices = Array.isArray(support.groundingChunkIndices) ? support.groundingChunkIndices : [];
+        supportedIndices.forEach(originalIndex => {
+            if (!Number.isSafeInteger(originalIndex) || !entriesByOriginalIndex.has(originalIndex)) return;
+            if (!insertionMap.has(insertionIndex)) insertionMap.set(insertionIndex, new Set());
+            insertionMap.get(insertionIndex).add(originalIndex);
+        });
+    });
+
+    let newText = text;
+    const sortedInsertions = Array.from(insertionMap.entries()).sort((a, b) => b[0] - a[0]);
+    sortedInsertions.forEach(([index, originalIndices]) => {
+        const marker = Array.from(originalIndices)
+            .sort((a, b) => a - b)
+            .map(originalIndex => {
+                const entry = entriesByOriginalIndex.get(originalIndex);
+                const label = `⁽${toSuperscript(originalIndex + 1)}⁾`;
+                const uri = entry.chunk?.web?.uri;
+                return uri ? `[${label}](${uri})` : label;
+            })
+            .join(' ');
+        if (!marker) return;
+
+        const before = newText[index - 1] || '';
+        const after = newText[index] || '';
+        const leadingSpace = index > 0 && !/\s/.test(before) ? ' ' : '';
+        const jsonCloser = isJson && /["'}\]]/.test(after);
+        const trailingSpace = index < newText.length && !/\s/.test(after) && !jsonCloser ? ' ' : '';
+        newText = newText.slice(0, index) + leadingSpace + marker + trailingSpace + newText.slice(index);
+    });
+
+    if (includeBibliography) newText += generateBibliographyString(metadata, citationStyle);
+    return newText;
+};
 const parseTaggedContent = (text) => {
     if (!text) return [];
     text = text.replace(/<([nvad])>([^<]*?)(?=<[nvad]>|<\/|\n|$)/g, (match, tag, content) => {
@@ -871,6 +1284,10 @@ const createTextPipelineHelpers = () => ({
   processMathHTML,
   sanitizeTruncatedCitations,
   normalizeCitationPlacement,
+  extractCitationLedger,
+  validateCitationConservation,
+  splitReferencesFromBody,
+  parseReferenceItems,
   normalizeMarkdownBlockBoundaries,
   filterEducationalSources,
   generateBibliographyString,

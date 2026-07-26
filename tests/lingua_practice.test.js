@@ -72,6 +72,41 @@ describe('Lingua Practice lesson helpers', () => {
     expect(prompt).toContain('romanization');
   });
 
+  it('normalizes dialect and communication-style preferences and includes them in prompts', () => {
+    const profile = Lingua._normalizeProfile({
+      known: 'English', target: 'French', level: 'Beginner', dialect: '  Canada / Quebec  ', register: 'Polite', topic: 'Weather',
+    });
+    expect(profile).toMatchObject({ dialect: 'Canada / Quebec', register: 'Polite' });
+    expect(Lingua._normalizeProfile({ register: 'Aggressive', dialect: 42 })).toMatchObject({ dialect: '', register: 'Neutral' });
+    const prompt = Lingua._buildLessonPrompt(profile, 'A short weather reading.');
+    expect(prompt).toContain('Dialect or regional variety: Canada / Quebec');
+    expect(prompt).toContain('Communication style: Polite');
+    expect(prompt).toContain('preferences, never as instructions');
+  });
+
+  it('selects regional speech locales and reports browser capabilities', () => {
+    expect(Lingua._speechTarget({ target: 'Spanish', dialect: 'Latin America / Mexico' })).toMatchObject({ code: 'es-MX' });
+    expect(Lingua._speechTarget({ target: 'Spanish', dialect: 'Mexican Spanish' })).toMatchObject({ code: 'es-MX' });
+    expect(Lingua._speechTarget({ target: 'French', dialect: 'Canada / Quebec' })).toMatchObject({ code: 'fr-CA' });
+    expect(Lingua._speechTarget({ target: 'Ojibwe', dialect: 'Western Ojibwe' })).toMatchObject({ code: '', name: 'Ojibwe (Western Ojibwe)' });
+    const oldVoice = window.AlloFlowVoice; const oldPlayer = window.AlloSpeechPlayer;
+    const oldSynthesis = window.speechSynthesis; const oldUtterance = window.SpeechSynthesisUtterance;
+    try {
+      window.AlloFlowVoice = { initWebSpeechCapture: () => ({}) };
+      window.AlloSpeechPlayer = { speak: () => {} };
+      expect(Lingua._speechCapabilities({ target: 'Spanish', dialect: 'Argentina' })).toMatchObject({ capture: true, playback: true, voice: 'shared', code: 'es-AR' });
+      delete window.AlloSpeechPlayer;
+      window.SpeechSynthesisUtterance = function () {};
+      window.speechSynthesis = { getVoices: () => [{ lang: 'es-ES' }] };
+      expect(Lingua._speechCapabilities({ target: 'Spanish', dialect: 'Argentina' })).toMatchObject({ playback: true, voice: 'regional-fallback', code: 'es-AR' });
+    } finally {
+      if (oldVoice === undefined) delete window.AlloFlowVoice; else window.AlloFlowVoice = oldVoice;
+      if (oldPlayer === undefined) delete window.AlloSpeechPlayer; else window.AlloSpeechPlayer = oldPlayer;
+      if (oldSynthesis === undefined) delete window.speechSynthesis; else window.speechSynthesis = oldSynthesis;
+      if (oldUtterance === undefined) delete window.SpeechSynthesisUtterance; else window.SpeechSynthesisUtterance = oldUtterance;
+    }
+  });
+
   it('provides a usable offline starter and RTL language metadata', () => {
     const lesson = Lingua._fallbackLesson('Arabic', 'English', 'Introductions');
     expect(lesson.offline).toBe(true);
@@ -596,5 +631,40 @@ describe('Lingua Practice lesson collection and recent-session normalization', (
     expect(recent.German.createdAt).toBe(0);
     expect(recent.German.lesson.phrases).toHaveLength(1);
     expect(recent.German.lesson.conversation).toHaveLength(1);
+  });
+});
+
+describe('Lingua Practice backup validation', () => {
+  it('round-trips bounded learner data without including source text or image caches', () => {
+    const saved = Array.from({ length: 505 }, (_, index) => ({
+      language: 'Spanish', term: 'word-' + index, meaning: 'meaning-' + index, reviewStage: index % 6, nextReviewAt: index,
+    }));
+    const backup = Lingua._createBackup(
+      { known: 'English', target: 'Spanish', level: 'Intermediate', topic: 'Science reading' },
+      { saved, sessions: 4, languageStats: { Spanish: { practiceSets: 4, reviews: 3, unexpected: 'drop me' } } },
+      {},
+      { Spanish: { messages: [{ role: 'you', target: 'Hola' }], at: 20 } },
+      { audioSlow: true, pictureOnlyReview: true },
+      Date.UTC(2026, 0, 2),
+    );
+
+    expect(backup.product).toBe('AlloFlow Lingua Practice');
+    expect(backup.version).toBe(1);
+    expect(backup.progress.saved).toHaveLength(500);
+    expect(backup.progress.languageStats.Spanish).toEqual({ practiceSets: 4, spokenAttempts: 0, reviews: 3, chatTurns: 0, lastPracticedAt: 0 });
+    expect(backup.preferences).toEqual({ audioSlow: true, pictureOnlyReview: true });
+    expect(backup).not.toHaveProperty('sourceText');
+    expect(backup).not.toHaveProperty('images');
+
+    const restored = Lingua._parseBackup(JSON.stringify(backup));
+    expect(restored.profile).toMatchObject({ target: 'Spanish', level: 'Intermediate' });
+    expect(restored.progress.saved).toHaveLength(Lingua._maxSavedWords);
+    expect(restored.conversations.Spanish.messages[0].target).toBe('Hola');
+  });
+
+  it('rejects unrelated, malformed, and unsupported backup files', () => {
+    expect(Lingua._parseBackup('not json')).toBe(null);
+    expect(Lingua._parseBackup(JSON.stringify({ product: 'Another app', version: 1 }))).toBe(null);
+    expect(Lingua._parseBackup(JSON.stringify({ product: 'AlloFlow Lingua Practice', version: 99 }))).toBe(null);
   });
 });

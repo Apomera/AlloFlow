@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1103-a-practical-approach-to-understanding-music-theory-1st",
+  "title": "A Practical Approach to Understanding Music Theory - 1st",
+  "description": "A Practical Approach to Understanding Music Theory is a textbook designed for the non-music performance major or music business/audio engineer who needs to professionally interface with musicians without needing to write or compose music. The material is designed around a spiral learning model in which a very simple straightforward concept is introduced, defined and explained. From this point and forward the book adds one element of music theory after another until a broad base of musical understanding and application is achieved. Even though the spiral learning model has a linear approach, the book is also laid out in a manner that any music student or hobbyist may treat it as a research manual to search out specific explanations of musical situations they encounter. This text is meant to be an all-inclusive explanation of how music is created, graphically distributed and performed for those who are not majoring in music theory, performance or education. It is aimed at those who are seeking a career in audio engineering, music business, artist representation, minoring in music, teaching lessons in a local community or someone who just wants to learn to play and understand music on a deeper level. The material is designed around a spiral learning model in which a very simple straightforward concept is introduced, defined and explained. From this point and forward the book adds one element of music theory after another until a broad base of musical understanding and application is achieved. Even though the spiral learning model has a linear approach, the book is also laid out in a manner that any music student or hobbyist may treat it as a research manual to search out specific explanations of musical situations they encounter. This text is meant to be an all-inclusive explanation of how music is created, graphically distributed and performed for those who are not majoring in music theory, performance or education. It is aimed at those who are seeking a career in audio engineering, music business, artist representation, minoring in music, teaching lessons in a local community or someone who just wants to learn to play and understand music on a deeper level.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Arts"
+  ],
+  "authors": [
+    "Charles Brooks - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of North Alabama",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-practical-approach-to-understanding-music-theory"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A Practical Approach to Understanding Music Theory is a textbook designed for the non-music performance major or music business/audio engineer who needs to professionally interface with musicians without needing to write or compose music. The material is designed around a spiral learning model in which a very simple straightforward concept is introduced, defined and explained. From this point and forward the book adds one element of music theory after another until a broad base of musical understanding and application is achieved. Even though the spiral learning model has a linear approach, the book is also laid out in a manner that any music student or hobbyist may treat it as a research manual to search out specific explanations of musical situations they encounter. This text is meant to be an all-inclusive explanation of how music is created, graphically distributed and performed for those who are not majoring in music theory, performance or education. It is aimed at those who are seeking a career in audio engineering, music business, artist representation, minoring in music, teaching lessons in a local community or someone who just wants to learn to play and understand music on a deeper level. The material is designed around a spiral learning model in which a very simple straightforward concept is introduced, defined and explained. From this point and forward the book adds one element of music theory after another until a broad base of musical understanding and application is achieved. Even though the spiral learning model has a linear approach, the book is also laid out in a manner that any music student or hobbyist may treat it as a research manual to search out specific explanations of musical situations they encounter. This text is meant to be an all-inclusive explanation of how music is created, graphically distributed and performed for those who are not majoring in music theory, performance or education. It is aimed at those who are seeking a career in audio engineering, music business, artist representation, minoring in music, teaching lessons in a local community or someone who just wants to learn to play and understand music on a deeper level."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2022."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 379
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1103",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

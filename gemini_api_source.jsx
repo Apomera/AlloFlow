@@ -461,7 +461,7 @@ const createGeminiAPI = (deps) => {
       if (!apiKey && !_isCanvasEnv) {
         console.warn('[callGemini] No API key available — skipping request.');
         if (jsonMode) return "{}";
-        if (useSearch) return { text: "", groundingMetadata: null };
+        if (useSearch) return { text: "", textParts: [], groundingMetadata: null };
         return "";
       }
       const _buildUrl = (model) => { console.log(`[callGemini] ✉ Using model: ${model}`); return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`; };
@@ -584,7 +584,8 @@ const createGeminiAPI = (deps) => {
         // ones are the model's prose; the code/result parts are reasoning that
         // the model already incorporated into the prose).
         const _parts = data.candidates?.[0]?.content?.parts || [];
-        let text = _parts.map(p => (typeof p.text === 'string' ? p.text : '')).join('');
+        const textParts = _parts.map(p => (typeof p.text === 'string' ? p.text : null));
+        let text = textParts.map(part => part || '').join('');
         if (!text && _parts[0]?.text !== undefined) text = _parts[0].text;
         if (data.candidates?.[0]?.finishReason) {
              const reason = data.candidates[0].finishReason;
@@ -607,11 +608,12 @@ const createGeminiAPI = (deps) => {
                  throw new Error(`Generation Stopped: ${reason}`);
              }
         }
-        // Defensive cleanup: web-search grounding or the LLM cleanup round-trip at
-        // content_engine_source.jsx:760 sometimes leaves a broken markdown link near the
-        // end of the text (e.g. "[¹⁴](https://www.webmd." + orphan "\n#"). Iterate so
+        // Defensive cleanup for non-grounded prose. Search-grounded text must remain
+        // byte-for-byte aligned with groundingSupports and is cleaned only after citation
+        // anchoring in the content engine. Other responses can still end with a broken
+        // markdown link (e.g. "[¹⁴](https://www.webmd." + orphan "\n#"). Iterate so
         // the trailing-link $ anchor keeps reaching the actual tail after each peel.
-        if (text && typeof text === 'string' && !jsonMode) {
+        if (text && typeof text === 'string' && !jsonMode && !useSearch) {
             const before = text.length;
             let prev = null;
             while (prev !== text) {
@@ -631,6 +633,7 @@ const createGeminiAPI = (deps) => {
         if (useSearch) {
             return {
                 text: text || "",
+                textParts,
                 groundingMetadata: (_isCanvasEnv && _canvasSearchMetadata)
                     ? _canvasSearchMetadata
                     : data.candidates?.[0]?.groundingMetadata
@@ -655,7 +658,7 @@ const createGeminiAPI = (deps) => {
         if (cls.kind === 'refusal') {
           warnLog("Gemini Model Refusal caught in callGemini (suppressed crash):", _diagnosticErrorSummary(err));
           if (jsonMode) return "{}";
-          if (useSearch) return { text: "Definition unavailable due to content safety filters.", groundingMetadata: null };
+          if (useSearch) return { text: "Definition unavailable due to content safety filters.", textParts: ["Definition unavailable due to content safety filters."], groundingMetadata: null };
           return "Content unavailable due to safety filters.";
         }
         // Quota / auth / config get the banner + a typed error so call-sites

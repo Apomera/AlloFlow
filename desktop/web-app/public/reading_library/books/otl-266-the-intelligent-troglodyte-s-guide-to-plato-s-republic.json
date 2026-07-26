@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-266-the-intelligent-troglodyte-s-guide-to-plato-s-republic",
+  "title": "The Intelligent Troglodyte’s Guide to Plato’s Republic",
+  "description": "The Republic of Plato is one of the classic gateway texts into the study and practice of philosophy, and it is just the sort of book that has been able to arrest and redirect lives. How it has been able to do this, and whether or not it will be able to do this in your own case, is something you can only discover for yourself. The present guidebook aims to help a person get fairly deep, fairly quickly, into the project. It divides the dialogue into 96 sections and provides commentary on each section as well as questions for reflection and exploration. It is organized with a table of contents and is stitched together with a system of navigating bookmarks. Links to external sites such as the Perseus Classical Library are used throughout. This book is suitable for college courses or independent study.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Philosophy"
+  ],
+  "authors": [
+    "Douglas Drabkin - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "A.T. Still University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-intelligent-troglodyte-s-guide-to-plato-s-republic"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Republic of Plato is one of the classic gateway texts into the study and practice of philosophy, and it is just the sort of book that has been able to arrest and redirect lives. How it has been able to do this, and whether or not it will be able to do this in your own case, is something you can only discover for yourself. The present guidebook aims to help a person get fairly deep, fairly quickly, into the project. It divides the dialogue into 96 sections and provides commentary on each section as well as questions for reflection and exploration. It is organized with a table of contents and is stitched together with a system of navigating bookmarks. Links to external sites such as the Perseus Classical Library are used throughout. This book is suitable for college courses or independent study."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 167
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "266",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

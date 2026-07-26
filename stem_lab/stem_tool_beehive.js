@@ -2671,7 +2671,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardStemXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
-      var isDark = ctx.isDark;
+      var isContrast = !!ctx.isContrast;
+      var isDark = !!ctx.isDark || isContrast;
       var callGemini = ctx.callGemini;
       var gradeLevel = ctx.gradeLevel;
 

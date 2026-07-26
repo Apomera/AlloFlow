@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1194-principles-of-epidemiology",
+  "title": "Principles of Epidemiology",
+  "description": "Most books about epidemiology are written for graduate students but this book is especially designed for undergraduates, who are taking an introductory course in epidemiology, and especially for those students who want to know more about epidemiology. But not because it is directed mainly to undergraduates and not to graduate students the course has less rigour and quality, it is because the concepts are introduced, and presented in an easier and simplified form, so, the study of epidemiology becomes less intimidating. While teaching epidemiology for several years, I have found that some students don’t choose epidemiology as a career because the content seems too complicated, presenting the content in a practical manner, and simpler (although some epidemiological concepts are very complex); should motivate students to learn about this subject matter.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine - Public Health"
+  ],
+  "authors": [
+    "Hector Giovanni Antunez - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Minnesota State Colleges and Universities",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/principles-of-epidemiology"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Most books about epidemiology are written for graduate students but this book is especially designed for undergraduates, who are taking an introductory course in epidemiology, and especially for those students who want to know more about epidemiology. But not because it is directed mainly to undergraduates and not to graduate students the course has less rigour and quality, it is because the concepts are introduced, and presented in an easier and simplified form, so, the study of epidemiology becomes less intimidating. While teaching epidemiology for several years, I have found that some students don’t choose epidemiology as a career because the content seems too complicated, presenting the content in a practical manner, and simpler (although some epidemiological concepts are very complex); should motivate students to learn about this subject matter."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 150
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "1194",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

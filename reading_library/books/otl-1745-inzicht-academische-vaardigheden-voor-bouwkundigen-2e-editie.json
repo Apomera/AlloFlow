@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1745-inzicht-academische-vaardigheden-voor-bouwkundigen-2e-editie",
+  "title": "Inzicht: Academische Vaardigheden voor Bouwkundigen - 2e editie",
+  "description": "Het boek Academische Vaardigheden voor Bouwkundigen geeft een verdiepend beeld van bouwkunde als wetenschappelijke discipline, gaat expliciet in op de relatie tussen ontwerp en onderzoek en richt zich met name op praktische vaardigheden die bouwkundestudenten ontwikkelen gedurende hun bacheloropleiding in Delft. Het boek is opgebouwd uit vier delen. Deel A richt zich op de plaats van bouwkunde binnen de wetenschap. Deel B richt zich op basisvaardigheden: algemene academische vaardigheden voor bouwkundigen. Deel C diept specifieke bouwkundige methoden van onderzoek uit. Deel D, het laatste deel, is enerzijds gericht op de praktijk en anderzijds op reflectie. Door deze brede opzet kan het boek niet alleen direct gebruikt worden door studenten en docenten in de leerlijn Academische Vaardigheden, maar juist ook in de andere leerlijnen en modulen. Tevens is het boek een naslagwerk voor andere Bouwkunde- en Architectuuropleidingen in binnen- en buitenland dat inzicht geeft hoe wij binnen de faculteit Bouwkunde van de TU Delft aankijken tegen het vakgebied en welke academische vaardigheden daar op bachelorniveau bij horen.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology"
+  ],
+  "authors": [
+    "MaartenJan Hoekstra - Author / Louis Lousberg - Author / Remon Rooij - Author / Willemijn Wilms Floet - Author / Sake Zijlstra - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "TU Delft Open",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/inzicht-academische-vaardigheden-voor-bouwkundigen-2e-editie"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Het boek Academische Vaardigheden voor Bouwkundigen geeft een verdiepend beeld van bouwkunde als wetenschappelijke discipline, gaat expliciet in op de relatie tussen ontwerp en onderzoek en richt zich met name op praktische vaardigheden die bouwkundestudenten ontwikkelen gedurende hun bacheloropleiding in Delft. Het boek is opgebouwd uit vier delen. Deel A richt zich op de plaats van bouwkunde binnen de wetenschap. Deel B richt zich op basisvaardigheden: algemene academische vaardigheden voor bouwkundigen. Deel C diept specifieke bouwkundige methoden van onderzoek uit. Deel D, het laatste deel, is enerzijds gericht op de praktijk en anderzijds op reflectie. Door deze brede opzet kan het boek niet alleen direct gebruikt worden door studenten en docenten in de leerlijn Academische Vaardigheden, maar juist ook in de andere leerlijnen en modulen. Tevens is het boek een naslagwerk voor andere Bouwkunde- en Architectuuropleidingen in binnen- en buitenland dat inzicht geeft hoe wij binnen de faculteit Bouwkunde van de TU Delft aankijken tegen het vakgebied en welke academische vaardigheden daar op bachelorniveau bij horen."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 189
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1745",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-39-sustainability-innovation-and-entrepreneurship",
+  "title": "Sustainability, Innovation, and Entrepreneurship",
+  "description": "This book is suited for the Entrepreneurship or Innovation course with an emphasis on Sustainability or for a course devoted entirely to Sustainability. What are the trends and forces underlying the changing character of the business-environment relationship? How they are creating significant entrepreneurial opportunities for individuals and companies? Around the world, the movement toward ”sustainable development“ has caused many firms to adopt policies and practices that reflect what is sometimes called a ”sustainable business“ or ”triple bottom line“ approach. ”Triple bottom line“ refers to the demonstration of strong performance across economic, social, and environmental indicators. Those measures serve as indicators of fiduciary responsibility to a growing set of concerned investors and therefore can help ensure access to capital. They also enable innovators to lower costs, create strategic differentiation, reduce risk, and position themselves for competitive advantage over rivals less attuned to trends. The deep roots of sustainability thinking are now evident in widespread and increasingly visible activities worldwide, and Sustainability, Innovation, and Entrepreneurship explores this evolution; its necessity, its implications and its progression.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Management"
+  ],
+  "authors": [
+    "Andrea Larson - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Saylor Foundation",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/sustainability-innovation-and-entrepreneurship"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is suited for the Entrepreneurship or Innovation course with an emphasis on Sustainability or for a course devoted entirely to Sustainability. What are the trends and forces underlying the changing character of the business-environment relationship? How they are creating significant entrepreneurial opportunities for individuals and companies? Around the world, the movement toward ”sustainable development“ has caused many firms to adopt policies and practices that reflect what is sometimes called a ”sustainable business“ or ”triple bottom line“ approach. ”Triple bottom line“ refers to the demonstration of strong performance across economic, social, and environmental indicators. Those measures serve as indicators of fiduciary responsibility to a growing set of concerned investors and therefore can help ensure access to capital. They also enable innovators to lower costs, create strategic differentiation, reduce risk, and position themselves for competitive advantage over rivals less attuned to trends. The deep roots of sustainability thinking are now evident in widespread and increasingly visible activities worldwide, and Sustainability, Innovation, and Entrepreneurship explores this evolution; its necessity, its implications and its progression."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2011."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 196
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "39",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1435-introduction-to-comparative-government-and-politics-1st-edition",
+  "title": "Introduction to Comparative Government and Politics - 1st edition",
+  "description": "Introduction to Comparative Government and Politics, 1st edition, is an Open Education Resource Textbook that surveys contemporary comparative politics. The textbook is organized thematically and includes chapters that cover a wide range of topics in comparative politics: how and what comparativists study; methods in comparative politics; states and regimes; democracies and democratization; non-democracies and democratic backsliding, political identity, including culture, race and ethnicity, gender, nationalism, religion, and class; political economy; collective action and social movements; comparative public opinion; political violence; and globalization and fragmentation. Each chapter accompanied by a case study or a comparative study, one of the main methodological tools used in comparative politics. By contextualizing the concepts, we hope to help students learn the comparative method, which to this day remains one of the most important methodological tools for all researchers.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Political Science"
+  ],
+  "authors": [
+    "Dino Bozonelos - Author / Julia Wendt - Author / Charlotte Lee - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Academic Senate for California Community Colleges",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-comparative-government-and-politics"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Introduction to Comparative Government and Politics, 1st edition, is an Open Education Resource Textbook that surveys contemporary comparative politics. The textbook is organized thematically and includes chapters that cover a wide range of topics in comparative politics: how and what comparativists study; methods in comparative politics; states and regimes; democracies and democratization; non-democracies and democratic backsliding, political identity, including culture, race and ethnicity, gender, nationalism, religion, and class; political economy; collective action and social movements; comparative public opinion; political violence; and globalization and fragmentation. Each chapter accompanied by a case study or a comparative study, one of the main methodological tools used in comparative politics. By contextualizing the concepts, we hope to help students learn the comparative method, which to this day remains one of the most important methodological tools for all researchers."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2022."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 156
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1435",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

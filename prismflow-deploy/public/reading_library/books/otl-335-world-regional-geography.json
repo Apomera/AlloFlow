@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-335-world-regional-geography",
+  "title": "World Regional Geography",
+  "description": "Rather than present students with a broad, novice-level introduction to geography, emphasizing places and vocabulary terms, this text approaches geography as experts understand the discipline, focusing on connections and an in-depth understanding of core themes. This thematic approach, informed by pedagogical research, provides students with an introduction to thinking geographically. Instead of repeating the same several themes each chapter, this text emphasizes depth over breadth by arranging each chapter around a central theme and then exploring that theme in detail as it applies to the particular region. In addition, while chapters are designed to stand alone and be rearranged or eliminated at the instructor's discretion, the theme of globalization and inequality unites all of the regions discussed. This core focus enables students to draw connections between regions and to better understand the interconnectedness of our world. Furthermore, the focus on both globalization and inequality helps demonstrate the real-world application of the concepts discussed. Colonialism, for instance, rather than a historical relict, becomes a force that has shaped geography and informs social justice. This thematic approach is also intended to facilitate active learning and would be suitable for a flipped or team-based learning-style course since it more easily integrates case studies and higher-order thinking than the traditional model. Each chapter begins with a list of learning objectives. This text was written with the backward course design model in mind and the content of each chapter was structured around these learning objectives. Because of this backward design focus, the length of each chapter is considerably shorter than most traditional textbooks. The intention is for the instructor to supplement the text with problems, case studies, and news articles and to use the text as a springboard for discussing deeper issues. The chapters are written in an accessible style, often addressing the student directly, and the author's voice has intentionally tried to remain present in the text. Following the Washington Post's gender-inclusive style guide, the singular they is intentionally used throughout the text. Rhetorical questions are also used to help students reflect on concepts and to encourage them to dig deeper and consider concepts from different perspectives.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Earth Sciences",
+    "Social Sciences - Cultural & Ethnic Studies"
+  ],
+  "authors": [
+    "Caitlin Finlayson - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Caitlin Finlayson",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/world-regional-geography"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Rather than present students with a broad, novice-level introduction to geography, emphasizing places and vocabulary terms, this text approaches geography as experts understand the discipline, focusing on connections and an in-depth understanding of core themes. This thematic approach, informed by pedagogical research, provides students with an introduction to thinking geographically. Instead of repeating the same several themes each chapter, this text emphasizes depth over breadth by arranging each chapter around a central theme and then exploring that theme in detail as it applies to the particular region. In addition, while chapters are designed to stand alone and be rearranged or eliminated at the instructor's discretion, the theme of globalization and inequality unites all of the regions discussed. This core focus enables students to draw connections between regions and to better understand the interconnectedness of our world. Furthermore, the focus on both globalization and inequality helps demonstrate the real-world application of the concepts discussed. Colonialism, for instance, rather than a historical relict, becomes a force that has shaped geography and informs social justice. This thematic approach is also intended to facilitate active learning and would be suitable for a flipped or team-based learning-style course since it more easily integrates case studies and higher-order thinking than the traditional model. Each chapter begins with a list of learning objectives. This text was written with the backward course design model in mind and the content of each chapter was structured around these learning objectives. Because of this backward design focus, the length of each chapter is considerably shorter than most traditional textbooks. The intention is for the instructor to supplement the text with problems, case studies, and news articles and to use the text as a springboard for discussing deeper issues. The chapters are written in an accessible style, often addressing the student directly, and the author's voice has intentionally tried to remain present in the text. Following the Washington Post's gender-inclusive style guide, the singular they is intentionally used throughout the text. Rhetorical questions are also used to help students reflect on concepts and to encourage them to dig deeper and consider concepts from different perspectives."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 376
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "335",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

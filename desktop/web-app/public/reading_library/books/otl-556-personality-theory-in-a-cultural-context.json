@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-556-personality-theory-in-a-cultural-context",
+  "title": "Personality Theory in a Cultural Context",
+  "description": "When you first think of personality, what comes to mind? When we refer to certain people as being “personalities,” we usually mean they are famous, people like movie stars or your favorite band. When we describe a person as having “lots of personality,” we usually mean they are outgoing and fun-loving, the kind of person we like to spend time with. But does this tell us anything about personality itself? Although we may think we have an understanding of what personality is, professional psychologists always seek to move beyond what people think they know in order to determine what is actually real or at least as close to real as we can come. In the pursuit of truly understanding personality, however, many personality theorists seem to have been focused on a particularly Western cultural approach that owes much of its history to the pioneering work of Sigmund Freud.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Psychology"
+  ],
+  "authors": [
+    "Mark Kelland - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax CNX",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/personality-theory-in-a-cultural-context"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "When you first think of personality, what comes to mind? When we refer to certain people as being “personalities,” we usually mean they are famous, people like movie stars or your favorite band. When we describe a person as having “lots of personality,” we usually mean they are outgoing and fun-loving, the kind of person we like to spend time with. But does this tell us anything about personality itself? Although we may think we have an understanding of what personality is, professional psychologists always seek to move beyond what people think they know in order to determine what is actually real or at least as close to real as we can come. In the pursuit of truly understanding personality, however, many personality theorists seem to have been focused on a particularly Western cultural approach that owes much of its history to the pioneering work of Sigmund Freud."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 171
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "556",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

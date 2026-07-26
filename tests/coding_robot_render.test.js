@@ -13,6 +13,7 @@ const FILE = 'stem_lab/stem_tool_coding.js';
 function nestedRobotProgram() {
   return {
     playgroundMode: 'robot',
+    codeMode: 'outline',
     robotChallengeIdx: 4,
     robotBlocks: [
       {
@@ -53,7 +54,7 @@ describe('Robot Commander recursive renderer (B4)', () => {
   it('offers conditional blocks inside a top-level loop (the filter widening)', () => {
     loadTool(FILE, 'codingPlayground');
     const html = renderTool('codingPlayground', {
-      _codingPlayground: { playgroundMode: 'robot', robotChallengeIdx: 4, robotBlocks: [{ type: 'whileNotGoal', children: [] }] },
+      _codingPlayground: { playgroundMode: 'robot', codeMode: 'outline', robotChallengeIdx: 4, robotBlocks: [{ type: 'whileNotGoal', children: [] }] },
     });
     // the add-toolbox inside the loop exposes "Add ... If Wall Ahead"
     expect(html).toMatch(/Add .*If Wall Ahead/);
@@ -63,7 +64,8 @@ describe('Robot Commander recursive renderer (B4)', () => {
     loadTool(FILE, 'codingPlayground');
     const html = renderTool('codingPlayground', {
       _codingPlayground: {
-        playgroundMode: 'robot', robotChallengeIdx: 4,
+        playgroundMode: 'robot',
+        codeMode: 'outline', robotChallengeIdx: 4,
         robotBlocks: [{ type: 'whileNotGoal', children: [{ type: 'ifWall', children: [], elseChildren: [] }] }],
       },
     });
@@ -89,7 +91,7 @@ describe('Canvas text alternatives (C2)', () => {
     const grid = Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => ({ wall: false, gem: false, goal: false, painted: false, start: false })));
     grid[2][3].goal = true; grid[1][1].gem = true; grid[0][0].wall = true;
     const html = renderTool('codingPlayground', {
-      _codingPlayground: { playgroundMode: 'robot', robotChallengeIdx: 4, robotGrid: grid, robotPos: { x: 0, y: 2, dir: 1 }, robotBlocks: [] },
+      _codingPlayground: { playgroundMode: 'robot', codeMode: 'outline', robotChallengeIdx: 4, robotGrid: grid, robotPos: { x: 0, y: 2, dir: 1 }, robotBlocks: [] },
     });
     expect(html).toContain('Robot grid, 5 by 5');
     expect(html).toContain('facing right');

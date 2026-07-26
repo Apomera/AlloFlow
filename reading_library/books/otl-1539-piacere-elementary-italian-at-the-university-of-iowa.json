@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1539-piacere-elementary-italian-at-the-university-of-iowa",
+  "title": "Piacere!: Elementary Italian at The University of Iowa",
+  "description": "Piacere! is an elementary Italian open-access textbook authorized by the Italian faculty of The University of Iowa. A comprehensive and flexible e-textbook, this Open Education Resource aims to support students’ acquisition of the grammar and vocabulary that ensure meaningful communication as well as to enhance students’ familiarity with Italian culture. Piacere! is divided into twenty-one units, which revolve around a specific theme, in order to facilitate a comprehensive learning and use of the language. Units include the following components: grammar, vocabulary, conversations, and readings. While in its organization the textbook is meant to offer the students with a flexible and approachable individual study experience, each component may be easily translated into classroom activities.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages"
+  ],
+  "authors": [
+    "Lucia Gemmani - Author / Irene Lottini - Author / Claudia Sartini-Rideout - Author / Andrea Trucchia - Illustrator"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Iowa",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/piacere-elementary-italian-at-the-university-of-iowa"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Piacere! is an elementary Italian open-access textbook authorized by the Italian faculty of The University of Iowa. A comprehensive and flexible e-textbook, this Open Education Resource aims to support students’ acquisition of the grammar and vocabulary that ensure meaningful communication as well as to enhance students’ familiarity with Italian culture. Piacere! is divided into twenty-one units, which revolve around a specific theme, in order to facilitate a comprehensive learning and use of the language. Units include the following components: grammar, vocabulary, conversations, and readings. While in its organization the textbook is meant to offer the students with a flexible and approachable individual study experience, each component may be easily translated into classroom activities."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 136
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1539",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-17812-lulu-u-ngafhi",
+  "title": "Lulu u ngafhi?",
+  "description": "Lulu u ngafhi nahone ndi ngani o dzumbama?",
+  "language": "Tshivenḓa",
+  "langCode": "ven",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Family, friends, and home",
+    "Let's go on an adventure",
+    "Let's learn!"
+  ],
+  "authors": [
+    "Mohale Mashigo"
+  ],
+  "illustrators": [
+    "Clyde Beech"
+  ],
+  "contributors": [
+    {
+      "name": "Lisa Treffry-Goatley",
+      "role": "Editor"
+    },
+    {
+      "name": "Nkosingiphile Mazibuko",
+      "role": "Designer"
+    },
+    {
+      "name": "Mohale Mashigo",
+      "role": "Writer"
+    },
+    {
+      "name": "Clyde Beech",
+      "role": "Illustrator"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/lulu-u-ngafhi/",
+    "attributionUrl": "https://bookdash.org/books/lulu-u-ngafhi/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=where-is-lulu"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/02/where-is-lulu_ve_20190328_cover-2-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/02/where-is-lulu_ve_20190328_cover-2-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Lulu u ngafhi nahone ndi ngani o dzumbama?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Lisa Treffry-Goatley (Editor); Nkosingiphile Mazibuko (Designer); Mohale Mashigo (Writer); Clyde Beech (Illustrator)\n\nLanguage: Tshivenḓa. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=where-is-lulu"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 74
+  }
+}

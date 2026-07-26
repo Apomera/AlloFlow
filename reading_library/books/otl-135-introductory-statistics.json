@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-135-introductory-statistics",
+  "title": "Introductory Statistics",
+  "description": "In many introductory level courses today, teachers are challenged with the task of fitting in all of the core concepts of the course in a limited period of time. The Introductory Statistics teacher is no stranger to this challenge. To add to the difficulty, many textbooks contain an overabundance of material, which not only results in the need for further streamlining, but also in intimidated students. Shafer and Zhang wrote Introductory Statistics by using their vast teaching experience to present a complete look at introductory statistics topics while keeping in mind a realistic expectation with respect to course duration and students' maturity level. Over time the core content of this course has developed into a well-defined body of material that is substantial for a one-semester course. Shafer and Zhang believe that the students in this course are best served by a focus on that core material and not by an exposure to a plethora of peripheral topics. Therefore in writing Introduction to Statistics they have sought to present only the core concepts and use a wide-ranging set of exercises for each concept to drive comprehension. As a result Introduction to Statistics is a smaller and less intimidating textbook that trades some extended and unnecessary topics for a better-focused presentation of the central material. You will not only appreciate the depth and breadth of exercises in Introduction to Statistics, but you will also like the close attention to detail that Shafer and Zhang have paid to the student and instructor solutions manuals. This is one of few books on the market where the textbook authors have written the solutions manuals to maintain the integrity of the material. In addition, in order to facilitate the use of technology with the book the authors included “large data set exercises,” where appropriate, that refer to large data sets that are available on the web, and for which use of statistical software is necessary.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Applied",
+    "Mathematics"
+  ],
+  "authors": [
+    "Douglas S. Shafer - Author / Zhiyi Zhang - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Saylor Foundation",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introductory-statistics"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "In many introductory level courses today, teachers are challenged with the task of fitting in all of the core concepts of the course in a limited period of time. The Introductory Statistics teacher is no stranger to this challenge. To add to the difficulty, many textbooks contain an overabundance of material, which not only results in the need for further streamlining, but also in intimidated students. Shafer and Zhang wrote Introductory Statistics by using their vast teaching experience to present a complete look at introductory statistics topics while keeping in mind a realistic expectation with respect to course duration and students' maturity level. Over time the core content of this course has developed into a well-defined body of material that is substantial for a one-semester course. Shafer and Zhang believe that the students in this course are best served by a focus on that core material and not by an exposure to a plethora of peripheral topics. Therefore in writing Introduction to Statistics they have sought to present only the core concepts and use a wide-ranging set of exercises for each concept to drive comprehension. As a result Introduction to Statistics is a smaller and less intimidating textbook that trades some extended and unnecessary topics for a better-focused presentation of the central material. You will not only appreciate the depth and breadth of exercises in Introduction to Statistics, but you will also like the close attention to detail that Shafer and Zhang have paid to the student and instructor solutions manuals. This is one of few books on the market where the textbook authors have written the solutions manuals to maintain the integrity of the material. In addition, in order to facilitate the use of technology with the book the authors included “large data set exercises,” where appropriate, that refer to large data sets that are available on the web, and for which use of statistical software is necessary."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2012."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 342
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "135",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

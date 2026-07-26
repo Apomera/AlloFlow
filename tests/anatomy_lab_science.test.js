@@ -1145,3 +1145,169 @@ describe('Anatomy neuromuscular-junction deep dive', () => {
     expect(html).toContain('ATP-powered myosin cross-bridge cycles');
   });
 });
+
+describe('Anatomy Lens focused-diagram gallery', () => {
+  it('stays compact by default and exposes an accessible disclosure control', () => {
+    const html = renderAnatomy({ system: 'skeletal', complexity: 3 });
+    expect(html).toContain('aria-controls="anatomy-lens-panel"');
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).not.toContain('data-anatomy-lens="true"');
+  });
+
+  it('offers focused deep dives and hands neuroanatomy to its specialist tool', () => {
+    const html = renderAnatomy({
+      system: 'skeletal', complexity: 3, _showAnatomyLens: true, _anatomyLensViewed: { heart: true }
+    });
+    expect(html).toContain('data-anatomy-lens="true"');
+    expect(html).toContain('id="anatomy-lens-title">Anatomy Lens');
+    expect((html.match(/data-anatomy-lens-id=/g) || [])).toHaveLength(8);
+    expect(html).toContain('data-anatomy-lens-specialist="brainAtlas"');
+    expect(html).toContain('instead of duplicating it here');
+    expect(html).toContain('1/8 explored');
+  });
+
+  it('sanitizes saved progress and launches deep dives with one coherent state patch', () => {
+    const malformed = renderAnatomy({ _showAnatomyLens: true, _anatomyLensViewed: 'heart' });
+    expect(malformed).toContain('0/8 explored');
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('function openAnatomyLensItem(item)');
+    expect(source).toContain('function openAnatomyScaleBridge(structureId, stepIndex, announcement)');
+    expect(source).toContain('_regionalAtlasStep: safeStep');
+    expect(source).toContain("_regionalAtlasOpen: item.structureId");
+    expect(source).toContain('_anatomyLensViewed: viewedPatch');
+    expect(source).toContain("setStemLabTool('brainAtlas')");
+  });
+});
+
+describe('Anatomy liver lobule Scale Bridge', () => {
+  it('connects body location, the liver organ, and labeled lobule microanatomy', () => {
+    const closed = renderAnatomy({
+      system: 'organs', view: 'anterior', complexity: 3, selectedStructure: 'liver'
+    });
+    expect(closed).toContain('aria-label="Open Liver lobule Scale Bridge"');
+    expect(closed).not.toContain('data-anatomy-atlas="liver"');
+
+    const open = renderAnatomy({
+      system: 'organs', view: 'anterior', complexity: 3, selectedStructure: 'liver',
+      _regionalAtlasOpen: 'liver'
+    });
+    expect(open).toContain('data-anatomy-atlas="liver"');
+    expect(open).toContain('data-anatomy-scale-bridge="liver"');
+    expect(open).toContain('data-anatomy-atlas-step="portal_entry"');
+    expect(open).toContain('Step 1 of 4');
+    expect(open).toContain('data-scale-continuation="sm_intestine"');
+    expect(open).toContain('Trace nutrient absorption');
+    expect(open).toContain('aria-label="Scale progression: body location to liver organ to hepatic lobule"');
+    expect(open).toContain('Body-to-liver-to-lobule Scale Bridge diagram');
+    expect(open).toContain('aria-label="Liver lobule processing steps"');
+    expect(open).toContain('BODY LOCATION');
+    expect(open).toContain('MICROANATOMY');
+    expect(open).toContain('portal vein');
+    expect(open).toContain('hepatic artery');
+    expect(open).toContain('central vein');
+    expect(open).toContain('bile duct');
+  });
+
+  it('clamps liver stages and explains bile flow opposite the blood direction', () => {
+    const html = renderAnatomy({
+      system: 'organs', view: 'anterior', complexity: 3, selectedStructure: 'liver',
+      _regionalAtlasOpen: 'liver', _regionalAtlasStep: 100, _regionalAtlasPlaying: false
+    });
+    expect(html).toContain('class="anatomy-atlas is-paused"');
+    expect(html).toContain('aria-label="Play liver-flow animation"');
+    expect(html).toContain('4. Bile flows outward');
+    expect(html).toContain('data-anatomy-atlas-step="bile_flow"');
+    expect(html).toContain('opposite the blood-flow direction');
+  });
+});
+
+describe('Anatomy intestinal villus Scale Bridge', () => {
+  it('connects the body region, intestinal wall, and nutrient-routing microanatomy', () => {
+    const closed = renderAnatomy({
+      system: 'organs', view: 'anterior', complexity: 3, selectedStructure: 'sm_intestine'
+    });
+    expect(closed).toContain('aria-label="Open Intestinal villus Scale Bridge"');
+    expect(closed).not.toContain('data-anatomy-atlas="sm_intestine"');
+
+    const open = renderAnatomy({
+      system: 'organs', view: 'anterior', complexity: 3, selectedStructure: 'sm_intestine',
+      _regionalAtlasOpen: 'sm_intestine'
+    });
+    expect(open).toContain('data-anatomy-atlas="sm_intestine"');
+    expect(open).toContain('data-anatomy-scale-bridge="sm_intestine"');
+    expect(open).toContain('data-anatomy-atlas-step="brush_border"');
+    expect(open).toContain('Step 1 of 4');
+    expect(open).toContain('data-scale-continuation="liver"');
+    expect(open).toContain('Continue to liver processing');
+    expect(open).toContain('aria-label="Scale progression: body region to intestinal wall to villus microanatomy"');
+    expect(open).toContain('Body-to-small-intestine-to-villus Scale Bridge diagram');
+    expect(open).toContain('aria-label="Intestinal villus absorption steps"');
+    expect(open).toContain('BODY REGION');
+    expect(open).toContain('INTESTINAL WALL');
+    expect(open).toContain('microvilli');
+    expect(open).toContain('enterocytes');
+    expect(open).toContain('capillaries');
+    expect(open).toContain('lacteal');
+    expect(open).toContain('to portal blood');
+    expect(open).toContain('to lymph');
+  });
+
+  it('clamps absorption stages and distinguishes water uptake from fat transport', () => {
+    const html = renderAnatomy({
+      system: 'organs', view: 'anterior', complexity: 3, selectedStructure: 'sm_intestine',
+      _regionalAtlasOpen: 'sm_intestine', _regionalAtlasStep: 500, _regionalAtlasPlaying: false
+    });
+    expect(html).toContain('class="anatomy-atlas is-paused"');
+    expect(html).toContain('aria-label="Play nutrient-absorption animation"');
+    expect(html).toContain('4. Water and ions');
+    expect(html).toContain('Water follows osmotic gradients');
+    expect(html).toContain('data-anatomy-atlas-step="water_balance"');
+    const fatHtml = renderAnatomy({
+      system: 'organs', view: 'anterior', complexity: 3, selectedStructure: 'sm_intestine',
+      _regionalAtlasOpen: 'sm_intestine', _regionalAtlasStep: 2
+    });
+    expect(fatHtml).toContain('3. Into the lacteal');
+    expect(fatHtml).toContain('Long-chain lipids are rebuilt into triglycerides');
+  });
+});
+describe('Anatomy Skin Repair Scale Bridge', () => {
+  it('connects body surface, skin layers, and the wound-repair zone', () => {
+    const closed = renderAnatomy({
+      system: 'integumentary', view: 'anterior', complexity: 3, selectedStructure: 'epidermis'
+    });
+    expect(closed).toContain('aria-label="Open Skin Repair Scale Bridge"');
+    expect(closed).not.toContain('data-anatomy-atlas="epidermis"');
+
+    const open = renderAnatomy({
+      system: 'integumentary', view: 'anterior', complexity: 3, selectedStructure: 'epidermis',
+      _regionalAtlasOpen: 'epidermis'
+    });
+    expect(open).toContain('data-anatomy-atlas="epidermis"');
+    expect(open).toContain('data-anatomy-scale-bridge="epidermis"');
+    expect(open).toContain('data-anatomy-atlas-step="hemostasis"');
+    expect(open).toContain('Body-to-skin-to-wound-repair Scale Bridge diagram');
+    expect(open).toContain('aria-label="Scale progression: body surface to skin layers to wound repair zone"');
+    expect(open).toContain('aria-label="Skin repair stages"');
+    expect(open).toContain('epidermis');
+    expect(open).toContain('dermis');
+    expect(open).toContain('hypodermis');
+    expect(open).toContain('platelets + fibrin');
+    expect(open).toContain('immune cleanup');
+    expect(open).toContain('granulation tissue');
+    expect(open).toContain('remodeled collagen');
+    expect(open).toContain('Step 1 of 4');
+  });
+
+  it('clamps repair phases and exposes paused remodeling narration', () => {
+    const html = renderAnatomy({
+      system: 'integumentary', view: 'anterior', complexity: 3, selectedStructure: 'epidermis',
+      _regionalAtlasOpen: 'epidermis', _regionalAtlasStep: 99, _regionalAtlasPlaying: false
+    });
+    expect(html).toContain('class="anatomy-atlas is-paused"');
+    expect(html).toContain('aria-label="Play skin-repair animation"');
+    expect(html).toContain('data-anatomy-atlas-step="remodeling"');
+    expect(html).toContain('4. Remodeling');
+    expect(html).toContain('Collagen fibers are replaced and reorganized');
+    expect(html).toContain('Step 4 of 4');
+  });
+});

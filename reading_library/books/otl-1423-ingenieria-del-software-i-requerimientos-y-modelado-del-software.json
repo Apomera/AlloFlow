@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1423-ingenieria-del-software-i-requerimientos-y-modelado-del-software",
+  "title": "Ingeniería del Software I: Requerimientos y Modelado del Software",
+  "description": "En este libro se investigó los fundamentos de la ingeniería del software y se documentó los conceptos básicos del software y los procesos para la creación de software, se documentó también cómo llevar a cabo un análisis de requerimientos de software, cuáles son los tipos de requerimientos, cómo obtenerlos, documentarlos, validarlos y modelarlos mediante diferentes tipos de diagramas. Este libro tiene como objetivo aplicar los conceptos y teorías de administración para la creación de software de calidad mediante las diferentes metodologías, técnicas y herramientas de la ingeniería del software para que el profesional de sistemas informáticos sea capaz de gestionar con eficiencia y en ambientes éticos y de responsabilidad proyectos inmersos en la creación software. Se investigó varios libros llegando a realizar un compendio de las partes más importantes y se llegó a la conclusión de que la ingeniería del software proporciona varias metodologías para el desarrollo del software y varios modelos para el diseño de software que el profesional puede utilizar dependiendo las diferentes necesidades o las diferentes situaciones o proyectos a desarrollar.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science"
+  ],
+  "authors": [
+    "Ricardo Javier Celi-Párraga - Author / Miguel Fabricio Boné-Andrade - Author / Aldo Patricio Mora-Olivero - Author / Juan Carlos Sarmiento-Saavedra - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/ingenieria-del-software-i-requerimientos-y-modelado-del-software"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "En este libro se investigó los fundamentos de la ingeniería del software y se documentó los conceptos básicos del software y los procesos para la creación de software, se documentó también cómo llevar a cabo un análisis de requerimientos de software, cuáles son los tipos de requerimientos, cómo obtenerlos, documentarlos, validarlos y modelarlos mediante diferentes tipos de diagramas. Este libro tiene como objetivo aplicar los conceptos y teorías de administración para la creación de software de calidad mediante las diferentes metodologías, técnicas y herramientas de la ingeniería del software para que el profesional de sistemas informáticos sea capaz de gestionar con eficiencia y en ambientes éticos y de responsabilidad proyectos inmersos en la creación software. Se investigó varios libros llegando a realizar un compendio de las partes más importantes y se llegó a la conclusión de que la ingeniería del software proporciona varias metodologías para el desarrollo del software y varios modelos para el diseño de software que el profesional puede utilizar dependiendo las diferentes necesidades o las diferentes situaciones o proyectos a desarrollar."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 197
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1423",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

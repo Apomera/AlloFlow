@@ -12,12 +12,29 @@ const ROOT = __dirname;
 const REPO = path.join(ROOT, '..');
 const DESTINATIONS = [
   path.join(REPO, 'desktop/web-app', 'public', 'reading_library'),
-  path.join(REPO, 'desktop/web-app', 'build', 'reading_library')
+  path.join(REPO, 'desktop/web-app', 'build', 'reading_library'),
+  path.join(REPO, 'prismflow-deploy', 'public', 'reading_library')
 ];
 const index = JSON.parse(fs.readFileSync(path.join(ROOT, 'index.json'), 'utf8'));
 const cards = JSON.parse(fs.readFileSync(path.join(ROOT, 'index_cards.json'), 'utf8'));
+const PROVIDER_IDS = new Set([
+  'openstax',
+  'open-rn',
+  'ck12',
+  'open-textbook-library',
+  'wikibooks',
+  'core-knowledge',
+  'pressbooks',
+  'standard-ebooks',
+  'book-dash',
+  'african-storybook',
+  'oapen',
+  'doab',
+  'mit-ocw',
+  'ncbi-bookshelf'
+]);
 const providerFiles = index.books.concat(cards.books)
-  .filter((entry) => entry.sourceId === 'openstax' || entry.sourceId === 'ck12')
+  .filter((entry) => PROVIDER_IDS.has(entry.sourceId))
   .map((entry) => entry.file);
 const files = Array.from(new Set([
   'index.json',
@@ -38,7 +55,8 @@ for (const destination of DESTINATIONS) {
 
 for (const destination of [
   path.join(REPO, 'desktop/web-app', 'public', 'reading_library_module.js'),
-  path.join(REPO, 'desktop/web-app', 'build', 'reading_library_module.js')
+  path.join(REPO, 'desktop/web-app', 'build', 'reading_library_module.js'),
+  path.join(REPO, 'prismflow-deploy', 'public', 'reading_library_module.js')
 ]) {
   fs.copyFileSync(path.join(REPO, 'reading_library_module.js'), destination);
   console.log('Synchronized ' + path.relative(REPO, destination));

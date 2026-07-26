@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1279-introduction-to-genetics",
+  "title": "Introduction to Genetics",
+  "description": "Genetics, otherwise known as the Science of Heredity, is the study of biological information, and how this information is stored, replicated, transmitted and used by subsequent generations. The study of genetics can be sub-divided into three main areas: Transmission Genetics, Molecular Genetics, and Population Genetics. In this Introductory text, the focus is on Transmission or Classical Genetics, which deals with the basic principles of heredity and the mechanisms by which traits are passed from one generation to the next. The work of Gregor Mendel is central to Transmission Genetics; as such, there is a discussion about the pioneering work performed by him along with Mendel’s Laws, as they pertain to inheritance. Other aspects of Classical Genetics are covered, including the relationship between chromosomes and heredity, the arrangement of genes on chromosomes, and the physical mapping of genes.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology"
+  ],
+  "authors": [
+    "Natasha Ramroop Singh - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Thompson Rivers University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-genetics"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Genetics, otherwise known as the Science of Heredity, is the study of biological information, and how this information is stored, replicated, transmitted and used by subsequent generations. The study of genetics can be sub-divided into three main areas: Transmission Genetics, Molecular Genetics, and Population Genetics. In this Introductory text, the focus is on Transmission or Classical Genetics, which deals with the basic principles of heredity and the mechanisms by which traits are passed from one generation to the next. The work of Gregor Mendel is central to Transmission Genetics; as such, there is a discussion about the pioneering work performed by him along with Mendel’s Laws, as they pertain to inheritance. Other aspects of Classical Genetics are covered, including the relationship between chromosomes and heredity, the arrangement of genes on chromosomes, and the physical mapping of genes."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2009."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 160
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1279",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

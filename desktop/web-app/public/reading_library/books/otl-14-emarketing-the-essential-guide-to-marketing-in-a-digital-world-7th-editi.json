@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-14-emarketing-the-essential-guide-to-marketing-in-a-digital-world-7th-editi",
+  "title": "eMarketing: The Essential Guide to Marketing in a Digital World - 7th Edition",
+  "description": "Since our 10th Anniversary Edition of eMarketing: The Essential Guide to Marketing in a Digital World, we have witnessed a global wave of change that has had an undeniable impact on how we live, connect, and communicate worldwide. There is no doubt that the COVID-19 pandemic has, and will continue to have, a lasting effect on human reality. With this in mind, we are incredibly proud to present the 7th Edition of our textbook.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Marketing"
+  ],
+  "authors": [
+    "Dionne Solomons - Author / Tania Kliphuis - Author / Michelle Wadley - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Red & Yellow",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/emarketing-the-essential-guide-to-marketing-in-a-digital-world"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Since our 10th Anniversary Edition of eMarketing: The Essential Guide to Marketing in a Digital World, we have witnessed a global wave of change that has had an undeniable impact on how we live, connect, and communicate worldwide. There is no doubt that the COVID-19 pandemic has, and will continue to have, a lasting effect on human reality. With this in mind, we are incredibly proud to present the 7th Edition of our textbook."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2022."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 97
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "14",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

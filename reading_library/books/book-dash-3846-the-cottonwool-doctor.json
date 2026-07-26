@@ -1,0 +1,86 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-3846-the-cottonwool-doctor",
+  "title": "The Cottonwool Doctor",
+  "description": "Margaret was clever and curious. Margaret had big dreams. But 200 years ago a girl could not become a doctor. So she cut off her hair and she put on boy’s clothes. From then onwards, no one knew that Margaret was a girl. She became James Barry.",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Emotions and life skills",
+    "Let's learn!",
+    "Powerful female characters"
+  ],
+  "authors": [
+    "Michelle Matthews"
+  ],
+  "illustrators": [
+    "Jean de Wet"
+  ],
+  "contributors": [
+    {
+      "name": "Jean de Wet",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Bridgitte Potton",
+      "role": "Designer"
+    },
+    {
+      "name": "Michelle Matthews",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/the-cottonwool-doctor/",
+    "attributionUrl": "https://bookdash.org/books/the-cottonwool-doctor/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=the-cottonwool-doctor"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2017/07/the-cottonwool-doctor_20170712_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2017/07/the-cottonwool-doctor_20170712_cover.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Margaret was clever and curious. Margaret had big dreams. But 200 years ago a girl could not become a doctor. So she cut off her hair and she put on boy’s clothes. From then onwards, no one knew that Margaret was a girl. She became James Barry."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Jean de Wet (Illustrator); Bridgitte Potton (Designer); Michelle Matthews (Writer)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=the-cottonwool-doctor"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 111
+  }
+}

@@ -1,0 +1,232 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47415-uburuhuko-na-nyokuru",
+  "title": "Uburuhuko na nyokuru",
+  "description": "Abana babiri baryohewe mu gihe bariko bitegura kuja kuramutsa inakuru wabo ruguru. Bararyoherwa cane no kuba ruguru ku buryo batagomba no kuvayo.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Violet Otieno"
+  ],
+  "illustrators": [
+    "Catherine Groenewald"
+  ],
+  "translators": [
+    "Fanuel Ndayishimiye"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Violet Otieno",
+      "role": "Author"
+    },
+    {
+      "name": "Fanuel Ndayishimiye",
+      "role": "Translation"
+    },
+    {
+      "name": "Catherine Groenewald",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Violet Otieno (Author); Fanuel Ndayishimiye (Translation); Catherine Groenewald (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47415",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-f8e69d61911987b7",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/11661.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11657.png",
+      "text": "Odongo na Apiyo babana na se wabo mu gisagara. Si bo babona uburuhuko burageze. Ntibaryoherwa ngo n'uko akaruhuko kageze, ariko bari bakumbuye kuja kuramutsa inakuru wabo. Inakuru yaba mu karere baroba iruhande y'ikiyaga kinini.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=1",
+      "sourceDigest": "sha256:bb075c2ae397017c49deb3f45ae6e6a42faa1732da5e05e610a7df41db5fef45"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11658.png",
+      "text": "Abo bana bari baryohewe cane kubera hari hageze gusubira kuja kuramutsa inakuru wabo. Batekera amasakoshi bitegurira urwo rugendo rurerure ku munsi ukurikira. Ijoro ryakeye badasinziriye baguma bavuga ivy'uburuhuko ijoro ryose.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=2",
+      "sourceDigest": "sha256:d87d6d5bbfaf5afe92cc16d6bebf8b484475f67eb5809532466e0d6f3d99e71e"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11659.png",
+      "text": "Mugatondo ka kare, bava i muhira mu modoka ya se. Barengana imisozi, ibikoko vyo mw'ishamba hamwe n'imirima. Bagenda baharura imodoka bongera baririmba indirimbo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=3",
+      "sourceDigest": "sha256:60eddc62089a06c0272387af7e406d6711a14b39502e2b4e2f8369b0cbcf145b"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11660.png",
+      "text": "Haciye umwanya, ba bana bararuha baca bafatwa n'itiro.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=4",
+      "sourceDigest": "sha256:5a98aa97d031d07e260d6d99a101545b3d62320856ce751f3fd0b4da62a643bb"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11661.png",
+      "text": "Se arabavyura kubera bari begereje gushika. Basanga inakuru wabo yitwa Kanyanda aruhukiye ku kirago musi y'igiti. Mu rurimi rwabo, Kanyanda arisigura 'Umukobwa wo muba kanyanda.' Yari umugore akomeye kandi w'akaranga.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=5",
+      "sourceDigest": "sha256:9d4c9fd3677951a9034be6730fbee0af69bd5bc8ba74c92ee6123a43c8147eeb"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11662.png",
+      "text": "Inakuru arabakira mu nzu. Atangura kubaririmbira azunguruka yuzuye n'umunezero. Abo buzukuru bararyohewe no kumushikiriza utuganuke baguze bavanye mu gisagara. Odongo, \"Hera kugurura akaganuke kanje.\" Apiyo, \"Oya tangura akiwanje.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=6",
+      "sourceDigest": "sha256:127c8c46f00901d55cc70816ca88c212d3431c88c99eee10ff3620c0eaaf6040"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11663.png",
+      "text": "Inakuru ahejeje kugurura utuganuke twabo buzukuru aca abahezagira akurikirije umuco wabo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=7",
+      "sourceDigest": "sha256:590b7be7e64624edf758242f81a4a9c8fac4920d8dadebf18a7eff5aa380db05"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11664.png",
+      "text": "Odongo na Apiya baca baja hanze. Birukana ibinyugunyugu n'inyoni.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=8",
+      "sourceDigest": "sha256:6e89681101c599a55ccb92f2455fa4c49ed64b705e452d72329ffa3ecb62e76f"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11665.png",
+      "text": "Burira ibiti bongera basura amazi yo ku kiyaga.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=9",
+      "sourceDigest": "sha256:c0ddc8ec93321d31f7bfb996094fc809d4ed66bd3dd5500428763c3d6465d02b"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11666.png",
+      "text": "Bugorovye bagasubira imuhira gufungura. Bataranaheza gufungura bagaca basinzira!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=10",
+      "sourceDigest": "sha256:1c8aac907ee889f264f785ab080368cf7083be5c7ff0875e7217dc8e17aa3db9"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11667.png",
+      "text": "Bukeye bwaho, se wabo yaciye asubira mu gisagara, abasiga kwa inakuru.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=11",
+      "sourceDigest": "sha256:4065ca1c9cc521fb6bc873630df8021c1efd78b90e4ad359d23279c1ad135ed7"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11668.png",
+      "text": "Odongo na Apiyo barafashije inakuru mu dukorwa twose tw' imuhira. Baravoma bagasenya. Baregeranya amagi inkoko ziwe zataye, bakongera bagasoroma imboga mu mirima.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=12",
+      "sourceDigest": "sha256:e9e930e9acc9c897702ec3f8604821babcdd1f217d9bc00301954b6f13d12568"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11669.png",
+      "text": "Kanyanda inakuru yarabigishije gucumba ubugari bakoza inyama. Yaraberetse ingene bateka umuceri w'inazi bazokoza amafi yokeje.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=13",
+      "sourceDigest": "sha256:1b8a87c97c4a5b749cb1a7f1e0290e8e9c731366ac7f008ddc30603fa162a322"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11670.png",
+      "text": "Umusi umwe, Odongo aturutsa inka za inakuru. Zica zija kona mu murima w'umubanyi. Uwo mubanyi yarashavuriye Odongo. Yaciye ategeka Odongo kuhagarika iziriko zirona uwo murima. Inyuma yaho, uwo muhungu amenya ko izo nka atangorane zasubiye guteza.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=14",
+      "sourceDigest": "sha256:c0497fb71397aac8fb0248c126d78930797873aa4eb00ad614a65221ea44df49"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11671.png",
+      "text": "Uwundi musi, abo bana bajana na inakuru kw'isoko. Yari afise icandiro c'imboga, isukari n'amasabuni. Apiyo yarakunda kuza arabwira abaguzi ibiciro vy'ivyo bidandazwa. Odongo nawe yaza aratekerera abaguzi ivyo baguze.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=15",
+      "sourceDigest": "sha256:c873e83bec4f6164fc9abc65e74369e0cb3d3fe71a3e3fe44418ad15918ad77f"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11672.png",
+      "text": "Bugorovye basangira icayi. Bakongera bagafasha guharura amahera inakuru yadandaje.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=16",
+      "sourceDigest": "sha256:6a573302958e1504cdff53b1d07ed3b27f932132d9001b93690c659893569145"
+    },
+    {
+      "n": 17,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11673.png",
+      "text": "Ngubwo uburuhuko burarangiye. Abana bategerezwa gusubira iwabo. Inakuru aha Odongo inkofero, Apiyo nawe amuha umupira w'imbeho, yongera abatekerera n'indya bazorya mu rugendo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=17",
+      "sourceDigest": "sha256:507decbb94a73ddade835295cabe7535507b0902902b186d7130c931334572f3"
+    },
+    {
+      "n": 18,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11674.png",
+      "text": "Igihe se yari aje kubatora, ntibashaka kuvirira inakuru. Baca bamusaba ko bojana nawe iwabo mu gisagara. Inakuru aca aratwenga aca ababwira, \"Ndashaje sinoba ngishobora kuba mu gisagara, mwebwe muzogaruka kuntemberera.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=18",
+      "sourceDigest": "sha256:03c610a0bf98412e0ac8904e346f823f4a4951f8240e07e33ce026fa432702d1"
+    },
+    {
+      "n": 19,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11675.png",
+      "text": "Ba buzukuru biwe baramugumbira cane, baca baramusezera.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=19",
+      "sourceDigest": "sha256:c91326463a74894863a8e882bf623c6ffc07bff3e6461ba1ca9c7f4839e74c51"
+    },
+    {
+      "n": 20,
+      "img": "https://www.africanstorybook.org/illustrations/pages/11676.png",
+      "text": "Odongo na Apiya basubiye kw'ishure, biganira abagenzi babo ivyerekeye ubuzima bwa ruguru ingene bumeze. Bamwe bumva ko ubuzima bwo mu gisagara aribwo buryoshe, abandi bakabona ko ubwa ruguru aribwo bwiza. Mugabo bose barahuriza ko Odongo na Apiyo bafise inakuru ameze neza cane!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47415#page=20",
+      "sourceDigest": "sha256:d9c04b2e4d7c4271782be5386730f2cfb388fe1c37c4bd4f38e3d5f5c2eadb4f"
+    }
+  ],
+  "stats": {
+    "pages": 20,
+    "words": 412
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:8e3465de559c86c769d93aafaea3b6097de0eeb718b4b4c91aa3f7ebaae9d03e"
+  }
+}

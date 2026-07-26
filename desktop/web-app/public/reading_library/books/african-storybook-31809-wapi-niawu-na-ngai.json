@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-31809-wapi-niawu-na-ngai",
+  "title": "Wapi niawu na ngai",
+  "description": "Niawu na nga abungi. Okoki komonela ngai ye wapi?",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Clare Verbeek, Thembani Dladla, Zanele Buthelezi"
+  ],
+  "illustrators": [
+    "Bronwen Heath"
+  ],
+  "translators": [
+    "Dorine Kamin"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi",
+      "role": "Author"
+    },
+    {
+      "name": "Dorine Kamin",
+      "role": "Translation"
+    },
+    {
+      "name": "Bronwen Heath",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY-NC 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/3.0/",
+  "attribution": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi (Author); Dorine Kamin (Translation); Bronwen Heath (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31809",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31809",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://cae.ukzn.ac.za/resources/seedbooks.aspx",
+    "editionId": "31809",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution. This edition is restricted to noncommercial use."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY-NC 3.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-d29e2476a063d70e",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/1565.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1565.png",
+      "text": "Wapi niawu na ngai?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31809#page=1",
+      "sourceDigest": "sha256:f425e2b3f0ab3a3b970e14841853303631c181fb4f384fe3100fa48ecf55dcb2"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1822.png",
+      "text": "Azali nase ya mbetu?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31809#page=2",
+      "sourceDigest": "sha256:2281a034e2f10515f5c17c4dba64a643ed078a89872c9432ab39ad0808d6e4bc"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1566.png",
+      "text": "Azali na likolo ya kabati?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31809#page=3",
+      "sourceDigest": "sha256:fae144d5d4903af068c65bf986a01ec477e0cdcf13db5285680709246497ffc4"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1567.png",
+      "text": "Azali na sima ya kiti?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31809#page=4",
+      "sourceDigest": "sha256:468aa826068855235c5efdcc09f49c07f61cc08cd5babfd5e0e17329d9c37db6"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1568.png",
+      "text": "Azali mpene ya foulu?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31809#page=5",
+      "sourceDigest": "sha256:ff1c182e6bf3b0a775f7eec685dea4d8471a58cca3c5e6860fe9ee133b410e74"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1569.png",
+      "text": "To azali na kati ya kitunga?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31809#page=6",
+      "sourceDigest": "sha256:d5d6509a637e2df38238c1ba28c6a62c08c74d9a0335f57ad73f254b500927fc"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1570.png",
+      "text": "To mpe na kati ya ndaku?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31809#page=7",
+      "sourceDigest": "sha256:73c0f16efb622adfe1c57e6886f77122414ec1fc26d6280b3e454f544eec34b7"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1823.png",
+      "text": "Yeyo azali awa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31809#page=8",
+      "sourceDigest": "sha256:3cd9717fc1def5c9ee0d049cfd1c1bdf3b671084a01676841b07e70bdce56f30"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 37
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:19fc200c8d4ca763b90fd433fb9fd304e6f3cd0a68b59f0cedaf418ff39b0803"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1383-conflict-war-and-revolution-the-problem-of-politics-in-international-pol",
+  "title": "Conflict, War and Revolution: the problem of politics in international political thought",
+  "description": "Violence and war were ubiquitous features of politics long before the emergence of the modern state system. Since the late 18th century major revolutions across the world have further challenged the idea of the state as a final arbiter of international order. This book discusses ten major thinkers who have questioned and re-shaped how we think about politics, violence and relations between states – Thucydides, Augustine, Machiavelli, Hobbes, Locke, Rousseau, Clausewitz, Lenin and Mao, and Schmitt. Conflict, war and revolution have generally been seen in political thought as problems to be managed by stable domestic political communities. In different ways, all the paradigmatic thinkers here acknowledge them instead as inevitable dimensions of human experience, manifested through different ways of acting politically – while yet offering radically distinct answers about how they can be handled. This book dramatically broadens the canon of political thought by considering perspectives on the international system that challenge its historical inevitability and triumph. Drawing on history, theology, and law as well as philosophy, Paul Kelly introduces thinkers who challenge fundamentally the ways in which we should think about the nature and scope of political institutions and agents. He illuminates many troubling contemporary conflicts with a critical and historical perspective. This book is primarily intended for second year and upwards undergraduate students in general political theory and international theory, and advanced international relations students. Each chapter is also downloadable on its own for use in courses considering only some of the ten theorists covered. Written in an accessible way Conflict, War and Revolution will also interest advanced general readers with interests in the historical thought underpinnings of political ideas and today’s international politics.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Political Science"
+  ],
+  "authors": [
+    "Paul Kelly - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "LSE Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/conflict-war-and-revolution-the-problem-of-politics-in-international-political-thought"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Violence and war were ubiquitous features of politics long before the emergence of the modern state system. Since the late 18th century major revolutions across the world have further challenged the idea of the state as a final arbiter of international order. This book discusses ten major thinkers who have questioned and re-shaped how we think about politics, violence and relations between states – Thucydides, Augustine, Machiavelli, Hobbes, Locke, Rousseau, Clausewitz, Lenin and Mao, and Schmitt. Conflict, war and revolution have generally been seen in political thought as problems to be managed by stable domestic political communities. In different ways, all the paradigmatic thinkers here acknowledge them instead as inevitable dimensions of human experience, manifested through different ways of acting politically – while yet offering radically distinct answers about how they can be handled. This book dramatically broadens the canon of political thought by considering perspectives on the international system that challenge its historical inevitability and triumph. Drawing on history, theology, and law as well as philosophy, Paul Kelly introduces thinkers who challenge fundamentally the ways in which we should think about the nature and scope of political institutions and agents. He illuminates many troubling contemporary conflicts with a critical and historical perspective. This book is primarily intended for second year and upwards undergraduate students in general political theory and international theory, and advanced international relations students. Each chapter is also downloadable on its own for use in courses considering only some of the ten theorists covered. Written in an accessible way Conflict, War and Revolution will also interest advanced general readers with interests in the historical thought underpinnings of political ideas and today’s international politics."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2022."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 299
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1383",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

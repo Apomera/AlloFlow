@@ -1,6 +1,6 @@
 {
     "schemaVersion":  1,
-    "catalogReviewedAt":  "2026-07-22",
+    "catalogReviewedAt":  "2026-07-25",
     "integrations":  [
                          {
                              "contract":  {
@@ -141,13 +141,19 @@
                                        ]
                          },
     "evidenceGraph":  {
-                          "version":  "1.0.0",
-                          "schemaVersion":  1,
+                          "version":  "1.1.0",
+                          "schemaVersion":  2,
                           "paths":  [
                                         "research_evidence_graph.js",
                                         "desktop/web-app/public/research_evidence_graph.js"
                                     ],
                           "documentationPath":  "docs/evidence_graph_and_interoperability.md",
+                          "schemaPaths":  [
+                                              "docs/schemas/alloflow-evidence-graph.schema.json",
+                                              "docs/schemas/alloflow-inquiry-portfolio.schema.json",
+                                              "docs/schemas/alloflow-interoperability-bundle.schema.json"
+                                          ],
+                          "supportsValidatedImport":  true,
                           "standards":  [
                                             "W3C Web Annotation Data Model",
                                             "CSL-JSON",

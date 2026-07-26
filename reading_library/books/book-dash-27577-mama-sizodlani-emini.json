@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-27577-mama-sizodlani-emini",
+  "title": "Mama, sizodlani emini?",
+  "description": "Hlanganyela noThabo nodadewabo uTumi ngezidlo zasemini ezinemilingo noMama!",
+  "language": "isiZulu",
+  "langCode": "zul",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Food and eating",
+    "Let's play!"
+  ],
+  "authors": [
+    "Sally Partridge"
+  ],
+  "illustrators": [
+    "Heather Jenkins"
+  ],
+  "contributors": [
+    {
+      "name": "Mbali Mauda",
+      "role": "Designer"
+    },
+    {
+      "name": "Sally Partridge",
+      "role": "Writer"
+    },
+    {
+      "name": "Heather Jenkins",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Melissa Fagan",
+      "role": "Editor"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/mama-sizodlani-emini/",
+    "attributionUrl": "https://bookdash.org/books/mama-sizodlani-emini/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=mama-whats-for-lunch"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/11/mama-whats-for-lunch_zu_20211108_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/11/mama-whats-for-lunch_zu_20211108_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Hlanganyela noThabo nodadewabo uTumi ngezidlo zasemini ezinemilingo noMama!"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Mbali Mauda (Designer); Sally Partridge (Writer); Heather Jenkins (Illustrator); Melissa Fagan (Editor)\n\nLanguage: isiZulu. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=mama-whats-for-lunch"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 74
+  }
+}

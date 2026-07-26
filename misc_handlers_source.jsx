@@ -1328,7 +1328,11 @@ async function runAutoFixLoop(maxRounds, deps) {
         _setStepIfOwned(t('pdf_audit.auto_continue_round', { round: round + 1, max: maxRounds, detail: _acDetail, score: cur.afterScore || 0, target: pdfTargetScore }) || ('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + _acDetail + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...'));
         let result;
         if (_vio > 0) {
-          result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
+          result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses, {
+            signal: _abortCtrl.signal,
+            shouldAbort: () => !_canContinue(),
+          });
+          if (!result || result.stale) { cur = pdfFixResultRef.current; break; }
         } else if (_auditOnlyRefresh) {
           // No confirmed fixable issue remains. Refresh all verification evidence
           // once without sending clean content through an empty AI rewrite.

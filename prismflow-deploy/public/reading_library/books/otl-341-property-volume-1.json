@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-341-property-volume-1",
+  "title": "Property Volume 1",
+  "description": "This is Volume 1 of a two volume set written for Property Law. From the Preface: Property, as a vaguely defined collection of contract, tort, and criminal cases, does not take on the natural structure of a substantive area of the law through the systematic study of duty, breach, causation, defenses, and damages. Instead this textbook and most Property courses survey various topics in law with two goals in mind. First, we will study a number of traditional property topics, those where the issue of \"ownership\" and what that entails have long been thought to be a central issue. Second, but most importantly, our interdisciplinary study will introduce some of the major analytical techniques in law, from reasoning using precedent to law and economics to distributive justice. As we roam among topics, our goal is always, relentlessly to ask, \"Why?\" \"Why should the law protect this party's interest?\" These major techniques that we will pick up along the way will help us provide better and better answers to this question.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law - Property Law"
+  ],
+  "authors": [
+    "Christian Turner - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CALI's eLangdell® Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/property-volume-1"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This is Volume 1 of a two volume set written for Property Law. From the Preface: Property, as a vaguely defined collection of contract, tort, and criminal cases, does not take on the natural structure of a substantive area of the law through the systematic study of duty, breach, causation, defenses, and damages. Instead this textbook and most Property courses survey various topics in law with two goals in mind. First, we will study a number of traditional property topics, those where the issue of \"ownership\" and what that entails have long been thought to be a central issue. Second, but most importantly, our interdisciplinary study will introduce some of the major analytical techniques in law, from reasoning using precedent to law and economics to distributive justice. As we roam among topics, our goal is always, relentlessly to ask, \"Why?\" \"Why should the law protect this party's interest?\" These major techniques that we will pick up along the way will help us provide better and better answers to this question."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2012."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 193
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "341",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -23,6 +23,12 @@ Last updated: 2026-07-18 by Codex.
 - Record the validation you ran and whether anything was deployed.
 - Commit finished work before handing off so another agent can sync from Git instead of overwriting local-only changes.
 
+## Strategy & Vision Docs (2026-07-24)
+
+- `UDL_REACH_AND_STRATEGY_HANDOFF.md` (repo root) — Part I: the no-extension reach roadmap (capture "Lens" command center -> Google Picker + `drive.file` write-back -> sanctioned connectors/LTI -> supervised computer-use spike hosted in AlloFlow Desktop), grounded in the mailbox (`apps_script/session_mailbox/Code.gs`) and `session_transport_module.js` findings, plus the cloud-vs-local capture FERPA fork. Part II: a filed Machiavellian / Art of War strategic shadow-work lens, explicitly a stress-test and NOT the mission. Reach prototype lives at `C:\tmp\allolens-docs-prototype.html` (standalone web app; needs Aaron's OAuth client id + API key; cannot be a hosted Artifact because CSP blocks Google SDKs). Do not let the computer-use spike jump the King Middle pilot-reliability gate.
+- `ALLOFLOW_CRITIQUES_ANSWERED.md` (repo root) — adversarial critiques that assume AlloFlow is an enemy of students and educators, each steelmanned then dismantled. Companion red-team to the shadow-work section above.
+- `ALLOLENS_HANDOFF_FOR_CHATGPT.md` (repo root) — **cross-agent handoff for continuing the AlloLens capture command-center work.** Self-contained: current prototype state (`C:\tmp\allolens-capture-prototype.html` + `allolens-docs-prototype.html`, standalone, not yet integrated), verified SessionTransport/mailbox facts, decided-vs-open items, ranked next steps (start with the `type` taxonomy mapping), and repo traps. Read before touching AlloLens.
+
 ## Current Priority Handoff (2026-07-09)
 
 Active thread goal: review project documentation, find stale material, and update it appropriately. Do not treat the Desktop/Docker cleanup as the whole job; it was the first high-impact layer.

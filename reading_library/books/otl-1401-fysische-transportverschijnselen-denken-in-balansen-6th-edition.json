@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1401-fysische-transportverschijnselen-denken-in-balansen-6th-edition",
+  "title": "Fysische Transportverschijnselen - Denken in Balansen - 6th edition",
+  "description": "De transport- en overdrachtsprocessen van warmte, massa en impuls worden naar hun analogie behandeld. De processen worden beschreven met behulp van macro- en microbalansen die in veel gevallen leiden tot differentiaalvergelijkingen. Ook veel aspecten van stromingsleer komen op deze manier aan de orde en zo bereidt het boek ook voor op moderne Computational Fluid Dynamics technieken. Het doel van het boek is ook studenten te trainen in het oplossen van problemen waarbij transportverschijnselen centraal staan. Daartoe bevat het boek bijna 100 uitgewerkte vraagstukken.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Physics"
+  ],
+  "authors": [
+    "Harrie van den Akker - Author / Robert F. Mudde - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "TU Delft Open",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/fysische-transportverschijnselen-denken-in-balansen-authors"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "De transport- en overdrachtsprocessen van warmte, massa en impuls worden naar hun analogie behandeld. De processen worden beschreven met behulp van macro- en microbalansen die in veel gevallen leiden tot differentiaalvergelijkingen. Ook veel aspecten van stromingsleer komen op deze manier aan de orde en zo bereidt het boek ook voor op moderne Computational Fluid Dynamics technieken. Het doel van het boek is ook studenten te trainen in het oplossen van problemen waarbij transportverschijnselen centraal staan. Daartoe bevat het boek bijna 100 uitgewerkte vraagstukken."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2026."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 106
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1401",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

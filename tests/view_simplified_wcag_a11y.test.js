@@ -11,8 +11,8 @@ describe('Simplified View WCAG controls', () => {
   });
 
   it('uses explicit non-submit types for every native button', () => {
-    expect(source.match(/<button\b/g)).toHaveLength(48);
-    expect(source.match(/\btype="button"/g)).toHaveLength(48);
+    expect(source.match(/<button\b/g)).toHaveLength(49);
+    expect(source.match(/\btype="button"/g)).toHaveLength(49);
   });
 
   it('keeps cloze completion a non-modal live status', () => {
@@ -20,6 +20,45 @@ describe('Simplified View WCAG controls', () => {
     expect(source).toContain('fixed inset-0 pointer-events-none');
     expect(source).not.toContain('data-a11y-overlay="nonmodal-status" role="dialog"');
     expect(source).not.toContain('data-a11y-overlay="nonmodal-status" aria-modal');
+  });
+});
+
+describe('Simplified View read-aloud sentence alignment', () => {
+  it('derives one normalized, reference-free body for every sentence consumer', () => {
+    expect(source).toContain("if (typeof splitReferencesFromBody === 'function') split = splitReferencesFromBody(fullText) || split;");
+    expect(source).toContain("return '## ' + inner.trim();");
+    expect(source).toContain('var simplifiedDisplayBody = simplifiedContentParts.body;');
+    expect(source).toContain('var simplifiedReadAloudText = simplifiedDisplayBody.trim();');
+    expect(source).toContain('var simplifiedReferences = resolveSimplifiedReferences(simplifiedDisplayBody, simplifiedContentParts.references, simplifiedInputReferences, adaptedCitationAudit);');
+    expect(source).toContain("if (!auditAllowsFallback || !simplifiedBodyHasCitationMarkers(adaptedBody)) return '';");
+    expect(source).toContain("if (ownedReferences) return ownedReferences;");
+    expect(source).toContain('const _references = simplifiedReferences;');
+    expect(source).not.toContain('_refsInputCount > _refsContentCount');
+
+    const sentenceListConsumers =
+      source.match(/getReadAloudSentencesForText\(simplifiedReadAloudText\)/g) || [];
+    const sideBySideConsumers =
+      source.match(/getSideBySideContent\(simplifiedReadAloudText\)/g) || [];
+    expect(sentenceListConsumers.length).toBeGreaterThanOrEqual(3);
+    expect(sideBySideConsumers.length).toBeGreaterThanOrEqual(3);
+
+    expect(source).toContain("handleSpeak(simplifiedReadAloudText, 'simplified-main',");
+    expect(source).not.toMatch(/handleSpeak\(generatedContent\?\.data,\s*'simplified-main'/);
+    expect(source).not.toContain('getReadAloudSentencesForText(generatedContent && generatedContent.data)');
+    expect(source).not.toContain('const paragraphs = generatedContent?.data.split(/\\n{2,}/);');
+  });
+
+  it('offsets side-by-side target indexes after non-table source sentences', () => {
+    expect(source).toContain(
+      "const sourceSentencesTotal = source.flatMap(p => p.trim().startsWith('|') || p.includes('\\n|') ? [] : splitTextToSentences(p)).length;"
+    );
+    expect(source).toContain('let currentTargetSentenceIdx = sourceSentencesTotal;');
+    expect(source).toContain(
+      "const sourceParaSentences = source[i] && !(source[i].trim().startsWith('|') || source[i].includes('\\n|')) ? splitTextToSentences(source[i]) : [];"
+    );
+    expect(source).toContain(
+      "const targetParaSentences = target[i] && !(target[i].trim().startsWith('|') || target[i].includes('\\n|')) ? splitTextToSentences(target[i]) : [];"
+    );
   });
 });
 

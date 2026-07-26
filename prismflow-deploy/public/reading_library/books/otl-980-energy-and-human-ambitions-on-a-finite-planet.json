@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-980-energy-and-human-ambitions-on-a-finite-planet",
+  "title": "Energy and Human Ambitions on a Finite Planet",
+  "description": "Where is humanity going? How realistic is a future of fusion and space colonies? What constraints are imposed by physics, by resource availability, and by human psychology? Are default expectations grounded in reality? This textbook, written for a general-education audience, aims to address these questions without either the hype or the indifference typical of many books. The message throughout is that humanity faces a broad sweep of foundational problems as we inevitably transition away from fossil fuels and confront planetary limits in a host of unprecedented ways—a shift whose scale and probable rapidity offers little historical guidance. Salvaging a decent future requires keen awareness, quantitative assessment, deliberate preventive action, and—above all—recognition that prevailing assumptions about human identity and destiny have been cruelly misshapen by the profoundly unsustainable trajectory of the last 150 years. The goal is to shake off unfounded and unexamined expectations, while elucidating the relevant physics and encouraging greater facility in quantitative reasoning. After addressing limits to growth, population dynamics, uncooperative space environments, and the current fossil underpinnings of modern civilization, various sources of alternative energy are considered in detail— assessing how they stack up against each other, and which show the greatest potential. Following this is an exploration of systemic human impediments to effective and timely responses, capped by guidelines for individual adaptations resulting in reduced energy and material demands on the planet’s groaning capacity. Appendices provide refreshers on math and chemistry, as well as supplementary material of potential interest relating to cosmology, electric transportation, and an evolutionary perspective on humanity’s place in nature.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Earth Sciences",
+    "Natural Sciences - Physics"
+  ],
+  "authors": [
+    "Thomas W. Murphy - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "eScholarship",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/energy-and-human-ambitions-on-a-finite-planet"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Where is humanity going? How realistic is a future of fusion and space colonies? What constraints are imposed by physics, by resource availability, and by human psychology? Are default expectations grounded in reality? This textbook, written for a general-education audience, aims to address these questions without either the hype or the indifference typical of many books. The message throughout is that humanity faces a broad sweep of foundational problems as we inevitably transition away from fossil fuels and confront planetary limits in a host of unprecedented ways—a shift whose scale and probable rapidity offers little historical guidance. Salvaging a decent future requires keen awareness, quantitative assessment, deliberate preventive action, and—above all—recognition that prevailing assumptions about human identity and destiny have been cruelly misshapen by the profoundly unsustainable trajectory of the last 150 years. The goal is to shake off unfounded and unexamined expectations, while elucidating the relevant physics and encouraging greater facility in quantitative reasoning. After addressing limits to growth, population dynamics, uncooperative space environments, and the current fossil underpinnings of modern civilization, various sources of alternative energy are considered in detail— assessing how they stack up against each other, and which show the greatest potential. Following this is an exploration of systemic human impediments to effective and timely responses, capped by guidelines for individual adaptations resulting in reduced energy and material demands on the planet’s groaning capacity. Appendices provide refreshers on math and chemistry, as well as supplementary material of potential interest relating to cosmology, electric transportation, and an evolutionary perspective on humanity’s place in nature."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 280
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "980",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

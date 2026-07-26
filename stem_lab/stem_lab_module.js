@@ -8,6 +8,19 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+// Shared theme enforcement for legacy neutral utility classes and Windows forced colors.
+(function() {
+  if (typeof document === 'undefined' || document.getElementById('allo-stem-theme-contract-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-theme-contract-css';
+  st.textContent = '[data-stem-theme=contrast]{background:#000!important;color:#fff!important;color-scheme:dark}' +
+    '[data-stem-theme=contrast] :is(.bg-white,.bg-slate-50,.bg-slate-100,.bg-slate-800,.bg-slate-900,.bg-slate-950){background-color:#000!important}' +
+    '[data-stem-theme=contrast] :is(.text-slate-300,.text-slate-400,.text-slate-500,.text-slate-600,.text-slate-700,.text-slate-800,.text-slate-900){color:#fff!important}' +
+    '[data-stem-theme=contrast] :is(.border-slate-100,.border-slate-200,.border-slate-300,.border-slate-600,.border-slate-700,.border-slate-800){border-color:#fbbf24!important}' +
+    '@media (forced-colors:active){[data-stem-tool-shell] :is(button,input,select,textarea,summary,a){forced-color-adjust:auto!important}[data-stem-tool-shell] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px!important}[data-stem-tool-shell] canvas,[data-stem-tool-shell] svg{border:1px solid CanvasText!important}}';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // stem_lab_module.js — v2.3.0 (a11y enhancements)
 (function () {
   if (window.AlloModules && window.AlloModules.StemLab) { console.log('[CDN] StemLab already loaded, skipping duplicate'); } else {
@@ -48,7 +61,7 @@
       };
       var _ASTDetectTheme = function () {
         try {
-          if (typeof document === 'undefined') return 'dark';
+          if (typeof document === 'undefined') return 'light';
           // <main> carries `theme-${theme}` class; fallback to body if absent
           var main = document.querySelector('main.theme-contrast') ? 'contrast'
                    : document.querySelector('main.theme-dark')     ? 'dark'
@@ -61,8 +74,8 @@
             if (document.body.classList.contains('theme-light')) return 'light';
           }
         } catch (_) {}
-        // Last-resort fallback to dark since the legacy STEM palette is dark.
-        return 'dark';
+        // Match the STEM host's initial theme so SSR and first paint agree.
+        return 'light';
       };
       window.AlloStemTheme = {
         palette: function (themeName) {
@@ -290,7 +303,8 @@
               borderRadius: 12,
               minHeight: 'calc(100vh - 32px)'
             },
-            'data-stem-tool-shell': id
+            'data-stem-tool-shell': id,
+            'data-stem-theme': (ctx.theme === 'contrast' || ctx.theme === 'dark' || ctx.theme === 'light') ? ctx.theme : (ctx.isContrast ? 'contrast' : (ctx.isDark ? 'dark' : 'light'))
           },
             // sr-only tool-name heading — gives every tool a semantic H1 landmark
             // for screen readers (many tools' visible titles are non-heading text
@@ -1313,13 +1327,17 @@
       // single guarded ctx.getHint entry point — see getHint above.)
 
       // ── Theme Detection (prop from parent app, falls back to DOM query) ──
-      var _stemTheme = _themeProp || 'light';
-      if (!_themeProp) {
+      var _stemTheme = (_themeProp === 'light' || _themeProp === 'dark' || _themeProp === 'contrast')
+        ? _themeProp
+        : null;
+      if (!_stemTheme) {
         try {
-          if (document.querySelector('.theme-dark')) _stemTheme = 'dark';
-          else if (document.querySelector('.theme-contrast')) _stemTheme = 'contrast';
-        } catch (e) { }
+          _stemTheme = window.AlloStemTheme && window.AlloStemTheme.currentTheme
+            ? window.AlloStemTheme.currentTheme()
+            : null;
+        } catch (e) { _stemTheme = null; }
       }
+      if (!_stemTheme) _stemTheme = 'light';
       var isDark = _stemTheme === 'dark';
       var isContrast = _stemTheme === 'contrast';
       // Palette shortcuts for canvas rendering

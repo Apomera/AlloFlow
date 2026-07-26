@@ -59,8 +59,10 @@ const BASE = {
   compass: { x: 90, y: 90 }, filings: false, compassMoved: false,
   sawAttract: false, sawRepel: false,
   turns: 20, current: 2, currentDir: 1, windingDir: 1, core: false, coilTouched: false,
-  motorCurrent: 3, motorField: 4, motorCurrentDir: 1, motorFieldDir: 1, motorRunning: false, motorAngle: 90, motorRan: false,
+  motorCurrent: 3, motorField: 4, motorCurrentDir: 1, motorFieldDir: 1, motorRunning: false, motorAngle: 90, motorRan: false, motorMode: 'forces',
   benchLoadOhms: 40, benchFriction: 3, benchTurns: 80, benchField: 4, benchUsed: false,
+  benchView: 'steady', benchRunning: false, benchTime: 0, benchOmega: 0, benchTemperature: 22,
+  benchTrace: [], benchTrials: [], benchTrialCount: 0, benchMissionStatus: 'ready', benchCompareTrialId: null,
   induceMode: 'hand', genAngle: 0, genTurns: 60, genField: 4, genRPM: 60,
   learningMode: 'guided', notebookOpen: false, notebookPrediction: '', notebookClaim: '', notebookTrials: [],
   earthSeen: false, declination: 12, earthSolarWind: 5,
@@ -144,6 +146,48 @@ describe('magnetism tool — real physics', () => {
     expect(off.generatedVoltage).toBe(0);
     expect(off.outputPower).toBe(0);
     expect(off.losses).toBe(0);
+  });
+  it('models back EMF, inertia, heat, and instantaneous energy conservation', () => {
+    const controls = { current: 3, motorField: 4, loadOhms: 40, friction: 3, turns: 80, generatorField: 4 };
+    const start = physics.motorGeneratorTransientStep({ time: 0, omega: 0, temperature: 22 }, controls, 0.1);
+    const fast = physics.motorGeneratorTransientStep({ time: 0, omega: 80, temperature: 22 }, controls, 0.1);
+    expect(start.omega).toBeGreaterThan(0);
+    expect(fast.backEMF).toBeGreaterThan(start.backEMF);
+    expect(fast.inputCurrent).toBeLessThan(start.inputCurrent);
+    expect(start.temperature).toBeGreaterThan(22);
+    [start, fast].forEach((sample) => {
+      expect(sample.inputPower).toBeCloseTo(sample.outputPower + sample.losses + sample.kineticPower, 9);
+    });
+  });
+
+  it('turns the transient bench into a constrained design mission', () => {
+    function run(loadOhms) {
+      const controls = { current: 3, motorField: 4, loadOhms, friction: 3, turns: 80, generatorField: 4 };
+      return physics.evaluateMotorGeneratorMission(physics.motorGeneratorSimulate(controls, 10, 0.1));
+    }
+    const heavy = run(10);
+    const balanced = run(40);
+    const light = run(160);
+    expect(heavy.pass).toBe(false);
+    expect(balanced.pass).toBe(true);
+    expect(light.pass).toBe(false);
+    expect(heavy.rpm).toBeLessThan(balanced.rpm);
+    expect(light.voltage).toBeGreaterThan(balanced.voltage);
+    expect(light.power).toBeLessThan(balanced.power);
+    expect(balanced.checks).toEqual([true, true, true, true]);
+  });
+
+  it('identifies controlled and confounded motor-generator trial changes', () => {
+    const baseline = { loadOhms: 40, turns: 80, field: 4, current: 3, motorField: 4, friction: 3 };
+    const controlled = Object.assign({}, baseline, { loadOhms: 10 });
+    const confounded = Object.assign({}, baseline, { loadOhms: 10, turns: 120 });
+    expect(physics.describeMotorGeneratorTrialChange(controlled, baseline)).toMatchObject({
+      count: 1, keys: ['loadOhms'], label: 'generator load only', fair: true,
+    });
+    expect(physics.describeMotorGeneratorTrialChange(confounded, baseline)).toMatchObject({
+      count: 2, keys: ['loadOhms', 'turns'], fair: false,
+    });
+    expect(physics.describeMotorGeneratorTrialChange(baseline, baseline).label).toBe('repeat design');
   });
   it('a bar magnet dipole field points away from its north pole on-axis', () => {
     const f = physics.fieldAt(50, 0, [{ x: 0, y: 0, angle: 0, polarity: 1 }]);
@@ -516,11 +560,31 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(html).toContain('battery → moving charges → opposite magnetic forces → rotation');
   });
 
+  it('keeps Motor investigations visually focused in three persistent submodes', () => {
+    const forces = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'forces' }));
+    expect(forces).toContain('Motor forces');
+    expect(forces).toContain('Energy systems');
+    expect(forces).toContain('Particle beam');
+    expect(forces).toContain('How a motor spins');
+    expect(forces).not.toContain('Coupled motor–generator engineering bench');
+    expect(forces).not.toContain('Charged-particle beam — Lorentz force');
+
+    const energy = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'energy' }));
+    expect(energy).toContain('Coupled motor–generator engineering bench');
+    expect(energy).not.toContain('How a motor spins');
+    expect(energy).not.toContain('Charged-particle beam — Lorentz force');
+
+    const particle = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'particle' }));
+    expect(particle).toContain('Charged-particle beam — Lorentz force');
+    expect(particle).not.toContain('How a motor spins');
+    expect(particle).not.toContain('Coupled motor–generator engineering bench');
+  });
+
   it('renders a coupled motor-generator bench with live load, loss, and speed feedback', () => {
     const heavyModel = physics.motorGeneratorBench(3, 4, 10, 3, 80, 4);
     const lightModel = physics.motorGeneratorBench(3, 4, 160, 3, 80, 4);
-    const heavy = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', benchLoadOhms: 10 }));
-    const light = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', benchLoadOhms: 160 }));
+    const heavy = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'energy', benchLoadOhms: 10 }));
+    const light = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'energy', benchLoadOhms: 160 }));
     expect(heavy).toContain('Coupled motor');
     expect(heavy).toContain('Motor generator energy bench');
     expect(heavy).toContain('Energy ledger');
@@ -530,13 +594,58 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(light).toContain(Math.round(lightModel.rpm) + ' RPM');
     expect(heavyModel.rpm).toBeLessThan(lightModel.rpm);
   });
+  it('renders the transient design mission, projected graph, controls, and trial comparison', () => {
+    const projected = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'energy', benchView: 'mission' }));
+    expect(projected).toContain('Transient design mission');
+    expect(projected).toContain('projected response');
+    expect(projected).toContain('shaft speed');
+    expect(projected).toContain('generated voltage');
+    expect(projected).toContain('useful power');
+    expect(projected).toContain('Run &amp; record 10 s trial');
+    expect(projected).toContain('Advance 1 s');
+    expect(projected).toContain('No completed trials yet');
+
+    const completed = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'energy', benchView: 'mission', benchMissionStatus: 'passed', benchTime: 10,
+      benchTrials: [{ id: 1, loadOhms: 40, turns: 80, field: 4, rpm: 562, voltage: 15.0, power: 5.7, temperature: 35.0, pass: true }],
+    }));
+    expect(completed).toContain('Motor-generator mission trial comparison');
+    expect(completed).toContain('✓ Pass');
+    expect(completed).toContain('80 × 4');
+  });
+  it('overlays a selected prior trial and explains whether the latest comparison is fair', () => {
+    const priorTrace = [
+      { time: 0, rpm: 0, generatedVoltage: 0, outputPower: 0 },
+      { time: 10, rpm: 520, generatedVoltage: 14.5, outputPower: 5.2 },
+    ];
+    const currentTrace = [
+      { time: 0, omega: 0, rpm: 0, generatedVoltage: 0, outputPower: 0, temperature: 22 },
+      { time: 10, omega: 60, rpm: 573, generatedVoltage: 15.6, outputPower: 6.1, temperature: 34 },
+    ];
+    const common = { turns: 80, field: 4, current: 3, motorField: 4, friction: 3 };
+    const html = mountWithSeed(cfg, Object.assign({}, BASE, {
+      tab: 'motor', motorMode: 'energy', benchView: 'mission', benchMissionStatus: 'passed', benchTime: 10,
+      benchTrace: currentTrace, benchCompareTrialId: 1, benchTrialCount: 2,
+      benchTrials: [
+        Object.assign({ id: 1, loadOhms: 40, rpm: 520, voltage: 14.5, power: 5.2, temperature: 33, pass: true, trace: priorTrace }, common),
+        Object.assign({ id: 2, loadOhms: 10, rpm: 573, voltage: 15.6, power: 6.1, temperature: 34, pass: true, trace: currentTrace }, common),
+      ],
+    }));
+    expect(html).toContain('trial #1 · dashed');
+    expect(html).toContain('current trial · solid');
+    expect(html).toContain('Dashed curves compare trial 1 with the solid current trial');
+    expect(html).toContain('generator load only');
+    expect(html).toContain('Fair comparison: only generator load changed.');
+    expect(html).toContain('aria-pressed="true"');
+  });
+
   it('passes axe WCAG A/AA rules for the coupled motor-generator bench', async () => {
     const auditHost = document.createElement('main');
-    auditHost.innerHTML = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', benchLoadOhms: 40 }));
+    auditHost.innerHTML = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'energy', benchView: 'mission', benchLoadOhms: 40 }));
     document.body.appendChild(auditHost);
     try {
       const ranges = Array.from(auditHost.querySelectorAll('input[type="range"]'));
-      expect(ranges.length).toBeGreaterThanOrEqual(6);
+      expect(ranges.length).toBeGreaterThanOrEqual(4);
       ranges.forEach((range) => {
         expect(auditHost.querySelector('label[for="' + range.id + '"]')).not.toBeNull();
         expect(range.getAttribute('aria-valuetext')).toBeTruthy();
@@ -627,7 +736,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(field).toContain('fourth power of distance');
     expect(field).toContain('force-versus-distance curve falls steeply');
 
-    const motor = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', chargeSign: -1, chargeField: 1 }));
+    const motor = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'particle', chargeSign: -1, chargeField: 1 }));
     expect(motor).toContain('Charged-particle beam — Lorentz force');
     expect(motor).toContain('F = qv × B');
     expect(motor).toContain('curving down');

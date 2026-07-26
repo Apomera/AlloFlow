@@ -150,7 +150,11 @@ describe('Sketch Response uses the existing Pictionary peer protocol', () => {
     host.resolveRound({ reason: 'manual' });
     expect(host.activeRound).toBeNull();
     expect(host.strokeHistory).toHaveLength(1);
-    expect(host.lastResolvedSketch).toEqual({ prompt: 'Model', participantUids: ['u1'] });
+    expect(host.lastResolvedSketch).toEqual({
+      prompt: 'Model',
+      criterion: 'Which sketch most clearly and accurately communicates the idea?',
+      participantUids: ['u1'],
+    });
     expect(host.broadcastSketchReveal('u1', 'Model')).toBeTruthy();
 
     host.startRound({ mode: 'pictionary', concept: 'Plant', drawerUids: ['u1'] });

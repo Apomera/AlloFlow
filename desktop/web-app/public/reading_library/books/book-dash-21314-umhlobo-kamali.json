@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-21314-umhlobo-kamali",
+  "title": "Umhlobo kaMali",
+  "description": "UMali uthanda ukudlala yedwa. UMakhulu ufuna ukuba adlale nabanye. UMali uyazama, kodwa akumonwabisi oko. Kwade kwafika uLesedi …",
+  "language": "isiXhosa",
+  "langCode": "xho",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Family, friends, and home",
+    "Let's play!"
+  ],
+  "authors": [
+    "Rujeko Moyo"
+  ],
+  "illustrators": [
+    "Ellen Heydenrych"
+  ],
+  "contributors": [
+    {
+      "name": "Rox Jaden Palmer",
+      "role": "Designer"
+    },
+    {
+      "name": "Ellen Heydenrych",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Rujeko Moyo",
+      "role": "Writer"
+    },
+    {
+      "name": "Margot Bertelsmann",
+      "role": "Editor"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/umhlobo-kamali/",
+    "attributionUrl": "https://bookdash.org/books/umhlobo-kamali/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=malis-friend"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/02/malis-friend_xh_20200419_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/02/malis-friend_xh_20200419_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "UMali uthanda ukudlala yedwa. UMakhulu ufuna ukuba adlale nabanye. UMali uyazama, kodwa akumonwabisi oko. Kwade kwafika uLesedi …"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Rox Jaden Palmer (Designer); Ellen Heydenrych (Illustrator); Rujeko Moyo (Writer); Margot Bertelsmann (Editor)\n\nLanguage: isiXhosa. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=malis-friend"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 85
+  }
+}

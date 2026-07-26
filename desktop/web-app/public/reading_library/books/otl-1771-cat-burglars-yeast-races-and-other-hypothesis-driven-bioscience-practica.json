@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1771-cat-burglars-yeast-races-and-other-hypothesis-driven-bioscience-practica",
+  "title": "Cat burglars, yeast races, and other hypothesis-driven bioscience practicals",
+  "description": "This book is aimed at fellow academics teaching biosciences students (probably in the first or second year of an undergraduate degree). It contains materials from eight different sets of practicals that colleagues have developed here at the University of Sheffield, concerning different areas of molecular and cellular biology. The experiments all span a few lab sessions, and are a step away from “cookbook” style labs with defined instructions and a certain outcome; each one contains significant elements of experimental planning. The standard lab session in our School is three hours long, with students working in pairs. Each section contains the following: some background information and scientific context; student-facing documents; technical information, including materials needed and any extra protocols; and additional resources that might be helpful such as references.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology"
+  ],
+  "authors": [
+    "Rebecca Barnes - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "The University of Sheffield",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/cat-burglars-yeast-races-and-other-hypothesis-driven-bioscience-practicals"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is aimed at fellow academics teaching biosciences students (probably in the first or second year of an undergraduate degree). It contains materials from eight different sets of practicals that colleagues have developed here at the University of Sheffield, concerning different areas of molecular and cellular biology. The experiments all span a few lab sessions, and are a step away from “cookbook” style labs with defined instructions and a certain outcome; each one contains significant elements of experimental planning. The standard lab session in our School is three hours long, with students working in pairs. Each section contains the following: some background information and scientific context; student-facing documents; technical information, including materials needed and any extra protocols; and additional resources that might be helpful such as references."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 151
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1771",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

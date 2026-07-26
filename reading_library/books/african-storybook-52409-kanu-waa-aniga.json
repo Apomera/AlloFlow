@@ -1,0 +1,141 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52409-kanu-waa-aniga",
+  "title": "Kanu waa aniga",
+  "description": "Akhri wax igu saabsan aniga: Qofka aan ahay, waxaan jeclahay iyo waxaan samaynkaro. Ka waran adiga?",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Clare Verbeek, Thembani Dladla, Zanele Buthelezi"
+  ],
+  "illustrators": [
+    "Kathy Arbuckle"
+  ],
+  "translators": [
+    "Abdikadir Ibrahim"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi",
+      "role": "Author"
+    },
+    {
+      "name": "Abdikadir Ibrahim",
+      "role": "Translation"
+    },
+    {
+      "name": "Kathy Arbuckle",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY-NC 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/3.0/",
+  "attribution": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi (Author); Abdikadir Ibrahim (Translation); Kathy Arbuckle (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52409",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52409",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://cae.ukzn.ac.za/resources/seedbooks.aspx",
+    "editionId": "52409",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution. This edition is restricted to noncommercial use."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY-NC 3.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-341d5bac6fb79ab5",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/1709.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1710.png",
+      "text": "Kanu waa sawirkayga.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52409#page=1",
+      "sourceDigest": "sha256:a1a33468a402b208b4e6e44db21151349c41448f8c3fe5408e4607fc33ba3338"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1711.png",
+      "text": "Waxaan ahay lix jir.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52409#page=2",
+      "sourceDigest": "sha256:9b29d1774c527e6869abf051be5f2de87eecb8b1bab86b75cc9381c6b8b4f2f9"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1797.png",
+      "text": "Kanu waa sawirka qoyskayga.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52409#page=3",
+      "sourceDigest": "sha256:8dc84ff2b3cdc6989aac0f009bc6951e025ca77d9d0f64eef3327f7de45c2823"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1713.png",
+      "text": "Cuntada aan u jeclahay waa kaluun shiilan iyo baradho.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52409#page=4",
+      "sourceDigest": "sha256:5aaa032fedd9ad1b5e550d517e98ab6120b6124609c11986f9487ddfa991c9fb"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1714.png",
+      "text": "Waxaan sawiri karaa gacantayda.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52409#page=5",
+      "sourceDigest": "sha256:e9077461a6b8e7b935685c8edccbbb61403b53d672fc879440d463fc211a1f6f"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1715.png",
+      "text": "Waxaan jeclahay in aan la boodo saaxiibaday.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52409#page=6",
+      "sourceDigest": "sha256:ce75b08523764b7496130bd04a66df8cf52260c86685324f07297e9aab12547e"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1716.png",
+      "text": "Taleefoonkaygu waa 079 523 3255.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52409#page=7",
+      "sourceDigest": "sha256:75201b12190be8e420ff163ff6edcd665e0acf839271822326ea8ccf0c90b7df"
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 36
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:2ddb565afe9d5e09f6cee9b72da20f6552de0b12667b4308a35b7c4cbe8239f2"
+  }
+}

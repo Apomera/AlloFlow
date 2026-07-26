@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-789-business-law-i-essentials",
+  "title": "Business Law I Essentials",
+  "description": "Business Law I Essentials is a brief introductory textbook designed to meet the scope and sequence requirements of courses on Business Law or the Legal Environment of Business. The concepts are presented in a streamlined manner, and cover the key concepts necessary to establish a strong foundation in the subject. The textbook follows a traditional approach to the study of business law. Each chapter contains learning objectives, explanatory narrative and concepts, references for further reading, and end-of-chapter questions. Business Law I Essentials may need to be supplemented with additional content, cases, or related materials, and is offered as a foundational resource that focuses on the baseline concepts, issues, and approaches.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law - Administrative Law",
+    "Law - Civil Law"
+  ],
+  "authors": [
+    "Mirande Valbrune - Author / Renee De Assis - Author / Suzanne Cardell - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/business-law-i-essentials"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Business Law I Essentials is a brief introductory textbook designed to meet the scope and sequence requirements of courses on Business Law or the Legal Environment of Business. The concepts are presented in a streamlined manner, and cover the key concepts necessary to establish a strong foundation in the subject. The textbook follows a traditional approach to the study of business law. Each chapter contains learning objectives, explanatory narrative and concepts, references for further reading, and end-of-chapter questions. Business Law I Essentials may need to be supplemented with additional content, cases, or related materials, and is offered as a foundational resource that focuses on the baseline concepts, issues, and approaches."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 133
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "789",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

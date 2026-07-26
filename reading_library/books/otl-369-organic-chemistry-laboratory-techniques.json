@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-369-organic-chemistry-laboratory-techniques",
+  "title": "Organic Chemistry Laboratory Techniques",
+  "description": "This resource was created by Lisa Nichols (chemistry faculty at Butte Community College in Northern California) as a result of an academic sabbatical leave in the Fall-2015 to Spring 2016 term. The target audience are undergraduate students in organic chemistry. In this resource you will find theory and procedures on the main organic lab techniques (chromatography, crystallization, extraction, distillation) as well as general concepts on how to set up and heat apparatuses (see the Table of Contents tab for a more complete listing of topics). All procedures are accompanied by step-by-step pictures, and graphics are heavily utilized throughout the resource.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Chemistry"
+  ],
+  "authors": [
+    "Lisa Nichols - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Lisa Nichols",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-NoDerivs",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/organic-chemistry-laboratory-techniques"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-NoDerivs"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This resource was created by Lisa Nichols (chemistry faculty at Butte Community College in Northern California) as a result of an academic sabbatical leave in the Fall-2015 to Spring 2016 term. The target audience are undergraduate students in organic chemistry. In this resource you will find theory and procedures on the main organic lab techniques (chromatography, crystallization, extraction, distillation) as well as general concepts on how to set up and heat apparatuses (see the Table of Contents tab for a more complete listing of topics). All procedures are accompanied by step-by-step pictures, and graphics are heavily utilized throughout the resource."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-NoDerivs. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 123
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-NoDerivs",
+  "externalRecordId": "369",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

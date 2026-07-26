@@ -1,0 +1,232 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-21197-untitled-ti",
+  "title": "ቅርስስቲ መዓልቲ",
+  "description": "እዚ ታሪኽ ብዛዕባ ክልተ ተጨወዩ ቆልዑ እዩ። እቶም ቆልዑ ሓደጋ ኣብ ዘለዎ ጉዕዞ ኣትዮም ነይሮም፤ ኣብ መወዳእታ ግን ድሒኖም።",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Richard Khadambi, Collins Kipkirui"
+  ],
+  "illustrators": [
+    "Abraham Muzee"
+  ],
+  "translators": [
+    "Angesom Abadi"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Richard Khadambi, Collins Kipkirui",
+      "role": "Author"
+    },
+    {
+      "name": "Angesom Abadi",
+      "role": "Translation"
+    },
+    {
+      "name": "Abraham Muzee",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Richard Khadambi, Collins Kipkirui (Author); Angesom Abadi (Translation); Abraham Muzee (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "21197",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-2ae63f9d9e73e19a",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/14751.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14735.png",
+      "text": "ኣነን በርሀ ዓርከይን ካብ ቤት ትምህርቲ ንገዛና ንኸድ ነበርና።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=1",
+      "sourceDigest": "sha256:91bf3538fc653bd44bf1eecc59d6dcacf1b4d8749f0024d68b516b4c77e9d29e"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14736.png",
+      "text": "ሓደ መዓልቲ ሓደ ሰብኣይ ደድሕሬና ይኽተለና ነበረ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=2",
+      "sourceDigest": "sha256:3170a836281106a5fa86d02a8cdfa50be7f067524a732494add472773e9f60b8"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14737.png",
+      "text": "ኣስናኑ ቡናዊ እዩ ነይሩ። ኣብ ገፁ ፈፀጋ ነይርዎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=3",
+      "sourceDigest": "sha256:8ccb6e4747a8f94d6c221210b3d927ea752c2639de3939c851d4b499fd599d82"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14738.png",
+      "text": "ምልስ ኢልና ምስርኣናዮ፣ ተቖጢዑ ኮረየልና።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=4",
+      "sourceDigest": "sha256:c6087916e05e8aa176bb64a819f4ab0d8cf51f9fc84f8395f747ad97f77c2d46"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14740.png",
+      "text": "ንዓይ ናብ ሽፍንቲ መኪና ሰንደውኒ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=5",
+      "sourceDigest": "sha256:2693db53c0b2ba9a106f792aca973d593a1e52d25d3e0e825e5840c1a361c871"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14739.png",
+      "text": "በርሀ ዓርከይ ጎይዩ ኣምለጠ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=6",
+      "sourceDigest": "sha256:0b53acba4636781c7f29cf817bb1f7ac6f5c9da750b755fd16a39d81f96f0ccb"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14741.png",
+      "text": "ኢደይ ኣሲሮም ናብ ፀልማት ገዛ ኣእትዮምኒ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=7",
+      "sourceDigest": "sha256:b250229bae0281609653afeb3f2f16b2dceea669babf3f1b85665ef13858ad2f"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14742.png",
+      "text": "“ነዊሕ ጉዕዞ ስለ ንኸይድ፣ እዚ ምግቢ ብላዕ” በለኒ ሓደ ሰብኣይ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=8",
+      "sourceDigest": "sha256:d2968a213d9a79dee6093555dee97ca0ce97fc49e1e8366bafd3358dbb630602"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14743.png",
+      "text": "ኣነ እናበላዕኹ እቲ ሰብኣይ ሽጋራ የትክኽ ነይሩ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=9",
+      "sourceDigest": "sha256:c9e7bfafbdf1091f758e68dc1ae031ceb501eef00cf44fdd870c0c1bfd7ec344"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14744.png",
+      "text": "ሃንደበት ካሊእ ሰብኣይ ንበርሀ ዓርከይ እናጎተቶ መፀ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=10",
+      "sourceDigest": "sha256:56d532a5b9082eb9858cc10560e56bbc08929552a5543a901d4f850aa9c2aefe"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14745.png",
+      "text": "ኣብቲ ካሊእ ክፍሊ እቶም ሰብኡት እናተኻትዑን እናተጓየቑን ንሰምዖም ነይርና።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=11",
+      "sourceDigest": "sha256:f982b6f5b78a356887e1bc4896aca28bd7bccbe48f5f4236a1bb4c7af12ded7e"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14746.png",
+      "text": "“ቤተሰብና ኣይኸፍልዎምን፣ ጎይና ነምልጥ” በለኒ በርሀ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=12",
+      "sourceDigest": "sha256:717ff880570f87877f13cd7e8f5cddc60b31742dc2aa59d9b211b51e35b790dc"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14747.png",
+      "text": "ብርሃን ክሳብ ንርኢ ንቲ ዓንደ-ገመል ካብ እቲ መስኮት ነቐልናዮ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=13",
+      "sourceDigest": "sha256:c000ec4325712d6327f9ccb258bf25e141a8d9cb95d2b28403d6d780f679114d"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14748.png",
+      "text": "በርሀ በቲ መስኮት ወፅዩ ዝረድኣና ሰብ ደለየ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=14",
+      "sourceDigest": "sha256:f9d643d47acbd602223440203bab04f5b3939740bd06647b429359ea397e817f"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14749.png",
+      "text": "እቶም ሰባት እናሸኮሉ መፁ። እቲ መራሒኦም ብጣዕሚ ሓረቐ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=15",
+      "sourceDigest": "sha256:6a4b044081051624f95522de9cacac4d7974d30f808a3d8627cffbbdd9c52282"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14750.png",
+      "text": "ናብቲ ካሊእ ክፍሊ ተመሊሶም ክትዖም ቀፀሉ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=16",
+      "sourceDigest": "sha256:3f070757a313165554831cf8ff5338efe347f9c4672257494d5db30b5281b6a8"
+    },
+    {
+      "n": 17,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14751.png",
+      "text": "“ኣይትፍራሕ፣ ፖሊሳት ኣለው ኣብዚ” ዝብል ድምፂ ሰማዕኹ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=17",
+      "sourceDigest": "sha256:63a76b19984dd9d784a0a4c68f3ab047367fe127ea4aaca128429992f56b287b"
+    },
+    {
+      "n": 18,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14752.png",
+      "text": "ይጨኻጨኹ ነይሮም፤ ተኹሲ ጥይት እውን ይሰምዕ ነይረ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=18",
+      "sourceDigest": "sha256:5b0ab49bac6de178cb73361661332842981be3e1d3ccbbd628cb409ce55ce4c6"
+    },
+    {
+      "n": 19,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14753.png",
+      "text": "ሓንቲ ፖሊስ “ኩሉ ነገር ኣብቂዑ ኣሎ። ሕዚ ድሕነትካ ሕልው እዩ” በለትኒ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=19",
+      "sourceDigest": "sha256:916bec44d09039ca7668bf386cc95b3c3d3c922e91446490c5a05b9237e93401"
+    },
+    {
+      "n": 20,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14754.png",
+      "text": "ድሕሪ እዛ ምዓልቲ ኣነን በርሀ ዓርከይን ምስተጠንቐቕና ኢና።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21197#page=20",
+      "sourceDigest": "sha256:e0767b7118d05d9ffb2cf9969c687c58e3ca99e59c19e65f4b20beaf29646b89"
+    }
+  ],
+  "stats": {
+    "pages": 20,
+    "words": 146
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:72dc00e95b3cc10db3ab705ea7b37397845ec664430a34215667a17a9e618e69"
+  }
+}

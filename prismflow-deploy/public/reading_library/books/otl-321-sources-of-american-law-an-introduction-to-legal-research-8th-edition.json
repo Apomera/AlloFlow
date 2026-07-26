@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-321-sources-of-american-law-an-introduction-to-legal-research-8th-edition",
+  "title": "Sources of American Law: An Introduction to Legal Research - 8th Edition",
+  "description": "At its most basic definition the practice of law comprises conducting research to find relevant rules of law and then applying those rules to the specific set of circumstances faced by a client. However, in American law, the legal rules to be applied derive from myriad sources, complicating the process and making legal research different from other sorts of research. This text introduces first-year law students to the new kind of research required to study and to practice law. It seeks to demystify the art of legal research by following a “Source and Process” approach. First, the text introduces students to the major sources of American law and describes the forms the various authorities traditionally took in print. After establishing this base, the text proceeds to instruct students on the methods they will most likely use in practice, namely electronic research techniques and the consultation of secondary sources. Sources of Law incorporates screencasts currently hosted on YouTube that actively demonstrate the processes described in the static text. Finally, the text illustrates how the different pieces come together in the legal research process. Sources of Law focuses on realistic goals for 1Ls to learn in a relatively small amount of instruction time, and so focuses mainly on the basics. It does introduce some advanced material so that 1Ls can recognize pieces of information they may encounter in research, but it does not fully cover researching materials outside the scope of the traditional 1L course. As such, it is best-suited for introductory legal research courses for 1Ls. What's New in the Eighth Edition: The Eighth Edition primarily expands Chapter 9’s discussion of the research process to compare currently available legal generative AI tools to previously existing research tools such as secondary sources and electronic citators. That expansion also addresses some of the AI tools’ limitations and further discusses how thoughtful evaluation of available research tools can affect the research process.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law"
+  ],
+  "authors": [
+    "Beau Steenken - Author / Tina M. Brooks - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CALI's eLangdell® Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/sources-of-american-law-an-introduction-to-legal-research"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "At its most basic definition the practice of law comprises conducting research to find relevant rules of law and then applying those rules to the specific set of circumstances faced by a client. However, in American law, the legal rules to be applied derive from myriad sources, complicating the process and making legal research different from other sorts of research. This text introduces first-year law students to the new kind of research required to study and to practice law. It seeks to demystify the art of legal research by following a “Source and Process” approach. First, the text introduces students to the major sources of American law and describes the forms the various authorities traditionally took in print. After establishing this base, the text proceeds to instruct students on the methods they will most likely use in practice, namely electronic research techniques and the consultation of secondary sources. Sources of Law incorporates screencasts currently hosted on YouTube that actively demonstrate the processes described in the static text. Finally, the text illustrates how the different pieces come together in the legal research process. Sources of Law focuses on realistic goals for 1Ls to learn in a relatively small amount of instruction time, and so focuses mainly on the basics. It does introduce some advanced material so that 1Ls can recognize pieces of information they may encounter in research, but it does not fully cover researching materials outside the scope of the traditional 1L course. As such, it is best-suited for introductory legal research courses for 1Ls. What's New in the Eighth Edition: The Eighth Edition primarily expands Chapter 9’s discussion of the research process to compare currently available legal generative AI tools to previously existing research tools such as secondary sources and electronic citators. That expansion also addresses some of the AI tools’ limitations and further discusses how thoughtful evaluation of available research tools can affect the research process."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 341
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "321",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

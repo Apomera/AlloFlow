@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1627-unlocking-the-digital-age-the-musician-s-guide-to-research-copyright-and",
+  "title": "Unlocking the Digital Age: The Musician's Guide to Research, Copyright, and Publishing",
+  "description": "Based on coursework developed at the Peabody Conservatory, this book serves as a crucial resource for early career musicians navigating the complexities of the digital era. This guide bridges the gap between creative practice and scholarly research, empowering musicians to confidently share and protect their work as they expand their performing lives beyond the concert stage as citizen artists. It offers a plain language resource that helps early career musicians see where creative practice and creative research intersect and how to traverse information systems to share their work. As professional musicians and researchers, the authors’ experiences on stage and in academia makes this guide an indispensable tool for musicians aiming to thrive in the digital landscape.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Music"
+  ],
+  "authors": [
+    "Kathleen DeLaurenti - Author / Andrea I. Copland - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "The Peabody Institute of The Johns Hopkins University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/unlocking-the-digital-age-the-musician-s-guide-to-research-copyright-and-publishing"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Based on coursework developed at the Peabody Conservatory, this book serves as a crucial resource for early career musicians navigating the complexities of the digital era. This guide bridges the gap between creative practice and scholarly research, empowering musicians to confidently share and protect their work as they expand their performing lives beyond the concert stage as citizen artists. It offers a plain language resource that helps early career musicians see where creative practice and creative research intersect and how to traverse information systems to share their work. As professional musicians and researchers, the authors’ experiences on stage and in academia makes this guide an indispensable tool for musicians aiming to thrive in the digital landscape."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 139
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1627",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-292-yoga-minds-writing-bodies-contemplative-writing-pedagogy",
+  "title": "Yoga Minds, Writing Bodies: Contemplative Writing Pedagogy",
+  "description": "In Yoga Minds, Writing Bodies, Christy Wenger argues for the inclusion of Eastern-influenced contemplative education within writing studies. She observes that, although we have \"embodied\" writing education in general by discussing the rhetorics of racialized, gendered, and disabled bodies, we have done substantially less to address the particular bodies that occupy our classrooms. She proposes that we turn to contemplative education practices that engages student bodies through fusing a traditional curriculum with contemplative practices including yoga, meditation, and the martial arts. Drawing strength from the recent \"quiet revolution\" (Zajonc) of contemplative pedagogy within postsecondary education and a legacy of field interest attributable to James Moffett, this project draws on case studies of first-year college writers to present contemplative pedagogy as a means of teaching students mindfulness of their writing and learning in ways that promote the academic, rhetorical work accomplished in first-year composition classes while at the same time remaining committed to a larger scope of a writer's physical and emotional well-being.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities"
+  ],
+  "authors": [
+    "Christy Wenger - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "WAC Clearinghouse",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-NoDerivs",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/yoga-minds-writing-bodies-contemplative-writing-pedagogy"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-NoDerivs"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "In Yoga Minds, Writing Bodies, Christy Wenger argues for the inclusion of Eastern-influenced contemplative education within writing studies. She observes that, although we have \"embodied\" writing education in general by discussing the rhetorics of racialized, gendered, and disabled bodies, we have done substantially less to address the particular bodies that occupy our classrooms. She proposes that we turn to contemplative education practices that engages student bodies through fusing a traditional curriculum with contemplative practices including yoga, meditation, and the martial arts. Drawing strength from the recent \"quiet revolution\" (Zajonc) of contemplative pedagogy within postsecondary education and a legacy of field interest attributable to James Moffett, this project draws on case studies of first-year college writers to present contemplative pedagogy as a means of teaching students mindfulness of their writing and learning in ways that promote the academic, rhetorical work accomplished in first-year composition classes while at the same time remaining committed to a larger scope of a writer's physical and emotional well-being."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-NoDerivs. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 185
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-NoDerivs",
+  "externalRecordId": "292",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

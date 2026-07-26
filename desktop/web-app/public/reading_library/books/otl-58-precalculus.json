@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-58-precalculus",
+  "title": "Precalculus",
+  "description": "A casual glance through the Table of Contents of most of the major publishers' College Algebra books reveals nearly isomorphic content in both order and depth. Our Table of Contents shows a different approach, one that might be labeled “Functions First.” To truly use The Rule of Four, that is, in order to discuss each new concept algebraically, graphically, numerically and verbally, it seems completely obvious to us that one would need to introduce functions first. (Take a moment and compare our ordering to the classic “equations first, then the Cartesian Plane and THEN functions” approach seen in most of the major players.) We then introduce a class of functions and discuss the equations, inequalities (with a heavy emphasis on sign diagrams) and applications which involve functions in that class. The material is presented at a level that definitely prepares a student for Calculus while giving them relevant Mathematics which can be used in other classes as well. Graphing calculators are used sparingly and only as a tool to enhance the Mathematics, not to replace it. The answers to nearly all of the computational homework exercises are given in thetext and we have gone to great lengths to write some very thought provoking discussion questions whose answers are not given. One will notice that our exercise sets are much shorter than the traditional sets of nearly 100 “drill and kill” questions which build skill devoid of understanding. Our experience has been that students can do about 15-20 homework exercises a night so we very carefully chose smaller sets of questions which cover all of the necessary skills and get the students thinking more deeply about the Mathematics involved.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Calculus",
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "Carl Stitz - Author / Jeff Zeager - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Stitz Zeager Open Source Mathematics",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/precalculus"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A casual glance through the Table of Contents of most of the major publishers' College Algebra books reveals nearly isomorphic content in both order and depth. Our Table of Contents shows a different approach, one that might be labeled “Functions First.” To truly use The Rule of Four, that is, in order to discuss each new concept algebraically, graphically, numerically and verbally, it seems completely obvious to us that one would need to introduce functions first. (Take a moment and compare our ordering to the classic “equations first, then the Cartesian Plane and THEN functions” approach seen in most of the major players.) We then introduce a class of functions and discuss the equations, inequalities (with a heavy emphasis on sign diagrams) and applications which involve functions in that class. The material is presented at a level that definitely prepares a student for Calculus while giving them relevant Mathematics which can be used in other classes as well. Graphing calculators are used sparingly and only as a tool to enhance the Mathematics, not to replace it. The answers to nearly all of the computational homework exercises are given in thetext and we have gone to great lengths to write some very thought provoking discussion questions whose answers are not given. One will notice that our exercise sets are much shorter than the traditional sets of nearly 100 “drill and kill” questions which build skill devoid of understanding. Our experience has been that students can do about 15-20 homework exercises a night so we very carefully chose smaller sets of questions which cover all of the necessary skills and get the students thinking more deeply about the Mathematics involved."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2013."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 301
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "58",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-663-a-grammar-of-pite-saami",
+  "title": "A grammar of Pite Saami",
+  "description": "Pite Saami is a highly endangered Western Saami language in the Uralic language family currently spoken by a few individuals in Swedish Lapland. This grammar is the first extensive book-length treatment of a Saami language written in English. While focusing on the morphophonology of the main word classes nouns, adjectives and verbs, it also deals with other linguistic structures such as prosody, phonology, phrase types and clauses. Furthermore, it provides an introduction to the language and its speakers, and an outline of a preliminary Pite Saami orthography. An extensive annotated spoken-language corpus collected over the course of five years forms the empirical foundation for this description, and each example includes a specific reference to the corpus in order to facilitate verification of claims made on the data. Descriptions are presented for a general linguistics audience and without attempting to support a specific theoretical approach, but this book should be equally useful for scholars of Uralic linguistics, typologists, and even learners of Pite Saami.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages"
+  ],
+  "authors": [
+    "Joshua Wilbur - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Language Science Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-grammar-of-pite-saami"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Pite Saami is a highly endangered Western Saami language in the Uralic language family currently spoken by a few individuals in Swedish Lapland. This grammar is the first extensive book-length treatment of a Saami language written in English. While focusing on the morphophonology of the main word classes nouns, adjectives and verbs, it also deals with other linguistic structures such as prosody, phonology, phrase types and clauses. Furthermore, it provides an introduction to the language and its speakers, and an outline of a preliminary Pite Saami orthography. An extensive annotated spoken-language corpus collected over the course of five years forms the empirical foundation for this description, and each example includes a specific reference to the corpus in order to facilitate verification of claims made on the data. Descriptions are presented for a general linguistics audience and without attempting to support a specific theoretical approach, but this book should be equally useful for scholars of Uralic linguistics, typologists, and even learners of Pite Saami."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2014."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 186
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "663",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

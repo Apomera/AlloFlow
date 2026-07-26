@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-394-discrete-mathematics-an-open-introduction-4th-edition",
+  "title": "Discrete Mathematics: An Open Introduction - 4th Edition",
+  "description": "Discrete Mathematics: An Open Introduction is a free, open source textbook appropriate for a first or second year undergraduate course for math and computer science majors. The book is especially well-suited for courses that incorporate inquiry-based learning. Since Spring 2013, the book has been used as the primary textbook or a supplemental resource at more than 200 colleges and universities around the world (see the partial adoptions list). After many years of development, I am pleased to announce that the 4th edition of Discrete Mathematics: an Open Introduction is now available, here and on Runestone Academy. The new edition brings many improvements and a new organization of content. In particular, the book now starts with logic and proofs, then practices those proofs with graph theory. The second half of the book contains material on counting (with a new \"application to probability\" section) and sequences. Over the last few years, I have found that students have more success with this arrangement. There is also a stronger emphasis on discrete structures, which should make the book more useful for students in computer science, while still focusing on understanding mathematical concepts essential for math majors and future math teachers.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "Oscar Levin - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oscar Levin",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/discrete-mathematics-an-open-introduction"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Discrete Mathematics: An Open Introduction is a free, open source textbook appropriate for a first or second year undergraduate course for math and computer science majors. The book is especially well-suited for courses that incorporate inquiry-based learning. Since Spring 2013, the book has been used as the primary textbook or a supplemental resource at more than 200 colleges and universities around the world (see the partial adoptions list). After many years of development, I am pleased to announce that the 4th edition of Discrete Mathematics: an Open Introduction is now available, here and on Runestone Academy. The new edition brings many improvements and a new organization of content. In particular, the book now starts with logic and proofs, then practices those proofs with graph theory. The second half of the book contains material on counting (with a new \"application to probability\" section) and sequences. Over the last few years, I have found that students have more success with this arrangement. There is also a stronger emphasis on discrete structures, which should make the book more useful for students in computer science, while still focusing on understanding mathematical concepts essential for math majors and future math teachers."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 219
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "394",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

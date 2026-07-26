@@ -37,12 +37,12 @@ const checkpointRuntimeStart = pipe.indexOf("const _ACTIVE_BATCH_FILES_KEY");
 const checkpointRuntimeEnd = pipe.indexOf('  const _AUDIT_SLICE_BYTES_KB', checkpointRuntimeStart);
 if (checkpointRuntimeStart < 0 || checkpointRuntimeEnd < 0) throw new Error('Batch checkpoint runtime markers missing');
 const makeCheckpointRuntime = (storageDB, idbKeyval, navigatorApi = {}, addToast = () => {}) => new Function(
-  'storageDB', 'window', 'navigator', '_PIPELINE_PROMPT_VERSION',
+  'storageDB', 'window', 'navigator', '_PIPELINE_PROMPT_VERSION', '_remediationRetentionMs',
   '_alloStripVerificationHtmlSnapshot', '_alloRehydrateVerificationHtmlBinding', 'warnLog', 'addToast',
   pipe.slice(checkpointRuntimeStart, checkpointRuntimeEnd)
     + '\nreturn { normalize: _normalizeBatchCheckpointId, newId: _newBatchCheckpointId, prefixFor: _batchResultPrefixFor, keyFor: _batchResultKeyFor, statusKeyFor: _batchStatusKeyFor, saveFiles: _saveBatchFiles, saveStatusNow: _saveBatchStatusNow, load: _loadActiveBatch, clear: _clearActiveBatch, withRootLock: _withBatchCheckpointRootLock };'
 )(
-  storageDB, { idbKeyval }, navigatorApi, 'test-prompt-v1',
+  storageDB, { idbKeyval }, navigatorApi, 'test-prompt-v1', (requestedMs) => requestedMs,
   (value) => value, async (value) => value, () => {}, addToast
 );
 const _checkpointHelperValues = new Map();
@@ -186,7 +186,7 @@ describe('remediation deep-dive hardening', () => {
   });
 
   it('keeps audit readiness separate while blocking buttons that actually remediate', () => {
-    expect(host).toContain("const auditModuleNames = ['DocPipelineModule', 'GeminiAPI'];");
+    expect(host).toContain("const auditModuleNames = ['AccessibilityEvidence', 'DocPipelineModule', 'GeminiAPI'];");
     expect(host).toContain("const remediationModuleNames = [...auditModuleNames, 'VerificationPolicy', 'DocBuilderRenderer', 'MiscHandlersModule'];");
     expect(host).toContain('auditReady, auditDependencyState, remediationReady, remediationDependencyState, retryRemediationDependencies');
     expect(view).toContain('Remediation engine not ready');

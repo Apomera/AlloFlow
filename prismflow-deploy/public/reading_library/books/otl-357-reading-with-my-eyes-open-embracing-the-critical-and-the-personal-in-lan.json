@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-357-reading-with-my-eyes-open-embracing-the-critical-and-the-personal-in-lan",
+  "title": "Reading With My Eyes Open: Embracing the critical and the personal in language pedagogy",
+  "description": "Untangling the various approaches to language teaching and their history, Gerdi Quist maps recent thinking in language studies at university. Using an interdisciplinary theoretical framework, drawn from educational philosophy, cultural studies, intercultural studies and language pedagogy, the author discusses the many tensions and currents in contemporary language teaching. The author puts forward an alternative pedagogy, that of a cultuurtekst-perspective, which engages learners at complex linguistic and cultural levels. In discussing the case study in which this approach is tested, the author develops her argument for embracing various critical perspectives through the personal engagement of students. From the start the author acknowledges her own engaged position as a language teacher in a liberal humanistic educational environment. She adopts a self-critical perspective through which her engagement with adverse student reaction leads to deepening insights both for the author and her students as part of the non-linear process of learning. Gerdi Quist teaches Dutch language and lectures on multiculturalism and intercultural communication. Recent publications included a book chapter and journal articles on language pedagogy and intercultural communication.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education",
+    "Humanities - Linguistics"
+  ],
+  "authors": [
+    "Gerdi Quist - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ubiquity Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/reading-with-my-eyes-open-embracing-the-critical-and-the-personal-in-language-pedagogy"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Untangling the various approaches to language teaching and their history, Gerdi Quist maps recent thinking in language studies at university. Using an interdisciplinary theoretical framework, drawn from educational philosophy, cultural studies, intercultural studies and language pedagogy, the author discusses the many tensions and currents in contemporary language teaching. The author puts forward an alternative pedagogy, that of a cultuurtekst-perspective, which engages learners at complex linguistic and cultural levels. In discussing the case study in which this approach is tested, the author develops her argument for embracing various critical perspectives through the personal engagement of students. From the start the author acknowledges her own engaged position as a language teacher in a liberal humanistic educational environment. She adopts a self-critical perspective through which her engagement with adverse student reaction leads to deepening insights both for the author and her students as part of the non-linear process of learning. Gerdi Quist teaches Dutch language and lectures on multiculturalism and intercultural communication. Recent publications included a book chapter and journal articles on language pedagogy and intercultural communication."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2013."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 197
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "357",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

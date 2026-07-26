@@ -344,6 +344,10 @@ describe('mirrored data contract (reading_library/)', () => {
   // contract check runs over the merged list.
   const allBooks = index.books.concat(cardIndex.books);
   const combinedIndex = { books: allBooks };
+  const extendedLazySources = new Set([
+    'open-textbook-library', 'wikibooks', 'core-knowledge', 'pressbooks',
+    'standard-ebooks', 'book-dash', 'oapen', 'doab', 'mit-ocw', 'ncbi-bookshelf',
+  ]);
 
   it('index has the expected schema and attribution', () => {
     expect(index.schema).toBe('allo-reading-library-index@1');
@@ -357,7 +361,11 @@ describe('mirrored data contract (reading_library/)', () => {
     expect(index.cardsFile).toBe('index_cards.json');
     expect(cardIndex.schema).toBe('allo-reading-library-index-cards@1');
     expect(index.books.some((b) => b.contentType === 'public-domain-catalog-card')).toBe(false);
-    expect(cardIndex.books.every((b) => b.contentType === 'public-domain-catalog-card')).toBe(true);
+    expect(index.books.some((b) => extendedLazySources.has(b.sourceId))).toBe(false);
+    expect(cardIndex.books.every((b) =>
+      b.contentType === 'public-domain-catalog-card' || extendedLazySources.has(b.sourceId)
+    )).toBe(true);
+    expect(cardIndex.books.every((b) => /card/.test(String(b.contentType || '')))).toBe(true);
     expect(index.cardsCount).toBe(cardIndex.books.length);
     // Same timestamp — the mirror writes both in one pass; a mismatch means a
     // stale card file shipped against a fresh core.
@@ -407,7 +415,10 @@ describe('mirrored data contract (reading_library/)', () => {
         fail(/^https:\/\/storyweaver\.org\.in\//.test(book.source.url), label + ': StoryWeaver source drift');
       } else {
         fail(entry.sourceId === sourceId, label + ': source id mismatch');
-        fail(['frontiers', 'nasa', 'noaa', 'usgs', 'wikisource', 'loc', 'gutenberg', 'openstax', 'ck12', 'bloom'].includes(sourceId), label + ': unknown source');
+        fail([
+          'frontiers', 'nasa', 'noaa', 'usgs', 'wikisource', 'loc', 'gutenberg',
+          'openstax', 'open-rn', 'ck12', 'bloom', 'african-storybook', ...extendedLazySources,
+        ].includes(sourceId), label + ': unknown source');
       }
       fail(Array.isArray(book.pages) && book.pages.length > 0, label + ': no pages');
       fail(!!(book.title && book.title.length), label + ': no title');

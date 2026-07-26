@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-21172-untitled-ti",
+  "title": "ነጎዳ ምስ ወዳ",
+  "description": "ነጎዳ ምስ ወዳ ኣብ መሬት እዮም ይነብሩ ነይሮም። ብምኽያት ጥፍኣት ወዳ፣ ካብ ሰብ ርሒቖም ኣብ ሰማይ ክነብሩ ንጉስ ወሲንሎም።",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Ogot Owino"
+  ],
+  "illustrators": [
+    "Jesse Breytenbach"
+  ],
+  "translators": [
+    "Angesom Abadi"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Ogot Owino",
+      "role": "Author"
+    },
+    {
+      "name": "Angesom Abadi",
+      "role": "Translation"
+    },
+    {
+      "name": "Jesse Breytenbach",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Ogot Owino (Author); Angesom Abadi (Translation); Jesse Breytenbach (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "21172",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-d5f4b0b27d651999",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/19056.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19042.png",
+      "text": "ቐደም ቐደም፣ ነጎዳን በርቕን ኣብ መሬት ምስ ሰባት እዮም ይነብሩ ነይሮም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172#page=1",
+      "sourceDigest": "sha256:8c4ddb0750577722cc6d5371c98517120e8352e92a2015e0cc9f3f17e97cc0a0"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19044.png",
+      "text": "ነጎዳ ንበርቒ ኣዲኡ እያ ነይራ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172#page=2",
+      "sourceDigest": "sha256:b7d65b7ec1f549b3e1cfd02d929f51ee69dc2e801eef9397b9675fd6d659a251"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19046.png",
+      "text": "በርቒ ብጣዕሚ ሓራቕ እዩ ነይሩ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172#page=3",
+      "sourceDigest": "sha256:4db170908aee4913040669a21a777bb23c69cc1b986646f9854307c8cf500c1b"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19047.png",
+      "text": "በርቒ እንትሓርቕ ሰባት፣ ደኒን ገዛውትን የጥፍእ ነይሩ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172#page=4",
+      "sourceDigest": "sha256:f03fdf4a7fe48689b7427cfbfc54dd6f31257d26d279d7776520ad2e50b27d52"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19048.png",
+      "text": "በርቒ ጉድኣት እንተብፅሕ፣ ነጎዳ ሓያል ድምፂ ትፈጥር ነይራ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172#page=5",
+      "sourceDigest": "sha256:11f37d61d8b897cb9b2046edb5d4f68e7f9432747181fade54293e3459cb6076"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19050.png",
+      "text": "በርቒ ንኣዲኡ ፈፂሙ ኣይሰምዓን ነይሩ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172#page=6",
+      "sourceDigest": "sha256:163eabd2bcd7622425b1203835f7486182e6378e41b92d9c1e2143aa9c4581bd"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19051.png",
+      "text": "ኣብ መወዳእታ፣ ሰባት ናብ ንጉስ ጥርዓን ኣቕሪቦም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172#page=7",
+      "sourceDigest": "sha256:3c58e06ab0010b9d42f13ebc0e334a0a81952950f8130150096e574cecf54413"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19052.png",
+      "text": "እቲ ንጉስ ንነጎዳን በርቒን ኣብ ርሑቕ ዓዲ ከይዶም ክቕመጡ ወሲንሎም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172#page=8",
+      "sourceDigest": "sha256:937bc9900fd1aaaa0b80747a52c75907582cea99b3c9e7353c374c584c064d9f"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19053.png",
+      "text": "በርቒ ሕዚ እውን እንትሓርቕ ጫካን ኣዝርእትን የቃፅል ነበረ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172#page=9",
+      "sourceDigest": "sha256:9f3ab502d48b1ba48c4b7f0b1a40d013ac65a36157b3fe2a9c76f4ecf470f2f2"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19054.png",
+      "text": "ሰባት ንኻልኣይ ግዜ ናብ ንጉስ ጥርዓን ኣቕሪቦም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172#page=10",
+      "sourceDigest": "sha256:e1b24f7581faf29390066a5c4f2a728c23d07dad064de9e9d113ef1eab5d0434"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19055.png",
+      "text": "እቲ ንጉስ ንነጎዳን በርቕን ኣብ ሰማይ ክነብሩ ወሲንሎም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172#page=11",
+      "sourceDigest": "sha256:2dfa670fad2ebc9bc09d2f8951a9c572a497f7a2cf689ebb685dd9bf98f7323c"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19056.png",
+      "text": "ሕዚ እውን ግን በርቒ እንትሓርቕ የዕንውን የቃፅልን ኣሎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21172#page=12",
+      "sourceDigest": "sha256:14ead4e9777971eaf55feccbc9c89b93e20ebcd899f9f3f92ac9b0b8f3ace2ce"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 89
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:12a7771ddb21578ab96e9cd867082e0a100838db4c71b3feefabc86d1326f348"
+  }
+}

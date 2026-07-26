@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-915-the-crystal-ball-instruction-manual-version-1-1-volume-one-introduction-",
+  "title": "The Crystal Ball Instruction Manual - version 1.1 Volume One: Introduction to Data Science",
+  "description": "A perfect introduction to the exploding field of Data Science for the curious, first-time student. The author brings his trademark conversational tone to the important pillars of the discipline: exploratory data analysis, choices for structuring data, causality, machine learning principles, and introductory Python programming using open-source Jupyter Notebooks. This engaging read will allow any dedicated learner to build the skills necessary to contribute to the Data Science revolution, regardless of background.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science - Artificial Intelligence",
+    "Computer Science"
+  ],
+  "authors": [
+    "Stephen Davies - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Mary Washington",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-crystal-ball-instruction-manual-volume-one-introduction-to-data-science"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A perfect introduction to the exploding field of Data Science for the curious, first-time student. The author brings his trademark conversational tone to the important pillars of the discipline: exploratory data analysis, choices for structuring data, causality, machine learning principles, and introductory Python programming using open-source Jupyter Notebooks. This engaging read will allow any dedicated learner to build the skills necessary to contribute to the Data Science revolution, regardless of background."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 94
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "915",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

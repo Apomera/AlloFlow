@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1720-culturally-responsive-computing-an-introduction-into-computer-science-se",
+  "title": "Culturally Responsive Computing: An Introduction into Computer Science, Security, and Technology",
+  "description": "\"Culturally Responsive Computing\" is an essential textbook that explores the intricate relationship between technology and global societies. It gives students and professionals a deep understanding of how cultural contexts shape and are shaped by computing practices, from algorithm design to user interface development. This book equips readers with the knowledge and skills to create inclusive, ethical, and culturally sensitive technological solutions for our diverse world.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science"
+  ],
+  "authors": [
+    "Devan J. Walton - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "ROTEL",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/culturally-responsive-computing-an-introduction-into-computer-science-security-and-technology"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "\"Culturally Responsive Computing\" is an essential textbook that explores the intricate relationship between technology and global societies. It gives students and professionals a deep understanding of how cultural contexts shape and are shaped by computing practices, from algorithm design to user interface development. This book equips readers with the knowledge and skills to create inclusive, ethical, and culturally sensitive technological solutions for our diverse world."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 88
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1720",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1453-exploring-the-u-s-healthcare-system",
+  "title": "Exploring the U.S. Healthcare System",
+  "description": "Welcome to Exploring the U.S. Healthcare System. This open educational resource (OER) introduces students to foundational characteristics of the U.S. healthcare system. It begins with an overview of the healthcare system that includes a brief history and a description of the current state of health in the U.S. The second chapter describes health delivery systems, including inpatient, outpatient, post-acute, longterm, palliative, and hospice care. An introduction to health insurance in the third chapter will include an overview of basic concepts, private insurance, public insurance, and recent trends. The fourth chapter presents issues related to the triple aim of improving access to care, increasing the quality of care, and lowering the cost of care. The fifth chapter reviews how the government intervenes in healthcare and presents current policy issues related to the Patient Protection and Affordable Care Act and value-based contracting. The final chapter on the topic of technology in healthcare provides an overview of health information technology, health information legislation, emerging technologies, and the future of health information technology. Chapter content is supplemented with additional material such as reports, briefs, figures, infographics, definitions, and key terms. Chapters two through six end with a “knowledge check” exercise to actively engage students with the content. While this OER book was curated and created for undergraduate students in the field of healthcare, it is my hope that it will continue to be customized to other programs and shared again.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine"
+  ],
+  "authors": [
+    "Karen Valaitis - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of West Florida Pressbooks",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/exploring-the-u-s-healthcare-system"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Welcome to Exploring the U.S. Healthcare System. This open educational resource (OER) introduces students to foundational characteristics of the U.S. healthcare system. It begins with an overview of the healthcare system that includes a brief history and a description of the current state of health in the U.S. The second chapter describes health delivery systems, including inpatient, outpatient, post-acute, longterm, palliative, and hospice care. An introduction to health insurance in the third chapter will include an overview of basic concepts, private insurance, public insurance, and recent trends. The fourth chapter presents issues related to the triple aim of improving access to care, increasing the quality of care, and lowering the cost of care. The fifth chapter reviews how the government intervenes in healthcare and presents current policy issues related to the Patient Protection and Affordable Care Act and value-based contracting. The final chapter on the topic of technology in healthcare provides an overview of health information technology, health information legislation, emerging technologies, and the future of health information technology. Chapter content is supplemented with additional material such as reports, briefs, figures, infographics, definitions, and key terms. Chapters two through six end with a “knowledge check” exercise to actively engage students with the content. While this OER book was curated and created for undergraduate students in the field of healthcare, it is my hope that it will continue to be customized to other programs and shared again."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 259
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1453",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

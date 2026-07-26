@@ -1,0 +1,149 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-9621-khomo-e-lenaka-le-leng",
+  "title": "Khomo e lenaka le leng",
+  "description": "Na u kile ua bona khomo e nang le lenaka le le leng feela e se na mohatla?",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Khothatso Ranoosi"
+  ],
+  "illustrators": [
+    "Marion Drew"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Khothatso Ranoosi",
+      "role": "Author"
+    },
+    {
+      "name": "Marion Drew",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Khothatso Ranoosi (Author); Marion Drew (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9621",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9621",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://paleng.weebly.com/,",
+    "editionId": "9621",
+    "bookType": "1",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-ed2961c2cd71a57b",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/9612.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9613.png",
+      "text": "\"Heee!\" Ho na le khomo e ntle heso.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9621#page=1",
+      "sourceDigest": "sha256:f875e4d6587f3d9a83cdc6290a0b0e9c072b02279d2bebc58ee3939638031d17"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9614.png",
+      "text": "E na le lenaka le le leng, feela ha e na mohatla.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9621#page=2",
+      "sourceDigest": "sha256:01e1d835bee81785e148f7475ef73457bdf4c1fa1c260fe2dc84e643366a7df6"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9615.png",
+      "text": "E nonne, e mpa e kholo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9621#page=3",
+      "sourceDigest": "sha256:9fe58c7d5d748f810a05e4d0cf60be5121565353262c5aa07eb6698bf793c0f9"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9616.png",
+      "text": "Ke khomo e matla haholo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9621#page=4",
+      "sourceDigest": "sha256:78ddfe0a56ccdae4c2d48cdd987b6c9bb5ec51d8df86ba1628acd15789e0cf95"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9617.png",
+      "text": "Molisana o rata khomo ena haholo hofeta tse ling. O rutile khomo ena ho mamela lentsoe la hae feela.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9621#page=5",
+      "sourceDigest": "sha256:0505739b60d4c930ad65431347f72a3e8e8d6cbe43fa7619999590c81f575c15"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9618.png",
+      "text": "Ha likhomo tse ling li fula naheng, ena eona e fula e le 'ngoe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9621#page=6",
+      "sourceDigest": "sha256:e807224581c79b419b938e80d397968160bc3354479c868a4355cc3d0473da5c"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9619.png",
+      "text": "Khomo ena e loana haholo. Likhomo tse ling li khaohana le eona.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9621#page=7",
+      "sourceDigest": "sha256:5f4c83c95299ff90d844e8e5b7dd10015a22b2f5eaf4ff2dd3b0a54f6ef6881f"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9620.png",
+      "text": "Batho bane ba e tseba, hape ba e tšaba. E ne ba hlaba ka lenaka leo la eona le le leng.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9621#page=8",
+      "sourceDigest": "sha256:84cb0339ddb2f790bf29be892c15a98a4d3965ff381e3128499723a53c15b921"
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Ha u ne u ka kopana le khomo e joalo, u ne u ka etsang?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9621#page=9",
+      "sourceDigest": "sha256:02e931198c47226226a7592d4c8a8df2d86686cf6e668628ba105ecb47243cb6"
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 112
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:e0f0dd8638a36862876b0f5fd54c80539e06191d601aab4db48640d6c665d7c5"
+  }
+}

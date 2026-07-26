@@ -58,7 +58,7 @@ describe('Guided Mode banner accessibility', () => {
     expect(component).toContain("'Phase {current} of {total}'");
     expect(component).toContain('role="region" aria-labelledby="guided-delivery-title"');
     expect(component).toContain("aria-label={t('guided.delivery_options_label')");
-    expect(component).toContain("const locked = s.id === 'source-input' || s.id === 'package-deliver' || s.id === '_final'");
+    expect(component).toContain("const locked = s.id === 'source-input' || s.id === 'directions' || s.id === 'package-deliver' || s.id === '_final'");
     expect(component).toContain('role="heading" aria-level={3}');
   });
 });
@@ -72,6 +72,38 @@ describe('Guided Mode banner follow-up safeguards', () => {
     expect(component).toContain("return localizeStep(sourceStep, 'label') + ' ✓'");
   });
 
+  it('makes AI planning labeled, reviewable, privacy-aware, and explicitly applied', () => {
+    expect(component).toContain('role="dialog" aria-modal="true" aria-labelledby="guided-ai-planner-title"');
+    expect(component).toContain('ref={_aiPlannerDialogRef}');
+    expect(component).toContain("if (event.key === 'Escape')");
+    expect(component).toContain("document.body.style.overflow = 'hidden'");
+    expect(component).toContain('htmlFor="guided-ai-goal"');
+    expect(component).toContain('id="guided-ai-goal"');
+    expect(component).toContain('maxLength={1200}');
+    expect(component).toContain("t('guided.ai_plan_privacy')");
+    expect(component).toContain("t('guided.ai_plan_steps_title')");
+    expect(component).toContain('role="log" aria-live="polite"');
+    expect(component).toContain('htmlFor="guided-ai-refinement"');
+    expect(component).toContain('maxLength={500}');
+    expect(component).toContain('aria-labelledby="guided-ai-roadmap-title"');
+    expect(component).toContain('aria-label={t(\'guided.ai_plan_phase_roadmap\')');
+    expect(component).toContain('aria-labelledby="guided-ai-questions-title"');
+    expect(component).toContain("getAiPlannerQuestions(goal).filter");
+    expect(component).toContain('aria-labelledby="guided-ai-readiness-title"');
+    expect(component).toContain('aria-live="polite"');
+    expect(component).toContain('allo-guided-planning-actions');
+    expect(component).toContain('htmlFor="guided-ai-save-name"');
+    expect(component).toContain('pendingDeleteSavedAiPlanId');
+    expect(component).toContain('onClick={applyAiPlan}');
+    expect(component).toContain('pendingAiPlanApply');
+    expect(component).toContain("localStorage.setItem('allo_guided_planner_draft'");
+    expect(component).toContain('aria-labelledby="guided-planner-close-title"');
+    expect(component).toContain('aria-labelledby="guided-planner-recovery-title"');
+    expect(component).toContain('aria-labelledby="guided-ai-changes-title"');
+    expect(component).toContain("requestAiGuidedPlan('best-judgment')");
+    expect(component).toContain('estimateAiPlanMinutes(next)');
+    expect(component).toContain('aiPlanResourceLabels.length');
+  });
   it('provides a named completion summary and a progress-preserving Resume later action', () => {
     expect(component).toContain('role="list" aria-label={t(\'guided.summary_label\')');
     expect(component).toContain('completedCount');

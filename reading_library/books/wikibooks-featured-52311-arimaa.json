@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikibooks-featured-52311-arimaa",
+  "title": "Arimaa",
+  "description": "A featured Wikibooks textbook or manual, pinned to revision 4357036 for stable discovery and attribution.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikibooks",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Open textbooks",
+    "Reference",
+    "Wikibooks featured book"
+  ],
+  "authors": [
+    "Wikibooks contributors"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikimedia Foundation",
+  "license": "CC BY-SA 4.0 and GFDL · pinned link-only catalog card",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "wikibooks",
+    "name": "Wikibooks",
+    "url": "https://en.wikibooks.org/w/index.php?title=Arimaa&oldid=4357036"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://en.wikibooks.org/wiki/Wikibooks:Copyrights",
+    "reason": "This card stores revision metadata and an AlloFlow-authored description only. Book text and media are not mirrored.",
+    "pinnedRevision": "4357036"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A featured Wikibooks textbook or manual, pinned to revision 4357036 for stable discovery and attribution."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Pinned source revision: 4357036, timestamped 2024-01-10T14:04:07Z."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official pinned revision to read the book and view its contributor history. Media may have separate licenses."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 40
+  },
+  "externalRecordId": "52311",
+  "pinnedRevision": "4357036",
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://en.wikibooks.org/wiki/Wikibooks:Copyrights",
+    "note": "Wikibooks text is generally CC BY-SA 4.0/GFDL; media may use separate licenses."
+  }
+}

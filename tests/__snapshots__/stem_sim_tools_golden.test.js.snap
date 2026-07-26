@@ -15,13 +15,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for a11yA
 
 exports[`science-sim + studio render goldens > renders + pins a digest for anatomy [ssr] 1`] = `
 {
-  "buttons": 66,
+  "buttons": 87,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 171,
+  "lengthBucket": 220,
   "paths": 0,
   "selects": 0,
-  "sha": "5590dc9aca8905f8",
+  "sha": "41f04127c60c0ee3",
   "svgs": 0,
 }
 `;
@@ -93,13 +93,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for bridg
 
 exports[`science-sim + studio render goldens > renders + pins a digest for cell [ssr] 1`] = `
 {
-  "buttons": 40,
+  "buttons": 41,
   "canvases": 1,
   "inputs": 3,
-  "lengthBucket": 111,
+  "lengthBucket": 114,
   "paths": 0,
   "selects": 0,
-  "sha": "084f88583ac6cae7",
+  "sha": "b6fdacd2196256aa",
   "svgs": 0,
 }
 `;

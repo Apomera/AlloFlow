@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-36357-nthabi-o-etsa-hantle",
+  "title": "Nthabi o etsa hantle!",
+  "description": "Pale ena e fana ka maikutlo a hore leha re laea bana, re lokela hape ho rorisa mesebetsi ea bona e metle ea letsatsi le letsatsi.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Michael Oguttu"
+  ],
+  "illustrators": [
+    "Vusi Malindi"
+  ],
+  "translators": [
+    "Lineo Nkabane-Sekopo"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Michael Oguttu",
+      "role": "Author"
+    },
+    {
+      "name": "Lineo Nkabane-Sekopo",
+      "role": "Translation"
+    },
+    {
+      "name": "Vusi Malindi",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Michael Oguttu (Author); Lineo Nkabane-Sekopo (Translation); Vusi Malindi (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "36357",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-964956f639b16ded",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/7514.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7513.png",
+      "text": "Moena oa ka o robala bosiu haholo. 'Na ke tsoha hoseng, hobane ke etsa hantle!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357#page=1",
+      "sourceDigest": "sha256:cf8baf6809968f03842f69ce4cbb4e9c0b0886a01d85ce3b99a83e514573df33"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7514.png",
+      "text": "Ke 'na ea bulang lifenstere hore mahlaseli a letsatsi a kene.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357#page=2",
+      "sourceDigest": "sha256:77a381f4daea8b9f3ef62667ba3a36880dbc0746b1601337b6ad1f3749df1f56"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7517.png",
+      "text": "\"U mphatlalatsane ea ka,\" ho rialo 'm'e.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357#page=3",
+      "sourceDigest": "sha256:b980adf534399ea6ee21263bcb950a0fa173f6c25c8d15cb3eacbc93429eb5cd"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7507.png",
+      "text": "Letsatsi le leng le le leng kea itlhapisa, ha ke hloke thuso.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357#page=4",
+      "sourceDigest": "sha256:983b3fd7c6a700e00212a3625c815e2fe998bc2c1bc07bec475949dccbd31743"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7515.png",
+      "text": "Ke hlapa ka metsi a batang, le sesepa se seputsoa se hlatsoang liphahlo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357#page=5",
+      "sourceDigest": "sha256:70c4963c8a52c194848792dbe1efc5ddd611a592ecc03b1397f2dc9228cae248"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7518.png",
+      "text": "'M'e oa nhopotsa o re, \"U se ke oa lebala ho tsukunya meno a hao.\" \"Nkeke ka lebala!\" ke 'na eo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357#page=6",
+      "sourceDigest": "sha256:51e22ccb7c38b710fe5a482aae4a7e3b886b1b0ec53dc2b06eed58fe335b1c41"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7516.png",
+      "text": "Ha ke qeta ho hlapa, ke ea ho lumelisa Ntate-moholo le Rakhali. Ke ba lakaletsa letsatsi le monate.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357#page=7",
+      "sourceDigest": "sha256:22901de3a3754713522c765c9925f5a9774d891106e11bf4fff1ed3ec8f3b74f"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7511.png",
+      "text": "Joale ebe kea itents'a. \"Ke se ke holile joale 'm'e,\" ke 'na eo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357#page=8",
+      "sourceDigest": "sha256:b3d38c6f727be744efb166748aa6e9c7697131ea67512264beedabd44303d137"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7508.png",
+      "text": "Ke qhoaela likonopo tsa ka, hape ke khona le ho fasa lieta tsa ka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357#page=9",
+      "sourceDigest": "sha256:d4cef19dce9e3b92914a6f0f1225d0cbdf5ca1203eabd5913c23288a2ee56d94"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7512.png",
+      "text": "Ke etsa bonnete ba hore moena'ka o tseba litaba tsohle tsa sekolo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357#page=10",
+      "sourceDigest": "sha256:492feb9ab0229f745cb62ad821f3ee8759507b915cbe4061010c1ab0c6cd0c1f"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7510.png",
+      "text": "Ka phaposing ea ho ithutela ke sebetsa ka thata.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357#page=11",
+      "sourceDigest": "sha256:7747e085e33c4ff96ecfc882db2f3e693f0bedbc7dbf079109dd9b92c73edad4"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7509.png",
+      "text": "Ke etsa lintho tsena tsohle tse ntle letsatsi le letsatsi. Empa ntho eo ke e ratang haholo, ke ho bapala!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36357#page=12",
+      "sourceDigest": "sha256:99fd4035c1964246f49c948dbec7bb85370557e7083dff42a3430c3278cb00ed"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 165
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:c85bfb423e8f532fcfb3fa288ecf00b73aa444c21d285f5ff5e364a36cd5f30d"
+  }
+}

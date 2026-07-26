@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-435-pdx-journeys-studying-and-living-in-the-us-low-intermediate-novel-and-te",
+  "title": "PDX Journeys: Studying and Living in the US, Low-Intermediate Novel and Textbook for University ESL Students",
+  "description": "Each unit begins with a chapter of fiction about a teacher and students in one ESL class. Reading comprehension and reading skills exercises follow. Prefix and suffix vocabulary-focus exercises are included. Academic Word List vocabulary exercises help students build a strong foundation in both receptive and productive knowledge. The following chapters in each unit expand on unit themes through non-fiction articles focusing on academic preparation, international experiences, and cultural adjustment. Vocabulary is repeated and comprehension and reading skills are further practiced.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Amber Bliss Calderón - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Portland State University Library",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/pdx-journeys-studying-and-living-in-the-us-low-intermediate-novel-and-textbook-for-university-esl-students"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Each unit begins with a chapter of fiction about a teacher and students in one ESL class. Reading comprehension and reading skills exercises follow. Prefix and suffix vocabulary-focus exercises are included. Academic Word List vocabulary exercises help students build a strong foundation in both receptive and productive knowledge. The following chapters in each unit expand on unit themes through non-fiction articles focusing on academic preparation, international experiences, and cultural adjustment. Vocabulary is repeated and comprehension and reading skills are further practiced."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 104
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "435",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

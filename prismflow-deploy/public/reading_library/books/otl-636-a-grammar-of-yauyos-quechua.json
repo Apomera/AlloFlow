@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-636-a-grammar-of-yauyos-quechua",
+  "title": "A grammar of Yauyos Quechua",
+  "description": "This book presents a synchronic grammar of the southern dialects of Yauyos, an extremely endangered Quechuan language spoken in the Peruvian Andes. As the language is highly synthetic, the grammar focuses principally on morphology; a longer section is dedicated to the language's unusual evidential system. The grammar's 1400 examples are drawn from a 24-hour corpus of transcribed recordings collected in the course of the documentation of the language.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages"
+  ],
+  "authors": [
+    "Aviva Shimelman - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Language Science Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-grammar-of-yauyos-quechua"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book presents a synchronic grammar of the southern dialects of Yauyos, an extremely endangered Quechuan language spoken in the Peruvian Andes. As the language is highly synthetic, the grammar focuses principally on morphology; a longer section is dedicated to the language's unusual evidential system. The grammar's 1400 examples are drawn from a 24-hour corpus of transcribed recordings collected in the course of the documentation of the language."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 91
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "636",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

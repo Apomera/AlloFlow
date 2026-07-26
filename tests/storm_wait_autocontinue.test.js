@@ -3,8 +3,8 @@
 // after ~150s AND extended the throttle window, until the 12-minute dead-man switch killed the loop
 // (a premature stop dressed as a safety net). Maintainer's requirement: never stop early — WAIT.
 // The pipeline now exposes geminiThrottleInfo (storm snapshot) + waitForGeminiCalm (bounded wait:
-// sleep out the active cooldown, confirm recovery with ONE tiny probe call, then proceed at full
-// strength; on timeout it proceeds anyway — the run only ever gets slower, never stopped).
+// sleep out the active cooldown, require two representative breaker-neutral probes, then resume
+// cautiously; on timeout it proceeds anyway — the run only ever gets slower, never stopped).
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -44,13 +44,111 @@ describe('pipeline API — LIVE instance', () => {
   });
 });
 
+describe('resolved empty-body recovery - LIVE instance', () => {
+  it('routes empty 200 responses through two bounded recovery attempts, then returns the original', async () => {
+    let calls = 0;
+    const emptyPipeline = window.AlloModules.createDocPipeline({
+      callGemini: async () => { calls += 1; return ''; },
+      callGeminiVision: async () => '{}',
+      callImagen: async () => null,
+      addToast: () => {},
+      t: (k) => k,
+      isRtlLang: () => false,
+      updateExportPreview: () => {},
+      getDefaultTitle: () => 'Document',
+      state: {},
+    });
+    const original = "<!doctype html><html lang=\"en\"><body><main><p>Accessible source content stays intact.</p></main></body></html>";
+    const result = await emptyPipeline.aiFixChunked(original, 'Add a descriptive landmark label.', 'empty-body-runtime');
+
+    expect(result).toBe(original);
+    expect(calls).toBe(3);
+    expect(emptyPipeline.geminiThrottleInfo()).toMatchObject({ transientStreak: 3, storming: true });
+    expect(emptyPipeline.getPipelineStats()).toMatchObject({ terminalFailures: 3, recoveredRetries: 0 });
+  });
+
+  it('propagates AbortError without counting user cancellation as a terminal service failure', async () => {
+    const abortingPipeline = window.AlloModules.createDocPipeline({
+      callGemini: (...args) => new Promise((resolve, reject) => {
+        const signal = args[5];
+        const rejectAbort = () => { const error = new Error('cancelled'); error.name = 'AbortError'; error.isAbort = true; reject(error); };
+        if (signal && signal.aborted) rejectAbort();
+        else if (signal && signal.addEventListener) signal.addEventListener('abort', rejectAbort, { once: true });
+        else resolve('');
+      }),
+      callGeminiVision: async () => '{}',
+      callImagen: async () => null,
+      addToast: () => {},
+      t: (k) => k,
+      isRtlLang: () => false,
+      updateExportPreview: () => {},
+      getDefaultTitle: () => 'Document',
+      state: {},
+    });
+    const ctrl = new AbortController();
+    const original = '<!doctype html><html lang="en"><body><main><p>Keep me.</p></main></body></html>';
+    const pending = abortingPipeline.aiFixChunked(original, 'Add a landmark label.', 'abort-runtime', null, { signal: ctrl.signal });
+    ctrl.abort();
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+    expect(abortingPipeline.getPipelineStats().terminalFailures).toBe(0);
+  });
+});
+
+describe('native cancellation and failure-duration telemetry - LIVE instance', () => {
+  it('does not retry or feed the breaker for a native AbortError without an explicit signal', async () => {
+    let calls = 0;
+    const nativeAbortPipeline = window.AlloModules.createDocPipeline({
+      callGemini: async () => {
+        calls += 1;
+        const error = new Error('native cancellation');
+        error.name = 'AbortError';
+        throw error;
+      },
+      callGeminiVision: async () => '{}',
+      callImagen: async () => null,
+      addToast: () => {}, t: (k) => k, isRtlLang: () => false,
+      updateExportPreview: () => {}, getDefaultTitle: () => 'Document', state: {},
+    });
+    const original = '<!doctype html><html lang="en"><body><main><p>Keep me.</p></main></body></html>';
+    await expect(nativeAbortPipeline.aiFixChunked(original, 'Add a landmark label.', 'native-abort-runtime')).rejects.toMatchObject({ name: 'AbortError' });
+    expect(calls).toBe(1);
+    expect(nativeAbortPipeline.geminiThrottleInfo()).toMatchObject({ authStreak: 0, transientStreak: 0, storming: false });
+    expect(nativeAbortPipeline.getPipelineStats().terminalFailures).toBe(0);
+  });
+
+  it('includes rejected terminal-call duration in totalApiMs', async () => {
+    let calls = 0;
+    const failedPipeline = window.AlloModules.createDocPipeline({
+      callGemini: () => new Promise((resolve, reject) => setTimeout(() => {
+        calls += 1;
+        const error = new Error('backend configuration unavailable');
+        error.isConfig = true;
+        reject(error);
+      }, 8)),
+      callGeminiVision: async () => '{}',
+      callImagen: async () => null,
+      addToast: () => {}, t: (k) => k, isRtlLang: () => false,
+      updateExportPreview: () => {}, getDefaultTitle: () => 'Document', state: {},
+    });
+    const original = '<!doctype html><html lang="en"><body><main><p>Keep me.</p></main></body></html>';
+    await expect(failedPipeline.aiFixChunked(original, 'Add a landmark label.', 'failure-duration-runtime')).resolves.toBe(original);
+    expect(calls).toBe(1);
+    expect(failedPipeline.getPipelineStats()).toMatchObject({ terminalFailures: 1 });
+    expect(failedPipeline.getPipelineStats().totalApiMs).toBeGreaterThan(0);
+  });
+});
+
 describe('pipeline behavior — source pins', () => {
-  it('sleeps out ACTIVE cooldowns, probes with ONE tiny call, is bounded, and feeds the idle watchdog', () => {
+  it('sleeps out ACTIVE cooldowns, uses representative breaker-neutral probes, is bounded, and feeds the owned watchdog', () => {
     expect(dp).toContain('var waitForGeminiCalm = async function (opts) {');
-    expect(dp).toContain("await callGemini('Reply with exactly: OK')");                      // the probe
-    expect(dp).toContain('await _sleep(Math.min(inf.cooldownRemainingMs + 250, 15000));');   // cooldown sleep
+    expect(dp).toContain('var _geminiProbe = function (opts) {');                              // representative probe
+    expect(dp).toContain('return _rawCallGemini(_prompt, false, false, null, null, _sig)');                                    // bypasses breaker mutation
+    expect(dp).toContain('promptChars: _geminiLastFailureProfile && _geminiLastFailureProfile.promptChars');
+    expect(dp).toContain('await _sleep(Math.min(inf.cooldownRemainingMs + 250, 1000, Math.max(0, maxWaitMs - (_now() - t0))));'); // bounded, abort-responsive cooldown polling
+    expect(dp).toContain("o.signal.addEventListener('abort', finish, { once: true })");
+    expect(dp).toContain('while (!_aborted() && _now() < _confirmUntil)');
     expect(dp).toContain('{ calm: false, waitedMs: _now() - t0, timedOut: true }');          // bounded → proceeds anyway
-    expect(dp).toContain('_pulsePipelineWatchdog(); // waiting IS pipeline activity');
+    expect(dp).toContain('_pulsePipelineWatchdog(o.owner || null); // waiting IS pipeline activity');
   });
   it('a reduced cap alone is NOT storming — it recovers on successes, so waiting on it would deadlock', () => {
     expect(dp).toContain('storming: cooldownRemainingMs > 0 || _geminiAuthStreak >= _GEMINI_STORM_TRIP || _geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP');
@@ -73,7 +171,7 @@ describe('deferred final re-audit CIRCLES BACK to throttle-skipped sections unti
     expect(dp).toContain('maxWaitMs: Math.max(0, _deferHardStop - Date.now()),');
     expect(dp).toContain('shouldAbort: _genStale,');
     expect(dp).toContain('const _reFinalAuditHtml = accessibleHtml;');
-    expect(dp).toContain("_reFinalAudit = await _withTimeout(auditOutputAccessibility(_reFinalAuditHtml), Math.max(5000, _deferHardStop - Date.now()), 'deferred re-audit round ' + _roundNow);");
+    expect(dp).toContain("_reFinalAudit = await _withTimeout(auditOutputAccessibility(_reFinalAuditHtml, { signal: _runAbortSignal }), Math.max(5000, _deferHardStop - Date.now()), 'deferred re-audit round ' + _roundNow);");
   });
   it('re-runs the AI audit (auditOutputAccessibility), NOT a deterministic substitute', () => {
     // the loop body must call the AI audit and must not swap in axe/EA as the coverage source
@@ -81,7 +179,7 @@ describe('deferred final re-audit CIRCLES BACK to throttle-skipped sections unti
     const e = dp.indexOf('Deferred re-audit SKIPPED', s);
     const block = dp.slice(s, e);
     expect(block).toContain('const _reFinalAuditHtml = accessibleHtml;');
-    expect(block).toContain('auditOutputAccessibility(_reFinalAuditHtml)');
+    expect(block).toContain('auditOutputAccessibility(_reFinalAuditHtml, { signal: _runAbortSignal })');
     expect(block).not.toContain('deterministicScore');
     expect(block).not.toContain('runAxeAudit');
   });
@@ -101,7 +199,7 @@ describe('deferred final re-audit CIRCLES BACK to throttle-skipped sections unti
   });
   it('the memo makes each re-audit cheap: only FAILED sections are re-called (successful parses memoized)', () => {
     // Strict-schema successes are memoized; thrown/invalid replies return null and retry.
-    expect(dp).toMatch(/const p = _requireStrictOutputAudit\(parseAuditJson\(r\)\);[\s\S]{0,500}_auditMemoPut\(_memoKey, p\);/);
+    expect(dp).toMatch(/const p = _requireStrictOutputAudit\(parseAuditJson\(r\)\);[\s\S]{0,500}_auditMemoPut\(_memoKey, prompt, p\);/);
     expect(dp).toContain('_outputAuditIssueArrayIsValid(parsed.issues)');
   });
 });

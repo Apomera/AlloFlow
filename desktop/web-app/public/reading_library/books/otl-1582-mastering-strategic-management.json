@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1582-mastering-strategic-management",
+  "title": "Mastering Strategic Management",
+  "description": "Teaching the strategic management course can be a challenge for many professors. In most business schools, strategic management is a “capstone” course that requires students to draw on insights from various functional courses they have completed (such as marketing, finance, and accounting) in order to understand how top executives make the strategic decisions that drive whether organizations succeed or fail. Although students have taken these functional courses, many students have very little experience with major organizational choices. It is this inexperience that can undermine many students’ engagement in the course. For questions about this textbook please contact textbookuse@umn.edu",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Marketing"
+  ],
+  "authors": [
+    "Open Textbook Library record"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Minnesota Libraries Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/mastering-strategic-management-2015"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Teaching the strategic management course can be a challenge for many professors. In most business schools, strategic management is a “capstone” course that requires students to draw on insights from various functional courses they have completed (such as marketing, finance, and accounting) in order to understand how top executives make the strategic decisions that drive whether organizations succeed or fail. Although students have taken these functional courses, many students have very little experience with major organizational choices. It is this inexperience that can undermine many students’ engagement in the course. For questions about this textbook please contact textbookuse@umn.edu"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 121
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1582",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1478-obligaciones-tributarias-y-su-influencia-en-la-recaudacion-fiscal-de-las",
+  "title": "Obligaciones Tributarias y su Influencia en la Recaudación Fiscal de las Micro y Pequeñas Empresas",
+  "description": "La investigación titulada: “Obligaciones tributarias y su influencia en la recaudación fiscal de las micro y pequeñas empresas” tuvo como propósito reflejar la influencia de las obligaciones tributarias en la recaudación fiscal, también busca reducir la informalidad, y ampliar la base tributaria mediante beneficios otorgados a las micro y pequeñas empresas que se acojan a los regímenes tributarios, con la finalidad de aumentar la recaudación fiscal. La estructura se desarrollado en base de cuatro capítulos, el CAPÍTULO I trata sobre el planteamiento del problema, la formulación, objetivos y justificación, CAPÍTULO II abarcó los antecedentes de estudio, bases teóricas sobre el tema de investigación, bases conceptuales, definición de términos, hipótesis, variables y la operacionalización de variables, el CAPÍTULO III contiene los materiales y métodos que se utilizó en el presente estudio finalmente el CAPÍTULO IV trató sobre la discusión de resultados, análisis de la información y la prueba de hipótesis. Como parte final del presente estudio comprende las conclusiones, recomendaciones, referencias bibliográficas y anexos.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Economics"
+  ],
+  "authors": [
+    "Emiliano Reymundo-Soto - Author / Xiomara Padua Fernández-Condori - Author / Estheysi Vianny Echevarria-Quispe - Author / Yuri Quispe-Cusi - Author / Erick Zenon Gutiérrez-Quispe - Author / Luis Julio Palacios-Aguilar - Author / Andrés Jesús Ramírez-Laurente - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/obligaciones-tributarias-y-su-influencia-en-la-recaudacion-fiscal-de-las-micro-y-pequenas-empresas"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "La investigación titulada: “Obligaciones tributarias y su influencia en la recaudación fiscal de las micro y pequeñas empresas” tuvo como propósito reflejar la influencia de las obligaciones tributarias en la recaudación fiscal, también busca reducir la informalidad, y ampliar la base tributaria mediante beneficios otorgados a las micro y pequeñas empresas que se acojan a los regímenes tributarios, con la finalidad de aumentar la recaudación fiscal. La estructura se desarrollado en base de cuatro capítulos, el CAPÍTULO I trata sobre el planteamiento del problema, la formulación, objetivos y justificación, CAPÍTULO II abarcó los antecedentes de estudio, bases teóricas sobre el tema de investigación, bases conceptuales, definición de términos, hipótesis, variables y la operacionalización de variables, el CAPÍTULO III contiene los materiales y métodos que se utilizó en el presente estudio finalmente el CAPÍTULO IV trató sobre la discusión de resultados, análisis de la información y la prueba de hipótesis. Como parte final del presente estudio comprende las conclusiones, recomendaciones, referencias bibliográficas y anexos."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 186
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1478",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

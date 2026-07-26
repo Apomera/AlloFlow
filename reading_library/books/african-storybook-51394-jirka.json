@@ -1,0 +1,162 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-51394-jirka",
+  "title": "Jirka",
+  "description": "Bar qaybaha jirka adigoo kaashanaya asxaabta si qosol leh loo sawiray.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [
+    "Sue Beattie"
+  ],
+  "translators": [
+    "Ubah Ali, Muna Mohamud Ali,"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Little Zebra Books",
+      "role": "Author"
+    },
+    {
+      "name": "Ubah Ali, Muna Mohamud Ali,",
+      "role": "Translation"
+    },
+    {
+      "name": "Sue Beattie",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Little Zebra Books (Author); Ubah Ali, Muna Mohamud Ali, (Translation); Sue Beattie (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51394",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51394",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "51394",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-458346fca8d5bbe8",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/26739.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26749.png",
+      "text": "Cago",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51394#page=1",
+      "sourceDigest": "sha256:6a6c30cc9e9da9d7773c383fbeaf609f55137d915565513497a9d552f6cb3760"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26744.png",
+      "text": "Lugo",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51394#page=2",
+      "sourceDigest": "sha256:6ec4365f03f10e708241762dac5813c11a7e26e679c103b2b1fdd213cd793b9c"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26741.png",
+      "text": "Jilbo",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51394#page=3",
+      "sourceDigest": "sha256:e5c51319f390cf2697919233e8fe063920a09267f418aac01eaa8c675e0d95af"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26747.png",
+      "text": "Dhex",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51394#page=4",
+      "sourceDigest": "sha256:b4cc3597be973707873dc9537d8d6b05f367ce065c9623e06025ae0b74cea536"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26740.png",
+      "text": "Belly",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51394#page=5",
+      "sourceDigest": "sha256:763503a6c964a73d39127ddd4b29861d9c225611c7aea67e385850cda915d117"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26748.png",
+      "text": "Xabad",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51394#page=6",
+      "sourceDigest": "sha256:9961efd33885736d47875004ea0666315ef1cd6b41a30996e014750c6c2e4b4d"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26742.png",
+      "text": "Gacmo",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51394#page=7",
+      "sourceDigest": "sha256:a19dc6c96c4f64ad61e4cd620dc8c3e065cc5f0a9cb17ad0e084b3db7640fead"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26745.png",
+      "text": "Cudud",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51394#page=8",
+      "sourceDigest": "sha256:5d5efcc329d1b2c7eb21539b78117fcd89637967fdce2adcbfe3d119c289bf61"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26746.png",
+      "text": "Suxul",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51394#page=9",
+      "sourceDigest": "sha256:2dfcb23b28d8990c1c8a5de7ce99a304247bb06be73ae0303b62e1e73882284a"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26743.png",
+      "text": "Madax",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51394#page=10",
+      "sourceDigest": "sha256:5459f39d5629de4e9a24de0c1d5af4cfe620e8055431dc0b017968bdf94a71a9"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 10
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:5b41f358e14903295d04945d6878f35236aa9c85a48c47f0375d827eca2fa6af"
+  }
+}

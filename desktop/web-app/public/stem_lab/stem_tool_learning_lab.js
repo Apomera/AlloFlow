@@ -13285,6 +13285,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var ls = R.useState({ location: '', item: '', vivid: '' });
     var locForm = ls[0]; var setLocForm = ls[1];
     var les = R.useState({ location: '', item: '' }); var locErrors = les[0]; var setLocErrors = les[1];
+    var eis = R.useState(null); var editingLocusId = eis[0]; var setEditingLocusId = eis[1];
+    var wrs = R.useState(false); var walkRevealed = wrs[0]; var setWalkRevealed = wrs[1];
+    var wgs = R.useState({}); var walkRatings = wgs[0]; var setWalkRatings = wgs[1];
+    var pms = R.useState('all'); var practiceMode = pms[0]; var setPracticeMode = pms[1];
+    var wss = R.useState(null); var walkSummary = wss[0]; var setWalkSummary = wss[1];
     var ts = R.useState(false); var practicing = ts[0]; var setPracticing = ts[1];
     var ws = R.useState(0); var walkIdx = ws[0]; var setWalkIdx = ws[1];
     var pfp = R.useState(''); var pendingFocusId = pfp[0]; var setPendingFocusId = pfp[1];
@@ -13298,6 +13303,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }, [pendingFocusId, view, practicing, walkIdx, data]);
 
     function focusById(id) { setPendingFocusId(id); }
+    function practiceOf(palace) {
+      var raw = palace && isRecord(palace.practice) ? palace.practice : {};
+      return {
+        loci: isRecord(raw.loci) ? raw.loci : {},
+        sessions: Array.isArray(raw.sessions) ? raw.sessions.filter(isRecord) : []
+      };
+    }
+    function masteryFor(palace, locusId) {
+      var stats = practiceOf(palace).loci[locusId];
+      if (!isRecord(stats) || !(Number(stats.attempts) > 0)) return { key: 'new', label: 'Not practiced', color: '#94a3b8' };
+      if (stats.lastRating === 'again') return { key: 'again', label: 'Needs practice', color: '#fbbf24' };
+      var strength = Math.max(0, Number(stats.strength) || 0);
+      if (strength >= 3) return { key: 'strong', label: 'Strong', color: '#6ee7b7' };
+      return { key: 'learning', label: 'Learning', color: '#c4b5fd' };
+    }
+    function difficultLoci(palace) {
+      return lociOf(palace).filter(function(locus) {
+        var mastery = masteryFor(palace, locus.id);
+        return mastery.key === 'again' || mastery.key === 'learning';
+      });
+    }
+    function recordWalkSession(palace, ratings, mode, routeStops) {
+      var practice = practiceOf(palace);
+      var nextStats = Object.assign({}, practice.loci);
+      var stopIds = {};
+      lociOf(palace).forEach(function(locus) { stopIds[locus.id] = true; });
+      var got = 0, again = 0;
+      Object.keys(ratings || {}).forEach(function(id) {
+        if (!stopIds[id]) return;
+        var rating = ratings[id];
+        if (rating !== 'got' && rating !== 'again') return;
+        var previous = isRecord(nextStats[id]) ? nextStats[id] : {};
+        var strength = Math.max(0, Number(previous.strength) || 0);
+        strength = rating === 'got' ? Math.min(5, strength + 1) : Math.max(0, strength - 1);
+        if (rating === 'got') got++; else again++;
+        nextStats[id] = {
+          attempts: Math.max(0, Number(previous.attempts) || 0) + 1,
+          got: Math.max(0, Number(previous.got) || 0) + (rating === 'got' ? 1 : 0),
+          again: Math.max(0, Number(previous.again) || 0) + (rating === 'again' ? 1 : 0),
+          strength: strength,
+          lastRating: rating,
+          lastPracticed: new Date().toISOString()
+        };
+      });
+      var total = Array.isArray(routeStops) ? routeStops.length : 0;
+      var summary = {
+        id: tkId(), practicedAt: new Date().toISOString(), mode: mode === 'difficult' ? 'difficult' : 'all',
+        total: total, rated: got + again, got: got, again: again, unrated: Math.max(0, total - got - again)
+      };
+      updatePalace({ practice: { loci: nextStats, sessions: [summary].concat(practice.sessions).slice(0, 20) } });
+      return summary;
+    }
+
     function createPalace() {
       var name = newP.name.trim();
       if (!name) {
@@ -13342,6 +13400,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
       var palace = getPalace();
       if (!palace) return;
+      if (editingLocusId) {
+        var edited = { id: editingLocusId, location: locForm.location.trim(), item: locForm.item.trim(), vivid: locForm.vivid.trim() };
+        updatePalace({ loci: lociOf(palace).map(function(item) { return item.id === editingLocusId ? edited : item; }) });
+        setEditingLocusId(null);
+        setLocForm({ location: '', item: '', vivid: '' });
+        setLocErrors({ location: '', item: '' });
+        llAnnounce('Memory palace stop updated: ' + edited.location + '.');
+        focusById('learning-lab-palace-location');
+        return;
+      }
       var locus = { id: tkId(), location: locForm.location.trim(), item: locForm.item.trim(), vivid: locForm.vivid.trim() };
       updatePalace({ loci: lociOf(palace).concat([locus]) });
       setLocForm({ location: '', item: '', vivid: '' });
@@ -13349,6 +13417,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       llAnnounce('Memory palace stop added: ' + locus.location + '.');
       focusById('learning-lab-palace-location');
     }
+    function editLocus(locus) {
+      if (!locus) return;
+      setEditingLocusId(locus.id);
+      setLocForm({ location: textValue(locus.location), item: textValue(locus.item), vivid: textValue(locus.vivid) });
+      setLocErrors({ location: '', item: '' });
+      llAnnounce('Editing memory palace stop: ' + (textValue(locus.location).trim() || 'unnamed location') + '.');
+      focusById('learning-lab-palace-location');
+    }
+    function cancelLocusEdit() {
+      setEditingLocusId(null);
+      setLocForm({ location: '', item: '', vivid: '' });
+      setLocErrors({ location: '', item: '' });
+      llAnnounce('Stop editing cancelled.');
+      focusById('learning-lab-palace-location');
+    }
+    function moveLocus(id, delta) {
+      var palace = getPalace();
+      if (!palace) return;
+      var stops = lociOf(palace).slice();
+      var from = -1;
+      for (var i = 0; i < stops.length; i++) { if (stops[i].id === id) { from = i; break; } }
+      var to = from + delta;
+      if (from < 0 || to < 0 || to >= stops.length) return;
+      var moved = stops[from];
+      stops[from] = stops[to];
+      stops[to] = moved;
+      updatePalace({ loci: stops });
+      llAnnounce('Memory palace stop moved to position ' + (to + 1) + ' of ' + stops.length + '.');
+      focusById('learning-lab-palace-edit-' + id);
+    }
+
     async function removeLocus(id) {
       var palace = getPalace();
       if (!palace) return;
@@ -13357,7 +13456,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!(await askLearningLabConfirmation('This permanently removes the stop' + (locusLocation ? ' "' + locusLocation + '" and its memory item' : '') + '.', {
         title: 'Delete this palace stop?', confirmText: 'Delete stop'
       }))) return;
-      updatePalace({ loci: lociOf(palace).filter(function(item) { return item.id !== id; }) });
+      var practice = practiceOf(palace);
+      var remainingStats = Object.assign({}, practice.loci);
+      delete remainingStats[id];
+      updatePalace({ loci: lociOf(palace).filter(function(item) { return item.id !== id; }), practice: { loci: remainingStats, sessions: practice.sessions } });
+      if (editingLocusId === id) {
+        setEditingLocusId(null);
+        setLocForm({ location: '', item: '', vivid: '' });
+      }
       llAnnounce('Memory palace stop deleted.');
       focusById('learning-lab-palace-location');
     }
@@ -13372,26 +13478,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       setActiveId(null);
       setPracticing(false);
       setWalkIdx(0);
+      setWalkRevealed(false);
+      setWalkRatings({});
+      setEditingLocusId(null);
+      setLocForm({ location: '', item: '', vivid: '' });
+      setWalkSummary(null);
       focusById('learning-lab-palace-open-' + previousId);
     }
-    function startWalk(palace) {
-      var stops = lociOf(palace);
+    function startWalk(palace, mode) {
+      var targetMode = mode === 'difficult' ? 'difficult' : 'all';
+      var stops = targetMode === 'difficult' ? difficultLoci(palace) : lociOf(palace);
       if (!stops.length) return;
+      setPracticeMode(targetMode);
       setPracticing(true);
       setWalkIdx(0);
-      llAnnounce('Memory walk started. Stop 1 of ' + stops.length + '.');
+      setWalkRevealed(false);
+      setWalkRatings({});
+      setWalkSummary(null);
+      if (targetMode === 'difficult') llAnnounce('Difficult-stop practice started. Stop 1 of ' + stops.length + '.');
+      else llAnnounce('Memory walk started. Stop 1 of ' + stops.length + '.');
       focusById('learning-lab-palace-walk-heading');
     }
     function nextStop(palace) {
-      var stops = lociOf(palace);
+      var stops = practiceMode === 'difficult' ? difficultLoci(palace) : lociOf(palace);
       var nextIndex = Math.min(stops.length - 1, walkIdx + 1);
       setWalkIdx(nextIndex);
+      setWalkRevealed(false);
       llAnnounce('Stop ' + (nextIndex + 1) + ' of ' + stops.length + '.');
       focusById('learning-lab-palace-walk-heading');
     }
+    function previousStop(palace) {
+      var stops = practiceMode === 'difficult' ? difficultLoci(palace) : lociOf(palace);
+      var nextIndex = Math.max(0, walkIdx - 1);
+      setWalkIdx(nextIndex);
+      setWalkRevealed(false);
+      llAnnounce('Stop ' + (nextIndex + 1) + ' of ' + stops.length + '.');
+      focusById('learning-lab-palace-walk-heading');
+    }
+    function revealCurrentMemory(current) {
+      setWalkRevealed(true);
+      llAnnounce('Memory revealed for ' + (textValue(current && current.location).trim() || 'this stop') + '.');
+    }
+    function rateCurrentMemory(current, rating) {
+      if (!current || !current.id) return;
+      var nextRatings = Object.assign({}, walkRatings);
+      nextRatings[current.id] = rating;
+      setWalkRatings(nextRatings);
+      llAnnounce(rating === 'got' ? 'Marked as remembered.' : 'Marked for more practice.');
+    }
+
     function endWalk(palace, completed) {
+      var routeStops = practiceMode === 'difficult' ? difficultLoci(palace) : lociOf(palace);
+      if (completed) setWalkSummary(recordWalkSession(palace, walkRatings, practiceMode, routeStops));
+      else setWalkSummary(null);
       setPracticing(false);
       setWalkIdx(0);
+      setWalkRevealed(false);
       llAnnounce(completed ? 'Memory walk complete.' : 'Memory walk stopped.');
       focusById('learning-lab-palace-start-walk');
     }
@@ -13400,11 +13542,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     var labelStyle = { display: 'block', fontSize: 12, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', marginBottom: 4 };
     var hiddenLabelStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
 
+    var palaceSurface = {
+      borderRadius: 16,
+      background: 'radial-gradient(circle at 18% 0%, rgba(168,85,247,0.16), transparent 34%), linear-gradient(145deg, rgba(15,23,42,0.92), rgba(2,6,23,0.78))',
+      border: '1px solid rgba(168,85,247,0.28)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 32px rgba(2,6,23,0.22)'
+    };
+    var eyebrowStyle = { fontSize: 10, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: '0.12em' };
+
+    function routePreview(stops, activeIndex, label) {
+      var safeStops = Array.isArray(stops) ? stops : [];
+      return hh('ol', {
+        'aria-label': label || 'Palace route preview',
+        style: {
+          listStyle: 'none', padding: '4px 2px 2px', margin: 0, display: 'flex',
+          alignItems: 'flex-start', gap: 0, width: '100%', overflowX: 'auto'
+        }
+      }, safeStops.map(function(stop, index) {
+        var active = index === activeIndex;
+        var passed = activeIndex >= 0 && index < activeIndex;
+        var savedRating = stop && stop.id ? practiceOf(activePalace).loci[stop.id] : null;
+        var rating = stop && stop.id ? (walkRatings[stop.id] || (savedRating && savedRating.lastRating)) : null;
+        var stopName = textValue(stop && stop.location).trim() || 'Stop ' + (index + 1);
+        return hh('li', {
+          key: 'preview-' + (stop && stop.id ? stop.id : index),
+          'aria-current': active ? 'step' : undefined,
+          style: { display: 'flex', alignItems: 'flex-start', flex: index === safeStops.length - 1 ? '0 0 auto' : '1 0 74px', minWidth: 44 }
+        },
+          hh('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', width: 44, flex: '0 0 44px' } },
+            hh('span', {
+              'aria-hidden': 'true',
+              style: {
+                width: active ? 34 : 28, height: active ? 34 : 28, borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: active ? '#7c3aed' : rating === 'got' ? '#047857' : rating === 'again' ? '#b45309' : passed ? '#334155' : 'rgba(30,41,59,0.92)',
+                border: '2px solid ' + (active ? '#ddd6fe' : rating === 'got' ? '#6ee7b7' : rating === 'again' ? '#fde68a' : 'rgba(196,181,253,0.55)'),
+                color: '#fff', fontSize: 10, fontWeight: 900,
+                boxShadow: active ? '0 0 0 5px rgba(124,58,237,0.20), 0 0 22px rgba(168,85,247,0.42)' : 'none'
+              }
+            }, rating === 'got' ? '\u2713' : rating === 'again' ? '!' : String(index + 1)),
+            hh('span', {
+              style: {
+                width: 64, marginTop: 5, color: active ? '#ede9fe' : 'var(--allo-stem-text-soft, #94a3b8)',
+                fontSize: 9, fontWeight: active ? 800 : 600, lineHeight: 1.25, textAlign: 'center',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+              }
+            }, stopName)
+          ),
+          index < safeStops.length - 1 ? hh('span', {
+            'aria-hidden': 'true',
+            style: {
+              height: 2, minWidth: 24, flex: 1, marginTop: active ? 16 : 13,
+              background: rating === 'again' ? 'linear-gradient(90deg, #f59e0b, #fde68a)' : passed ? 'linear-gradient(90deg, #10b981, #6ee7b7)' : 'linear-gradient(90deg, rgba(168,85,247,0.55), rgba(100,116,139,0.22))'
+            }
+          }) : null
+        );
+      }));
+    }
+
+    function countDots(count) {
+      var visible = Math.min(8, Math.max(0, count));
+      return hh('div', { 'aria-hidden': 'true', style: { display: 'flex', alignItems: 'center', gap: 4, minHeight: 12 } },
+        Array.from({ length: visible }).map(function(_, index) {
+          return hh('span', { key: 'dot-' + index, style: { width: 7, height: 7, borderRadius: '50%', background: index === 0 ? '#c4b5fd' : 'rgba(196,181,253,0.38)' } });
+        }),
+        count > visible ? hh('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '+' + (count - visible)) : null
+      );
+    }
+
     if (view === 'edit') {
       var activePalace = getPalace();
       if (!activePalace) return hh('div', { role: 'status', style: { padding: 20, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'This memory palace is not available. Return to the palace list and choose another.');
       var activePalaceName = textValue(activePalace.name).trim() || 'Untitled palace';
-      var loci = lociOf(activePalace);
+      var allLoci = lociOf(activePalace);
+      var loci = practicing && practiceMode === 'difficult' ? difficultLoci(activePalace) : allLoci;
+      var difficult = difficultLoci(activePalace);
+      var palacePractice = practiceOf(activePalace);
+      var latestSummary = walkSummary || palacePractice.sessions[0] || null;
       if (practicing && loci.length > 0) {
         var safeIndex = Math.max(0, Math.min(loci.length - 1, walkIdx));
         var current = loci[safeIndex];
@@ -13413,22 +13627,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           tkSectionHeader('🚶', 'Walking through ' + activePalaceName, 'Stop ' + (safeIndex + 1) + ' of ' + loci.length, '#10b981'),
           hh('section', { 'aria-labelledby': 'learning-lab-palace-walk-heading' },
             hh('h2', { id: 'learning-lab-palace-walk-heading', tabIndex: -1, style: hiddenLabelStyle }, 'Stop ' + (safeIndex + 1) + ' of ' + loci.length + ': ' + textValue(current.location)),
+            hh('div', { style: Object.assign({}, palaceSurface, { padding: '14px 14px 10px', marginBottom: 12 }) },
+              routePreview(loci, safeIndex, 'Memory walk route')
+            ),
             hh('div', { role: 'progressbar', 'aria-label': 'Memory walk progress', 'aria-valuemin': 1, 'aria-valuemax': loci.length, 'aria-valuenow': safeIndex + 1, 'aria-valuetext': 'Stop ' + (safeIndex + 1) + ' of ' + loci.length, style: { height: 10, background: 'rgba(15,23,42,0.7)', borderRadius: 5, overflow: 'hidden', marginBottom: 10 } },
               hh('div', { 'aria-hidden': 'true', style: { width: progress + '%', height: '100%', background: '#10b981' } })
             ),
             hh('article', { 'aria-label': 'Memory stop ' + (safeIndex + 1), style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, rgba(16,185,129,0.20), rgba(15,23,42,0.7))', border: '2px solid #10b981', marginBottom: 14 } },
+              hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 16 } },
+                hh('span', { style: eyebrowStyle }, 'Current locus'),
+                hh('span', { style: { padding: '5px 9px', borderRadius: 999, background: 'rgba(16,185,129,0.14)', border: '1px solid rgba(110,231,183,0.46)', color: '#a7f3d0', fontSize: 10, fontWeight: 800 } }, 'Stop ' + (safeIndex + 1))
+              ),
+              hh('div', { 'aria-hidden': 'true', style: { float: 'left', width: 44, height: 44, borderRadius: '14px 14px 14px 4px', margin: '0 12px 8px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, #059669, #047857)', color: '#fff', fontSize: 15, fontWeight: 900, boxShadow: '0 8px 18px rgba(5,150,105,0.25)' } }, String(safeIndex + 1)),
               hh('h3', { style: { fontSize: 11, color: '#6ee7b7', fontWeight: 800, textTransform: 'uppercase', margin: '0 0 8px' } }, 'Location'),
               hh('p', { style: { fontSize: 18, color: 'var(--allo-stem-text, #e2e8f0)', margin: '0 0 14px', lineHeight: 1.5 } }, textValue(current.location)),
-              hh('h3', { style: { fontSize: 11, color: '#6ee7b7', fontWeight: 800, textTransform: 'uppercase', margin: '0 0 8px' } }, 'Item to remember'),
-              hh('p', { style: { fontSize: 16, color: 'var(--allo-stem-text, #cbd5e1)', margin: '0 0 12px', lineHeight: 1.5, fontStyle: 'italic' } }, textValue(current.item)),
-              textValue(current.vivid).trim() ? hh('div', null,
-                hh('h3', { style: { fontSize: 11, color: '#6ee7b7', fontWeight: 800, textTransform: 'uppercase', margin: '0 0 6px' } }, 'Vivid image'),
-                hh('p', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: 0 } }, textValue(current.vivid).trim())
-              ) : null
+              !walkRevealed ? hh('div', { style: { clear: 'both', padding: '14px 16px', borderRadius: 10, background: 'rgba(2,6,23,0.42)', border: '1px dashed rgba(110,231,183,0.48)', textAlign: 'center' } },
+                hh('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.55, margin: '0 0 10px' } }, 'Pause and retrieve the memory attached to this location before revealing it.'),
+                hh('button', { id: 'learning-lab-palace-reveal-memory', type: 'button', onClick: function() { revealCurrentMemory(current); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Reveal memory')
+              ) : hh('div', { style: { clear: 'both' } },
+                hh('h3', { style: { fontSize: 11, color: '#6ee7b7', fontWeight: 800, textTransform: 'uppercase', margin: '0 0 8px' } }, 'Item to remember'),
+                hh('p', { style: { fontSize: 16, color: 'var(--allo-stem-text, #cbd5e1)', margin: '0 0 12px', lineHeight: 1.5, fontStyle: 'italic' } }, textValue(current.item)),
+                textValue(current.vivid).trim() ? hh('div', null,
+                  hh('h3', { style: { fontSize: 11, color: '#6ee7b7', fontWeight: 800, textTransform: 'uppercase', margin: '0 0 6px' } }, 'Vivid image'),
+                  hh('p', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 12px' } }, textValue(current.vivid).trim())
+                ) : null,
+                hh('div', { role: 'group', 'aria-label': 'How well did you remember this locus?', style: { display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 10, borderTop: '1px solid rgba(148,163,184,0.20)' } },
+                  hh('button', { type: 'button', 'aria-pressed': walkRatings[current.id] === 'again', onClick: function() { rateCurrentMemory(current, 'again'); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(251,191,36,0.55)', background: walkRatings[current.id] === 'again' ? 'rgba(180,83,9,0.45)' : 'rgba(251,191,36,0.10)', color: '#fde68a', fontWeight: 800, cursor: 'pointer' } }, 'Needs practice'),
+                  hh('button', { type: 'button', 'aria-pressed': walkRatings[current.id] === 'got', onClick: function() { rateCurrentMemory(current, 'got'); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(110,231,183,0.58)', background: walkRatings[current.id] === 'got' ? 'rgba(4,120,87,0.72)' : 'rgba(16,185,129,0.10)', color: '#a7f3d0', fontWeight: 800, cursor: 'pointer' } }, 'Got it')
+                )
+              )
             )
           ),
           hh('div', { role: 'group', 'aria-label': 'Memory walk controls', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
             hh('button', { type: 'button', onClick: function() { endWalk(activePalace, false); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Stop walk'),
+            safeIndex > 0 ? hh('button', { type: 'button', onClick: function() { previousStop(activePalace); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid rgba(196,181,253,0.56)', background: 'rgba(124,58,237,0.10)', color: '#ddd6fe', fontWeight: 800, cursor: 'pointer' } }, 'Previous stop') : null,
             safeIndex + 1 >= loci.length
               ? hh('button', { type: 'button', onClick: function() { endWalk(activePalace, true); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Complete walk')
               : hh('button', { type: 'button', onClick: function() { nextStop(activePalace); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Next stop')
@@ -13440,11 +13672,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         hh('h2', { id: 'learning-lab-palace-editor-heading', tabIndex: -1, style: hiddenLabelStyle }, 'Editing memory palace: ' + activePalaceName),
         hh('div', { role: 'group', 'aria-label': 'Memory palace actions', style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
           hh('button', { type: 'button', onClick: backToPalaces, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, '← All palaces'),
-          loci.length > 0 ? hh('button', { id: 'learning-lab-palace-start-walk', type: 'button', onClick: function() { startWalk(activePalace); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Start memory walk') : null
+          loci.length > 0 ? hh('button', { id: 'learning-lab-palace-start-walk', type: 'button', onClick: function() { startWalk(activePalace); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #a7f3d0', background: '#047857', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Start memory walk') : null,
+          difficult.length > 0 ? hh('button', { id: 'learning-lab-palace-practice-difficult', type: 'button', onClick: function() { startWalk(activePalace, 'difficult'); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #fde68a', background: 'rgba(180,83,9,0.34)', color: '#fef3c7', fontWeight: 800, cursor: 'pointer' } }, 'Practice difficult stops (' + difficult.length + ')') : null
         ),
+        latestSummary ? hh('section', { role: 'status', 'aria-label': 'Last memory walk summary', style: Object.assign({}, palaceSurface, { padding: 14, marginBottom: 12, border: '1px solid rgba(110,231,183,0.36)' }) },
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 } },
+            hh('div', null,
+              hh('div', { style: eyebrowStyle }, 'Last walk'),
+              hh('strong', { style: { display: 'block', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, marginTop: 2 } }, 'Recall check complete')
+            ),
+            hh('span', { style: { padding: '5px 9px', borderRadius: 999, background: latestSummary.mode === 'difficult' ? 'rgba(180,83,9,0.28)' : 'rgba(16,185,129,0.12)', border: '1px solid ' + (latestSummary.mode === 'difficult' ? 'rgba(253,230,138,0.48)' : 'rgba(110,231,183,0.42)'), color: latestSummary.mode === 'difficult' ? '#fef3c7' : '#a7f3d0', fontSize: 10, fontWeight: 800 } }, latestSummary.mode === 'difficult' ? 'Focused review' : 'Full route')
+          ),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 8 } },
+            hh('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(16,185,129,0.10)', textAlign: 'center' } },
+              hh('strong', { style: { display: 'block', color: '#a7f3d0', fontSize: 18 } }, String(Math.max(0, Number(latestSummary.got) || 0))),
+              hh('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Remembered')
+            ),
+            hh('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(251,191,36,0.10)', textAlign: 'center' } },
+              hh('strong', { style: { display: 'block', color: '#fde68a', fontSize: 18 } }, String(Math.max(0, Number(latestSummary.again) || 0))),
+              hh('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Review again')
+            ),
+            hh('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(148,163,184,0.08)', textAlign: 'center' } },
+              hh('strong', { style: { display: 'block', color: '#cbd5e1', fontSize: 18 } }, String(Math.max(0, Number(latestSummary.unrated) || 0))),
+              hh('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Not rated')
+            )
+          ),
+          hh('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginTop: 9 } }, palacePractice.sessions.length + (palacePractice.sessions.length === 1 ? ' saved practice session' : ' saved practice sessions'))
+        ) : null,
+        loci.length > 0 ? hh('section', { 'aria-label': 'Route at a glance', style: Object.assign({}, palaceSurface, { padding: '14px 14px 10px', marginBottom: 12 }) },
+          hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 8 } },
+            hh('span', { style: eyebrowStyle }, 'Route at a glance'),
+            hh('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, loci.length + (loci.length === 1 ? ' locus' : ' loci'))
+          ),
+          routePreview(loci, -1, 'Palace route at a glance')
+        ) : null,
         tkCard('#a855f7',
           hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); addLocus(); }, 'aria-labelledby': 'learning-lab-palace-add-heading' },
-            hh('h3', { id: 'learning-lab-palace-add-heading', style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', margin: '0 0 8px' } }, 'Add a location and memory item'),
+            hh('h3', { id: 'learning-lab-palace-add-heading', style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', margin: '0 0 8px' } }, editingLocusId ? 'Edit this palace stop' : 'Add a location and memory item'),
             hh('label', { htmlFor: 'learning-lab-palace-location', style: labelStyle }, 'Location (required)'),
             hh('input', { id: 'learning-lab-palace-location', type: 'text', value: locForm.location, required: true, maxLength: 500, 'aria-invalid': locErrors.location ? 'true' : undefined, 'aria-describedby': locErrors.location ? 'learning-lab-palace-location-error' : undefined, placeholder: 'e.g., Front door of my house', onChange: function(event) { setLocForm(Object.assign({}, locForm, { location: event.target.value })); if (locErrors.location) setLocErrors(Object.assign({}, locErrors, { location: '' })); }, style: Object.assign({}, fieldStyle, { marginBottom: locErrors.location ? 4 : 6 }) }),
             hh('div', { id: 'learning-lab-palace-location-error', role: 'alert', style: { minHeight: locErrors.location ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: locErrors.location ? 6 : 0 } }, locErrors.location),
@@ -13453,19 +13717,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             hh('div', { id: 'learning-lab-palace-item-error', role: 'alert', style: { minHeight: locErrors.item ? '1.4em' : 0, color: '#fecaca', fontSize: 11, fontWeight: 800, marginBottom: locErrors.item ? 6 : 0 } }, locErrors.item),
             hh('label', { htmlFor: 'learning-lab-palace-vivid', style: labelStyle }, 'Vivid image (optional)'),
             hh('textarea', { id: 'learning-lab-palace-vivid', value: locForm.vivid, rows: 3, maxLength: 2000, placeholder: 'Describe an exaggerated or surprising mental image', onChange: function(event) { setLocForm(Object.assign({}, locForm, { vivid: event.target.value })); }, style: Object.assign({}, fieldStyle, { minHeight: 76, resize: 'vertical', marginBottom: 8 }) }),
-            hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Add stop')
+            hh('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              hh('button', { type: 'submit', 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, editingLocusId ? 'Save stop changes' : 'Add stop'),
+              editingLocusId ? hh('button', { type: 'button', onClick: cancelLocusEdit, 'data-ll-focusable': true, style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, border: '1px solid rgba(203,213,225,0.55)', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 800, cursor: 'pointer' } }, 'Cancel edit') : null
+            )
           )
         ),
         loci.length === 0 ? tkEmptyState('🏛', 'No stops yet. Add 5 to 15 specific locations on your mental walk.', null, null)
         : hh('ol', { 'aria-label': 'Memory palace route', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
             loci.map(function(locus, index) {
               var locusLocation = textValue(locus.location).trim() || 'Unnamed location';
+              var mastery = masteryFor(activePalace, locus.id);
               return hh('li', { key: 'lc-' + locus.id, style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.6)', borderLeft: '3px solid #a855f7' } },
+                hh('div', { 'aria-hidden': 'true', style: { float: 'left', width: 34, height: 34, borderRadius: '50%', margin: '0 10px 6px -1px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, #7c3aed, #6b21a8)', border: '2px solid #c4b5fd', color: '#fff', fontSize: 11, fontWeight: 900, boxShadow: '0 0 0 4px rgba(168,85,247,0.10)' } }, String(index + 1)),
                 hh('article', { 'aria-labelledby': 'learning-lab-palace-locus-' + locus.id },
                   hh('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
                     hh('h3', { id: 'learning-lab-palace-locus-' + locus.id, style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, margin: 0 } }, (index + 1) + '. ' + locusLocation),
-                    hh('button', { type: 'button', 'aria-label': 'Delete memory stop ' + (index + 1) + ': ' + locusLocation, onClick: function() { removeLocus(locus.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
+                    hh('div', { role: 'group', 'aria-label': 'Actions for memory stop ' + (index + 1), style: { display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+                      hh('button', { id: 'learning-lab-palace-edit-' + locus.id, type: 'button', 'aria-label': 'Edit memory stop ' + (index + 1) + ': ' + locusLocation, onClick: function() { editLocus(locus); }, 'data-ll-focusable': true, style: { minHeight: 44, padding: '8px 10px', borderRadius: 8, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(196,181,253,0.42)', color: '#ddd6fe', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Edit'),
+                      hh('button', { type: 'button', disabled: index === 0, 'aria-label': 'Move memory stop ' + (index + 1) + ' up', onClick: function() { moveLocus(locus.id, -1); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid rgba(148,163,184,0.30)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, cursor: index === 0 ? 'not-allowed' : 'pointer', opacity: index === 0 ? 0.45 : 1 } }, '↑'),
+                      hh('button', { type: 'button', disabled: index === loci.length - 1, 'aria-label': 'Move memory stop ' + (index + 1) + ' down', onClick: function() { moveLocus(locus.id, 1); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: '1px solid rgba(148,163,184,0.30)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, cursor: index === loci.length - 1 ? 'not-allowed' : 'pointer', opacity: index === loci.length - 1 ? 0.45 : 1 } }, '↓'),
+                      hh('button', { type: 'button', 'aria-label': 'Delete memory stop ' + (index + 1) + ': ' + locusLocation, onClick: function() { removeLocus(locus.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
+                    )
                   ),
+                  hh('span', { 'data-mastery': mastery.key, style: { display: 'inline-block', padding: '3px 7px', borderRadius: 999, margin: '0 0 6px', background: mastery.color + '18', border: '1px solid ' + mastery.color + '66', color: mastery.color, fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, mastery.label),
                   hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', margin: textValue(locus.vivid).trim() ? '0 0 4px' : 0 } }, 'Item: ' + textValue(locus.item)),
                   textValue(locus.vivid).trim() ? hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', margin: 0 } }, 'Vivid image: ' + textValue(locus.vivid).trim()) : null
                 )
@@ -13479,6 +13754,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     return hh('div', { style: { padding: 14 } },
       tkSectionHeader('🏛', 'Memory Palace Builder', 'Use a familiar route and attach information to specific locations.', '#a855f7'),
       hh('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, margin: '0 0 12px' } }, 'Palaces are saved only in your Personal Toolkit and are not shared with or sent to anyone.'),
+      hh('ol', { 'aria-label': 'How to build a memory palace', style: { listStyle: 'none', padding: 0, margin: '0 0 12px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+        [
+          ['01', 'Choose a place', 'Start with a route you can picture without effort.'],
+          ['02', 'Place your cues', 'Give each memory one distinct location.'],
+          ['03', 'Walk the route', 'Practice in the same order until recall feels natural.']
+        ].map(function(step) {
+          return hh('li', { key: step[0], style: Object.assign({}, palaceSurface, { padding: '11px 12px', display: 'grid', gridTemplateColumns: '34px minmax(0,1fr)', gap: 9, alignItems: 'start' }) },
+            hh('span', { 'aria-hidden': 'true', style: { width: 30, height: 30, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(124,58,237,0.22)', border: '1px solid rgba(196,181,253,0.48)', color: '#ddd6fe', fontSize: 10, fontWeight: 900 } }, step[0]),
+            hh('span', null,
+              hh('strong', { style: { display: 'block', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, marginBottom: 2 } }, step[1]),
+              hh('span', { style: { display: 'block', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.45 } }, step[2])
+            )
+          );
+        })
+      ),
       tkCard('#a855f7',
         hh('form', { noValidate: true, onSubmit: function(event) { event.preventDefault(); createPalace(); }, 'aria-labelledby': 'learning-lab-palace-new-heading' },
           hh('h3', { id: 'learning-lab-palace-new-heading', style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', margin: '0 0 8px' } }, 'New memory palace'),
@@ -13501,6 +13791,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('button', { type: 'button', 'aria-label': 'Delete memory palace: ' + palaceName, onClick: function() { removePalace(palace.id); }, 'data-ll-focusable': true, style: { minWidth: 44, minHeight: 44, padding: 8, borderRadius: 8, background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, cursor: 'pointer' } }, '×')
                 ),
                 textValue(palace.description).trim() ? hh('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '4px 0', fontStyle: 'italic' } }, textValue(palace.description).trim()) : null,
+                countDots(lociOf(palace).length),
                 hh('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '4px 0 8px' } }, lociOf(palace).length + (lociOf(palace).length === 1 ? ' stop' : ' stops')),
                 hh('button', { id: 'learning-lab-palace-open-' + palace.id, type: 'button', 'aria-label': 'Open memory palace: ' + palaceName, onClick: function() { openPalace(palace.id); }, 'data-ll-focusable': true, style: { width: '100%', minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid #d8b4fe', background: '#6b21a8', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, 'Open palace')
               )

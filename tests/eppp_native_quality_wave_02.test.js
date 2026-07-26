@@ -9,10 +9,15 @@ const json = (relativePath) => JSON.parse(read(relativePath));
 const paddedChoiceText = 'Under the conditions in the question, the best response is ';
 const wordCount = (value) => String(value).trim().split(/\s+/).filter(Boolean).length;
 const supersedingReviewWaveById = new Map([
+  ['eppp-v3-intervention-060', 'eppp-native-quality-wave-16'],
   ['eppp-v3-professional-030', 'eppp-native-quality-wave-06'],
   ['eppp-v3-assessment-062', 'eppp-native-quality-wave-07'],
   ['eppp-v3-intervention-069', 'eppp-native-quality-wave-07'],
   ['eppp-v3-professional-041', 'eppp-native-quality-wave-09'],
+  ['eppp-v3-professional-055', 'eppp-native-quality-wave-11'],
+  ['eppp-v3-intervention-062', 'eppp-native-quality-wave-12'],
+  ['eppp-v3-social-cultural-055', 'eppp-native-quality-wave-12'],
+  ['eppp-v3-intervention-064', 'eppp-native-quality-wave-12'],
 ]);
 
 describe('EPPP native quality repair wave 02', () => {

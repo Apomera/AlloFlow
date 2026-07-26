@@ -1,0 +1,90 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-44266-ubaba-uza-ekhaya",
+  "title": "UBaba uza ekhaya",
+  "description": "UDali urhabele bonyana uBaba eze ekhaya ngepelaveke. Bazokwenzani nakafikako?",
+  "language": "isiNdebele",
+  "langCode": "nbl",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Emotions and life skills",
+    "Let's play!",
+    "Positive male role models"
+  ],
+  "authors": [
+    "Sewela Langeni"
+  ],
+  "illustrators": [
+    "Heleen Steyn van der Merwe"
+  ],
+  "contributors": [
+    {
+      "name": "Sewela Langeni",
+      "role": "Writer"
+    },
+    {
+      "name": "Heleen Steyn van der Merwe",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Tammy Adendorff",
+      "role": "Designer"
+    },
+    {
+      "name": "Nabeela Kalla",
+      "role": "Editor"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/ubaba-uza-ekhaya-2/",
+    "attributionUrl": "https://bookdash.org/books/ubaba-uza-ekhaya-2/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=tata-comes-home"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2025/09/tata-comes-home_nr_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2025/09/tata-comes-home_nr_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "UDali urhabele bonyana uBaba eze ekhaya ngepelaveke. Bazokwenzani nakafikako?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Sewela Langeni (Writer); Heleen Steyn van der Merwe (Illustrator); Tammy Adendorff (Designer); Nabeela Kalla (Editor)\n\nLanguage: isiNdebele. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=tata-comes-home"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 78
+  }
+}

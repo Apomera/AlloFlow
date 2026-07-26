@@ -154,8 +154,13 @@ function HistoryPanel(props) {
   const [resourceSearch, setResourceSearch] = React.useState("");
   const [resourceTypeFilter, setResourceTypeFilter] = React.useState("all");
   const [isMoreActionsOpen, setIsMoreActionsOpen] = React.useState(false);
+  const moreActionsButtonRef = React.useRef(null);
+  const moreActionsMenuRef = React.useRef(null);
   const unitFilteredHistory = (typeof getFilteredHistory === "function" ? getFilteredHistory() : history) || [];
-  const getResourceTypeLabel = (type) => String(type || "resource").replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const getResourceTypeLabel = (type) => {
+    const localizedTitle = getDefaultTitle(type);
+    return localizedTitle ? String(localizedTitle) : String(type || "resource").replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  };
   const resourceTypes = Array.from(new Set(unitFilteredHistory.map((item) => item && item.type).filter(Boolean))).sort((a, b) => getResourceTypeLabel(a).localeCompare(getResourceTypeLabel(b)));
   const displayedResourceTypes = resourceTypeFilter !== "all" && !resourceTypes.includes(resourceTypeFilter) ? [resourceTypeFilter, ...resourceTypes] : resourceTypes;
   const normalizedResourceSearch = resourceSearch.trim().toLocaleLowerCase();
@@ -173,12 +178,54 @@ function HistoryPanel(props) {
     setResourceSearch("");
     setResourceTypeFilter("all");
   };
+  const focusMoreAction = (edge = "first") => {
+    window.requestAnimationFrame(() => {
+      const menuItems = moreActionsMenuRef.current ? Array.from(moreActionsMenuRef.current.querySelectorAll('[role="menuitem"]:not(:disabled)')) : [];
+      const target = edge === "last" ? menuItems[menuItems.length - 1] : menuItems[0];
+      if (target) target.focus();
+    });
+  };
+  const openMoreActions = (edge = "first") => {
+    setIsMoreActionsOpen(true);
+    focusMoreAction(edge);
+  };
+  const closeMoreActions = (restoreFocus = false) => {
+    setIsMoreActionsOpen(false);
+    if (restoreFocus) {
+      window.requestAnimationFrame(() => {
+        if (moreActionsButtonRef.current) moreActionsButtonRef.current.focus();
+      });
+    }
+  };
+  const handleMoreActionsMenuKeyDown = (e) => {
+    const menuItems = Array.from(e.currentTarget.querySelectorAll('[role="menuitem"]:not(:disabled)'));
+    const currentIndex = menuItems.indexOf(document.activeElement);
+    let nextIndex = currentIndex;
+    if (e.key === "ArrowDown") nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % menuItems.length;
+    else if (e.key === "ArrowUp") nextIndex = currentIndex < 0 ? menuItems.length - 1 : (currentIndex - 1 + menuItems.length) % menuItems.length;
+    else if (e.key === "Home") nextIndex = 0;
+    else if (e.key === "End") nextIndex = menuItems.length - 1;
+    else if (e.key === "Escape") {
+      e.preventDefault();
+      closeMoreActions(true);
+      return;
+    } else if (e.key === "Tab") {
+      closeMoreActions(false);
+      return;
+    } else return;
+    e.preventDefault();
+    if (menuItems[nextIndex]) menuItems[nextIndex].focus();
+  };
+  React.useEffect(() => {
+    clearResourceFilters();
+    setIsMoreActionsOpen(false);
+  }, [activeUnitId]);
   return /* @__PURE__ */ React.createElement("div", { id: "tour-history-panel", "data-help-key": "history_panel", className: `bg-indigo-900 text-indigo-100 rounded-3xl p-4 shadow-xl shadow-indigo-900/50 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? "fixed inset-4 z-[190] h-auto" : !isTeacherMode ? "h-full" : "flex-grow min-h-[500px]"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 mb-3 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-sm flex items-center gap-2" }, /* @__PURE__ */ React.createElement(History, { size: 16 }), " ", isTeacherMode ? t("sidebar.resource_pack_history") : t("sidebar.my_resources"), /* @__PURE__ */ React.createElement(
     "span",
     {
       className: "rounded-full bg-indigo-700/80 px-2 py-0.5 text-[11px] font-bold text-indigo-100",
       "aria-live": "polite",
-      "aria-label": isResourceFilterActive ? filteredHistory.length + " of " + unitFilteredHistory.length + " resources visible" : unitFilteredHistory.length + " resources"
+      "aria-label": isResourceFilterActive ? t("history.resource_count_filtered", { visible: filteredHistory.length, total: unitFilteredHistory.length }) : t("history.resource_count", { count: unitFilteredHistory.length })
     },
     isResourceFilterActive ? filteredHistory.length + " of " + unitFilteredHistory.length : unitFilteredHistory.length
   )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-1 text-[11px] font-medium opacity-80" }, isCanvas && canvasRecoverySaveStatus === "inactive" ? /* @__PURE__ */ React.createElement("span", { className: "flex min-h-11 items-center gap-1 text-indigo-200" }, "Live-session device recovery is off") : isCanvas ? /* @__PURE__ */ React.createElement(
@@ -193,21 +240,94 @@ function HistoryPanel(props) {
     },
     canvasRecoverySaveStatus === "checking" || canvasRecoverySaveStatus === "saving" || canvasRecoverySaveStatus === "restoring" ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin", "aria-hidden": "true" }) : canvasRecoverySaveStatus === "error" ? /* @__PURE__ */ React.createElement(AlertCircle, { size: 10, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Save, { size: 10, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", null, canvasRecoverySaveStatus === "checking" ? "Checking saved work\u2026" : canvasRecoverySaveStatus === "saving" ? "Saving on this device\u2026" : canvasRecoverySaveStatus === "restoring" ? "Restoring saved work\u2026" : canvasRecoverySaveStatus === "error" ? "Device save needs attention" : canvasRecoverySaveStatus === "idle" ? canvasRecoverySnapshotCount > 0 ? "Current workspace not saved yet" : "Not saved on this device yet" : lastSaved ? "Saved on this device \xB7 " + lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Saved on this device")
-  ) : isStorageDisabled ? /* @__PURE__ */ React.createElement("span", { className: "text-red-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10 }), " ", t("status.storage_disabled")) : isCloudSyncEnabled ? /* @__PURE__ */ React.createElement(React.Fragment, null, cloudSyncStatus === "syncing" && /* @__PURE__ */ React.createElement("span", { className: "text-indigo-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }), " ", t("status.syncing")), cloudSyncStatus === "error" && /* @__PURE__ */ React.createElement("span", { className: "text-red-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10 }), " ", t("status.sync_error")), (cloudSyncStatus === "saved" || cloudSyncStatus === "idle") && /* @__PURE__ */ React.createElement("span", { className: "text-green-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10 }), " ", t("status.cloud_saved"))) : pendingSync ? /* @__PURE__ */ React.createElement("span", { className: "text-orange-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CloudOff, { size: 10 }), " ", t("status.unsaved")) : lastSaved ? /* @__PURE__ */ React.createElement("span", { className: "text-green-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10 }), " ", t("status.autosaved", { time: lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })) : /* @__PURE__ */ React.createElement("span", { className: "text-indigo-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }), " ", t("status.syncing")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.upload_file"), type: "file", ref: projectFileInputRef, onChange: handleLoadProject, className: "hidden", accept: ".json" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => projectFileInputRef.current.click(), className: "min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300", title: t("history.load_project"), "aria-label": t("history.load_project"), "data-help-key": "history_load_project" }, /* @__PURE__ */ React.createElement(Upload, { size: 14, "aria-hidden": "true" })), isTeacherMode && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: initiateSaveTeacherProject, disabled: history.length === 0, className: "min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 " + (isSaveActionPulsing ? "pulse-history shadow-indigo-500/50" : ""), title: t("history.save_teacher"), "aria-label": t("history.save_teacher"), "data-help-key": "history_save_teacher" }, /* @__PURE__ */ React.createElement(Save, { size: 14, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: initiateSaveStudentProject, disabled: history.length === 0, className: "min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 " + (isSaveActionPulsing ? "pulse-history shadow-indigo-500/50" : ""), title: isTeacherMode ? t("history.save_student") : t("history.save_work"), "aria-label": isTeacherMode ? t("history.save_student") : t("history.save_work"), "data-help-key": "history_save_student" }, isTeacherMode ? /* @__PURE__ */ React.createElement(Lock, { size: 14, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Save, { size: 14, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleToggleIsHistoryMaximized, className: "min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300", title: isHistoryMaximized ? t("history.minimize") : t("history.maximize"), "aria-label": isHistoryMaximized ? t("history.minimize") : t("history.maximize"), "data-help-key": "history_max_toggle" }, isHistoryMaximized ? /* @__PURE__ */ React.createElement(Minimize, { size: 14, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Maximize, { size: 14, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("div", { className: "relative", onKeyDown: (e) => {
-    if (e.key === "Escape") {
-      e.stopPropagation();
-      setIsMoreActionsOpen(false);
+  ) : isStorageDisabled ? /* @__PURE__ */ React.createElement("span", { className: "text-red-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10 }), " ", t("status.storage_disabled")) : isCloudSyncEnabled ? /* @__PURE__ */ React.createElement(React.Fragment, null, cloudSyncStatus === "syncing" && /* @__PURE__ */ React.createElement("span", { className: "text-indigo-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }), " ", t("status.syncing")), cloudSyncStatus === "error" && /* @__PURE__ */ React.createElement("span", { className: "text-red-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10 }), " ", t("status.sync_error")), (cloudSyncStatus === "saved" || cloudSyncStatus === "idle") && /* @__PURE__ */ React.createElement("span", { className: "text-green-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10 }), " ", t("status.cloud_saved"))) : pendingSync ? /* @__PURE__ */ React.createElement("span", { className: "text-orange-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CloudOff, { size: 10 }), " ", t("status.unsaved")) : lastSaved ? /* @__PURE__ */ React.createElement("span", { className: "text-green-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10 }), " ", t("status.autosaved", { time: lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })) : /* @__PURE__ */ React.createElement("span", { className: "text-indigo-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }), " ", t("status.syncing")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.upload_file"), type: "file", ref: projectFileInputRef, onChange: handleLoadProject, className: "hidden", accept: ".json" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => projectFileInputRef.current.click(), className: "min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300", title: t("history.load_project"), "aria-label": t("history.load_project"), "data-help-key": "history_load_project" }, /* @__PURE__ */ React.createElement(Upload, { size: 14, "aria-hidden": "true" })), isTeacherMode && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: initiateSaveTeacherProject, disabled: history.length === 0, className: "min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 " + (isSaveActionPulsing ? "pulse-history shadow-indigo-500/50" : ""), title: t("history.save_teacher"), "aria-label": t("history.save_teacher"), "data-help-key": "history_save_teacher" }, /* @__PURE__ */ React.createElement(Save, { size: 14, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: initiateSaveStudentProject, disabled: history.length === 0, className: "min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 " + (isSaveActionPulsing ? "pulse-history shadow-indigo-500/50" : ""), title: isTeacherMode ? t("history.save_student") : t("history.save_work"), "aria-label": isTeacherMode ? t("history.save_student") : t("history.save_work"), "data-help-key": "history_save_student" }, isTeacherMode ? /* @__PURE__ */ React.createElement(Lock, { size: 14, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Save, { size: 14, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleToggleIsHistoryMaximized, className: "min-h-11 min-w-11 p-2 rounded-lg hover:bg-indigo-700 text-indigo-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300", title: isHistoryMaximized ? t("history.minimize") : t("history.maximize"), "aria-label": isHistoryMaximized ? t("history.minimize") : t("history.maximize"), "data-help-key": "history_max_toggle" }, isHistoryMaximized ? /* @__PURE__ */ React.createElement(Minimize, { size: 14, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Maximize, { size: 14, "aria-hidden": "true" })), (isTeacherMode || history.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      ref: moreActionsButtonRef,
+      type: "button",
+      onClick: () => isMoreActionsOpen ? closeMoreActions(false) : openMoreActions("first"),
+      onKeyDown: (e) => {
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          openMoreActions(e.key === "ArrowUp" ? "last" : "first");
+        } else if (e.key === "Escape" && isMoreActionsOpen) {
+          e.preventDefault();
+          closeMoreActions(true);
+        }
+      },
+      className: "min-h-11 rounded-lg px-2.5 text-[11px] font-bold text-indigo-100 hover:bg-indigo-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300",
+      "aria-label": t("history.more_actions_aria"),
+      "aria-haspopup": "menu",
+      "aria-expanded": isMoreActionsOpen,
+      "aria-controls": "history-more-actions-menu"
+    },
+    t("history.more_actions")
+  ), isMoreActionsOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      tabIndex: -1,
+      "aria-label": t("history.close_more_actions_aria"),
+      className: "fixed inset-0 z-[80] cursor-default bg-transparent",
+      onClick: () => closeMoreActions(true)
     }
-  } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setIsMoreActionsOpen((open) => !open), className: "min-h-11 rounded-lg px-2.5 text-[11px] font-bold text-indigo-100 hover:bg-indigo-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300", "aria-label": "More resource pack actions", "aria-expanded": isMoreActionsOpen, "aria-controls": "history-more-actions-menu" }, "More"), isMoreActionsOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", tabIndex: -1, "aria-label": "Close more resource pack actions", className: "fixed inset-0 z-[80] cursor-default bg-transparent", onClick: () => setIsMoreActionsOpen(false) }), /* @__PURE__ */ React.createElement("div", { id: "history-more-actions-menu", role: "menu", "aria-label": "More resource pack actions", className: "absolute right-0 top-full z-[90] mt-1 w-56 rounded-xl border border-indigo-600 bg-indigo-950 p-1.5 shadow-2xl" }, /* @__PURE__ */ React.createElement("button", { type: "button", role: "menuitem", onClick: () => {
-    setIsMoreActionsOpen(false);
-    shareResourcePackToCommunity();
-  }, disabled: history.length === 0, className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-indigo-100 hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50", "data-help-key": "history_share_pack" }, /* @__PURE__ */ React.createElement(Share2, { size: 15, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, "Share resource pack")), isTeacherMode && /* @__PURE__ */ React.createElement("button", { type: "button", role: "menuitem", onClick: () => {
-    setIsMoreActionsOpen(false);
-    handleSetIsProjectSettingsOpenToTrue();
-  }, className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-indigo-100 hover:bg-indigo-800", "data-help-key": "history_settings" }, /* @__PURE__ */ React.createElement(Settings, { size: 15, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, t("history.settings"))), (isTeacherMode || history.length > 0) && /* @__PURE__ */ React.createElement("button", { type: "button", role: "menuitem", onClick: () => {
-    setIsMoreActionsOpen(false);
-    handleClearHistory();
-  }, className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-red-200 hover:bg-red-950/70", "data-help-key": "history_clear_button" }, /* @__PURE__ */ React.createElement(Trash2, { size: 15, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, t("history.clear")))))))), isTeacherMode && !isIndependentMode && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-950/50 p-2 rounded-lg border border-indigo-700/50 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(FolderOpen, { size: 14, className: "text-indigo-300 shrink-0" }), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      ref: moreActionsMenuRef,
+      id: "history-more-actions-menu",
+      role: "menu",
+      "aria-label": t("history.more_actions_aria"),
+      onKeyDown: handleMoreActionsMenuKeyDown,
+      className: "absolute right-0 top-full z-[90] mt-1 w-56 rounded-xl border border-indigo-600 bg-indigo-950 p-1.5 shadow-2xl"
+    },
+    /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        onClick: () => {
+          closeMoreActions(false);
+          shareResourcePackToCommunity();
+        },
+        disabled: history.length === 0,
+        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-indigo-100 hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50",
+        "data-help-key": "history_share_pack"
+      },
+      /* @__PURE__ */ React.createElement(Share2, { size: 15, "aria-hidden": "true" }),
+      /* @__PURE__ */ React.createElement("span", null, t("history.share_resource_pack"))
+    ),
+    isTeacherMode && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        onClick: () => {
+          closeMoreActions(false);
+          handleSetIsProjectSettingsOpenToTrue();
+        },
+        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-indigo-100 hover:bg-indigo-800",
+        "data-help-key": "history_settings"
+      },
+      /* @__PURE__ */ React.createElement(Settings, { size: 15, "aria-hidden": "true" }),
+      /* @__PURE__ */ React.createElement("span", null, t("history.settings"))
+    ),
+    (isTeacherMode || history.length > 0) && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        role: "menuitem",
+        onClick: () => {
+          closeMoreActions(false);
+          handleClearHistory();
+        },
+        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-red-200 hover:bg-red-950/70",
+        "data-help-key": "history_clear_button"
+      },
+      /* @__PURE__ */ React.createElement(Trash2, { size: 15, "aria-hidden": "true" }),
+      /* @__PURE__ */ React.createElement("span", null, t("history.clear"))
+    )
+  ))))), isTeacherMode && !isIndependentMode && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-950/50 p-2 rounded-lg border border-indigo-700/50 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(FolderOpen, { size: 14, className: "text-indigo-300 shrink-0" }), /* @__PURE__ */ React.createElement(
     "select",
     {
       value: activeUnitId,
@@ -248,7 +368,7 @@ function HistoryPanel(props) {
       "aria-label": t("history.delete_unit_tooltip")
     },
     /* @__PURE__ */ React.createElement(Trash2, { size: 14 })
-  )), (unitFilteredHistory.length >= 6 || isResourceFilterActive) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-indigo-700/70 bg-indigo-950/40 p-2", role: "search", "aria-label": "Find resources in this pack" }, /* @__PURE__ */ React.createElement("div", { className: "relative min-w-[150px] flex-1" }, /* @__PURE__ */ React.createElement(Search, { size: 14, "aria-hidden": "true", className: "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-indigo-300" }), /* @__PURE__ */ React.createElement("input", { type: "search", value: resourceSearch, onChange: (e) => setResourceSearch(e.target.value), placeholder: "Search resources", "aria-label": "Search resources by title or type", className: "min-h-11 w-full rounded-lg border border-indigo-700 bg-indigo-900 py-2 pl-8 pr-9 text-xs text-white placeholder:text-indigo-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400" }), resourceSearch && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setResourceSearch(""), "aria-label": "Clear resource search", className: "absolute right-0 top-0 min-h-11 min-w-11 rounded-lg text-indigo-300 hover:bg-indigo-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300" }, /* @__PURE__ */ React.createElement(X, { size: 14, className: "mx-auto", "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("select", { value: resourceTypeFilter, onChange: (e) => setResourceTypeFilter(e.target.value), "aria-label": "Filter resources by type", className: "min-h-11 min-w-[120px] flex-1 rounded-lg border border-indigo-700 bg-indigo-900 px-2 text-xs text-indigo-100 focus:border-indigo-400 focus:outline-none focus:ring-2 focus-visible:ring-indigo-400" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "All types"), displayedResourceTypes.map((type) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, getResourceTypeLabel(type)))), isResourceFilterActive && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-indigo-100 hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300" }, "Clear filters"), isResourceFilterActive && /* @__PURE__ */ React.createElement("p", { className: "w-full text-[11px] text-indigo-200", role: "status" }, "Showing ", filteredHistory.length, " of ", unitFilteredHistory.length, ". Clear filters to reorder resources.")), isUnitModalOpen && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-800 p-2 rounded-lg border border-indigo-600 animate-in slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-indigo-200 mb-1" }, t("history.new_unit_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+  )), (unitFilteredHistory.length >= 6 || isResourceFilterActive) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-indigo-700/70 bg-indigo-950/40 p-2", role: "search", "aria-label": t("history.find_resources_aria") }, /* @__PURE__ */ React.createElement("div", { className: "relative min-w-[150px] flex-1" }, /* @__PURE__ */ React.createElement(Search, { size: 14, "aria-hidden": "true", className: "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-indigo-300" }), /* @__PURE__ */ React.createElement("input", { type: "search", value: resourceSearch, onChange: (e) => setResourceSearch(e.target.value), placeholder: t("history.search_resources_placeholder"), "aria-label": t("history.search_resources_aria"), className: "min-h-11 w-full rounded-lg border border-indigo-700 bg-indigo-900 py-2 pl-8 pr-9 text-xs text-white placeholder:text-indigo-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400" }), resourceSearch && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setResourceSearch(""), "aria-label": t("history.clear_resource_search_aria"), className: "absolute right-0 top-0 min-h-11 min-w-11 rounded-lg text-indigo-300 hover:bg-indigo-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300" }, /* @__PURE__ */ React.createElement(X, { size: 14, className: "mx-auto", "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("select", { value: resourceTypeFilter, onChange: (e) => setResourceTypeFilter(e.target.value), "aria-label": t("history.filter_by_type_aria"), className: "min-h-11 min-w-[120px] flex-1 rounded-lg border border-indigo-700 bg-indigo-900 px-2 text-xs text-indigo-100 focus:border-indigo-400 focus:outline-none focus:ring-2 focus-visible:ring-indigo-400" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, t("history.all_types")), displayedResourceTypes.map((type) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, getResourceTypeLabel(type)))), isResourceFilterActive && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-indigo-100 hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300" }, t("history.clear_filters")), isResourceFilterActive && /* @__PURE__ */ React.createElement("p", { className: "w-full text-[11px] text-indigo-200", role: "status" }, t("history.filtered_status", { visible: filteredHistory.length, total: unitFilteredHistory.length }))), isUnitModalOpen && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-800 p-2 rounded-lg border border-indigo-600 animate-in slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-indigo-200 mb-1" }, t("history.new_unit_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_new_unit_name"),
@@ -325,7 +445,7 @@ function HistoryPanel(props) {
         /* @__PURE__ */ React.createElement(X, { size: 12 })
       )
     ))));
-  })(), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10", role: "list", "aria-label": t("sidebar.resource_pack_history") || "Saved resources" }, filteredHistory.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center p-4 text-indigo-200 text-xs italic" }, history.length === 0 ? t("history.empty_general") : unitFilteredHistory.length === 0 ? t("history.empty_unit") : "No resources match your search and type filters.", isResourceFilterActive && unitFilteredHistory.length > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "mx-auto mt-3 block min-h-11 rounded-lg px-3 font-bold text-indigo-100 hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300" }, "Clear filters")), filteredHistory.map((item, idx) => {
+  })(), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10", role: "list", "aria-label": t("sidebar.resource_pack_history") || "Saved resources" }, filteredHistory.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center p-4 text-indigo-200 text-xs italic" }, history.length === 0 ? t("history.empty_general") : unitFilteredHistory.length === 0 ? t("history.empty_unit") : t("history.no_filter_matches"), isResourceFilterActive && unitFilteredHistory.length > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "mx-auto mt-3 block min-h-11 rounded-lg px-3 font-bold text-indigo-100 hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300" }, t("history.clear_filters"))), filteredHistory.map((item, idx) => {
     const itemTitle = isTeacherMode && !isIndependentMode ? String(item.title || getDefaultTitle(item.type)) : sanitizeString(item.title || getDefaultTitle(item.type));
     const itemMeta = typeof item.meta === "string" ? item.meta.trim() : "";
     const itemUnit = item.unitId ? units.find((u) => u.id === item.unitId) : null;
@@ -366,10 +486,10 @@ function HistoryPanel(props) {
           },
           "aria-keyshortcuts": canReorderResources ? "Alt+ArrowUp Alt+ArrowDown" : void 0,
           "aria-disabled": !canReorderResources || editingId === item.id,
-          "aria-label": canReorderResources ? (t("common.reorder_list") || "Reorder") + ": " + itemTitle + ". " + (t("history.position") || "Position") + " " + (idx + 1) + " " + (t("common.of") || "of") + " " + filteredHistory.length + ". " + (t("history.keyboard_reorder") || "Use Alt plus Up or Down Arrow to reorder.") : itemTitle + ". Clear search and type filters to reorder resources.",
+          "aria-label": canReorderResources ? (t("common.reorder_list") || "Reorder") + ": " + itemTitle + ". " + (t("history.position") || "Position") + " " + (idx + 1) + " " + (t("common.of") || "of") + " " + filteredHistory.length + ". " + (t("history.keyboard_reorder") || "Use Alt plus Up or Down Arrow to reorder.") : itemTitle + ". " + t("history.clear_filters_to_reorder"),
           className: `min-h-11 min-w-11 rounded-lg flex items-center justify-center gap-0.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${isCurrent ? "text-indigo-500 hover:bg-indigo-100" : "text-indigo-400 hover:bg-indigo-700 hover:text-white"} ${editingId === item.id || !canReorderResources ? "cursor-not-allowed opacity-40" : "cursor-grab active:cursor-grabbing"}`,
           "data-help-key": "history_item_drag",
-          title: isResourceFilterActive ? "Clear filters to reorder resources" : t("common.drag_to_reorder")
+          title: isResourceFilterActive ? t("history.clear_filters_to_reorder") : t("common.drag_to_reorder")
         },
         /* @__PURE__ */ React.createElement(GripVertical, { size: 14, "aria-hidden": "true" }),
         /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold", "aria-hidden": "true" }, idx + 1)

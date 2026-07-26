@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-325-torts-cases-principles-and-institutions-6th-edition",
+  "title": "Torts: Cases, Principles, and Institutions - 6th Edition",
+  "description": "This is the Fifth Edition of Torts: Cases, Principles, and Institutions, a casebook for a one-semester torts course that carves out a distinctive niche in the field by focusing on the institutions and sociology of American tort law. The book retains many of the familiar features of the traditional casebook, including many of the classic cases. Like the best casebooks, it seeks to survey the theoretical principles underlying those cases. But it aims to supplement the cases and principles with editorial notes that focus students’ attention on the institutional features of our tort system, including features such as the pervasiveness of settlements, the significance of the market, the role of the plaintiff's bar, the importance of private insurance, the contingency fee, and the jury. These institutional arrangements are what make American tort law distinctive. They are how the substantive doctrines of tort law are translated into the practice of torts lawyers. And they are sociologically fascinating in their own right. TCPI integrates the institutional materials into the cases and notes rather than segregate them into separate sections of their own. It does so because its aim is not to teach the details of any one institution, such as the mechanics of the law of subrogation or workers’ compensation. Few one-semester torts classes can take up so much material. Instead, the book integrates the institutional material into the main text to draw general lessons about the massive, sprawling systems of private administration that American law has created under the umbrella of our torts system.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law - Civil Law"
+  ],
+  "authors": [
+    "John Fabian Witt - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CALI's eLangdell® Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/torts-cases-principles-and-institutions"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This is the Fifth Edition of Torts: Cases, Principles, and Institutions, a casebook for a one-semester torts course that carves out a distinctive niche in the field by focusing on the institutions and sociology of American tort law. The book retains many of the familiar features of the traditional casebook, including many of the classic cases. Like the best casebooks, it seeks to survey the theoretical principles underlying those cases. But it aims to supplement the cases and principles with editorial notes that focus students’ attention on the institutional features of our tort system, including features such as the pervasiveness of settlements, the significance of the market, the role of the plaintiff's bar, the importance of private insurance, the contingency fee, and the jury. These institutional arrangements are what make American tort law distinctive. They are how the substantive doctrines of tort law are translated into the practice of torts lawyers. And they are sociologically fascinating in their own right. TCPI integrates the institutional materials into the cases and notes rather than segregate them into separate sections of their own. It does so because its aim is not to teach the details of any one institution, such as the mechanics of the law of subrogation or workers’ compensation. Few one-semester torts classes can take up so much material. Instead, the book integrates the institutional material into the main text to draw general lessons about the massive, sprawling systems of private administration that American law has created under the umbrella of our torts system."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2022."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 276
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "325",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

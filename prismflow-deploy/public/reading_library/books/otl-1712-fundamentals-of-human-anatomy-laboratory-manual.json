@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1712-fundamentals-of-human-anatomy-laboratory-manual",
+  "title": "Fundamentals of Human Anatomy Laboratory Manual",
+  "description": "This laboratory manual is meant to be used in a lab course that accompanies a college-level introductory human anatomy course. It covers the language of anatomy, cells and tissues, and the organ systems that comprise the human body. Multiple open textbooks were adapted to create this lab manual. Attribution for these sources are provided at the end of each chapter.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology",
+    "Medicine - Anatomy"
+  ],
+  "authors": [
+    "Carly Manz - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Iowa State University Digital Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/fundamentals-of-human-anatomy-laboratory-manual"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This laboratory manual is meant to be used in a lab course that accompanies a college-level introductory human anatomy course. It covers the language of anatomy, cells and tissues, and the organ systems that comprise the human body. Multiple open textbooks were adapted to create this lab manual. Attribution for these sources are provided at the end of each chapter."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 83
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1712",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

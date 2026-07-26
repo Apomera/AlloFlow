@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1541-epidemiology",
+  "title": "Epidemiology",
+  "description": "Epidemiology is an openly licensed text designed for medical degree–seeking clinical students without a prior background in public health. Using sports medicine and injury prevention examples and applications, it aims to provide students with the basics of epidemiology terms and concepts and is intended to guide medical school students as they prepare for the USMLE Step 1 Exam and to transition from student to clinician. It includes an introduction to general concepts and terminology of epidemiology, study designs and their relationship to clinical questions, and the use of epidemiology in clinical diagnosis and screening of disease. Concluding sections of the book present sources of errors in epidemiologic studies, including bias, confounding, and effect modification. The book is notable for its use of accessible, inclusive figures and examples, and end-of-chapter study guides that summarize the chapter visually. Are you reviewing or adopting this book for a course? Please help us understand your use by filling out this form: https://bit.ly/interest_epidemiology",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine - Public Health"
+  ],
+  "authors": [
+    "Charlotte Baker - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Virginia Tech Libraries",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/epidemiology"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Epidemiology is an openly licensed text designed for medical degree–seeking clinical students without a prior background in public health. Using sports medicine and injury prevention examples and applications, it aims to provide students with the basics of epidemiology terms and concepts and is intended to guide medical school students as they prepare for the USMLE Step 1 Exam and to transition from student to clinician. It includes an introduction to general concepts and terminology of epidemiology, study designs and their relationship to clinical questions, and the use of epidemiology in clinical diagnosis and screening of disease. Concluding sections of the book present sources of errors in epidemiologic studies, including bias, confounding, and effect modification. The book is notable for its use of accessible, inclusive figures and examples, and end-of-chapter study guides that summarize the chapter visually. Are you reviewing or adopting this book for a course? Please help us understand your use by filling out this form: https://bit.ly/interest_epidemiology"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 181
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1541",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

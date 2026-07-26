@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-885-strategic-marketing-in-the-global-forest-industries-third-edition",
+  "title": "Strategic Marketing in the Global Forest Industries - Third Edition",
+  "description": "The forest industry is increasingly global and every marketer of forest products should have a global perspective. As a natural resource-based industry, the forest industry has an especially high profile role in environmental protection and is increasingly involved in climate change mitigation and management. Global forests are not only important because they provide a source of industrial raw material, but also because of the various other human needs they satisfy. A forest products marketer should have a basic understanding of the role that global forests play in society. Major societal trends are impacting the external environment within which the forest industry operates. We provide an overview of global forests and a brief description of the markets for the main categories of the forest industry.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Marketing"
+  ],
+  "authors": [
+    "Eric Hansen - Author / Heikki Juslin - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oregon State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/strategic-marketing-in-the-global-forest-industries-third-edition"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The forest industry is increasingly global and every marketer of forest products should have a global perspective. As a natural resource-based industry, the forest industry has an especially high profile role in environmental protection and is increasingly involved in climate change mitigation and management. Global forests are not only important because they provide a source of industrial raw material, but also because of the various other human needs they satisfy. A forest products marketer should have a basic understanding of the role that global forests play in society. Major societal trends are impacting the external environment within which the forest industry operates. We provide an overview of global forests and a brief description of the markets for the main categories of the forest industry."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 147
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "885",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

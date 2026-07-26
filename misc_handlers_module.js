@@ -66,6 +66,25 @@ const _classifyMiscUpload = (file) => {
     };
 };
 
+// Copyable diagnostics must not retain filenames, document/model excerpts,
+// custom instructions, or arbitrary Error.message bodies. Preserve only a
+// bounded error identity, stable code/status, and coarse failure category.
+const _miscDiagnosticErrorSummary = (error) => {
+    const name = String(error && error.name || 'Error').replace(/[^a-z0-9_.-]/gi, '').slice(0, 48) || 'Error';
+    const rawCode = error && (error.code != null ? error.code : error.status);
+    const code = rawCode == null ? '' : String(rawCode).replace(/[^a-z0-9_.-]/gi, '').slice(0, 48);
+    const message = String(error && error.message || error || '').toLowerCase();
+    const category = /abort|cancel|stale/.test(message) ? 'cancelled-or-stale'
+        : /timeout|timed out|etimedout/.test(message) ? 'timeout'
+        : /429|quota|resource_exhausted|rate limit/.test(message) ? 'quota'
+        : /401|403|auth|api key|permission/.test(message) ? 'auth'
+        : /json|parse|syntax|malformed/.test(message) ? 'parse-or-format'
+        : /read|filereader|encoding/.test(message) ? 'read'
+        : /fetch|network|5\d\d/.test(message) ? 'network'
+        : 'unexpected';
+    return name + (code ? ' code=' + code : '') + ' category=' + category;
+};
+
 // FileReader events, workbook conversion, and vision extraction can all outlive
 // the input event that started them. Retain every concrete resource under one
 // generation owner so selecting B or invalidating the document actually aborts
@@ -284,7 +303,7 @@ const handleFileUpload = async (e, deps) => {
                 addToast('✅ ' + (conv.sheets > 1 ? conv.sheets + ' sheets' : '1 sheet') + (t('toasts.spreadsheet_ready') || ' loaded as accessible tables — Make Accessible for the full treatment (tagged PDF included).'), 'success');
             } catch (err) {
                 if (!intakeIsCurrent()) return;
-                warnLog('[Spreadsheet→Pipeline] failed:', err?.message || err);
+                warnLog('[Spreadsheet→Pipeline] failed:', _miscDiagnosticErrorSummary(err));
                 setError((t('toasts.spreadsheet_failed') || 'Could not read the spreadsheet: ') + (err?.message || 'unknown') + ' — export it as CSV and try again.');
                 finishExtraction();
             }
@@ -428,7 +447,7 @@ const handleFileUpload = async (e, deps) => {
                                 if (!intakeIsCurrent()) return;
                                 if (chunkText && chunkText.trim().length > 20) chunks.push(chunkText);
                             } catch (chunkErr) {
-                                warnLog(`[PDF Chunk ${i + 1}] Failed:`, chunkErr?.message);
+                                warnLog(`[PDF Chunk ${i + 1}] Failed:`, _miscDiagnosticErrorSummary(chunkErr));
                                 if (i === 0) throw chunkErr; // First chunk failing = total failure
                             }
                         }
@@ -439,7 +458,7 @@ const handleFileUpload = async (e, deps) => {
                         finishExtraction();
                         addToast(`PDF extracted successfully (${chunks.length} sections)`, 'success');
                     } catch (pdfErr) {
-                        warnLog('[PDF Chunked] All extraction failed:', pdfErr);
+                        warnLog('[PDF Chunked] All extraction failed:', _miscDiagnosticErrorSummary(pdfErr));
                         setError('PDF extraction failed — the document may be too complex or image-heavy. Try copying and pasting the text directly.');
                         finishExtraction();
                     }
@@ -490,7 +509,7 @@ const handleFileUpload = async (e, deps) => {
                 finishExtraction();
                 } catch (err) {
                     if (!intakeIsCurrent()) return;
-                    warnLog('File extraction failed:', err?.message || err);
+                    warnLog('File extraction failed:', _miscDiagnosticErrorSummary(err));
                     failRead(t('toasts.file_process_error'));
                 }
             };
@@ -498,7 +517,7 @@ const handleFileUpload = async (e, deps) => {
             reader.onabort = () => { releaseReader(reader); if (intakeIsCurrent()) failRead(t('quick_start.error_read_file')); };
             try { reader.readAsDataURL(file); } catch (err) { failRead(err?.message || t('quick_start.error_read_file')); }
         } catch (err) {
-            warnLog("Unhandled error:", err);
+            warnLog("Unhandled error:", _miscDiagnosticErrorSummary(err));
             setError(t('toasts.file_process_error'));
             finishExtraction();
         }
@@ -600,6 +619,13 @@ function _createProjectLoadOperationManager(controllerFactory) {
 
 const _projectLoadOperations = _createProjectLoadOperationManager();
 const cancelProjectLoad = (options) => _projectLoadOperations.cancel(null, options || {});
+const _projectDiagnosticErrorSummary = typeof _miscDiagnosticErrorSummary === 'function'
+    ? _miscDiagnosticErrorSummary
+    : (error) => {
+        const name = String(error && error.name || 'Error').replace(/[^a-z0-9_.-]/gi, '').slice(0, 48) || 'Error';
+        const code = error && (error.code != null ? error.code : error.status);
+        return name + (code == null ? '' : ' code=' + String(code).replace(/[^a-z0-9_.-]/gi, '').slice(0, 48));
+    };
 
 const handleLoadProject = (e, deps) => {
   const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory, setStickers, setConceptMasteryLocal, bankImportedConceptMastery, onProjectLoadStart, onProjectLoadComplete } = deps;
@@ -665,7 +691,7 @@ const handleLoadProject = (e, deps) => {
                     window.__alloflowStudentProgressSummary = rawData.studentProgressSummary;
                     try { localStorage.setItem('alloflow_student_progress_summary', JSON.stringify(rawData.studentProgressSummary)); } catch (e) {}
                     window.dispatchEvent(new CustomEvent('alloflow-student-progress-summary-restored'));
-                } catch (e) { warnLog && warnLog('Student progress summary restore failed:', e); }
+                } catch (e) { warnLog && warnLog('Student progress summary restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // Guided-tour resume: a teacher who saved mid-tutorial drops back in at their
             // step (Canvas has no cross-session storage, so progress rides the project file).
@@ -827,7 +853,7 @@ const handleLoadProject = (e, deps) => {
                      if (rawData.completedActivities) {
                           try {
                               setCompletedActivities(new Map(rawData.completedActivities));
-                          } catch(e) { warnLog("Failed to restore completed activities", e); }
+                          } catch(e) { warnLog("Failed to restore completed activities", _projectDiagnosticErrorSummary(e)); }
                      }
                 }
                 // Word Sounds state restores for BOTH save modes (was inside the
@@ -865,7 +891,7 @@ const handleLoadProject = (e, deps) => {
                         try { localStorage.setItem('alloflow_sel_tool_usage', JSON.stringify(rawData.selEngagement.toolUsage)); } catch (e) {}
                     }
                     window.dispatchEvent(new CustomEvent('alloflow-sel-engagement-restored'));
-                } catch (e) { warnLog && warnLog('SEL engagement restore failed:', e); }
+                } catch (e) { warnLog && warnLog('SEL engagement restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // BirdLab persistent state (life list, badges). Same pattern as
             // SEL engagement: write to window slot, mirror to localStorage,
@@ -880,7 +906,7 @@ const handleLoadProject = (e, deps) => {
                         try { localStorage.setItem('birdLab.badges.v1', JSON.stringify(rawData.birdLab.badges)); } catch (e) {}
                     }
                     window.dispatchEvent(new CustomEvent('alloflow-birdlab-restored'));
-                } catch (e) { warnLog && warnLog('BirdLab restore failed:', e); }
+                } catch (e) { warnLog && warnLog('BirdLab restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // PetsLab persistent state (module visits, badges, decoder mastery).
             // Same Canvas-survival flow as SEL engagement and BirdLab above.
@@ -889,7 +915,7 @@ const handleLoadProject = (e, deps) => {
                     window.__alloflowPetsLab = rawData.petsLab;
                     try { localStorage.setItem('petsLab.state.v1', JSON.stringify(rawData.petsLab)); } catch (e) {}
                     window.dispatchEvent(new CustomEvent('alloflow-petslab-restored'));
-                } catch (e) { warnLog && warnLog('PetsLab restore failed:', e); }
+                } catch (e) { warnLog && warnLog('PetsLab restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // OpticsLab AP-quiz concept mastery. Mirrors the rest of the
             // STEM Lab tool persistence chain.
@@ -898,7 +924,7 @@ const handleLoadProject = (e, deps) => {
                     window.__alloflowOpticsLab = rawData.opticsLab;
                     try { localStorage.setItem('opticsLab.state.v1', JSON.stringify(rawData.opticsLab)); } catch (e) {}
                     window.dispatchEvent(new CustomEvent('alloflow-opticslab-restored'));
-                } catch (e) { warnLog && warnLog('OpticsLab restore failed:', e); }
+                } catch (e) { warnLog && warnLog('OpticsLab restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // StatsLab AP-quiz concept mastery (AP Psych / AP Bio).
             if (rawData.statsLab && typeof rawData.statsLab === 'object') {
@@ -906,7 +932,7 @@ const handleLoadProject = (e, deps) => {
                     window.__alloflowStatsLab = rawData.statsLab;
                     try { localStorage.setItem('statsLab.state.v1', JSON.stringify(rawData.statsLab)); } catch (e) {}
                     window.dispatchEvent(new CustomEvent('alloflow-statslab-restored'));
-                } catch (e) { warnLog && warnLog('StatsLab restore failed:', e); }
+                } catch (e) { warnLog && warnLog('StatsLab restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // WeldLab welder's defect catalog (cross-sample log) + badges.
             if (rawData.weldLab && typeof rawData.weldLab === 'object') {
@@ -919,7 +945,7 @@ const handleLoadProject = (e, deps) => {
                         try { localStorage.setItem('weldLab.badges.v1', JSON.stringify(rawData.weldLab.badges)); } catch (e) {}
                     }
                     window.dispatchEvent(new CustomEvent('alloflow-weldlab-restored'));
-                } catch (e) { warnLog && warnLog('WeldLab restore failed:', e); }
+                } catch (e) { warnLog && warnLog('WeldLab restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // RenewablesLab energy-source mastery (badges + module visits + quiz mastery).
             if (rawData.renewablesLab && typeof rawData.renewablesLab === 'object') {
@@ -927,7 +953,7 @@ const handleLoadProject = (e, deps) => {
                     window.__alloflowRenewablesLab = rawData.renewablesLab;
                     try { localStorage.setItem('renewablesLab.state.v1', JSON.stringify(rawData.renewablesLab)); } catch (e) {}
                     window.dispatchEvent(new CustomEvent('alloflow-renewableslab-restored'));
-                } catch (e) { warnLog && warnLog('RenewablesLab restore failed:', e); }
+                } catch (e) { warnLog && warnLog('RenewablesLab restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // FirstResponse Lab responder mastery (consent + module visits + faMastery).
             if (rawData.firstResponse && typeof rawData.firstResponse === 'object') {
@@ -935,7 +961,7 @@ const handleLoadProject = (e, deps) => {
                     window.__alloflowFirstResponse = rawData.firstResponse;
                     try { localStorage.setItem('firstResponse.state.v1', JSON.stringify(rawData.firstResponse)); } catch (e) {}
                     window.dispatchEvent(new CustomEvent('alloflow-firstresponse-restored'));
-                } catch (e) { warnLog && warnLog('FirstResponse restore failed:', e); }
+                } catch (e) { warnLog && warnLog('FirstResponse restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // ThrowLab Pitch Locker (cross-session strike log per pitch type).
             if (rawData.throwlab && typeof rawData.throwlab === 'object') {
@@ -943,7 +969,7 @@ const handleLoadProject = (e, deps) => {
                     window.__alloflowThrowLab = rawData.throwlab;
                     try { localStorage.setItem('throwlab.state.v1', JSON.stringify(rawData.throwlab)); } catch (e) {}
                     window.dispatchEvent(new CustomEvent('alloflow-throwlab-restored'));
-                } catch (e) { warnLog && warnLog('ThrowLab restore failed:', e); }
+                } catch (e) { warnLog && warnLog('ThrowLab restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // PlayLab Play Catalog (cross-session log of plays/concepts run successfully).
             if (rawData.playlab && typeof rawData.playlab === 'object') {
@@ -951,7 +977,7 @@ const handleLoadProject = (e, deps) => {
                     window.__alloflowPlayLab = rawData.playlab;
                     try { localStorage.setItem('playlab.state.v1', JSON.stringify(rawData.playlab)); } catch (e) {}
                     window.dispatchEvent(new CustomEvent('alloflow-playlab-restored'));
-                } catch (e) { warnLog && warnLog('PlayLab restore failed:', e); }
+                } catch (e) { warnLog && warnLog('PlayLab restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // Assessment Literacy junk-science mastery (per-scenario first-correct).
             if (rawData.assessmentLiteracy && typeof rawData.assessmentLiteracy === 'object') {
@@ -959,7 +985,7 @@ const handleLoadProject = (e, deps) => {
                     window.__alloflowAssessmentLiteracy = rawData.assessmentLiteracy;
                     try { localStorage.setItem('assessmentLiteracy.state.v1', JSON.stringify(rawData.assessmentLiteracy)); } catch (e) {}
                     window.dispatchEvent(new CustomEvent('alloflow-assessmentliteracy-restored'));
-                } catch (e) { warnLog && warnLog('AssessmentLiteracy restore failed:', e); }
+                } catch (e) { warnLog && warnLog('AssessmentLiteracy restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // RoadReady Permit Mastery (per-question first-correct log + per-category stats + parking best).
             if (rawData.roadReady && typeof rawData.roadReady === 'object') {
@@ -975,7 +1001,7 @@ const handleLoadProject = (e, deps) => {
                         try { localStorage.setItem('roadReady.parkingBest.v1', JSON.stringify(rawData.roadReady.parkingBest)); } catch (e) {}
                     }
                     window.dispatchEvent(new CustomEvent('alloflow-roadready-restored'));
-                } catch (e) { warnLog && warnLog('RoadReady restore failed:', e); }
+                } catch (e) { warnLog && warnLog('RoadReady restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // SEL Hub teacher-authored Stations (custom curated tool bundles
             // with quests). Mirror to window slot AND localStorage, then fire
@@ -988,7 +1014,7 @@ const handleLoadProject = (e, deps) => {
                         try { localStorage.setItem('alloflow_sel_stations', JSON.stringify(rawData.selStations)); } catch (e) {}
                     }
                     window.dispatchEvent(new CustomEvent('alloflow-sel-stations-restored'));
-                } catch (e) { warnLog && warnLog('SEL stations restore failed:', e); }
+                } catch (e) { warnLog && warnLog('SEL stations restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // SEL Hub per-station quest progress (xpThreshold / timeSpent /
             // freeResponse / manualComplete tracking). Same restore flow.
@@ -997,7 +1023,7 @@ const handleLoadProject = (e, deps) => {
                     window.__alloflowSelProgress = rawData.selProgress;
                     try { localStorage.setItem('alloflow_sel_station_progress', JSON.stringify(rawData.selProgress)); } catch (e) {}
                     window.dispatchEvent(new CustomEvent('alloflow-sel-progress-restored'));
-                } catch (e) { warnLog && warnLog('SEL progress restore failed:', e); }
+                } catch (e) { warnLog && warnLog('SEL progress restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // SEL Hub per-tool persistent state (Voice Detective confusion
             // matrix, Journal entries, etc.). The window slot is keyed by
@@ -1018,14 +1044,14 @@ const handleLoadProject = (e, deps) => {
                         } catch (e) {}
                     });
                     window.dispatchEvent(new CustomEvent('alloflow-sel-tooldata-restored'));
-                } catch (e) { warnLog && warnLog('SEL tool data restore failed:', e); }
+                } catch (e) { warnLog && warnLog('SEL tool data restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             if (Array.isArray(rawData.selSnapshots)) {
                 try {
                     window.__alloflowSelSnapshots = rawData.selSnapshots;
                     try { localStorage.setItem('alloflow_sel_snapshots', JSON.stringify(rawData.selSnapshots)); } catch (e) {}
                     window.dispatchEvent(new CustomEvent('alloflow-sel-snapshots-restored'));
-                } catch (e) { warnLog && warnLog('SEL snapshots restore failed:', e); }
+                } catch (e) { warnLog && warnLog('SEL snapshots restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
             // Student-authored permanent products (SEL Share Packets and future
             // module exports). AlloHaven renders these read-only, so clear the
@@ -1036,7 +1062,7 @@ const handleLoadProject = (e, deps) => {
                 window.__alloflowStudentArtifacts = restoredStudentArtifacts;
                 try { localStorage.setItem('alloflow_student_artifacts', JSON.stringify(restoredStudentArtifacts)); } catch (e) {}
                 window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-restored'));
-            } catch (e) { warnLog && warnLog('Student artifacts restore failed:', e); }
+            } catch (e) { warnLog && warnLog('Student artifacts restore failed:', _projectDiagnosticErrorSummary(e)); }
             // Rehydrate sticker overlays. Stickers are saved into the
             // project JSON by phase_k_helpers.executeSaveFile so a teacher's
             // feedback or a student's marks survive reload. Falls back to
@@ -1082,7 +1108,7 @@ const handleLoadProject = (e, deps) => {
             }
         } catch (err) {
             if (!projectLoadIsCurrent()) return;
-            warnLog("Failed to parse project file", err);
+            warnLog("Failed to parse project file", _projectDiagnosticErrorSummary(err));
             addToast(t('errors.project_file_load_failed') || t('toasts.project_load_failed') || 'The project file could not be loaded.', 'error');
 
         } finally {
@@ -1091,7 +1117,7 @@ const handleLoadProject = (e, deps) => {
     };
     reader.onerror = () => {
         if (!projectLoadIsCurrent()) return;
-        if (warnLog) warnLog('Failed to read project file', reader.error || new Error('FileReader failed'));
+        if (warnLog) warnLog('Failed to read project file', _projectDiagnosticErrorSummary(reader.error || new Error('FileReader failed')));
         if (addToast) addToast(t('errors.project_file_load_failed') || t('toasts.project_load_failed') || 'The project file could not be loaded.', 'error');
         finishCurrentProjectLoad(false);
     };
@@ -1102,7 +1128,7 @@ const handleLoadProject = (e, deps) => {
         reader.readAsText(file);
     } catch (err) {
         if (projectLoadIsCurrent()) {
-            if (warnLog) warnLog('Failed to read project file', err);
+            if (warnLog) warnLog('Failed to read project file', _projectDiagnosticErrorSummary(err));
             if (addToast) addToast(t('errors.project_file_load_failed') || t('toasts.project_load_failed') || 'The project file could not be loaded.', 'error');
             finishCurrentProjectLoad(false);
         }
@@ -1136,7 +1162,7 @@ const detectClimaxArchetype = async (text, instructions, deps) => {
         if (clean.includes('Discovery')) return 'Discovery';
         return 'Catastrophe';
     } catch (e) {
-        warnLog("Archetype detection failed", e);
+        warnLog("Archetype detection failed", _miscDiagnosticErrorSummary(e));
         return 'Catastrophe';
     }
 };
@@ -1161,6 +1187,16 @@ async function runAutoFixLoop(maxRounds, deps) {
   const {
     pdfAutoContinueAbortCtrlRef, pdfAutoContinueAbortRef, pdfFixResultRef, pdfHtmlRevisionRef, setPdfAutoContinueRunning, setPdfFixLoading, setPdfFixResult, setPdfFixStep, pdfFixLoading, pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, waitForGeminiCalm, runAxeAudit, runEqualAccessAudit, deriveVerificationState, createVerificationHtmlBinding, applyVerificationHtmlBinding, isLiveVerificationHtmlBound, enforceVerificationHtmlBinding, formatVerificationReason, auditOutputAccessibility, recomputeIssueResolution, recomputeContentFidelity, _docPipeline, sanitizeStyleForWCAG, attachVerificationHtmlProof, saveProjectToFile, addToast, pdfAutoSaveProject, t, warnLog,
   } = deps;
+
+  // Some focused tests load only this function body. Keep a local fail-safe so
+  // redaction remains effective even when the module-level helper is absent.
+  const _safeDiagnosticError = typeof _miscDiagnosticErrorSummary === 'function'
+    ? _miscDiagnosticErrorSummary
+    : (error) => {
+        const name = String(error && error.name || 'Error').replace(/[^a-z0-9_.-]/gi, '').slice(0, 48) || 'Error';
+        const code = error && (error.code != null ? error.code : error.status);
+        return name + (code == null ? '' : ' code=' + String(code).replace(/[^a-z0-9_.-]/gi, '').slice(0, 48));
+      };
 
     // Re-entry guard (sweep 2026-06-11 [5]): a second concurrent loop's
     // rounds would interleave with the first and its finally would clobber
@@ -1295,7 +1331,11 @@ async function runAutoFixLoop(maxRounds, deps) {
         _setStepIfOwned(t('pdf_audit.auto_continue_round', { round: round + 1, max: maxRounds, detail: _acDetail, score: cur.afterScore || 0, target: pdfTargetScore }) || ('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + _acDetail + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...'));
         let result;
         if (_vio > 0) {
-          result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
+          result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses, {
+            signal: _abortCtrl.signal,
+            shouldAbort: () => !_canContinue(),
+          });
+          if (!result || result.stale) { cur = pdfFixResultRef.current; break; }
         } else if (_auditOnlyRefresh) {
           // No confirmed fixable issue remains. Refresh all verification evidence
           // once without sending clean content through an empty AI rewrite.
@@ -1377,7 +1417,7 @@ async function runAutoFixLoop(maxRounds, deps) {
             break;
           }
         } catch (_finErr) {
-          if (_canPublish()) warnLog('[AutoContinue] round merge failed (' + ((_finErr && _finErr.message) || _finErr) + ') — preserving prior state and stopping the loop.');
+          if (_canPublish()) warnLog('[AutoContinue] round merge failed (' + _safeDiagnosticError(_finErr) + ') — preserving prior state and stopping the loop.');
           break;
         }
         const _det = _mergedRound._detScore;
@@ -1454,11 +1494,11 @@ async function runAutoFixLoop(maxRounds, deps) {
         || (_abortCtrl.signal && _abortCtrl.signal.aborted)
         || (error && error.name === 'AbortError');
       if (!_canPublish()) {
-        warnLog('[AutoContinue] Stale loop rejected after a newer document/run took ownership:', error && (error.message || error));
+        warnLog('[AutoContinue] Stale loop rejected after a newer document/run took ownership:', _safeDiagnosticError(error));
       } else if (_wasCancelled) {
         _toastIfOwned(t('toasts.auto_continue_stopped') || 'Auto-continue stopped.', 'info');
       } else {
-        warnLog('[AutoContinue] Loop failed:', error && (error.stack || error.message || error));
+        warnLog('[AutoContinue] Loop failed:', _safeDiagnosticError(error));
         _toastIfOwned((t('toasts.auto_continue_failed') || 'Auto-remediation stopped after an unexpected error: ') + String((error && error.message) || error || 'unknown error'), 'error');
       }
     } finally {
@@ -1486,8 +1526,8 @@ async function runAutoFixLoop(maxRounds, deps) {
       if (pdfAutoSaveProject && !_staleAtExit && _ownsExit) {
         try {
           const _saveResult = saveProjectToFile(true);
-          if (_saveResult && typeof _saveResult.catch === 'function') _saveResult.catch((error) => warnLog('[AutoContinue] Autosave failed:', error && (error.message || error)));
-        } catch (error) { warnLog('[AutoContinue] Autosave failed:', error && (error.message || error)); }
+          if (_saveResult && typeof _saveResult.catch === 'function') _saveResult.catch((error) => warnLog('[AutoContinue] Autosave failed:', _safeDiagnosticError(error)));
+        } catch (error) { warnLog('[AutoContinue] Autosave failed:', _safeDiagnosticError(error)); }
       }
     }
 }

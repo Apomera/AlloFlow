@@ -8,7 +8,7 @@ describe('STEM theme contract', () => {
   it('uses the host isDark/isContrast contract instead of the retired darkMode name', () => {
     const offenders = readdirSync('stem_lab')
       .filter((name) => /^stem_tool_.*.js$/.test(name))
-      .filter((name) => /ctx.darkMode/.test(read('stem_lab/' + name)));
+      .filter((name) => /\bctx\.darkMode\b/.test(read('stem_lab/' + name)));
     expect(offenders).toEqual([]);
   });
 

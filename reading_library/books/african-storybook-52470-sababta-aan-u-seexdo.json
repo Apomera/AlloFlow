@@ -1,0 +1,146 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52470-sababta-aan-u-seexdo",
+  "title": "Sababta aan u seexdo",
+  "description": "Ilmo ayaa ka hadlaaya muhiimadda hurdada.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Mimi Werna"
+  ],
+  "illustrators": [
+    ", African Storybook, Catherine Groenewald, Wiehan de Jager"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Mimi Werna",
+      "role": "Author"
+    },
+    {
+      "name": "Mohamuud Mohamuud",
+      "role": "Adaptation"
+    },
+    {
+      "name": ", African Storybook, Catherine Groenewald, Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Mimi Werna (Author); Mohamuud Mohamuud (Adaptation); , African Storybook, Catherine Groenewald, Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=52470",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=52470",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52470",
+    "bookType": "2",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-78b6cd061009e94b",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/1502.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1496.png",
+      "text": "Waxaan jeclahay inaan akhriska laakiin waa inaan seexdaa badanaa, si aan u nasto.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=52470#page=1",
+      "sourceDigest": "sha256:393d6875bc73f6cb1c4fef634ee138ffce0f4ae887080359c8ff6ac4a1eefffc"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1515.png",
+      "text": "Waxaan jecelahay inaan la ciyaaro walaasheyda yar. Waankudagaa, laakiin weli waxaan u baahanahay hurdo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=52470#page=2",
+      "sourceDigest": "sha256:0040985cb689814a3f3ea34cde8e24ddfab886be6b22d54f123b2163285a4fcd"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1806.png",
+      "text": "Ka dib marka aan seexdo, maskaxdaydu waxay kuistareexdaa firfircooni dabeeci maalintaas.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=52470#page=3",
+      "sourceDigest": "sha256:8703fc116050744633056cd3568cd23a3d0b06dae885dc726101508460289650"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27082.png",
+      "text": "Hurdadu waxay ka dhigtaa niyaddayda mid wanaagsan. Tani waxay iga caawisaa inaan ku raaxaysto la jooga dadka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=52470#page=4",
+      "sourceDigest": "sha256:cf3eed53134556455dc897bbc4ee50460547045acafa078958c533c7c1018994"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1502.png",
+      "text": "Hurdadu waxay i siisaa tamar aan ku sameeyo dhammaan waxyaabaha aan jeclahay markii aan soo tooso.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=52470#page=5",
+      "sourceDigest": "sha256:5ead59b3c2bdb488496b352951ba9514d3dd77dbb3902946acaa91d7c122d576"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1500.png",
+      "text": "Taas waxaa ka mid ah, ka faa'iidaysiga miraha iyo khudaarta.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=52470#page=6",
+      "sourceDigest": "sha256:1b16a4b932dbaa4cdf1a5e79848f1abaaec43e355365abf76aab01d9ac048262"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1497.png",
+      "text": "Iyo anoo banaanka kulaciyaaro asxaabteeyda.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=52470#page=7",
+      "sourceDigest": "sha256:4e300ff8b99b2848f5abd11953bf1e345f98ff1f7dfec47f8510628fe65818f0"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1501.png",
+      "text": "Waa inaan seexdaa si aan u koro, u ifto, oo u socdo!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=52470#page=8",
+      "sourceDigest": "sha256:852d554142d910067a574d36cf6c7f0b2cad0490b41c2ceedb0b1229b8a9f919"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 98
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:95bbb10d2b306de9292f06da16b4379aa10fe01f1d3f34f968c238ea3a9f45dd"
+  }
+}

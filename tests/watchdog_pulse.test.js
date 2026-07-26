@@ -12,14 +12,14 @@ const host = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 
 describe('the retry path pulses the dead-man watchdog (fix A)', () => {
   it('defines _pulsePipelineWatchdog that dispatches alloflow:pipeline-warn', () => {
-    expect(pipe).toMatch(/var _pulsePipelineWatchdog = function \(\) \{/);
-    expect(pipe).toMatch(/_pulsePipelineWatchdog[\s\S]{0,300}new CustomEvent\('alloflow:pipeline-warn'/);
+    expect(pipe).toMatch(/var _pulsePipelineWatchdog = function \(owner\) \{/);
+    expect(pipe).toMatch(/_pulsePipelineWatchdog[\s\S]{0,900}new CustomEvent\('alloflow:pipeline-warn'/);
   });
   it('is called on BOTH the canvas-auth retry and the generic transient retry', () => {
     // canvas-auth retry branch (before the backoff sleep)
-    expect(pipe).toMatch(/_pulsePipelineWatchdog\(\);[\s\S]{0,300}setTimeout\(r, _backoff\)/);
+    expect(pipe).toMatch(/_pulsePipelineWatchdog\(owner\);[\s\S]{0,300}setTimeout\(r, _backoff\)/);
     // generic transient retry branch
-    expect(pipe).toMatch(/_pulsePipelineWatchdog\(\); \/\/ a retry is activity \(fix A\)/);
+    expect(pipe).toMatch(/_pulsePipelineWatchdog\(owner\); \/\/ a retry is activity \(fix A\)/);
   });
   it('the watchdog still re-arms on alloflow:pipeline-warn (the heartbeat it listens to)', () => {
     expect(host).toMatch(/addEventListener\('alloflow:pipeline-warn', onActivity\)/);

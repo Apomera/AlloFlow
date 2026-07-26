@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52187-dameer-iyo-dibi",
+  "title": "Dameer iyo Dibi",
+  "description": "Sheeko ku saabsan dibi shaqo-badan iyo dameer caqli badan.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Melese Getahun Wolde, Elizabeth Laird"
+  ],
+  "illustrators": [
+    ", Salim Kasamba"
+  ],
+  "translators": [
+    "Abdullahi Mohamed and Ubah Ali"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Melese Getahun Wolde, Elizabeth Laird",
+      "role": "Author"
+    },
+    {
+      "name": "Abdullahi Mohamed and Ubah Ali",
+      "role": "Translation"
+    },
+    {
+      "name": ", Salim Kasamba",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Melese Getahun Wolde, Elizabeth Laird (Author); Abdullahi Mohamed and Ubah Ali (Translation); , Salim Kasamba (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52187",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-8c24f2e2b2a546c9",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/15496.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15491.png",
+      "text": "Nin beeraley ah ayaa lahaa dibi gaboobay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187#page=1",
+      "sourceDigest": "sha256:2662fbf734a468d6f56b32f8c46780ad66394870b1910414cadaae72ea166065"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15492.png",
+      "text": "Wuxuu kaloo lahaa dameer. Dibiga iyo dameerku saxiibo bay ahaayeen.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187#page=2",
+      "sourceDigest": "sha256:80909dcac6ef60927dc48841709a3d8dbb520d386de482f6edd5514694d70bc1"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15493.png",
+      "text": "Fiidkii ayaa dibigii ku yiri dameerkii, \"Maanta aad baan u daalan ahay.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187#page=3",
+      "sourceDigest": "sha256:2f5850c8490d113eecead389141035d99aa809ddcf26b36a5057b829e51e6eea"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15494.png",
+      "text": "Dibigii wuxuu ku yiri dameerkii, \"Ma nasan maanta.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187#page=4",
+      "sourceDigest": "sha256:dbf56c9b93acc0be9cd9f1fbfe04cd940b3d47c164d9333a13b8529b71c75d0f"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15495.png",
+      "text": "Dameerkii baa ku jawaabey, \"Annigaa kaa shaqo badnaa.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187#page=5",
+      "sourceDigest": "sha256:0bc661778d14b1d4a7c1b403e206c6138148b0b77a28b18ea7a3f1334c05399a"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15496.png",
+      "text": "Maalintii labaad, dibigii baa yiri, \"Maanta maalin xun bay ahayd.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187#page=6",
+      "sourceDigest": "sha256:f3a0460ca7b537097855c05b88f49e6075fb29f7abbdb2821eaae77766184368"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15497.png",
+      "text": "Dameer baa yiri, \"Markaa beeralaydu yimaado, wax tiraa, 'Moo!' Wuxuu ku ogalaan doonaa inaad nasato.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187#page=7",
+      "sourceDigest": "sha256:01405f2ce1c35c24cf730d9015400dd3c9c6192627cc55fde53fbf4bdad2827d"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15498.png",
+      "text": "Subaxii danbe, dibigii baa qayliyey, \"Moo!\" Beeralaydii wuxuu dibigii u ogolaaday inuu nasto.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187#page=8",
+      "sourceDigest": "sha256:4df7bcef46b4f2100e9dd83d51913c0774f2e3b919635aabe955f7d13913a16f"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15499.png",
+      "text": "Beeralaydii wuxuu kaxeeyey dameerkii si uu u soo xagaafo dhulka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187#page=9",
+      "sourceDigest": "sha256:067fefe1f0415359de33dd8a6c8a165e82ae60ddd79ab99b11fff9f29aab7671"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15500.png",
+      "text": "Dameerkii xoog buu maalintaas oo dhan u shaqeeyey. Aad buu u daalanaa markuu guriga ku soo laabtay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187#page=10",
+      "sourceDigest": "sha256:9a56dc9a2a679df892bcbf9e40cbe82e44d6c50cf85eac22cb4bb8c79a51a375"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15501.png",
+      "text": "\"Beeralaydu wuxuu sheegay inuu ku gowracaayo si u u hilibkaaga u cuno.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187#page=11",
+      "sourceDigest": "sha256:3458546dca553ecdc1b928419ad8605496efc140a8ef349715c3a86d51439789"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15502.png",
+      "text": "Dibigii baa yiri, \"Berri waan shaqayn doonaa. Hadda waan fiican ahay.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52187#page=12",
+      "sourceDigest": "sha256:c38cc12a71cc98f6612478f7bc9d1c25b31b96c6e632093c2fa1ce90b26ed9bd"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 133
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:932ed478dae79a94534b9e6254ade635f4ccbc6cfaf18448ad756267dd1b2e92"
+  }
+}

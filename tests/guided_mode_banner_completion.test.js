@@ -438,6 +438,165 @@ describe('Guided banner - data lifecycle and accountable navigation', () => {
     c.cleanup();
   });
 });
+describe('Guided banner - AI-configured lesson path', () => {
+  it('turns a natural-language goal into a reviewable plan and applies it only after approval', async () => {
+    const generateGuidedPlanFromGoal = vi.fn().mockResolvedValue({
+      source: 'ai', title: 'Vocabulary and assessment path', summary: 'Build access supports and a short check.',
+      rationale: 'The goal asks for vocabulary and independent assessment.',
+      stepIds: ['analysis', 'faq'], stepReasons: { analysis: 'Find barriers first.', faq: 'Prepare likely questions.' },
+      estimatedMinutes: 18, deliverySetting: 'lms', deliveryPriority: 'assessment', assumptions: ['A short source will be provided.'],
+    });
+    const applyGuidedPreset = vi.fn();
+    const b = mountBanner(baseProps({
+      guidedStep: 0, guidedPresets: [], applyGuidedPreset, generateGuidedPlanFromGoal,
+      allGuidedSteps: STEPS, GUIDED_STEPS: STEPS,
+    }));
+    act(() => { b.button('Plan with AI').click(); });
+    const textarea = b.host.querySelector('#guided-ai-goal');
+    expect(textarea).toBeTruthy();
+    act(() => {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+      setter.call(textarea, 'Build vocabulary support and a short independent assessment with an LMS backup.');
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    act(() => { b.button('Create my Guided plan').click(); });
+    expect(generateGuidedPlanFromGoal).not.toHaveBeenCalled();
+    expect(b.text()).toContain('Two quick questions will improve this plan');
+    const timeQuestion = b.host.querySelector('#guided-ai-question-time');
+    const gradeQuestion = b.host.querySelector('#guided-ai-question-grade');
+    act(() => {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+      setter.call(timeQuestion, '40–50 minutes'); timeQuestion.dispatchEvent(new Event('change', { bubbles: true }));
+      setter.call(gradeQuestion, 'Middle school (6–8)'); gradeQuestion.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await act(async () => { b.button('Continue and create plan').click(); await new Promise(resolve => setTimeout(resolve, 0)); });
+    expect(generateGuidedPlanFromGoal).toHaveBeenCalledWith(expect.stringMatching(/vocabulary support[\s\S]*PLANNING CONTEXT:[\s\S]*40–50 minutes/));
+    expect(b.text()).toContain('Vocabulary and assessment path');
+    expect(b.text()).toContain('Find barriers first.');
+    expect(b.text()).toContain('Before you begin: lesson roadmap');
+    expect(b.text()).toContain('Expected lesson resources');
+    expect(b.text()).toContain('Planned delivery');
+    expect(b.text()).toContain('Plan readiness');
+    expect(b.text()).toContain('QTI packaging requires quiz content');
+    expect(b.host.querySelector('[role="dialog"][aria-modal="true"]')).toBeTruthy();
+    expect(applyGuidedPreset).not.toHaveBeenCalled();
+
+    const refinement = b.host.querySelector('#guided-ai-refinement');
+    act(() => {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+      setter.call(refinement, 'Make it shorter and prioritize printable options.');
+      refinement.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await act(async () => { b.button('Update this plan').click(); await new Promise(resolve => setTimeout(resolve, 0)); });
+    expect(generateGuidedPlanFromGoal).toHaveBeenNthCalledWith(2, expect.stringContaining('vocabulary support'), expect.objectContaining({
+      currentPlan: expect.objectContaining({ stepIds: ['analysis', 'faq'] }),
+      refinement: expect.stringContaining('prioritize printable'),
+    }));
+    expect(b.text()).toContain('Make it shorter and prioritize printable options.');
+    expect(b.text()).toContain('What changed');
+    expect(b.text()).toContain('The plan wording was refined without changing its steps, timing, or delivery settings.');
+
+    act(() => { b.button('Save plan').click(); });
+    const savedPlans = JSON.parse(localStorage.getItem('allo_guided_saved_plans') || '[]');
+    expect(savedPlans).toHaveLength(1);
+    expect(savedPlans[0]).toEqual(expect.objectContaining({ name: 'Vocabulary and assessment path', stepIds: ['analysis', 'faq'] }));
+    expect(b.text()).toContain('Your saved Guided plans');
+    act(() => { b.button('Load').click(); });
+    expect(b.text()).toContain('Saved plan');
+    expect(applyGuidedPreset).not.toHaveBeenCalled();
+    act(() => { b.button('Use this Guided plan').click(); });
+    expect(applyGuidedPreset).toHaveBeenCalledWith(expect.objectContaining({ id: 'ai-plan', stepIds: ['analysis', 'faq'] }));
+    expect(JSON.parse(localStorage.getItem('allo_guided_delivery_preferences') || '{}')).toEqual({ setting: 'lms', priority: 'assessment' });
+    b.cleanup();
+  });
+  it('flags a missing QTI prerequisite and adds the Assess step without changing the active path', async () => {
+    const planSteps = [
+      { id: 'source-input', phase: 'plan', label: 'Source Material', action: 'Add source.', success: 'Ready.' },
+      { id: 'analysis', phase: 'understand', label: 'Analyze Source Material', action: 'Analyze.', success: 'Ready.' },
+      { id: 'quiz', phase: 'assess', label: 'Assess', action: 'Create a quiz.', success: 'Ready.' },
+    ];
+    const generateGuidedPlanFromGoal = vi.fn().mockResolvedValue({
+      source: 'ai', title: 'LMS assessment', summary: 'Prepare an LMS assessment.', stepIds: ['analysis'],
+      estimatedMinutes: 20, deliverySetting: 'lms', deliveryPriority: 'assessment', assumptions: [],
+    });
+    const applyGuidedPreset = vi.fn();
+    const b = mountBanner(baseProps({
+      guidedStep: 0, guidedPresets: [], applyGuidedPreset, generateGuidedPlanFromGoal,
+      openGuidedDocumentBuilder: vi.fn(), allGuidedSteps: planSteps, GUIDED_STEPS: planSteps,
+    }));
+    act(() => { b.button('Plan with AI').click(); });
+    const textarea = b.host.querySelector('#guided-ai-goal');
+    act(() => {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+      setter.call(textarea, 'I have 40 minutes with seventh grade students. Build an LMS quiz assessment.');
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await act(async () => { b.button('Create my Guided plan').click(); await new Promise(resolve => setTimeout(resolve, 0)); });
+    expect(b.text()).toContain('QTI packaging requires quiz content');
+    expect(applyGuidedPreset).not.toHaveBeenCalled();
+    act(() => { b.button('Add Assess step').click(); });
+    expect(b.text()).toContain('Quiz content is included for the planned QTI package.');
+    expect(b.text()).not.toContain('QTI packaging requires quiz content');
+    expect(b.text()).toContain('13 min to build');
+    expect(b.text()).toContain('2 resources');
+    act(() => { b.button('Use this Guided plan').click(); });
+    expect(applyGuidedPreset).toHaveBeenCalledWith(expect.objectContaining({ stepIds: ['analysis', 'quiz'] }));
+    b.cleanup();
+  });
+
+  it('can use best judgment instead of blocking on clarification questions', async () => {
+    const goal = 'Build vocabulary support and a short independent assessment.';
+    const generateGuidedPlanFromGoal = vi.fn().mockResolvedValue({
+      source: 'ai', title: 'Best judgment path', summary: 'Use sensible defaults.',
+      stepIds: ['analysis'], estimatedMinutes: 12, deliverySetting: 'take-home', deliveryPriority: 'accessible', assumptions: [],
+    });
+    const b = mountBanner(baseProps({
+      guidedStep: 0, guidedPresets: [], generateGuidedPlanFromGoal,
+      allGuidedSteps: STEPS, GUIDED_STEPS: STEPS,
+    }));
+    act(() => { b.button('Plan with AI').click(); });
+    const textarea = b.host.querySelector('#guided-ai-goal');
+    act(() => {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+      setter.call(textarea, goal);
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    act(() => { b.button('Create my Guided plan').click(); });
+    expect(b.text()).toContain('Two quick questions will improve this plan');
+    await act(async () => { b.button('Use your best judgment').click(); await new Promise(resolve => setTimeout(resolve, 0)); });
+    expect(generateGuidedPlanFromGoal).toHaveBeenCalledWith(goal);
+    expect(generateGuidedPlanFromGoal.mock.calls[0][0]).not.toContain('PLANNING CONTEXT');
+    expect(b.text()).toContain('Best judgment path');
+    b.cleanup();
+  });
+
+  it('keeps, restores, and can explicitly discard an unfinished private planning draft', () => {
+    const goal = 'Create a visual middle-school lesson with printable supports.';
+    const b = mountBanner(baseProps({ guidedStep: 0, guidedPresets: [], allGuidedSteps: STEPS, GUIDED_STEPS: STEPS }));
+    act(() => { b.button('Plan with AI').click(); });
+    const textarea = b.host.querySelector('#guided-ai-goal');
+    act(() => {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+      setter.call(textarea, goal);
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    act(() => { b.host.querySelector('button[aria-label="Close"]').click(); });
+    expect(b.text()).toContain('Keep this unfinished plan?');
+    act(() => { b.button('Keep draft and close').click(); });
+    expect(b.host.querySelector('[role="dialog"]')).toBeFalsy();
+    expect(JSON.parse(localStorage.getItem('allo_guided_planner_draft') || 'null')).toEqual(expect.objectContaining({ goal }));
+
+    act(() => { b.button('Plan with AI').click(); });
+    expect(b.text()).toContain('Resume your unfinished plan?');
+    act(() => { b.button('Resume draft').click(); });
+    expect(b.host.querySelector('#guided-ai-goal').value).toBe(goal);
+    act(() => { b.host.querySelector('button[aria-label="Close"]').click(); });
+    act(() => { b.button('Discard and close').click(); });
+    expect(localStorage.getItem('allo_guided_planner_draft')).toBeNull();
+    expect(b.host.querySelector('[role="dialog"]')).toBeFalsy();
+    b.cleanup();
+  });
+});
 describe('Guided banner - outcome phases and delivery actions', () => {
   it('shows a phase-aware delivery recommender and completes only after verified delivery evidence', () => {
     const deliverySteps = [

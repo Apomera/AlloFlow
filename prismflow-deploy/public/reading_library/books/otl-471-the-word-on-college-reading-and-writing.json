@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-471-the-word-on-college-reading-and-writing",
+  "title": "The Word on College Reading and Writing",
+  "description": "Written by five college reading and writing instructors, this interactive, multimedia text draws from decades of experience teaching students who are entering the college reading and writing environment for the very first time. It includes examples, exercises, and definitions for just about every reading- and writing-related topic students will encounter in their college courses.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Monique Babin - Author / Carol Burnell - Author / Susan Pesznecker - Author / Nicole Rosevear - Author / Jaime Wood - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Oregon Educational Resources",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-word-on-college-reading-and-writing"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Written by five college reading and writing instructors, this interactive, multimedia text draws from decades of experience teaching students who are entering the college reading and writing environment for the very first time. It includes examples, exercises, and definitions for just about every reading- and writing-related topic students will encounter in their college courses."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 77
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "471",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-114-civil-procedure-pleading",
+  "title": "Civil Procedure: Pleading",
+  "description": "This chapter covers the Civil Procedure topic of Pleading: The Plaintiff‘s Complaint. The chapter takes approximately four class periods to cover in detail. The student is exposed to cases, presented with questions that are designed to both guide class discussion and to help the student focus his reading of the materials, pleadings from cases, and the applicable Federal Rules of Civil Procedure. Faculty materials available: This eLangdell chapter includes a teacher's manual. Faculty and staff at CALI member schools can access these faculty-only materials by logging in to eLangdell with their normal cali.org username and password. Contact CALI if you have questions. This chapter covers the Civil Procedure topic of Pleading: The Plaintiff's Complaint. The chapter takes approximately four class periods to cover in detail. The student is exposed to cases, presented with questions that are designed to both guide class discussion and to help the student focus his reading of the materials, pleadings from cases, and the applicable Federal Rules of Civil Procedure. There are two accompanying files available only to faculty who are registered at cali.org (registration is free for faculty at CALI member schools): a Teaching Manual and a Supplemental Material document. The Supplemental Material should be distributed to students at the appropriate point in the unit. Please see the Teaching Manual for details.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law - Civil Law",
+    "Law - Procedural Law"
+  ],
+  "authors": [
+    "Hillel Y. Levin - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CALI's eLangdell® Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/civil-procedure-pleading"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This chapter covers the Civil Procedure topic of Pleading: The Plaintiff‘s Complaint. The chapter takes approximately four class periods to cover in detail. The student is exposed to cases, presented with questions that are designed to both guide class discussion and to help the student focus his reading of the materials, pleadings from cases, and the applicable Federal Rules of Civil Procedure. Faculty materials available: This eLangdell chapter includes a teacher's manual. Faculty and staff at CALI member schools can access these faculty-only materials by logging in to eLangdell with their normal cali.org username and password. Contact CALI if you have questions. This chapter covers the Civil Procedure topic of Pleading: The Plaintiff's Complaint. The chapter takes approximately four class periods to cover in detail. The student is exposed to cases, presented with questions that are designed to both guide class discussion and to help the student focus his reading of the materials, pleadings from cases, and the applicable Federal Rules of Civil Procedure. There are two accompanying files available only to faculty who are registered at cali.org (registration is free for faculty at CALI member schools): a Teaching Manual and a Supplemental Material document. The Supplemental Material should be distributed to students at the appropriate point in the unit. Please see the Teaching Manual for details."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2014."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 240
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "114",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

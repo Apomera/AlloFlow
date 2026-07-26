@@ -1,0 +1,169 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-31800-mobali-ya-molayi",
+  "title": "Mobali ya molayi",
+  "description": "Mobali oyo azali molayi makasi, molayi eleki ye, nkasi biloko nionse mpene naye ezalaki mike pe mikuse pona molayi.",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Cornelius Wambi Gulere"
+  ],
+  "illustrators": [
+    "Catherine Groenewald"
+  ],
+  "translators": [
+    "Dorine Kamin"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Cornelius Wambi Gulere",
+      "role": "Author"
+    },
+    {
+      "name": "Dorine Kamin",
+      "role": "Translation"
+    },
+    {
+      "name": "Catherine Groenewald",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Cornelius Wambi Gulere (Author); Dorine Kamin (Translation); Catherine Groenewald (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31800",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31800",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "31800",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-578ba7bacc1e830e",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/309.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/309.png",
+      "text": "Konga naye ezalaki mukuse makasi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31800#page=1",
+      "sourceDigest": "sha256:470ce9b8054fea891e17c25c0352502a46c537e58717324c95ee2feefd1782aa"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/310.png",
+      "text": "Efungoleli naye ya ndaku pe mukuse makasi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31800#page=2",
+      "sourceDigest": "sha256:fb0fbb9a4a4122abd94ae9ed2f66b14ccde76ece2e10173950704d24615370a9"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/311.png",
+      "text": "Mbetu naye ezalaki pe mukuse.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31800#page=3",
+      "sourceDigest": "sha256:d6a00db1f05108a0d1c94dcefd629b5412a664459fd9e5bdd413bff29735adfb"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/314.png",
+      "text": "Kinga naye pe mukuse.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31800#page=4",
+      "sourceDigest": "sha256:afc67436cd2423046a6990d6b7c2d3a25ec51c3d6082c8bffb2c01ce89821c0f"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/313.png",
+      "text": "Mobali oyo azalaki penza mulayi makasi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31800#page=5",
+      "sourceDigest": "sha256:55142cb19750a6c90aae6f719243373e801f5af7cae02f2086a9ffefb6657325"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/316.png",
+      "text": "Nkasi na yango asali kongo ya mulayieee makasi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31800#page=6",
+      "sourceDigest": "sha256:709a5ac0867ab7726afa1103d9f76e46ccb02b6c3eb5064393d64c099cb9c7f4"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/315.png",
+      "text": "Asali lisusu efungoleli ya ndaku yamulayi pe kitoko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31800#page=7",
+      "sourceDigest": "sha256:7a619739954dddac479d0964dcf0414f9fb21b2858b058113bf094824529962b"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/317.png",
+      "text": "Ebongo lisusu asali mpe mbetu ya molayieee.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31800#page=8",
+      "sourceDigest": "sha256:c042da4f50785729b1f3fa739047ae7254a15f6f95214fb3d1724652cb2cdb57"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/318.png",
+      "text": "A sombi kinga ya molayieee.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31800#page=9",
+      "sourceDigest": "sha256:6aa3b4ac9879ed33d60a3c9121317d46be140b255e82ab065844305aef9c9c2a"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/319.png",
+      "text": "A fandi na kiti ya molayi koleka, mpe azali kolia na kania ya molayi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31800#page=10",
+      "sourceDigest": "sha256:3d42054be61a702e4e6f0b8b7ab63a203f45c1cbfd250f1e432f0078ff48e966"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/320.png",
+      "text": "A tiki ndaku naye, akeyi kofanda na zamba ba mbula ebele.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31800#page=11",
+      "sourceDigest": "sha256:2ee58190a1740e9cee28198b1fc51f55519d2c6e339dc003a762d03a814c8bbd"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 80
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:f4c373a31173acac16702b876405796f670a6ad07624569fcc8d48baed1929e2"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-450-a-different-road-to-college-a-guide-for-transitioning-non-traditional-st",
+  "title": "A Different Road To College: A Guide For Transitioning Non-Traditional Students",
+  "description": "A Different Road To College: A Guide For Transitioning Non-Traditional Students is designed to introduce students to the contextual issues of college. Non-traditional students have an ever-growing presence on college campuses, especially community colleges. This open educational resource is designed to engage students in seeing themselves as college students and understanding the complexity of what that means to their lives. Non-traditional students face critical issues surrounding participation and success in college. These critical issues include, but are not limited to, the following Strategies for managing competing needs on their time Difficulty navigating institutional environments Understanding the culture of college Transitional services not in place to the same degree as for “traditional” students Knowledgeable support systems Personal barriers Unpredictable influences on their schedules Work first, study second priorities Paying for college Underprepared foundation skills (Reading, Writing, Math, Computer Literacy, Human Relations, Oral Communication).Most textbooks available on the topic of college transition/success today focus on the traditional 18-year old student and the needs of someone living away from home for the first time.The goal of the book is to help students understand how to select the right college for them and then become acquainted with the inner workings and language of college. The book is designed to be a practical guide for first-generation college students as they navigate potentially unfamiliar topics such as understanding the costs of college beyond tuition, navigating college websites, and defining critical language needed to understand communication regarding the context and culture of the college.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Student Success"
+  ],
+  "authors": [
+    "Alise Lamoreaux - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Oregon Educational Resources",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-different-road-to-college-a-guide-for-transitioning-non-traditional-students"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A Different Road To College: A Guide For Transitioning Non-Traditional Students is designed to introduce students to the contextual issues of college. Non-traditional students have an ever-growing presence on college campuses, especially community colleges. This open educational resource is designed to engage students in seeing themselves as college students and understanding the complexity of what that means to their lives. Non-traditional students face critical issues surrounding participation and success in college. These critical issues include, but are not limited to, the following Strategies for managing competing needs on their time Difficulty navigating institutional environments Understanding the culture of college Transitional services not in place to the same degree as for “traditional” students Knowledgeable support systems Personal barriers Unpredictable influences on their schedules Work first, study second priorities Paying for college Underprepared foundation skills (Reading, Writing, Math, Computer Literacy, Human Relations, Oral Communication).Most textbooks available on the topic of college transition/success today focus on the traditional 18-year old student and the needs of someone living away from home for the first time.The goal of the book is to help students understand how to select the right college for them and then become acquainted with the inner workings and language of college. The book is designed to be a practical guide for first-generation college students as they navigate potentially unfamiliar topics such as understanding the costs of college beyond tuition, navigating college websites, and defining critical language needed to understand communication regarding the context and culture of the college."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 270
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "450",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

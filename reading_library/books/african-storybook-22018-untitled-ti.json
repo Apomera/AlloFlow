@@ -1,0 +1,170 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-22018-untitled-ti",
+  "title": "ኣቦይ በርሀን ተመንን",
+  "description": "ፅቡቕ ገይርኻ ፀገም ከጋጥመካ ከሎ ካብ ብሓይሊ ምፍታሕ ዓበይቲ ምምኻር ጠቃሚ ምዃኑ፡፡",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "ኣብራሃም መብራህቶም, ኪዱ ተኽላይ"
+  ],
+  "illustrators": [
+    "Adonay Gebru"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "ኣብራሃም መብራህቶም, ኪዱ ተኽላይ",
+      "role": "Author"
+    },
+    {
+      "name": "Adonay Gebru",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "ኣብራሃም መብራህቶም, ኪዱ ተኽላይ (Author); Adonay Gebru (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "22018",
+    "bookType": "1",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-725ac407717ef1ce",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/25747.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25741.png",
+      "text": "ወቕቱ ክረምቲ ወርሒ ሓምለ እዩ፡፡ ሓደ መዓልቲ ኣቦይ በርሀ ዝበሃሉ ሰብኣይ ሩባ ሰጊሮም ናብ መገሻ ክኸዱ ጉዕዞ ጀመሩ፡፡ ኣብቲ ከባቢ ሩባ እንትበፅሑ ሓደ ዓብዪ ተመን ረኸቡ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018#page=1",
+      "sourceDigest": "sha256:033300b840f7ec91bca88a26e2a6d7c1a14ddb3358fca9a517f6740ccd981d31"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25742.png",
+      "text": "እቲ ተመን ድማ ቅንዕ ኢሉ ረኣዮም፡፡ «ወላዲ ናበይ ኢኹም እትኸዱ ዘለኹም?» ኢሉ ሓተቶም፡፡ ንሶም ድማ «እዚ ሩባ ሰጊረ ክኸይድ እየ» በልዎ ፡፡ «አረ በይዛኹም ምስጋሩ ስለዘይክእሎ ምሳኹም ኣሳጉሩኒ» ኢሉ ሓተቶም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018#page=2",
+      "sourceDigest": "sha256:3e4b443ea475d3dd17a8420f29d3059e00f62a21b27647d5c9162dc1193422ac"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25743.png",
+      "text": "ኣቦይ በርሀ ድማ ርህሩህ ስለዝኾኑ «በል ንዓ ክማለአካ»በልዎ፡፡ እቲ ተመን ድማ ናብ ርእሶም ደይቡ ተጠምጠሞም፤ ተሸኪሞሞ ሰገሩ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018#page=3",
+      "sourceDigest": "sha256:5c8100b3c29a7ce407d032a573f3eed20b728b1e0c39768eeb44bf0336379daa"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25744.png",
+      "text": "እቲ ሩባ ምስ ሰገሩ «በል ውረድ» ይብልዎ እሞ፤ «ኣይወርድን ፅቡቕ እየ ዘለኹ» ይብሎም፡፡ «እረ በይዛኻ ውረድ» ኣይወርድን» በሎም ደጊሙ፡፡ ብውረድ ኣይወርድን ቡዙሕ ምስተኸራኸሩ ኣቦይ በርሀ ብጣዕሚ ተጨነቁ፡፡ ከይወቕዕዎ ርእሶም ክውቃዕ እዩ፤ ብኢዶም ሒዞም ከየውርድዎ ከይነኽሶም ፈርሑ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018#page=4",
+      "sourceDigest": "sha256:db2fe080f78a11cf4dd3993d05490afadeade8d6e91da5adc55228e3f68d9064"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25745.png",
+      "text": "ናይዚ መፍትሒ ግና ሽምግልና ከም ዝኾነ ተረድኡ፡፡ ብድሕሪ እዚ ንኽሽምግሎም ናብ ኣያ ዝብኢ ከዱ፡፡ ንኣያ ዝብኢ ረኺቦም «ከማዓልካ ኣያ ዝብኢ» በልዎ፡፡ ኣያ ዝብኢ ድማ «እግዚኣብሄር ይመስገን ድሓንዶ ውዒልኩም፤ እንታይ ድኣ ኣምፂኡኩም?» ክብል ብቡርቱዕ ድምፁ ሓተቶም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018#page=5",
+      "sourceDigest": "sha256:e782007a4beb5c9014a7b750345cd7bbc6cde4ea9b0f204e1253faa94997097d"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25746.png",
+      "text": "ኣቦይ በርሀ ንዝብኢ ከምዚ ክብሉ ጥርዓኖም ኣቕረቡ፤ «እሞ ኣያ ዝብኢ ንስኻ ካብ ካልኦት እንስሳት ብድፍረት ፍርዲ ናይ ምሃብ ክእለት ከም ዘለካ ዝፍለጥ እዩ፤ ስለዚ ፀገመይ ተረዲእኻ ሓቀኛ ፍትሒ ክትህበኒ እየ መፂኤካ ዘለኹ» ኢሎም እቲ ዘጋጠሞም ሽግር ኣረድእዎ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018#page=6",
+      "sourceDigest": "sha256:d752146da56e27f2355e843b8276e5639eafed627ad7fa9f4eb62e2c8d7f5c19"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25747.png",
+      "text": "ኣያ ዝብኢ ድማ ከምዚ ክብል ሸምገሎም፤ «እሞ እቲ ውሕጅ እንድሕር ሰጊርካ ድኣ እንታይ ደሊኻ? ሐዚ ኣብ ውሕጅ ዘይብሉ ቦታ ስለዘለኻ ወሪድካ ባዕልኻ ኪድ» ኢሉ ፍርዱ ኣዕረፈ፡፡ ተመን ግና ሐዚ ውን «እምቢ፤ ኣይወርድን» በለ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018#page=7",
+      "sourceDigest": "sha256:9847cc6c6235877dcbc8c23fc9b6cfd3744085dd38c57a5eb442cc27e6deef3c"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25748.png",
+      "text": "ኣቦይ በርሀ ንተወሳኺ ጥርዓን ናብ ቡዃርያ ከዱ ፡፡ «ወይዘሮ ቡዃርያ ካብ ካልኦት እንስሳት ዝሐሸ ውሳነ ናይ ምሃብ ክእለት ኣለኪ ስለዚ ፍርዲ ክትህብኒ እየ መፂአ» በልዋ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018#page=8",
+      "sourceDigest": "sha256:d24747b4cb916d4f11e79e2a0696ca4a6e0855642ccd9f9c16157ec02f1bb13a"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25749.png",
+      "text": "ኣቦይ በርሀ ዘረባኦም ብምቕፃል «እምበኣርከስ ኣነ ሓደ ውሕጅ ዝመልአ ሩባ ክሰግር እንትብል እዚ ኣብ ርእሰይ ተጠምጢሙእትረኢዮ ዘለኺ ተመን ‹በይዛኻ ኣሳግረኒ› ይብለኒ፡፡ ኣነ ድማ በል ንዓ ኢለ ከስግሮ ፍቓደኛ ኮንኩ፡፡ ምስ አስገርኩዎ በል ውረድ እንተበልኩዎ ‹እምቢ› አሉኒ፡፡ እዝጊ የርኢኺ ፍትሒ ሃብኒ» በልዋ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018#page=9",
+      "sourceDigest": "sha256:40dcbba092bc9d8a37465829587b83f0ecc3be8a135a5a1f83a05070cd22644f"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25750.png",
+      "text": "ወይዘሮ ቡዃርያ ድማ ከምዚ ክትብል ተዛረበት፤ «በሉ ኣነ ፍርዲ ከዕርፈልኩም እንተኾይነ ከሳስን ተኸሳስን ኣብ መሬት ጠጠው በሉ፤ ድሓር እቲ ፍርዲ ንተዘይኣዕጊብኩም ነናብ ዝነበርኩሙዎ ትምለሱ» በለቶም፡፡ ተመን ድማ «እንድሕር ናብ ዝነበርኩዎ ዝምለስ ኰይነ ዘይወርድ» ኢሉ ወረደ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018#page=10",
+      "sourceDigest": "sha256:610ff9ffce13a0388272fe3731f71c059db8d7a31c1254fb01d1e99d1956683c"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25751.png",
+      "text": "«ወይዘሮ ቡዃርያ በሊ ሐዚ ፍርድኺ ኣዕርፊ» በሉዋ ኣቦይ በርሀ ቕልጥፍ ኢሎም ፡፡ ወይዘሮ ቡዃርያ ድማ ከምዚ ክትብል ፍርዳ ኣዕረፈት፤ «እቲ ተመን ኣብ እግርኻ ፣እቲ በትሪ ውን ኣብ ኢድካ ነዚ ድኣ እንታይ ክፈርደልካ» በለቶም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018#page=11",
+      "sourceDigest": "sha256:c60877f4c0a07dc35751f0169c8b9aa4f4562050596da18ca53a2de94bc658b8"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25752.png",
+      "text": "ኣቦይ በርሀ ወይዘሮ ቡዃርያ ዝፈረደቶ ፍርዲ እንታይ ማለት ከምዝዀነ ንምርዳእ ርእሶም ኣድንን ኣቢሎም ሓሰቡ፡፡ ሽዑ ንሽዑ ፍርዲ ወይዘሮ ቡዃርያ ተረደኦም፡፡ አከታቲሎም ድማ በቲ ሒዚምዎ ዝነበሩ በትሪ ነቲ ተመን ቀጥቂጦም ቀተልዎ ይበሃል፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22018#page=12",
+      "sourceDigest": "sha256:995132f981e86dea9a03b4ccf492e37f4e9b8a800481a8ba8a689b50a0f14355"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 379
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:e12cb042e3b458673981d6ccf70b1da1526195f5c83373ff481a740227b9fce5"
+  }
+}

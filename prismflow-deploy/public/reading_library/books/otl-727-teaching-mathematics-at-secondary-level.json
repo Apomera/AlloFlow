@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-727-teaching-mathematics-at-secondary-level",
+  "title": "Teaching Mathematics at Secondary Level",
+  "description": "Teaching Mathematics is nothing less than a mathematical manifesto. Arising in response to a limited National Curriculum, and engaged with secondary schooling for those aged 11 ̶ 14 (Key Stage 3) in particular, this handbook for teachers will help them broaden and enrich their students’ mathematical education. It avoids specifying how to teach, and focuses instead on the central principles and concepts that need to be borne in mind by all teachers and textbook authors—but which are little appreciated in the UK at present. This study is aimed at anyone who would like to think more deeply about the discipline of ‘elementary mathematics’, in England and Wales and anywhere else. By analysing and supplementing the current curriculum, Teaching Mathematics provides food for thought for all those involved in school mathematics, whether as aspiring teachers or as experienced professionals. It challenges us all to reflect upon what it is that makes secondary school mathematics educationally, culturally, and socially important.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "Tony Gardiner - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Book Publishers",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/teaching-mathematics-at-secondary-level"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Teaching Mathematics is nothing less than a mathematical manifesto. Arising in response to a limited National Curriculum, and engaged with secondary schooling for those aged 11 ̶ 14 (Key Stage 3) in particular, this handbook for teachers will help them broaden and enrich their students’ mathematical education. It avoids specifying how to teach, and focuses instead on the central principles and concepts that need to be borne in mind by all teachers and textbook authors—but which are little appreciated in the UK at present. This study is aimed at anyone who would like to think more deeply about the discipline of ‘elementary mathematics’, in England and Wales and anywhere else. By analysing and supplementing the current curriculum, Teaching Mathematics provides food for thought for all those involved in school mathematics, whether as aspiring teachers or as experienced professionals. It challenges us all to reflect upon what it is that makes secondary school mathematics educationally, culturally, and socially important."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 181
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "727",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

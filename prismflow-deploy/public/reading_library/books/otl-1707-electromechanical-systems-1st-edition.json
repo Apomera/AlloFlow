@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1707-electromechanical-systems-1st-edition",
+  "title": "Electromechanical Systems - 1st Edition",
+  "description": "This eBook was written as the third installment in the series that coincide with three engineering courses taught at the University of Oklahoma (ENGR 2431, ENGR 2531, and ENGR 3431). These courses were designed to provide non-major students – those not majoring in electrical or computer engineering (ECE) – a foundation in various ECE topics. ENGR 2431 is a prerequisite for both ENGR 2531 and ENGR 3431 and it is recommended that the DC Circuits book be studied prior to beginning the eBooks created for the other two courses. The following topics are covered in this book: LabVIEW Overview Module 1 – Number Systems and Character Encoding Module 2 – Digital Logic Module 3 – Measurement and Instrumentation Overview Module 4 – Sensors Module 5 – Power Systems Module 6 – Electric Machines Module 7 – Computer Communications Appendix A – Step by Step Guide to Digital, Analog, and Counter IOs in a DAQ",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology"
+  ],
+  "authors": [
+    "Chad Davis - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SHAREOK",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/electromechanical-systems"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This eBook was written as the third installment in the series that coincide with three engineering courses taught at the University of Oklahoma (ENGR 2431, ENGR 2531, and ENGR 3431). These courses were designed to provide non-major students – those not majoring in electrical or computer engineering (ECE) – a foundation in various ECE topics. ENGR 2431 is a prerequisite for both ENGR 2531 and ENGR 3431 and it is recommended that the DC Circuits book be studied prior to beginning the eBooks created for the other two courses. The following topics are covered in this book: LabVIEW Overview Module 1 – Number Systems and Character Encoding Module 2 – Digital Logic Module 3 – Measurement and Instrumentation Overview Module 4 – Sensors Module 5 – Power Systems Module 6 – Electric Machines Module 7 – Computer Communications Appendix A – Step by Step Guide to Digital, Analog, and Counter IOs in a DAQ"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 177
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1707",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

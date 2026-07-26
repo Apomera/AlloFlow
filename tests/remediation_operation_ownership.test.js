@@ -25,14 +25,24 @@ const createOperationOwner = new Function(
   return _alloCreateRemediationOperationOwner;`,
 )();
 
+const normalizeDocumentEpoch = new Function(
+  `${extract(
+    pipeline,
+    'var _normalizeDocumentEpoch = function (value) {',
+    'var _readCurrentDocumentEpoch = function () {',
+  )}
+  return _normalizeDocumentEpoch;`,
+)();
+
 const createRefixChunkStateLease = new Function(
+  '_normalizeDocumentEpoch',
   `${extract(
     pipeline,
     'const _createRefixChunkStateLease = (options) => {',
     'const _docFingerprint = (html)',
   )}
   return _createRefixChunkStateLease;`,
-)();
+)(normalizeDocumentEpoch);
 
 const makeCommitGate = ({
   epochRef,

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1609-leading-in-health-and-social-care",
+  "title": "Leading in Health and Social Care",
+  "description": "This comprehensive textbook captures best international practice and is focused on the practical needs of leaders in health and social care. The text includes chapters that address evolving and innovative practices in leadership, ethics, leading people and human resource management, cultural safety for First Nations peoples, innovation, digital health, finance and resource management, systems thinking, change, evaluation and safety and quality. As an open educational resource, leaders, managers, students, policymakers and all readers interested in improving healthcare systems can access the book. The choice to publish on an open platform demonstrates our commitment to building a strong, transparent, and connected community of practice for health service leaders across many disciplines and across the world. We hope this pragmatic and contemporary textbook will reach a broad audience with an interest in strengthening the discipline of health service leadership and building fit-for-purpose healthcare systems that meet the needs of the diverse communities we serve. To achieve this we want the text to be free and widely available. To achieve the United Nation’s Sustainable Development Goals, health and quality education are key and this open educational resource (OER) is available for all to use to guide their practice and the strengthening of health and social care systems.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities",
+    "Medicine"
+  ],
+  "authors": [
+    "Sheree Lloyd - Author / Richard Olley - Author / Eleanor Milligan - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Griffith University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/leading-in-health-and-social-care"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This comprehensive textbook captures best international practice and is focused on the practical needs of leaders in health and social care. The text includes chapters that address evolving and innovative practices in leadership, ethics, leading people and human resource management, cultural safety for First Nations peoples, innovation, digital health, finance and resource management, systems thinking, change, evaluation and safety and quality. As an open educational resource, leaders, managers, students, policymakers and all readers interested in improving healthcare systems can access the book. The choice to publish on an open platform demonstrates our commitment to building a strong, transparent, and connected community of practice for health service leaders across many disciplines and across the world. We hope this pragmatic and contemporary textbook will reach a broad audience with an interest in strengthening the discipline of health service leadership and building fit-for-purpose healthcare systems that meet the needs of the diverse communities we serve. To achieve this we want the text to be free and widely available. To achieve the United Nation’s Sustainable Development Goals, health and quality education are key and this open educational resource (OER) is available for all to use to guide their practice and the strengthening of health and social care systems."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 227
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1609",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

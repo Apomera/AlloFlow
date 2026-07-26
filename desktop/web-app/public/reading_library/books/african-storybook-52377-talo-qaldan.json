@@ -1,0 +1,232 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52377-talo-qaldan",
+  "title": "Talo qaldan",
+  "description": "Laba nin ayaa si khaldan garsoore ula taliyey. Waxay raadiyeen xigmadda odayaasha. Waxay intaa dabadeed ku noolaadaan si farxad leh.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Magabi Eynew Gessesse, Elizabeth Laird"
+  ],
+  "illustrators": [
+    "Brian Wambi"
+  ],
+  "translators": [
+    "Osman Egal"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Magabi Eynew Gessesse, Elizabeth Laird",
+      "role": "Author"
+    },
+    {
+      "name": "Osman Egal",
+      "role": "Translation"
+    },
+    {
+      "name": "Brian Wambi",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Magabi Eynew Gessesse, Elizabeth Laird (Author); Osman Egal (Translation); Brian Wambi (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52377",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-580e024747b40475",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/17057.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17050.png",
+      "text": "Kombe iyo Juma waxay ahaayeen daris sabool ah. Wax kasta ayaga ayaa qabsan jiray.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=1",
+      "sourceDigest": "sha256:12f78d323728450c7ba1808e74d31ecf4d677ed68358a58fc6a5f589417d699f"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17052.png",
+      "text": "Waxay jeclaan lahaayeen in ay helaan dameer. Wuxuu ayaga u qaadi lahaa alaabta.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=2",
+      "sourceDigest": "sha256:8d28930cff7a62d6d5ba3f1f0a1ee684f6ef8589422230dde31fada70baefc24"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17053.png",
+      "text": "Kumbe wuxuu yiri, \"Aan wada gadano dameer.\" Way farxeen.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=3",
+      "sourceDigest": "sha256:0aa05c035a583d97c7473947b83837880eb7c0a51134841e602875c78a33348c"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17054.png",
+      "text": "Markii Kombe aabihii dhintay, Kombe wuxuu dhaxlay hanti badan. Wuxuu ilaaway Juma.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=4",
+      "sourceDigest": "sha256:25b67a66c948d79c94a7f044985f25e02598a4b97befba5684c3b141107669ed"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17055.png",
+      "text": "Kombe wuxuu u rabay dameerka hilibkiisa si uu u siiyo eeyihiisa. Juma wuxuu u baahnaa dameerka si uu ugu shaqeeyo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=5",
+      "sourceDigest": "sha256:7c013ec6674a8e4f413d5db0f45a4ac17e06eb27936c7e1c39862c67e40e3280"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17057.png",
+      "text": "Garsoorihii wuxuu yiri, \"Midkiin kasta wuxuu qaadan karaa nus dameerka.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=6",
+      "sourceDigest": "sha256:cae48e58c9f859976a76acaf16ad0f9d2460db1a4416ec967091391ed844574a"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17058.png",
+      "text": "Kombe wuxuu dilay dameerkii. Juma wuxuu qaaday alaabtii kaligiis mar kale.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=7",
+      "sourceDigest": "sha256:0eaf92ebdce32f529587775ab526ea45abceda60ea9a9e12c949f314d8403b15"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17060.png",
+      "text": "Kombe wuxuu rabay inuu gubo muddulkiisa oo uu dhisto mid cusub.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=8",
+      "sourceDigest": "sha256:08f9c58cb0bb558bb6a81eddf6790fcca9c62ae6e23115754de43f96fa9877a0"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17061.png",
+      "text": "Juma ayaa yiri, kaygana waan gubi doonaa sidoo kale. Garsoorihii ayaa ku raacay Kombe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=9",
+      "sourceDigest": "sha256:784fa602ba0a148ecebfc43703004c18d4578c272698a2c99daed8347464349c"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17062.png",
+      "text": "Juma muddulkiisii waa gubtay. Garsoorihii ayaa yiri, \"Kombe wuxu gubay mundulkiisii kaliya.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=10",
+      "sourceDigest": "sha256:143e92cc2c508590bab75a5d7a65dfe8770b441ed69adbfbb60ac7b6a9115767"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17063.png",
+      "text": "Juma ma uusan haysan dameer, mana haysto muddul. Wuxuuna seexday geed hoostiisa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=11",
+      "sourceDigest": "sha256:b57e11569bdcaf287e46fe89aa0b96d8eb7f4d7a6b048803c7d10fef89abad53"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17064.png",
+      "text": "Juma si adag buu u shaqeeyay. Wuxuuna helay dalag wanaagsan oo digir ah.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=12",
+      "sourceDigest": "sha256:aa78cdd75badac1d1d7e0cd55a98126898fec495667f87433b385889088aa6af"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17066.png",
+      "text": "Kombe wiilashiisu waxay cuneen inta badan digirtii ka baxday dhulka Juma.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=13",
+      "sourceDigest": "sha256:bcb0e06b1ce8c99551fe5173239415f0623cc84cece83f99b9ebafb5a2c95406"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17068.png",
+      "text": "Wiilashii waxay yiraahdeen, \"Waydii aabbahayo ha bixiyo digirtaada.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=14",
+      "sourceDigest": "sha256:35ed9248ed1b7dcb16f208b9bc8053d68eaaa856efcc927688d1617b153d015a"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17069.png",
+      "text": "Juma wuxuu yiri, \"Anigu ma rabo lacagtiina. Waxaan rabaa digirtayda.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=15",
+      "sourceDigest": "sha256:378b4001e592e6d511c8df2ac5aff67c9266129b8638108573bb72db78832ebc"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17070.png",
+      "text": "Garsoorihii wuxuu ku yiri Juma, \"Wiilasha kale jeex. Kana qaado digirtaada.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=16",
+      "sourceDigest": "sha256:b1554bddc146b35ce6d1c240b0c333681f55bd4bbfa91798c7dee733a8107e8b"
+    },
+    {
+      "n": 17,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17071.png",
+      "text": "Juma waa diiday inuu dhagaysto. Kombe ayaa ooyay, \"Udhaaf odayaashu ha goaamiyeene.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=17",
+      "sourceDigest": "sha256:ed39220ffd82ecf8350b1ed956c350b1254de39256701ee4a0c533082121e724"
+    },
+    {
+      "n": 18,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17073.png",
+      "text": "Odayaashii waxay u sheegeen Kombe, \"Waxaad dishay dameerkii, waad gubtay muddulkiisii.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=18",
+      "sourceDigest": "sha256:286ba6f4825b9cb3c98d7df882c332480b406121fecda362bccf367280d74346"
+    },
+    {
+      "n": 19,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17074.png",
+      "text": "Waxay ku yiraahdeen Juma, \"In la dilo Kombe wiilashiisa waa khalad sidoo kale.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=19",
+      "sourceDigest": "sha256:284052709c5f21039f5aed97e632fd40e7ee833f90f934d1b9aa4832e1dee26a"
+    },
+    {
+      "n": 20,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17075.png",
+      "text": "Kombe wuxuu siiyay Juma kala bar hantidiisa. Waxay ku noolaadeen farxad.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52377#page=20",
+      "sourceDigest": "sha256:6f271f1e9357bf6460289b434377aca35faf54bc9e3d773888c04b0abb7c1c88"
+    }
+  ],
+  "stats": {
+    "pages": 20,
+    "words": 238
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:fe895609020b3005850564d66baf5951b11a228893bbd7b2acf7cd5d2eb5ecfb"
+  }
+}

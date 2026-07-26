@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-140-small-business-management-in-the-21st-century",
+  "title": "Small Business Management in the 21st Century",
+  "description": "Small Business Management in the 21st Century offers a unique perspective and set of capabilities for instructors. The authors designed this book with a “less can be more” approach, and by treating small business management as a practical human activity rather than as an abstract theoretical concept. The text has a format and structure that will be familiar to you if you use other books on small business management. Yet it brings a fresh perspective by incorporating three distinctive and unique themes and an important new feature (Disaster Watch) which is embedded throughout the entire text. These themes assure that students see the material in an integrated context rather than a stream of separate and distinct topics. First, the authors incorporate the use of technology and e-business as a way to gain competitive advantage over larger rivals. Technology is omnipresent in today's business world. Small business must use it to its advantage. We provide practical discussions and examples of how a small business can use these technologies without having extensive expertise or expenditures. Second, they explicitly acknowledge the constant need to examine how decisions affect cash flow by incorporating cash flow impact content in several chapters. As the life blood of all organizations, cash flow implications must be a factor in all business decision-making. Third, they recognize the need to clearly identify sources of customer value and bring that understanding to every decision. Decisions that do not add to customer value should be seriously reconsidered. Small Business Management in 21st Century boasts a new feature called Disaster Watch scenarios. Few texts cover, in any detail, some of the major hazards that small business managers face. Disaster Watch scenarios, included in most chapters, cover topics that include financing, bankers, creditors, employees, customers who don't pay, economic downturns, and marketing mistakes.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business",
+    "Business - Human Resources"
+  ],
+  "authors": [
+    "David Cadden - Author / Sandra L. Lueder - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Saylor Foundation",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/small-business-management-in-the-21st-century"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Small Business Management in the 21st Century offers a unique perspective and set of capabilities for instructors. The authors designed this book with a “less can be more” approach, and by treating small business management as a practical human activity rather than as an abstract theoretical concept. The text has a format and structure that will be familiar to you if you use other books on small business management. Yet it brings a fresh perspective by incorporating three distinctive and unique themes and an important new feature (Disaster Watch) which is embedded throughout the entire text. These themes assure that students see the material in an integrated context rather than a stream of separate and distinct topics. First, the authors incorporate the use of technology and e-business as a way to gain competitive advantage over larger rivals. Technology is omnipresent in today's business world. Small business must use it to its advantage. We provide practical discussions and examples of how a small business can use these technologies without having extensive expertise or expenditures. Second, they explicitly acknowledge the constant need to examine how decisions affect cash flow by incorporating cash flow impact content in several chapters. As the life blood of all organizations, cash flow implications must be a factor in all business decision-making. Third, they recognize the need to clearly identify sources of customer value and bring that understanding to every decision. Decisions that do not add to customer value should be seriously reconsidered. Small Business Management in 21st Century boasts a new feature called Disaster Watch scenarios. Few texts cover, in any detail, some of the major hazards that small business managers face. Disaster Watch scenarios, included in most chapters, cover topics that include financing, bankers, creditors, employees, customers who don't pay, economic downturns, and marketing mistakes."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2012."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 322
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "140",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-31802-selemenge-na-niawu",
+  "title": "Selemenge na niawu",
+  "description": "Selemenge azali na ba niawu ebele. Selemenge azali na ba niawu boni?",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Khothatso Ranoosi, Marion Drew"
+  ],
+  "illustrators": [
+    "Marleen Visser, Wiehan de Jager"
+  ],
+  "translators": [
+    "Theresa Nyemba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Author"
+    },
+    {
+      "name": "Theresa Nyemba",
+      "role": "Translation"
+    },
+    {
+      "name": "Marleen Visser, Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Khothatso Ranoosi, Marion Drew (Author); Theresa Nyemba (Translation); Marleen Visser, Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://paleng.weebly.com/.",
+    "editionId": "31802",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-e500cb18c2dc2f1a",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/12005.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12005.png",
+      "text": "Selemenge alingaka niawu. Ba niawu bazali ebele na ndako.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802#page=1",
+      "sourceDigest": "sha256:39684902636bd0d30fa8009dd39f4573b45aa21668ad1ad90c77cc114a0917c5"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12006.png",
+      "text": "Selemenge azali na niawu moko ya moyindo. Niawu oyo aliaka biloko ebele.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802#page=2",
+      "sourceDigest": "sha256:f3c3604343e2dc3a4fbae812886684b11d81fc9c6154ce68e0db5bcaa8d08ad6"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12007.png",
+      "text": "Selemenge azali na niawu moko ya monene. Niawu oyo aliaka biloko nioso.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802#page=3",
+      "sourceDigest": "sha256:a61935a7a3ddc0fb4293e30a997e7c1001fdae1179e5853fb24695a3347cf0f7"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12008.png",
+      "text": "Niawu ya misato, akimi na nzete. Niawu akangemi likolo ya nzete.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802#page=4",
+      "sourceDigest": "sha256:02e3b02e6829c62edac009bf53e60508ddbd0aa8156df60a3d649871974ad2d8"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12028.png",
+      "text": "Selemenge amati na nzete, akangemi na nzete na niawu. Maman ya Selemenge aye kosalisa bango bakita.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802#page=5",
+      "sourceDigest": "sha256:db96815170f607066474868350360a39434c4867a147efef0a9b4f3d5a3d4ba5"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12009.png",
+      "text": "Selemenge azali na ba niawu mibale ya bolembu, balali libanda na moyi mokolo mobimba.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802#page=6",
+      "sourceDigest": "sha256:b28537e24e554f1419d11c0f927de60db5231b670c54589526faae5f54fd652e"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12019.png",
+      "text": "Selemenge azali na ba niawu misato na mosala. Bakangi punku na kikuku na butu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802#page=7",
+      "sourceDigest": "sha256:021770835f3642fd4fbade660309672418d95e3c546c77b3ce665c930b2960d3"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12020.png",
+      "text": "Selemenge azali na mbwua moko. Kombo na ye Lirafi. Lirafi azali na moninga te. Ye alobi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802#page=8",
+      "sourceDigest": "sha256:f41f92942c2f0daeb645f0d39378db83fc81e42efd8ff126fc3e966cda0cedaa"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12021.png",
+      "text": "Selemenge ba niawu na yo balingi Lirafi te. Babengani ye libanda ya ndako. Lirafi akimi mosika.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802#page=9",
+      "sourceDigest": "sha256:21c73976ddbf93e267f56fcf65b1ab6964bbabfc357e1c27d3187a17535fd8e5"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12022.png",
+      "text": "Selemenge amoni Lirafi pe amemi ye na ndako. Ba niawu basepeli te. Balingi komona Lirafi lisusu te.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802#page=10",
+      "sourceDigest": "sha256:be84d90f6f302b0239570572413e747fb28cc04d97b9d068c3759c071153db27"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12024.png",
+      "text": "Selemenge azali na ba niawu boni? Azali na bango muambe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802#page=11",
+      "sourceDigest": "sha256:c5c5596af985c12986623f31f1250d1f1e6b5f612afd8c22d3240863053fb6ef"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12023.png",
+      "text": "Selemenge azali na ba mbwua boni? Azali na mbwua moko. Lirafi azali wapi sikoyo?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802#page=12",
+      "sourceDigest": "sha256:0a39498399ebe34d6228b205cc2cb302fc0684a347ac91f4472e8116718f0e4e"
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Ozali na ba niawu boni na ndako? Ozali na ba mbwua boni na ndako?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31802#page=13",
+      "sourceDigest": "sha256:24aaf70097c7d9bd60ba39ade53c578b612a9bb8195677b8231b46e5983dce9b"
+    }
+  ],
+  "stats": {
+    "pages": 13,
+    "words": 175
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:d281e64a9bc08059222de920782988639a5696499eccce045585d742bdfe0133"
+  }
+}

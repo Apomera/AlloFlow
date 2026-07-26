@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1673-el-derecho-sucesorio-y-las-legitimas-un-equilibrio-entre-la-autonomia-te",
+  "title": "El derecho sucesorio y las legítimas: ¿Un equilibrio entre la autonomía testamentaria y la protección de los herederos forzosos?",
+  "description": "El derecho sucesorio, una rama del derecho privado, se ocupa de regular el traspaso de los bienes y derechos pertenecientes a un individuo fallecido hacia sus herederos. Este proceso, conocido como sucesión mortis causa, tiene como objetivo principal armonizar la libertad de disposición testamentaria del difunto con la salvaguardia de los herederos forzosos, aquellos que legalmente tienen derecho a recibir una porción de la herencia. Dentro del ámbito del derecho sucesorio, se establecen disposiciones normativas que rigen la distribución de los activos, así como los criterios de validez y formalidad de los testamentos. Además, se definen las legítimas, las cuales representan las porciones de la herencia destinadas a ser reservadas obligatoriamente para los herederos forzosos. Esta rama legal desempeña un papel fundamental en garantizar una distribución justa y equitativa de los bienes y derechos de una persona fallecida, al mismo tiempo que protege los derechos de los herederos forzosos y respeta la voluntad testamentaria del fallecido.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law"
+  ],
+  "authors": [
+    "Delia Paulina Samaniego-Quiguiri - Author / Rosa Elizabeth Campoverde-Jiménez - Author / David Santiago Astudillo-Bermeo - Author / Pablo Fausto Urbano-Urbano - Author / Hilda del Rocío Erazo-Domínguez - Author / Xavier Edgar Puente-Heredia - Author / Jaime Enrique Guano-Fogacho - Author / Ricardo Paúl Aroca-Rivadeneira - Author / Thelmo Fernando Yánez-Erazo - Author / Wellington Amado Andachi-Trujillo - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/el-derecho-sucesorio-y-las-legitimas-un-equilibrio-entre-la-autonomia-testamentaria-y-la-proteccion-de-los-herederos-forzosos"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "El derecho sucesorio, una rama del derecho privado, se ocupa de regular el traspaso de los bienes y derechos pertenecientes a un individuo fallecido hacia sus herederos. Este proceso, conocido como sucesión mortis causa, tiene como objetivo principal armonizar la libertad de disposición testamentaria del difunto con la salvaguardia de los herederos forzosos, aquellos que legalmente tienen derecho a recibir una porción de la herencia. Dentro del ámbito del derecho sucesorio, se establecen disposiciones normativas que rigen la distribución de los activos, así como los criterios de validez y formalidad de los testamentos. Además, se definen las legítimas, las cuales representan las porciones de la herencia destinadas a ser reservadas obligatoriamente para los herederos forzosos. Esta rama legal desempeña un papel fundamental en garantizar una distribución justa y equitativa de los bienes y derechos de una persona fallecida, al mismo tiempo que protege los derechos de los herederos forzosos y respeta la voluntad testamentaria del fallecido."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 179
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1673",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-957-monitoring-animal-populations-and-their-habitats-a-practitioner-s-guide",
+  "title": "Monitoring Animal Populations and their Habitats: A Practitioner's Guide",
+  "description": "We designed this book to offer a comprehensive overview of the monitoring process, from start to finish. Although there are books that deal with sampling design and the quantitative analysis of population data, there are few that provide practical advice covering the entire evolution of a monitoring plan from incorporating stakeholder input to data collection to data management and analysis to reporting. This book strives to present an overview of this process. We also acknowledge that any such effort tends to reflect the interests and expertise of the authors, and as such, there is a distinct emphasis on monitoring vertebrate populations and upland habitats. Although many of our examples tend to focus on bird populations and forested habitats, we have made an attempt to cover other taxa and habitat types as well, and many of the recommendations and suggestions that we present are applicable to a diversity of monitoring programs. This book was written to fill a practical need and also to embrace a set of values that we hold dear. We wanted a book that could be used in a classroom because we feel that students in natural resources programs need to know how to design a monitoring program when they enter the workforce. We also realize that many former students now in the workforce did not have that training and may find this book of value to them.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology"
+  ],
+  "authors": [
+    "Brenda C. McComb - Author / Benjamin Zuckerberg - Author / David G. Vesely - Author / Christopher A. Jordan - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oregon State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/monitoring-animal-populations-and-their-habitats-a-practitioner-s-guide"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "We designed this book to offer a comprehensive overview of the monitoring process, from start to finish. Although there are books that deal with sampling design and the quantitative analysis of population data, there are few that provide practical advice covering the entire evolution of a monitoring plan from incorporating stakeholder input to data collection to data management and analysis to reporting. This book strives to present an overview of this process. We also acknowledge that any such effort tends to reflect the interests and expertise of the authors, and as such, there is a distinct emphasis on monitoring vertebrate populations and upland habitats. Although many of our examples tend to focus on bird populations and forested habitats, we have made an attempt to cover other taxa and habitat types as well, and many of the recommendations and suggestions that we present are applicable to a diversity of monitoring programs. This book was written to fill a practical need and also to embrace a set of values that we hold dear. We wanted a book that could be used in a classroom because we feel that students in natural resources programs need to know how to design a monitoring program when they enter the workforce. We also realize that many former students now in the workforce did not have that training and may find this book of value to them."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 253
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "957",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

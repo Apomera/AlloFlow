@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1723-untitled",
+  "title": "通过表达动物的汉字学习中文书写系统： 起源、演变和文化",
+  "description": "在内容的取舍上，本书主要包括了重要的动物汉字的起源、它们的字形以及与现代楷体字的联系，从这些字衍生出的其他字、它们的常见用法及文化含义，并展示了历史对当今的持续影响，也阐释了汉字产生发展背后的思维理念。 English Description: This book discusses the origins of important Chinese characters for animals, the original characters used, and their connections to modern characters. In addition to showing the evolution of the character for \"horse,\" for example, other characters that are derived from these characters are also discussed, along with their common uses. By exploring the development of characters for animals, this book serves as a jumping-off point to explore the continuous influence of history on the present day.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages",
+    "Social Sciences - Cultural & Ethnic Studies"
+  ],
+  "authors": [
+    "Shenglan Zhang - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Iowa State University Digital Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/%E9%80%9A%E8%BF%87%E8%A1%A8%E8%BE%BE%E5%8A%A8%E7%89%A9%E7%9A%84%E6%B1%89%E5%AD%97%E5%AD%A6%E4%B9%A0%E4%B8%AD%E6%96%87%E4%B9%A6%E5%86%99%E7%B3%BB%E7%BB%9F"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "在内容的取舍上，本书主要包括了重要的动物汉字的起源、它们的字形以及与现代楷体字的联系，从这些字衍生出的其他字、它们的常见用法及文化含义，并展示了历史对当今的持续影响，也阐释了汉字产生发展背后的思维理念。 English Description: This book discusses the origins of important Chinese characters for animals, the original characters used, and their connections to modern characters. In addition to showing the evolution of the character for \"horse,\" for example, other characters that are derived from these characters are also discussed, along with their common uses. By exploring the development of characters for animals, this book serves as a jumping-off point to explore the continuous influence of history on the present day."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 102
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "1723",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

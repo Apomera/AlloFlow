@@ -183,6 +183,25 @@ var StopCircle = _lazyIcon('StopCircle');
 var Trash2 = _lazyIcon('Trash2');
 var ChevronDown = _lazyIcon('ChevronDown');
 var ChevronUp = _lazyIcon('ChevronUp');
+function simplifiedBodyHasCitationMarkers(body) {
+  var inFence = false;
+  return String(body || '').split(/\r?\n/).some(function (line) {
+    if (/^[ \t]*(?:\x60{3}|~~~)/.test(line)) {
+      inFence = !inFence;
+      return false;
+    }
+    if (inFence) return false;
+    var prose = line.replace(/\x60[^\x60\n]*\x60/g, '');
+    return /\[\s*\u207d[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+\u207e\s*\]\s*\(|\u207d[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+\u207e|\[Source[ \t]+\d+\]/i.test(prose);
+  });
+}
+function resolveSimplifiedReferences(adaptedBody, adaptedReferences, inputReferences, citationAudit) {
+  var ownedReferences = String(adaptedReferences || '');
+  if (ownedReferences) return ownedReferences;
+  var auditAllowsFallback = !citationAudit || citationAudit.enabled === true && Number(citationAudit.sourceCitationCount || 0) > 0;
+  if (!auditAllowsFallback || !simplifiedBodyHasCitationMarkers(adaptedBody)) return '';
+  return String(inputReferences || '');
+}
 function SimplifiedView(props) {
   // State reads
   var t = props.t;
@@ -337,6 +356,39 @@ function SimplifiedView(props) {
   // (backdrop just under the popup, still above the overlay).
   const _popupZ = isImmersiveReaderActive ? 'z-[220]' : 'z-[100]';
   const _popupBackdropZ = isImmersiveReaderActive ? 'z-[210]' : 'z-[90]';
+  // Build the exact text contract shared by visible sentence indexes,
+  // in-view playback, karaoke preparation, and Edit Audio.
+  var buildSimplifiedContentParts = function (rawText) {
+    var fullText = typeof rawText === 'string' ? rawText : String(rawText || '');
+    var split = {
+      body: fullText,
+      references: ''
+    };
+    try {
+      if (typeof splitReferencesFromBody === 'function') split = splitReferencesFromBody(fullText) || split;
+    } catch (_) {}
+    var normalizedBody = String(split.body || '').replace(/^[ \t]*(\*{1,2})([^*\n]+?)\1[ \t]*$/gm, function (_match, _stars, inner) {
+      return '## ' + inner.trim();
+    });
+    return {
+      body: normalizedBody,
+      references: String(split.references || '')
+    };
+  };
+  var simplifiedContentParts = buildSimplifiedContentParts(generatedContent && generatedContent.data);
+  var simplifiedDisplayBody = simplifiedContentParts.body;
+  // The adapted document owns its citation registry. Falling back to the
+  // source document is only safe when the adapted document has no reference
+  // trailer at all; choosing whichever list is longer can pair adapted body
+  // markers with a different source list.
+  var simplifiedInputReferences = '';
+  try {
+    if (inputText && typeof splitReferencesFromBody === 'function') simplifiedInputReferences = String((splitReferencesFromBody(inputText) || {}).references || '');
+  } catch (_) {}
+  var adaptedCitationAudit = generatedContent && generatedContent.config && generatedContent.config.citationAudit;
+  var simplifiedReferences = resolveSimplifiedReferences(simplifiedDisplayBody, simplifiedContentParts.references, simplifiedInputReferences, adaptedCitationAudit);
+  simplifiedContentParts.references = simplifiedReferences;
+  var simplifiedReadAloudText = simplifiedDisplayBody.trim();
   var ttsPrepState_state = React.useState({
     busy: false,
     done: 0,
@@ -424,6 +476,9 @@ function SimplifiedView(props) {
   var captureAudioErrors = captureAudioErrors_state[0];
   var setCaptureAudioErrors = captureAudioErrors_state[1];
   var regenAudioKey_state = React.useState(null);
+  var editAudioPlaybackErrors_state = React.useState({});
+  var editAudioPlaybackErrors = editAudioPlaybackErrors_state[0];
+  var setEditAudioPlaybackErrors = editAudioPlaybackErrors_state[1];
   var regenAudioKey = regenAudioKey_state[0];
   var setRegenAudioKey = regenAudioKey_state[1];
   var setAudioStatusTick = React.useState(0)[1];
@@ -484,6 +539,26 @@ function SimplifiedView(props) {
     } catch (_) {}
     return String(sentence || '').toLowerCase().replace(/\s+/g, ' ').trim();
   };
+  var updateEditAudioPlaybackIssue = function (sentence, issue) {
+    var audioKey = getReadAloudAudioKey(sentence);
+    if (!audioKey) return;
+    setEditAudioPlaybackErrors(function (prev) {
+      var next = Object.assign({}, prev);
+      if (issue) next[audioKey] = issue;else delete next[audioKey];
+      return next;
+    });
+  };
+  var reportEditAudioPlaybackFailure = function (sentence, sentenceNumber, error) {
+    if (error && error.name === 'NotAllowedError') {
+      setEditAudioNotice('Audio playback was blocked. Press Play again.');
+      return;
+    }
+    updateEditAudioPlaybackIssue(sentence, {
+      code: error && error.name ? error.name : 'playback-failed',
+      reason: 'The saved audio could not be decoded or loaded.'
+    });
+    setEditAudioNotice('Saved audio for sentence ' + sentenceNumber + ' could not be played. Rebuild or replace it.');
+  };
   var setSaveTtsAsPlayedEnabled = function (value) {
     var next = !!value;
     setSaveTtsAsPlayed(next);
@@ -535,6 +610,8 @@ function SimplifiedView(props) {
         });
         if (detail.status === 'error' || detail.status === 'limit') {
           setEditAudioNotice(detail.reason || 'Played TTS could not be saved. Generate that sentence again to retry.');
+        } else {
+          updateEditAudioPlaybackIssue(detail.sentence, null);
         }
         setAudioStatusTick(function (n) {
           return n + 1;
@@ -551,6 +628,7 @@ function SimplifiedView(props) {
   React.useEffect(function () {
     setSavingAudioKeys({});
     setCaptureAudioErrors({});
+    setEditAudioPlaybackErrors({});
   }, [generatedContent && generatedContent.id]);
   React.useEffect(function () {
     if (isEditingLeveledText) return;
@@ -615,6 +693,22 @@ function SimplifiedView(props) {
   var getReadAloudStore = function () {
     try {
       return window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+    } catch (_) {
+      return null;
+    }
+  };
+  var getStoredReadAloudAudioUrl = function (sentence) {
+    try {
+      var sharedInspect = typeof window !== 'undefined' && window.__alloInspectReadAloudAudio;
+      if (typeof sharedInspect === 'function') {
+        var inspection = sharedInspect(sentence, 'reference');
+        if (inspection && inspection.storedUrl) return inspection.storedUrl;
+        if (inspection && inspection.status === 'ready' && inspection.url) return inspection.url;
+      }
+    } catch (_) {}
+    var st = getReadAloudStore();
+    try {
+      return st && typeof st.get === 'function' ? st.get(sentence) : null;
     } catch (_) {
       return null;
     }
@@ -791,11 +885,11 @@ function SimplifiedView(props) {
     });
   };
   var karaokeReaderSentences = React.useMemo(function () {
-    return getReadAloudSentencesForText(generatedContent && generatedContent.data);
+    return getReadAloudSentencesForText(simplifiedReadAloudText);
   }, [generatedContent && generatedContent.data]);
   var handlePrepareReadAloudAudio = async function () {
     if (ttsPrepState.busy || typeof window.__alloPrepareReadAloud !== 'function') return;
-    var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
+    var sentences = getReadAloudSentencesForText(simplifiedReadAloudText);
     if (!sentences.length) return;
     // Note: prep saves every sentence regardless of the capture toggle, and
     // capture now defaults ON — no longer force-enable it here, so a
@@ -816,7 +910,7 @@ function SimplifiedView(props) {
       if (result && result.remaining) {
         setEditAudioNotice(result.failure && result.failure.reason || result.remaining + ' sentence audio clips remain. Run Save TTS again to retry only missing clips.');
       } else if (result && result.ok) {
-        setEditAudioNotice('Read-aloud audio is ready for all sentences.');
+        setEditAudioNotice('Read-aloud audio is saved for all sentences.');
       }
     } finally {
       setTtsPrepState({
@@ -839,6 +933,7 @@ function SimplifiedView(props) {
     try {
       var url = await window.__alloRegenerateSentenceAudio(sentence);
       if (!url) throw new Error('No audio was returned');
+      updateEditAudioPlaybackIssue(sentence, null);
       setAudioStatusTick(function (n) {
         return n + 1;
       });
@@ -864,10 +959,11 @@ function SimplifiedView(props) {
       try {
         if (isFinite(current.duration) && current.currentTime >= current.duration) current.currentTime = 0;
         await current.play();
+        updateEditAudioPlaybackIssue(sentence, null);
         setEditAudioPlayingKey(key);
         setEditAudioNotice('Playing sentence ' + sentenceNumber + '.');
-      } catch (_) {
-        setEditAudioNotice('Audio playback was blocked. Press Play again.');
+      } catch (error) {
+        reportEditAudioPlaybackFailure(sentence, sentenceNumber, error);
       }
       return;
     }
@@ -880,7 +976,7 @@ function SimplifiedView(props) {
     setEditAudioLoadingKey(key);
     setEditAudioNotice('Loading sentence ' + sentenceNumber + ' audio...');
     try {
-      var url = await getKaraokeAudioUrl(sentence);
+      var url = getStoredReadAloudAudioUrl(sentence);
       if (token !== editAudioPlayTokenRef.current) return;
       if (!url) throw new Error('No saved audio URL');
       var audio = new Audio(url);
@@ -896,8 +992,9 @@ function SimplifiedView(props) {
       };
       audio.onerror = function () {
         if (editAudioPlayerRef.current === audio) {
+          editAudioPlayerRef.current = null;
           setEditAudioPlayingKey(null);
-          setEditAudioNotice('Could not play sentence ' + sentenceNumber + ' audio.');
+          reportEditAudioPlaybackFailure(sentence, sentenceNumber, audio.error);
         }
       };
       editAudioPlayerRef.current = audio;
@@ -908,13 +1005,14 @@ function SimplifiedView(props) {
         } catch (_) {}
         return;
       }
+      updateEditAudioPlaybackIssue(sentence, null);
       setEditAudioPlayingKey(key);
       setEditAudioNotice('Playing sentence ' + sentenceNumber + '.');
-    } catch (_) {
+    } catch (error) {
       if (token === editAudioPlayTokenRef.current) {
         editAudioPlayerRef.current = null;
         setEditAudioPlayingKey(null);
-        setEditAudioNotice('Could not play sentence ' + sentenceNumber + ' audio.');
+        reportEditAudioPlaybackFailure(sentence, sentenceNumber, error);
       }
     } finally {
       if (token === editAudioPlayTokenRef.current) setEditAudioLoadingKey(null);
@@ -1008,6 +1106,7 @@ function SimplifiedView(props) {
           setAudioStatusTick(function (n) {
             return n + 1;
           });
+          updateEditAudioPlaybackIssue(sentence, null);
           setEditAudioNotice('Teacher recording saved for sentence ' + sentenceNumber + '.');
         } catch (_) {
           setEditAudioNotice('Could not save the recording for sentence ' + sentenceNumber + '. Please try again.');
@@ -1050,6 +1149,7 @@ function SimplifiedView(props) {
       setAudioStatusTick(function (n) {
         return n + 1;
       });
+      updateEditAudioPlaybackIssue(sentence, null);
       setEditAudioNotice('Saved audio removed from sentence ' + sentenceNumber + '.');
     } catch (_) {
       setEditAudioNotice('Could not remove the audio for sentence ' + sentenceNumber + '.');
@@ -1145,7 +1245,7 @@ function SimplifiedView(props) {
   }, [!!revisionData]);
   var renderEditAudioSentenceTools = function () {
     if (!isTeacherMode || !isEditingLeveledText) return null;
-    var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
+    var sentences = getReadAloudSentencesForText(simplifiedReadAloudText);
     if (!sentences.length) return null;
     var summary = getReadAloudAudioSummary(sentences);
     var savingCount = Object.keys(savingAudioKeys || {}).length;
@@ -1227,7 +1327,8 @@ function SimplifiedView(props) {
         stale: false
       };
       var captureIssue = captureAudioErrors[audioKey];
-      var needsRebuild = !!(isSaved && provenance.stale);
+      var playbackIssue = editAudioPlaybackErrors[audioKey];
+      var needsRebuild = !!(isSaved && (provenance.stale || playbackIssue));
       var isGenerating = regenAudioKey === key;
       var isLoading = editAudioLoadingKey === key;
       var isPlayingSentence = editAudioPlayingKey === key;
@@ -1235,8 +1336,8 @@ function SimplifiedView(props) {
       var isRecording = editAudioRecordingKey === key;
       var isRecordingSave = editAudioRecordingSaveKey === key;
       var isRemoving = removeAudioKey === key;
-      var statusLabel = isMicRequest ? 'Opening microphone' : isRecording ? 'Recording' : isRecordingSave ? 'Saving recording' : isGenerating ? isSaved ? 'Regenerating' : 'Generating' : isRemoving ? 'Removing' : isSaving ? 'Caching played TTS' : captureIssue ? captureIssue.status === 'limit' ? 'Storage limit' : 'Save failed' : needsRebuild ? 'Ready · settings changed' : isSaved ? 'Ready' : 'Missing audio';
-      var statusClass = isRecording ? 'bg-red-50 text-red-700 border-red-200' : isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : captureIssue ? captureIssue.status === 'limit' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-red-50 text-red-700 border-red-200' : needsRebuild ? 'bg-amber-50 text-amber-800 border-amber-200' : isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200';
+      var statusLabel = isMicRequest ? 'Opening microphone' : isRecording ? 'Recording' : isRecordingSave ? 'Saving recording' : isGenerating ? isSaved ? 'Regenerating' : 'Generating' : isRemoving ? 'Removing' : isSaving ? 'Caching played TTS' : captureIssue ? captureIssue.status === 'limit' ? 'Storage limit' : 'Save failed' : playbackIssue ? 'Saved · unreadable' : provenance.stale ? 'Saved · settings changed' : isSaved ? 'Saved' : 'Missing audio';
+      var statusClass = isRecording ? 'bg-red-50 text-red-700 border-red-200' : isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : captureIssue ? captureIssue.status === 'limit' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-red-50 text-red-700 border-red-200' : playbackIssue ? 'bg-red-50 text-red-700 border-red-200' : provenance.stale ? 'bg-amber-50 text-amber-800 border-amber-200' : isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200';
       var controlsBlocked = isSaving || isGenerating || isRemoving || ttsPrepState.busy;
       var recordDisabled = !isRecording && (anyRecordingWork || !!regenAudioKey || !!removeAudioKey || isSaving || ttsPrepState.busy);
       var actionClass = 'inline-flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-45 disabled:cursor-not-allowed';
@@ -1413,8 +1514,8 @@ function SimplifiedView(props) {
       }
     },
     totalSentences: (() => {
-      const sbs = getSideBySideContent(generatedContent?.data);
-      const ps = sbs ? [...(sbs.source || []), ...(sbs.target || [])] : (generatedContent?.data || '').split(new RegExp('\\n{2,}'));
+      const sbs = getSideBySideContent(simplifiedReadAloudText);
+      const ps = sbs ? [...(sbs.source || []), ...(sbs.target || [])] : simplifiedReadAloudText.split(new RegExp('\\n{2,}'));
       return ps.flatMap(p => p.trim().startsWith('|') ? [] : splitTextToSentences(p)).length || 1;
     })()
   }), /*#__PURE__*/React.createElement(ErrorBoundary, {
@@ -1465,18 +1566,18 @@ function SimplifiedView(props) {
   }, (() => {
     const isTable = p => p.trim().startsWith('|') || p.includes('\n|');
     let sentences = [];
-    const sideBySideData = getSideBySideContent(generatedContent?.data);
+    const sideBySideData = getSideBySideContent(simplifiedReadAloudText);
     if (sideBySideData) {
       const sourceSentences = sideBySideData.source.flatMap(p => isTable(p) ? [] : splitTextToSentences(p));
       const targetSentences = sideBySideData.target.flatMap(p => isTable(p) ? [] : splitTextToSentences(p));
       sentences = [...sourceSentences, ...targetSentences];
     } else {
-      const paragraphs = generatedContent?.data.split(/\n{2,}/);
+      const paragraphs = simplifiedReadAloudText.split(/\n{2,}/);
       sentences = paragraphs.flatMap(p => isTable(p) ? [] : splitTextToSentences(p));
     }
     let currentSentenceIdx = 0;
     let currentSentenceText = sentences[0] || "";
-    let normalizedSentence = currentSentenceText.replace(/\s+/g, '').toLowerCase();
+    let normalizedSentence = cleanSentenceForAudio(currentSentenceText).replace(/\s+/g, '').toLowerCase();
     let currentTokenBuffer = "";
     // Typewriter char-offset bookkeeping for the active sentence (mood='typewriter').
     // Resets when we encounter the first token of the active sentence; each token in
@@ -1491,6 +1592,12 @@ function SimplifiedView(props) {
           className: "w-full h-4"
         });
       }
+      while (!normalizedSentence && currentSentenceIdx < sentences.length - 1) {
+        currentSentenceIdx++;
+        currentSentenceText = sentences[currentSentenceIdx];
+        normalizedSentence = cleanSentenceForAudio(currentSentenceText).replace(/\s+/g, '').toLowerCase();
+        currentTokenBuffer = "";
+      }
       const tokenStr = wordData.text.replace(/\s+/g, '').toLowerCase();
       const assignedIdx = currentSentenceIdx;
       currentTokenBuffer += tokenStr;
@@ -1498,7 +1605,7 @@ function SimplifiedView(props) {
         if (currentSentenceIdx < sentences.length - 1) {
           currentSentenceIdx++;
           currentSentenceText = sentences[currentSentenceIdx];
-          normalizedSentence = currentSentenceText.replace(/\s+/g, '').toLowerCase();
+          normalizedSentence = cleanSentenceForAudio(currentSentenceText).replace(/\s+/g, '').toLowerCase();
           currentTokenBuffer = "";
         }
       }
@@ -1567,7 +1674,7 @@ function SimplifiedView(props) {
           if (isChunkReaderActive) {
             setChunkReaderIdx(assignedIdx);
           } else {
-            handleSpeak(generatedContent?.data, 'simplified-main', assignedIdx);
+            handleSpeak(simplifiedReadAloudText, 'simplified-main', assignedIdx);
           }
         }
       }));
@@ -2522,14 +2629,14 @@ function SimplifiedView(props) {
       source,
       target,
       sourceFull
-    } = getSideBySideContent(generatedContent?.data);
+    } = getSideBySideContent(simplifiedReadAloudText);
     const maxPars = Math.max(source.length, target.length);
     const rows = Array.from({
       length: maxPars
     });
-    const sourceSentencesTotal = source.flatMap(p => splitTextToSentences(p)).length;
+    const sourceSentencesTotal = source.flatMap(p => p.trim().startsWith('|') || p.includes('\n|') ? [] : splitTextToSentences(p)).length;
     let currentSourceSentenceIdx = 0;
-    let currentTargetSentenceIdx = 0;
+    let currentTargetSentenceIdx = sourceSentencesTotal;
     const renderTextContent = (sentences, startIdx, isHeaderStyle) => {
       if (interactionMode === 'explain' || interactionMode === 'revise') {
         const cleanText = sentences.join(' ').replace(/\*\*|\*/g, '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
@@ -2618,12 +2725,12 @@ function SimplifiedView(props) {
             onClick: e => {
               if (interactionMode === 'cloze') return;
               e.stopPropagation();
-              handleSpeak(generatedContent?.data, 'simplified-main', globalIdx);
+              handleSpeak(simplifiedReadAloudText, 'simplified-main', globalIdx);
             },
             onKeyDown: e => {
               if ((e.key === 'Enter' || e.key === ' ') && interactionMode !== 'cloze') {
                 e.preventDefault();
-                handleSpeak(generatedContent?.data, 'simplified-main', globalIdx);
+                handleSpeak(simplifiedReadAloudText, 'simplified-main', globalIdx);
               }
             },
             tabIndex: interactionMode !== 'cloze' ? "0" : "-1",
@@ -2642,8 +2749,8 @@ function SimplifiedView(props) {
     }, leveledTextLanguage), /*#__PURE__*/React.createElement("div", {
       className: "hidden md:block font-bold text-orange-800 text-sm uppercase tracking-wider border-b-2 border-orange-200 pb-2 mb-2"
     }, t('common.english_translation')), rows.map((_, i) => {
-      const sourceParaSentences = source[i] ? splitTextToSentences(source[i]) : [];
-      const targetParaSentences = target[i] ? splitTextToSentences(target[i]) : [];
+      const sourceParaSentences = source[i] && !(source[i].trim().startsWith('|') || source[i].includes('\n|')) ? splitTextToSentences(source[i]) : [];
+      const targetParaSentences = target[i] && !(target[i].trim().startsWith('|') || target[i].includes('\n|')) ? splitTextToSentences(target[i]) : [];
       const rowSourceStartIdx = currentSourceSentenceIdx;
       const rowTargetStartIdx = currentTargetSentenceIdx;
       const rowSourceEndIdx = rowSourceStartIdx + sourceParaSentences.length;
@@ -2666,7 +2773,9 @@ function SimplifiedView(props) {
         className: "text-base text-slate-700 leading-relaxed"
       }, renderTextContent(targetParaSentences, rowTargetStartIdx, false))));
     }));
-  })(), isProcessing && /*#__PURE__*/React.createElement("div", {
+  })(), /*#__PURE__*/React.createElement(SourceReferencesPanel, {
+    referencesText: simplifiedContentParts.references
+  }), isProcessing && /*#__PURE__*/React.createElement("div", {
     className: "mt-6 flex items-center justify-center gap-2 text-indigo-500 text-xs font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none opacity-80"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
@@ -2682,23 +2791,14 @@ function SimplifiedView(props) {
   }, generatedContent?.data ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
   }, (() => {
-    const rawData = generatedContent?.data;
-    const _fullData = typeof rawData === 'string' ? rawData : String(rawData || '');
-    const {
-      body: _bodyRaw,
-      references: _referencesFromContent
-    } = splitReferencesFromBody(_fullData);
     // Normalize AI heading lines wrapped in * / ** (e.g. "*Dreams*",
     // "**How Do We Dream?**") into real Markdown headings, so the reader
     // styles them as bold section headers instead of showing the raw
     // asterisks. Only matches a WHOLE line that is a single * / ** span
     // with no other asterisks — inline emphasis inside a sentence is
     // untouched.
-    const _bodyNoRefs = String(_bodyRaw || '').replace(/^[ \t]*(\*{1,2})([^*\n]+?)\1[ \t]*$/gm, (_m, _s, _inner) => '## ' + _inner.trim());
-    const _refsFromInput = inputText ? splitReferencesFromBody(inputText).references : '';
-    const _refsContentCount = parseReferenceItems(_referencesFromContent || '').length;
-    const _refsInputCount = parseReferenceItems(_refsFromInput || '').length;
-    const _references = _refsInputCount > _refsContentCount ? _refsFromInput : _referencesFromContent || _refsFromInput;
+    const _bodyNoRefs = simplifiedDisplayBody;
+    const _references = simplifiedReferences;
     const _bilingualIdx = _bodyNoRefs.indexOf('--- ENGLISH TRANSLATION ---');
     const _hasBilingual = _bilingualIdx !== -1;
     const safeData = _hasBilingual ? _bodyNoRefs.substring(0, _bilingualIdx).trim() : _bodyNoRefs;
@@ -2843,7 +2943,7 @@ function SimplifiedView(props) {
               onClick: e => {
                 if (interactionMode === 'cloze') return;
                 e.stopPropagation();
-                handleSpeak(generatedContent?.data, 'simplified-main', currentGlobalIdx);
+                handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
               },
               className: `transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100/20' : ''} ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : isLineFocusMode ? 'text-slate-100' : 'text-slate-800'} ${headerClass}`,
               title: interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""
@@ -2940,12 +3040,12 @@ function SimplifiedView(props) {
               onClick: e => {
                 if (interactionMode === 'cloze') return;
                 e.stopPropagation();
-                handleSpeak(generatedContent?.data, 'simplified-main', currentGlobalIdx);
+                handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
               },
               onKeyDown: e => {
                 if ((e.key === 'Enter' || e.key === ' ') && interactionMode !== 'cloze') {
                   e.preventDefault();
-                  handleSpeak(generatedContent?.data, 'simplified-main', currentGlobalIdx);
+                  handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
                 }
               },
               tabIndex: interactionMode !== 'cloze' ? "0" : "-1",
@@ -3076,12 +3176,12 @@ function SimplifiedView(props) {
             onClick: e => {
               if (interactionMode === 'cloze') return;
               e.stopPropagation();
-              handleSpeak(generatedContent?.data, 'simplified-main', currentGlobalIdx);
+              handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
             },
             onKeyDown: e => {
               if ((e.key === 'Enter' || e.key === ' ') && interactionMode !== 'cloze') {
                 e.preventDefault();
-                handleSpeak(generatedContent?.data, 'simplified-main', currentGlobalIdx);
+                handleSpeak(simplifiedReadAloudText, 'simplified-main', currentGlobalIdx);
               }
             },
             tabIndex: interactionMode !== 'cloze' ? "0" : "-1",
@@ -3102,6 +3202,8 @@ function SimplifiedView(props) {
     className: "animate-spin motion-reduce:animate-none"
   }), " Generating more..."))));
 }
+SimplifiedView.resolveReferences = resolveSimplifiedReferences;
+SimplifiedView.hasCitationMarkers = simplifiedBodyHasCitationMarkers;
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.SimplifiedView = SimplifiedView;

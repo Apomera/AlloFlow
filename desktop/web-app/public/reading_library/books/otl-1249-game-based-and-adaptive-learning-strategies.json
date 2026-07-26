@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1249-game-based-and-adaptive-learning-strategies",
+  "title": "Game Based and Adaptive Learning Strategies",
+  "description": "This book is designed to accompany a graduate-level instructional design course: Game-Based and Adaptive Learning, but could also be used for undergraduate teacher education or instructional design courses. The original texts and material for this book came from the development of a course for Brandeis University as part of their MS in Learner Experience Design program. This material can be used to teach pre-service teachers, in-service teachers, and instructional designers about game-based and adaptive learning. Assessments used in the actual Game-based and Adaptive Learning course are included in the final chapter and serve as recommendations for assessments of the learning outcomes. The material in this book pairs well with Using Game-Based Learning Online – A Cookbook of Recipes by The EGG. The Faculty Showcase materials were developed by dedicated faculty during the course of a year-long game development workshop in which faculty were introduced to GBL, developed game prototypes, played a variety of games, and finally playtested their designs. The work they continue to do in the area of GBL is part of the inspiration for this book. If you would like to contribute your own case study, please contact me at carrie.miller@mnsu.edu for consideration. Carrie Lewis Miller, Ph.D.- editor/author- Instructional Designer, Minnesota State University, Mankato",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Curriculum & Instruction",
+    "Computer Science"
+  ],
+  "authors": [
+    "Carrie Lewis Miller - Author / Odbayar Batsaikhan - Author / Elizabeth Pluskwik - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Minnesota State Colleges and Universities",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/game-based-and-adaptive-learning-strategies"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is designed to accompany a graduate-level instructional design course: Game-Based and Adaptive Learning, but could also be used for undergraduate teacher education or instructional design courses. The original texts and material for this book came from the development of a course for Brandeis University as part of their MS in Learner Experience Design program. This material can be used to teach pre-service teachers, in-service teachers, and instructional designers about game-based and adaptive learning. Assessments used in the actual Game-based and Adaptive Learning course are included in the final chapter and serve as recommendations for assessments of the learning outcomes. The material in this book pairs well with Using Game-Based Learning Online – A Cookbook of Recipes by The EGG. The Faculty Showcase materials were developed by dedicated faculty during the course of a year-long game development workshop in which faculty were introduced to GBL, developed game prototypes, played a variety of games, and finally playtested their designs. The work they continue to do in the area of GBL is part of the inspiration for this book. If you would like to contribute your own case study, please contact me at carrie.miller@mnsu.edu for consideration. Carrie Lewis Miller, Ph.D.- editor/author- Instructional Designer, Minnesota State University, Mankato"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2022."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 229
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1249",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

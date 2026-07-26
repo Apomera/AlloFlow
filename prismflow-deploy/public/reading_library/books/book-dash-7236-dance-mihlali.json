@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-7236-dance-mihlali",
+  "title": "Dance, Mihlali!",
+  "description": "The day of the concert is approaching, and Mihlali is getting more and more nervous. Will she ever be ready to dance in front of all those people?",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Emotions and life skills",
+    "Let's play!"
+  ],
+  "authors": [
+    "Matona Fatman"
+  ],
+  "illustrators": [
+    "Aimee Ayres"
+  ],
+  "contributors": [
+    {
+      "name": "Alison Ziki",
+      "role": "Editor"
+    },
+    {
+      "name": "Matona Fatman",
+      "role": "Writer"
+    },
+    {
+      "name": "Khuty Ngqayimbana",
+      "role": "Designer"
+    },
+    {
+      "name": "Aimee Ayres",
+      "role": "Illustrator"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/dance-mihlali/",
+    "attributionUrl": "https://bookdash.org/books/dance-mihlali/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=dance-mihlali"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2019/02/dance-mihlali_en_20181206_cover-297x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2019/02/dance-mihlali_en_20181206_cover-600x606.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The day of the concert is approaching, and Mihlali is getting more and more nervous. Will she ever be ready to dance in front of all those people?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Alison Ziki (Editor); Matona Fatman (Writer); Khuty Ngqayimbana (Designer); Aimee Ayres (Illustrator)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=dance-mihlali"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 94
+  }
+}

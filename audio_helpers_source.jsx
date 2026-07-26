@@ -2,6 +2,119 @@
 // handleDownloadAudio + handleCardAudioSequence extracted from
 // AlloFlowANTI.txt 2026-04-25 using the (args, deps) shim pattern.
 
+const _readAudioMarkdownSpan = (text, start, openChar, closeChar) => {
+    if (text[start] !== openChar) return null;
+    let depth = 0;
+    let escaped = false;
+    for (let i = start; i < text.length; i++) {
+        const ch = text[i];
+        if (escaped) {
+            escaped = false;
+            continue;
+        }
+        if (ch === '\\') {
+            escaped = true;
+            continue;
+        }
+        if (ch === openChar) depth++;
+        else if (ch === closeChar && --depth === 0) {
+            return { end: i + 1, content: text.slice(start + 1, i) };
+        }
+    }
+    return null;
+};
+
+const _replaceAudioMarkdownLinks = (value) => {
+    const text = String(value || '');
+    let output = '';
+    let cursor = 0;
+    while (cursor < text.length) {
+        const start = text.indexOf('[', cursor);
+        if (start < 0) {
+            output += text.slice(cursor);
+            break;
+        }
+        const label = _readAudioMarkdownSpan(text, start, '[', ']');
+        if (!label || text[label.end] !== '(') {
+            output += text.slice(cursor, start + 1);
+            cursor = start + 1;
+            continue;
+        }
+        const destination = _readAudioMarkdownSpan(text, label.end, '(', ')');
+        if (!destination) {
+            output += text.slice(cursor, start + 1);
+            cursor = start + 1;
+            continue;
+        }
+        output += text.slice(cursor, start);
+        // Citation labels carry no speakable content; ordinary Markdown links
+        // retain their human-readable label while their destination is silent.
+        if (!/^\u207d[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+\u207e$/.test(label.content)) output += label.content;
+        cursor = destination.end;
+    }
+    return output;
+};
+
+const _stripAudioReferenceTrailer = (value) => {
+    const text = String(value || '');
+    try {
+        const helpers = window.AlloModules && window.AlloModules.TextPipelineHelpers;
+        if (helpers && typeof helpers.splitReferencesFromBody === 'function') {
+            return String((helpers.splitReferencesFromBody(text) || {}).body || '');
+        }
+    } catch (_) {}
+
+    // Rolling-deployment fallback for an older text-pipeline module. Preserve
+    // a bilingual English block if a legacy document put references before it.
+    const header = /(?:^|\r?\n)[ \t]*#{1,6}[ \t]+(?:Source[ \t]+Text[ \t]+References|Accuracy[ \t]+Check[ \t]+References|Verified[ \t]+Sources|Referenced[ \t]+Sources|Sources|References|Bibliography|Works[ \t]+Cited|R\u00e9f\u00e9rences|Sources[ \t]+du[ \t]+texte|Referencias|Quellen)[ \t]*:?[ \t]*(?=\r?\n|$)/im.exec(text);
+    if (!header) return text;
+    const leadingHeaderBreak = /^(?:\r?\n)/.exec(header[0]);
+    const headerStart = header.index + (leadingHeaderBreak ? leadingHeaderBreak[0].length : 0);
+    const afterHeader = headerStart + header[0].replace(/^(?:\r?\n)/, '').length;
+    const remainder = text.slice(afterHeader);
+    const delimiter = /(?:^|\r?\n)[ \t]*---[ \t]+ENGLISH[ \t]+TRANSLATION[ \t]+---[ \t]*(?=\r?\n|$)/im.exec(remainder);
+    const before = text.slice(0, header.index).trim();
+    const leadingDelimiterBreak = delimiter && /^(?:\r?\n)/.exec(delimiter[0]);
+    const after = delimiter ? remainder.slice(delimiter.index + (leadingDelimiterBreak ? leadingDelimiterBreak[0].length : 0)).trim() : '';
+    return before && after ? before + '\n\n' + after : (before || after);
+};
+
+const prepareDownloadAudioText = (rawText) => {
+    let cleanText = _stripAudioReferenceTrailer(rawText);
+    cleanText = _replaceAudioMarkdownLinks(cleanText)
+        .replace(/\u207d[\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079]+\u207e/g, '')
+        .replace(/\*\*/g, '')
+        .replace(/\*/g, '')
+        .replace(/__|\_/g, '')
+        .replace(/^#+\s/gm, '')
+        .replace(/`/g, '')
+        .replace(/https?:\/\/[^\s<>"']+/g, 'link')
+        .replace(/[ \t]+([.,;:!?])/g, '$1')
+        .replace(/[ \t]{2,}/g, ' ')
+        .replace(/[ \t]+$/gm, '')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+    return cleanText;
+};
+
+const _normalizeRequiredTtsBytes = (result, segmentNumber) => {
+    const rawBytes = result && result.bytes;
+    let bytes = null;
+    if (rawBytes instanceof Uint8Array) {
+        bytes = rawBytes;
+    } else if (typeof ArrayBuffer !== 'undefined' && rawBytes instanceof ArrayBuffer) {
+        bytes = new Uint8Array(rawBytes);
+    } else if (typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView && ArrayBuffer.isView(rawBytes)) {
+        bytes = new Uint8Array(rawBytes.buffer, rawBytes.byteOffset, rawBytes.byteLength);
+    } else if (Array.isArray(rawBytes)) {
+        bytes = Uint8Array.from(rawBytes);
+    }
+    if (!bytes || bytes.byteLength === 0) {
+        throw new Error(`TTS returned no audio for segment ${segmentNumber}`);
+    }
+    return bytes;
+};
+
 const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
   const { AVAILABLE_VOICES, fetchTTSBytes, downloadingContentId, selectedVoice, textFormat, setDownloadingContentId, persistentVoiceMapRef, addToast, t, warnLog, pcmToMp3, pcmToWav } = deps;
   try { if (window._DEBUG_AUDIO_HELPERS) console.log("[AudioHelpers] handleDownloadAudio fired"); } catch(_) {}
@@ -9,14 +122,8 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
     setDownloadingContentId(contentId);
     addToast(t('common.audio_generating'), "info");
     try {
-        const cleanText = rawText
-            .replace(/\*\*/g, '')
-            .replace(/\*/g, '')
-            .replace(/__|\_/g, '')
-            .replace(/^#+\s/gm, '')
-            .replace(/`/g, '')
-            .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
-            .replace(/https?:\/\/[^\s]+/g, 'link');
+        const cleanText = prepareDownloadAudioText(rawText);
+        if (!cleanText) throw new Error('No speakable text remains after removing citations and references');
         const pcmChunks = [];
         const voicePool = AVAILABLE_VOICES.filter(v => v !== selectedVoice);
         if (!persistentVoiceMapRef.current) {
@@ -75,6 +182,15 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
                 segments.push({ speaker: "Narrator", text: cleanText });
             }
         }
+        if (!segments.some(segment => segment && String(segment.text || '').trim())) {
+            throw new Error('No speakable audio segments were created');
+        }
+        let requestedSegmentCount = 0;
+        const fetchRequiredPcm = async (text, voice) => {
+            requestedSegmentCount += 1;
+            const result = await fetchTTSBytes(text, voice);
+            return _normalizeRequiredTtsBytes(result, requestedSegmentCount);
+        };
         for (const segment of segments) {
             if (!segment.text.trim()) continue;
             let targetVoice = selectedVoice;
@@ -91,8 +207,7 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
                 let currentChunk = "";
                 for (const s of sentences) {
                     if ((currentChunk.length + s.length) > CHUNK_SIZE) {
-                        const result = await fetchTTSBytes(currentChunk.trim(), targetVoice);
-                        if (result && result.bytes) pcmChunks.push(result.bytes);
+                        pcmChunks.push(await fetchRequiredPcm(currentChunk.trim(), targetVoice));
                         currentChunk = s;
                         await new Promise(r => setTimeout(r, 100));
                     } else {
@@ -100,16 +215,17 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
                     }
                 }
                 if (currentChunk.trim()) {
-                    const result = await fetchTTSBytes(currentChunk.trim(), targetVoice);
-                    if (result && result.bytes) pcmChunks.push(result.bytes);
+                    pcmChunks.push(await fetchRequiredPcm(currentChunk.trim(), targetVoice));
                 }
             } else {
-                const result = await fetchTTSBytes(segment.text, targetVoice);
-                if (result && result.bytes) pcmChunks.push(result.bytes);
+                pcmChunks.push(await fetchRequiredPcm(segment.text, targetVoice));
                 await new Promise(r => setTimeout(r, 100));
             }
         }
         const totalLength = pcmChunks.reduce((acc, c) => acc + c.length, 0);
+        if (requestedSegmentCount === 0 || pcmChunks.length !== requestedSegmentCount || totalLength === 0) {
+            throw new Error('TTS did not return complete audio');
+        }
         const combinedPCM = new Uint8Array(totalLength);
         let offset = 0;
         for (const c of pcmChunks) {
@@ -121,17 +237,29 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
         if (window.lamejs) {
             try {
                 blob = pcmToMp3(combinedPCM);
+                if (!blob || !Number.isFinite(blob.size) || blob.size === 0) {
+                    throw new Error('MP3 encoder returned no audio');
+                }
                 extension = "mp3";
             } catch (e) {
                 warnLog("MP3 Encoding failed, falling back to WAV", e);
                 const wavBuffer = pcmToWav(combinedPCM);
+                if (!wavBuffer || Number(wavBuffer.byteLength || wavBuffer.length || 0) <= 44) {
+                    throw new Error('WAV encoder returned no audio');
+                }
                 blob = new Blob([wavBuffer], { type: 'audio/wav' });
                 extension = "wav";
             }
         } else {
             const wavBuffer = pcmToWav(combinedPCM);
+            if (!wavBuffer || Number(wavBuffer.byteLength || wavBuffer.length || 0) <= 44) {
+                throw new Error('WAV encoder returned no audio');
+            }
             blob = new Blob([wavBuffer], { type: 'audio/wav' });
             extension = "wav";
+        }
+        if (!blob || !Number.isFinite(blob.size) || blob.size === 0) {
+            throw new Error('Audio encoder returned an empty file');
         }
         const audioUrl = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -344,6 +472,7 @@ const pcmToMp3Async = async (pcmData, sampleRate = 24000, kbps = 128, options = 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.AudioHelpers = {
   handleDownloadAudio,
+  prepareDownloadAudioText,
   handleCardAudioSequence,
   pcmToWav,
   pcmToMp3,

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-72-international-business",
+  "title": "International Business",
+  "description": "International Business is one of the most challenging and exciting courses to teach in the Business School. To teach a current, dynamic and complete course you need a textbook by authors as passionate and informed about International Business as you are. Carpenter and Dunung's International Business: The Opportunities and Challenges of a Flat World provides exploration into building, leading, and thriving in global organizations in an increasingly flat world. The authors define ”Flat world“ as one where service industries that dwarf manufacturing industries in terms of scale and scope, an Internet that pervades life and work, and networks define modern businesses, whether service or manufacturing. Carpenter and Dunung's text is designed to speak to technologically-savvy students who see national borders as bridges and not barriers. The authors use the lexicon of international business, and additionally, develop students' knowledge of international contexts with the aim that they may launch, run, and work in any organization that is global in scope (or is wrestling with global competition or other global threats). The textbook is organized in 5 Sections: Section 1 introduces the global business course and concludes with a chapter on seizing global opportunities. Section 2 develops student knowledge about key facets of the global business environment, while Section 3 develops knowledge about how a student or organization can exploit opportunities in that global environment. Section 4 is devoted to entrepreneurship in a flat world — this section will explore why the entrepreneurial context is changing, provide lenses for identifying and capitalizing on entrepreneurial opportunities, and Section 5 shows how key organizational activities can be managed for global effectiveness. Every chapter has five enumerated learning objectives, each of these five sections concludes with a short summary (”Key Takeaways“) and five review questions. In addition, each chapter concludes with a mini case on a unique global business that encompasses the topics shown in the chapter. The authors even provide a set of end-of-chapter questions that are mapped to AACSB learning standards, so that you will be able to measure how well students are grasping course content that aligns with the AACSB guidelines. Request a desk copy of Carpenter and Dunung's International Business: The Opportunities and Challenges of a Flat World to experience its current and progressive look at International Business for yourself.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Management"
+  ],
+  "authors": [
+    "Mason A Carpenter - Author / Sanjyot P Dunung - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Saylor Foundation",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/international-business"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "International Business is one of the most challenging and exciting courses to teach in the Business School. To teach a current, dynamic and complete course you need a textbook by authors as passionate and informed about International Business as you are. Carpenter and Dunung's International Business: The Opportunities and Challenges of a Flat World provides exploration into building, leading, and thriving in global organizations in an increasingly flat world. The authors define ”Flat world“ as one where service industries that dwarf manufacturing industries in terms of scale and scope, an Internet that pervades life and work, and networks define modern businesses, whether service or manufacturing. Carpenter and Dunung's text is designed to speak to technologically-savvy students who see national borders as bridges and not barriers. The authors use the lexicon of international business, and additionally, develop students' knowledge of international contexts with the aim that they may launch, run, and work in any organization that is global in scope (or is wrestling with global competition or other global threats). The textbook is organized in 5 Sections: Section 1 introduces the global business course and concludes with a chapter on seizing global opportunities. Section 2 develops student knowledge about key facets of the global business environment, while Section 3 develops knowledge about how a student or organization can exploit opportunities in that global environment. Section 4 is devoted to entrepreneurship in a flat world — this section will explore why the entrepreneurial context is changing, provide lenses for identifying and capitalizing on entrepreneurial opportunities, and Section 5 shows how key organizational activities can be managed for global effectiveness. Every chapter has five enumerated learning objectives, each of these five sections concludes with a short summary (”Key Takeaways“) and five review questions. In addition, each chapter concludes with a mini case on a unique global business that encompasses the topics shown in the chapter. The authors even provide a set of end-of-chapter questions that are mapped to AACSB learning standards, so that you will be able to measure how well students are grasping course content that aligns with the AACSB guidelines. Request a desk copy of Carpenter and Dunung's International Business: The Opportunities and Challenges of a Flat World to experience its current and progressive look at International Business for yourself."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2011."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 402
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "72",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

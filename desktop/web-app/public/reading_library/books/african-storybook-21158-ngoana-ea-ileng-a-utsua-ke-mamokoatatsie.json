@@ -1,0 +1,209 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-21158-ngoana-ea-ileng-a-utsua-ke-mamokoatatsie",
+  "title": "Ngoana ea ileng a utsua ke mamokoatatsie",
+  "description": "Ngoana ea ileng a utsua ke mamokoatatsie.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "5",
+  "readingLevelLabel": "Read aloud",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "South African Folktale"
+  ],
+  "illustrators": [
+    "Emily Berg"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "South African Folktale",
+      "role": "Author"
+    },
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Adaptation"
+    },
+    {
+      "name": "Emily Berg",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "South African Folktale (Author); Khothatso Ranoosi, Marion Drew (Adaptation); Emily Berg (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "21158",
+    "bookType": "2",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-60a1c9798b8f93de",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/8485.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8479.png",
+      "text": "Khale khale hone hoena le lelapa leneng le lula pela letamo. Lelapa lena lene lena le bana ba bararo bao baneng ba bitsoa Thabo, Lerato le ngoana ea moshanyana eoo a neng a bitsoa Ts'epo. Joale hoseng hohong le hohong, batsoali bana bane ba tsohella mosebetsing masimong. Joale bana bana bane ba sala hae eba, Thabo le Lerato ba sala ba hlokomela ngoana ea monyane e leng Ts'epo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=1",
+      "sourceDigest": "sha256:26ef5b08e4261afcd9f36da5675f2ebca357bded6cd49430ec5fe7c537e391bc"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8482.png",
+      "text": "Thabo le Lerato bane ba rata hobapala kantle le bakhotsinyana ba bona. Ka nako engoe eaba baba le nako e monate haholo ea hobapala, ba lebala mosebetsi oa bona oa katlung, eaba ba bapala lipapali tsa bona. Bane ba bapala tse monate haholo hohao baneng ba lebala le ngoana ea monyane ea bitsoang Ts'epo. Ts'epo o ne alla, alla empa hose ea motsotella hoba bo Thabo le bo Lerato ba shebane le mosebetsi oa bona oa ho bapala.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=2",
+      "sourceDigest": "sha256:2de55ad94061c1db793e88e3cf0b8f92b12daf11b722d39ea58c587acc614aeb"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8154.png",
+      "text": "Ka tsatsi leleng eaba Thabo le Lerato ba tsoha hoseng haholo balo bapala. Ba tsamaea le Ts'epo ba monkile. Ba meha tlasa sefate meriting holima kobo e khubelu, ba 'meha mono eaba bona bailo bapala. Kamora nako eseng kae eaba Ts'epo o ea qala holla, eaba linonyana tsengata tse bitsoang bo 'Mamokoatatsie lia fihla lintse lifofa holima sefate seo Ts'epo a beuoeng tlasa sona. Eaba bautloa hore Ts'epo ontse alla empa baits'oabela.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=3",
+      "sourceDigest": "sha256:48491742870681e8a96367bb8a156d2578513f1df74c7faa8e7283bd31361e65"
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "Ba fumana pitso ea hore balo bapala le baleng la bolo. Tlohong, tlohong bana. Eaba habautloe hore Ts'epo ontse alla. Bo 'Mamokoatatsie ba holehetsa hape bare, tlohong, tlohong bana. Eaba Ts'epo ena ontse alla, o ne a batla eona thuso. Ka eona nako eoo, bautloa bo 'Mamokoatatsie bantse ba holehatsa, empa ba khutlala hona moo, bare rentse re shebane le mosebetsi oa rona. Bacho joalo hobo 'Mamokoatatsie. \"Ngoana enoa o ne a batla hoea motseng o mocha,\" ho rialo bo 'Mamokoatatsie ereng, \"Re monkeng retsebe ho moshebela motho eatla motsotella.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=4",
+      "sourceDigest": "sha256:d1d47fbed30613a6a9d8d3bb09b166fae9927f0332594682201802cb4b954904"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8156.png",
+      "text": "Eaba bo 'Mamokoatatsie bafofa hoea tlase hoea nka Ts'epo homotlosa mono. 'Mamokoatatsie e mong le e mong a ts'oara qhona ea kobo hore batsebe ho monka ba mophahamisetsa holimo hantle ka semate. Eaba ba fofa ka ena ba monketse holimo. Bana bana bane basa bone bo 'Mamokoatatsie haba fofa ka Ts'epo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=5",
+      "sourceDigest": "sha256:1e8b384e84a605931f0bfa66637a48818e9168647faa7132a9d637b3c9a1cc3a"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8485.png",
+      "text": "Eare ha bantse ba fofa joalo, eaba 'm'e oa Ts'epo o lula tlasa sefate. Hoba kannete hee hone ho chesa haholo masimong. Eaba o batla hore ake a phomole moriting hanyane tlasa sefate. Eare ha antse a lutse tlasa sefate meriting, eaba outloa lentsoe la Ts'epo lentse lella. 'M'e oa Ts'epo a qamaka hosheba hore na Ts'epo olla hokae, empa a se ke a mobona eaba o sheba holimo a bona bo 'Mamokoatatsie bantse ba fofa ka ngoana oa hae a thatetsoe ka kobo e khubelu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=6",
+      "sourceDigest": "sha256:9322b4c58034738f5c81e9113daa8392c1cf3077fc2b78801f816b8642d54116"
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "A holehetsa a entse lerata antse a omanya a leka ho matha ka mora linonyana tsena tseo linkileng ngoana oa hae Ts'epo, eaba lia mosia. Akhutlela morao masimong antse a matha hoea ho monna oa hae antse alla, \"Monna oaka, monna oaka, bo 'Mamokoatatsie bankile ngona oa rona e monyanen Ts'epo!\" \"Seke oasa oena. O nahana linonyana likanka ngoana? Hahona linonyana tsengkileng ngoana mona,\" ho rialo Ntate oa Ts'epo. O 'M'e ea hlanyang. Eaba o ea khutla hoea losebetsa mosebetsi oa hae oa masimong. Eaba linonyana tsena bo 'Mamokoatatsie tsona lintse li tsoela pela ka hofofa ka ngoana oa bona.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=7",
+      "sourceDigest": "sha256:e10772f483f1fda3980ba17698a6f749ac2f57aa846401460d751f8187db63e0"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8484.png",
+      "text": "Bo 'Mamokoatatsie ba pata T'sepo li pakaneng tsa lehlaka la ntlo. \"Hare shebeng moo reka lulang teng rele lelapa, moo retla tsebang hore ho ts'oara Ts'epo hantle, eaba bantse ba boisana ka Ts'epo hore na ba moetsa joang.\" Eaba Tsepo o ea thola ha salla o ea robala, eare hantse a khalehile joalo eaba bo 'Mamokoatatsie bafofa hoea sheba motho eo a ka shebanang le Ts'epo ea khonang hotsotella ngoana.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=8",
+      "sourceDigest": "sha256:dbe21972aaa769bf140104e656dbbf84f781a0d22c29e48226e71f12af9a7c7f"
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Hone hona le khotso e ngata mono habo 'Mamokoatatsie ebile thabo e le ngota haholo, hole monate mono lehlakeng. Ts'epo oile a khaleha nako e telehele. Eare ha atsoha a qalella holla hape, eaba o ea lapa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=9",
+      "sourceDigest": "sha256:264ed96e5531100d2d4770f5743984d7cdaef050b86f6a6abd3674bb405383d7"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8483.png",
+      "text": "Eare ha antse alla joalo, senkankana se seholoholo sa moutloa, sa atamela pela hae sentse se qhomaqhoma. Sa bona Ts'epo a thatesoe ka kobo e khobelu. \"Oh!\" ho rialo senkankana, \"Ke eng ntho ee? Kea tseba hore ke ngoana ea tsoang motseng o pela letamo leo ke lulang ho lona.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=10",
+      "sourceDigest": "sha256:6a78d8e5af681a2c28faee6ef06f522b2910543f89922902b6a40e6c806c82ab"
+    },
+    {
+      "n": 11,
+      "img": null,
+      "text": "Hone hosena moo baka mopatang teng senkakana sena sa ahlama haholo sa bula molomo oa sona eaba se hula Ts'epo salula kamora lefika le leholo, sa ema hore se bone hore na ho etsahala eng. Eaba bo 'Mamokoatatsie ba fofela tlase ka mora lehlakeng. \"Ngoana o kae?\" ba mosheba hohle empa base mofumane, eare habantse ba shebisisa ba bona senkakana se lutse ka mora lefika le leholo. Base bona eaba babotsa senkakana hore na haseso bone ngoana oa bona.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=11",
+      "sourceDigest": "sha256:f27b038ef2e32dd0b1bca9921af22c55c5a0950df19ff0493c63f233e7ac380b"
+    },
+    {
+      "n": 12,
+      "img": null,
+      "text": "Eaba senkakana se tsetsinya hlooho ea sona e kholo sebonts'a hore haseso mobone. Bo 'Mamokoatatsie ba joetsana hore senkakana sena retlameha ho etsa hore se tlohe mona, eaba baea tloha mono baea fofa. Senkakana sona sa qala ho qhomaqhoma se nkile ngoana e leng Ts'epo ho mokhutlisetsa motseng o pela letamo la sona moo Ts'epo a lulang teng. Senkakana sena sene se nkile Ts'epo ka molomo oa sona o moholo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=12",
+      "sourceDigest": "sha256:be62f4548026b2fa25d48ee96fe00952213ed363307bfb99506b02b5a5e53232"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8486.png",
+      "text": "Thabo le Lerato bane ba lutse kantle hontlo ea bona ea mokhoro. Balla bare, \"Ts'epo o kae? Ngoana oa rona o hokae ea motle abuti? E le hore rese re molahlile hofihleletse!\" Hang-hang senkankana se seholo sa fihla sentse se qhoma-qhoma hoea lemating le holimo, Lerato a qhomela kantle a ts'ohile. \"Oh, oh tloha mona oena phoofotsoana toe,\" horialo Lerato. Thabo eaba onka thupa a re, \"Olo otla senkankana seno ka eona.\" Senkankana sena sa ahlama, Ts'epo a khalehile ha monate ka lehanong la senkankana.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=13",
+      "sourceDigest": "sha256:ed0c948171749ff158b1baec7f399691638000a22256507700d69e066181e1a0"
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "\"Batsoali ba hao ba kae?\" horialo senkankana. \"Ba tsamaile hoealo sheba ngoana oa bona abuti. O ne a utsoitsoe tlasa sefate kebo 'Maokoatatsie,\" horialo Lerato. \"Ngoana oa lona o ts'irelelitsoe ke nna,\" horialo senkankana, \"Hale motsotelle ngoana enoa. Hobaneng ke motlisitse holona?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=14",
+      "sourceDigest": "sha256:62d95d480725b01ed1afa6ad27ef818fc0df162b14a63f5ec01e1ddb707fd96e"
+    },
+    {
+      "n": 15,
+      "img": null,
+      "text": "\"Rea kopa, rea kopa, refe ngoana oa rona.\" Bana bana ba kopa ngoana enoa ka matla bare, \"'M'e le Ntate ba rona balo retebela haeba resa fihle le ngoana resa mofumana.\" \"O sia ngoan'eno lemong a lule alla mehlaena. Hobaneng nka khutlisa ngoana eoo hape ho lona?\" horialo senkankana. \"Oh, rea o kopa!\" balla bale ba beli Thabo le Lerato, bare kannete ha resatla mosia a lemong rea o ts'episa.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=15",
+      "sourceDigest": "sha256:a930d95827b38b3b801720d58f61d75fe5010d3ed20d09b427c0240b20448b0e"
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "\"Lets'oanela honts'episa hore letla lula le ntlisetsa lits'intsi tse noneng tsatsi leleng leleng kale tamong laka,\" horialo senkankana. Joale ketla lefa ngoana oa lona. Empa ketla lula ke leshebile, haeba lesa tsotelle Ts'epo ketlatla ketlo nka Ts'epo ho lona hape. \"Oh, oh reao ts'episa,\" horialo Thabo le Lerato. \"Re kopa o refe Ts'epo pele batsoali ba rona ba khutla hotsoa masimong.\" Ba matha ka pele hoeatla le lits'ints'i tse nonneng hotlafa senkankana.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=16",
+      "sourceDigest": "sha256:6a86fe10c74c976cc2ebc77b9d2d41b5559ff93b3c90846cb9d0cf2113c026b1"
+    },
+    {
+      "n": 17,
+      "img": null,
+      "text": "Senkankana sa bula molomo oa sona eaba Thabo le Lerato bantsa Ts'epo antse a khalehile, bare, 'ho senkankana rea leboha, rea leboha.' Eaba baea monka ba mokenya ka hare hontlo. Eare ha batsoali ba bona ba khutla hotsoa mosebetsing masimong batla bantse ba tants'a ba thabile ka hore Ts'epo o teng. Hotloha ka lona letsatsi leo eaba Thabo le Lerato balula baisetsa senkankana lits'ints'itse nonneng letsatsi leleng le leleng holi isa letamong ha senkankana seo. Eaba habasa sia Ts'epo ale mong. Ke pheletso ea pale ea rona.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=21158#page=17",
+      "sourceDigest": "sha256:020d566a5917d8c42875a8f8b8fdf55669ab2e96237f89fe3ce20474cf3be053"
+    }
+  ],
+  "stats": {
+    "pages": 17,
+    "words": 1207
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:95c4afb9214a335e6c9150211fcb056b937a756d344fee404dd7f0b49a3a932b"
+  }
+}

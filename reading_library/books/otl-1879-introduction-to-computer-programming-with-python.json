@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1879-introduction-to-computer-programming-with-python",
+  "title": "Introduction to Computer Programming with Python",
+  "description": "This introduction to computer programming with Python begins with some of the basics of computing and programming before diving into the fundamental elements and building blocks of computer programs in Python language. From the installation of Python, Python interactive programming, and integrated development environments to raising and handling exceptions, using compound data types to solve problems, and implement divide-and-conquer processes using functions, classes and modules, this textbook will set students up for success in programming and computing study and practice. The included exercises and projects are designed to hone students’ skills.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science - Programming Languages"
+  ],
+  "authors": [
+    "Harris Wang - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Athabasca University Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-computer-programming-with-python"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This introduction to computer programming with Python begins with some of the basics of computing and programming before diving into the fundamental elements and building blocks of computer programs in Python language. From the installation of Python, Python interactive programming, and integrated development environments to raising and handling exceptions, using compound data types to solve problems, and implement divide-and-conquer processes using functions, classes and modules, this textbook will set students up for success in programming and computing study and practice. The included exercises and projects are designed to hone students’ skills."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 114
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1879",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

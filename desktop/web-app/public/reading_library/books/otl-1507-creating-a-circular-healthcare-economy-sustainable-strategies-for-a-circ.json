@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1507-creating-a-circular-healthcare-economy-sustainable-strategies-for-a-circ",
+  "title": "Creating a circular healthcare economy: Sustainable strategies for a circular healthcare",
+  "description": "Our world is the only planet, as far as we know, which harbors life. The number of humans on our planet has grown tremendously in recent centuries. In 1800 one billion humans occupied our earth; on 15 November 2022, this number reached 8 billion. A result of this growth, the emissions of carbon dioxide (CO2), the primary greenhouse gas emitted by human activities, drastically increased. The increased concentrations of greenhouse gases in our atmosphere foster the long-term increase of our earth’s temperatures, also referred to as global warming. While the earth’s population grew, so did our mass consumption society. After the Second World War humanity witnessed gigantic global economic development with great technological improvements. Computers, laptops, airplanes, tablets and Internet of Things connected humans all over the world. The hunger for plastics and steel grew as all products had to be manufactured in ever-increasing volumes. As the economy developed, our consumption grew apace. The healthcare sector has seen the same increase of consumption. The number of patients grew, and so did the number of single-use medical products. As products become more complex and more different materials were combined., recycling became more difficult. Thus, hospitals transformed into waste factories with ever-growing waste streams. The consumption of (disposable) medical devices takes up scarce raw materials and contributes to the growing CO2 emissions. In this book, Van Straten, Alvino and Horeman present their findings on how to create a sustainable healthcare economy by introducing different circular strategies. In 9 chapters, they present a wide variation of studies as practical cases to show what strategies and actions can be taken in order to implement sustainable strategies for a circular healthcare. This book was written in line with the courses the authors developed at TU Extension School, the open online education edX platform of Delft University of Technology/TU Delft, a leading university in science and technology, recognized for its world-class research. This book is a manual for everyone who follows the online course ‘Circular strategies for a sustainable healthcare’, but certainly also for everyone who wants to discover more about circular strategies and wants to understand the principles and practices of circular economy and urban mining. This book is suitable for students, researchers, policymakers and practitioners in the fields of healthcare sustainability, management, business and economics.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business",
+    "Engineering & Technology"
+  ],
+  "authors": [
+    "Bart van Straten - Author / Letizia Alvino - Author / Tim Horeman - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "TU Delft Open",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/creating-a-circular-healthcare-economy-sustainable-strategies-for-a-circular-healthcare"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Our world is the only planet, as far as we know, which harbors life. The number of humans on our planet has grown tremendously in recent centuries. In 1800 one billion humans occupied our earth; on 15 November 2022, this number reached 8 billion. A result of this growth, the emissions of carbon dioxide (CO2), the primary greenhouse gas emitted by human activities, drastically increased. The increased concentrations of greenhouse gases in our atmosphere foster the long-term increase of our earth’s temperatures, also referred to as global warming. While the earth’s population grew, so did our mass consumption society. After the Second World War humanity witnessed gigantic global economic development with great technological improvements. Computers, laptops, airplanes, tablets and Internet of Things connected humans all over the world. The hunger for plastics and steel grew as all products had to be manufactured in ever-increasing volumes. As the economy developed, our consumption grew apace. The healthcare sector has seen the same increase of consumption. The number of patients grew, and so did the number of single-use medical products. As products become more complex and more different materials were combined., recycling became more difficult. Thus, hospitals transformed into waste factories with ever-growing waste streams. The consumption of (disposable) medical devices takes up scarce raw materials and contributes to the growing CO2 emissions. In this book, Van Straten, Alvino and Horeman present their findings on how to create a sustainable healthcare economy by introducing different circular strategies. In 9 chapters, they present a wide variation of studies as practical cases to show what strategies and actions can be taken in order to implement sustainable strategies for a circular healthcare. This book was written in line with the courses the authors developed at TU Extension School, the open online education edX platform of Delft University of Technology/TU Delft, a leading university in science and technology, recognized for its world-class research. This book is a manual for everyone who follows the online course ‘Circular strategies for a sustainable healthcare’, but certainly also for everyone who wants to discover more about circular strategies and wants to understand the principles and practices of circular economy and urban mining. This book is suitable for students, researchers, policymakers and practitioners in the fields of healthcare sustainability, management, business and economics."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 404
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1507",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

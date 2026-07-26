@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52382-waa-meeqa",
+  "title": "Waa meeqa?",
+  "description": "Tiri meeqa cayayaan, xayawaan, iyo shimbiro ayaad ku aragtaa sawir kasta.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Clare Verbeek, Thembani Dladla, Zanele Buthelezi"
+  ],
+  "illustrators": [
+    "Sandra McDougall"
+  ],
+  "translators": [
+    "Abdullahi Mohamed"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi",
+      "role": "Author"
+    },
+    {
+      "name": "Abdullahi Mohamed",
+      "role": "Translation"
+    },
+    {
+      "name": "Sandra McDougall",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY-NC 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/3.0/",
+  "attribution": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi (Author); Abdullahi Mohamed (Translation); Sandra McDougall (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52382",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52382",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://cae.ukzn.ac.za/resources/seedbooks.aspx",
+    "editionId": "52382",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution. This edition is restricted to noncommercial use."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY-NC 3.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-dc1521a2f35bc9b2",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/1786.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1600.png",
+      "text": "Meeqa lugood ayey laba xaarwalwaal leeyihiin?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52382#page=1",
+      "sourceDigest": "sha256:8e33fbea2fffab1b3d7541aaddef1ee6a9dc90372eb09ed34027b01e691fc38f"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1599.png",
+      "text": "Meeqa baal ayey afar shimbirood leeyihiin?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52382#page=2",
+      "sourceDigest": "sha256:bc43ede9b708cbde4dd245d2a461a78d80d97b2a6ef7c636c0c6d9c71ad2f43a"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1601.png",
+      "text": "Meeqa gees ayey saddex wiyiilood leeyihiin?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52382#page=3",
+      "sourceDigest": "sha256:1e14fdaffe802a51a223b42dd7e2121ad91383ba5f3aa65fc86bd88c92ec00f1"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1602.png",
+      "text": "Meeqa gacanayey shan maroodi leeyihiin?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52382#page=4",
+      "sourceDigest": "sha256:a2ee820e59252b076e970ce1ba62854fcad8c996e899a5ffb9dc0c8036352e8b"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1603.png",
+      "text": "Meeqa dhegood ayey todoba ey leeyihiin?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52382#page=5",
+      "sourceDigest": "sha256:31357c88dce764ab35704dea67355b8272360c6661fdbd42de2cd04604884fde"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1604.png",
+      "text": "Meeqa dabo ayey saddex daayeer leeyihiin?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52382#page=6",
+      "sourceDigest": "sha256:55001007cfb844d54d70f7dcada16965cdc72e26b25d7a88e60875c1132e179f"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1605.png",
+      "text": "Meeqa indhood ayey lix bisadood leeyihiin?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52382#page=7",
+      "sourceDigest": "sha256:a8a5ed1707ec4bde0daff3d0a22567899ab7e38c95827acb6a432a1352b6ed32"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1606.png",
+      "text": "Meeqa lugood ayaa hal dirxi leeyahay ?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52382#page=8",
+      "sourceDigest": "sha256:be8c11c4e4fc11d7531a6004f44b54c4a4b7ab80a0cbfa798fbe978183369980"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 48
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:ea4936aa4c90d63a27562d36b018e3168e6bfa7d6248c8e2e89aaaecce6e3f4d"
+  }
+}

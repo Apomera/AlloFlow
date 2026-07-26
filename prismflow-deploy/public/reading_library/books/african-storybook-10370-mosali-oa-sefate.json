@@ -1,0 +1,190 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-10370-mosali-oa-sefate",
+  "title": "Mosali Oa Sefate",
+  "description": "Monna ea tsofetseng oa morui o na le nntho e ngoe le engoe eo a e batlang kantle ho mofumahali. O iketsetsa mofumahali ka ho rema sefate. Banna ba motseng o momg ba fihla ebe ba mo nkela mofumahali oa hae hobane a le motle. O utloa bohloko haholo ebe o leka kahohle ho mo fumana hape.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Southern African Folktale"
+  ],
+  "illustrators": [
+    "Jemma Kahn"
+  ],
+  "translators": [
+    "Khothatso Ranoosi, Marion Drew"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Southern African Folktale",
+      "role": "Author"
+    },
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Translation"
+    },
+    {
+      "name": "Jemma Kahn",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Southern African Folktale (Author); Khothatso Ranoosi, Marion Drew (Translation); Jemma Kahn (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://www.youtube.com/watch?v=li8tkliflms",
+    "editionId": "10370",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-b122abd9aa341580",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/2580.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2584.png",
+      "text": "Khale khale hone ho ena le monna e mong ea neng a na le lintho tsengata – o ne ana le sebaka se lekaneng bakeng sa hoba sehoai. Ana le likhomo, linku le lipoli. Empa itse ha antse, o ile a koata, hobane ntho engoe ile ea hana hohlaha. O ne a sena mosali.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=1",
+      "sourceDigest": "sha256:1156db30502a17a11dc4c488cd95bcb66b528cd56bb10b0f6de4017bdd68d5d7"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2585.png",
+      "text": "Ka tsatsi leleng o ne eme tlasa sefate, o ile a ba le menahano e mette. Ha eba ane asa fumana mosali, mohlomong one aka etsa mosali e mong.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=2",
+      "sourceDigest": "sha256:8e7f7d12309908d0b9889f2ce10e4ecee466486760bf66398dcc6a2d7fe0fc5a"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2583.png",
+      "text": "Joale oile a qala ho etsa mosali e mong a motle, ka leqala la sefate le teileng. Eitse ha qeta ho etsang mosali, oile a motsoara mahlong, abelia. Ha a qeta a mobutsoela ka moya oa hae hantle, oile a phela.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=3",
+      "sourceDigest": "sha256:67aaa52d4fa67aaa5880f56303ed2846fe3170255c871462cdfc9df73419bd4d"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2586.png",
+      "text": "Ene ele mosali oa nnete oa motle eo aso mobone. Oile a khomama ka pela hae, a mo kopa hore e be mosali oa hae.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=4",
+      "sourceDigest": "sha256:ae4f0dc355ecbb0ddaf8d68f24bea534d26ac86f61349ea04a079b9e258e8f32"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2587.png",
+      "text": "Amofa thithana emebalabala, lifaha le se khabiso sa hloohong, lintho tseo ene ele tsona pontse ea hore tseo lipakang kapa hore o se anyetsoe hape anka seretse le joang tseo lileng pela kutu ea sefat, eaba o haha ntlo. Monna enoa a re, \"Ke kopa hore a ntsepise ntho e lengoe fela.\" O se ke be oa joetsa motho ofe kapa ofe hore na o tsoa kae.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=5",
+      "sourceDigest": "sha256:cda663bf5384bf6508c1a4e4c6277ce2de529d4d80bd2efede44e5106b836d7c"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2588.png",
+      "text": "Empa pele homong, monna e mong ea monyane ea tsoang motseng o mong eoo aneng e le mohaisane, oile a qoka le bona. \"Fela hotlile joang o le moholo hakale hore o ka fumana mosali ea monyane ea motle hokale?\" Ba ile bakheta ho moutsoa ho moisa ma ha bona.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=6",
+      "sourceDigest": "sha256:af5f78311b1e49c709bae5579a8197e478aed25e2a6fa46cdae9ed3d291f5c00"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2589.png",
+      "text": "Monna eo ea moholo eaneng a entse mosali eoo, oile a utloa bohloko. O ne a sa utloe hore na a ka phela joang kantle ho ena. Empa oile a nahana hore, \"Mohlomong ha a ka ba le hohong hotsoang ho ena ke ne ke sena ho koata?\" Joale eo ea ba o roma maeba a hae hoea mobatla, li mobinele ebe litla le hohong hotsoang ho ena.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=7",
+      "sourceDigest": "sha256:d29c3cf1a197b7658d1f928fe1bb4887ee9d9fa0aba68ae6da1962212bad14d5"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2590.png",
+      "text": "Eitse ha linonyana tsena li mofumana tsa mobinela mmino oa linonyana ka puo ea tsona tsare: Mosali oa sefate Mosali oa sefate O motle haholo ho feta basali babang Monna oa hao ore romelle tse ho oena hotlo lata thithana ea hao.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=8",
+      "sourceDigest": "sha256:0d00a206995af8052b96b7df6172d977acbc6ad296d33362849644865be17ae1"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2591.png",
+      "text": "Oile a fa linonyana tseo thithana eeno, tsa fofa ka eona hoea maraleng, tsa tšela noka ho khutlela ho monna oa hae. Eitse ha li fihla tsa fa monna eeno thithana a e beha sefubeng sa hae a utloa a khotsofala.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=9",
+      "sourceDigest": "sha256:e683cc0c8ee3ae30f9dd0bd4d8b3db6b952aa511a9206bfed71ce0a573137f8d"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2592.png",
+      "text": "Empa holima hontse hole joalo o ne antse a batla mosali oa hae. Monna enoa a boela a romela maeba a na a hae hoea mobinela hape. Mosali oa sefate Mosali oa sefate O motle haholo ho feta tsohle Monna oa hao oile a re romella hore re khutle le sekhabiso sa hloohong sa hao. Linonyana tsa khutla lifofa linkile se khabiso sa hloohong, hoea ho monna eeno.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=10",
+      "sourceDigest": "sha256:7041277a2160622199e440b74710379abe2ca41b81d31d5a6498edbd6b000730"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2581.png",
+      "text": "Oile anka se khabiso sena sa hlooho. Empa o ne antse a batla mosali oa hae. A bitsa maeba a hae hape. A roma hape are tsamaeang le ee mono. Ha lefihla le mobinele: Mosali oa sefate Mosali oa sefate O motle haholo ho feta tsohle Monna oa hao oile a re romella hotla o lata.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=11",
+      "sourceDigest": "sha256:67daf5d03ee0588a2e20b4724c851da1f81769c66cf0cfddaabead1cb82534c1"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2582.png",
+      "text": "Linonyana tsena liile tsa khutlela hoena khetlo la boraro. Eitse ha lifihla tsa lula holima mahetle a hae. Tsa bina nonyana, engoe le engoe ea tsomula leihlo la hae. Hang hang a fetoha sefate. Matsoho le maoto a hae tsa oela fatše lehloho ea hae ea oa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=12",
+      "sourceDigest": "sha256:76d119ab8607fff634ccd27d183ff0c3e3d51ea38dcd1239325eff8d41f86938"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2593.png",
+      "text": "Monna oa hae ea mopitikisa ho moisa nokeng. A moemisa ka methapo ka hara noka. Eba o mela makhasi eaba sefate hape.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=13",
+      "sourceDigest": "sha256:bf68e616999d8a404ebaf6fdc76e3099184e0bf338c76f36b30dae48cb028ac9"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2580.png",
+      "text": "Ha moea o ba teng, makhasi aoo ane alla joalo ka mosali ea batlang monna oa hae.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10370#page=14",
+      "sourceDigest": "sha256:284b23b0fbd5e01a891ef4f6cfaf8a831ad960c5bffbef726c2887d848999a3c"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 627
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:1f3a891982292565fd2a5bc28080c4ed1451f8c893c41c1945504a78fb48ed7a"
+  }
+}

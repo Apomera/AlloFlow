@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-21103-untitled-ti",
+  "title": "ሕንጉጉ ሕማቓት እዮሞ",
+  "description": "ሓደ እዋን ድርቂ ነበረ። ኣቦይ ሃፍቱ ምስ ቤተሰቦም ምግቢ ይደልዩ ነበሩ። ሓደ ልሙዕ ደን ይረኽቡ እሞ እቲ በዓልዋና ክበልዑ ፈቐደሎም።እቲ ምግቢ ንኽበልዑ ግን ዓቢይ ፈተና ክሓልፉ ኣለዎም።",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Fabian Wakholi"
+  ],
+  "illustrators": [
+    "Natalie Propa"
+  ],
+  "translators": [
+    "Angesom Abadi"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Fabian Wakholi",
+      "role": "Author"
+    },
+    {
+      "name": "Angesom Abadi",
+      "role": "Translation"
+    },
+    {
+      "name": "Natalie Propa",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Fabian Wakholi (Author); Angesom Abadi (Translation); Natalie Propa (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "21103",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-b4a3ef5c5d7959e0",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/8114.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8111.png",
+      "text": "ድርቂ ነይሩ። ስድራ እንዳ ኣቦይ ሃፍቱ ምንም ምግቢ ኣይነበሮምን።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103#page=1",
+      "sourceDigest": "sha256:3c3df0e2430969ce86c5fc266018f2380ce29cf385a852b5f51a38d5d4ec3886"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8112.png",
+      "text": "ሓደ መዓልቲ ምግቢ ኣለሻ ኣቦይ ሃፍቱ ንበረኻ ሒዘሞም ከዱ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103#page=2",
+      "sourceDigest": "sha256:a5caa222034c7397188bedbb7253cde4e17d3eeabb5c5756f2d288ebad5f7a82"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8113.png",
+      "text": "ብዓል ዋና ዘይብሉ ተኽልታት በናና ረኸቡ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103#page=3",
+      "sourceDigest": "sha256:aa35940bc9725960fee71a228e98c878a08af8760fa567de53dfc470508a59a1"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8114.png",
+      "text": "ሃንደበት ሓደ ዓቢይ ሕንጉጉ መፀ። ኣብቲ ጫካ ክፀንሑ ኣዘዞም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103#page=4",
+      "sourceDigest": "sha256:65e3b0b8474f130878ea72b7c2ab150fda6959db151d2b16c3e1d8c32f2bcc46"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8115.png",
+      "text": "ሓደ መዓልቲ “ወድኹም ኣብሲልኩም ኣቕርቡለይ” በሎም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103#page=5",
+      "sourceDigest": "sha256:63527be864c141f48770dad82e922240dbacd1b2b18a9e28464f564d66c836d8"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8116.png",
+      "text": "ምሸት ድማ እቲ ሕንጉጉ “ፅባሕ ድማ ጓልኩም ኣብሲልኩም ሃቡኒ” በሎም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103#page=6",
+      "sourceDigest": "sha256:c1743f318de8da7d293fae57003549e06343872a7d557270f6f94b97fef038a8"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8117.png",
+      "text": "እቶም ቤተሰብ ጓሎም ኣብ ኦም ሓቢኦማ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103#page=7",
+      "sourceDigest": "sha256:cb8eb0505f979e25aeeb28c2c3383e0a338b06dd0d8e6601b629108534fdddb9"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8118.png",
+      "text": "እቲ ሕንጉጉ “ፅባሕ ናይ ግድን ሰብኣይኪ ኣብሲልኪ ኣቕርብለይ” በላ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103#page=8",
+      "sourceDigest": "sha256:cd20356cf5792e990a8d1e0675604f9d6a74068206f592465bafd5b05ad40de0"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8119.png",
+      "text": "ሓደ ምሸት ፣ እቲ ሕንጉጉ ነታ ሰበይቲ ፣ በሊ ንባዕልኺ ብሰሊ በላ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103#page=9",
+      "sourceDigest": "sha256:e8636826c265ee967809a80542c2bbf741ed0d001dadce926a3a9bc4a152d3a1"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8120.png",
+      "text": "ሕንጉጉ ምስ ፀገበ፣ ኣብ ትሕቲ ኦም ደቂሱ ምሕርናኽ ጀመረ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103#page=10",
+      "sourceDigest": "sha256:0624c145216f780dd3de49f40d66523d4d98f7c2d96829c52540924e73b7a913"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8121.png",
+      "text": "እቲ ሕንጉጉ ኩሎም ብሂወት ምህላዎም ምስ ፈለጠ ብጣዕሚ ሓረቐ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103#page=11",
+      "sourceDigest": "sha256:9ea96683727bb8acaa707f9cd8f98624ee8702eb920c9262de5ed7699e3eebcc"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8122.png",
+      "text": "ኣዐሽየሞ ድማ ኩሎም ካብ ተሓብኡሉ ኦም ወረዱ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21103#page=12",
+      "sourceDigest": "sha256:3b25b20f352dc5bc6d22d81b379c75b38c1007d469b0c905438b6f0c2692392a"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 101
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:428caa548c9a156563340785d0731c2d2de539fa53e28cfaa8109bcfab4e01e7"
+  }
+}

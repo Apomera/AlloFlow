@@ -76,6 +76,26 @@ function _alloTaggedPdfDeliveryVerdict(result) {
     const byteFails = (validator.checks || []).filter((c) => c && c.status === "fail").map((c) => c.rule || c.label).filter(Boolean);
     return { ok: false, code: "validator-failed", reason: byteFails.join("; ") || "byte-level exported-PDF validation did not pass" };
   }
+  const layer = result && result.ocrTextLayer;
+  if (layer) {
+    const coverage = Number(layer.coveragePct);
+    const droppedChars = Number(layer.droppedChars);
+    const pagesWithText = Number(layer.pagesWithText);
+    const pagesCovered = Number(layer.pagesCovered);
+    const pagesIncomplete = Number(layer.pagesIncomplete);
+    const pagesEmpty = Number(layer.pagesEmpty);
+    const scanned = layer.scanned === true || Number.isFinite(pagesWithText) && pagesWithText > 0 || Number.isFinite(pagesEmpty) && pagesEmpty > 0 || Number.isFinite(droppedChars) && droppedChars > 0;
+    if (scanned) {
+      const reasons = [];
+      if (layer.nonLatinDropped === true || Number.isFinite(droppedChars) && droppedChars > 0) reasons.push((Number.isFinite(droppedChars) ? droppedChars : "some") + " OCR character(s) could not be embedded");
+      if (Number.isFinite(coverage) && coverage < 100) reasons.push("OCR character coverage was " + coverage + "%");
+      if (!Number.isFinite(pagesWithText) || pagesWithText < 1) reasons.push("no scanned page produced a usable OCR text layer");
+      if (Number.isFinite(pagesIncomplete) && pagesIncomplete > 0) reasons.push(pagesIncomplete + " page(s) had incomplete OCR text");
+      if (Number.isFinite(pagesEmpty) && pagesEmpty > 0) reasons.push(pagesEmpty + " page(s) had no OCR text");
+      if (Number.isFinite(pagesWithText) && Number.isFinite(pagesCovered) && pagesCovered !== pagesWithText) reasons.push(pagesCovered + " of " + pagesWithText + " text page(s) received a searchable layer");
+      if (reasons.length) return { ok: false, code: "ocr-text-layer-incomplete", reason: reasons.join("; ") };
+    }
+  }
   return { ok: true, code: "verified", reason: "" };
 }
 function _alloExecutableActiveContentFindings(result) {
@@ -258,7 +278,7 @@ async function _latexToOmml(latex) {
           });
         }
         const _dynImport = new Function("u", "return import(u)");
-        const mod = await _dynImport("https://cdn.jsdelivr.net/npm/mathml2omml/+esm");
+        const mod = await _dynImport("https://cdn.jsdelivr.net/npm/mathml2omml@0.5.0/+esm");
         const mml2omml = mod.mml2omml || mod.default && mod.default.mml2omml || mod.default;
         if (typeof mml2omml !== "function") throw new Error("mathml2omml export shape unexpected");
         return { mml2omml };
@@ -313,6 +333,19 @@ function _viewSanitizeMarkupForExport(html, pipeline) {
   const clean = helper(String(html == null ? "" : html));
   if (typeof clean !== "string" || !clean.trim()) throw new Error("The markup could not be sanitized safely.");
   return clean;
+}
+function _viewSafeCssColor(value, fallback, allowGradient) {
+  const raw = String(value == null ? "" : value).trim();
+  const blocked = /(?:@import|url\s*\(|image-set\s*\(|src\s*:|expression\s*\(|behavior\s*:|javascript\s*:|vbscript\s*:)/i;
+  if (!raw || blocked.test(raw) || /[{};]/.test(raw)) return fallback;
+  if (/^#[0-9a-f]{3,8}$/i.test(raw) || /^(?:rgb|hsl)a?\([\d\s.,%+\-/]+\)$/i.test(raw)) return raw;
+  if (allowGradient && /^linear-gradient\(\s*(?:to\s+(?:top|bottom|left|right)(?:\s+(?:top|bottom|left|right))?|[-+]?\d+(?:\.\d+)?(?:deg|grad|rad|turn))\s*,\s*(?:#[0-9a-f]{3,8}|(?:rgb|hsl)a?\([\d\s.,%+\-/]+\))(?:\s+\d+(?:\.\d+)?%)?(?:\s*,\s*(?:#[0-9a-f]{3,8}|(?:rgb|hsl)a?\([\d\s.,%+\-/]+\))(?:\s+\d+(?:\.\d+)?%)?)+\s*\)$/i.test(raw)) return raw;
+  return fallback;
+}
+function _viewSafeCssFontFamily(value, fallback) {
+  const raw = String(value == null ? "" : value).trim();
+  if (!raw || /(?:@import|url\s*\(|image-set\s*\(|src\s*:|expression\s*\(|behavior\s*:|javascript\s*:|vbscript\s*:)/i.test(raw) || /[{};]/.test(raw)) return fallback;
+  return /^(?:[A-Za-z][A-Za-z0-9 -]*|"[A-Za-z][A-Za-z0-9 -]*"|'[A-Za-z][A-Za-z0-9 -]*')(?:\s*,\s*(?:[A-Za-z][A-Za-z0-9 -]*|"[A-Za-z][A-Za-z0-9 -]*"|'[A-Za-z][A-Za-z0-9 -]*'))*$/.test(raw) ? raw : fallback;
 }
 function _viewAuditCanStartRemediation(audit) {
   return !!(audit && audit.score !== -1);
@@ -430,7 +463,13 @@ function _viewEnforceVerificationHtmlBinding(result, reason, pipeline) {
   const coverage = oldCoverage ? { ...oldCoverage, pdfUaSelfCheck: "not-run" } : oldCoverage;
   const next = {
     ...value,
-    verificationState: value.verificationState === "complete" ? "partial" : value.verificationState || "unavailable",
+    verificationState: /^(?:complete|complete-for-tested-scope)$/.test(value.verificationState || "") ? "partial" : value.verificationState || "unavailable",
+    executionState: value.executionState === "complete" ? "partial" : value.executionState || "unavailable",
+    outcomeState: "unknown",
+    testedScopeComplete: false,
+    engineExecutionComplete: false,
+    fullyVerifiedSuccess: false,
+    success: false,
     afterScoreVerified: false,
     requiresManualReview: true,
     verificationReasons: reasons,
@@ -680,7 +719,25 @@ function _viewDeriveVerificationState(input, pipeline) {
   } catch (_) {
   }
   const coverage = { standard: "WCAG 2.2 AA", ai: "unavailable", axe: "unavailable", equalAccess: "unavailable", pdfUaSelfCheck: "not-run" };
-  return { verificationCoverage: coverage, coverage, verificationState: "unavailable", afterScoreVerified: false, requiresManualReview: true, reviewCount: 1, reasons: ["verification-policy-module-unavailable"] };
+  return {
+    verificationCoverage: coverage,
+    coverage,
+    verificationState: "unavailable",
+    executionState: "unavailable",
+    outcomeState: "unknown",
+    verificationScope: "full-output",
+    testedScopeComplete: false,
+    engineExecutionComplete: false,
+    fullyVerifiedSuccess: false,
+    success: false,
+    afterScoreVerified: false,
+    requiresManualReview: true,
+    reviewCount: 1,
+    knownFindingCount: 0,
+    knownFindings: { aiIssues: null, axeViolations: null, equalAccessFailures: null, total: 0 },
+    scoreEvidence: { ai: null, axe: null, equalAccess: null },
+    reasons: ["verification-policy-module-unavailable"]
+  };
 }
 function _viewVerificationForExport(result, pipeline) {
   const value = result || {};
@@ -691,17 +748,30 @@ function _viewVerificationForExport(result, pipeline) {
     equalAccess: value.secondEngineAudit || null,
     pdfUaSelfCheck: value.verificationCoverage && value.verificationCoverage.pdfUaSelfCheck,
     languageReviewRequired: !!value.languageReviewRequired,
-    extraReasons: value.verificationExtraReasons || []
+    extraReasons: value.verificationExtraReasons || [],
+    verificationScope: value.verificationScope || void 0,
+    staticSourceScope: value.verificationScope === "static-source"
   }, pipeline);
   const binding = _viewValidVerificationHtmlBinding(value.verificationHtmlBinding) ? value.verificationHtmlBinding : null;
-  const stored = !!(value.verificationCoverage && /^WCAG 2\.\d+ AA$/.test(String(value.verificationCoverage.standard || "")) && /^(complete|review-required|partial|unavailable)$/.test(value.verificationState || ""));
+  const stored = !!(value.verificationCoverage && /^WCAG 2\.\d+ AA$/.test(String(value.verificationCoverage.standard || "")) && /^(complete|complete-for-tested-scope|review-required|partial|unavailable)$/.test(value.verificationState || ""));
   const liveBound = _viewIsLiveVerificationHtmlBound(value, value.accessibleHtml, pipeline);
-  if (stored && liveBound) return { ...derived, verificationHtmlBinding: binding };
+  if (stored && liveBound) {
+    if (value.verificationState === "complete-for-tested-scope" && derived.verificationState === "complete") {
+      return { ...derived, verificationState: "complete-for-tested-scope", verificationScope: "static-source", testedScopeComplete: true, fullyVerifiedSuccess: false, success: false, afterScoreVerified: false, requiresManualReview: true, verificationHtmlBinding: binding };
+    }
+    return { ...derived, verificationHtmlBinding: binding };
+  }
   const why = stored ? "verification-html-binding-missing-or-stale" : "This saved result predates canonical verification coverage and is unverified.";
   const reasons = Array.from(new Set([why].concat(derived.reasons || [])));
   return {
     ...derived,
-    verificationState: derived.verificationState === "complete" ? "partial" : derived.verificationState,
+    verificationState: /^(?:complete|complete-for-tested-scope)$/.test(derived.verificationState || "") ? "partial" : derived.verificationState,
+    executionState: derived.executionState === "complete" ? "partial" : derived.executionState || "unavailable",
+    outcomeState: "unknown",
+    testedScopeComplete: false,
+    engineExecutionComplete: false,
+    fullyVerifiedSuccess: false,
+    success: false,
     afterScoreVerified: false,
     requiresManualReview: true,
     reviewCount: Math.max(1, derived.reviewCount || 0),
@@ -718,6 +788,16 @@ function _viewNormalizeLoadedVerification(result, pipeline) {
     verificationState: normalized.verificationState || "unavailable",
     verificationReasons: Array.isArray(normalized.reasons) ? normalized.reasons : [],
     verificationReviewCount: Number.isFinite(normalized.reviewCount) ? normalized.reviewCount : 0,
+    executionState: normalized.executionState || "unavailable",
+    outcomeState: normalized.outcomeState || "unknown",
+    verificationScope: normalized.verificationScope || value.verificationScope || "full-output",
+    testedScopeComplete: normalized.testedScopeComplete === true,
+    engineExecutionComplete: normalized.engineExecutionComplete === true,
+    fullyVerifiedSuccess: normalized.fullyVerifiedSuccess === true,
+    success: normalized.success === true,
+    knownFindingCount: Number.isFinite(normalized.knownFindingCount) ? normalized.knownFindingCount : null,
+    knownFindings: normalized.knownFindings || null,
+    scoreEvidence: normalized.scoreEvidence || null,
     afterScoreVerified: normalized.afterScoreVerified === true,
     requiresManualReview: normalized.requiresManualReview !== false,
     verificationHtmlBinding: normalized.verificationHtmlBinding || value.verificationHtmlBinding || null
@@ -2796,7 +2876,7 @@ function PdfAuditView(props) {
     fixContrastViolations,
     fixIssuesList,
     generateAuditReportHtml,
-    getChunkState,
+    selectChunkVersion,
     getPdfPreviewHtml,
     imageReinsertionReport,
     insertBlockFilter,
@@ -2924,6 +3004,8 @@ function PdfAuditView(props) {
     _remediationMode
   } = props;
   const [remediationProgress, setRemediationProgress] = useState(null);
+  const remediationProgressOwnerRef = useRef({ documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0, startedAt: 0 });
+  const chunkTraceOwnerRef = useRef({ documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0 });
   const [showAgentTrace, setShowAgentTrace] = useState(false);
   const [liveChunkTrace, setLiveChunkTrace] = useState({});
   const [pdfConfirmRequest, setPdfConfirmRequest] = useState(null);
@@ -2984,6 +3066,10 @@ function PdfAuditView(props) {
     if (resolve) resolve(false);
   }, []);
   useEffect(() => {
+    remediationProgressOwnerRef.current = { documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0, startedAt: 0 };
+    chunkTraceOwnerRef.current = { documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0 };
+    setRemediationProgress(null);
+    setLiveChunkTrace({});
     const appendTrace = (detail) => {
       if (!detail || !Number.isInteger(detail.index)) return;
       const safe = {
@@ -3005,16 +3091,63 @@ function PdfAuditView(props) {
     };
     const _eventIsForCurrentDocument = (e) => !!(e && e.detail && Number.isInteger(e.detail.documentEpoch) && e.detail.documentEpoch === pdfDocumentEpoch);
     const onProgress = (e) => {
-      if (_eventIsForCurrentDocument(e) && e.detail.version === 1) setRemediationProgress(e.detail);
+      if (!_eventIsForCurrentDocument(e) || e.detail.version !== 1) return;
+      const detail = e.detail;
+      if (!detail.runId) return;
+      let owner = remediationProgressOwnerRef.current;
+      if (!owner || owner.documentEpoch !== pdfDocumentEpoch) {
+        owner = { documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0, startedAt: 0 };
+      }
+      const eventStartedAt = Number(detail.startedAt) || 0;
+      const eventRunSequence = Number.isSafeInteger(detail.runSequence) && detail.runSequence > 0 ? detail.runSequence : 0;
+      const isRunStart = detail.status === "running" && detail.step === 0;
+      if (!owner.runId || isRunStart) {
+        if (owner.runId && owner.runId !== detail.runId) {
+          if (eventRunSequence > 0 && owner.runSequence > 0) {
+            if (eventRunSequence <= owner.runSequence) return;
+          } else if (eventStartedAt < owner.startedAt) return;
+        }
+        owner = {
+          documentEpoch: pdfDocumentEpoch,
+          runId: detail.runId,
+          runSequence: eventRunSequence,
+          startedAt: Math.max(owner.startedAt || 0, eventStartedAt)
+        };
+        remediationProgressOwnerRef.current = owner;
+      }
+      if (owner.runId !== detail.runId) return;
+      setRemediationProgress(detail);
+    };
+    const _chunkOwnerFromEvent = (e) => {
+      const detail = e && e.detail;
+      const runSequence = detail && Number.isSafeInteger(detail.runSequence) && detail.runSequence > 0 ? detail.runSequence : 0;
+      if (!_eventIsForCurrentDocument(e) || !detail.runId || !runSequence) return null;
+      return { documentEpoch: pdfDocumentEpoch, runId: detail.runId, runSequence };
+    };
+    const _adoptChunkTraceOwner = (e) => {
+      const next = _chunkOwnerFromEvent(e);
+      if (!next) return false;
+      const owner = chunkTraceOwnerRef.current;
+      if (owner && owner.documentEpoch === pdfDocumentEpoch && owner.runId) {
+        if (next.runSequence < owner.runSequence) return false;
+        if (next.runSequence === owner.runSequence && next.runId !== owner.runId) return false;
+      }
+      chunkTraceOwnerRef.current = next;
+      return true;
+    };
+    const _chunkEventIsForActiveSession = (e) => {
+      const next = _chunkOwnerFromEvent(e);
+      const owner = chunkTraceOwnerRef.current;
+      return !!(next && owner && owner.documentEpoch === next.documentEpoch && owner.runId === next.runId && owner.runSequence === next.runSequence);
     };
     const onChunkSessionStart = (e) => {
-      if (_eventIsForCurrentDocument(e)) setLiveChunkTrace({});
+      if (_adoptChunkTraceOwner(e)) setLiveChunkTrace({});
     };
     const onChunkProgress = (e) => {
-      if (_eventIsForCurrentDocument(e)) appendTrace(e.detail);
+      if (_chunkEventIsForActiveSession(e)) appendTrace(e.detail);
     };
     const onChunkFixed = (e) => {
-      if (!_eventIsForCurrentDocument(e)) return;
+      if (!_chunkEventIsForActiveSession(e)) return;
       const d = e && e.detail || {};
       appendTrace({
         index: d.index,
@@ -3026,15 +3159,23 @@ function PdfAuditView(props) {
         usedOriginal: d.usedOriginal
       });
     };
+    const onChunkRefixed = onChunkFixed;
     window.addEventListener("alloflow:remediation-progress", onProgress);
     window.addEventListener("alloflow:chunk-session-start", onChunkSessionStart);
+    try {
+      const latest = window.__alloRemediationProgress;
+      if (latest) onProgress({ detail: latest });
+    } catch (_) {
+    }
     window.addEventListener("alloflow:chunk-progress", onChunkProgress);
     window.addEventListener("alloflow:chunk-fixed", onChunkFixed);
+    window.addEventListener("alloflow:chunk-refixed", onChunkRefixed);
     return () => {
       window.removeEventListener("alloflow:remediation-progress", onProgress);
       window.removeEventListener("alloflow:chunk-session-start", onChunkSessionStart);
       window.removeEventListener("alloflow:chunk-progress", onChunkProgress);
       window.removeEventListener("alloflow:chunk-fixed", onChunkFixed);
+      window.removeEventListener("alloflow:chunk-refixed", onChunkRefixed);
     };
   }, [pdfDocumentEpoch]);
   const _legacyProgressPercent = pdfFixStep.includes("Step 1") ? 15 : pdfFixStep.includes("Step 2") ? 50 : pdfFixStep.includes("Step 3") ? 80 : pdfFixStep.includes("Step 4") ? 92 : pdfFixStep.includes("Auto-fix") || pdfFixStep.includes("Auto-continue") ? 96 : 5;
@@ -3137,6 +3278,57 @@ function PdfAuditView(props) {
     setPdfFixStep("");
     if (clearMode) pdfFixModeRef.current = "";
     return true;
+  };
+  const _commitHtmlPendingVerification = (operationTicket, nextHtml, metadata) => {
+    if (!_remediationOperationIsCurrent(operationTicket) || typeof nextHtml !== "string") return false;
+    const token = _captureAsyncHtmlToken();
+    if (!token || token.documentEpoch !== operationTicket.documentEpoch) return false;
+    return _commitAsyncHtmlIfCurrent(token, (prev) => {
+      if (!prev || prev.accessibleHtml !== token.html) return prev;
+      const pending = {
+        ...prev,
+        ...metadata || {},
+        accessibleHtml: nextHtml,
+        htmlChars: nextHtml.length,
+        verificationHtmlBinding: null,
+        verificationAudit: null,
+        axeAudit: null,
+        axeViolations: null,
+        secondEngineAudit: null,
+        afterScore: null,
+        afterScoreVerified: false,
+        _scoreIsBlended: false,
+        _aiVerificationIncomplete: true,
+        _estimatedMinimumScore: null,
+        _estimatedScoreBasis: null,
+        _finalAuditRetryAvailable: true,
+        _scoreSource: "unavailable",
+        verificationCoverage: {
+          standard: "WCAG 2.2 AA",
+          ai: "unavailable",
+          axe: "unavailable",
+          equalAccess: "unavailable",
+          pdfUaSelfCheck: "not-run"
+        },
+        verificationState: "unavailable",
+        executionState: "unavailable",
+        outcomeState: "unknown",
+        verificationScope: prev.verificationScope || "full-output",
+        testedScopeComplete: false,
+        engineExecutionComplete: false,
+        fullyVerifiedSuccess: false,
+        success: false,
+        knownFindingCount: null,
+        knownFindings: null,
+        scoreEvidence: null,
+        verificationReasons: ["content-modified-pending-reverification"],
+        verificationReviewCount: 0,
+        requiresManualReview: true,
+        issueResolution: null,
+        remainingIssues: null
+      };
+      return _viewEnforceVerificationHtmlBinding(pending, null, _docPipeline);
+    });
   };
   useEffect(() => {
     const cancelOwnedOperation = () => {
@@ -3998,8 +4190,13 @@ function PdfAuditView(props) {
       cancelUi: () => {
         if (audioJobRef.current === job) {
           job.pauseRequested = true;
-          audioJobRef.current = null;
-          setAudioJob(null);
+          const sameSource = job.operationTicket && _remediationOperationSourceIsCurrent(job.operationTicket);
+          if (sameSource && job.nextIdx > 0 && job.nextIdx < job.segments.length) _saveAudioMeta(job, false, job.operationTicket);
+          if (sameSource) setAudioJob({ total: job.segments.length, done: job.blobs.length, failed: Number(job.failed) || 0, status: "paused" });
+          else {
+            audioJobRef.current = null;
+            setAudioJob(null);
+          }
         }
       }
     });
@@ -4053,7 +4250,9 @@ function PdfAuditView(props) {
     const ticket = operationTicket || j && j.operationTicket;
     if (!_audioOperationIsCurrent(ticket, j)) return false;
     try {
-      return _commitAsyncHtmlIfCurrent(ticket.htmlToken, (prev) => prev ? { ...prev, _audioJobMeta: complete ? null : { nextIdx: j.nextIdx, total: j.segments.length, srMode: !!j.srMode, variant: j.variant || "main", langSuffix: j.langSuffix || "", companionAt: j.companionAt || null, savedAt: Date.now() } } : prev);
+      const token = _captureAsyncHtmlToken();
+      if (!token || token.documentEpoch !== ticket.documentEpoch || token.html !== ticket.htmlToken.html) return false;
+      return _commitAsyncHtmlIfCurrent(token, (prev) => prev ? { ...prev, _audioJobMeta: complete ? null : { nextIdx: j.nextIdx, total: j.segments.length, srMode: !!j.srMode, variant: j.variant || "main", langSuffix: j.langSuffix || "", companionAt: j.companionAt || null, savedAt: Date.now() } } : prev);
     } catch (_) {
       return false;
     }
@@ -4887,6 +5086,9 @@ function PdfAuditView(props) {
   };
   const _BATCH_MAX_FILE_BYTES = 200 * 1024 * 1024;
   const _BATCH_MAX_TOTAL_BYTES = 300 * 1024 * 1024;
+  const _batchDeviceMemoryGb = typeof navigator !== "undefined" && Number.isFinite(Number(navigator.deviceMemory)) ? Number(navigator.deviceMemory) : null;
+  const _BATCH_EFFECTIVE_MAX_FILE_BYTES = _batchDeviceMemoryGb === null ? _BATCH_MAX_FILE_BYTES : _batchDeviceMemoryGb <= 4 ? 32 * 1024 * 1024 : _batchDeviceMemoryGb <= 8 ? 64 * 1024 * 1024 : 96 * 1024 * 1024;
+  const _BATCH_EFFECTIVE_MAX_TOTAL_BYTES = _batchDeviceMemoryGb === null ? _BATCH_MAX_TOTAL_BYTES : _batchDeviceMemoryGb <= 4 ? 64 * 1024 * 1024 : _batchDeviceMemoryGb <= 8 ? 128 * 1024 * 1024 : 192 * 1024 * 1024;
   const _alloBatchPreflight = (files, existingQueue) => {
     const _fmtMB = (b) => Math.round(b / (1024 * 1024)) + " MB";
     const queuedBytes = (existingQueue || []).reduce((s, q) => s + (q.fileSize || 0), 0);
@@ -4898,11 +5100,11 @@ function PdfAuditView(props) {
         overCount++;
         continue;
       }
-      if ((f.size || 0) > _BATCH_MAX_FILE_BYTES) {
+      if ((f.size || 0) > _BATCH_EFFECTIVE_MAX_FILE_BYTES) {
         overSize.push(f.name || "file");
         continue;
       }
-      if (total + (f.size || 0) > _BATCH_MAX_TOTAL_BYTES) {
+      if (total + (f.size || 0) > _BATCH_EFFECTIVE_MAX_TOTAL_BYTES) {
         overTotal++;
         continue;
       }
@@ -4910,8 +5112,8 @@ function PdfAuditView(props) {
       accepted.push(f);
     }
     if (overCount) addToast("\u26A0 Batch limit is " + _BATCH_MAX_FILES + " files \u2014 " + overCount + " file(s) were not added. Run them as a second batch.", "warning");
-    if (overSize.length) addToast("\u26A0 Skipped " + overSize.length + " file(s) over the " + _fmtMB(_BATCH_MAX_FILE_BYTES) + " per-file limit: " + overSize.slice(0, 3).join(", ") + (overSize.length > 3 ? "\u2026" : ""), "warning");
-    if (overTotal) addToast("\u26A0 Batch memory budget (" + _fmtMB(_BATCH_MAX_TOTAL_BYTES) + " total) reached \u2014 " + overTotal + " file(s) were not added. Run them as a second batch.", "warning");
+    if (overSize.length) addToast("\u26A0 Skipped " + overSize.length + " file(s) over the " + _fmtMB(_BATCH_EFFECTIVE_MAX_FILE_BYTES) + " per-file limit: " + overSize.slice(0, 3).join(", ") + (overSize.length > 3 ? "\u2026" : ""), "warning");
+    if (overTotal) addToast("\u26A0 Batch memory budget (" + _fmtMB(_BATCH_EFFECTIVE_MAX_TOTAL_BYTES) + " total) reached \u2014 " + overTotal + " file(s) were not added. Run them as a second batch.", "warning");
     try {
       if (accepted.length && typeof navigator !== "undefined" && navigator.storage && navigator.storage.estimate) {
         navigator.storage.estimate().then((est) => {
@@ -4954,7 +5156,7 @@ function PdfAuditView(props) {
         if (!_batchIngestIsCurrent(session)) return;
         if (!readResult || !readResult.base64) continue;
         const actualSize = descriptor.size || readResult.sizeBytes || Math.floor(String(readResult.base64).length * 0.75);
-        if (actualSize > _BATCH_MAX_FILE_BYTES || actualBytes + actualSize > _BATCH_MAX_TOTAL_BYTES) {
+        if (actualSize > _BATCH_EFFECTIVE_MAX_FILE_BYTES || actualBytes + actualSize > _BATCH_EFFECTIVE_MAX_TOTAL_BYTES) {
           addToast('Skipped "' + descriptor.name + '" because it exceeds the batch memory budget.', "warning");
           continue;
         }
@@ -5141,15 +5343,24 @@ function PdfAuditView(props) {
     return out;
   };
   const _reauditAndScore = async (newHtml, onActivity, operationTicket) => {
-    const _reauditIsCurrent = () => !operationTicket || _remediationOperationIsCurrent(operationTicket);
+    let ownedTicket = null;
+    if (!operationTicket) {
+      const live = pdfFixResultRef && pdfFixResultRef.current;
+      if (!live || live.accessibleHtml !== newHtml) return { ok: false, score: null, stale: true, verificationState: "unavailable" };
+      ownedTicket = _beginRemediationOperation("canonical-re-audit", false, { sourceHtml: newHtml });
+      operationTicket = ownedTicket;
+    }
+    const _reauditHtmlToken = _captureAsyncHtmlToken();
+    const _reauditSignal = operationTicket && operationTicket.controller && operationTicket.controller.signal;
+    const _reauditIsCurrent = () => !!(operationTicket && _remediationOperationIsCurrent(operationTicket) && _reauditHtmlToken && _reauditHtmlToken.documentEpoch === operationTicket.documentEpoch && pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml === newHtml && _reauditHtmlToken.html === newHtml);
     if (!_reauditIsCurrent()) return { ok: false, score: null, stale: true, verificationState: "unavailable" };
     try {
       if (onActivity && _reauditIsCurrent()) onActivity({ text: "Re-auditing to refresh verification evidence...", type: "audit", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() });
       const _safeAudit = (run) => Promise.resolve().then(run).catch(() => null);
       const [_wv, _wa, _wea] = await Promise.all([
-        _safeAudit(() => auditOutputAccessibility(newHtml)),
-        _safeAudit(() => runAxeAudit(newHtml)),
-        _docPipeline && typeof _docPipeline.runEqualAccessAudit === "function" ? _safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml)) : Promise.resolve(null)
+        _safeAudit(() => auditOutputAccessibility(newHtml, void 0, { signal: _reauditSignal })),
+        _safeAudit(() => runAxeAudit(newHtml, { signal: _reauditSignal })),
+        _docPipeline && typeof _docPipeline.runEqualAccessAudit === "function" ? _safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml, { signal: _reauditSignal })) : Promise.resolve(null)
       ]);
       if (!_reauditIsCurrent()) return { ok: false, score: null, stale: true, verificationState: "unavailable" };
       const _wvOk = !!(_wv && Number.isFinite(_wv.score) && !_wv._partialAudit && !_wv._scoreDegraded && !_wv.synthesized);
@@ -5157,12 +5368,12 @@ function PdfAuditView(props) {
       const _weaOk = !!(_wea && Number.isFinite(_wea.score));
       const _wdet = _waOk ? _weaOk ? Math.min(_wa.score, _wea.score) : _wa.score : _weaOk ? _wea.score : null;
       const _wscore = _computeHeadline(_wvOk ? _wv.score : null, _wdet);
-      const _sameBoundHtml = _viewIsLiveVerificationHtmlBound(pdfFixResult, newHtml, _docPipeline);
+      const _sameBoundHtml = _viewIsLiveVerificationHtmlBound(pdfFixResultRef.current, newHtml, _docPipeline);
       if (!_reauditIsCurrent()) return { ok: false, score: null, stale: true, verificationState: "unavailable" };
       const _freshBinding = await _viewCreateVerificationHtmlBinding(newHtml, _docPipeline);
       if (!_reauditIsCurrent()) return { ok: false, score: null, stale: true, verificationState: "unavailable" };
       const _curFix = pdfFixResultRef.current;
-      const _applied = !!(_reauditIsCurrent() && _curFix && _curFix.accessibleHtml === newHtml);
+      let _applied = !!(_reauditIsCurrent() && _curFix && _curFix.accessibleHtml === newHtml);
       let _verification = _deriveVerificationState({ ai: _wv, axe: _wa, equalAccess: _wea, pdfUaSelfCheck: "not-run" });
       if (_applied) {
         _verification = _deriveVerificationState({
@@ -5191,6 +5402,16 @@ function PdfAuditView(props) {
           secondEngineAudit: _weaOk ? _wea : null,
           verificationCoverage: _verification.coverage,
           verificationState: _verification.verificationState,
+          executionState: _verification.executionState || "unavailable",
+          outcomeState: _verification.outcomeState || "unknown",
+          verificationScope: _verification.verificationScope || "full-output",
+          testedScopeComplete: _verification.testedScopeComplete === true,
+          engineExecutionComplete: _verification.engineExecutionComplete === true,
+          fullyVerifiedSuccess: _verification.fullyVerifiedSuccess === true,
+          success: _verification.success === true,
+          knownFindingCount: Number.isFinite(_verification.knownFindingCount) ? _verification.knownFindingCount : null,
+          knownFindings: _verification.knownFindings || null,
+          scoreEvidence: _verification.scoreEvidence || null,
           verificationReasons: _verification.reasons,
           verificationReviewCount: _verification.reviewCount,
           requiresManualReview: _verification.requiresManualReview,
@@ -5207,11 +5428,21 @@ function PdfAuditView(props) {
           coverage: _bound.verificationCoverage || _verification.coverage,
           verificationCoverage: _bound.verificationCoverage || _verification.coverage,
           verificationState: _bound.verificationState,
+          executionState: _bound.executionState || _verification.executionState || "unavailable",
+          outcomeState: _bound.outcomeState || _verification.outcomeState || "unknown",
+          verificationScope: _bound.verificationScope || _verification.verificationScope || "full-output",
+          testedScopeComplete: _bound.testedScopeComplete === true,
+          engineExecutionComplete: _bound.engineExecutionComplete === true,
+          fullyVerifiedSuccess: _bound.fullyVerifiedSuccess === true,
+          success: _bound.success === true,
+          knownFindingCount: Number.isFinite(_bound.knownFindingCount) ? _bound.knownFindingCount : _verification.knownFindingCount,
+          knownFindings: _bound.knownFindings || _verification.knownFindings || null,
+          scoreEvidence: _bound.scoreEvidence || _verification.scoreEvidence || null,
           afterScoreVerified: !!_bound.afterScoreVerified,
           requiresManualReview: !!_bound.requiresManualReview,
           reasons: _bound.verificationReasons || _verification.reasons
         };
-        setPdfFixResult((prev) => prev && prev.accessibleHtml === newHtml ? _bound : prev);
+        _applied = _commitAsyncHtmlIfCurrent(_reauditHtmlToken, (prev) => prev && prev.accessibleHtml === newHtml ? _bound : prev);
       }
       if (_applied && !_sameBoundHtml) {
         setLastTaggedValidation(null);
@@ -5221,55 +5452,42 @@ function PdfAuditView(props) {
       }
       const _scoreLabel = Number.isFinite(_wscore) ? _wscore + "/100" : "score unavailable";
       if (onActivity && _reauditIsCurrent()) onActivity({ text: "Updated: " + _scoreLabel + " - verification " + _verification.verificationState, type: "score", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() });
-      return { ok: Number.isFinite(_wscore), score: Number.isFinite(_wscore) ? _wscore : null, issues: _wvOk ? (_wv.issues || []).length : null, stale: !_applied, verificationState: _verification.verificationState };
+      return {
+        ok: Number.isFinite(_wscore),
+        score: Number.isFinite(_wscore) ? _wscore : null,
+        issues: _wvOk ? (_wv.issues || []).length : null,
+        stale: !_applied,
+        verificationState: _verification.verificationState,
+        executionState: _verification.executionState || "unavailable",
+        outcomeState: _verification.outcomeState || "unknown",
+        verificationScope: _verification.verificationScope || "full-output",
+        testedScopeComplete: _verification.testedScopeComplete === true,
+        engineExecutionComplete: _verification.engineExecutionComplete === true,
+        fullyVerifiedSuccess: _verification.fullyVerifiedSuccess === true,
+        success: _verification.success === true,
+        knownFindingCount: Number.isFinite(_verification.knownFindingCount) ? _verification.knownFindingCount : null,
+        knownFindings: _verification.knownFindings || null,
+        scoreEvidence: _verification.scoreEvidence || null
+      };
     } catch (_) {
       return { ok: false, score: null, verificationState: "unavailable" };
+    } finally {
+      if (ownedTicket) _completeRemediationOperation(ownedTicket);
     }
   };
   const _commitRefixedSection = async (result, sectionNumber, operationTicket) => {
     if (!result || !result.html) return { ok: false, score: null, verificationState: "unavailable" };
     if (!_remediationOperationIsCurrent(operationTicket)) return { ok: false, score: null, stale: true, verificationState: "unavailable" };
     const newHtml = result.html;
-    if (!_commitAsyncHtmlIfCurrent(operationTicket.htmlToken, (prev) => {
-      if (!prev) return prev;
-      const pendingCoverage = {
-        standard: "WCAG 2.2 AA",
-        ai: "unavailable",
-        axe: "unavailable",
-        equalAccess: "unavailable",
-        pdfUaSelfCheck: prev.verificationCoverage && prev.verificationCoverage.pdfUaSelfCheck || "not-run"
-      };
-      return {
-        ...prev,
-        accessibleHtml: newHtml,
-        verificationAudit: null,
-        axeAudit: null,
-        axeViolations: null,
-        secondEngineAudit: null,
-        afterScore: null,
-        afterScoreVerified: false,
-        _scoreIsBlended: false,
-        _aiVerificationIncomplete: true,
-        _scoreSource: "unavailable",
-        verificationCoverage: pendingCoverage,
-        verificationState: "unavailable",
-        verificationReasons: ["content-modified-pending-reverification"],
-        verificationReviewCount: 0,
-        requiresManualReview: true,
-        needsExpertReview: !!prev.fidelityLimited,
-        expertReviewReason: prev.fidelityLimited ? "content-fidelity" : null,
-        issueResolution: null,
-        remainingIssues: null,
-        htmlChars: newHtml.length,
-        chunkState: result.chunkState,
-        chunkWeightedScore: result.chunkWeightedScore
-      };
+    if (!_commitHtmlPendingVerification(operationTicket, newHtml, {
+      chunkState: result.chunkState,
+      chunkWeightedScore: result.chunkWeightedScore
     })) return { ok: false, score: null, stale: true, verificationState: "unavailable" };
     const recheck = await _reauditAndScore(newHtml, null, operationTicket);
     if (!_remediationOperationIsCurrent(operationTicket) || recheck && recheck.stale) return { ...recheck || {}, ok: false, score: null, stale: true, verificationState: recheck && recheck.verificationState || "unavailable" };
     const label = "Section " + sectionNumber + " re-fixed";
     if (recheck && recheck.ok) {
-      addToast(label + ": " + recheck.score + "/100 \xB7 verification " + recheck.verificationState, recheck.verificationState === "complete" ? "success" : "warning");
+      addToast(label + ": " + recheck.score + "/100 \xB7 verification " + recheck.verificationState, recheck.fullyVerifiedSuccess === true ? "success" : "warning");
     } else {
       addToast(label + ", but no current score is available. Verification evidence was cleared; re-run the audit when ready.", "warning");
     }
@@ -5290,6 +5508,8 @@ function PdfAuditView(props) {
         currentHtml: source.accessibleHtml,
         persistedState: source.chunkState,
         documentEpoch: operationTicket.documentEpoch,
+        runId: source.chunkState && source.chunkState.runId || source.runId || source.pipelineStats && source.pipelineStats.runId || null,
+        runSequence: source.chunkState && source.chunkState.runSequence || source.pipelineStats && source.pipelineStats.runSequence || 0,
         signal: operationTicket.controller && operationTicket.controller.signal,
         shouldAbort: () => !_remediationOperationIsCurrent(operationTicket)
       });
@@ -5357,49 +5577,64 @@ function PdfAuditView(props) {
     _toastForRemediationOperation(operationTicket, kind === "axe" ? t("toasts.running_axe_core_edited_content") || "Running axe-core on edited content..." : t("toasts.running_full_ai_re_audit") || "Running a full AI and axe-core re-audit...", "info");
     try {
       if (kind === "axe") {
-        const axe = await runAxeAudit(html);
+        const axe = await runAxeAudit(html, { signal: operationTicket.controller && operationTicket.controller.signal });
         if (!previewIsCurrent()) {
           _cancelRemediationOperation(operationTicket);
           return null;
         }
         if (!axe) return null;
-        const committed2 = _commitAsyncHtmlIfCurrent(operationTicket.htmlToken, (prev) => prev ? {
-          ...prev,
-          axeAudit: axe,
-          axeScore: axe.score,
-          accessibleHtml: html
-        } : prev);
-        if (!committed2) {
+        if (html !== operationTicket.htmlToken.html && !_commitHtmlPendingVerification(operationTicket, html, { _userEditedAt: Date.now() })) {
+          _cancelRemediationOperation(operationTicket);
+          return null;
+        }
+        const axeToken = _captureAsyncHtmlToken();
+        const committed = _commitAsyncHtmlIfCurrent(axeToken, (prev) => {
+          if (!prev || prev.accessibleHtml !== html) return prev;
+          const verification = _deriveVerificationState({
+            ai: prev.verificationAudit,
+            axe,
+            equalAccess: prev.secondEngineAudit,
+            pdfUaSelfCheck: prev.verificationCoverage && prev.verificationCoverage.pdfUaSelfCheck || "not-run",
+            languageReviewRequired: !!prev.languageReviewRequired,
+            extraReasons: prev.verificationExtraReasons || []
+          });
+          return _viewEnforceVerificationHtmlBinding({
+            ...prev,
+            axeAudit: axe,
+            axeScore: axe.score,
+            axeViolations: Number.isFinite(axe.totalViolations) ? axe.totalViolations : null,
+            verificationCoverage: verification.coverage,
+            verificationState: verification.verificationState,
+            verificationReasons: verification.reasons,
+            verificationReviewCount: verification.reviewCount,
+            requiresManualReview: verification.requiresManualReview,
+            afterScoreVerified: verification.afterScoreVerified
+          }, null, _docPipeline);
+        });
+        if (!committed) {
           _cancelRemediationOperation(operationTicket);
           return null;
         }
         _toastForRemediationOperation(operationTicket, axe.totalViolations === 0 ? "Zero violations!" : `${axe.totalViolations} violation(s) found`, axe.totalViolations === 0 ? "success" : "info");
         return axe;
       }
-      const [aiResult, axeResult] = await Promise.all([
-        auditOutputAccessibility(html),
-        runAxeAudit(html).catch(() => null)
-      ]);
       if (!previewIsCurrent()) {
         _cancelRemediationOperation(operationTicket);
         return null;
       }
-      if (!aiResult) return null;
-      const committed = _commitAsyncHtmlIfCurrent(operationTicket.htmlToken, (prev) => prev ? {
-        ...prev,
-        verificationAudit: aiResult,
-        accessibleHtml: html,
-        afterScore: aiResult.score,
-        ...axeResult ? { axeAudit: axeResult, axeScore: axeResult.score } : {}
-      } : prev);
-      if (!committed) {
+      if (html !== operationTicket.htmlToken.html && !_commitHtmlPendingVerification(operationTicket, html, { _userEditedAt: Date.now() })) {
         _cancelRemediationOperation(operationTicket);
         return null;
       }
-      const totalIssues = (aiResult.issues || []).length;
-      const totalPasses = (aiResult.passes || []).length;
-      _toastForRemediationOperation(operationTicket, totalIssues === 0 ? `Full re-audit complete: ${totalPasses} checks passing, 0 issues.` : `Re-audit: ${totalIssues} issue(s), ${totalPasses} passing`, totalIssues === 0 ? "success" : "info");
-      return { aiResult, axeResult };
+      const result = await _reauditAndScore(html, null, operationTicket);
+      if (!_remediationOperationIsCurrent(operationTicket) || !result || result.stale) return null;
+      if (result.ok) {
+        const totalIssues = Number.isFinite(result.issues) ? result.issues : null;
+        _toastForRemediationOperation(operationTicket, totalIssues === 0 ? `Full re-audit complete: 0 issues, ${result.score}/100.` : `Full re-audit complete: ${totalIssues == null ? "issue count unavailable" : totalIssues + " issue(s)"}, ${result.score}/100.`, totalIssues === 0 && result.verificationState === "complete" ? "success" : "info");
+      } else {
+        _toastForRemediationOperation(operationTicket, "Full re-audit finished without a current verified score. The edited content remains marked for review.", "warning");
+      }
+      return result;
     } catch (error) {
       if (_remediationOperationIsCurrent(operationTicket)) {
         const classified = classifyPdfError(error);
@@ -5646,11 +5881,14 @@ function PdfAuditView(props) {
       addToast(t("pdf_audit.region.unavailable") || "Restyle tools are still loading \u2014 try again in a moment.", "info");
       return;
     }
+    const sourceToken = _captureAsyncHtmlToken();
+    const sourceHtml = String(sourceToken && sourceToken.html || "");
+    if (!sourceHtml) return;
     const original = String(rgn.original || "");
     if (!original) return;
     let topts = {};
     if (kind === "heading") {
-      topts.precedingLevel = typeof _docPipeline.precedingHeadingLevel === "function" ? _docPipeline.precedingHeadingLevel(pdfFixResult.accessibleHtml, original) : 0;
+      topts.precedingLevel = typeof _docPipeline.precedingHeadingLevel === "function" ? _docPipeline.precedingHeadingLevel(sourceHtml, original) : 0;
       topts.badAncestor = !!rgn.badAncestor;
     }
     let res = null;
@@ -5664,7 +5902,7 @@ function PdfAuditView(props) {
       addToast(msg, "info");
       return;
     }
-    const sp = _spliceBlock(pdfFixResult.accessibleHtml, original, res.html);
+    const sp = _spliceBlock(sourceHtml, original, res.html);
     if (!sp.ok) {
       addToast(
         sp.reason === "ambiguous" ? t("pdf_audit.issue.edit_ambiguous") || "This exact markup appears more than once \u2014 use the Expert Workbench for a targeted fix instead." : t("pdf_audit.issue.edit_moved") || "That section changed since you opened it \u2014 close and reopen Source, then try again.",
@@ -5672,18 +5910,31 @@ function PdfAuditView(props) {
       );
       return;
     }
+    const operationTicket = _beginRemediationOperation("restyle-region", false, { sourceHtml });
+    if (!_remediationOperationSourceIsCurrent(operationTicket)) {
+      _completeRemediationOperation(operationTicket);
+      return;
+    }
     _setIssueEdit((prev) => ({ ...prev, ["__region__"]: { ...prev["__region__"], saving: true } }));
-    const _before = pdfFixResult.accessibleHtml;
-    setPdfFixResult((p) => p ? { ...p, accessibleHtml: sp.html, _preCmdHtml: _before } : p);
+    const _before = sourceHtml;
+    if (!_commitHtmlPendingVerification(operationTicket, sp.html, { _preCmdHtml: _before })) {
+      _completeRemediationOperation(operationTicket);
+      _setIssueEdit((prev) => ({ ...prev, ["__region__"]: { ...prev["__region__"], saving: false } }));
+      return;
+    }
     _setIssueEdit((prev) => {
       const n = { ...prev };
       delete n["__region__"];
       return n;
     });
-    addToast(t("pdf_audit.region.restyled") || "\u2728 Restyled this block \u2014 re-checking\u2026", "success");
+    _toastForRemediationOperation(operationTicket, t("pdf_audit.region.restyled") || "\u2728 Restyled this block \u2014 re-checking\u2026", "success");
     if (kind === "heading") _warnHeadingOutline(_before, sp.html);
-    const _rescore = await _reauditAndScore(sp.html, null);
-    if (_rescore && _rescore.ok === false) addToast(t("pdf_audit.region.restyle_norescore") || "\u2728 Restyle applied. Couldn\u2019t re-score automatically (the checker was busy) \u2014 the document is updated; re-run the audit when ready.", "info");
+    try {
+      const _rescore = await _reauditAndScore(sp.html, null, operationTicket);
+      if (_rescore && _rescore.ok === false && !_rescore.stale) _toastForRemediationOperation(operationTicket, t("pdf_audit.region.restyle_norescore") || "\u2728 Restyle applied. Couldn\u2019t re-score automatically (the checker was busy) \u2014 the document is updated; re-run the audit when ready.", "info");
+    } finally {
+      _completeRemediationOperation(operationTicket);
+    }
   };
   const _warnHeadingOutline = (beforeHtml, afterHtml) => {
     try {
@@ -5701,41 +5952,73 @@ function PdfAuditView(props) {
       addToast(t("pdf_audit.region.suggest_unavailable") || "Suggestion tools are still loading \u2014 try again in a moment.", "info");
       return;
     }
-    setRestyleProposalsBusy(true);
-    addToast(t("pdf_audit.region.suggesting") || "\u2728 Looking for blocks that would read better as callouts or lists\u2026", "info");
-    let r = null;
-    try {
-      r = await _docPipeline.proposeRestyles(pdfFixResult.accessibleHtml, { max: 10 });
-    } catch (_) {
-    }
-    setRestyleProposalsBusy(false);
-    if (!r) {
-      addToast(t("pdf_audit.region.suggest_failed") || "Couldn\u2019t get suggestions right now (the AI may be busy) \u2014 try again later.", "info");
-      setRestyleProposals(null);
+    const source = pdfFixResultRef && pdfFixResultRef.current;
+    const sourceHtml = String(source && source.accessibleHtml || "");
+    const operationTicket = _beginRemediationOperation("suggest-restyles", false, {
+      sourceHtml,
+      cancelUi: () => {
+        setRestyleProposalsBusy(false);
+      }
+    });
+    if (!sourceHtml || !_remediationOperationSourceIsCurrent(operationTicket)) {
+      _completeRemediationOperation(operationTicket);
       return;
     }
-    setRestyleProposals(r.proposals || []);
-    setRestyleDropped(Math.max(0, (r.suggested || 0) - (r.proposals || []).length));
-    if (!r.proposals || !r.proposals.length) addToast(t("pdf_audit.region.suggest_none") || "No structure changes suggested \u2014 the document already reads cleanly.", "info");
+    setRestyleProposalsBusy(true);
+    _toastForRemediationOperation(operationTicket, t("pdf_audit.region.suggesting") || "\u2728 Looking for blocks that would read better as callouts or lists\u2026", "info");
+    try {
+      let r = null;
+      try {
+        r = await _docPipeline.proposeRestyles(sourceHtml, { max: 10, signal: operationTicket.controller && operationTicket.controller.signal });
+      } catch (_) {
+      }
+      if (!_remediationOperationSourceIsCurrent(operationTicket)) return;
+      if (!r) {
+        _toastForRemediationOperation(operationTicket, t("pdf_audit.region.suggest_failed") || "Couldn\u2019t get suggestions right now (the AI may be busy) \u2014 try again later.", "info");
+        setRestyleProposals(null);
+        return;
+      }
+      setRestyleProposals(r.proposals || []);
+      setRestyleDropped(Math.max(0, (r.suggested || 0) - (r.proposals || []).length));
+      if (!r.proposals || !r.proposals.length) _toastForRemediationOperation(operationTicket, t("pdf_audit.region.suggest_none") || "No structure changes suggested \u2014 the document already reads cleanly.", "info");
+    } finally {
+      if (_completeRemediationOperation(operationTicket)) setRestyleProposalsBusy(false);
+    }
   };
   const _applyProposal = async (p) => {
     if (!p || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
-    const sp = _spliceBlock(pdfFixResult.accessibleHtml, p.original, p.html);
+    const source = pdfFixResultRef && pdfFixResultRef.current;
+    const sourceHtml = String(source && source.accessibleHtml || "");
+    const operationTicket = _beginRemediationOperation("apply-restyle-proposal", false, { sourceHtml });
+    if (!sourceHtml || !_remediationOperationSourceIsCurrent(operationTicket)) {
+      _completeRemediationOperation(operationTicket);
+      return;
+    }
+    const sp = _spliceBlock(sourceHtml, p.original, p.html);
     if (!sp.ok) {
-      addToast(
+      _toastForRemediationOperation(
+        operationTicket,
         sp.reason === "ambiguous" ? t("pdf_audit.issue.edit_ambiguous") || "This exact markup appears more than once \u2014 use the Expert Workbench for a targeted fix instead." : t("pdf_audit.region.suggest_stale") || "That block changed since the suggestion was made \u2014 re-run \u201CSuggest\u201D to refresh.",
         sp.reason === "ambiguous" ? "info" : "error"
       );
       setRestyleProposals((prev) => prev ? prev.filter((x) => x !== p) : prev);
+      _completeRemediationOperation(operationTicket);
       return;
     }
-    const _before = pdfFixResult.accessibleHtml;
-    setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: sp.html, _preCmdHtml: _before } : prev);
+    const _before = sourceHtml;
+    if (!_commitHtmlPendingVerification(operationTicket, sp.html, { _preCmdHtml: _before })) {
+      _completeRemediationOperation(operationTicket);
+      return;
+    }
     setRestyleProposals((prev) => prev ? prev.filter((x) => x !== p) : prev);
-    addToast(t("pdf_audit.region.suggest_applied") || "\u2728 Applied \u2014 re-checking\u2026", "success");
+    _toastForRemediationOperation(operationTicket, t("pdf_audit.region.suggest_applied") || "\u2728 Applied \u2014 re-checking\u2026", "success");
     if (p.kind === "heading") _warnHeadingOutline(_before, sp.html);
-    const _rs = await _reauditAndScore(sp.html, null);
-    if (_rs && _rs.ok === false) addToast(t("pdf_audit.region.restyle_norescore") || "\u2728 Applied. Couldn\u2019t re-score automatically (the checker was busy) \u2014 the document is updated; re-run the audit when ready.", "info");
+    try {
+      const _rs = await _reauditAndScore(sp.html, null, operationTicket);
+      if (_rs && _rs.ok === false && !_rs.stale) _toastForRemediationOperation(operationTicket, t("pdf_audit.region.restyle_norescore") || "\u2728 Applied. Couldn\u2019t re-score automatically (the checker was busy) \u2014 the document is updated; re-run the audit when ready.", "info");
+    } finally {
+      _completeRemediationOperation(operationTicket);
+    }
   };
   const _recoveryResidualSource = (td, sourceText, finalText) => {
     const _normTokenForDiff = _normTokenForDiffShared;
@@ -5758,32 +6041,46 @@ function PdfAuditView(props) {
     }
     return { missingTokens: [], residual: 0, freshMode: false };
   };
-  const _applyPalette = async (preset) => {
-    if (!preset || _paletteBusy || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
+  const _applyPalette = async (preset, existingTicket) => {
+    if (!preset || !existingTicket && _paletteBusy || !pdfFixResult || !pdfFixResult.accessibleHtml) return;
     if (!_docPipeline || typeof _docPipeline.applyPaletteToHtml !== "function") {
       addToast(t("pdf_audit.palette.unavailable") || "Palette tools are still loading \u2014 try again in a moment.", "info");
       return;
     }
-    const origin = _paletteSnapshotRef.current || pdfFixResult.accessibleHtml;
-    setPaletteBusy(true);
+    const source = pdfFixResultRef && pdfFixResultRef.current;
+    const sourceHtml = String(source && source.accessibleHtml || "");
+    const ownsTicket = !existingTicket;
+    const operationTicket = existingTicket || _beginRemediationOperation("apply-palette", false, {
+      sourceHtml,
+      cancelUi: () => {
+        setPaletteBusy(false);
+      }
+    });
+    if (!sourceHtml || !_remediationOperationSourceIsCurrent(operationTicket)) {
+      if (ownsTicket) _completeRemediationOperation(operationTicket);
+      return;
+    }
+    const origin = _paletteSnapshotRef.current || sourceHtml;
+    if (ownsTicket) setPaletteBusy(true);
     try {
       const built = typeof _docPipeline.buildPaletteCss === "function" ? _docPipeline.buildPaletteCss(preset.tokens) : null;
       const newHtml = _docPipeline.applyPaletteToHtml(origin, preset.tokens);
-      if (newHtml && newHtml !== pdfFixResult.accessibleHtml) {
-        if (!_paletteSnapshotRef.current) _paletteSnapshotRef.current = pdfFixResult.accessibleHtml;
+      if (newHtml && newHtml !== sourceHtml) {
+        if (!_paletteSnapshotRef.current) _paletteSnapshotRef.current = sourceHtml;
         const worst = built && built.report && built.report.length ? Math.round(Math.min.apply(null, built.report.map((r) => r.after)) * 10) / 10 : null;
         const _snap = _paletteSnapshotRef.current;
-        setPdfFixResult((p) => p ? { ...p, accessibleHtml: newHtml, _preCmdHtml: _snap } : p);
+        if (!_commitHtmlPendingVerification(operationTicket, newHtml, { _preCmdHtml: _snap })) return;
         setAppliedPalette({ id: preset.id, name: preset.name, worst, allPass: built ? built.allPass : true });
-        addToast((t("pdf_audit.palette.applied") || "\u{1F3A8} Applied palette:") + " " + preset.name + " \u2014 re-checking contrast\u2026", "info");
-        await _reauditAndScore(newHtml, null);
+        _toastForRemediationOperation(operationTicket, (t("pdf_audit.palette.applied") || "\u{1F3A8} Applied palette:") + " " + preset.name + " \u2014 re-checking contrast\u2026", "info");
+        await _reauditAndScore(newHtml, null, operationTicket);
       } else {
-        setAppliedPalette({ id: preset.id, name: preset.name, worst: null, allPass: true });
+        if (_remediationOperationIsCurrent(operationTicket)) setAppliedPalette({ id: preset.id, name: preset.name, worst: null, allPass: true });
       }
     } catch (e) {
-      addToast((t("pdf_audit.palette.failed") || "Palette apply failed:") + " " + (e && e.message || "unknown"), "error");
+      _toastForRemediationOperation(operationTicket, (t("pdf_audit.palette.failed") || "Palette apply failed:") + " " + (e && e.message || "unknown"), "error");
+    } finally {
+      if (ownsTicket && _completeRemediationOperation(operationTicket)) setPaletteBusy(false);
     }
-    setPaletteBusy(false);
   };
   const _suggestPalette = async () => {
     const intent = String(_paletteIntent || "").trim();
@@ -5792,33 +6089,64 @@ function PdfAuditView(props) {
       addToast(t("pdf_audit.palette.unavailable") || "Palette tools are still loading \u2014 try again in a moment.", "info");
       return;
     }
-    setPaletteBusy(true);
-    addToast((t("pdf_audit.palette.ai_asking") || "\u2728 Asking the AI for a palette:") + ' "' + intent + '"\u2026', "info");
-    let proposed = null;
-    try {
-      proposed = await _docPipeline.proposePaletteFromIntent(intent);
-    } catch (_) {
-    }
-    setPaletteBusy(false);
-    if (!proposed || !proposed.tokens) {
-      addToast(t("pdf_audit.palette.ai_failed") || "The AI couldn\u2019t suggest a palette right now (it may be busy) \u2014 pick a preset above; contrast is guaranteed either way.", "info");
+    const source = pdfFixResultRef && pdfFixResultRef.current;
+    const sourceHtml = String(source && source.accessibleHtml || "");
+    const operationTicket = _beginRemediationOperation("suggest-palette", false, {
+      sourceHtml,
+      cancelUi: () => {
+        setPaletteBusy(false);
+      }
+    });
+    if (!sourceHtml || !_remediationOperationSourceIsCurrent(operationTicket)) {
+      _completeRemediationOperation(operationTicket);
       return;
     }
-    await _applyPalette({ id: "ai:" + intent.slice(0, 24), name: "AI: " + intent.slice(0, 24), tokens: proposed.tokens });
+    setPaletteBusy(true);
+    _toastForRemediationOperation(operationTicket, (t("pdf_audit.palette.ai_asking") || "\u2728 Asking the AI for a palette:") + ' "' + intent + '"\u2026', "info");
+    try {
+      let proposed = null;
+      try {
+        proposed = await _docPipeline.proposePaletteFromIntent(intent, { signal: operationTicket.controller && operationTicket.controller.signal });
+      } catch (_) {
+      }
+      if (!_remediationOperationSourceIsCurrent(operationTicket)) return;
+      if (!proposed || !proposed.tokens) {
+        _toastForRemediationOperation(operationTicket, t("pdf_audit.palette.ai_failed") || "The AI couldn\u2019t suggest a palette right now (it may be busy) \u2014 pick a preset above; contrast is guaranteed either way.", "info");
+        return;
+      }
+      await _applyPalette({ id: "ai:" + intent.slice(0, 24), name: "AI: " + intent.slice(0, 24), tokens: proposed.tokens }, operationTicket);
+    } finally {
+      if (_completeRemediationOperation(operationTicket)) setPaletteBusy(false);
+    }
   };
   const _revertPalette = async () => {
     const snap = _paletteSnapshotRef.current;
     if (!snap || _paletteBusy || !pdfFixResult) return;
-    setPaletteBusy(true);
-    setPdfFixResult((p) => p ? { ...p, accessibleHtml: snap } : p);
-    _paletteSnapshotRef.current = null;
-    setAppliedPalette(null);
-    addToast(t("pdf_audit.palette.reverted") || "\u21A9 Reverted to the original colours.", "info");
-    try {
-      await _reauditAndScore(snap, null);
-    } catch (_) {
+    const source = pdfFixResultRef && pdfFixResultRef.current;
+    const sourceHtml = String(source && source.accessibleHtml || "");
+    const operationTicket = _beginRemediationOperation("revert-palette", false, {
+      sourceHtml,
+      cancelUi: () => {
+        setPaletteBusy(false);
+      }
+    });
+    if (!sourceHtml || !_remediationOperationSourceIsCurrent(operationTicket)) {
+      _completeRemediationOperation(operationTicket);
+      return;
     }
-    setPaletteBusy(false);
+    setPaletteBusy(true);
+    try {
+      if (!_commitHtmlPendingVerification(operationTicket, snap, { _preCmdHtml: sourceHtml })) return;
+      _paletteSnapshotRef.current = null;
+      setAppliedPalette(null);
+      _toastForRemediationOperation(operationTicket, t("pdf_audit.palette.reverted") || "\u21A9 Reverted to the original colours.", "info");
+      try {
+        await _reauditAndScore(snap, null, operationTicket);
+      } catch (_) {
+      }
+    } finally {
+      if (_completeRemediationOperation(operationTicket)) setPaletteBusy(false);
+    }
   };
   const _axeTarget = (v) => {
     const nd = v && Array.isArray(v.nodeDetails) ? v.nodeDetails[0] : null;
@@ -6231,7 +6559,12 @@ function PdfAuditView(props) {
         if (!fixed.includes("Skip to") && !fixed.includes("skip-nav")) fixed = fixed.replace(/<body[^>]*>/, (m) => m + '\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px">Skip to main content</a>');
         const preFixAxe = await _safeAudit(() => runAxeAudit(fixed));
         let autoFix = null;
-        if (preFixAxe) autoFix = await _safeAudit(() => autoFixAxeViolations(fixed, preFixAxe, pdfAutoFixPasses));
+        if (preFixAxe) autoFix = await _safeAudit(() => autoFixAxeViolations(fixed, preFixAxe, pdfAutoFixPasses, {
+          documentEpoch: _webRemediationToken.documentEpoch,
+          signal: _webRemediationToken.controller && _webRemediationToken.controller.signal,
+          shouldAbort: () => !_viewDocumentJobIsCurrent(_webRemediationToken)
+        }));
+        if (!_viewDocumentJobIsCurrent(_webRemediationToken) || autoFix && autoFix.stale) return;
         if (autoFix?.html) fixed = autoFix.html;
         if (!_viewDocumentJobIsCurrent(_webRemediationToken)) return;
         if (_sourceLanguageReviewRequired) {
@@ -6742,8 +7075,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         addToast(t("toasts.remediation_already_running") || "Remediation is already running. This click was ignored so the active run can finish.", "info");
         return;
       }
-      const _oneClickDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : null;
-      const _oneClickDocumentIsCurrent = () => _oneClickDocumentEpoch == null || typeof isPdfDocumentIntakeCurrent !== "function" || isPdfDocumentIntakeCurrent(_oneClickDocumentEpoch);
+      const _oneClickDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
+      const _oneClickDocumentIsCurrent = () => Number.isInteger(_oneClickDocumentEpoch) && (typeof isPdfDocumentIntakeCurrent === "function" ? isPdfDocumentIntakeCurrent(_oneClickDocumentEpoch) : _oneClickDocumentEpoch === pdfDocumentEpoch);
       _oneClickRemediationBusyRef.current = true;
       setOneClickRemediationBusy(true);
       try {
@@ -6823,7 +7156,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
           if (!_oneClickDocumentIsCurrent()) return;
           _handsErr = null;
           try {
-            _res = await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit });
+            _res = await fixAndVerifyPdf({ documentEpoch: _oneClickDocumentEpoch, base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit });
           } catch (e) {
             _handsErr = e;
           }
@@ -7810,51 +8143,35 @@ Return ONLY JSON:
       setPdfFixLoading(true);
       pdfFixModeRef.current = "sweep";
       _setRemediationOperationStep(_sweepOperation, "Scanning for new issues...");
-      const prevSnapshot = {
-        html: _sweepSource.accessibleHtml,
-        afterScore: _sweepSource.afterScore,
-        ai: safeCloneAudit(_sweepSource.verificationAudit),
-        axe: safeCloneAudit(_sweepSource.axeAudit),
-        chars: _sweepSource.htmlChars
-      };
       try {
         let html = _sweepSource.accessibleHtml;
         const cf = fixContrastViolations(html);
         if (cf.fixCount > 0) html = cf.html;
-        _setRemediationOperationStep(_sweepOperation, "Running audit...");
-        const [rv, ra] = await Promise.all([auditOutputAccessibility(html, true), runAxeAudit(html)]);
+        _setRemediationOperationStep(_sweepOperation, "Running deterministic audit...");
+        const ra = await runAxeAudit(html, { signal: _sweepOperation.controller && _sweepOperation.controller.signal });
         if (!_remediationOperationIsCurrent(_sweepOperation)) return;
-        let committed = false;
+        let autoFixMeta = null;
         if (ra && ra.totalViolations > 0) {
           _setRemediationOperationStep(_sweepOperation, "Fixing " + ra.totalViolations + " violations...");
-          const fr = await autoFixAxeViolations(html, ra, pdfAutoFixPasses);
-          if (!_remediationOperationIsCurrent(_sweepOperation)) return;
-          html = fr.html;
-          const [fv, fa] = await Promise.all([auditOutputAccessibility(html, true), runAxeAudit(html)]);
-          if (!_remediationOperationIsCurrent(_sweepOperation)) return;
-          const candAi = fv || rv;
-          const candAxe = fa || ra;
-          const perfect = candAi?.issues?.length === 0 && candAxe?.totalViolations === 0;
-          committed = commitOrRevertPdfFix(
-            prevSnapshot,
-            { html, ai: candAi, axe: candAxe, chars: html.length, perfect },
-            { commit: { autoFixPasses: (_sweepSource.autoFixPasses || 0) + fr.passes, chunkState: fr.chunkState || _sweepSource.chunkState, chunkWeightedScore: fr.chunkWeightedScore || _sweepSource.chunkWeightedScore } },
-            "Additional Sweep",
-            { documentEpoch: _sweepOperation.documentEpoch, htmlToken: _sweepOperation.htmlToken }
-          );
-        } else {
-          const candAi = rv || _sweepSource.verificationAudit;
-          const candAxe = ra || _sweepSource.axeAudit;
-          const perfect = candAi?.issues?.length === 0 && candAxe?.totalViolations === 0;
-          committed = commitOrRevertPdfFix(
-            prevSnapshot,
-            { html, ai: candAi, axe: candAxe, chars: html.length, perfect },
-            {},
-            "Additional Sweep",
-            { documentEpoch: _sweepOperation.documentEpoch, htmlToken: _sweepOperation.htmlToken }
-          );
+          const fr = await autoFixAxeViolations(html, ra, pdfAutoFixPasses, {
+            documentEpoch: _sweepOperation.documentEpoch,
+            signal: _sweepOperation.controller && _sweepOperation.controller.signal,
+            shouldAbort: () => !_remediationOperationIsCurrent(_sweepOperation)
+          });
+          if (!_remediationOperationIsCurrent(_sweepOperation) || fr && fr.stale) return;
+          if (fr && fr.html) html = fr.html;
+          autoFixMeta = fr ? {
+            autoFixPasses: (_sweepSource.autoFixPasses || 0) + (fr.passes || 0),
+            chunkState: fr.chunkState || _sweepSource.chunkState,
+            chunkWeightedScore: fr.chunkWeightedScore || _sweepSource.chunkWeightedScore
+          } : null;
         }
-        if (committed) _toastForRemediationOperation(_sweepOperation, t("toasts.sweep_complete"), "success");
+        if (html !== _sweepSource.accessibleHtml && !_commitHtmlPendingVerification(_sweepOperation, html, autoFixMeta)) return;
+        _setRemediationOperationStep(_sweepOperation, "Running canonical verification...");
+        const recheck = await _reauditAndScore(html, null, _sweepOperation);
+        if (!_remediationOperationIsCurrent(_sweepOperation) || !recheck || recheck.stale) return;
+        const fullyVerified = recheck.fullyVerifiedSuccess === true && recheck.verificationState === "complete";
+        _toastForRemediationOperation(_sweepOperation, fullyVerified ? (t("toasts.sweep_complete") || "Additional sweep verified successfully.") + " " + recheck.score + "/100." : recheck.ok ? `Additional sweep finished at ${recheck.score}/100, but verification is ${recheck.verificationState || "unavailable"}; review is still required.` : "Additional sweep completed, but a current verified score is unavailable.", fullyVerified ? "success" : "warning");
       } catch (e) {
         _toastForRemediationOperation(_sweepOperation, t("toasts.sweep_failed") + (e?.message || ""), "error");
       } finally {
@@ -7872,10 +8189,33 @@ Return ONLY JSON:
       const MAX_INTERNAL_PASSES = 3;
       let html = _fixRemainingSource.accessibleHtml;
       let bestHtml = html;
-      let bestIssueCount = (_fixRemainingSource.verificationAudit?.issues?.length || 0) + (_fixRemainingSource.axeAudit?.totalViolations || 0);
+      const _countCanonicalIssues = (ai, axe, equalAccess) => {
+        const aiCount = ai && Array.isArray(ai.issues) ? ai.issues.length : null;
+        const axeCount = axe && Number.isFinite(axe.totalViolations) ? axe.totalViolations : null;
+        const equalAccessCount = equalAccess && Number.isFinite(equalAccess.failViolations) ? Math.max(0, equalAccess.failViolations) : null;
+        return aiCount === null && axeCount === null && equalAccessCount === null ? Number.POSITIVE_INFINITY : (aiCount || 0) + (axeCount || 0) + (equalAccessCount || 0);
+      };
+      const _executionRank = (verification) => verification && verification.engineExecutionComplete === true ? 2 : verification && verification.executionState === "partial" ? 1 : 0;
+      const _outcomeRank = (verification) => verification && verification.outcomeState === "pass" ? 3 : verification && verification.outcomeState === "review-required" ? 2 : verification && verification.outcomeState === "fail" ? 1 : 0;
+      const _canonicalCandidateImproved = (candidateVerification, candidateCount, priorVerification, priorCount) => {
+        const candidateExecution = _executionRank(candidateVerification);
+        const priorExecution = _executionRank(priorVerification);
+        if (candidateExecution < priorExecution) return false;
+        if (candidateVerification && candidateVerification.fullyVerifiedSuccess === true && !(priorVerification && priorVerification.fullyVerifiedSuccess === true)) return true;
+        if (!candidateVerification || !priorVerification || candidateVerification.outcomeState === "unknown" || priorVerification.outcomeState === "unknown") return false;
+        const candidateOutcome = _outcomeRank(candidateVerification);
+        const priorOutcome = _outcomeRank(priorVerification);
+        if (candidateOutcome !== priorOutcome) return candidateOutcome > priorOutcome;
+        return Number.isFinite(candidateCount) && (!Number.isFinite(priorCount) || candidateCount < priorCount);
+      };
+      let bestIssueCount = _countCanonicalIssues(_fixRemainingSource.verificationAudit, _fixRemainingSource.axeAudit, _fixRemainingSource.secondEngineAudit);
       let bestAi = safeCloneAudit(_fixRemainingSource.verificationAudit);
       let bestAxe = safeCloneAudit(_fixRemainingSource.axeAudit);
+      let bestEa = safeCloneAudit(_fixRemainingSource.secondEngineAudit);
+      let bestVerification = _verificationForExport(_fixRemainingSource);
+      const startVerification = bestVerification;
       let totalPasses = 0;
+      let lastCanonical = null;
       const prevSnapshot = {
         html: _fixRemainingSource.accessibleHtml,
         afterScore: _fixRemainingSource.afterScore,
@@ -7893,35 +8233,13 @@ Return ONLY JSON:
             ...(bestAxe?.moderate || []).map((v) => `AXE MODERATE: ${v.description} (${v.id})`),
             ...(bestAxe?.minor || []).map((v) => `AXE MINOR: ${v.description} (${v.id})`)
           ];
-          const allIssues = [...aiIssues, ...axeIssues];
+          const equalAccessIssues = (bestEa?.fails || []).map((v) => `EQUAL ACCESS FAIL: ${v.description || v.id || "confirmed failure"}`);
+          if (!equalAccessIssues.length && bestEa && Number.isFinite(bestEa.failViolations) && bestEa.failViolations > 0) equalAccessIssues.push(`EQUAL ACCESS: ${bestEa.failViolations} confirmed failure(s)`);
+          const allIssues = [...aiIssues, ...axeIssues, ...equalAccessIssues];
           if (allIssues.length === 0) break;
           _setRemediationOperationStep(_fixRemainingOperation, `Pass ${pass + 1}: deterministic fixes...`);
           let cf = fixContrastViolations(html);
           if (cf.fixCount > 0) html = cf.html;
-          if (/<html(?:\s[^>]*)?>/.test(html) && !/ lang=/.test(html.match(/<html[^>]*>/)?.[0] || "")) html = html.replace(/<html/, '<html lang="en"');
-          if (/<title>\s*<\/title>/.test(html) || /<head[^>]*>/.test(html) && !/<title[^>]*>[^<]+<\/title>/.test(html)) {
-            const tm = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
-            const tt = tm ? tm[1].trim() : "Accessible Document";
-            html = html.includes("<title>") ? html.replace(/<title>[^<]*<\/title>/, `<title>${tt}</title>`) : html.replace(/<head([^>]*)>/, `<head$1><title>${tt}</title>`);
-          }
-          if (pass === 0) {
-            html = html.replace(/<div([^>]*style="[^"]*(?:font-size:\s*(?:1[8-9]|[2-9]\d)\s*px|font-weight:\s*(?:bold|[6-9]\d{2}))[^"]*"[^>]*)>([\s\S]*?)<\/div>/gi, (m, a, c) => {
-              const t2 = c.replace(/<[^>]+>/g, "").trim();
-              return t2.length > 0 && t2.length < 200 && !/<h\d/.test(c) ? /<h1[\s>]/i.test(html) ? `<h2${a}>${c}</h2>` : `<h1${a}>${c}</h1>` : m;
-            });
-          }
-          if (!/<header[\s>]/i.test(html)) html = html.replace(/(<body[^>]*>)([\s\S]*?)(<main[\s>]|<h1[\s>])/i, (m, b, p, n) => p.trim().length > 10 ? `${b}<header role="banner">${p}</header>${n}` : m);
-          if (!/<main[\s>]/i.test(html)) {
-            html = html.replace(/<body([^>]*)>/, '<body$1>\n<main id="main-content" role="main">');
-            html = html.replace("</body>", "</main>\n</body>");
-          }
-          if (!/skip.to/i.test(html) && !/skip-nav/i.test(html)) html = html.replace(/<body([^>]*)>/, '<body$1>\n<a href="#main-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden">Skip to main content</a>');
-          html = html.replace(/<img([^>]*)>/gi, (m, a) => /alt\s*=/.test(a) ? m : `<img alt="Document image"${a}>`);
-          html = html.replace(/<th(?![^>]*scope)/gi, '<th scope="col"');
-          html = html.replace(/<a([^>]*)>\s*<\/a>/gi, (m, a) => {
-            const h = a.match(/href="([^"]*)"/);
-            return `<a${a}>${h ? h[1].replace(/https?:\/\//, "").substring(0, 40) : "Link"}</a>`;
-          });
           try {
             if (bestAxe && bestAxe.totalViolations > 0) {
               _setRemediationOperationStep(_fixRemainingOperation, `Pass ${pass + 1}: Tier 2 surgical fixes...`);
@@ -7929,7 +8247,7 @@ Return ONLY JSON:
               if (!_remediationOperationIsCurrent(_fixRemainingOperation)) return;
               if (t2 && t2.stats && t2.stats.accepted > 0) {
                 html = t2.html;
-                bestAxe = await runAxeAudit(html);
+                bestAxe = await runAxeAudit(html, { signal: _fixRemainingOperation.controller && _fixRemainingOperation.controller.signal });
                 if (!_remediationOperationIsCurrent(_fixRemainingOperation)) return;
                 warnLog(`[Fix Remaining] Pass ${pass + 1}: Tier 2 fixed ${t2.stats.violationsFixed} violation(s) in ${t2.stats.accepted} cluster(s)`);
               }
@@ -7940,18 +8258,20 @@ Return ONLY JSON:
               if (!_remediationOperationIsCurrent(_fixRemainingOperation)) return;
               if (t25 && t25.stats && t25.stats.accepted > 0) {
                 html = t25.html;
-                bestAxe = await runAxeAudit(html);
+                bestAxe = await runAxeAudit(html, { signal: _fixRemainingOperation.controller && _fixRemainingOperation.controller.signal });
                 if (!_remediationOperationIsCurrent(_fixRemainingOperation)) return;
                 warnLog(`[Fix Remaining] Pass ${pass + 1}: Tier 2.5 fixed ${t25.stats.violationsFixed} violation(s) in ${t25.stats.accepted} section(s)`);
               }
             }
-            const _afterCount = (bestAi?.issues?.length || 0) + (bestAxe?.totalViolations || 0);
+            const _afterCount = _countCanonicalIssues(bestAi, bestAxe, bestEa);
             if (_afterCount > 0) {
               _setRemediationOperationStep(_fixRemainingOperation, `Pass ${pass + 1}: Tier 3 chunked fix (${_afterCount} remaining)...`);
               const remResult = await remediateSurgicallyThenAI(html, {
                 aiIssues: bestAi?.issues || [],
                 axeResult: bestAxe,
                 enableGeminiPass: true,
+                signal: _fixRemainingOperation.controller && _fixRemainingOperation.controller.signal,
+                shouldAbort: () => !_remediationOperationIsCurrent(_fixRemainingOperation),
                 onProgress: (msg) => _setRemediationOperationStep(_fixRemainingOperation, `Pass ${pass + 1}: ${msg}`)
               });
               if (!_remediationOperationIsCurrent(_fixRemainingOperation)) return;
@@ -7968,51 +8288,75 @@ Return ONLY JSON:
           }
           cf = fixContrastViolations(html);
           if (cf.fixCount > 0) html = cf.html;
-          _setRemediationOperationStep(_fixRemainingOperation, `Pass ${pass + 1}: verifying (2 audits)...`);
-          const [rv1, rv2, ra] = await Promise.all([auditOutputAccessibility(html, true), auditOutputAccessibility(html, true), runAxeAudit(html)]);
+          _setRemediationOperationStep(_fixRemainingOperation, `Pass ${pass + 1}: deterministic pre-check...`);
+          const ra = await runAxeAudit(html, { signal: _fixRemainingOperation.controller && _fixRemainingOperation.controller.signal });
           if (!_remediationOperationIsCurrent(_fixRemainingOperation)) return;
           if (ra && ra.totalViolations > 0) {
-            const fr = await autoFixAxeViolations(html, ra, 1);
-            if (!_remediationOperationIsCurrent(_fixRemainingOperation)) return;
-            html = fr.html;
+            const fr = await autoFixAxeViolations(html, ra, 1, {
+              documentEpoch: _fixRemainingOperation.documentEpoch,
+              signal: _fixRemainingOperation.controller && _fixRemainingOperation.controller.signal,
+              shouldAbort: () => !_remediationOperationIsCurrent(_fixRemainingOperation)
+            });
+            if (!_remediationOperationIsCurrent(_fixRemainingOperation) || fr && fr.stale) return;
+            if (fr && fr.html) html = fr.html;
           }
-          const [fv1, fv2, fa] = await Promise.all([auditOutputAccessibility(html, true), auditOutputAccessibility(html, true), runAxeAudit(html)]);
-          if (!_remediationOperationIsCurrent(_fixRemainingOperation)) return;
-          const bestAiScores = [fv1, fv2, rv1, rv2].filter(Boolean).map((a) => a?.score).filter((s) => typeof s === "number");
-          const finalAi = fv1 || fv2 || rv1 || rv2;
-          if (finalAi && bestAiScores.length > 0) finalAi.score = Math.round(bestAiScores.reduce((a, b) => a + b, 0) / bestAiScores.length);
-          const finalAxe = fa || ra;
-          const newCount = (finalAi?.issues?.length || 0) + (finalAxe?.totalViolations || 0);
+          if (html !== (pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) && !_commitHtmlPendingVerification(_fixRemainingOperation, html, { autoFixPasses: (_fixRemainingSource.autoFixPasses || 0) + totalPasses + 1 })) return;
+          _setRemediationOperationStep(_fixRemainingOperation, `Pass ${pass + 1}: canonical verification...`);
+          const recheck = await _reauditAndScore(html, null, _fixRemainingOperation);
+          if (!_remediationOperationIsCurrent(_fixRemainingOperation) || !recheck || recheck.stale) return;
+          const canonical = pdfFixResultRef.current;
+          const finalAi = canonical && safeCloneAudit(canonical.verificationAudit);
+          const finalAxe = canonical && safeCloneAudit(canonical.axeAudit);
+          const finalEa = canonical && safeCloneAudit(canonical.secondEngineAudit);
+          const finalVerification = canonical ? _verificationForExport(canonical) : null;
+          const newCount = _countCanonicalIssues(finalAi, finalAxe, finalEa);
           totalPasses++;
-          warnLog(`[Fix Remaining] Pass ${pass + 1}: ${bestIssueCount} \u2192 ${newCount} issues`);
-          if (newCount < bestIssueCount) {
+          warnLog(`[Fix Remaining] Pass ${pass + 1}: ${Number.isFinite(bestIssueCount) ? bestIssueCount : "unavailable"} \u2192 ${Number.isFinite(newCount) ? newCount : "unavailable"} issues`);
+          if (html === bestHtml) {
+            bestIssueCount = newCount;
+            bestAi = finalAi;
+            bestAxe = finalAxe;
+            bestEa = finalEa;
+            bestVerification = finalVerification;
+            lastCanonical = recheck;
+            break;
+          }
+          if (_canonicalCandidateImproved(finalVerification, newCount, bestVerification, bestIssueCount)) {
             bestHtml = html;
             bestIssueCount = newCount;
             bestAi = finalAi;
             bestAxe = finalAxe;
-            if (newCount === 0) break;
+            bestEa = finalEa;
+            bestVerification = finalVerification;
+            lastCanonical = recheck;
+            if (finalVerification && finalVerification.fullyVerifiedSuccess === true) break;
           } else {
+            if (!_commitHtmlPendingVerification(_fixRemainingOperation, bestHtml, { autoFixPasses: (_fixRemainingSource.autoFixPasses || 0) + totalPasses })) return;
+            const restored = await _reauditAndScore(bestHtml, null, _fixRemainingOperation);
+            if (!_remediationOperationIsCurrent(_fixRemainingOperation) || !restored || restored.stale) return;
+            const restoredCanonical = pdfFixResultRef.current;
+            bestAi = restoredCanonical && safeCloneAudit(restoredCanonical.verificationAudit);
+            bestAxe = restoredCanonical && safeCloneAudit(restoredCanonical.axeAudit);
+            bestEa = restoredCanonical && safeCloneAudit(restoredCanonical.secondEngineAudit);
+            bestVerification = restoredCanonical ? _verificationForExport(restoredCanonical) : null;
+            bestIssueCount = _countCanonicalIssues(bestAi, bestAxe, bestEa);
+            lastCanonical = restored;
             html = bestHtml;
-            if (pass > 0) break;
+            break;
           }
         }
-        _setRemediationOperationStep(_fixRemainingOperation, "Final verification (averaging 3 audits)...");
-        const [endAi1, endAi2, endAi3, endAxe] = await Promise.all([
-          auditOutputAccessibility(bestHtml),
-          auditOutputAccessibility(bestHtml),
-          auditOutputAccessibility(bestHtml),
-          runAxeAudit(bestHtml)
-        ]);
-        if (!_remediationOperationIsCurrent(_fixRemainingOperation)) return;
-        const endScores = [endAi1, endAi2, endAi3].map((a) => a?.score).filter((s) => typeof s === "number");
-        let avgScore;
-        avgScore = endScores.length > 0 ? Math.round(endScores.reduce((a, b) => a + b, 0) / endScores.length) : bestAi?.score;
-        warnLog("[Fix Remaining] Final scores: " + endScores.join(", ") + " \u2192 avg " + avgScore);
-        const finalAxeResult = endAxe || bestAxe;
-        const finalAiResult = endAi1 || bestAi;
-        if (finalAiResult) finalAiResult.score = avgScore;
-        const perfect = (finalAiResult?.issues?.length || 0) === 0 && (finalAxeResult?.totalViolations || 0) === 0;
-        const startCount = (_fixRemainingSource.verificationAudit?.issues?.length || 0) + (_fixRemainingSource.axeAudit?.totalViolations || 0);
+        if (!lastCanonical) {
+          _setRemediationOperationStep(_fixRemainingOperation, "Running canonical verification...");
+          lastCanonical = await _reauditAndScore(bestHtml, null, _fixRemainingOperation);
+          if (!_remediationOperationIsCurrent(_fixRemainingOperation) || !lastCanonical || lastCanonical.stale) return;
+          const finalCanonical = pdfFixResultRef.current;
+          bestAi = finalCanonical && safeCloneAudit(finalCanonical.verificationAudit);
+          bestAxe = finalCanonical && safeCloneAudit(finalCanonical.axeAudit);
+          bestEa = finalCanonical && safeCloneAudit(finalCanonical.secondEngineAudit);
+          bestVerification = finalCanonical ? _verificationForExport(finalCanonical) : null;
+          bestIssueCount = _countCanonicalIssues(bestAi, bestAxe, bestEa);
+        }
+        const startCount = _countCanonicalIssues(_fixRemainingSource.verificationAudit, _fixRemainingSource.axeAudit, _fixRemainingSource.secondEngineAudit);
         let _refixNotes = Array.isArray(_fixRemainingSource.fidelityNotes) ? _fixRemainingSource.fidelityNotes.slice() : [];
         try {
           const _srcRaw = _fixRemainingSource.sourceText || "";
@@ -8038,22 +8382,25 @@ Return ONLY JSON:
         } catch (_fidErr) {
           warnLog("[Fix Remaining] fidelity sweep failed (non-critical): " + (_fidErr && _fidErr.message));
         }
-        const committed = commitOrRevertPdfFix(
-          prevSnapshot,
-          { html: bestHtml, ai: finalAiResult, axe: finalAxeResult, chars: bestHtml.length, perfect },
-          {
-            // M22 (deep dive 2026-07-09): fidelityLimited has TWO halves in the pipeline
-            // (coverage<90 OR notes) — recomputing it here from the re-fix notes alone made
-            // the header's "verify content" chip + amber asterisk VANISH on a doc still at
-            // e.g. 85% coverage, while the expert panel on the same screen kept saying 85%.
-            commit: { autoFixPasses: (_fixRemainingSource.autoFixPasses || 0) + totalPasses, fidelityNotes: _refixNotes, fidelityLimited: _refixNotes.length > 0 || typeof _fixRemainingSource.integrityCoverage === "number" && _fixRemainingSource.integrityCoverage < 90 },
-            preserveOnRevert: { autoFixPasses: (_fixRemainingSource.autoFixPasses || 0) + totalPasses }
-          },
-          "Fix Remaining",
-          { documentEpoch: _fixRemainingOperation.documentEpoch, htmlToken: _fixRemainingOperation.htmlToken }
-        );
+        const finalMetadataToken = _captureAsyncHtmlToken();
+        const committed = finalMetadataToken && finalMetadataToken.html === bestHtml && _commitAsyncHtmlIfCurrent(finalMetadataToken, (prev) => {
+          if (!prev || prev.accessibleHtml !== bestHtml) return prev;
+          const fidelityLimited = _refixNotes.length > 0 || typeof _fixRemainingSource.integrityCoverage === "number" && _fixRemainingSource.integrityCoverage < 90;
+          const accessibilityReview = !!(prev.axeAudit && Array.isArray(prev.axeAudit.critical) && prev.axeAudit.critical.length > 0 || prev.secondEngineAudit && Number.isFinite(prev.secondEngineAudit.failViolations) && prev.secondEngineAudit.failViolations > 0 || Number.isFinite(prev.afterScore) && prev.afterScore < 50);
+          return {
+            ...prev,
+            autoFixPasses: (_fixRemainingSource.autoFixPasses || 0) + totalPasses,
+            fidelityNotes: _refixNotes,
+            fidelityLimited,
+            needsExpertReview: fidelityLimited || accessibilityReview,
+            expertReviewReason: fidelityLimited ? accessibilityReview ? "both" : "content-fidelity" : accessibilityReview ? "accessibility" : null
+          };
+        });
         if (committed) {
-          addToast(bestIssueCount < startCount ? `Fixed! ${startCount} \u2192 ${bestIssueCount} issues (${totalPasses} passes).` : `${totalPasses} passes completed. ${bestIssueCount} issues may need manual remediation.`, bestIssueCount < startCount ? "success" : "info");
+          const improved = _canonicalCandidateImproved(bestVerification, bestIssueCount, startVerification, startCount);
+          const fullyVerified = !!(bestVerification && bestVerification.fullyVerifiedSuccess === true && bestVerification.verificationState === "complete");
+          const countLabel = Number.isFinite(bestIssueCount) ? String(bestIssueCount) : "an unavailable number of";
+          _toastForRemediationOperation(_fixRemainingOperation, fullyVerified ? `Fix pass verified successfully: ${Number.isFinite(startCount) ? startCount : "?"} \u2192 ${bestIssueCount} confirmed issues (${totalPasses} passes).` : improved ? `Canonical issue burden improved to ${countLabel} (${totalPasses} passes), but verification is ${bestVerification?.verificationState || "unavailable"}; review is still required.` : `${totalPasses} passes completed. ${countLabel} confirmed issues remain and verification is ${bestVerification?.verificationState || "unavailable"}; manual remediation may be required.`, fullyVerified ? "success" : improved ? "warning" : "info");
         }
       } catch (e) {
         if (_remediationOperationIsCurrent(_fixRemainingOperation)) {
@@ -8066,13 +8413,15 @@ Return ONLY JSON:
     }, disabled: pdfFixLoading, className: "flex-1 px-5 py-3 bg-gradient-to-r from-amber-800 to-orange-800 text-white rounded-xl font-bold text-sm hover:from-amber-900 hover:to-orange-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40" }, pdfFixLoading && pdfFixModeRef.current === "fix" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3"), " ", pdfFixStep || "Fixing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Wrench, { size: 16 }), " ", (pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0) > 0 ? `Fix ${(pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)} Remaining` : "Run Additional Fix Pass"))) : /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       console.warn("[Fix&Verify btn] clicked \u2014 pendingPdfBase64:", !!pendingPdfBase64, "pdfAuditResult:", !!pdfAuditResult, "pageRange:", pdfPageRange);
       if (!_requireRemediationReady()) return;
+      const _fixDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
       const freshBase64 = await ensurePdfBase64();
       if (!freshBase64) return;
+      if (typeof isPdfDocumentIntakeCurrent === "function" && !isPdfDocumentIntakeCurrent(_fixDocumentEpoch)) return;
       if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) {
-        fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {
+        fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {
         });
       } else {
-        fixAndVerifyPdf({ base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {
+        fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {
         });
       }
     }, disabled: pdfFixLoading || remediationReady === false, className: "flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40" }, pdfFixLoading ? /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3") : /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), pdfFixLoading ? pdfFixStep || "Fixing..." : pdfPageRange ? `\u267F Fix Pages ${pdfPageRange.start}\u2013${pdfPageRange.end}` : `\u267F Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ""}`), pdfFixLoading && /* @__PURE__ */ React.createElement("div", { className: "basis-full mt-1", role: "region", "aria-label": "Detailed remediation progress" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-1 text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, Math.round(_remediationPercent), "% estimated"), /* @__PURE__ */ React.createElement("span", null, _formatElapsed(remediationProgress?.elapsedMs), " elapsed")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-2 overflow-hidden", role: "progressbar", "aria-label": t("pdf_audit.fix_pass.progress_aria") || "Fix and verify progress", "aria-valuenow": Math.round(_remediationPercent), "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full", style: { width: _remediationPercent + "%" } })), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-700 mt-1 text-center font-semibold", role: "status", "aria-live": "polite", "aria-atomic": "true" }, remediationProgress?.detail || pdfFixStep), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[10px]" }, /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-slate-100 text-slate-700" }, "AI calls ", _progressStats.apiCalls || 0), /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-slate-100 text-slate-700" }, "Vision ", _progressStats.visionCalls || 0), /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-slate-100 text-slate-700" }, "Retries ", _progressStats.transportRetries || 0), !!_progressStats.recoveredRetries && /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800" }, "Recovered ", _progressStats.recoveredRetries), !!_progressStats.authThrottles && /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 rounded-full bg-amber-100 text-amber-800" }, "Throttle signals ", _progressStats.authThrottles)), remediationProgress?.activity?.message && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border px-2.5 py-1.5 text-[11px] " + (remediationProgress.status === "throttled" ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-slate-50 border-slate-200 text-slate-700") }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, remediationProgress.status === "throttled" ? "Waiting safely: " : "Current activity: "), remediationProgress.activity.message), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center justify-center" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowAgentTrace((v) => !v), "aria-pressed": showAgentTrace, className: "text-[11px] font-bold px-3 py-1 rounded-full border border-indigo-300 bg-indigo-50 text-indigo-800 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-400" }, showAgentTrace ? "Hide live agent trace" : "Show live agent trace")), showAgentTrace && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[10px] text-center text-slate-600" }, "Read-only safety view: intermediate AI HTML is isolated; code appears only after validation."), (() => {
@@ -8756,7 +9105,13 @@ Return ONLY JSON:
         return /* @__PURE__ */ React.createElement("div", { className: `${_bandColor} border rounded-lg p-2 text-[11px]` }, /* @__PURE__ */ React.createElement("div", { className: "font-bold mb-0.5" }, _bandLabel, " (", fidelityResult.fidelity, "% \xB7 ", _band === "green" ? "\u226599" : _band === "amber" ? "95\u201399" : "<95", "%)"), /* @__PURE__ */ React.createElement("div", { className: "leading-relaxed" }, _bandAdvice), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] mt-1 opacity-75" }, "Thresholds: \u226599% = production-ready \xB7 95\u201399% = review \xB7 <95% = re-run."));
       })()), disagreements.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-2 bg-amber-50 border border-amber-200 rounded-xl p-2 text-[11px]" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-amber-800 select-none" }, "\u26A0\uFE0F Tesseract & Vision disagreed on ", disagreements.length, " page", disagreements.length === 1 ? "" : "s", " \u2014 click to review"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2 max-h-96 overflow-y-auto" }, disagreements.map((d, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white rounded-lg border border-amber-100 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-[10px] text-amber-700 mb-1" }, "Page ", d.pageNum, " \u2014 Tesseract: ", d.tesseractChars, " chars \xB7 Vision: ", d.visionChars, " chars"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2 text-[10px]" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-600" }, "Tesseract"), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-1 rounded max-h-32 overflow-y-auto whitespace-pre-wrap" }, d.tesseractText.substring(0, 500), d.tesseractText.length > 500 ? "\u2026" : "")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-600" }, "Vision"), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-1 rounded max-h-32 overflow-y-auto whitespace-pre-wrap" }, d.visionText.substring(0, 500), d.visionText.length > 500 ? "\u2026" : ""))))))));
     })()), /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-gradient-to-br from-slate-50 via-indigo-50/40 to-violet-50/30 border border-indigo-200/60 rounded-2xl p-5 space-y-3", style: { animation: "fadeInUp 0.9s ease-out 7s both" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-700 flex items-center justify-center shadow-lg shadow-indigo-200" }, /* @__PURE__ */ React.createElement("span", { className: "text-white font-black text-base" }, "K")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "Knowbility"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider" }, t("pdf_audit.knowbility.partner_badge") || "Accessibility Partner"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider" }, "501(c)(3) Nonprofit")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed mt-1" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-700" }, t("pdf_audit.knowbility.mission_strong") || "Mission: Create an inclusive digital world for people with disabilities."), " ", "Founded in 1999 in Austin, TX, Knowbility is an award-winning nonprofit that helps organizations ensure their technology meets the highest accessibility benchmarks through expert testing, training, and remediation."))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg border border-indigo-100 p-2.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5" }, "\u{1F50D} Testing & Auditing"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-snug" }, t("pdf_audit.knowbility.testing_desc") || "Manual WCAG audits producing actionable reports and remediation paths for websites, apps, and documents")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg border border-indigo-100 p-2.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5" }, "\u{1F4C4} Document Remediation"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-snug" }, t("pdf_audit.knowbility.docrem_full_desc") || "Specialist team for PDF and MS Office documents \u2014 ensuring full usability with assistive technology")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg border border-indigo-100 p-2.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5" }, "\u267F AccessWorks"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-snug" }, t("pdf_audit.knowbility.accessworks_desc") || "Real-world usability testing by people with disabilities who use assistive technology daily")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg border border-indigo-100 p-2.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-700 uppercase tracking-wider mb-0.5" }, "\u{1F393} Training & AccessU"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 leading-snug" }, t("pdf_audit.knowbility.training_full_desc") || "Annual conference and on-demand courses \u2014 from beginner to advanced accessibility skills"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg border border-indigo-100 p-3" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-2 text-center" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "Web"), /* @__PURE__ */ React.createElement("a", { href: "https://knowbility.org?utm_source=alloflow&utm_medium=referral&utm_campaign=expert_remediation", target: "_blank", rel: "noopener noreferrer", className: "text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300" }, "knowbility.org")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "Email"), /* @__PURE__ */ React.createElement("a", { href: "mailto:knowbility@knowbility.org", className: "text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300" }, "knowbility@knowbility.org")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, "Phone"), /* @__PURE__ */ React.createElement("a", { href: "tel:+15125273138", className: "text-[11px] font-bold text-slate-700 hover:text-indigo-700" }, "512-527-3138"))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 pt-2 border-t border-indigo-100 text-center" }, /* @__PURE__ */ React.createElement("a", { href: "https://knowbility.org/services/project-inquiry", target: "_blank", rel: "noopener noreferrer", className: "inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-full text-[11px] font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md shadow-indigo-200" }, "Request a Project Inquiry \u2192"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 border-t border-indigo-100" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-600 font-medium uppercase tracking-wider" }, "W3C/WAI \xB7 IAAP-Certified \xB7 Clinton White House Recognized \xB7 FCC Innovation Award"), /* @__PURE__ */ React.createElement("div", { className: "flex-1 border-t border-indigo-100" })), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 text-center leading-relaxed italic" }, "While AlloFlow handles automated fixes, Knowbility's team ensures documents are fully usable by people with disabilities \u2014 not just technically compliant. Serving corporations, government agencies, educational institutions, and nonprofits since 1999.")), /* @__PURE__ */ React.createElement("style", null, `@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`)), /* @__PURE__ */ React.createElement("div", { className: "relative group" }, /* @__PURE__ */ React.createElement("button", { className: "px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5", title: t("pdf_audit.report.download_title") || "Download audit report" }, /* @__PURE__ */ React.createElement(FileDown, { size: 14 }), " Report \u25BE"), /* @__PURE__ */ React.createElement("div", { className: "hidden group-hover:block group-focus-within:block absolute top-full left-0 mt-1 bg-white border border-indigo-200 rounded-xl shadow-xl z-10 min-w-[180px] overflow-hidden" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const html = generateAuditReportHtml(pdfAuditResult, pendingPdfFile?.name || "document.pdf");
+      let html;
+      try {
+        html = _viewSanitizeMarkupForExport(generateAuditReportHtml(pdfAuditResult, pendingPdfFile?.name || "document.pdf"), _docPipeline);
+      } catch (error) {
+        addToast((t("toasts.export_security_unavailable") || "The report could not be opened safely. Please retry after the security module finishes loading.") + (error?.message ? " " + error.message : ""), "error");
+        return;
+      }
       const w = window.open("", "_blank");
       if (w) {
         w.document.write(html);
@@ -8771,7 +9126,13 @@ Return ONLY JSON:
       }
       if (addToast) addToast(t("toasts.report_opened_with_save_as"), "success");
     }, className: "w-full px-4 py-2.5 text-left text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors flex items-center gap-2" }, "\u{1F4C4} Formatted Report (PDF)"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const html = generateAuditReportHtml(pdfAuditResult, pendingPdfFile?.name || "document.pdf");
+      let html;
+      try {
+        html = _viewSanitizeMarkupForExport(generateAuditReportHtml(pdfAuditResult, pendingPdfFile?.name || "document.pdf"), _docPipeline);
+      } catch (error) {
+        addToast((t("toasts.export_security_unavailable") || "The report could not be downloaded safely. Please retry after the security module finishes loading.") + (error?.message ? " " + error.message : ""), "error");
+        return;
+      }
       const blob = new Blob([html], { type: "text/html;charset=utf-8" });
       safeDownloadBlob(blob, `a11y-audit-${(pendingPdfFile?.name || "document").replace(/\.pdf$/i, "")}-${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.html`);
       if (addToast) addToast(t("toasts.html_report_downloaded"), "success");
@@ -8795,7 +9156,7 @@ Return ONLY JSON:
       {
         onClick: () => {
           setChunkResumePrompt(null);
-          window.dispatchEvent(new CustomEvent("alloflow:chunk-resume-accept"));
+          window.dispatchEvent(new CustomEvent("alloflow:chunk-resume-accept", { detail: { documentEpoch: chunkResumePrompt.documentEpoch, runId: chunkResumePrompt.runId, runSequence: chunkResumePrompt.runSequence } }));
         },
         className: "px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors"
       },
@@ -8809,7 +9170,7 @@ Return ONLY JSON:
       {
         onClick: () => {
           setChunkResumePrompt(null);
-          window.dispatchEvent(new CustomEvent("alloflow:chunk-resume-decline"));
+          window.dispatchEvent(new CustomEvent("alloflow:chunk-resume-decline", { detail: { documentEpoch: chunkResumePrompt.documentEpoch, runId: chunkResumePrompt.runId, runSequence: chunkResumePrompt.runSequence } }));
         },
         className: "px-4 py-2 bg-white border border-amber-300 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-50 transition-colors"
       },
@@ -8834,7 +9195,7 @@ Return ONLY JSON:
           "aria-label": `${isExpanded ? "Hide" : "View"} diff for section ${chunk.index + 1}`
         },
         isExpanded ? "\u25BC Hide Diff" : "\u25B6 View Diff"
-      ), !isRejected && !pdfFixLoading && /* @__PURE__ */ React.createElement(
+      ), !isRejected && !pdfFixLoading && !pdfAutoContinueRunning && /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: () => {
@@ -8844,19 +9205,26 @@ Return ONLY JSON:
           "aria-label": `Re-fix section ${chunk.index + 1}`
         },
         "\u{1F504} Re-fix"
-      ), !isRejected && !pdfFixLoading && /* @__PURE__ */ React.createElement(
+      ), !isRejected && !pdfFixLoading && !pdfAutoContinueRunning && /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: () => {
-            setLiveChunkRejected((prev) => ({ ...prev, [chunk.index]: true }));
             try {
-              const cs = getChunkState?.();
-              if (cs && cs.fixedChunks && cs.originalChunks && cs.fixedChunks[chunk.index] !== void 0) {
-                cs.fixedChunks[chunk.index] = cs.originalChunks[chunk.index];
-                const revertedHtml = cs.preamble + "\n" + cs.fixedChunks.join("\n") + "\n" + cs.postamble;
-                setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: revertedHtml, htmlChars: revertedHtml.length } : prev);
-                addToast(`Section ${chunk.index + 1} reverted to original`, "info");
+              const token = _captureAsyncHtmlToken();
+              const selection = selectChunkVersion?.(chunk.index, "original", {
+                currentHtml: token && token.html,
+                documentEpoch: token && token.documentEpoch
+              });
+              if (!selection || selection.stale || !selection.html) {
+                addToast("This section changed before it could be reverted. Refresh the live review and try again.", "info");
+                return;
               }
+              if (!_commitAsyncHtmlIfCurrent(token, (prev) => prev ? { ...prev, accessibleHtml: selection.html, htmlChars: selection.html.length, chunkState: selection.chunkState, chunkWeightedScore: null, chunkReport: null } : prev)) {
+                addToast("The document changed before this section revert could be applied.", "info");
+                return;
+              }
+              setLiveChunkRejected((prev) => ({ ...prev, [chunk.index]: true }));
+              addToast(`Section ${chunk.index + 1} reverted to original`, "info");
             } catch (e) {
               addToast(`Revert failed: ${e?.message}`, "error");
             }
@@ -8865,27 +9233,32 @@ Return ONLY JSON:
           "aria-label": `Reject fix for section ${chunk.index + 1}, revert to original`
         },
         "\u2715 Reject"
-      ), isRejected && !pdfFixLoading && /* @__PURE__ */ React.createElement(
+      ), isRejected && !pdfFixLoading && !pdfAutoContinueRunning && /* @__PURE__ */ React.createElement(
         "button",
         {
           onClick: () => {
-            setLiveChunkRejected((prev) => {
-              const next = { ...prev };
-              delete next[chunk.index];
-              return next;
-            });
             try {
-              const cs = getChunkState?.();
-              if (cs && cs.fixedChunks) {
-                const fixedHtml = cs.chunkResults?.[chunk.index]?.html;
-                if (fixedHtml !== void 0) {
-                  cs.fixedChunks[chunk.index] = fixedHtml;
-                  const restoredHtml = cs.preamble + "\n" + cs.fixedChunks.join("\n") + "\n" + cs.postamble;
-                  setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: restoredHtml, htmlChars: restoredHtml.length } : prev);
-                  addToast(`Section ${chunk.index + 1} restored`, "success");
-                }
+              const token = _captureAsyncHtmlToken();
+              const selection = selectChunkVersion?.(chunk.index, "fixed", {
+                currentHtml: token && token.html,
+                documentEpoch: token && token.documentEpoch
+              });
+              if (!selection || selection.stale || !selection.html) {
+                addToast("This section changed before it could be restored. Refresh the live review and try again.", "info");
+                return;
               }
+              if (!_commitAsyncHtmlIfCurrent(token, (prev) => prev ? { ...prev, accessibleHtml: selection.html, htmlChars: selection.html.length, chunkState: selection.chunkState, chunkWeightedScore: null, chunkReport: null } : prev)) {
+                addToast("The document changed before this section restore could be applied.", "info");
+                return;
+              }
+              setLiveChunkRejected((prev) => {
+                const next = { ...prev };
+                delete next[chunk.index];
+                return next;
+              });
+              addToast(`Section ${chunk.index + 1} restored`, "success");
             } catch (e) {
+              addToast(`Restore failed: ${e?.message}`, "error");
             }
           },
           className: "text-[11px] bg-slate-200 text-slate-700 px-2 py-1 rounded-full font-bold hover:bg-slate-300 transition-colors",
@@ -9599,6 +9972,18 @@ Return ONLY JSON:
         return;
       }
       if (!win) return;
+      let _safeCompareAfterHtml = "";
+      try {
+        _safeCompareAfterHtml = _viewSanitizeMarkupForExport(pdfFixResult.accessibleHtml, _docPipeline);
+      } catch (error) {
+        _clearComparePopupCallbacks(_comparePopupOwnerRef.current);
+        try {
+          if (!win.closed) win.close();
+        } catch (_) {
+        }
+        addToast((t("toasts.export_security_unavailable") || "The comparison could not be opened safely. Please retry after the security module finishes loading.") + (error?.message ? " " + error.message : ""), "error");
+        return;
+      }
       const beforeScore = pdfAuditResult?.score ?? pdfFixResult.beforeScore ?? "?";
       const afterAi = pdfFixResult.afterScore;
       const afterAxe = pdfFixResult.axeAudit?.score ?? null;
@@ -9880,8 +10265,7 @@ Return ONLY JSON:
 
                             var _b64 = "${(() => {
         try {
-          const _safeHtml = String(pdfFixResult.accessibleHtml || "").replace(/<script[\s\S]*?<\/script>/gi, "").replace(/<\/?(?:iframe|object|embed)\b[^>]*>/gi, "").replace(/[\s/]on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "").replace(/(?:javascript|vbscript)\s*:/gi, "");
-          return btoa(unescape(encodeURIComponent(_safeHtml)));
+          return btoa(unescape(encodeURIComponent(_safeCompareAfterHtml)));
         } catch (_) {
           return "";
         }
@@ -10815,7 +11199,13 @@ Return ONLY JSON:
       const _rptBlended = _rptAi != null ? _rptAi : _rptAxe;
       const _rptVerification = _verificationForExport(pdfFixResult);
       const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _rptBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _rptBlended, afterScoreVerified: _rptVerification.afterScoreVerified, verificationState: _rptVerification.verificationState, verificationReasons: _rptVerification.reasons, verificationHtmlBinding: _rptVerification.verificationHtmlBinding, verificationResult: pdfFixResult, summary: pdfAuditResult?.summary || "", integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, verificationCoverage: _rptVerification.coverage, requiresManualReview: _rptVerification.requiresManualReview, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, _estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null, _estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null };
-      const html = generateAuditReportHtml(full, pendingPdfFile?.name || "document.pdf", true);
+      let html;
+      try {
+        html = _viewSanitizeMarkupForExport(generateAuditReportHtml(full, pendingPdfFile?.name || "document.pdf", true), _docPipeline);
+      } catch (error) {
+        addToast((t("toasts.export_security_unavailable") || "The report could not be opened safely. Please retry after the security module finishes loading.") + (error?.message ? " " + error.message : ""), "error");
+        return;
+      }
       const w = window.open("", "_blank");
       if (w) {
         w.document.write(html);
@@ -10835,7 +11225,13 @@ Return ONLY JSON:
       const _dlBlended = _dlAi != null ? _dlAi : _dlAxe;
       const _dlVerification = _verificationForExport(pdfFixResult);
       const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _dlBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _dlBlended, afterScoreVerified: _dlVerification.afterScoreVerified, verificationState: _dlVerification.verificationState, verificationReasons: _dlVerification.reasons, verificationHtmlBinding: _dlVerification.verificationHtmlBinding, verificationResult: pdfFixResult, summary: pdfAuditResult?.summary || "", integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, verificationCoverage: _dlVerification.coverage, requiresManualReview: _dlVerification.requiresManualReview, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, _estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore) ? pdfFixResult._estimatedMinimumScore : null, _estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null };
-      const html = generateAuditReportHtml(full, pendingPdfFile?.name || "document.pdf", true);
+      let html;
+      try {
+        html = _viewSanitizeMarkupForExport(generateAuditReportHtml(full, pendingPdfFile?.name || "document.pdf", true), _docPipeline);
+      } catch (error) {
+        addToast((t("toasts.export_security_unavailable") || "The report could not be downloaded safely. Please retry after the security module finishes loading.") + (error?.message ? " " + error.message : ""), "error");
+        return;
+      }
       const blob = new Blob([html], { type: "text/html" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -11073,6 +11469,7 @@ Return ONLY JSON:
       const _lowConf = typeof window !== "undefined" && Array.isArray(window.__lastOcrLowConfidencePages) ? window.__lastOcrLowConfidencePages : [];
       const _lowPages = _lowConf.map((p) => p && p.pageNum).filter((n) => typeof n === "number");
       const _reRun = async (force) => {
+        const _rescanDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
         if (pdfFixResult && pdfFixResult.accessibleHtml) {
           const _rescanDecision = await askPdfConfirmation({
             title: t("pdf_audit.rescan_title") || "Replace results with a new OCR scan?",
@@ -11101,9 +11498,16 @@ Return ONLY JSON:
           }
           return;
         }
-        if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name }).catch(() => {
+        if (typeof isPdfDocumentIntakeCurrent === "function" && !isPdfDocumentIntakeCurrent(_rescanDocumentEpoch)) {
+          try {
+            window.__alloForceOcr = null;
+          } catch (_) {
+          }
+          return;
+        }
+        if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) fixAndVerifyPdf({ documentEpoch: _rescanDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name }).catch(() => {
         });
-        else fixAndVerifyPdf({ base64: fb, fileName: pendingPdfFile?.name }).catch(() => {
+        else fixAndVerifyPdf({ documentEpoch: _rescanDocumentEpoch, base64: fb, fileName: pendingPdfFile?.name }).catch(() => {
         });
       };
       return /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, _lowPages.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-1.5 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", null, "\u26A0 ", t("pdf_audit.low_conf_ocr") || "Low OCR confidence on", " page", _lowPages.length === 1 ? "" : "s", " ", _lowPages.slice(0, 8).join(", "), _lowPages.length > 8 ? "\u2026" : "", ". ", t("pdf_audit.low_conf_ocr_hint") || "The text may be misread."), /* @__PURE__ */ React.createElement("button", { onClick: () => _reRun({ pages: _lowPages }), disabled: pdfFixLoading, className: "ml-auto px-2 py-0.5 bg-white border border-amber-400 text-amber-800 rounded-full font-bold hover:bg-amber-100 disabled:opacity-40 shrink-0" }, "\u{1F504} Re-OCR ", _lowPages.length, " ", _lowPages.length === 1 ? t("pdf_audit.page") || "page" : t("pdf_audit.pages") || "pages")), /* @__PURE__ */ React.createElement("button", { onClick: () => _reRun("all"), disabled: pdfFixLoading, title: t("pdf_audit.rescan_ocr_tooltip") || "Re-run OCR on the whole document, ignoring the embedded text layer and any saved text. Use this if the extracted text looks garbled.", className: "w-full px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40" }, "\u{1F504} ", t("pdf_audit.rescan_ocr") || "Re-scan with OCR (text looks wrong?)"));
@@ -12968,7 +13372,7 @@ Return ONLY CSS \u2014 no explanation, no markdown fences.`, true);
               `Analyze this document/image and extract the brand color scheme and typography.
 
 Return ONLY JSON:
-{"headingColor":"hex","accentColor":"hex","bgColor":"hex","textColor":"hex","headerBg":"hex or CSS gradient","headerText":"hex","tableBg":"hex","tableBorder":"hex","bodyFont":"CSS font-family string","headingFont":"CSS font-family string","extraCSS":"any additional CSS rules to match the brand style"}`,
+{"headingColor":"hex","accentColor":"hex","bgColor":"hex","textColor":"hex","headerBg":"hex or linear-gradient using hex/rgb/hsl colors","headerText":"hex","tableBg":"hex","tableBorder":"hex","bodyFont":"CSS font-family string","headingFont":"CSS font-family string"}`,
               base64,
               mime
             );
@@ -12982,17 +13386,25 @@ Return ONLY JSON:
             const brand = JSON.parse(cleaned);
             const doc = pdfPreviewRef.current?.contentDocument;
             if (doc) {
+              const bodyFont = _viewSafeCssFontFamily(brand.bodyFont, "system-ui");
+              const headingFont = _viewSafeCssFontFamily(brand.headingFont, bodyFont);
+              const textColor = _viewSafeCssColor(brand.textColor, "#1e293b", false);
+              const bgColor = _viewSafeCssColor(brand.bgColor, "#fff", false);
+              const headingColor = _viewSafeCssColor(brand.headingColor, "#1e3a5f", false);
+              const accentColor = _viewSafeCssColor(brand.accentColor, "#2563eb", false);
+              const headerBg = _viewSafeCssColor(brand.headerBg, "#f1f5f9", true);
+              const tableBg = _viewSafeCssColor(brand.tableBg, headerBg, true);
+              const tableBorder = _viewSafeCssColor(brand.tableBorder, "#cbd5e1", false);
               const style = doc.createElement("style");
               style.id = "brand-theme";
               const old = doc.getElementById("brand-theme");
               if (old) old.remove();
               style.textContent = `
-                            body { font-family: ${brand.bodyFont || "system-ui"}; color: ${brand.textColor || "#1e293b"}; background: ${brand.bgColor || "#fff"}; }
-                            h1,h2,h3,h4 { font-family: ${brand.headingFont || brand.bodyFont || "system-ui"}; color: ${brand.headingColor || "#1e3a5f"}; }
-                            a { color: ${brand.accentColor || "#2563eb"}; }
-                            th { background: ${brand.tableBg || brand.headerBg || "#f1f5f9"}; border-color: ${brand.tableBorder || "#cbd5e1"}; }
-                            table { border-color: ${brand.tableBorder || "#cbd5e1"}; }
-                            ${brand.extraCSS || ""}
+                            body { font-family: ${bodyFont}; color: ${textColor}; background: ${bgColor}; }
+                            h1,h2,h3,h4 { font-family: ${headingFont}; color: ${headingColor}; }
+                            a { color: ${accentColor}; }
+                            th { background: ${tableBg}; border-color: ${tableBorder}; }
+                            table { border-color: ${tableBorder}; }
                           `;
               doc.head.appendChild(style);
               addToast(t("toasts.brand_theme_applied"), "success");
@@ -16471,7 +16883,7 @@ Return ONLY JSON:
           ref: pdfPreviewRef,
           title: t("pdf_audit.preview.iframe_title") || "Accessible document preview",
           className: "flex-1 w-full border-0",
-          sandbox: "allow-same-origin allow-scripts allow-forms allow-modals",
+          sandbox: "allow-same-origin allow-forms allow-modals",
           onLoad: () => {
             const iframe = pdfPreviewRef.current;
             const doc = iframe?.contentDocument;

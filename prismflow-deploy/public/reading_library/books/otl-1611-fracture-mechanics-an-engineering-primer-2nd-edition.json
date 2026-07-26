@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1611-fracture-mechanics-an-engineering-primer-2nd-edition",
+  "title": "Fracture Mechanics: An Engineering Primer - 2nd Edition",
+  "description": "In this second edition, which is the result of numerous revisions, updates and additions, the authors cover the basic concepts of fracture mechanics for both the linear elastic and elastic-plastic regimes. The fracture mechanics parameters K, G, J and CTOD are treated in a basic manner along with the test methods to determine critical values. The development of failure assessment based on elastic-plastic fracture mechanics is reflected in a comprehensive treatment. Three chapters are devoted to the fracture mechanics characterisation of crack growth. Fatigue crack growth is extensively treated and attention is paid to the important topic of the initiation and growth of short fatigue cracks. Furthermore, sustained load fracture and dynamic crack growth are discussed, including various test techniques, e.g. the determination of the crack arrest toughness. Finally, there are two chapters dealing with mechanisms of fracture and the ways in which actual material behaviour influences the fracture mechanics characterisation of crack growth. This textbook is intended primarily for engineering students. It will be useful to practising engineers as well, since it provides the background to several test and design methods and to criteria for material selection.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology - Civil Engineering"
+  ],
+  "authors": [
+    "Michael Janssen - Author / Jan Zuidema - Author / Russell Wanhill - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "TU Delft Open",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/fracture-mechanics-an-engineering-primer"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "In this second edition, which is the result of numerous revisions, updates and additions, the authors cover the basic concepts of fracture mechanics for both the linear elastic and elastic-plastic regimes. The fracture mechanics parameters K, G, J and CTOD are treated in a basic manner along with the test methods to determine critical values. The development of failure assessment based on elastic-plastic fracture mechanics is reflected in a comprehensive treatment. Three chapters are devoted to the fracture mechanics characterisation of crack growth. Fatigue crack growth is extensively treated and attention is paid to the important topic of the initiation and growth of short fatigue cracks. Furthermore, sustained load fracture and dynamic crack growth are discussed, including various test techniques, e.g. the determination of the crack arrest toughness. Finally, there are two chapters dealing with mechanisms of fracture and the ways in which actual material behaviour influences the fracture mechanics characterisation of crack growth. This textbook is intended primarily for engineering students. It will be useful to practising engineers as well, since it provides the background to several test and design methods and to criteria for material selection."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 211
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1611",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

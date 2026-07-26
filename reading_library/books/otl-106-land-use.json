@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-106-land-use",
+  "title": "Land Use",
+  "description": "This text explores the laws governing the use of land. Sometimes narrowly focused, often intensely local, land use regulation may give the impression of a highly specialized field with small stakes. The text is divided into three parts: First, we will survey the ordinary, local administrative scheme of land use regulation. The cases in this section are intended to establish what that system is and what it's standards are. In the second part of the course, we will turn our attention to cases illustrating litigation attacks on the ordinary administrative scheme. The purpose here is not, as it was in the first part, to understand better the standards the administrators should apply, but to understand the constraints imposed on the contents of local laws, the procedures of enactment and permitting, and the composition of local lawmaking bodies. In the third part, we focus on the distributive concerns raised by land use regulation. The regulatory takings doctrine has gone from, literally, nothing, to wrestling to disentangle distributive concerns from substantive ones, to trying to craft either rules or standards to identify regulations that go “too far” and should be considered “takings” within the meaning of the Fifth Amendment. We will consider what the doctrine's purposes are, how it should be governed, and how it should be invoked as a procedural matter.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law - Property Law"
+  ],
+  "authors": [
+    "Christian Turner - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CALI's eLangdell® Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/land-use"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This text explores the laws governing the use of land. Sometimes narrowly focused, often intensely local, land use regulation may give the impression of a highly specialized field with small stakes. The text is divided into three parts: First, we will survey the ordinary, local administrative scheme of land use regulation. The cases in this section are intended to establish what that system is and what it's standards are. In the second part of the course, we will turn our attention to cases illustrating litigation attacks on the ordinary administrative scheme. The purpose here is not, as it was in the first part, to understand better the standards the administrators should apply, but to understand the constraints imposed on the contents of local laws, the procedures of enactment and permitting, and the composition of local lawmaking bodies. In the third part, we focus on the distributive concerns raised by land use regulation. The regulatory takings doctrine has gone from, literally, nothing, to wrestling to disentangle distributive concerns from substantive ones, to trying to craft either rules or standards to identify regulations that go “too far” and should be considered “takings” within the meaning of the Fifth Amendment. We will consider what the doctrine's purposes are, how it should be governed, and how it should be invoked as a procedural matter."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2014."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 243
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "106",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

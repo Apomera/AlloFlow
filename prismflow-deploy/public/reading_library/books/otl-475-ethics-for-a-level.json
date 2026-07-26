@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-475-ethics-for-a-level",
+  "title": "Ethics for A-Level",
+  "description": "What does pleasure have to do with morality? What role, if any, should intuition have in the formation of moral theory? If something is ‘simulated', can it be immoral? This accessible and wide-ranging textbook explores these questions and many more. Key ideas in the fields of normative ethics, metaethics and applied ethics are explained rigorously and systematically, with a vivid writing style that enlivens the topics with energy and wit. Individual theories are discussed in detail in the first part of the book, before these positions are applied to a wide range of contemporary situations including business ethics, sexual ethics, and the acceptability of eating animals. A wealth of real-life examples, set out with depth and care, illuminate the complexities of different ethical approaches while conveying their modern-day relevance. This concise and highly engaging resource is tailored to the Ethics components of AQA Philosophy and OCR Religious Studies, with a clear and practical layout that includes end-of-chapter summaries, key terms, and common mistakes to avoid. It should also be of practical use for those teaching Philosophy as part of the International Baccalaureate. Ethics for A-Level is of particular value to students and teachers, but Fisher and Dimmock's precise and scholarly approach will appeal to anyone seeking a rigorous and lively introduction to the challenging subject of ethics.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities",
+    "Humanities - Philosophy"
+  ],
+  "authors": [
+    "Mark Dimmock - Author / Andrew Fisher - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Book Publishers",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/ethics-for-a-level"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "What does pleasure have to do with morality? What role, if any, should intuition have in the formation of moral theory? If something is ‘simulated', can it be immoral? This accessible and wide-ranging textbook explores these questions and many more. Key ideas in the fields of normative ethics, metaethics and applied ethics are explained rigorously and systematically, with a vivid writing style that enlivens the topics with energy and wit. Individual theories are discussed in detail in the first part of the book, before these positions are applied to a wide range of contemporary situations including business ethics, sexual ethics, and the acceptability of eating animals. A wealth of real-life examples, set out with depth and care, illuminate the complexities of different ethical approaches while conveying their modern-day relevance. This concise and highly engaging resource is tailored to the Ethics components of AQA Philosophy and OCR Religious Studies, with a clear and practical layout that includes end-of-chapter summaries, key terms, and common mistakes to avoid. It should also be of practical use for those teaching Philosophy as part of the International Baccalaureate. Ethics for A-Level is of particular value to students and teachers, but Fisher and Dimmock's precise and scholarly approach will appeal to anyone seeking a rigorous and lively introduction to the challenging subject of ethics."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 240
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "475",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

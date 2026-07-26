@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1025-future-energy-opportunities-challenges",
+  "title": "Future Energy: Opportunities & Challenges",
+  "description": "How can we produce enough sustainable energy while avoiding unacceptable environmental consequences? To evaluate the various energy options, we must understand the science of each potential energy source and energy use technology. This book presents the science in an easy-to-understand way to enable readers to make informed decisions about what is possible and practical, and to choose lifestyle options to implement in their personal lives. America and the world face daunting questions about how we produce energy and how we use it. Conservation and improved energy efficiency can help reduce energy requirements, but cannot halt the steady increase in energy consumption. An increasing world population and increasing energy appetites in emerging economies will create competition for energy resources for all nations. The possibilities for future energy production include fossil fuels (oil, natural gas, coal, oil sands, and oil shale), biofuels, solar, wind, hydro-energy, geothermal, and nuclear (probably fission and possibly fusion). Each of these sources has relative advantages and disadvantages. The problem is to produce enough sustainable energy while avoiding unacceptable environmental consequences, especially climate change. In order to evaluate the potential of the various energy options, one must understand the basic science that underlies each potential energy source and energy use technology. This knowledge will enable us to determine what is possible and practical and, maybe more importantly, what is impossible or impractical. Fortunately most of the pertinent science is old, well established and, for the most part, quite simple. This science provides a framework into which one can insert real data and draw conclusions. Without such quantitative assessments, claims about capabilities of the various energy options must be viewed as unverified assumptions rather than hard facts. This book presents the essential science in an easy-to-understand, yet comprehensive way. A big change in the ways that we produce and use energy is inevitable. Informed choices will help avoid waste, avoid unnecessary disruptions in our lives, and avoid undesirable environmental effects. The purpose of this book is to help the reader make informed decisions about which energy production technologies to support and which energy use technologies and lifestyle options to implement in his/her personal life. This book was originally published in 2013 by the International Society of Automation. Rights for this work have been reverted to the author by the original publisher. To report your interest or share that you have adopted Future Energy: Opportunities & Challenges, please complete this short form. To provide feedback or report errata, please complete this short form.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Physics"
+  ],
+  "authors": [
+    "Thomas W. Kerlin - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "The University of Tennessee Libraries",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/future-energy-opportunities-challenges"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "How can we produce enough sustainable energy while avoiding unacceptable environmental consequences? To evaluate the various energy options, we must understand the science of each potential energy source and energy use technology. This book presents the science in an easy-to-understand way to enable readers to make informed decisions about what is possible and practical, and to choose lifestyle options to implement in their personal lives. America and the world face daunting questions about how we produce energy and how we use it. Conservation and improved energy efficiency can help reduce energy requirements, but cannot halt the steady increase in energy consumption. An increasing world population and increasing energy appetites in emerging economies will create competition for energy resources for all nations. The possibilities for future energy production include fossil fuels (oil, natural gas, coal, oil sands, and oil shale), biofuels, solar, wind, hydro-energy, geothermal, and nuclear (probably fission and possibly fusion). Each of these sources has relative advantages and disadvantages. The problem is to produce enough sustainable energy while avoiding unacceptable environmental consequences, especially climate change. In order to evaluate the potential of the various energy options, one must understand the basic science that underlies each potential energy source and energy use technology. This knowledge will enable us to determine what is possible and practical and, maybe more importantly, what is impossible or impractical. Fortunately most of the pertinent science is old, well established and, for the most part, quite simple. This science provides a framework into which one can insert real data and draw conclusions. Without such quantitative assessments, claims about capabilities of the various energy options must be viewed as unverified assumptions rather than hard facts. This book presents the essential science in an easy-to-understand, yet comprehensive way. A big change in the ways that we produce and use energy is inevitable. Informed choices will help avoid waste, avoid unnecessary disruptions in our lives, and avoid undesirable environmental effects. The purpose of this book is to help the reader make informed decisions about which energy production technologies to support and which energy use technologies and lifestyle options to implement in his/her personal life. This book was originally published in 2013 by the International Society of Automation. Rights for this work have been reverted to the author by the original publisher. To report your interest or share that you have adopted Future Energy: Opportunities & Challenges, please complete this short form. To provide feedback or report errata, please complete this short form."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2013."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 436
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1025",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

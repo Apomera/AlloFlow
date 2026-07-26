@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1934-movilizando-horizontes-para-el-futuro-de-la-educacion-y-ciencia-abierta",
+  "title": "Movilizando horizontes para el futuro de la educación y ciencia abierta",
+  "description": "Este libro abre nuevas vías de acción y nos invita a ser parte de la solución. A través de un manifiesto inspirador, expertos en educación y ciencia abierta se unen para trazar un camino hacia un nuevo contrato social que sea más justo, inclusivo y accesible para todos. La obra surge del décimo aniversario de la Cátedra UNESCO Movimiento Educativo Abierto para América Latina, donde se reunieron voluntades y conocimientos para reimaginar la educación. Mediante un enfoque transdisciplinar, los autores nos guían a través de tres preguntas clave: ¿qué queremos?, ¿quiénes somos? y ¿cómo llegaremos allí? Más que un texto académico, este libro es un llamado a la acción. Con un lenguaje sencillo y directo, es una herramienta indispensable para académicos, desarrolladores, líderes empresariales y tomadores de decisiones. Constituye una guía práctica y visionaria para implementar y mejorar las prácticas de educación y ciencia abierta. Únete a esta movilización de horizontes para construir un futuro donde el conocimiento sea un bien común y una fuerza poderosa para el bienestar global.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education"
+  ],
+  "authors": [
+    "María Soledad Ramírez-Montoya - Author / Inés Álvarez-Icaza Longoria - Author / Edgar Omar López-Caudana - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Octaedro Editorial",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/movilizando-horizontes-para-el-futuro-de-la-educacion-y-ciencia-abierta"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Este libro abre nuevas vías de acción y nos invita a ser parte de la solución. A través de un manifiesto inspirador, expertos en educación y ciencia abierta se unen para trazar un camino hacia un nuevo contrato social que sea más justo, inclusivo y accesible para todos. La obra surge del décimo aniversario de la Cátedra UNESCO Movimiento Educativo Abierto para América Latina, donde se reunieron voluntades y conocimientos para reimaginar la educación. Mediante un enfoque transdisciplinar, los autores nos guían a través de tres preguntas clave: ¿qué queremos?, ¿quiénes somos? y ¿cómo llegaremos allí? Más que un texto académico, este libro es un llamado a la acción. Con un lenguaje sencillo y directo, es una herramienta indispensable para académicos, desarrolladores, líderes empresariales y tomadores de decisiones. Constituye una guía práctica y visionaria para implementar y mejorar las prácticas de educación y ciencia abierta. Únete a esta movilización de horizontes para construir un futuro donde el conocimiento sea un bien común y una fuerza poderosa para el bienestar global."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 193
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1934",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52219-atta-s-safarkii-ugu-horeeyay-ee-baska",
+  "title": "Atta's safarkii ugu horeeyay ee baska",
+  "description": "Tani waxaa sameeyay limo-waxaana lagu sameeyay maktabadda dhexe Carruurta ee Accra intii lagu jiray aqoon- iswedaarsiga sheeko- sameenta ee ASB oo uu hogaaminayay Edward Addo-Yohoo.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Emelia Antiwaa"
+  ],
+  "illustrators": [],
+  "translators": [
+    "Osman Egal"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Emelia Antiwaa",
+      "role": "Author"
+    },
+    {
+      "name": "Osman Egal",
+      "role": "Translation"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Emelia Antiwaa (Author); Osman Egal (Translation)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52219",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52219",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52219",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-2bd5c01b3cff9f18",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/30610501.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/30610502.png",
+      "text": "Had iyo jeer waxay ahayd riyada Atta's in uu bas ku safro maalin.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52219#page=1",
+      "sourceDigest": "sha256:f3f4f180a2c5d80bee78efcdf7774ecc9cdf04e8223701caaae930c6584b9131"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/30610503.png",
+      "text": "Hal maalin Atta's abbihiis ayaa u sheegay in ay bas ugu safri doonaan Kumasi. Atta aad buu u farxay markuu maqlay warkaas.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52219#page=2",
+      "sourceDigest": "sha256:3d1473e691fff04419b330c1010210dcd380aeb6549036afd7b9c61a954d2942"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/30610504.png",
+      "text": "Maalintii socdaalkooda, Atta Iyo aabihii waxay aadeen boosaajada basaska. Aabihii baa labadoodaba tikidho u soo iibiyay. Waxayna sugeen markooda si ay u fuulaan baska.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52219#page=3",
+      "sourceDigest": "sha256:03b5ebc5a422827d30e7037a5c32752383321c06b1ef40221877dcee2a4e28a4"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/30610505.png",
+      "text": "Waxaa lagaaray markii baska la fuuli lahaa. Kaaliyaha darawalka ayaa hubiyay tigidhadooda ka hor inta uusan u oggolaan inay fuulaan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52219#page=4",
+      "sourceDigest": "sha256:8ebefd1caf13fb529c844938e7e6ee3e1237b7b96e475881f14f096e103ddc51"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/30610506.png",
+      "text": "Markuu basku buuxsamay, ayuu darawalkii fariistay kursigiisii oo dhaqaaqay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52219#page=5",
+      "sourceDigest": "sha256:21c13593e3162fd56d377e7bc2893fe71d07bf4e943e1167d13aea38b43657dd"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/30610507.png",
+      "text": "Intii ay jidka ku sii jireen, waxay soo mareen magaalooyin ay ka mid yihiin Suhum, Nsawam, Anyinam, iyo Nkawkaw.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52219#page=6",
+      "sourceDigest": "sha256:9574ba19e03b56cb14ad276d8a7856b09af99304a0b86b99f61b5737f35ed38e"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/30610508.png",
+      "text": "Anyinam ayuu darawalkii ku joojiyay baska. Rakaabkii way ka degeen waxayna isticmaaleen musqusha.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52219#page=7",
+      "sourceDigest": "sha256:2fade44bed2498d5ab1977bb2cd1728c35b7465076d5b477d7f5b5495b67fd3a"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/30610509.png",
+      "text": "Nkawakaw rakaabku waxay ka soo iibsadeen ganacsatada xoogaa rooti.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52219#page=8",
+      "sourceDigest": "sha256:4ea122b0ff84b7f9b2876d6e38cae3aa6a44222f3f1eff66c141b98202717c2f"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/30610510.png",
+      "text": "Baskii ayaa ugu danbayn yimid Kumasi, dhammaan rakaabkiina waa ka dageen. Waxay Atta u ahayd maalin xiisa leh, sababtoo ah, uğur danbeyntii, riyadiisii ayaa u rumowday.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52219#page=9",
+      "sourceDigest": "sha256:ed77e2e73bd59d8966044875e94535ccbd8a0cc0716e74c94db1a71cc883bfeb"
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 155
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:b42af56b5ed6124eab1caaa7652152ba2e547e6746712268dae1109bdebf9ffb"
+  }
+}

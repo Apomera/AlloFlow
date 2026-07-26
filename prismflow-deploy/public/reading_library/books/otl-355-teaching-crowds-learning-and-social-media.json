@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-355-teaching-crowds-learning-and-social-media",
+  "title": "Teaching Crowds: Learning and Social Media",
+  "description": "Within the rapidly expanding field of educational technology, learners and educators must confront a seemingly overwhelming selection of tools designed to deliver and facilitate both online and blended learning. Many of these tools assume that learning is configured and delivered in closed contexts, through learning management systems (LMS). However, while traditional \"classroom\" learning is by no means obsolete, networked learning is in the ascendant. A foundational method in online and blended education, as well as the most common means of informal and self-directed learning, networked learning is rapidly becoming the dominant mode of teaching as well as learning. In Teaching Crowds, Dron and Anderson introduce a new model for understanding and exploiting the pedagogical potential of Web-based technologies, one that rests on connections — on networks and collectives — rather than on separations. Recognizing that online learning both demands and affords new models of teaching and learning, the authors show how learners can engage with social media platforms to create an unbounded field of emergent connections. These connections empower learners, allowing them to draw from one another's expertise to formulate and fulfill their own educational goals. In an increasingly networked world, developing such skills will, they argue, better prepare students to become self-directed, lifelong learners.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Curriculum & Instruction",
+    "Education - Distance Education"
+  ],
+  "authors": [
+    "Jon Dron - Author / Terry Anderson - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Athabasca University Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-NoDerivs",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/teaching-crowds-learning-and-social-media"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-NoDerivs"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Within the rapidly expanding field of educational technology, learners and educators must confront a seemingly overwhelming selection of tools designed to deliver and facilitate both online and blended learning. Many of these tools assume that learning is configured and delivered in closed contexts, through learning management systems (LMS). However, while traditional \"classroom\" learning is by no means obsolete, networked learning is in the ascendant. A foundational method in online and blended education, as well as the most common means of informal and self-directed learning, networked learning is rapidly becoming the dominant mode of teaching as well as learning. In Teaching Crowds, Dron and Anderson introduce a new model for understanding and exploiting the pedagogical potential of Web-based technologies, one that rests on connections — on networks and collectives — rather than on separations. Recognizing that online learning both demands and affords new models of teaching and learning, the authors show how learners can engage with social media platforms to create an unbounded field of emergent connections. These connections empower learners, allowing them to draw from one another's expertise to formulate and fulfill their own educational goals. In an increasingly networked world, developing such skills will, they argue, better prepare students to become self-directed, lifelong learners."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-NoDerivs. Copyright year: 2014."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 228
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-NoDerivs",
+  "externalRecordId": "355",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-1724-sima-and-siza",
+  "title": "Sima and Siza",
+  "description": "Sima wants to be a nurse one day. His favourite game is hospital-hospital. But papa and his friends do not approve. What will change their minds?",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Emotions and life skills",
+    "My body, identity, and daily routines",
+    "Positive male role models"
+  ],
+  "authors": [
+    "Lwando Xaso"
+  ],
+  "illustrators": [
+    "Claire Ingram"
+  ],
+  "contributors": [
+    {
+      "name": "Claire Ingram",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Lwando Xaso",
+      "role": "Writer"
+    },
+    {
+      "name": "Arthur Attwell",
+      "role": "Designer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/sima-and-siza/",
+    "attributionUrl": "https://bookdash.org/books/sima-and-siza/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=sima-and-siza"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2016/01/sima-and-siza_Page_01-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2016/01/sima-and-siza_Page_01-600x600.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Sima wants to be a nurse one day. His favourite game is hospital-hospital. But papa and his friends do not approve. What will change their minds?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Claire Ingram (Illustrator); Lwando Xaso (Writer); Arthur Attwell (Designer)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=sima-and-siza"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 89
+  }
+}

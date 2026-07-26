@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-20846-iingonyama-zisoloko-zikhaliphile",
+  "title": "Iingonyama zisoloko zikhaliphile",
+  "description": "Le ngonyama encinci ifuna wazi ukuba iingonyama zinamandla, zinamendu, kwaye ngaphezu kwako konke, zikhaliphile.",
+  "language": "isiXhosa",
+  "langCode": "xho",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Emotions and life skills"
+  ],
+  "authors": [
+    "Daniel Browde"
+  ],
+  "illustrators": [
+    "Carlos Amato"
+  ],
+  "contributors": [
+    {
+      "name": "Daniel Browde",
+      "role": "Writer"
+    },
+    {
+      "name": "Carlos Amato",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Alison Ziki",
+      "role": "Editor"
+    },
+    {
+      "name": "Thabang Tlhako",
+      "role": "Designer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/iingonyama-zisoloko-zikhaliphile/",
+    "attributionUrl": "https://bookdash.org/books/iingonyama-zisoloko-zikhaliphile/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=lions-are-always-brave"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/02/lions-are-always-brave_xh_20200717_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/02/lions-are-always-brave_xh_20200717_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Le ngonyama encinci ifuna wazi ukuba iingonyama zinamandla, zinamendu, kwaye ngaphezu kwako konke, zikhaliphile."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Daniel Browde (Writer); Carlos Amato (Illustrator); Alison Ziki (Editor); Thabang Tlhako (Designer)\n\nLanguage: isiXhosa. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=lions-are-always-brave"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 80
+  }
+}

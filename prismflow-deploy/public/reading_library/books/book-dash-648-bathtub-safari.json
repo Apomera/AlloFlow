@@ -1,0 +1,86 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-648-bathtub-safari",
+  "title": "Bathtub Safari",
+  "description": "Jack’s bath time takes a wild turn as things in his bathtub start to change, and a group of animals becomes part of his adventurous bathtub safari!",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Let's play!",
+    "My body, identity, and daily routines"
+  ],
+  "authors": [
+    "Tracy Lynn Chemaly"
+  ],
+  "illustrators": [
+    "Robert McEwan"
+  ],
+  "contributors": [
+    {
+      "name": "Robert McEwan",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Sarah-Jane Williams",
+      "role": "Designer"
+    },
+    {
+      "name": "Tracy Lynn Chemaly",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/bathtub-safari/",
+    "attributionUrl": "https://bookdash.org/books/bathtub-safari/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=bathtub-safari"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2014/12/bathtub-safari_front-cover_20141202-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2014/12/bathtub-safari_front-cover_20141202-600x600.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Jack’s bath time takes a wild turn as things in his bathtub start to change, and a group of animals becomes part of his adventurous bathtub safari!"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Robert McEwan (Illustrator); Sarah-Jane Williams (Designer); Tracy Lynn Chemaly (Writer)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=bathtub-safari"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 91
+  }
+}

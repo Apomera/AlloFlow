@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-11",
+  "reviewedAt": "2026-07-25",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next eight unreviewed items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "domainsCovered": 6,
+    "appliedOrAnalysisItems": 8,
+    "keyPositionsPreserved": 8,
+    "optionSpecificExplanations": 32,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 166,
+      "asymmetricExtremeDistractorCandidates": 339,
+      "advancedDirectRecallCandidates": 23,
+      "semanticConceptDuplicatePairs": 287,
+      "semanticConceptDuplicateClusters": 128,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 162,
+      "asymmetricExtremeDistractorCandidates": 332,
+      "advancedDirectRecallCandidates": 23,
+      "semanticConceptDuplicatePairs": 272,
+      "semanticConceptDuplicateClusters": 128,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-b017-biological-1",
+      "domainId": "biological",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "biological-activity-dependent-synaptic-refinement",
+      "sourceCheck": "The reviewed neuroscience literature defines activity-dependent pruning as selective removal of some synapses with maintenance or strengthening of others as neural activity guides developing circuit organization, supporting the keyed mechanism and excluding indiscriminate cell loss.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b020-social-1",
+      "domainId": "social-cultural",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "social-cognitive-neoassociation-process-sequence",
+      "sourceCheck": "Berkowitz's peer-reviewed reformulation places negative affect and associative activation early in the response to aversive stimulation, while attribution and higher-order cognitive processing subsequently differentiate or regulate the initial tendencies.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-professional-073",
+      "domainId": "professional",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-emergency-competence-bounded-care",
+      "sourceCheck": "The official APA standard permits emergency services beyond established competence when appropriate alternatives are unavailable so that care is not denied, and it limits that service to the duration of the emergency or until suitable care becomes available.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-assessment-064",
+      "domainId": "assessment",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "assessment-bdi-severity-versus-diagnosis",
+      "sourceCheck": "Pearson's official instrument page identifies a 21-item brief self-report inventory measuring depression symptom severity over two weeks, supporting screening and monitoring use while not converting a questionnaire total into an independently sufficient diagnosis.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-015",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "cognitive-dual-process-default-and-intervention",
+      "sourceCheck": "Evans and Stanovich characterize Type 1 processing as rapid and autonomous and Type 2 processing as capable of intervening on defaults, supporting hypothetical thought, and loading heavily on working memory, which maps directly onto the scenario's two judgments.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b004-professional-2",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-multiple-relationship-prospective-acceptance",
+      "sourceCheck": "The official APA standard uses a prospective reasonable-expectation test focused on impaired objectivity, competence, effectiveness, exploitation, or harm; it does not make every overlap prohibited or treat consent as dispositive.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-professional-055",
+      "domainId": "professional",
+      "difficulty": "intermediate",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "professional-unforeseen-multiple-relationship-management",
+      "sourceCheck": "The APA code requires risk-focused analysis of multiple relationships and, when an unforeseen potentially harmful overlap arises, reasonable resolution with due regard for the affected person's interests, supporting management rather than intent, waiver, or reflexive termination rules.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b028-intervention-2",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-erp-exposure-with-response-prevention",
+      "sourceCheck": "The NIMH description identifies the defining pairing used in the scenario: safe exposure to an obsession-triggering situation while preventing the associated compulsion and tolerating the resulting distress rather than neutralizing it.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

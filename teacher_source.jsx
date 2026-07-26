@@ -2067,14 +2067,17 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         );
     };
     const handleEndQuiz = async () => {
-        addToast(t('quiz.session_ended_success') || "Session ended successfully.", "success");
         try {
             const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
             await updateDoc(sessionRef, {
-                "quizState.isActive": false
+                "quizState.isActive": false,
+                "quizState.phase": "closed",
+                "quizState.endedAt": Date.now()
             });
+            addToast(t('quiz.session_ended_success') || "Session ended successfully.", "success");
         } catch (err) {
             warnLog("Quiz end Firestore failed (Canvas sandbox):", err.message);
+            addToast("Could not end the live quiz. Please try again.", "error");
         }
     };
     const handleModeChange = async (e) => {

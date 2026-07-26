@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-144-programming-fundamentals-a-modular-structured-approach-using-c",
+  "title": "Programming Fundamentals - A Modular Structured Approach using C++",
+  "description": "Programming Fundamentals - A Modular Structured Approach using C++ is written by Kenneth Leroy Busbee, a faculty member at Houston Community College in Houston, Texas. The materials used in this textbook/collection were developed by the author and others as independent modules for publication within the Connexions environment. Programming fundamentals are often divided into three college courses: Modular/Structured, Object Oriented and Data Structures. This textbook/collection covers the first of those three courses. The learning modules of this textbook/collection were written as standalone modules. Students using a collection of modules as a textbook will usually view it contents by reading the modules sequentially as presented by the author of the collection. The learning modules of this textbook/collection were, for the most part, written without consideration of a speci??c programming language. In many cases the C++ language is discussed as part of the explanation of the concept. Often the examples used for C++ are exactly the same for the Java programming language. However, some modules were written speci??cally for the C++ programming language. This could not beavoided as the C++ language is used in conjunction with this textbook/collection by the author in teaching college courses.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science - Programming Languages"
+  ],
+  "authors": [
+    "Kenneth Leroy Busbee - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax CNX",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/programming-fundamentals-a-modular-structured-approach-using-c"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Programming Fundamentals - A Modular Structured Approach using C++ is written by Kenneth Leroy Busbee, a faculty member at Houston Community College in Houston, Texas. The materials used in this textbook/collection were developed by the author and others as independent modules for publication within the Connexions environment. Programming fundamentals are often divided into three college courses: Modular/Structured, Object Oriented and Data Structures. This textbook/collection covers the first of those three courses. The learning modules of this textbook/collection were written as standalone modules. Students using a collection of modules as a textbook will usually view it contents by reading the modules sequentially as presented by the author of the collection. The learning modules of this textbook/collection were, for the most part, written without consideration of a speci??c programming language. In many cases the C++ language is discussed as part of the explanation of the concept. Often the examples used for C++ are exactly the same for the Java programming language. However, some modules were written speci??cally for the C++ programming language. This could not beavoided as the C++ language is used in conjunction with this textbook/collection by the author in teaching college courses."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2013."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 215
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "144",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1510-polimetrics-a-stata-companion-to-introduction-to-political-science-resea",
+  "title": "Polimetrics: A Stata Companion to Introduction to Political Science Research Methods - 1st Edition",
+  "description": "Polimetrics: A Stata Companion, authored by Dr. Josh Franco, is an Open Education Resource workbook licensed CC BY-NC and designed as a Stata companion to Introduction to Political Science Research Methods. This workbook provides a tour of the Stata software, an introduction to cross-sectional, time series, and panel data, and an introduction to a variety of models. I review models where the outcome is linear, binary, ordinal, categorical, and count. Additionally, I have an interpretation chapter on survival models. Each “Models” chapter has a similar organizational structure: about, estimated time, what is the model, how are models run in Stata, how do we interpret the model results, and a real-world example of model results in a Creative Commons licensed, peer-reviewed journal article. Additionally, mini-assignment instructions and a rubric are included so students can practice their interpretation skills.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Statistics"
+  ],
+  "authors": [
+    "Josh Franco - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Political Science (OPoliSci)",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/polimetrics-a-stata-companion-to-introduction-to-political-science-research-methods"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Polimetrics: A Stata Companion, authored by Dr. Josh Franco, is an Open Education Resource workbook licensed CC BY-NC and designed as a Stata companion to Introduction to Political Science Research Methods. This workbook provides a tour of the Stata software, an introduction to cross-sectional, time series, and panel data, and an introduction to a variety of models. I review models where the outcome is linear, binary, ordinal, categorical, and count. Additionally, I have an interpretation chapter on survival models. Each “Models” chapter has a similar organizational structure: about, estimated time, what is the model, how are models run in Stata, how do we interpret the model results, and a real-world example of model results in a Creative Commons licensed, peer-reviewed journal article. Additionally, mini-assignment instructions and a rubric are included so students can practice their interpretation skills."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 160
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1510",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-33811-baboti-na-ngayi",
+  "title": "Baboti na ngayi",
+  "description": "Ekoki kozala pasi tango baboti nayo bazali lisusu te elongo. (Lisapo na bandakisa oyo esalemaki na sanza ya motoba na mobu tuku mibale na zomi na libwa na tango ya bopemi ya mosala, na lisalisi ya Sophia town Community Psychological Service, na Johannesburg).",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Gloria M"
+  ],
+  "illustrators": [
+    "Gloria M"
+  ],
+  "translators": [
+    "Guillain Sompa, Theresa Nyemba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Gloria M",
+      "role": "Author"
+    },
+    {
+      "name": "Guillain Sompa, Theresa Nyemba",
+      "role": "Translation"
+    },
+    {
+      "name": "Gloria M",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Gloria M (Author); Guillain Sompa, Theresa Nyemba (Translation); Gloria M (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33811",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33811",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "33811",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-c5a7ee57674214c8",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/91400160.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Tata na ngayi afandaka na Yeoville.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33811#page=1",
+      "sourceDigest": "sha256:56fbadf7357c1c29bc6751e9d51923d8f8be9413e5701ad2f3fe7f744236bc1f"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/91400157.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33811#page=2",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Ngayi na fandaka na Bertrams, na mama na ngayi pe bandeko na ngayi mibale ya basi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33811#page=3",
+      "sourceDigest": "sha256:64d362c65f0cf4f0edf14cbce23ab98e1f055d82052e183fb515b53349462b46"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/91400158.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33811#page=4",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Namonaka tata na ngayi tango ayaka kotala biso na mokolo ya mbotama na ngayi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33811#page=5",
+      "sourceDigest": "sha256:c361d34d440554eef1cced931d40ef2a60f61269f48848cb88fbe3970887e39d"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/91400159.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33811#page=6",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "Nalingaka ye afanda na biso. Nayebi te pona nini tofandaka esika moko te.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33811#page=7",
+      "sourceDigest": "sha256:2de1e0f6401b96a01555b3bd877cd3c374163804971cf6873b63d6cd9a799c8d"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/91400160.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33811#page=8",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 49
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:f68c7b7ffe6da41ae42e473f43217c70be3c01c0329df569404db379c729bb63"
+  }
+}

@@ -22,7 +22,7 @@
 //     and why the grid steps voltage up then down (loss ∝ I²R).
 //   • Earth's Field — Earth as a giant (tilted) bar magnet: declination,
 //     the magnetosphere that deflects the solar wind, and pole reversals.
-//   • Quiz — 12 questions with a quest hook at 9+.
+//   • Quiz — 22 questions with a quest hook at 15+.
 //
 // Science-accuracy notes (hedged where honesty demands it):
 //   • Field LINES are a schematic dipole model — real bar-magnet fields near
@@ -50,6 +50,7 @@
   var _electro3DCanvas = null;
   var _induction3DRAF = null;
   var _induction3DRunToken = 0;
+  var _benchTimer = null;
 
   // ── Pure physics helpers (exported for tests) ──────────────────────────
   // 2-D magnetic dipole field direction at point p from a dipole at `mag`
@@ -371,6 +372,120 @@
     };
   }
 
+  // One deterministic time step for the coupled motor-generator system.
+  // The electrical side includes motor resistance and back EMF; the mechanical
+  // side includes inertia, generator counter-torque, and shaft friction.
+  function motorGeneratorTransientStep(state, controls, dtSeconds) {
+    var previous = state || {};
+    var c = controls || {};
+    var dt = Math.max(0, Math.min(0.25, Number(dtSeconds) || 0));
+    var omega = Math.max(0, Number(previous.omega) || 0);
+    var temperature = Math.max(22, Number(previous.temperature) || 22);
+    var time = Math.max(0, Number(previous.time) || 0);
+    var currentSetting = Math.max(0, Math.abs(Number(c.current) || 0));
+    var motorField = Math.max(0, Math.abs(Number(c.motorField) || 0));
+    var loadOhms = Math.max(1, Math.abs(Number(c.loadOhms) || 40));
+    var frictionLevel = Math.max(0, Math.abs(Number(c.friction) || 0));
+    var turns = Math.max(1, Math.abs(Number(c.turns) || 80));
+    var generatorField = Math.max(0, Math.abs(Number(c.generatorField) || 0));
+    var supplyVoltage = 12;
+    var motorResistance = currentSetting > 0 ? supplyVoltage / currentSetting : 1e9;
+    var motorConstant = 0.025 * motorField;
+    var backEMF = motorConstant * omega;
+    var motorCurrent = currentSetting > 0
+      ? Math.max(0, Math.min(currentSetting, (supplyVoltage - backEMF) / motorResistance))
+      : 0;
+    var motorTorque = motorConstant * motorCurrent;
+    var generatorConstant = 0.0008 * turns * generatorField;
+    var generatedVoltage = generatorConstant * omega;
+    var loadCurrent = generatedVoltage / loadOhms;
+    var outputPower = generatedVoltage * loadCurrent;
+    var generatorEfficiency = 0.84;
+    var generatorTorque = omega > 1e-8 ? outputPower / (generatorEfficiency * omega) : 0;
+    var availableBeforeFriction = motorTorque - generatorTorque;
+    var frictionLimit = omega > 0 || motorCurrent > 0 ? 0.005 + frictionLevel * 0.008 : 0;
+    var frictionTorque = omega > 0.05
+      ? frictionLimit
+      : Math.min(frictionLimit, Math.max(0, availableBeforeFriction));
+    var netTorque = motorTorque - generatorTorque - frictionTorque;
+    var inertia = 0.012;
+    var nextOmega = Math.max(0, omega + netTorque / inertia * dt);
+    if (nextOmega === 0 && netTorque < 0) netTorque = 0;
+    var inputPower = supplyVoltage * motorCurrent;
+    var copperLoss = motorCurrent * motorCurrent * motorResistance;
+    var generatorLoss = outputPower * (1 / generatorEfficiency - 1);
+    var mechanicalLoss = frictionTorque * omega;
+    var losses = copperLoss + generatorLoss + mechanicalLoss;
+    var kineticPower = netTorque * omega;
+    var cooling = Math.max(0, temperature - 22) * 0.08;
+    var nextTemperature = Math.max(22, temperature + (losses * 0.12 - cooling) * dt);
+    return {
+      time: time + dt, omega: nextOmega, rpm: nextOmega * 60 / (2 * Math.PI),
+      temperature: nextTemperature, inputVoltage: supplyVoltage,
+      inputCurrent: motorCurrent, inputPower: inputPower, backEMF: backEMF,
+      motorResistance: motorResistance, motorTorque: motorTorque,
+      generatorConstant: generatorConstant, generatedVoltage: generatedVoltage,
+      loadCurrent: loadCurrent, loadOhms: loadOhms, outputPower: outputPower,
+      generatorTorque: generatorTorque, frictionTorque: frictionTorque,
+      copperLoss: copperLoss, generatorLoss: generatorLoss,
+      mechanicalLoss: mechanicalLoss, losses: losses, kineticPower: kineticPower,
+      efficiency: inputPower > 0 ? Math.max(0, Math.min(1, outputPower / inputPower)) : 0
+    };
+  }
+
+  function motorGeneratorSimulate(controls, seconds, dtSeconds, initialState) {
+    var duration = Math.max(0, Number(seconds) || 0);
+    var dt = Math.max(0.02, Math.min(0.25, Number(dtSeconds) || 0.1));
+    var state = Object.assign({ time: 0, omega: 0, temperature: 22 }, initialState || {});
+    var trace = [motorGeneratorTransientStep(state, controls, 0)];
+    while (state.time < duration - 1e-9) {
+      state = motorGeneratorTransientStep(state, controls, Math.min(dt, duration - state.time));
+      trace.push(state);
+    }
+    return trace;
+  }
+
+  function evaluateMotorGeneratorMission(trace) {
+    var samples = Array.isArray(trace) ? trace.filter(function (sample) { return sample && isFinite(sample.time); }) : [];
+    if (!samples.length) return { pass: false, rpm: 0, voltage: 0, power: 0, maxTemperature: 22, checks: [false, false, false, true] };
+    var endTime = samples[samples.length - 1].time;
+    var settled = samples.filter(function (sample) { return sample.time >= Math.max(0, endTime - 2); });
+    function average(key) {
+      return settled.reduce(function (sum, sample) { return sum + (Number(sample[key]) || 0); }, 0) / Math.max(1, settled.length);
+    }
+    var rpm = average('rpm');
+    var voltage = average('generatedVoltage');
+    var power = average('outputPower');
+    var maxTemperature = samples.reduce(function (mx, sample) { return Math.max(mx, Number(sample.temperature) || 22); }, 22);
+    var checks = [rpm >= 500, voltage >= 14 && voltage <= 18, power >= 5, maxTemperature <= 65];
+    return { pass: checks.every(Boolean), rpm: rpm, voltage: voltage, power: power, maxTemperature: maxTemperature, checks: checks };
+  }
+
+  function describeMotorGeneratorTrialChange(current, previous) {
+    if (!current || !previous) return { count: 0, keys: [], labels: [], label: 'baseline', fair: true };
+    var variables = [
+      ['loadOhms', 'generator load', 40],
+      ['turns', 'generator turns', 80],
+      ['field', 'generator field', 4],
+      ['current', 'motor current', 3],
+      ['motorField', 'motor field', 4],
+      ['friction', 'shaft friction', 3]
+    ];
+    var changed = variables.filter(function (entry) {
+      var currentValue = current[entry[0]] == null ? entry[2] : Number(current[entry[0]]);
+      var previousValue = previous[entry[0]] == null ? entry[2] : Number(previous[entry[0]]);
+      return currentValue !== previousValue;
+    });
+    var keys = changed.map(function (entry) { return entry[0]; });
+    var labels = changed.map(function (entry) { return entry[1]; });
+    return {
+      count: changed.length,
+      keys: keys,
+      labels: labels,
+      label: changed.length === 0 ? 'repeat design' : (changed.length === 1 ? labels[0] + ' only' : labels.join(' + ')),
+      fair: changed.length <= 1
+    };
+  }
   // Far-field, axial dipole-pair force magnitude. The 60-unit reference keeps
   // the lab readout intuitive while preserving the important F ∝ m₁m₂/r⁴
   // relationship. Near contact, real bar magnets depart from this model.
@@ -751,8 +866,10 @@
         electro3dVectors: true, electro3dLines: true, electro3dProbe: { x: 0, y: 0, z: 0 },
         // Motor
         motorCurrent: 3, motorField: 4, motorCurrentDir: 1, motorFieldDir: 1,
-        motorRunning: false, motorAngle: 90, motorRan: false, motorDirectionSeen: false,
+        motorRunning: false, motorAngle: 90, motorRan: false, motorDirectionSeen: false, motorMode: 'forces',
         benchLoadOhms: 40, benchFriction: 3, benchTurns: 80, benchField: 4, benchUsed: false,
+        benchView: 'steady', benchRunning: false, benchTime: 0, benchOmega: 0, benchTemperature: 22,
+        benchTrace: [], benchTrials: [], benchTrialCount: 0, benchMissionStatus: 'ready', benchCompareTrialId: null,
         // Force bench + charged-particle beam
         pairDistance: 70, pairStrength1: 1, pairStrength2: 1, pairAttract: true,
         chargeSign: 1, chargeField: 1, chargeSpeed: 5, chargeB: 4,
@@ -2173,8 +2290,25 @@
         var torqueSigned = motorTorqueFactor(d.motorCurrent, d.motorField, d.motorAngle, d.motorCurrentDir, d.motorFieldDir);
         var torqueRel = Math.abs(torqueSigned) / (4 * 3);
         var motorDirection = d.motorCurrentDir * d.motorFieldDir > 0 ? 'clockwise' : 'counter-clockwise';
+        var mode = ['forces', 'energy', 'particle'].indexOf(d.motorMode) >= 0 ? d.motorMode : 'forces';
+        function chooseMotorMode(nextMode) {
+          var patch = { motorMode: nextMode };
+          if (mode === 'energy' && nextMode !== 'energy') {
+            if (_benchTimer && typeof window !== 'undefined') { window.clearInterval(_benchTimer); _benchTimer = null; }
+            patch.benchRunning = false;
+            if (d.benchRunning) patch.benchMissionStatus = 'paused';
+          }
+          if (mode === 'forces' && nextMode !== 'forces') patch.motorRunning = false;
+          upd(patch);
+          announceToSR((nextMode === 'forces' ? 'Motor forces' : nextMode === 'energy' ? 'Energy systems' : 'Particle beam') + ' investigation selected.');
+        }
+        var modeSwitch = h('div', { role: 'group', 'aria-label': 'Motor investigation', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
+          h('button', { 'aria-pressed': mode === 'forces' ? 'true' : 'false', onClick: function () { chooseMotorMode('forces'); }, style: btn(mode === 'forces') }, 'Motor forces'),
+          h('button', { 'aria-pressed': mode === 'energy' ? 'true' : 'false', onClick: function () { chooseMotorMode('energy'); }, style: btn(mode === 'energy') }, 'Energy systems'),
+          h('button', { 'aria-pressed': mode === 'particle' ? 'true' : 'false', onClick: function () { chooseMotorMode('particle'); }, style: btn(mode === 'particle') }, 'Particle beam'));
         return h('div', null,
-          card('How a motor spins', h('div', null,
+          modeSwitch,
+          mode === 'forces' ? card('How a motor spins', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'Current in the loop sits inside a magnet’s field. Each side feels a force ', h('b', null, 'F = B·I·L'), ' — one side pushed up, the other down. That twist is torque. A ', h('b', null, 'commutator'), ' flips the current every half turn so the push never reverses.'),
             h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 6 } }, motorSVG()),
             motorTorqueGraph(),
@@ -2202,9 +2336,7 @@
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.3)' } },
               h('div', { style: { color: TEXT, fontSize: 13, fontWeight: 700 } }, 'Force on each active wire side ≈ ' + F.toFixed(3) + ' N · torque ≈ ' + torqueRel.toFixed(2) + '× baseline · ' + motorDirection),
               h('div', { style: { color: SOFT, fontSize: 12, marginTop: 4 } }, 'Torque grows with current, field, and sin θ. ' + (d.motorCurrent === 0 ? 'No current → no force → it will not turn.' : 'Reverse current OR field to reverse rotation; reverse both and the original direction returns.')))
-          ), '#38bdf8'),
-          motorGeneratorBenchCard(),
-          chargedParticleCard(),
+          ), '#38bdf8') : mode === 'energy' ? motorGeneratorBenchCard() : chargedParticleCard(),
           disclosure('The spin here is a teaching animation, not a timed simulation — angle advances at a steady rate so you can watch the commutator flip. The force law F = B·I·L and the "torque grows with B and I" relationship are real. The particle beam uses a uniform-field trajectory model with distance shown schematically.')
         );
       }
@@ -2275,19 +2407,194 @@
           h('text', { x: 480, y: 218, fill: TEXT, fontSize: 10, textAnchor: 'end' }, '▨ losses ' + model.losses.toFixed(1) + ' W'));
       }
 
-      function motorGeneratorBenchCard() {
-        var loadOhms = d.benchLoadOhms == null ? 40 : d.benchLoadOhms;
-        var friction = d.benchFriction == null ? 3 : d.benchFriction;
-        var turns = d.benchTurns == null ? 80 : d.benchTurns;
-        var field = d.benchField == null ? 4 : d.benchField;
-        var model = motorGeneratorBench(d.motorCurrent, d.motorField, loadOhms, friction, turns, field);
-        var loadName = loadOhms <= 20 ? 'heavy electrical load' : (loadOhms >= 120 ? 'light electrical load' : 'moderate electrical load');
-        var motionNote = model.rpm < 1 ? 'The shaft is stalled: available motor torque cannot overcome the selected drag.' :
-          'Lower resistance draws more generator current and pushes back harder on the shared shaft.';
-        return card('Coupled motor–generator engineering bench', h('div', null,
-          h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
-            'The motor above now drives a generator and real load model. Keep motor current and field fixed, then change one load variable to see where the energy goes.'),
-          motorGeneratorBenchSVG(model),
+      function benchControlsFrom(state) {
+        return {
+          current: Number(state.motorCurrent) || 0,
+          motorField: Number(state.motorField) || 0,
+          loadOhms: state.benchLoadOhms == null ? 40 : Number(state.benchLoadOhms),
+          friction: state.benchFriction == null ? 3 : Number(state.benchFriction),
+          turns: state.benchTurns == null ? 80 : Number(state.benchTurns),
+          generatorField: state.benchField == null ? 4 : Number(state.benchField)
+        };
+      }
+
+      function missionCompletionPatch(state, trace) {
+        var evaluation = evaluateMotorGeneratorMission(trace);
+        var last = trace[trace.length - 1] || motorGeneratorTransientStep({ time: 0, omega: 0, temperature: 22 }, benchControlsFrom(state), 0);
+        var count = (state.benchTrialCount || 0) + 1;
+        var compactTrace = trace.filter(function (sample, index) { return index % 2 === 0 || index === trace.length - 1; }).map(function (sample) {
+          return { time: Number(sample.time.toFixed(2)), rpm: Number(sample.rpm.toFixed(2)), generatedVoltage: Number(sample.generatedVoltage.toFixed(3)), outputPower: Number(sample.outputPower.toFixed(3)) };
+        });
+        var trial = {
+          id: count, loadOhms: Number(state.benchLoadOhms) || 40,
+          turns: Number(state.benchTurns) || 80, field: Number(state.benchField) || 4,
+          current: Number(state.motorCurrent) || 0, motorField: Number(state.motorField) || 0,
+          friction: state.benchFriction == null ? 3 : Number(state.benchFriction),
+          rpm: evaluation.rpm, voltage: evaluation.voltage, power: evaluation.power,
+          temperature: evaluation.maxTemperature, pass: evaluation.pass, trace: compactTrace
+        };
+        var priorTrials = state.benchTrials || [];
+        var compareId = state.benchCompareTrialId;
+        if (compareId == null && priorTrials.length) compareId = priorTrials[priorTrials.length - 1].id;
+        var trials = priorTrials.concat([trial]);
+        if (trials.length > 5) trials = trials.slice(trials.length - 5);
+        var evidence = {
+          station: 'Motor-generator design mission',
+          setup: 'load ' + trial.loadOhms + ' Ω, generator ' + trial.turns + ' turns × field ' + trial.field + ', motor I ' + trial.current + ' × B ' + trial.motorField,
+          result: Math.round(trial.rpm) + ' RPM, ' + trial.voltage.toFixed(1) + ' V, ' + trial.power.toFixed(1) + ' W, peak ' + trial.temperature.toFixed(1) + ' °C, ' + (trial.pass ? 'mission passed' : 'revise design'),
+          prediction: (state.notebookPrediction || '').trim() || 'No prediction recorded'
+        };
+        var notebookTrials = (state.notebookTrials || []).concat([evidence]);
+        if (notebookTrials.length > 8) notebookTrials = notebookTrials.slice(notebookTrials.length - 8);
+        return {
+          benchRunning: false, benchTime: last.time, benchOmega: last.omega,
+          benchTemperature: last.temperature, benchTrace: trace,
+          benchMissionStatus: evaluation.pass ? 'passed' : 'needs-work',
+          benchTrials: trials, benchTrialCount: count, benchCompareTrialId: compareId,
+          notebookTrials: notebookTrials, notebookUsed: true, benchUsed: true
+        };
+      }
+
+      function runBenchTimer() {
+        if (_benchTimer || typeof window === 'undefined' || typeof window.setInterval !== 'function') return;
+        _benchTimer = window.setInterval(function () {
+          var shouldStop = false;
+          setLabToolData(function (prev) {
+            var state = Object.assign({}, MAG_DEFAULTS, (prev && prev.magnetism) || {});
+            if (!state.benchRunning || state.tab !== 'motor' || state.motorMode !== 'energy' || state.benchView !== 'mission') {
+              shouldStop = true;
+              return prev;
+            }
+            var controls = benchControlsFrom(state);
+            var next = motorGeneratorTransientStep({ time: state.benchTime, omega: state.benchOmega, temperature: state.benchTemperature }, controls, 0.1);
+            var trace = (state.benchTrace || []).concat([next]);
+            var patch = {
+              benchTime: next.time, benchOmega: next.omega,
+              benchTemperature: next.temperature, benchTrace: trace,
+              motorAngle: (state.motorAngle + next.rpm * 0.006 + 360) % 360
+            };
+            if (next.time >= 10 - 1e-9) {
+              shouldStop = true;
+              patch = Object.assign(patch, missionCompletionPatch(state, trace));
+            }
+            return Object.assign({}, prev, { magnetism: Object.assign({}, (prev && prev.magnetism) || {}, patch) });
+          });
+          if (shouldStop && _benchTimer) { window.clearInterval(_benchTimer); _benchTimer = null; }
+        }, 100);
+      }
+
+      function startBenchMission() {
+        var resume = d.benchMissionStatus === 'paused' && (d.benchTrace || []).length && d.benchTime < 10;
+        var controls = benchControlsFrom(d);
+        var compareId = d.benchCompareTrialId;
+        if (!resume && compareId == null && (d.benchTrials || []).length) compareId = d.benchTrials[d.benchTrials.length - 1].id;
+        if (_prefersReducedMotion) {
+          var initial = resume ? { time: d.benchTime, omega: d.benchOmega, temperature: d.benchTemperature } : { time: 0, omega: 0, temperature: 22 };
+          var remainingTrace = motorGeneratorSimulate(controls, 10, 0.1, initial);
+          var completeTrace = resume ? (d.benchTrace || []).concat(remainingTrace.slice(1)) : remainingTrace;
+          upd(missionCompletionPatch(d, completeTrace));
+          announceToSR('Ten second motor-generator trial completed without animation. Results were recorded.');
+          return;
+        }
+        var trace = resume ? (d.benchTrace || []).slice() : [motorGeneratorTransientStep({ time: 0, omega: 0, temperature: 22 }, controls, 0)];
+        var first = trace[trace.length - 1];
+        upd({ benchRunning: true, benchTime: first.time, benchOmega: first.omega,
+          benchTemperature: first.temperature, benchTrace: trace, benchCompareTrialId: compareId,
+          benchMissionStatus: 'running', benchUsed: true });
+        runBenchTimer();
+        announceToSR(resume ? 'Motor-generator trial resumed.' : 'Ten second motor-generator trial started.');
+      }
+
+      function pauseBenchMission() {
+        if (_benchTimer && typeof window !== 'undefined') { window.clearInterval(_benchTimer); _benchTimer = null; }
+        upd({ benchRunning: false, benchMissionStatus: 'paused' });
+        announceToSR('Motor-generator trial paused at ' + d.benchTime.toFixed(1) + ' seconds.');
+      }
+
+      function resetBenchMission() {
+        if (_benchTimer && typeof window !== 'undefined') { window.clearInterval(_benchTimer); _benchTimer = null; }
+        upd({ benchRunning: false, benchTime: 0, benchOmega: 0, benchTemperature: 22,
+          benchTrace: [], benchMissionStatus: 'ready' });
+        announceToSR('Motor-generator mission reset. Saved comparison trials were kept.');
+      }
+
+      function advanceBenchMission() {
+        if (d.benchRunning || d.benchTime >= 10) return;
+        var controls = benchControlsFrom(d);
+        var state = { time: d.benchTime || 0, omega: d.benchOmega || 0, temperature: d.benchTemperature || 22 };
+        var trace = (d.benchTrace || []).length ? (d.benchTrace || []).slice() : [motorGeneratorTransientStep(state, controls, 0)];
+        for (var i = 0; i < 10 && state.time < 10 - 1e-9; i++) {
+          state = motorGeneratorTransientStep(state, controls, Math.min(0.1, 10 - state.time));
+          trace.push(state);
+        }
+        if (state.time >= 10 - 1e-9) {
+          upd(missionCompletionPatch(d, trace));
+          announceToSR('Trial completed and recorded.');
+        } else {
+          upd({ benchTime: state.time, benchOmega: state.omega, benchTemperature: state.temperature,
+            benchTrace: trace, benchMissionStatus: 'paused', benchUsed: true,
+            motorAngle: (d.motorAngle + state.rpm * 0.06 + 360) % 360 });
+          announceToSR('Advanced the trial to ' + state.time.toFixed(1) + ' seconds.');
+        }
+      }
+
+      function motorGeneratorMissionGraph(trace) {
+        var controls = benchControlsFrom(d);
+        var projected = !trace || !trace.length;
+        var samples = projected ? motorGeneratorSimulate(controls, 10, 0.2) : trace;
+        var comparisonTrial = (d.benchTrials || []).filter(function (trial) { return trial.id === d.benchCompareTrialId; })[0] || null;
+        var comparisonSamples = !projected && comparisonTrial && Array.isArray(comparisonTrial.trace) ? comparisonTrial.trace : [];
+        var W = 520, H = 264, left = 56, right = 72, plotW = W - left - right;
+        var panels = [
+          { key: 'rpm', label: 'shaft speed', unit: 'RPM', color: '#38bdf8', top: 32, height: 54, floor: 700, targetMin: 500 },
+          { key: 'generatedVoltage', label: 'generated voltage', unit: 'V', color: '#fbbf24', top: 107, height: 54, floor: 20, targetMin: 14, targetMax: 18 },
+          { key: 'outputPower', label: 'useful power', unit: 'W', color: '#34d399', top: 182, height: 54, floor: 8, targetMin: 5 }
+        ];
+        var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 12, fill: INSTRUMENT })];
+        function xAt(sample) { return left + Math.max(0, Math.min(10, sample.time || 0)) / 10 * plotW; }
+        panels.forEach(function (panel, pi) {
+          var scaleSamples = samples.concat(comparisonSamples);
+          var observedMax = scaleSamples.reduce(function (mx, sample) { return Math.max(mx, Number(sample[panel.key]) || 0); }, 0);
+          panel.max = Math.max(panel.floor, observedMax * 1.12);
+          function yAt(value) { return panel.top + panel.height - Math.max(0, Math.min(panel.max, value)) / panel.max * panel.height; }
+          var bandTop = panel.targetMax == null ? panel.top : yAt(panel.targetMax);
+          var bandBottom = yAt(panel.targetMin);
+          kids.push(h('rect', { key: 'band' + pi, x: left, y: bandTop, width: plotW, height: Math.max(0, bandBottom - bandTop), fill: 'rgba(52,211,153,.10)' }));
+          kids.push(h('line', { key: 'base' + pi, x1: left, y1: panel.top + panel.height, x2: W - right, y2: panel.top + panel.height, stroke: BORDER, strokeWidth: 1 }));
+          kids.push(h('line', { key: 'target' + pi, x1: left, y1: bandBottom, x2: W - right, y2: bandBottom, stroke: '#34d399', strokeWidth: 1, strokeDasharray: '4 4' }));
+          kids.push(h('text', { key: 'label' + pi, x: left, y: panel.top - 6, fill: TEXT, fontSize: 11, fontWeight: 800 }, panel.label));
+          kids.push(h('text', { key: 'zero' + pi, x: left - 7, y: panel.top + panel.height + 4, fill: SOFT, fontSize: 11, textAnchor: 'end' }, '0'));
+          kids.push(h('text', { key: 'max' + pi, x: left - 7, y: panel.top + 4, fill: SOFT, fontSize: 11, textAnchor: 'end' }, Math.round(panel.max) + ' ' + panel.unit));
+          if (comparisonSamples.length) {
+            var comparisonPoints = comparisonSamples.map(function (sample) { return xAt(sample).toFixed(1) + ',' + yAt(Number(sample[panel.key]) || 0).toFixed(1); }).join(' ');
+            kids.push(h('polyline', { key: 'comparison' + pi, points: comparisonPoints, fill: 'none', stroke: panel.color, strokeWidth: 2,
+              strokeDasharray: '3 4', strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.62 }));
+          }
+          var points = samples.map(function (sample) { return xAt(sample).toFixed(1) + ',' + yAt(Number(sample[panel.key]) || 0).toFixed(1); }).join(' ');
+          kids.push(h('polyline', { key: 'line' + pi, points: points, fill: 'none', stroke: panel.color, strokeWidth: 3,
+            strokeDasharray: projected ? '6 4' : 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }));
+          var end = samples[samples.length - 1] || {};
+          var ex = xAt(end), ey = yAt(Number(end[panel.key]) || 0);
+          if (pi === 0) kids.push(h('circle', { key: 'mark' + pi, cx: ex, cy: ey, r: 4, fill: INSTRUMENT, stroke: panel.color, strokeWidth: 2 }));
+          else if (pi === 1) kids.push(h('rect', { key: 'mark' + pi, x: ex - 4, y: ey - 4, width: 8, height: 8, fill: INSTRUMENT, stroke: panel.color, strokeWidth: 2 }));
+          else kids.push(h('polygon', { key: 'mark' + pi, points: ex + ',' + (ey - 5) + ' ' + (ex + 5) + ',' + ey + ' ' + ex + ',' + (ey + 5) + ' ' + (ex - 5) + ',' + ey, fill: INSTRUMENT, stroke: panel.color, strokeWidth: 2 }));
+          var formatted = panel.key === 'rpm' ? Math.round(Number(end[panel.key]) || 0) : (Number(end[panel.key]) || 0).toFixed(1);
+          kids.push(h('text', { key: 'value' + pi, x: W - right + 8, y: ey + 4, fill: TEXT, fontSize: 11, fontWeight: 800 }, formatted + ' ' + panel.unit));
+        });
+        [0, 5, 10].forEach(function (tick) {
+          var x = left + tick / 10 * plotW;
+          kids.push(h('line', { key: 'tick' + tick, x1: x, y1: 238, x2: x, y2: 243, stroke: BORDER, strokeWidth: 1 }));
+          kids.push(h('text', { key: 'tickText' + tick, x: x, y: 257, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, tick + ' s'));
+        });
+        if (comparisonSamples.length) kids.push(h('text', { key: 'comparisonMode', x: left, y: 18, fill: SOFT, fontSize: 11 }, 'trial #' + comparisonTrial.id + ' · dashed'));
+        kids.push(h('text', { key: 'mode', x: W - 12, y: 18, fill: SOFT, fontSize: 11, textAnchor: 'end' }, projected ? 'projected response · dashed' : 'current trial · solid'));
+        var last = samples[samples.length - 1] || {};
+        var aria = (projected ? 'Projected' : 'Measured') + ' ten second motor generator response. Final speed ' + Math.round(last.rpm || 0) + ' RPM, voltage ' + (last.generatedVoltage || 0).toFixed(1) + ' volts, useful power ' + (last.outputPower || 0).toFixed(1) + ' watts.';
+        if (comparisonSamples.length) aria += ' Dashed curves compare trial ' + comparisonTrial.id + ' with the solid current trial.';
+        return h('svg', { viewBox: '0 0 520 264', width: '100%', style: { maxWidth: 760, display: 'block', margin: '0 auto 10px' }, role: 'img', 'aria-label': aria }, kids);
+      }
+      function benchControlPanel(loadOhms, friction, turns, field) {
+        return h('div', null,
           h('div', { role: 'group', 'aria-label': 'Generator load presets', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
             h('button', { 'aria-pressed': loadOhms === 10 ? 'true' : 'false', onClick: function () { upd({ benchLoadOhms: 10, benchUsed: true }); }, style: btn(loadOhms === 10) }, 'Heavy load · 10 Ω'),
             h('button', { 'aria-pressed': loadOhms === 40 ? 'true' : 'false', onClick: function () { upd({ benchLoadOhms: 40, benchUsed: true }); }, style: btn(loadOhms === 40) }, 'Balanced · 40 Ω'),
@@ -2298,18 +2605,113 @@
               slider('Shaft friction', friction, 0, 10, 1, function (v) { upd({ benchFriction: v, benchUsed: true }); })),
             h('div', null,
               slider('Generator turns', turns, 20, 160, 10, function (v) { upd({ benchTurns: v, benchUsed: true }); }),
-              slider('Generator field', field, 1, 8, 1, function (v) { upd({ benchField: v, benchUsed: true }); }))),
-          h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
-            h('span', { 'aria-hidden': 'true' }, '⚙️'),
-            h('span', null,
-              h('b', null, Math.round(model.rpm) + ' RPM · ' + model.generatedVoltage.toFixed(1) + ' V · ' + model.loadCurrent.toFixed(2) + ' A. '),
-              'Input ' + model.inputPower.toFixed(1) + ' W = useful output ' + model.outputPower.toFixed(1) + ' W + losses ' + model.losses.toFixed(1) + ' W. This is a ' + loadName + '. ' + motionNote)),
-          h('div', { style: { color: SOFT, fontSize: 12, marginTop: 8, lineHeight: 1.5 } },
-            h('b', { style: { color: TEXT } }, 'Engineering challenge: '),
-            'Compare 10 Ω with 160 Ω without changing the motor controls. Watch the shaft slow under load, then raise generator turns or field and look for the tradeoff between voltage and speed.')),
-        '#34d399');
+              slider('Generator field', field, 1, 8, 1, function (v) { upd({ benchField: v, benchUsed: true }); }))));
       }
-      function chargedParticleCard() {
+
+      function benchTrialsTable(trials) {
+        if (!trials.length) return h('p', { style: { color: SOFT, fontSize: 11.5, margin: '8px 0 0' } }, 'No completed trials yet. Each 10-second run is recorded here and in the investigation notebook.');
+        var latestChange = trials.length > 1 ? describeMotorGeneratorTrialChange(trials[trials.length - 1], trials[trials.length - 2]) : null;
+        var insight = !latestChange ? 'Baseline recorded. Change one variable for a controlled comparison.' :
+          latestChange.count === 0 ? 'Repeatability check: no design variables changed.' :
+          latestChange.fair ? 'Fair comparison: only ' + latestChange.labels[0] + ' changed.' :
+          'Comparison caution: ' + latestChange.count + ' variables changed — ' + latestChange.labels.join(' + ') + '.';
+        return h('div', null,
+          h('div', { style: { overflowX: 'auto', marginTop: 9 } },
+            h('table', { style: { width: '100%', borderCollapse: 'collapse', color: TEXT, fontSize: 11.5 }, 'aria-label': 'Motor-generator mission trial comparison' },
+              h('thead', null, h('tr', null,
+                ['Trial', 'Load', 'Turns × field', 'RPM', 'Voltage', 'Power', 'Peak temp', 'Result', 'Changed', 'Curve'].map(function (label) {
+                  return h('th', { key: label, scope: 'col', style: { textAlign: ['Trial', 'Result', 'Changed', 'Curve'].indexOf(label) >= 0 ? 'left' : 'right', padding: '6px 5px', borderBottom: '1px solid ' + BORDER, whiteSpace: 'nowrap' } }, label);
+                }))),
+              h('tbody', null, trials.map(function (trial, index) {
+                var change = index ? describeMotorGeneratorTrialChange(trial, trials[index - 1]) : null;
+                var selected = trial.id === d.benchCompareTrialId;
+                return h('tr', { key: trial.id },
+                  h('th', { scope: 'row', style: { textAlign: 'left', padding: '6px 5px', borderBottom: '1px solid ' + BORDER } }, '#' + trial.id),
+                  h('td', { style: { textAlign: 'right', padding: '6px 5px', borderBottom: '1px solid ' + BORDER, whiteSpace: 'nowrap' } }, trial.loadOhms + ' Ω'),
+                  h('td', { style: { textAlign: 'right', padding: '6px 5px', borderBottom: '1px solid ' + BORDER, whiteSpace: 'nowrap' } }, trial.turns + ' × ' + trial.field),
+                  h('td', { style: { textAlign: 'right', padding: '6px 5px', borderBottom: '1px solid ' + BORDER } }, Math.round(trial.rpm)),
+                  h('td', { style: { textAlign: 'right', padding: '6px 5px', borderBottom: '1px solid ' + BORDER } }, trial.voltage.toFixed(1) + ' V'),
+                  h('td', { style: { textAlign: 'right', padding: '6px 5px', borderBottom: '1px solid ' + BORDER } }, trial.power.toFixed(1) + ' W'),
+                  h('td', { style: { textAlign: 'right', padding: '6px 5px', borderBottom: '1px solid ' + BORDER } }, trial.temperature.toFixed(1) + ' °C'),
+                  h('td', { style: { textAlign: 'left', padding: '6px 5px', borderBottom: '1px solid ' + BORDER, fontWeight: 800 } }, trial.pass ? '✓ Pass' : '↻ Revise'),
+                  h('td', { style: { textAlign: 'left', padding: '6px 5px', borderBottom: '1px solid ' + BORDER, whiteSpace: 'nowrap' } }, change ? change.label : 'baseline'),
+                  h('td', { style: { textAlign: 'left', padding: '4px 5px', borderBottom: '1px solid ' + BORDER } },
+                    h('button', { 'aria-pressed': selected ? 'true' : 'false', onClick: function () {
+                      upd({ benchCompareTrialId: selected ? null : trial.id });
+                      announceToSR(selected ? 'Trial comparison curve hidden.' : 'Trial ' + trial.id + ' selected as the dashed comparison curve.');
+                    }, style: Object.assign({}, btn(selected), { padding: '4px 7px', fontSize: 11, whiteSpace: 'nowrap' }) }, selected ? 'Hide' : 'Compare')));
+              })))),
+          h('p', { role: 'status', 'aria-live': 'polite', style: { color: latestChange && !latestChange.fair ? '#fbbf24' : SOFT, fontSize: 11.5, margin: '7px 0 0', lineHeight: 1.45 } }, insight));
+      }
+      function motorGeneratorMissionPanel(loadOhms, friction, turns, field) {
+        var trace = d.benchTrace || [];
+        var sample = trace.length ? trace[trace.length - 1] : motorGeneratorTransientStep({ time: 0, omega: 0, temperature: 22 }, benchControlsFrom(d), 0);
+        var evaluation = trace.length ? evaluateMotorGeneratorMission(trace) : null;
+        var status = d.benchMissionStatus || 'ready';
+        var checks = evaluation ? evaluation.checks : [false, false, false, true];
+        var statusText = status === 'running' ? 'Trial running at ' + d.benchTime.toFixed(1) + ' seconds.' :
+          status === 'paused' ? 'Trial paused at ' + d.benchTime.toFixed(1) + ' seconds.' :
+          status === 'passed' ? 'Mission passed and recorded.' :
+          status === 'needs-work' ? 'Trial recorded. Revise one variable and test again.' :
+          'Ready. The dashed curves predict the current design.';
+        return h('div', null,
+          h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 8px', lineHeight: 1.5 } },
+            'Design a system that settles above 500 RPM, generates 14–18 V and at least 5 W, and stays below 65 °C. Each run records evidence automatically.'),
+          h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 8 }, 'aria-label': 'Mission constraints' },
+            ['≥ 500 RPM', '14–18 V', '≥ 5 W useful', '≤ 65 °C'].map(function (label, index) {
+              var known = trace.length && (status === 'passed' || status === 'needs-work');
+              return h('span', { key: label, style: { color: TEXT, fontSize: 11.5, fontWeight: 700, padding: '5px 8px', border: '1px solid ' + BORDER, borderRadius: 8 } }, known ? (checks[index] ? '✓ ' : '○ ') + label : label);
+            })),
+          motorGeneratorMissionGraph(trace),
+          h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
+            d.benchRunning
+              ? h('button', { onClick: pauseBenchMission, style: btn(true) }, 'Pause trial')
+              : h('button', { onClick: startBenchMission, disabled: d.benchTime >= 10 && status !== 'paused', style: btn(true) }, status === 'paused' ? 'Resume trial' : 'Run & record 10 s trial'),
+            h('button', { onClick: advanceBenchMission, disabled: d.benchRunning || d.benchTime >= 10, style: btn() }, 'Advance 1 s'),
+            h('button', { onClick: resetBenchMission, style: btn() }, 'Reset current run')),
+          h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+            h('span', { 'aria-hidden': 'true' }, status === 'passed' ? '✓' : '⚙️'),
+            h('span', null, h('b', null, statusText + ' '),
+              Math.round(sample.rpm || 0) + ' RPM · ' + (sample.generatedVoltage || 0).toFixed(1) + ' V · ' + (sample.outputPower || 0).toFixed(1) + ' W · ' + (sample.temperature || 22).toFixed(1) + ' °C.')),
+          benchControlPanel(loadOhms, friction, turns, field),
+          h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginTop: 4 } }, 'Recorded mission evidence'),
+          benchTrialsTable(d.benchTrials || []),
+          disclosure('This transient model includes motor resistance, back EMF, rotational inertia, generator counter-torque, copper heating, generator loss, friction, and cooling. The parameter values represent a classroom-scale system rather than a particular commercial machine.'));
+      }
+
+      function motorGeneratorBenchCard() {
+        var loadOhms = d.benchLoadOhms == null ? 40 : d.benchLoadOhms;
+        var friction = d.benchFriction == null ? 3 : d.benchFriction;
+        var turns = d.benchTurns == null ? 80 : d.benchTurns;
+        var field = d.benchField == null ? 4 : d.benchField;
+        var model = motorGeneratorBench(d.motorCurrent, d.motorField, loadOhms, friction, turns, field);
+        var loadName = loadOhms <= 20 ? 'heavy electrical load' : (loadOhms >= 120 ? 'light electrical load' : 'moderate electrical load');
+        var motionNote = model.rpm < 1 ? 'The shaft is stalled: available motor torque cannot overcome the selected drag.' :
+          'Lower resistance draws more generator current and pushes back harder on the shared shaft.';
+        var missionView = d.benchView === 'mission';
+        return card('Coupled motor–generator engineering bench', h('div', null,
+          h('div', { role: 'group', 'aria-label': 'Motor-generator investigation mode', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
+            h('button', { 'aria-pressed': !missionView ? 'true' : 'false', onClick: function () {
+              if (_benchTimer && typeof window !== 'undefined') { window.clearInterval(_benchTimer); _benchTimer = null; }
+              upd({ benchView: 'steady', benchRunning: false, benchMissionStatus: d.benchRunning ? 'paused' : d.benchMissionStatus });
+              announceToSR('Steady-state energy explorer selected.');
+            }, style: btn(!missionView) }, 'Steady-state explorer'),
+            h('button', { 'aria-pressed': missionView ? 'true' : 'false', onClick: function () { upd({ benchView: 'mission', benchUsed: true }); announceToSR('Transient design mission selected.'); }, style: btn(missionView) }, 'Transient design mission')),
+          missionView ? motorGeneratorMissionPanel(loadOhms, friction, turns, field) : h('div', null,
+            h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
+              'The motor above drives a generator and load model. Keep motor current and field fixed, then change one load variable to see where the energy goes.'),
+            motorGeneratorBenchSVG(model),
+            benchControlPanel(loadOhms, friction, turns, field),
+            h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
+              h('span', { 'aria-hidden': 'true' }, '⚙️'),
+              h('span', null,
+                h('b', null, Math.round(model.rpm) + ' RPM · ' + model.generatedVoltage.toFixed(1) + ' V · ' + model.loadCurrent.toFixed(2) + ' A. '),
+                'Input ' + model.inputPower.toFixed(1) + ' W = useful output ' + model.outputPower.toFixed(1) + ' W + losses ' + model.losses.toFixed(1) + ' W. This is a ' + loadName + '. ' + motionNote)),
+            h('div', { style: { color: SOFT, fontSize: 12, marginTop: 8, lineHeight: 1.5 } },
+              h('b', { style: { color: TEXT } }, 'Engineering challenge: '),
+              'Compare 10 Ω with 160 Ω without changing the motor controls. Then open the transient mission to test startup, back EMF, heat, and a constrained design.'))),
+        '#34d399');
+      }      function chargedParticleCard() {
         var pts = chargedParticleTrajectory(d.chargeSign, d.chargeField, d.chargeSpeed, d.chargeB, 36);
         var path = pts.map(function (p) {
           return (32 + p.x * 1.35).toFixed(1) + ',' + (110 + p.y * 0.55).toFixed(1);
@@ -4012,6 +4414,11 @@
             result: eB.toFixed(eB < 10 ? 2 : 0) + ' mT interior field' };
         }
         if (d.tab === 'motor' && d.benchUsed) {
+          if (d.benchView === 'mission' && (d.benchTrace || []).length) {
+            var missionResult = evaluateMotorGeneratorMission(d.benchTrace || []);
+            return { station: 'Motor-generator design mission', setup: 'motor I ' + d.motorCurrent + ', motor B ' + d.motorField + ', load ' + d.benchLoadOhms + ' Ω, generator ' + d.benchTurns + ' turns × field ' + d.benchField,
+              result: Math.round(missionResult.rpm) + ' RPM, ' + missionResult.voltage.toFixed(1) + ' V, ' + missionResult.power.toFixed(1) + ' W, peak ' + missionResult.maxTemperature.toFixed(1) + ' °C, ' + (missionResult.pass ? 'mission passed' : 'design needs revision') };
+          }
           var mb = motorGeneratorBench(d.motorCurrent, d.motorField, d.benchLoadOhms, d.benchFriction, d.benchTurns, d.benchField);
           return { station: 'Motor–generator bench', setup: 'motor I ' + d.motorCurrent + ', motor B ' + d.motorField + ', load ' + d.benchLoadOhms + ' Ω, friction ' + d.benchFriction,
             result: Math.round(mb.rpm) + ' RPM, ' + mb.generatedVoltage.toFixed(1) + ' V, ' + mb.outputPower.toFixed(1) + ' W useful of ' + mb.inputPower.toFixed(1) + ' W input' };
@@ -4170,6 +4577,6 @@
 
   // Expose pure helpers for the test suite (no-op in the browser bundle).
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { CORE_MATERIALS: CORE_MATERIALS, coreAdjustedField: coreAdjustedField, finiteSolenoidCenterField: finiteSolenoidCenterField, solenoidWireLength: solenoidWireLength, solenoidHeatingIndex: solenoidHeatingIndex, solenoidFieldAt3D: solenoidFieldAt3D, traceSolenoidLine3D: traceSolenoidLine3D, coilNormal3D: coilNormal3D, coilFlux3D: coilFlux3D, inducedVoltage3D: inducedVoltage3D, inductionPass3D: inductionPass3D, dipoleMoment3D: dipoleMoment3D, dipoleFieldAt3D: dipoleFieldAt3D, fieldAt3D: fieldAt3D, fieldComponentsAt3D: fieldComponentsAt3D, traceLine3D: traceLine3D, findFieldNull3D: findFieldNull3D, dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, fieldComponentsAt: fieldComponentsAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, motorTorqueFactor: motorTorqueFactor, motorGeneratorBench: motorGeneratorBench, magnetPairForce: magnetPairForce, chargedParticleTrajectory: chargedParticleTrajectory, rotatingFlux: rotatingFlux, rotatingEMF: rotatingEMF, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, transformerLoad: transformerLoad, hysteresisMagnetization: hysteresisMagnetization, eddyBrakeFactor: eddyBrakeFactor, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, countCycles: countCycles, MAZE_ROUNDS: MAZE_ROUNDS, mazeCellToField: mazeCellToField, mazePoles: mazePoles, MATERIALS: MATERIALS, QUIZ: QUIZ, QUIZ_TABS: QUIZ_TABS, QUIZ_PASS: QUIZ_PASS, MU0: MU0 };
+    module.exports = { CORE_MATERIALS: CORE_MATERIALS, coreAdjustedField: coreAdjustedField, finiteSolenoidCenterField: finiteSolenoidCenterField, solenoidWireLength: solenoidWireLength, solenoidHeatingIndex: solenoidHeatingIndex, solenoidFieldAt3D: solenoidFieldAt3D, traceSolenoidLine3D: traceSolenoidLine3D, coilNormal3D: coilNormal3D, coilFlux3D: coilFlux3D, inducedVoltage3D: inducedVoltage3D, inductionPass3D: inductionPass3D, dipoleMoment3D: dipoleMoment3D, dipoleFieldAt3D: dipoleFieldAt3D, fieldAt3D: fieldAt3D, fieldComponentsAt3D: fieldComponentsAt3D, traceLine3D: traceLine3D, findFieldNull3D: findFieldNull3D, dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, fieldComponentsAt: fieldComponentsAt, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, motorTorqueFactor: motorTorqueFactor, motorGeneratorBench: motorGeneratorBench, motorGeneratorTransientStep: motorGeneratorTransientStep, motorGeneratorSimulate: motorGeneratorSimulate, evaluateMotorGeneratorMission: evaluateMotorGeneratorMission, describeMotorGeneratorTrialChange: describeMotorGeneratorTrialChange, magnetPairForce: magnetPairForce, chargedParticleTrajectory: chargedParticleTrajectory, rotatingFlux: rotatingFlux, rotatingEMF: rotatingEMF, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, transformerLoad: transformerLoad, hysteresisMagnetization: hysteresisMagnetization, eddyBrakeFactor: eddyBrakeFactor, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, countCycles: countCycles, MAZE_ROUNDS: MAZE_ROUNDS, mazeCellToField: mazeCellToField, mazePoles: mazePoles, MATERIALS: MATERIALS, QUIZ: QUIZ, QUIZ_TABS: QUIZ_TABS, QUIZ_PASS: QUIZ_PASS, MU0: MU0 };
   }
 })();

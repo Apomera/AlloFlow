@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-64-american-government-and-politics-in-the-information-age",
+  "title": "American Government and Politics in the Information Age",
+  "description": "This text is a comprehensive introduction to the vital subject of American government and politics. Governments decide who gets what, when, how (See Harold D. Lasswell, Politics: Who Gets What, When, How, [New York: McGraw-Hill, 1936]); they make policies and pass laws that are binding on all a society's members; they decide about taxation and spending, benefits and costs, even life and death. Governments possess power—the ability to gain compliance and to get people under their jurisdiction to obey them—and they may exercise their power by using the police and military to enforce their decisions. However, power need not involve the exercise of force or compulsion; people often obey because they think it is in their interest to do so, they have no reason to disobey, or they fear punishment. Above all, people obey their government because it has authority; its power is seen by people as rightfully held, as legitimate. People can grant their government legitimacy because they have been socialized to do so; because there are processes, such as elections, that enable them to choose and change their rulers; and because they believe that their governing institutions operate justly. Politics is the process by which leaders are selected and policy decisions are made and executed. It involves people and groups, both inside and outside of government, engaged in deliberation and debate, disagreement and conflict, cooperation and consensus, and power struggles. In covering American government and politics, our text introduces the intricacies of the Constitution, the complexities of federalism, the meanings of civil liberties, and the conflicts over civil rights;explains how people are socialized to politics, acquire and express opinions, and participate in political life; describes interest groups, political parties, and elections—the intermediaries that link people to government and politics; details the branches of government and how they operate; and shows how policies are made and affect people's lives.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Political Science"
+  ],
+  "authors": [
+    "Open Textbook Library record"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Minnesota Libraries Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/american-government-and-politics-in-the-information-age"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This text is a comprehensive introduction to the vital subject of American government and politics. Governments decide who gets what, when, how (See Harold D. Lasswell, Politics: Who Gets What, When, How, [New York: McGraw-Hill, 1936]); they make policies and pass laws that are binding on all a society's members; they decide about taxation and spending, benefits and costs, even life and death. Governments possess power—the ability to gain compliance and to get people under their jurisdiction to obey them—and they may exercise their power by using the police and military to enforce their decisions. However, power need not involve the exercise of force or compulsion; people often obey because they think it is in their interest to do so, they have no reason to disobey, or they fear punishment. Above all, people obey their government because it has authority; its power is seen by people as rightfully held, as legitimate. People can grant their government legitimacy because they have been socialized to do so; because there are processes, such as elections, that enable them to choose and change their rulers; and because they believe that their governing institutions operate justly. Politics is the process by which leaders are selected and policy decisions are made and executed. It involves people and groups, both inside and outside of government, engaged in deliberation and debate, disagreement and conflict, cooperation and consensus, and power struggles. In covering American government and politics, our text introduces the intricacies of the Constitution, the complexities of federalism, the meanings of civil liberties, and the conflicts over civil rights;explains how people are socialized to politics, acquire and express opinions, and participate in political life; describes interest groups, political parties, and elections—the intermediaries that link people to government and politics; details the branches of government and how they operate; and shows how policies are made and affect people's lives."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 333
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "64",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

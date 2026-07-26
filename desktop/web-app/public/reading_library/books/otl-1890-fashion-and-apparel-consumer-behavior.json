@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1890-fashion-and-apparel-consumer-behavior",
+  "title": "Fashion and Apparel Consumer Behavior",
+  "description": "This open textbook was designed for students studying apparel and fashion studies at an undergraduate level. It draws on the fields of marketing, business, communications, media studies, psychology, sociology, and anthropology. The book invites readers to examine the internal forces that shape consumer decision making, such as perceptions, motivations, personality, and attitudes as well as the external ones, such as social and situational influences, culture, and subcultures, especially those related to our appearances and clothing. This text centers the lived experiences of today’s consumers, specifically, undergraduate students. Following the original author, Andrea Niosi, the adapting author has also made efforts to decenter whiteness and dominant culture perspectives wherever possible to ensure a broader and more accurate representation of diverse consumers.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Marketing"
+  ],
+  "authors": [
+    "Andrea Niosi - Author / Doreen Chung - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Iowa State University Digital Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/fashion-and-apparel-consumer-behavior"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This open textbook was designed for students studying apparel and fashion studies at an undergraduate level. It draws on the fields of marketing, business, communications, media studies, psychology, sociology, and anthropology. The book invites readers to examine the internal forces that shape consumer decision making, such as perceptions, motivations, personality, and attitudes as well as the external ones, such as social and situational influences, culture, and subcultures, especially those related to our appearances and clothing. This text centers the lived experiences of today’s consumers, specifically, undergraduate students. Following the original author, Andrea Niosi, the adapting author has also made efforts to decenter whiteness and dominant culture perspectives wherever possible to ensure a broader and more accurate representation of diverse consumers."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 143
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1890",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

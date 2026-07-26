@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-15",
+  "reviewedAt": "2026-07-25",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next eight unreviewed items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "domainsCovered": 4,
+    "appliedOrAnalysisItems": 8,
+    "keyPositionsPreserved": 8,
+    "optionSpecificExplanations": 32,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 149,
+      "asymmetricExtremeDistractorCandidates": 309,
+      "advancedDirectRecallCandidates": 19,
+      "semanticConceptDuplicatePairs": 262,
+      "semanticConceptDuplicateClusters": 125,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 142,
+      "asymmetricExtremeDistractorCandidates": 301,
+      "advancedDirectRecallCandidates": 19,
+      "semanticConceptDuplicatePairs": 258,
+      "semanticConceptDuplicateClusters": 124,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v2-lifespan-031",
+      "domainId": "lifespan",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "lifespan-secure-attachment-organized-reunion-pattern",
+      "sourceCheck": "The article describes classification as the organization of attachment behavior around the caregiver and identifies secure-base exploration and comfort following separation as central features. The revised scenario requires integrating those observations rather than treating distress alone as diagnostic.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-lifespan-048",
+      "domainId": "lifespan",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "lifespan-havighurst-three-sources-contextual-application",
+      "sourceCheck": "The article characterizes developmental tasks as arising through the interaction of physical maturation, sociocultural pressures, and the individual. The keyed critique preserves age linkage while rejecting a uniform biological timetable, which is the central conceptual distinction in the scenario.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-professional-035",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-plagiarism-local-attribution-versus-neighboring-research-standards",
+      "sourceCheck": "Standard 8.11 directly addresses presenting portions of another person's work as one's own and expressly prevents occasional citation from curing unattributed copying. The scenario separates that rule from authorship credit, duplicate publication, and fabrication.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-professional-057",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-cultural-responsiveness-self-awareness-context-assessment-fit",
+      "sourceCheck": "The guidelines emphasize self-awareness, intersectionality, ecological context, collaborative understanding, and culturally informed practice. The keyed response combines those elements while keeping consultation, measure evaluation, and adaptation conditional on the client and task.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-professional-068",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-recording-prior-permission-and-jurisdictional-boundary",
+      "sourceCheck": "Standard 4.03 establishes the narrow, stable ethical rule that permission is obtained before recording. The revised item preserves that rule and explicitly treats storage, documentation, and consent-form details as matters that may be supplemented by law and policy.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-research-005",
+      "domainId": "research",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "research-multiple-regression-adjusted-predictor-association",
+      "sourceCheck": "The NIST handbook represents a response as a function of several explanatory variables and identifies multiple regression as the fitting framework. The revised scenario adds the crucial interpretation that one predictor is evaluated conditionally within the joint model, not through separate bivariate tests.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-social-cultural-050",
+      "domainId": "social-cultural",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "social-cultural-descriptive-versus-injunctive-message-application",
+      "sourceCheck": "The foundational article separates the is meaning of descriptive norms from the ought or approval meaning of injunctive norms and argues that normative focus matters for behavior. The two messages instantiate that contrast without relying on extreme or obviously implausible alternatives.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-research-014",
+      "domainId": "research",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "research-counterbalancing-purpose-and-residual-order-effects",
+      "sourceCheck": "The methods article establishes counterbalancing as a response to serial order and carryover, while the critical review documents why unexamined order interactions may remain. The keyed choice therefore states both the intended control and the need to evaluate residual order effects.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

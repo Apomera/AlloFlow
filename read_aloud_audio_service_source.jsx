@@ -301,10 +301,14 @@ const createReadAloudAudioService = (dependencies = {}) => {
 
         function inspectDescriptor(segment, store, profile) {
             if (!store) {
-                return { status: 'missing', url: null, source: null, metadata: null, segment, profile };
+                return { status: 'missing', url: null, storedUrl: null, source: null, metadata: null, segment, profile };
             }
             const key = segment.storageKey;
             const compatibility = compatibilityFor(profile);
+            let storedUrl = null;
+            try {
+                if (typeof store.get === 'function') storedUrl = store.get(key);
+            } catch (_) {}
             // V4 stores own identity compatibility (including the important
             // "same stable segment, edited spoken text" stale case). Prefer
             // their structured result instead of reconstructing state from
@@ -319,6 +323,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
                     return {
                         status,
                         url: status === 'ready' && inspected.url != null ? inspected.url : null,
+                        storedUrl: storedUrl != null ? storedUrl : (inspected.url != null ? inspected.url : null),
                         source: inspected.source == null ? null : inspected.source,
                         metadata: inspected.metadata || inspected.synthesisProfile || null,
                         identity: inspected.identity || null,
@@ -341,10 +346,11 @@ const createReadAloudAudioService = (dependencies = {}) => {
             } else if (typeof store.get === 'function') {
                 url = store.get(key);
             }
-            if (!exists && url != null) exists = true;
+            if (!exists && (url != null || storedUrl != null)) exists = true;
             return {
                 status: url != null ? 'ready' : (exists ? 'stale' : 'missing'),
                 url: url == null ? null : url,
+                storedUrl: storedUrl == null ? null : storedUrl,
                 source,
                 metadata,
                 segment,

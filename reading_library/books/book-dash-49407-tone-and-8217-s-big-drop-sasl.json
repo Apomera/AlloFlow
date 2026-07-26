@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-49407-tone-and-8217-s-big-drop-sasl",
+  "title": "Tone’s Big Drop (SASL)",
+  "description": "Tone the raindrop is wondering what’s way down there on the ground. She and her friend Nyunyu go on a journey to find out.",
+  "language": "South African Sign Language",
+  "langCode": "sgn",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Day and night, seasons, and weather",
+    "Let's learn!"
+  ],
+  "authors": [
+    "Edna Gicovi"
+  ],
+  "illustrators": [
+    "Musonda Kabwe"
+  ],
+  "contributors": [
+    {
+      "name": "Musonda Kabwe",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Robyn Daly",
+      "role": "Designer"
+    },
+    {
+      "name": "Monique Whitaker",
+      "role": "Editor"
+    },
+    {
+      "name": "Edna Gicovi",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/tones-big-drop-sasl/",
+    "attributionUrl": "https://bookdash.org/books/tones-big-drop-sasl/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=tones-big-drop"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2026/04/tones-big-drop_cover_sasl-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2026/04/tones-big-drop_cover_sasl-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Tone the raindrop is wondering what’s way down there on the ground. She and her friend Nyunyu go on a journey to find out."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Musonda Kabwe (Illustrator); Robyn Daly (Designer); Monique Whitaker (Editor); Edna Gicovi (Writer)\n\nLanguage: South African Sign Language. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=tones-big-drop"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 93
+  }
+}

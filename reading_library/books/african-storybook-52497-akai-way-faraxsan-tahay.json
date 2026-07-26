@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52497-akai-way-faraxsan-tahay",
+  "title": "Akai way faraxsan tahay",
+  "description": "Gabar ayaa kabo hesha markii ugu horeysay.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Ursula Nafula"
+  ],
+  "illustrators": [
+    "Rob Owen"
+  ],
+  "translators": [
+    "Fosiyo Mohamud"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Ursula Nafula",
+      "role": "Author"
+    },
+    {
+      "name": "Fosiyo Mohamud",
+      "role": "Translation"
+    },
+    {
+      "name": "Rob Owen",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Ursula Nafula (Author); Fosiyo Mohamud (Translation); Rob Owen (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52497",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-e6ebe47c34677125",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/9500.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9441.png",
+      "text": "Akai kabo ma lahayn. Carruurta kale ee da'deeda ah way lahaayeen kabo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497#page=1",
+      "sourceDigest": "sha256:95901729330a9eb44e11880dca6a4f581bb8bc4e6fd539650c43e9aa2ed6f33d"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9492.png",
+      "text": "\"Way adag tahay in la ciyaaro adigoon kabo haysan,\" ayay Akai u sheegtay hooyadeed.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497#page=2",
+      "sourceDigest": "sha256:1dc419aaba4d3e493975fc0c30c267a70bc3274238b99dd0c96bc0579e0f285e"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9493.png",
+      "text": "\"Akai, waxaan u malaynayaa in la joogo waqtigii aad kabo heli lahayd,\" ayay tiri hooyadeed.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497#page=3",
+      "sourceDigest": "sha256:fc2945b2ae64dda2944d5bd5bbf4048a470b933307670e4220ccd3b146c33c27"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9496.png",
+      "text": "Hooyadu waxay toosisay Akai aroortii hore subaxdii xigtay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497#page=4",
+      "sourceDigest": "sha256:3e5036627a8f0be6c75efb61e211272da4fa206891adddb9152729313df0aa6e"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9495.png",
+      "text": "Akai iyo hooyadeed waxay tageen suuqa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497#page=5",
+      "sourceDigest": "sha256:ba63ff34d55b9c5fdcf09dd43c74fb777f01300d3932ea45dea2c751e69404f5"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9497.png",
+      "text": "Waxay galeen dukaan kabo. Hooyadeedna waxay u gaday Akai kabo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497#page=6",
+      "sourceDigest": "sha256:27abe2db02e2e2aa20a61359c481ae86835f85a615a6e349631813d003eed8bd"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9499.png",
+      "text": "Habeenkii, Akai waxay ka fikiraysay kabahaheeda cusub.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497#page=7",
+      "sourceDigest": "sha256:f6fe1a308f583aad2df0b676829f5954f3301295e7c15af6df2fe8a3aeb3fee1"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10444.png",
+      "text": "Akai waxay xiratay kabahaheeda cusub.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497#page=8",
+      "sourceDigest": "sha256:360464c50cbb793f2e1fe29dd7aad2fb6525c95984c22bb0d1ec33a78224a357"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9498.png",
+      "text": "Akai waxay ka fikiraysay sida ay u tusi lahayd kabahaheeda.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497#page=9",
+      "sourceDigest": "sha256:c7a221f1681f789802aad1c649fd4ea21a08efc4afd13d63edb4a4b485feb477"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9502.png",
+      "text": "Akai waxay xiratay kabahaheeda cusub mar labaad, iyadoo qoob ka ciyaaraysa qolkeeda.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497#page=10",
+      "sourceDigest": "sha256:68e678feaf80a13071e4ce47377ea36c81ad13df3f16f2485fdc88c5bf382aff"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9501.png",
+      "text": "\"Akai, sariirta laguma xirto kabo,\" ayay tiri hooyadeed.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497#page=11",
+      "sourceDigest": "sha256:ff91c5fe7ef0bec1bb87a4095b2d0f4b8c1a3badad2d525ffc637b818f4390e4"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9500.png",
+      "text": "Akai aad ayay ugu faraxday inay kabo hesho markii ugu horreysay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52497#page=12",
+      "sourceDigest": "sha256:26bcd940fdf75fb03bbe1ba69992fb22f7e6cfa886031d9f6e65fa18850d0c82"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 118
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:58e489220c38a889321487c6c89a3f89946b439d64e6266517cab45c51f27c58"
+  }
+}

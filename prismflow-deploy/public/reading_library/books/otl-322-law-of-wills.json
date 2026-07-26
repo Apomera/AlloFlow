@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-322-law-of-wills",
+  "title": "Law of Wills",
+  "description": "The purpose of this casebook is to train law students to think and act like probate attorneys. This book is meant to be used in conjunction with the author's book on the law of trusts. This book's focus is problem-solving and legal application; the book includes numerous problems, so law students can learn to apply the law they learn from reading the cases. It also contains collaborative learning exercises to encourage students to engage in group problem-solving. The book is divided into three parts to reflect the main types of issues that students will encounter if they practice probate law. The book's organization mirrors the manner in which probate law is practiced in the real world. The book starts with an examination of the intestacy system because the majority of people die without executing a will. Therefore, most of the legal issues a probate lawyer faces center around the intestacy system. Unlike the typical wills casebook, this book provides a detailed discussion of the intestacy system. A chapter on ethics is included because probate attorneys encounter ethical issues that are different from attorneys practicing in other areas of law. The second part of the book includes an exploration of the testacy system. It is arranged so professors can lead students from the client interview to the will execution. The first three chapters of this section deal with issues that directly impact the existence of the inheritance system. It analyzes a person's ability to control the disposition of his or her property after death. This serves as the students' first introduction to the power of the “dead hand”. These chapters are included to start a public policy discussion about the rights of the dead, the right of heirs, and the necessity of an inheritance system. I tell my students that, when executing a will, they must think of the ways that it can be contested. In addition, I tell them that a will can be contested on two fronts-an attack on the testator and an attack on the will. Two chapters in this part highlight the ways that the testator's ability to execute a valid will may questioned. The final chapters in this unit show the issues that can be raised to dispute the validity of the will. They also explain the different types of wills that are available. The final part of the book deals with non-probate transfers. These chapters are included to show students the other devises that people can use to distribute their property. That knowledge is important because the majority of people use these procedures to transfer their property. At the end of the semester, my students have to draft a will based upon a fact pattern that I give them. I intentionally include non-probate property in order to see if they will attempt to distribute that using the will.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law - Property Law"
+  ],
+  "authors": [
+    "Browne C. Lewis - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CALI's eLangdell® Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/law-of-wills"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The purpose of this casebook is to train law students to think and act like probate attorneys. This book is meant to be used in conjunction with the author's book on the law of trusts. This book's focus is problem-solving and legal application; the book includes numerous problems, so law students can learn to apply the law they learn from reading the cases. It also contains collaborative learning exercises to encourage students to engage in group problem-solving. The book is divided into three parts to reflect the main types of issues that students will encounter if they practice probate law. The book's organization mirrors the manner in which probate law is practiced in the real world. The book starts with an examination of the intestacy system because the majority of people die without executing a will. Therefore, most of the legal issues a probate lawyer faces center around the intestacy system. Unlike the typical wills casebook, this book provides a detailed discussion of the intestacy system. A chapter on ethics is included because probate attorneys encounter ethical issues that are different from attorneys practicing in other areas of law. The second part of the book includes an exploration of the testacy system. It is arranged so professors can lead students from the client interview to the will execution. The first three chapters of this section deal with issues that directly impact the existence of the inheritance system. It analyzes a person's ability to control the disposition of his or her property after death. This serves as the students' first introduction to the power of the “dead hand”. These chapters are included to start a public policy discussion about the rights of the dead, the right of heirs, and the necessity of an inheritance system. I tell my students that, when executing a will, they must think of the ways that it can be contested. In addition, I tell them that a will can be contested on two fronts-an attack on the testator and an attack on the will. Two chapters in this part highlight the ways that the testator's ability to execute a valid will may questioned. The final chapters in this unit show the issues that can be raised to dispute the validity of the will. They also explain the different types of wills that are available. The final part of the book deals with non-probate transfers. These chapters are included to show students the other devises that people can use to distribute their property. That knowledge is important because the majority of people use these procedures to transfer their property. At the end of the semester, my students have to draft a will based upon a fact pattern that I give them. I intentionally include non-probate property in order to see if they will attempt to distribute that using the will."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 496
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "322",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

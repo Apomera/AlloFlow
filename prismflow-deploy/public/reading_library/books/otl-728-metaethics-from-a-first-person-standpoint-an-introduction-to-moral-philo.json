@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-728-metaethics-from-a-first-person-standpoint-an-introduction-to-moral-philo",
+  "title": "Metaethics from a First Person Standpoint: An Introduction to Moral Philosophy",
+  "description": "Metaethics from a First Person Standpoint addresses in a novel format the major topics and themes of contemporary metaethics, the study of the analysis of moral thought and judgement. Metathetics is less concerned with what practices are right or wrong than with what we mean by ‘right’ and ‘wrong.’ Looking at a wide spectrum of topics including moral language, realism and anti-realism, reasons and motives, relativism, and moral progress, this book engages students and general readers in order to enhance their understanding of morality and moral discourse as cultural practices. Catherine Wilson innovatively employs a first-person narrator to report step-by-step an individual’s reflections, beginning from a position of radical scepticism, on the possibility of objective moral knowledge. The reader is invited to follow along with this reasoning, and to challenge or agree with each major point. Incrementally, the narrator is led to certain definite conclusions about ‘oughts’ and norms in connection with self-interest, prudence, social norms, and finally morality. Scepticism is overcome, and the narrator arrives at a good understanding of how moral knowledge and moral progress are possible, though frequently long in coming.Accessibly written, Metaethics from a First Person Standpoint presupposes no prior training in philosophy and is a must-read for philosophers, students and general readers interested in gaining a better understanding of morality as a personal philosophical quest.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Philosophy"
+  ],
+  "authors": [
+    "Catherine Wilson - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Book Publishers",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/metaethics-from-a-first-person-standpoint-an-introduction-to-moral-philosophy"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Metaethics from a First Person Standpoint addresses in a novel format the major topics and themes of contemporary metaethics, the study of the analysis of moral thought and judgement. Metathetics is less concerned with what practices are right or wrong than with what we mean by ‘right’ and ‘wrong.’ Looking at a wide spectrum of topics including moral language, realism and anti-realism, reasons and motives, relativism, and moral progress, this book engages students and general readers in order to enhance their understanding of morality and moral discourse as cultural practices. Catherine Wilson innovatively employs a first-person narrator to report step-by-step an individual’s reflections, beginning from a position of radical scepticism, on the possibility of objective moral knowledge. The reader is invited to follow along with this reasoning, and to challenge or agree with each major point. Incrementally, the narrator is led to certain definite conclusions about ‘oughts’ and norms in connection with self-interest, prudence, social norms, and finally morality. Scepticism is overcome, and the narrator arrives at a good understanding of how moral knowledge and moral progress are possible, though frequently long in coming.Accessibly written, Metaethics from a First Person Standpoint presupposes no prior training in philosophy and is a must-read for philosophers, students and general readers interested in gaining a better understanding of morality as a personal philosophical quest."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 243
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "728",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

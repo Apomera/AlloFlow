@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-21183-untitled-ti",
+  "title": "መታለሊ ማንቲለ",
+  "description": "ማንቲለ ምትላሉ ቐፂሉ ኣሎ። ሕዚ ክኣ እንታይ ከምዝገብር እዚ ታሪኽ ኣንብቡ እሞ እስቲ ተዓዘቡ።",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Dan Kaasha"
+  ],
+  "illustrators": [
+    "Abraham Muzee"
+  ],
+  "translators": [
+    "Angesom Abadi"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Dan Kaasha",
+      "role": "Author"
+    },
+    {
+      "name": "Angesom Abadi",
+      "role": "Translation"
+    },
+    {
+      "name": "Abraham Muzee",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Dan Kaasha (Author); Angesom Abadi (Translation); Abraham Muzee (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "21183",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-d20e83add4b713cc",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/17187.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17185.png",
+      "text": "ማንቲለ ዕትሮ ሙሉእ መዓር ዝተሸከመ ሓርማዝ ረኸበ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183#page=1",
+      "sourceDigest": "sha256:212d46402d1e0d7644a09107a1301217e4db1cd89481dd14bb847d74cd0d373d"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17186.png",
+      "text": "ሓርማዝ ንማንቲለ ኣብ ዝባኑ ተሸከሞ። ማንቲለ ነቲ መዓር ኩሉ በልዖ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183#page=2",
+      "sourceDigest": "sha256:dcffa72ae2c74dc64deca515a89827c3a339ba462b67effb056264a22a5c1c07"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17188.png",
+      "text": "ኣብ ሩብ ማይ እናሰተየ ዓብይ ጎባይ ረኸቡ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183#page=3",
+      "sourceDigest": "sha256:68c00d734051393b47420368037f56a74a215e0d2b1aea85b516d1715495c403"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17189.png",
+      "text": "ማንቲለ ካብ ጎባይን ሓርማዝን መን ከምዝሕይል ክፈልጥ ደለየ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183#page=4",
+      "sourceDigest": "sha256:74a018b414c7e1c40f67e37e86e6237460d2f6f7bf8e2fab944a690b42effa34"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17191.png",
+      "text": "ማንቲለ እዙይ ከመይ ከምዘረጋግፆ ሓሳብ ኣለኒ በለ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183#page=5",
+      "sourceDigest": "sha256:6422b6a1c2625448471f85b3bdba92382865ea53fb0bb02d3c86358041a6841a"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17192.png",
+      "text": "ማንቲለ ሓደ ጫፍ ናይ ገመድ ኣብ ሽንጢ ሓርማዝ ኣሰሮ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183#page=6",
+      "sourceDigest": "sha256:9dcf5b8dfee059fa042c6d9fbfca2fdea23018bd268f2189d2c6fadfbf67f7a7"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17193.png",
+      "text": "እቲ ካሊእ ጫፍ ናይቲ ገመድ ኣብ ናይ ጎባይ ሽንጢ ኣሰሮ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183#page=7",
+      "sourceDigest": "sha256:74c49a7ccf85b1fdfcd5764f869796b568d110521c70c35037952aed39fa25cb"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17194.png",
+      "text": "ማንቲለ ኣብ ኦም ተሓቢኡ “ጉተት” በለ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183#page=8",
+      "sourceDigest": "sha256:91ad2e02d12145bdc0c881e19317f7d7a9f06216c9582c139457ad0cb27b9226"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17195.png",
+      "text": "ጎባይን ሓርማዝን ምጉታት ጀመሩ። ሓርማዝ ንጎባይ ጎተቶ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183#page=9",
+      "sourceDigest": "sha256:1abd22cfe7e2c808e351e03889bb4563806d12a4477389f05707ee9021c49ee5"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17196.png",
+      "text": "ጎባይ ንሓርማዝ ጎተቶ። ዋላ ሓዲኦም ክዕወቱ ኣይክኣሉን።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183#page=10",
+      "sourceDigest": "sha256:42b24f9220e308957cdd200fc10315a68af9e49acffe76981130e1f8071855b5"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17199.png",
+      "text": "ማንቲለ ናብ ጎባይ ገፅ ነቲ ገመድ ቖረፆ፤ ሓርማዝ ወደቐ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183#page=11",
+      "sourceDigest": "sha256:1254911651cf401e3ba6d209798aadd4dd38fe95b4a9342829d3cf845dff652c"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17201.png",
+      "text": "ማንቲለ ንጎባይ “ንስኻ ሓያል ኢኻ” በሎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21183#page=12",
+      "sourceDigest": "sha256:fb0301903c85786f10c086133a86381e781257e2ad4566df2cddac170cf56eb6"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 93
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:3cf311338a42a9ccf1b414dc7492c6a1155529731c11521f25c90c97c9ff1025"
+  }
+}

@@ -42,6 +42,10 @@ it('exposes the scoring internals via the test seam', () => {
   expect(typeof M.getBenchmarkLabel).toBe('function');
   expect(typeof M.analyzeErrors).toBe('function');
   expect(typeof M.getSeason).toBe('function');
+  expect(typeof M.normalizeGrade).toBe('function');
+  expect(typeof M.generateProblems).toBe('function');
+  expect(typeof M.parseStudentAnswer).toBe('function');
+  expect(typeof M.countCorrectDigits).toBe('function');
   expect(M.BENCHMARKS && M.BENCHMARKS['3']).toBeTruthy();
 });
 
@@ -57,35 +61,33 @@ describe('getSeason — month → season boundaries', () => {
   }
 });
 
-describe('getBenchmark — grade normalization (winter column)', () => {
-  beforeEach(() => freezeMonth(0)); // Jan → winter
-  it('K addition → grade K, winter target 10', () => {
-    expect(M.getBenchmark('K', 'add')).toMatchObject({ grade: 'K', season: 'winter', target: 10 });
+describe('getBenchmark - strict grade and operation support (winter column)', () => {
+  beforeEach(() => freezeMonth(0));
+  it('normalizes K labels without falling through to grade 3', () => {
+    expect(M.getBenchmark('K', 'add')).toMatchObject({ grade: 'K', season: 'winter', target: 10, available: true });
+    expect(M.getBenchmark('Kindergarten', 'add')).toMatchObject({ grade: 'K', target: 10, available: true });
+    expect(M.getBenchmark('0', 'add')).toMatchObject({ grade: 'K', target: 10, available: true });
   });
-  it('"0" normalizes to K', () => {
-    expect(M.getBenchmark('0', 'add')).toMatchObject({ grade: 'K', target: 10 });
+  it('normalizes ordinal and Grade N labels', () => {
+    expect(M.normalizeGrade('3rd Grade')).toBe('3');
+    expect(M.getBenchmark('Grade 5', 'add')).toMatchObject({ grade: '5', target: 55, available: true });
   });
-  it('"Grade 5" → grade 5 addition winter 55', () => {
-    expect(M.getBenchmark('Grade 5', 'add')).toMatchObject({ grade: '5', target: 55 });
+  it('does not silently substitute grade-3 data for missing or unsupported grades', () => {
+    expect(M.getBenchmark('', 'add')).toMatchObject({ target: null, available: false, reason: 'unsupported-grade' });
+    expect(M.getBenchmark('9th Grade', 'add')).toMatchObject({ grade: '9', target: null, available: false, reason: 'unsupported-grade' });
+    expect(M.getBenchmark('College', 'add')).toMatchObject({ target: null, available: false, reason: 'unsupported-grade' });
   });
-  it('empty grade defaults to grade 3 (target 40)', () => {
-    expect(M.getBenchmark('', 'add')).toMatchObject({ grade: '3', target: 40 });
+  it('does not substitute addition references for unsupported operations', () => {
+    expect(M.getBenchmark('K', 'mul')).toMatchObject({ target: null, available: false, reason: 'unsupported-operation' });
+    expect(M.getBenchmark('3', 'mixed')).toMatchObject({ target: null, available: false, reason: 'unsupported-operation' });
+    expect(M.getBenchmark('3', 'totallyBogus')).toMatchObject({ target: null, available: false, reason: 'unsupported-operation' });
   });
-  it('unknown grade "99" falls back to grade-3 DATA but keeps the 99 label', () => {
-    // documents the current behavior: BENCHMARKS['99'] missing → grade-3 numbers, grade string still '99'
-    expect(M.getBenchmark('99', 'add')).toMatchObject({ grade: '99', target: 40 });
+  it('retains supported operation references', () => {
+    expect(M.getBenchmark('5', 'mul')).toMatchObject({ target: 45, available: true });
   });
-  it('grade 5 multiplication → winter 45', () => {
-    expect(M.getBenchmark('5', 'mul').target).toBe(45);
-  });
-  it('K multiplication (no mul norms) falls back to addition (10)', () => {
-    expect(M.getBenchmark('K', 'mul').target).toBe(10);
-  });
-  it('"mixed" operation maps to addition', () => {
-    expect(M.getBenchmark('3', 'mixed').target).toBe(40);
-  });
-  it('unknown operation falls back to addition', () => {
-    expect(M.getBenchmark('3', 'totallyBogus').target).toBe(40);
+  it('does not treat a zero placeholder as an achieved reference', () => {
+    freezeMonth(7);
+    expect(M.getBenchmark('1', 'mul')).toMatchObject({ target: null, available: false, reason: 'no-season-reference' });
   });
 });
 
@@ -109,19 +111,53 @@ describe('getBenchmark — strategic/frustration multipliers', () => {
   });
 });
 
-describe('getBenchmarkLabel — tier cut points', () => {
-  const bm = { target: 50, strategic: 38 };
-  it('dcpm at/above target → benchmark (green)', () => {
-    expect(M.getBenchmarkLabel(50, bm)).toMatchObject({ tier: 'benchmark' });
-    expect(M.getBenchmarkLabel(60, bm).tier).toBe('benchmark');
+describe('getBenchmarkLabel - instructional reference bands', () => {
+  const reference = { target: 50, strategic: 38, available: true };
+  it('labels scores at or above the instructional reference', () => {
+    expect(M.getBenchmarkLabel(50, reference).tier).toBe('reference-met');
+    expect(M.getBenchmarkLabel(60, reference).tier).toBe('reference-met');
   });
-  it('dcpm in [strategic, target) → strategic (yellow)', () => {
-    expect(M.getBenchmarkLabel(49, bm).tier).toBe('strategic');
-    expect(M.getBenchmarkLabel(38, bm).tier).toBe('strategic');
+  it('labels scores approaching the instructional reference', () => {
+    expect(M.getBenchmarkLabel(49, reference).tier).toBe('reference-approaching');
+    expect(M.getBenchmarkLabel(38, reference).tier).toBe('reference-approaching');
   });
-  it('dcpm below strategic → intensive (red)', () => {
-    expect(M.getBenchmarkLabel(37, bm).tier).toBe('intensive');
-    expect(M.getBenchmarkLabel(0, bm).tier).toBe('intensive');
+  it('labels scores below the instructional reference without diagnostic tier language', () => {
+    expect(M.getBenchmarkLabel(37, reference).tier).toBe('reference-below');
+    expect(M.getBenchmarkLabel(0, reference).tier).toBe('reference-below');
+  });
+  it('returns a descriptive result when no reference is available', () => {
+    expect(M.getBenchmarkLabel(90, { target: null, available: false }).tier).toBe('descriptive');
+  });
+});
+
+describe('strict answer and correct-digit scoring', () => {
+  it('accepts safe whole numbers and rejects blanks, decimals, and exponent notation', () => {
+    expect(M.parseStudentAnswer('-12')).toEqual({ valid: true, value: -12 });
+    expect(M.parseStudentAnswer('')).toEqual({ valid: false, value: null });
+    expect(M.parseStudentAnswer('3.9')).toEqual({ valid: false, value: null });
+    expect(M.parseStudentAnswer('3e2')).toEqual({ valid: false, value: null });
+  });
+  it('awards place-aligned partial digit credit', () => {
+    expect(M.countCorrectDigits(37, 38)).toBe(1);
+    expect(M.countCorrectDigits(137, 37)).toBe(2);
+    expect(M.countCorrectDigits(42, 42)).toBe(2);
+    expect(M.countCorrectDigits(42, 'SKIP')).toBe(0);
+  });
+});
+
+describe('problem-generator difficulty contracts', () => {
+  it('uses two-digit operands for extended addition and subtraction', () => {
+    for (const op of ['add', 'sub']) {
+      const items = M.generateProblems(op, 'double', 40);
+      expect(items).toHaveLength(40);
+      expect(items.every((item) => item.a >= 10 && item.a <= 99 && item.b >= 10 && item.b <= 99)).toBe(true);
+    }
+  });
+  it('uses extended fact ranges for multiplication and division', () => {
+    const mul = M.generateProblems('mul', 'double', 40);
+    expect(mul.every((item) => item.a >= 10 && item.a <= 20 && item.b >= 0 && item.b <= 12)).toBe(true);
+    const div = M.generateProblems('div', 'double', 40);
+    expect(div.every((item) => item.b >= 1 && item.b <= 15 && item.answer >= 0 && item.answer <= 20 && item.a === item.b * item.answer)).toBe(true);
   });
 });
 
@@ -162,6 +198,38 @@ describe('analyzeErrors', () => {
     expect(r.errors).toBe(0);
     expect(r.skips).toBe(0);
     expect(r.patterns).toHaveLength(0);
+  });
+});
+
+describe('probe timing and comparison integrity contract', () => {
+  it('uses a monotonic deadline and excludes incomplete or interrupted runs', () => {
+    const source = readFileSync(resolve(process.cwd(), 'math_fluency_module.js'), 'utf8');
+    expect(source).toContain("typeof performance.now === 'function'");
+    expect(source).toContain('deadlineRef.current - nowMs()');
+    expect(source).toContain("finishProbe('time')");
+    expect(source).toContain("finishProbe('early')");
+    expect(source).toContain("completionStatus === 'complete'");
+    expect(source).toContain('item.validForComparison !== false && Number.isFinite(item.dcpm)');
+  });
+
+  it('suppresses coaching cues during fixed comparable forms', () => {
+    const source = readFileSync(resolve(process.cwd(), 'math_fluency_module.js'), 'utf8');
+    expect(source).toContain('!isFixedRun && soundEnabled');
+    expect(source).toContain("runConfigRef.current.mode === 'benchmark')) return");
+    expect(source).toContain("config.mode !== 'benchmark'");
+  });
+});
+
+describe('active probe accessibility contract', () => {
+  it('uses modal dialog semantics, preserves Tab navigation, and exposes progress values', () => {
+    const source = readFileSync(resolve(process.cwd(), 'math_fluency_module.js'), 'utf8');
+    expect(source).toContain("role: 'dialog'");
+    expect(source).toContain("'aria-modal': 'true'");
+    expect(source).toContain("e.key !== 'Tab'");
+    expect(source).not.toContain('Tab = Skip');
+    expect(source).toContain("'aria-valuenow': Math.round(timerPct)");
+    expect(source).toContain("role: 'group'");
+    expect(source).toContain("tt('math_fluency.run_again', 'Run again')");
   });
 });
 

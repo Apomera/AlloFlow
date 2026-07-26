@@ -41,6 +41,14 @@
     "credibility": "Oxford University Press is an established academic publisher, and this clinician-authored volume provides a traceable treatment-specific account of IPT concepts and procedures.",
     "metadataSource": "pack-authored"
   },
+  "https://apastyle.apa.org/jars/quantitative": {
+    "url": "https://apastyle.apa.org/jars/quantitative",
+    "title": "Journal Article Reporting Standards for Quantitative Research",
+    "organization": "American Psychological Association",
+    "summary": "The APA Style JARS-Quant resource specifies information for quantitative reports, including participant characteristics and sampling, measurement quality, research design, assignment, data collection, analyses, and transparency practices.",
+    "credibility": "This is the American Psychological Association's official reporting-standard resource for quantitative psychology manuscripts. It is authoritative for APA reporting expectations and directly addresses the methodological details tested by the item.",
+    "metadataSource": "pack-authored"
+  },
   "https://apastyle.apa.org/style-grammar-guidelines/paper-format/sample-papers": {
     "title": "Sample Papers",
     "organization": "apastyle.apa.org",
@@ -133,6 +141,7 @@
     "metadataSource": "explicit-override"
   },
   "https://clep.collegeboard.org/for-educators/for-colleges/clep-scores/understanding-scores/reliability-and-validity": {
+    "url": "https://clep.collegeboard.org/for-educators/for-colleges/clep-scores/understanding-scores/reliability-and-validity",
     "title": "Reliability and Validity: Understanding CLEP Scores",
     "organization": "College Board",
     "summary": "College Board explains that the standard error of measurement is inversely related to a reliability coefficient and approaches zero as reliability approaches perfect score consistency.",
@@ -322,6 +331,7 @@
     "metadataSource": "page-metadata"
   },
   "https://dictionary.apa.org/flooding": {
+    "url": "https://dictionary.apa.org/flooding",
     "title": "Flooding - APA Dictionary of Psychology",
     "organization": "APA Dictionary of Psychology, American Psychological Association",
     "summary": "The professional dictionary defines flooding as direct exposure to a maximum-intensity anxiety-producing situation or stimulus without preliminary relaxation training.",
@@ -350,6 +360,7 @@
     "metadataSource": "page-metadata"
   },
   "https://dictionary.apa.org/halstead-reitan-neuropsychological-battery": {
+    "url": "https://dictionary.apa.org/halstead-reitan-neuropsychological-battery",
     "title": "Halstead-Reitan Neuropsychological Battery (HRNB)",
     "organization": "APA Dictionary of Psychology, American Psychological Association",
     "summary": "The APA entry defines the HRNB, names its five core and five optional subtests, and identifies the broad cognitive and sensorimotor functions represented in the battery.",
@@ -399,6 +410,7 @@
     "metadataSource": "page-metadata"
   },
   "https://dictionary.apa.org/musturbation": {
+    "url": "https://dictionary.apa.org/musturbation",
     "title": "APA Dictionary of Psychology Entry: Musturbation",
     "organization": "American Psychological Association",
     "summary": "The entry defines Albert Ellis’s term for rigid and unrealistic must or should demands and links the construct directly to rational emotive behavior therapy.",
@@ -476,6 +488,7 @@
     "metadataSource": "pack-authored"
   },
   "https://dictionary.apa.org/systematic-desensitization": {
+    "url": "https://dictionary.apa.org/systematic-desensitization",
     "title": "Systematic desensitization - APA Dictionary of Psychology",
     "organization": "APA Dictionary of Psychology, American Psychological Association",
     "summary": "The professional dictionary defines systematic desensitization as gradual exposure to increasingly anxiety-provoking stimuli while using relaxation to inhibit anxiety.",
@@ -616,6 +629,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1002/ejsp.2420010202": {
+    "url": "https://doi.org/10.1002/ejsp.2420010202",
     "title": "Social Categorization and Intergroup Behaviour",
     "organization": "European Journal of Social Psychology",
     "summary": "Tajfel, Billig, Bundy, and Flament report minimal-group experiments in which arbitrary classification influenced allocation of real rewards, including choices favoring one's assigned category over another category.",
@@ -623,6 +637,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1002/j.1556-6676.1992.tb01642.x": {
+    "url": "https://doi.org/10.1002/j.1556-6676.1992.tb01642.x",
     "title": "Multicultural Counseling Competencies and Standards: A Call to the Profession",
     "organization": "Journal of Counseling & Development, Wiley",
     "summary": "Sue, Arredondo, and McDavis develop multicultural counseling competencies across counselor self-awareness, understanding culturally different client worldviews, and culturally appropriate intervention strategies.",
@@ -637,6 +652,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1002/j.2333-8504.1995.tb01668.x": {
+    "url": "https://doi.org/10.1002/j.2333-8504.1995.tb01668.x",
     "title": "Estimating the Importance of Differential Item Functioning",
     "organization": "ETS Research Report Series",
     "summary": "Rudas and Zwick define DIF through different conditional probabilities of a correct response for demographic groups at the same ability level and evaluate methods for estimating its importance.",
@@ -652,6 +668,7 @@
     "doi": "10.1002/wps.20238"
   },
   "https://doi.org/10.1006/cogp.1999.0734": {
+    "url": "https://doi.org/10.1006/cogp.1999.0734",
     "title": "The Unity and Diversity of Executive Functions and Their Contributions to Complex Frontal Lobe Tasks: A Latent Variable Analysis",
     "organization": "Cognitive Psychology, Academic Press/Elsevier",
     "summary": "Miyake and colleagues used a multitask latent-variable design to examine shifting, updating and monitoring working-memory representations, and inhibition of prepotent responses as related but separable executive functions.",
@@ -659,6 +676,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1007/978-1-4419-1005-9_215": {
+    "url": "https://doi.org/10.1007/978-1-4419-1005-9_215",
     "title": "Stress: Appraisal and Coping",
     "organization": "Encyclopedia of Behavioral Medicine, Springer Nature",
     "summary": "Susan Folkman summarizes stress as a person-environment relationship appraised as personally significant and as taxing or exceeding coping resources, and contrasts this view with stimulus-only and response-only definitions.",
@@ -666,6 +684,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1007/978-1-4757-9825-3": {
+    "url": "https://doi.org/10.1007/978-1-4757-9825-3",
     "title": "The Halstead-Reitan Neuropsychological Test Battery: Theory and Clinical Interpretation",
     "organization": "Springer Nature",
     "summary": "Reitan and Wolfson describe the fixed battery, its component measures, and a profile-based interpretive framework for examining patterns and levels of neuropsychological performance associated with cerebral dysfunction.",
@@ -681,6 +700,7 @@
     "doi": "10.1007/BF01044839"
   },
   "https://doi.org/10.1007/BF02310555": {
+    "url": "https://doi.org/10.1007/BF02310555",
     "title": "Coefficient Alpha and the Internal Structure of Tests",
     "organization": "Psychometrika, The Psychometric Society",
     "summary": "Cronbach derives coefficient alpha from item covariances, relates it to split-half equivalence, and discusses its interpretation for multi-item scores.",
@@ -688,6 +708,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1007/s11336-008-9101-0": {
+    "url": "https://doi.org/10.1007/s11336-008-9101-0",
     "title": "On the Use, the Misuse, and the Very Limited Usefulness of Cronbach's Alpha",
     "organization": "Psychometrika, The Psychometric Society",
     "summary": "Sijtsma reviews common interpretations of alpha and explains why a high value should not be treated as evidence that a test is unidimensional or that its scores are valid.",
@@ -695,6 +716,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/0001-6918(67)90011-X": {
+    "url": "https://doi.org/10.1016/0001-6918(67)90011-X",
     "title": "Age Differences in Fluid and Crystallized Intelligence",
     "organization": "Acta Psychologica, Elsevier",
     "summary": "Horn and Cattell used factor scores across adult age groups to examine distinct age patterns for fluid and crystallized abilities.",
@@ -754,6 +776,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/0022-1031(66)90077-1": {
+    "url": "https://doi.org/10.1016/0022-1031(66)90077-1",
     "title": "Social Facilitation of Dominant and Subordinate Responses",
     "organization": "Journal of Experimental Social Psychology",
     "summary": "Zajonc and Sales experimentally found that an audience increased dominant responses and reduced subordinate responses on a task with previously trained response habits.",
@@ -769,12 +792,12 @@
     "doi": "10.1016/0022-1031(77)90049-X"
   },
   "https://doi.org/10.1016/0749-5978(85)90049-4": {
-    "title": "The psychology of sunk cost",
+    "url": "https://doi.org/10.1016/0749-5978(85)90049-4",
+    "title": "The Psychology of Sunk Cost",
     "organization": "Organizational Behavior and Human Decision Processes",
-    "summary": "This scholarly work focuses on “The psychology of sunk cost.” Open the source to review its methods, scope, findings, and limitations in context.",
-    "credibility": "The DOI provides a persistent link to the publisher metadata for this scholarly work. Evidentiary strength still depends on the publication type, methods, sample, analysis, and fit to the claim.",
-    "metadataSource": "Crossref",
-    "doi": "10.1016/0749-5978(85)90049-4"
+    "summary": "Arkes and Blumer define the sunk-cost effect as a greater tendency to continue an endeavor after investing money, effort, or time and demonstrate the effect across field and experimental studies of consequential decisions.",
+    "credibility": "This DOI identifies the foundational peer-reviewed empirical article by the researchers who named and experimentally examined the sunk-cost effect. It directly supports the distinction between irrecoverable investment and prospective value.",
+    "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/0959-4388(95)80023-9": {
     "title": "Retrograde amnesia and memory consolidation: a neurobiological perspective",
@@ -785,6 +808,7 @@
     "doi": "10.1016/0959-4388(95)80023-9"
   },
   "https://doi.org/10.1016/j.brat.2005.06.006": {
+    "url": "https://doi.org/10.1016/j.brat.2005.06.006",
     "title": "Acceptance and Commitment Therapy: Model, Processes and Outcomes",
     "organization": "Behaviour Research and Therapy",
     "summary": "Hayes and colleagues present the treatment model and review evidence concerning psychological flexibility, acceptance, cognitive defusion, values, and committed action as linked processes of behavior change.",
@@ -800,6 +824,7 @@
     "doi": "10.1016/j.brat.2008.10.014"
   },
   "https://doi.org/10.1016/j.brat.2014.04.006": {
+    "url": "https://doi.org/10.1016/j.brat.2014.04.006",
     "title": "Maximizing Exposure Therapy: An Inhibitory Learning Approach",
     "organization": "Behaviour Research and Therapy, Elsevier",
     "summary": "Craske and colleagues review exposure mechanisms and clinical strategies that emphasize inhibitory learning and expectancy violation rather than treating within-session fear habituation as the necessary index of success.",
@@ -853,6 +878,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/j.neuroimage.2010.06.016": {
+    "url": "https://doi.org/10.1016/j.neuroimage.2010.06.016",
     "title": "Default Network Activity, Coupled with the Frontoparietal Control Network, Supports Goal-Directed Cognition",
     "organization": "NeuroImage, Elsevier",
     "summary": "Spreng and colleagues used fMRI to compare autobiographical and visuospatial planning, finding default-network engagement for the internal task, dorsal-attention engagement for the external task, and frontoparietal-control engagement across both.",
@@ -881,6 +907,14 @@
     "credibility": "The DOI provides a persistent link to the publisher metadata for this scholarly work. Evidentiary strength still depends on the publication type, methods, sample, analysis, and fit to the claim.",
     "metadataSource": "Crossref",
     "doi": "10.1016/j.obhdp.2006.01.005"
+  },
+  "https://doi.org/10.1016/j.paid.2006.08.022": {
+    "url": "https://doi.org/10.1016/j.paid.2006.08.022",
+    "title": "The Interrelations Between Irrational Cognitive Processes and Distress in Stressful Academic Settings",
+    "organization": "Personality and Individual Differences",
+    "summary": "This peer-reviewed study describes the rational-emotive ABCDE model in which beliefs mediate responses to adversity and clients dispute irrational beliefs while developing more efficient adaptive alternatives.",
+    "credibility": "The article appears in a peer-reviewed psychology journal and directly states the ABCDE distinction and disputation process. Its DOI is a stable scholarly source for the mechanism tested, though it is not a complete treatment manual.",
+    "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/j.tics.2004.11.006": {
     "title": "Change blindness: past, present, and future",
@@ -929,10 +963,10 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/S0022-5371(77)80016-9": {
-    "title": "Levels of Processing Versus Transfer Appropriate Processing",
-    "organization": "Journal of Verbal Learning and Verbal Behavior, Elsevier",
-    "summary": "The original experiments found that semantic encoding aided standard recognition while rhyme-oriented encoding aided a rhyming recognition test.",
-    "credibility": "This DOI identifies the original peer-reviewed Morris, Bransford, and Franks experimental article that established the tested transfer-appropriate-processing effect.",
+    "title": "Levels of Processing versus Transfer Appropriate Processing",
+    "organization": "Journal of Verbal Learning and Verbal Behavior",
+    "summary": "Morris, Bransford, and Franks compared semantic and rhyme-oriented encoding with standard and rhyming recognition tests, demonstrating that test performance depends on compatibility between acquisition and retrieval operations.",
+    "credibility": "This DOI identifies the foundational peer-reviewed experiment that introduced the transfer-appropriate-processing account and directly demonstrated the semantic-versus-rhyme reversal used to support both revised items.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/S0140-6736(10)61460-9": {
@@ -975,6 +1009,7 @@
     "doi": "10.1016/S0301-0511(00)00058-2"
   },
   "https://doi.org/10.1016/S1364-6613(00)01538-2": {
+    "url": "https://doi.org/10.1016/S1364-6613(00)01538-2",
     "title": "The Episodic Buffer: A New Component of Working Memory?",
     "organization": "Trends in Cognitive Sciences, Elsevier",
     "summary": "Baddeley proposes a fourth working-memory component that temporarily stores multimodal information and binds subsidiary-system and long-term-memory inputs into integrated episodic representations.",
@@ -982,12 +1017,12 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1017/CBO9780511665684.003": {
+    "url": "https://doi.org/10.1017/CBO9780511665684.003",
     "title": "Psychological perspectives on successful aging: The model of selective optimization with compensation",
     "organization": "Successful Aging",
-    "summary": "This scholarly work focuses on “Psychological perspectives on successful aging: The model of selective optimization with compensation.” Open the source to review its methods, scope, findings, and limitations in context.",
+    "summary": "This scholarly work focuses on Psychological perspectives on successful aging: the model of selective optimization with compensation. The chapter develops selection, optimization, and compensation as coordinated processes for adapting goals and means across the lifespan.",
     "credibility": "The DOI provides a persistent link to the publisher metadata for this scholarly work. Evidentiary strength still depends on the publication type, methods, sample, analysis, and fit to the claim.",
-    "metadataSource": "Crossref",
-    "doi": "10.1017/CBO9780511665684.003"
+    "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1017/S0140525X01003922": {
     "title": "The magical number 4 in short-term memory: A reconsideration of mental storage capacity",
@@ -1022,6 +1057,7 @@
     "doi": "10.1037/0003-066X.34.10.906"
   },
   "https://doi.org/10.1037/0003-066X.36.2.129": {
+    "url": "https://doi.org/10.1037/0003-066X.36.2.129",
     "title": "Mood and memory (American Psychologist, 1981)",
     "organization": "American Psychologist, American Psychological Association",
     "summary": "Bower reviews evidence that people recall a greater proportion of experiences whose affective tone is congruent with their mood during retrieval and distinguishes this from mood-state-dependent effects.",
@@ -1053,6 +1089,7 @@
     "doi": "10.1037/0003-066X.52.6.613"
   },
   "https://doi.org/10.1037/0003-066X.54.3.165": {
+    "url": "https://doi.org/10.1037/0003-066X.54.3.165",
     "title": "Taking Time Seriously: A Theory of Socioemotional Selectivity",
     "organization": "American Psychologist, American Psychological Association",
     "summary": "Carstensen, Isaacowitz, and Charles explain how open-ended time prioritizes knowledge goals whereas limited perceived time increases the priority of emotionally meaningful present-focused goals.",
@@ -1068,10 +1105,11 @@
     "doi": "10.1037/0003-066X.55.5.469"
   },
   "https://doi.org/10.1037/0003-066X.61.4.271": {
-    "title": "American Psychological Association Presidential Task Force on Evidence-Based Practice. (2006). Evidence-based practice in psychology. American Psychologist, 61(4), 271–285",
-    "organization": "",
-    "summary": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
-    "credibility": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
+    "url": "https://doi.org/10.1037/0003-066X.61.4.271",
+    "title": "Evidence-Based Practice in Psychology",
+    "organization": "American Psychological Association Presidential Task Force",
+    "summary": "The APA task-force report defines evidence-based practice as integrating the best available research with clinical expertise in the context of patient characteristics, culture, and preferences.",
+    "credibility": "This peer-reviewed American Psychologist policy article is the primary APA formulation of evidence-based practice in psychology. It directly describes the integrated decision model rather than reducing practice to one source of information.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1037/0003-066X.62.4.271": {
@@ -1153,10 +1191,10 @@
     "doi": "10.1037/0022-3514.51.6.1173"
   },
   "https://doi.org/10.1037/0022-3514.58.6.1015": {
-    "title": "A focus theory of normative conduct: Recycling the concept of norms to reduce littering in public places - scholarly source",
-    "organization": "",
-    "summary": "The DOI is a persistent identifier for the cited scholarly publication and preserves item-level provenance. The question was checked against the cited definition or finding; the study design and publication context still determine evidentiary strength.",
-    "credibility": "The DOI is a persistent identifier for the cited scholarly publication and preserves item-level provenance. The question was checked against the cited definition or finding; the study design and publication context still determine evidentiary strength.",
+    "title": "A Focus Theory of Normative Conduct: Recycling the Concept of Norms to Reduce Littering in Public Places",
+    "organization": "Journal of Personality and Social Psychology",
+    "summary": "Cialdini, Reno, and Kallgren distinguish descriptive norms concerning what people commonly do from injunctive norms concerning what people approve, and examine how focusing normative information affects public behavior.",
+    "credibility": "This DOI resolves to the foundational peer-reviewed empirical article that introduced the focus-theory distinction tested in the item. The article reports field experiments and directly defines the two types of normative information.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1037/0022-3514.64.2.243": {
@@ -1168,6 +1206,7 @@
     "doi": "10.1037/0022-3514.64.2.243"
   },
   "https://doi.org/10.1037/0022-3514.67.4.741": {
+    "url": "https://doi.org/10.1037/0022-3514.67.4.741",
     "title": "Social Dominance Orientation: A Personality Variable Predicting Social and Political Attitudes",
     "organization": "Journal of Personality and Social Psychology",
     "summary": "Pratto and colleagues introduce social dominance orientation as an individual-difference construct concerning preference for inequality among social groups and test its relation to hierarchy-enhancing attitudes and policies.",
@@ -1182,6 +1221,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1037/0022-3514.71.2.364": {
+    "url": "https://doi.org/10.1037/0022-3514.71.2.364",
     "title": "Mechanisms of Moral Disengagement in the Exercise of Moral Agency",
     "organization": "Journal of Personality and Social Psychology, American Psychological Association",
     "summary": "Bandura and colleagues develop and test a social-cognitive account in which moral self-sanctions can be disengaged by reconstrual of conduct, obscuring personal agency, minimizing consequences, and blaming or dehumanizing victims.",
@@ -1211,6 +1251,7 @@
     "doi": "10.1037/0022-3514.77.6.1121"
   },
   "https://doi.org/10.1037/0022-3514.90.5.751": {
+    "url": "https://doi.org/10.1037/0022-3514.90.5.751",
     "title": "A Meta-Analytic Test of Intergroup Contact Theory",
     "organization": "Journal of Personality and Social Psychology, American Psychological Association",
     "summary": "Pettigrew and Tropp synthesize 515 studies with 713 independent samples to test the average contact-prejudice association, methodological alternatives, and the role of structured contact conditions.",
@@ -1218,6 +1259,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1037/0033-2909.101.2.171": {
+    "url": "https://doi.org/10.1037/0033-2909.101.2.171",
     "title": "Massive IQ Gains in 14 Nations: What IQ Tests Really Measure",
     "organization": "Psychological Bulletin, American Psychological Association",
     "summary": "Flynn documents large secular increases in average intelligence-test performance across multiple national cohorts and discusses their implications for score interpretation.",
@@ -1232,10 +1274,11 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1037/0033-2909.114.1.3": {
-    "title": "Johnson, M. K., Hashtroudi, S., & Lindsay, D. S. (1993). Source monitoring. Psychological Bulletin, 114(1), 3–28",
-    "organization": "",
-    "summary": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
-    "credibility": "This is a traceable scholarly publication indexed through a DOI or the U.S. National Library of Medicine; the cited work directly addresses the tested concept.",
+    "url": "https://doi.org/10.1037/0033-2909.114.1.3",
+    "title": "Source Monitoring: A Psychological Bulletin Framework",
+    "organization": "Psychological Bulletin and American Psychological Association",
+    "summary": "Johnson, Hashtroudi, and Lindsay present a framework for attributing memories, knowledge, and beliefs to origins based on qualitative characteristics and judgment processes that can produce source confusions.",
+    "credibility": "This peer-reviewed Psychological Bulletin article is the foundational source-monitoring framework from its principal authors. The DOI supplies a stable scholarly record for the mechanisms and attribution errors tested here.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1037/0033-2909.123.2.238": {
@@ -1271,6 +1314,7 @@
     "doi": "10.1037/0033-2909.126.1.17"
   },
   "https://doi.org/10.1037/0033-2909.126.5.703": {
+    "url": "https://doi.org/10.1037/0033-2909.126.5.703",
     "title": "Gender Differences in Moral Orientation: A Meta-Analysis",
     "organization": "Psychological Bulletin, American Psychological Association",
     "summary": "Jaffee and Hyde quantitatively synthesized care- and justice-orientation studies, finding small average differences and concluding that the evidence did not strongly support predominantly female care or predominantly male justice reasoning.",
@@ -1286,6 +1330,7 @@
     "doi": "10.1037/0033-2909.130.1.143"
   },
   "https://doi.org/10.1037/0033-2909.130.5.711": {
+    "url": "https://doi.org/10.1037/0033-2909.130.5.711",
     "title": "Is There a Universal Positivity Bias in Attributions? A Meta-Analytic Review of Individual, Developmental, and Cultural Differences in the Self-Serving Attributional Bias",
     "organization": "Psychological Bulletin, American Psychological Association",
     "summary": "Mezulis and colleagues synthesize 266 studies and examine the magnitude, distribution, developmental variation, and cultural variation of self-serving attributional patterns.",
@@ -1308,6 +1353,7 @@
     "doi": "10.1037/0033-2909.86.2.420"
   },
   "https://doi.org/10.1037/0033-2909.86.3.638": {
+    "url": "https://doi.org/10.1037/0033-2909.86.3.638",
     "title": "The File Drawer Problem and Tolerance for Null Results",
     "organization": "Psychological Bulletin, American Psychological Association",
     "summary": "Rosenthal's seminal article describes how unavailable null-result studies can distort an apparent evidence base and develops a method for evaluating tolerance for missing null results.",
@@ -1430,6 +1476,7 @@
     "doi": "10.1037/0735-7028.37.2.215"
   },
   "https://doi.org/10.1037/0882-7974.7.3.331": {
+    "url": "https://doi.org/10.1037/0882-7974.7.3.331",
     "title": "Social and Emotional Patterns in Adulthood: Support for Socioemotional Selectivity Theory",
     "organization": "Psychology and Aging, American Psychological Association",
     "summary": "This primary study examines age-related differences in social networks and supports selective concentration on emotionally close relationships rather than indiscriminate social withdrawal.",
@@ -1445,6 +1492,7 @@
     "doi": "10.1037/1040-3590.12.1.19"
   },
   "https://doi.org/10.1037/1040-3590.15.4.446": {
+    "url": "https://doi.org/10.1037/1040-3590.15.4.446",
     "title": "The Incremental Validity of Psychological Testing and Assessment: Conceptual, Methodological, and Statistical Issues",
     "organization": "Psychological Assessment, American Psychological Association",
     "summary": "Hunsley and Meyer examine research designs and statistical issues for determining whether tests, test-informed inferences, or new measures add prediction beyond information already available.",
@@ -1483,6 +1531,7 @@
     "doi": "10.1037/14692-000"
   },
   "https://doi.org/10.1037/a0018378": {
+    "url": "https://doi.org/10.1037/a0018378",
     "title": "The Efficacy of Psychodynamic Psychotherapy",
     "organization": "American Psychologist, American Psychological Association",
     "summary": "Shedler synthesizes outcome and comparative process research and describes characteristic psychodynamic emphases, including affect, avoidance, recurring patterns, interpersonal experience, and the therapy relationship.",
@@ -1654,6 +1703,7 @@
     "doi": "10.1037/h0040957"
   },
   "https://doi.org/10.1037/h0041593": {
+    "url": "https://doi.org/10.1037/h0041593",
     "title": "Cognitive Consequences of Forced Compliance",
     "organization": "The Journal of Abnormal and Social Psychology, American Psychological Association",
     "summary": "Festinger and Carlsmith compared incentive conditions after counter-attitudinal compliance and interpreted the smaller-incentive attitude shift through insufficient external justification and dissonance reduction.",
@@ -1708,6 +1758,7 @@
     "doi": "10.1037/h0046016"
   },
   "https://doi.org/10.1037/h0046743": {
+    "url": "https://doi.org/10.1037/h0046743",
     "title": "Theory of Fluid and Crystallized Intelligence: A Critical Experiment",
     "organization": "Journal of Educational Psychology, American Psychological Association",
     "summary": "Cattell tested the proposed distinction between fluid reasoning and culturally or educationally accumulated intellectual abilities using differentiated cognitive measures.",
@@ -1785,6 +1836,7 @@
     "doi": "10.1037/h0074524"
   },
   "https://doi.org/10.1037/h0076284": {
+    "url": "https://doi.org/10.1037/h0076284",
     "title": "Reciprocal Concessions Procedure for Inducing Compliance: The Door-in-the-Face Technique",
     "organization": "Journal of Personality and Social Psychology, American Psychological Association",
     "summary": "Cialdini and colleagues report three experiments comparing an extreme-request-then-smaller-request sequence with a smaller-request-only procedure and additional control conditions designed to evaluate reciprocal concessions.",
@@ -1866,6 +1918,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1038/nn1326": {
+    "url": "https://doi.org/10.1038/nn1326",
     "title": "The Neural Basis of Puberty and Adolescence",
     "organization": "Nature Neuroscience, Springer Nature",
     "summary": "Sisk and Foster review neural and neuroendocrine mechanisms of pubertal maturation, including the reawakening of gonadotropin-releasing-hormone neuronal activity.",
@@ -1881,6 +1934,7 @@
     "doi": "10.1038/nrn1406"
   },
   "https://doi.org/10.1038/nrn1723": {
+    "url": "https://doi.org/10.1038/nrn1723",
     "title": "Forty-Five Years of Split-Brain Research and Still Going Strong",
     "organization": "Nature Reviews Neuroscience, Springer Nature",
     "summary": "Gazzaniga reviews the experimental evidence on hemispheric specialization, restricted interhemispheric transfer, and the integrative functions of the corpus callosum.",
@@ -1903,6 +1957,7 @@
     "doi": "10.1038/nrn2555"
   },
   "https://doi.org/10.1038/nrn3820": {
+    "url": "https://doi.org/10.1038/nrn3820",
     "title": "Polyunsaturated fatty acids and their metabolites in brain function and disease",
     "organization": "Nature Reviews Neuroscience",
     "summary": "Bazinet and Laye review DHA enrichment in brain phospholipids, fatty-acid participation in signaling, synaptic and inflammatory regulation, and limits in translating mechanistic findings into treatment effects.",
@@ -1916,6 +1971,14 @@
     "credibility": "The DOI provides a persistent link to the publisher metadata for this scholarly work. Evidentiary strength still depends on the publication type, methods, sample, analysis, and fit to the claim.",
     "metadataSource": "Crossref",
     "doi": "10.1038/nrn915"
+  },
+  "https://doi.org/10.1038/s41583-021-00507-y": {
+    "url": "https://doi.org/10.1038/s41583-021-00507-y",
+    "title": "Mechanisms Governing Activity-Dependent Synaptic Pruning in the Developing Mammalian CNS",
+    "organization": "Nature Reviews Neuroscience",
+    "summary": "Faust, Gunner, and Schafer review developmental removal of a subset of synapses while other connections are maintained or strengthened in response to changes in spontaneous and experience-driven neural activity.",
+    "credibility": "This peer-reviewed Nature Reviews Neuroscience article synthesizes cellular, circuit, and developmental evidence for activity-dependent pruning. It is an authoritative scholarly review rather than a commercial or test-preparation summary.",
+    "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1056/NEJMra041867": {
     "title": "Boyer, E. W., & Shannon, M. (2005). The serotonin syndrome. New England Journal of Medicine, 352(11), 1112–1120",
@@ -1939,6 +2002,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1073/pnas.1718793115": {
+    "url": "https://doi.org/10.1073/pnas.1718793115",
     "title": "Flynn Effect and Its Reversal Are Both Environmentally Caused",
     "organization": "Proceedings of the National Academy of Sciences",
     "summary": "This primary Norwegian cohort study documents both positive and negative secular IQ trends and analyzes within-family evidence relevant to environmental explanations.",
@@ -1946,6 +2010,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1073/pnas.48.10.1765": {
+    "url": "https://doi.org/10.1073/pnas.48.10.1765",
     "title": "Some Functional Effects of Sectioning the Cerebral Commissures in Man",
     "organization": "Proceedings of the National Academy of Sciences of the United States of America",
     "summary": "Gazzaniga, Bogen, and Sperry reported early human commissurotomy findings showing striking limits on transfer of sensory information between the cerebral hemispheres while hemisphere-specific responses remained possible.",
@@ -1953,6 +2018,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1073/pnas.98.2.676": {
+    "url": "https://doi.org/10.1073/pnas.98.2.676",
     "title": "A Default Mode of Brain Function",
     "organization": "Proceedings of the National Academy of Sciences of the United States of America",
     "summary": "Raichle and colleagues integrated functional-imaging evidence for a network with high baseline activity that commonly decreases during externally demanding tasks, establishing the default-mode framework.",
@@ -2008,6 +2074,7 @@
     "doi": "10.1080/13854046.2012.680913"
   },
   "https://doi.org/10.1080/13854046.2021.1896036": {
+    "url": "https://doi.org/10.1080/13854046.2021.1896036",
     "title": "American Academy of Clinical Neuropsychology 2021 Consensus Statement on Validity Assessment",
     "organization": "American Academy of Clinical Neuropsychology",
     "summary": "The consensus statement distinguishes performance and symptom validity from diagnostic attributions, recommends multiple validity methods, and explains how invalid responding limits interpretation of ability scores.",
@@ -2145,6 +2212,7 @@
     "doi": "10.1111/1467-8721.ep10772327"
   },
   "https://doi.org/10.1111/famp.12943": {
+    "url": "https://doi.org/10.1111/famp.12943",
     "title": "Development of the Internal Family Systems Model: Honoring Contributions From Family Systems Therapies",
     "organization": "Family Process, Wiley",
     "summary": "Brenner, Schwartz, and Becker describe the development of IFS and how Schwartz applied foundational family-systems concepts to interacting patterns of internal experience and the positive intentions attributed to protective responses.",
@@ -2213,6 +2281,7 @@
     "doi": "10.1111/j.1741-3737.2001.00473.x"
   },
   "https://doi.org/10.1111/j.1745-3992.1991.tb00195.x": {
+    "url": "https://doi.org/10.1111/j.1745-3992.1991.tb00195.x",
     "title": "Standard Error of Measurement: An NCME Instructional Module",
     "organization": "Educational Measurement: Issues and Practice, National Council on Measurement in Education",
     "summary": "Harvill defines SEM as the variability of measurement errors associated with scores and explains how score bands communicate uncertainty in interpreting individual scores.",
@@ -2282,6 +2351,7 @@
     "doi": "10.1126/science.1127488"
   },
   "https://doi.org/10.1126/science.149.3681.269": {
+    "url": "https://doi.org/10.1126/science.149.3681.269",
     "title": "Social Facilitation - Science (1965)",
     "organization": "Science",
     "summary": "Zajonc's foundational theoretical article explains how the presence of others increases dominant responding, producing facilitation or impairment depending on task mastery.",
@@ -2298,11 +2368,10 @@
   },
   "https://doi.org/10.1126/science.163.3873.1358": {
     "title": "Alcohol and Recall: State-Dependent Effects in Man",
-    "organization": "Science",
-    "summary": "Male volunteers performed four memory tasks either while sober or under effects of alcohol. Twenty-four hours later they were tested under the same or different conditions. In tasks measuring recall and interference, learning transfer was better when the subject was intoxicated during both sessions than when he was intoxicated only during the learning session.…",
-    "credibility": "The DOI provides a persistent link to the publisher metadata for this scholarly work. Evidentiary strength still depends on the publication type, methods, sample, analysis, and fit to the claim.",
-    "metadataSource": "Crossref",
-    "doi": "10.1126/science.163.3873.1358"
+    "organization": "Science and American Association for the Advancement of Science",
+    "summary": "Goodwin and colleagues experimentally examined human recall across alcohol and sober conditions, providing a foundational demonstration that retrieval can vary with reinstatement of an internal state present during learning.",
+    "credibility": "This DOI identifies the foundational peer-reviewed Science article on human state-dependent recall. The controlled state-match design directly supports the internal-condition interaction tested here, while later research establishes important boundary conditions.",
+    "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1126/science.179.4077.1011": {
     "title": "Opiate Receptor: Demonstration in Nervous Tissue",
@@ -2368,6 +2437,7 @@
     "doi": "10.1146/annurev-neuro-061010-113731"
   },
   "https://doi.org/10.1146/annurev.clinpsy.3.022806.091516": {
+    "url": "https://doi.org/10.1146/annurev.clinpsy.3.022806.091516",
     "title": "Understanding and Treating Insomnia",
     "organization": "Annual Review of Clinical Psychology",
     "summary": "This scholarly review explains behavioral models and established behavioral treatments for insomnia, including stimulus-control procedures associated with Richard Bootzin.",
@@ -2422,6 +2492,7 @@
     "doi": "10.1159/000368279"
   },
   "https://doi.org/10.1176/ajp.150.2.188": {
+    "url": "https://doi.org/10.1176/ajp.150.2.188",
     "title": "The Concept of Boundaries in Clinical Practice: Theoretical and Risk-Management Dimensions",
     "organization": "American Journal of Psychiatry, American Psychiatric Association Publishing",
     "summary": "Gutheil and Gabbard analyze treatment boundaries, harmful versus nonharmful departures from the therapeutic frame, and the clinical and risk-management significance of context and boundary patterns.",
@@ -2490,6 +2561,7 @@
     "doi": "10.1177/0272431691111004"
   },
   "https://doi.org/10.1177/0706743719828968": {
+    "url": "https://doi.org/10.1177/0706743719828968",
     "title": "Treatment Recommendations for Tardive Dyskinesia",
     "organization": "Canadian Journal of Psychiatry",
     "summary": "This systematic review describes tardive dyskinesia as an irregular, stereotyped, or choreiform movement disorder associated with antipsychotic exposure and evaluates treatment recommendations.",
@@ -2527,6 +2599,14 @@
     "metadataSource": "Crossref",
     "doi": "10.1177/0959354394044004"
   },
+  "https://doi.org/10.1177/09731342241238096": {
+    "url": "https://doi.org/10.1177/09731342241238096",
+    "title": "Externalizing the Internalized: Exploring Externalizing Conversations in Narrative Therapy",
+    "organization": "Psychological Studies and SAGE Publications",
+    "summary": "This peer-reviewed article describes externalizing conversations as separating people from internalized problem identities, locating problems in context, and constructing preferred stories aligned with clients' values, skills, and commitments.",
+    "credibility": "The DOI provides a stable record for a recent peer-reviewed article focused specifically on the narrative-therapy process tested here. It synthesizes the White and Epston tradition and applies externalizing conversations in clinical work.",
+    "metadataSource": "pack-authored"
+  },
   "https://doi.org/10.1177/1529100614522901": {
     "title": "Scholarly source (DOI 10.1177/1529100614522901)",
     "organization": "DOI Foundation record",
@@ -2534,6 +2614,14 @@
     "credibility": "A DOI is a persistent identifier, not a quality rating. Verify the resolved publication and evaluate its methods before relying on the claim.",
     "metadataSource": "fallback",
     "doi": "10.1177/1529100614522901"
+  },
+  "https://doi.org/10.1177/1745691612460685": {
+    "url": "https://doi.org/10.1177/1745691612460685",
+    "title": "Dual-Process Theories of Higher Cognition: Advancing the Debate",
+    "organization": "Association for Psychological Science",
+    "summary": "Evans and Stanovich distinguish rapid autonomous Type 1 processes that yield default responses from Type 2 processes that enable hypothetical reasoning and depend heavily on working-memory resources.",
+    "credibility": "This peer-reviewed Perspectives on Psychological Science article directly develops and qualifies the dual-process framework. It is a primary theoretical review by leading researchers rather than an introductory secondary summary.",
+    "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1177/1745691615617439": {
     "title": "Top 10 Replicated Findings From Behavioral Genetics",
@@ -2551,6 +2639,14 @@
     "metadataSource": "fallback",
     "doi": "10.1177/1745691617693056"
   },
+  "https://doi.org/10.1177/1754073916639667": {
+    "url": "https://doi.org/10.1177/1754073916639667",
+    "title": "The Ability Model of Emotional Intelligence: Principles and Updates",
+    "organization": "Emotion Review and SAGE Publications",
+    "summary": "Mayer, Caruso, and Salovey update the ability model of emotional intelligence and describe emotion-related mental abilities involving perception, facilitation of thought, understanding, and management.",
+    "credibility": "This peer-reviewed Emotion Review article is authored by the principal developers of the ability model. It is a primary theoretical update that clarifies the construct and its placement among cognitive, personal, and social abilities.",
+    "metadataSource": "pack-authored"
+  },
   "https://doi.org/10.1177/2158244019850246": {
     "title": "Development of Rational Emotive Education Module for Stress Intervention of Malaysian Boarding School Students",
     "organization": "Sage Open",
@@ -2559,7 +2655,15 @@
     "metadataSource": "Crossref",
     "doi": "10.1177/2158244019850246"
   },
+  "https://doi.org/10.1177/21676968251322822": {
+    "title": "Building Bridges Between Arnett's and Havighurst's Theories: New Developmental Tasks in Emerging Adulthood Across Six Countries",
+    "organization": "Emerging Adulthood and SAGE Publications",
+    "summary": "This peer-reviewed cross-national article explains Havighurst's developmental tasks as age-graded challenges produced by biological pressures, sociocultural expectations, and individual psychological needs or competencies.",
+    "credibility": "The DOI identifies a peer-reviewed article that explicitly reconstructs Havighurst's three-source framework and examines its cultural application across six countries. It is suitable for distinguishing the theory from biological or stage-only accounts.",
+    "metadataSource": "pack-authored"
+  },
   "https://doi.org/10.1207/S15327957PSPR0504_2": {
+    "url": "https://doi.org/10.1207/S15327957PSPR0504_2",
     "title": "Negativity Bias, Negativity Dominance, and Contagion",
     "organization": "Personality and Social Psychology Review",
     "summary": "Rozin and Royzman synthesize evidence for several negativity effects, including negative potency, in which negative entities exert stronger psychological effects than equivalent positive entities.",
@@ -2613,12 +2717,12 @@
     "doi": "10.1521/ijgp.2006.56.4.455"
   },
   "https://doi.org/10.1542/peds.2019-2528": {
+    "url": "https://doi.org/10.1542/peds.2019-2528",
     "title": "Clinical Practice Guideline for the Diagnosis, Evaluation, and Treatment of Attention-Deficit/Hyperactivity Disorder in Children and Adolescents",
     "organization": "Pediatrics",
-    "summary": "Attention-deficit/hyperactivity disorder (ADHD) is one of the most common neurobehavioral disorders of childhood and can profoundly affect children’s academic achievement, well-being, and social interactions. The American Academy of Pediatrics first published clinical recommendations for evaluation and diagnosis of pediatric ADHD in 2000; recommendations for treatment followed in 2001.…",
+    "summary": "Attention-deficit/hyperactivity disorder (ADHD) is one of the most common neurobehavioral disorders of childhood and can profoundly affect children's academic achievement, well-being, and social interactions. The American Academy of Pediatrics first published clinical recommendations for evaluation and diagnosis of pediatric ADHD in 2000; recommendations for treatment followed in 2001.",
     "credibility": "The DOI provides a persistent link to the publisher metadata for this scholarly work. Evidentiary strength still depends on the publication type, methods, sample, analysis, and fit to the claim.",
-    "metadataSource": "Crossref",
-    "doi": "10.1542/peds.2019-2528"
+    "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1542/peds.2024-066326": {
     "title": "Confidentiality in the Care of Adolescents: Policy Statement",
@@ -2637,6 +2741,7 @@
     "doi": "10.17226/12480"
   },
   "https://doi.org/10.17763/haer.47.4.g6167429416hg5l0": {
+    "url": "https://doi.org/10.17763/haer.47.4.g6167429416hg5l0",
     "title": "In a Different Voice: Women's Conceptions of Self and of Morality",
     "organization": "Harvard Educational Review, Harvard Education Publishing Group",
     "summary": "Gilligan examines limits in prevailing developmental theories and describes moral reasoning organized around relationship, responsibility, and care that can be obscured by a justice-centered framework.",
@@ -2652,6 +2757,7 @@
     "doi": "10.1901/jaba.1973.6-1"
   },
   "https://doi.org/10.2307/1127100": {
+    "url": "https://doi.org/10.2307/1127100",
     "title": "Egocentrism in Adolescence",
     "organization": "Child Development, Society for Research in Child Development",
     "summary": "David Elkind’s foundational article extends Piagetian egocentrism to adolescence and introduces the imaginary audience and personal fable as characteristic theoretical constructions.",
@@ -2674,6 +2780,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.2307/j.ctvjf9vz4.11": {
+    "url": "https://doi.org/10.2307/j.ctvjf9vz4.11",
     "title": "Interaction Between Learning and Development",
     "organization": "Mind in Society, Harvard University Press; digital chapter hosted by JSTOR",
     "summary": "This chapter defines the zone of proximal development by contrasting independent problem-solving performance with potential performance under adult guidance or in collaboration with more capable peers.",
@@ -2737,6 +2844,7 @@
     "doi": "10.4103/2229-3485.83221"
   },
   "https://doi.org/10.4135/9781412963947.n540": {
+    "url": "https://doi.org/10.4135/9781412963947.n540",
     "title": "Solomon Four-Group Design",
     "organization": "SAGE Encyclopedia of Survey Research Methods",
     "summary": "The reference entry explains that the Solomon design crosses treatment and pretest administration, permitting tests of treatment effects, pretest effects, and whether pretesting interacts with treatment.",
@@ -2744,6 +2852,7 @@
     "metadataSource": "pack-authored"
   },
   "https://dulwichcentre.com.au/articles-about-narrative-therapy/externalising/": {
+    "url": "https://dulwichcentre.com.au/articles-about-narrative-therapy/externalising/",
     "title": "Externalising: Commonly Asked Questions",
     "organization": "Dulwich Centre",
     "summary": "The Dulwich Centre explains that externalising conversations change a person's relationship with a problem, explore the problem's effects, identify unique outcomes, and create openings for preferred alternative stories.",
@@ -2926,6 +3035,7 @@
     "metadataSource": "page-metadata"
   },
   "https://ifs-institute.com/resources/articles/evolution-internal-family-systems-model-dr-richard-schwartz-ph-d": {
+    "url": "https://ifs-institute.com/resources/articles/evolution-internal-family-systems-model-dr-richard-schwartz-ph-d",
     "title": "Evolution of the Internal Family Systems Model by Dr. Richard Schwartz, PhD",
     "organization": "IFS Institute",
     "summary": "Schwartz's first-person model account describes managers as proactive protectors, firefighters as reactive protectors, exiles as carriers of painful experience, and Self-leadership as a central treatment aim.",
@@ -2952,6 +3062,13 @@
     "summary": "NCII explains its six academic and behavioral screening, progress-monitoring, and intervention tools charts, the technical-review criteria behind them, and steps for selecting tools that fit local needs.",
     "credibility": "NCII’s external technical review committees rate voluntarily submitted tools against published criteria; the charts do not rank products and inclusion is not an endorsement. This is the primary NCII explanation of appropriate chart use.",
     "metadataSource": "explicit-override"
+  },
+  "https://iocdf.org/about-ocd/ocd-treatment-guide/erp/": {
+    "title": "Exposure and Response Prevention Therapy for Obsessive-Compulsive Disorder",
+    "organization": "International OCD Foundation",
+    "summary": "The International OCD Foundation describes ERP as collaborative, planned confrontation with obsessional triggers while the client resists compulsions and avoidance during and after exposure practice.",
+    "credibility": "The International OCD Foundation is a specialized nonprofit organization that provides clinician-informed OCD education and treatment resources. Its ERP guide summarizes established first-line practice and links the procedure to its evidence base.",
+    "metadataSource": "pack-authored"
   },
   "https://iris.peabody.vanderbilt.edu/module/bp/cresource/q1/p04/": {
     "title": "Behavioral Principles: The Basics of Understanding Student Behavior — Page 4: Consequences",
@@ -3143,6 +3260,7 @@
     "metadataSource": "page-metadata"
   },
   "https://openstax.org/books/principles-management/pages/14-3-process-theories-of-motivation": {
+    "url": "https://openstax.org/books/principles-management/pages/14-3-process-theories-of-motivation",
     "title": "14.3 Process Theories of Motivation",
     "organization": "OpenStax, Rice University",
     "summary": "The chapter explains expectancy theory through effort-to-performance expectancy, performance-to-outcome expectancy or instrumentality, and the valence assigned to anticipated outcomes.",
@@ -3339,6 +3457,7 @@
     "metadataSource": "page-metadata"
   },
   "https://openstax.org/books/psychology-2e/pages/7-2-language": {
+    "url": "https://openstax.org/books/psychology-2e/pages/7-2-language",
     "title": "7.2 Language - Psychology 2e",
     "organization": "OpenStax, Rice University",
     "summary": "The language-development section contrasts Skinner's reinforcement account with Chomsky's position that language-acquisition mechanisms are biologically determined and describes children's rule-governed overgeneralization errors.",
@@ -3464,6 +3583,13 @@
     "credibility": "pmc.ncbi.nlm.nih.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
     "metadataSource": "page-metadata"
   },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC11169091/": {
+    "title": "The Predictive Validity of the Strange Situation Procedure: Evidence from Registered Analyses of Two Landmark Longitudinal Studies",
+    "organization": "Child Development and PubMed Central",
+    "summary": "This peer-reviewed registered analysis describes Strange Situation attachment classifications as the organization of infant behavior around a caregiver, including use of the caregiver for exploration and comfort after separation-related distress.",
+    "credibility": "PubMed Central is the U.S. National Library of Medicine full-text archive, and Child Development is a peer-reviewed developmental-science journal. The article directly defines the assessment procedure and the secure-base and safe-haven behaviors tested here.",
+    "metadataSource": "pack-authored"
+  },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC11268653/": {
     "title": "Checking your browser - reCAPTCHA",
     "organization": "pmc.ncbi.nlm.nih.gov",
@@ -3535,6 +3661,7 @@
     "metadataSource": "page-metadata"
   },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC2364719/": {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2364719/",
     "title": "Speech Perception and Short-Term Memory Deficits in Persistent Developmental Speech Disorder",
     "organization": "Brain and Language; National Institute of Neurological Disorders and Stroke, National Institutes of Health",
     "summary": "The methods describe the Reitan Neuropsychology Laboratory Rhythm Test as pairs of five-, six-, or seven-note rhythmic patterns for which examinees make same-or-different judgments, directly documenting paired-rhythm discrimination.",
@@ -3549,6 +3676,7 @@
     "metadataSource": "page-metadata"
   },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC2686982/": {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2686982/",
     "title": "The Challenge of Understanding Process in Clinical Behavior Analysis: The Case of Functional Analytic Psychotherapy",
     "organization": "PubMed Central, U.S. National Library of Medicine",
     "summary": "This peer-reviewed article explains FAP’s behavior-analytic use of the therapeutic relationship and describes clinically relevant in-session problem behaviors and improvements as treatment targets.",
@@ -3575,6 +3703,14 @@
     "summary": "This pmc.ncbi.nlm.nih.gov resource addresses Pmc.Ncbi.Nlm.Nih.Gov Resource. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
     "credibility": "pmc.ncbi.nlm.nih.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
     "metadataSource": "page-metadata"
+  },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC2846577/": {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2846577/",
+    "title": "Clinical Application of Functional Analysis Methodology",
+    "organization": "PubMed Central and Behavior Analysis in Practice",
+    "summary": "This peer-reviewed clinical review explains functional analysis through controlled test and comparison conditions that manipulate antecedent and consequent events to identify reinforcement processes maintaining problem behavior and guide treatment.",
+    "credibility": "The article is archived by PubMed Central and reviews the established Iwata functional-analysis methodology for clinical application. It directly supports interpreting differentiated demand and control conditions without inferring function from topography.",
+    "metadataSource": "pack-authored"
   },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC2846651/": {
     "title": "Temperament-Based Intervention: Re-examining Goodness of Fit - PMC",
@@ -3604,6 +3740,13 @@
     "credibility": "PubMed Central preserves the complete peer-reviewed article and its journal, author, citation, and reference metadata through the U.S. National Library of Medicine.",
     "metadataSource": "pack-authored"
   },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC2981013/": {
+    "title": "Counterbalancing in Smoking Cue Research: A Critical Analysis",
+    "organization": "Nicotine and Tobacco Research and PubMed Central",
+    "summary": "This peer-reviewed review evaluates counterbalanced cue studies and shows that sequence assignment may not fully address order effects when order interacts with treatment or other study variables.",
+    "credibility": "PubMed Central supplies the full text of a methodological review grounded in applied experiments. Its analysis is directly relevant to the item's boundary that counterbalancing distributes order but does not prove carryover absent.",
+    "metadataSource": "pack-authored"
+  },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC3025168/": {
     "title": "How antidepressant drugs act: A primer on neuroplasticity as the eventual mediator of antidepressant efficacy",
     "organization": "Indian Journal of Psychiatry; PubMed Central, U.S. National Library of Medicine (2010)",
@@ -3619,6 +3762,7 @@
     "metadataSource": "page-metadata"
   },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC3151309/": {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3151309/",
     "title": "Measuring Motor Speed Through Typing: A Surrogate for the Finger Tapping Test",
     "organization": "Behavior Research Methods; Oregon Health & Science University",
     "summary": "The article describes the Finger Tapping Test as depressing a key rapidly with the index finger during a 10-second interval, testing each hand separately and summarizing performance across repeated trials.",
@@ -3631,6 +3775,14 @@
     "summary": "This pmc.ncbi.nlm.nih.gov resource addresses Pmc.Ncbi.Nlm.Nih.Gov Resource. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
     "credibility": "pmc.ncbi.nlm.nih.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
     "metadataSource": "page-metadata"
+  },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC3215582/": {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3215582/",
+    "title": "Behavioral Couples Therapy for Alcoholism and Drug Abuse",
+    "organization": "PubMed Central and Journal of Substance Abuse Treatment",
+    "summary": "O'Farrell and Schein describe conjoint behavioral couples therapy as combining a daily recovery contract that supports abstinence with communication training, positive shared activities, and other methods for improving relationship functioning.",
+    "credibility": "This peer-reviewed clinical article is available through the U.S. National Library of Medicine's PubMed Central archive and is authored by a principal developer of the treatment program. It directly describes its rationale and procedures.",
+    "metadataSource": "pack-authored"
   },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC3719016/": {
     "title": "Checking your browser - reCAPTCHA",
@@ -3654,6 +3806,7 @@
     "metadataSource": "page-metadata"
   },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC3969247/": {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3969247/",
     "title": "Systematic Review of the Hawthorne Effect: New Concepts Are Needed to Study Research Participation Effects",
     "organization": "Journal of Clinical Epidemiology and U.S. National Library of Medicine",
     "summary": "McCambridge, Witton, and Elbourne systematically review behavioral effects associated with research participation and observation, finding heterogeneous definitions, conditions, mechanisms, and effect sizes.",
@@ -3715,6 +3868,13 @@
     "summary": "This pmc.ncbi.nlm.nih.gov resource addresses Pmc.Ncbi.Nlm.Nih.Gov Resource. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
     "credibility": "pmc.ncbi.nlm.nih.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
     "metadataSource": "page-metadata"
+  },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC4475575/": {
+    "title": "Multisystemic Therapy for Externalizing Youth",
+    "organization": "Child and Adolescent Psychiatric Clinics of North America and PubMed Central",
+    "summary": "This peer-reviewed review describes MST as an intensive home- and community-based intervention that formulates reciprocal drivers across youth, family, peer, school, and community systems and empowers caregivers.",
+    "credibility": "PubMed Central provides the U.S. National Library of Medicine full text of a peer-reviewed clinical review authored by MST researchers. It directly explains the social-ecological formulation, service setting, and analytic process tested here.",
+    "metadataSource": "pack-authored"
   },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC4495554/": {
     "title": "Checking your browser - reCAPTCHA",
@@ -3793,6 +3953,13 @@
     "credibility": "pmc.ncbi.nlm.nih.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
     "metadataSource": "page-metadata"
   },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC5509623/": {
+    "title": "Acceptance and Commitment Therapy: A Transdiagnostic Behavioral Intervention for Mental Health and Medical Conditions",
+    "organization": "Neurotherapeutics and PubMed Central",
+    "summary": "This peer-reviewed review describes ACT as cultivating psychological flexibility through present-moment awareness, perspective taking, values, committed action, acceptance, and cognitive defusion across clinical and health contexts.",
+    "credibility": "PubMed Central provides the U.S. National Library of Medicine full text of a peer-reviewed Neurotherapeutics article. Its explicit process descriptions directly support the applied distinctions in this ACT scenario.",
+    "metadataSource": "pack-authored"
+  },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC5600694/": {
     "title": "Checking your browser - reCAPTCHA",
     "organization": "pmc.ncbi.nlm.nih.gov",
@@ -3833,6 +4000,13 @@
     "organization": "Annals of the New York Academy of Sciences; PubMed Central, U.S. National Library of Medicine",
     "summary": "This peer-reviewed Baylor College of Medicine review synthesizes evidence about somatodendritic input, action-potential initiation at the axon initial segment, and propagation through myelinated axons and nodes. PubMed Central provides stable full text and traceable publication metadata.",
     "credibility": "This peer-reviewed Baylor College of Medicine review synthesizes evidence about somatodendritic input, action-potential initiation at the axon initial segment, and propagation through myelinated axons and nodes. PubMed Central provides stable full text and traceable publication metadata.",
+    "metadataSource": "pack-authored"
+  },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC6007584/": {
+    "title": "Dialectical Behavior Therapy as Treatment for Borderline Personality Disorder",
+    "organization": "Mental Health Clinician and PubMed Central",
+    "summary": "This peer-reviewed clinical review describes the four DBT skills modules and differentiates mindfulness, relationship skills, emotion regulation, and crisis-survival and acceptance strategies within distress tolerance.",
+    "credibility": "PubMed Central is the U.S. National Library of Medicine full-text archive, and Mental Health Clinician is a peer-reviewed clinical journal. The article directly defines the neighboring DBT skills functions tested in this scenario.",
     "metadataSource": "pack-authored"
   },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC6050075/": {
@@ -3878,6 +4052,7 @@
     "metadataSource": "page-metadata"
   },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC6601918/": {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6601918/",
     "title": "Extracting Object Identity: Ventral or Dorsal Visual Stream?",
     "organization": "PubMed Central, U.S. National Library of Medicine",
     "summary": "This peer-reviewed neuroscience article reviews the two-stream account in which ventral temporal processing emphasizes object identity and dorsal parietal processing emphasizes spatial relations and action.",
@@ -3940,6 +4115,14 @@
     "credibility": "pmc.ncbi.nlm.nih.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
     "metadataSource": "page-metadata"
   },
+  "https://pmc.ncbi.nlm.nih.gov/articles/PMC7001362/": {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7001362/",
+    "title": "Interpersonal Psychotherapy for Patients With Mental Disorders",
+    "organization": "PubMed Central and Indian Journal of Psychiatry",
+    "summary": "The review describes time-limited interpersonal psychotherapy, its four focal problem areas, and strategies for role disputes that include identifying nonreciprocal expectations and improving communication.",
+    "credibility": "This peer-reviewed clinical review is indexed in PubMed Central and provides a detailed, traceable account of IPT formulation and techniques. It is appropriate for distinguishing current role disputes from transitions, grief, and deficits.",
+    "metadataSource": "pack-authored"
+  },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC7070124/": {
     "title": "Checking your browser - reCAPTCHA",
     "organization": "pmc.ncbi.nlm.nih.gov",
@@ -3969,6 +4152,7 @@
     "metadataSource": "page-metadata"
   },
   "https://pmc.ncbi.nlm.nih.gov/articles/PMC7853203/": {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7853203/",
     "title": "Behavioral and psychological treatments for chronic insomnia disorder in adults: an American Academy of Sleep Medicine clinical practice guideline",
     "organization": "American Academy of Sleep Medicine and Journal of Clinical Sleep Medicine",
     "summary": "This clinical practice guideline evaluates behavioral and psychological treatments for adult chronic insomnia, including stimulus control as a recommended component or intervention.",
@@ -4417,17 +4601,19 @@
     "metadataSource": "pack-authored"
   },
   "https://pubmed.ncbi.nlm.nih.gov/15061343/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/15061343/",
     "title": "Mentalization-based treatment of borderline personality disorder",
     "organization": "PubMed, U.S. National Library of Medicine",
     "summary": "Bateman and Fonagy describe treatment for borderline personality disorder that focuses on increasing the capacity to think about mental states in oneself and other people as distinct from, but capable of causing, actions.",
-    "credibility": "PubMed is maintained by the National Center for Biotechnology Information at the U.S. National Library of Medicine. Its indexed citation and abstract support traceability to the scholarly publication; inclusion in PubMed is not by itself a guarantee of study quality.",
+    "credibility": "The indexed peer-reviewed review is authored by the developers of mentalization-based treatment and directly describes the population, treatment focus, and mentalizing construct tested by this scenario.",
     "metadataSource": "pack-authored"
   },
   "https://pubmed.ncbi.nlm.nih.gov/15631556/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/15631556/",
     "title": "Experimental research on just-world theory: problems, developments, and future challenges",
-    "organization": "PubMed, U.S. National Library of Medicine",
+    "organization": "Psychological Bulletin via PubMed",
     "summary": "Hafer and Begue review experimental just-world research built on the proposition that evidence of injustice is threatening and that people use multiple strategies to reduce that threat.",
-    "credibility": "PubMed is maintained by the National Center for Biotechnology Information at the U.S. National Library of Medicine. Its indexed citation and abstract support traceability to the scholarly publication; inclusion in PubMed is not by itself a guarantee of study quality.",
+    "credibility": "This PubMed-indexed peer-reviewed Psychological Bulletin review directly synthesizes experimental just-world theory and clearly distinguishes the threat-reduction premise used by the item.",
     "metadataSource": "pack-authored"
   },
   "https://pubmed.ncbi.nlm.nih.gov/15661671/": {
@@ -4445,6 +4631,7 @@
     "metadataSource": "pack-authored"
   },
   "https://pubmed.ncbi.nlm.nih.gov/16717171/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/16717171/",
     "title": "A Brief Measure for Assessing Generalized Anxiety Disorder: The GAD-7",
     "organization": "PubMed, U.S. National Library of Medicine",
     "summary": "The original validation study describes development of the seven-item GAD-7 and evaluates its reliability, validity, and usefulness for identifying generalized anxiety disorder and grading anxiety severity.",
@@ -4459,10 +4646,11 @@
     "metadataSource": "page-metadata"
   },
   "https://pubmed.ncbi.nlm.nih.gov/16737372/": {
-    "title": "A meta-analytic test of intergroup contact theory",
-    "organization": "PubMed, U.S. National Library of Medicine",
-    "summary": "Peer-reviewed meta-analysis of 713 independent samples testing contact effects and the added value of Allport optimal-contact conditions.",
-    "credibility": "PubMed is maintained by the National Center for Biotechnology Information at the U.S. National Library of Medicine. Its indexed citation and abstract support traceability to the scholarly publication; inclusion in PubMed is not by itself a guarantee of study quality.",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/16737372/",
+    "title": "A Meta-Analytic Test of Intergroup Contact Theory",
+    "organization": "Journal of Personality and Social Psychology and U.S. National Library of Medicine",
+    "summary": "The PubMed record summarizes Pettigrew and Tropp?s synthesis of 713 independent samples from 515 studies, finding that intergroup contact generally reduces prejudice and that Allport-favorable conditions strengthen the effect.",
+    "credibility": "PubMed provides the U.S. National Library of Medicine record for this peer-reviewed Journal of Personality and Social Psychology meta-analysis, including its DOI, sample base, methods, and central findings.",
     "metadataSource": "pack-authored"
   },
   "https://pubmed.ncbi.nlm.nih.gov/17073526/": {
@@ -4494,6 +4682,7 @@
     "metadataSource": "page-metadata"
   },
   "https://pubmed.ncbi.nlm.nih.gov/19247829/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/19247829/",
     "title": "Linking Informant Discrepancies to Observed Variations in Young Children's Disruptive Behavior",
     "organization": "Journal of Abnormal Child Psychology; National Library of Medicine PubMed record",
     "summary": "In a study of 327 preschoolers, behavior observed in different interaction contexts related uniquely to parent- and teacher-identified behavior, supporting the interpretation that informant discrepancies can reflect cross-context behavioral variation and distinct informant perspectives.",
@@ -4543,6 +4732,7 @@
     "metadataSource": "pack-authored"
   },
   "https://pubmed.ncbi.nlm.nih.gov/22122142/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/22122142/",
     "title": "Culturally Adapted Mental Health Intervention: A Meta-Analytic Review",
     "organization": "Psychotherapy, indexed by PubMed",
     "summary": "This meta-analysis synthesizes 76 studies of culturally adapted mental health interventions and reports beneficial average outcomes, including moderation by cultural targeting and client language.",
@@ -4556,6 +4746,13 @@
     "credibility": "PubMed is maintained by the National Center for Biotechnology Information at the U.S. National Library of Medicine. Its indexed citation and abstract support traceability to the scholarly publication; inclusion in PubMed is not by itself a guarantee of study quality.",
     "metadataSource": "page-metadata"
   },
+  "https://pubmed.ncbi.nlm.nih.gov/22799624/": {
+    "title": "Counterbalancing for Serial Order Carryover Effects in Experimental Condition Orders",
+    "organization": "Psychological Methods and PubMed",
+    "summary": "This peer-reviewed methods article explains why prior inputs can affect later responses in repeated-measures experiments and develops counterbalanced sequences that distribute serial order and carryover relationships.",
+    "credibility": "PubMed provides the U.S. National Library of Medicine record for an APA Psychological Methods article devoted specifically to counterbalancing repeated-measures conditions. It directly supports the design purpose tested here.",
+    "metadataSource": "pack-authored"
+  },
   "https://pubmed.ncbi.nlm.nih.gov/22925137/": {
     "title": "The validity of individual Rorschach variables: systematic reviews and meta-analyses of the comprehensive system - PubMed",
     "organization": "PubMed, U.S. National Library of Medicine",
@@ -4564,10 +4761,19 @@
     "metadataSource": "page-metadata"
   },
   "https://pubmed.ncbi.nlm.nih.gov/22955493/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/22955493/",
     "title": "Interpersonal Psychotherapy in Major Depressive Disorder",
     "organization": "European Archives of Psychiatry and Clinical Neuroscience, indexed by PubMed",
     "summary": "This peer-reviewed review describes interpersonal psychotherapy as a short-term depression treatment linking symptoms with current interpersonal difficulties, including role transitions such as retirement.",
     "credibility": "PubMed provides the indexed record for a peer-reviewed clinical review that directly describes the treatment process, evidence base, and interpersonal problem areas used to formulate depression.",
+    "metadataSource": "pack-authored"
+  },
+  "https://pubmed.ncbi.nlm.nih.gov/24234985/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/24234985/",
+    "title": "The Theory of Multiple Intelligences",
+    "organization": "Annals of Dyslexia and PubMed",
+    "summary": "Gardner's peer-reviewed theoretical article presents intelligence as several intellectual competences rather than a single undifferentiated capacity and discusses implications for understanding individual cognitive profiles.",
+    "credibility": "PubMed supplies the U.S. National Library of Medicine record for this article authored by Howard Gardner. It provides approved scholarly provenance for the framework whose boundaries are clarified by the accompanying Harvard source.",
     "metadataSource": "pack-authored"
   },
   "https://pubmed.ncbi.nlm.nih.gov/24324449/": {
@@ -4598,6 +4804,14 @@
     "credibility": "PubMed is maintained by the National Center for Biotechnology Information at the U.S. National Library of Medicine. Its indexed citation and abstract support traceability to the scholarly publication; inclusion in PubMed is not by itself a guarantee of study quality.",
     "metadataSource": "pack-authored"
   },
+  "https://pubmed.ncbi.nlm.nih.gov/25364086/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/25364086/",
+    "title": "New Findings on Object Permanence: A Developmental Difference Between Two Types of Occlusion",
+    "organization": "British Journal of Developmental Psychology and PubMed",
+    "summary": "This study examines manual search for fully occluded objects in infants and shows that performance differs by the type of hiding event, supporting a gradual and task-sensitive account rather than a single abrupt attainment.",
+    "credibility": "PubMed provides the National Library of Medicine record for this peer-reviewed developmental study. Its direct manipulation of hiding events and observed search behavior closely match the inference and qualification tested here.",
+    "metadataSource": "pack-authored"
+  },
   "https://pubmed.ncbi.nlm.nih.gov/25581007/": {
     "title": "Guidelines for Clinical Supervision in Health Service Psychology",
     "organization": "PubMed, U.S. National Library of Medicine",
@@ -4613,11 +4827,12 @@
     "metadataSource": "pack-authored"
   },
   "https://pubmed.ncbi.nlm.nih.gov/2667009/": {
-    "title": "Frustration-aggression hypothesis: examination and reformulation - PubMed",
-    "organization": "PubMed, U.S. National Library of Medicine",
-    "summary": "Examines the Dollard et al. (1939) frustration-aggression hypothesis. The original formulation's main proposition is limited to interference with an expected attainment of a desired goal on hostile (emotional) aggression. Although some studies have yielded negative results, others support the core p …",
-    "credibility": "PubMed is maintained by the National Center for Biotechnology Information at the U.S. National Library of Medicine. Its indexed citation and abstract support traceability to the scholarly publication; inclusion in PubMed is not by itself a guarantee of study quality.",
-    "metadataSource": "page-metadata"
+    "url": "https://pubmed.ncbi.nlm.nih.gov/2667009/",
+    "title": "Frustration-Aggression Hypothesis: Examination and Reformulation",
+    "organization": "Psychological Bulletin and U.S. National Library of Medicine",
+    "summary": "Berkowitz reformulates frustration-aggression theory by describing how aversive events produce negative affect and activate associatively linked thoughts, memories, physiological responses, and rudimentary action tendencies.",
+    "credibility": "This is the PubMed record for Berkowitz's peer-reviewed Psychological Bulletin article, a foundational primary theoretical source for the cognitive-neoassociation sequence tested by the scenario.",
+    "metadataSource": "pack-authored"
   },
   "https://pubmed.ncbi.nlm.nih.gov/26773688/": {
     "title": "Norepinephrine at the nexus of arousal, motivation and relapse - PubMed",
@@ -4654,7 +4869,16 @@
     "credibility": "PubMed is maintained by the National Center for Biotechnology Information at the U.S. National Library of Medicine. Its indexed citation and abstract support traceability to the scholarly publication; inclusion in PubMed is not by itself a guarantee of study quality.",
     "metadataSource": "page-metadata"
   },
+  "https://pubmed.ncbi.nlm.nih.gov/28003656/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/28003656/",
+    "title": "Closed-Loop Brain Training: The Science of Neurofeedback",
+    "organization": "Nature Reviews Neuroscience and PubMed",
+    "summary": "This multidisciplinary review describes neurofeedback as closed-loop training in which measured brain activity is translated into real-time sensory feedback to support learned self-regulation, and it discusses methodological and clinical-evidence challenges.",
+    "credibility": "PubMed provides the National Library of Medicine record for this peer-reviewed Nature Reviews Neuroscience article by an international neurofeedback research group. Its scope directly covers mechanism, implementation, and evidentiary limits.",
+    "metadataSource": "pack-authored"
+  },
   "https://pubmed.ncbi.nlm.nih.gov/28215294/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/28215294/",
     "title": "BDNF and Hippocampal Synaptic Plasticity",
     "organization": "Frontiers in Cellular Neuroscience, indexed by PubMed",
     "summary": "This peer-reviewed review synthesizes evidence that activity regulates BDNF expression and secretion and that mature-BDNF signaling through TrkB has a central role in hippocampal long-term potentiation.",
@@ -4702,6 +4926,14 @@
     "summary": "One of Lev Vygotsky's most widely known concepts in educational psychology is the zone of proximal development (ZPD), which he began to articulate in the last 2 years of his life and work (1933-1934). This article explores an earlier period in Vygotsky's career-well before he developed the concept o …",
     "credibility": "PubMed is maintained by the National Center for Biotechnology Information at the U.S. National Library of Medicine. Its indexed citation and abstract support traceability to the scholarly publication; inclusion in PubMed is not by itself a guarantee of study quality.",
     "metadataSource": "page-metadata"
+  },
+  "https://pubmed.ncbi.nlm.nih.gov/29856366/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/29856366/",
+    "title": "A Review of Current Theories and Treatments for Phantom Limb Pain",
+    "organization": "Journal of Clinical Investigation and PubMed",
+    "summary": "This peer-reviewed review synthesizes peripheral, spinal, cortical, and psychological accounts of phantom limb pain, including altered and preserved body representations, and evaluates the evidence and limitations of treatment mechanisms.",
+    "credibility": "PubMed provides the U.S. National Library of Medicine record for a scholarly clinical review focused specifically on phantom limb pain. Its comparison of competing mechanisms supports a multilevel inference rather than a single-cause claim.",
+    "metadataSource": "pack-authored"
   },
   "https://pubmed.ncbi.nlm.nih.gov/30762387/": {
     "title": "APA Multicultural Guidelines Executive Summary: Ecological Approach to Context, Identity, and Intersectionality",
@@ -4752,6 +4984,14 @@
     "credibility": "PubMed is maintained by the National Center for Biotechnology Information at the U.S. National Library of Medicine. Its indexed citation and abstract support traceability to the scholarly publication; inclusion in PubMed is not by itself a guarantee of study quality.",
     "metadataSource": "pack-authored"
   },
+  "https://pubmed.ncbi.nlm.nih.gov/31740940/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/31740940/",
+    "title": "Looking Beyond the Face Area: Lesion Network Mapping of Prosopagnosia",
+    "organization": "Brain and PubMed",
+    "summary": "This lesion-network study identifies prosopagnosia-causing lesions across multiple locations and shows that their connectivity to right fusiform and left frontal regions predicts the syndrome, supporting a distributed-network account.",
+    "credibility": "PubMed provides the National Library of Medicine record for this peer-reviewed Brain article. The systematic lesion search, network mapping, and independent validation directly test whether prosopagnosia reduces to damage at one anatomical site.",
+    "metadataSource": "pack-authored"
+  },
   "https://pubmed.ncbi.nlm.nih.gov/31847790/": {
     "title": "Correspondence bias of Chinese and American undergraduates: similar initial trait attributions but different situational corrections - PubMed",
     "organization": "PubMed, U.S. National Library of Medicine",
@@ -4774,6 +5014,7 @@
     "metadataSource": "pack-authored"
   },
   "https://pubmed.ncbi.nlm.nih.gov/33772310/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/33772310/",
     "title": "A Meta-analysis of Cognitive Remediation for Schizophrenia",
     "organization": "Schizophrenia Bulletin, indexed by PubMed",
     "summary": "This meta-analysis of randomized trials found cognitive remediation improved multiple cognitive domains and functioning in schizophrenia, with larger effects for programs using strategy coaching and bridging groups.",
@@ -4843,6 +5084,14 @@
     "credibility": "PubMed is maintained by the National Center for Biotechnology Information at the U.S. National Library of Medicine. Its indexed citation and abstract support traceability to the scholarly publication; inclusion in PubMed is not by itself a guarantee of study quality.",
     "metadataSource": "page-metadata"
   },
+  "https://pubmed.ncbi.nlm.nih.gov/39558003/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/39558003/",
+    "title": "Hippocampal Neurogenesis in Adult Primates: A Systematic Review",
+    "organization": "Molecular Psychiatry and PubMed",
+    "summary": "This systematic review evaluates primary studies of adult-primate hippocampal neurogenesis and reports converging evidence for newly generated dentate-gyrus neurons that mature and integrate, while identifying heterogeneous measures and unresolved functional questions.",
+    "credibility": "PubMed provides the National Library of Medicine record for a recent peer-reviewed systematic review with an explicit multi-database search and study criteria. Its primate focus directly addresses the human-generalization problem in the original item.",
+    "metadataSource": "pack-authored"
+  },
   "https://pubmed.ncbi.nlm.nih.gov/39901761/": {
     "title": "Repairing Cultural Ruptures in Psychotherapy: Strategies to Enhance the Therapeutic Alliance",
     "organization": "PubMed, U.S. National Library of Medicine",
@@ -4863,6 +5112,14 @@
     "summary": "Age differences in fluid and crystallized intelligence",
     "credibility": "PubMed is maintained by the National Center for Biotechnology Information at the U.S. National Library of Medicine. Its indexed citation and abstract support traceability to the scholarly publication; inclusion in PubMed is not by itself a guarantee of study quality.",
     "metadataSource": "page-metadata"
+  },
+  "https://pubmed.ncbi.nlm.nih.gov/6076856/": {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/6076856/",
+    "title": "Essentials of Implosive Therapy: A Learning-Theory-Based Psychodynamic Behavioral Therapy",
+    "organization": "Journal of Abnormal Psychology and PubMed",
+    "summary": "Stampfl and Levis present the original implosive-therapy formulation as a learning-theory-based behavioral method that also incorporates psychodynamic hypotheses and intense imagined material in treatment.",
+    "credibility": "PubMed supplies the National Library of Medicine record for this peer-reviewed primary article written by the originators of implosive therapy. It is the most direct source for the historical procedure and its theoretical integration.",
+    "metadataSource": "pack-authored"
   },
   "https://pubmed.ncbi.nlm.nih.gov/6356198/": {
     "title": "Social facilitation: a meta-analysis of 241 studies - PubMed",
@@ -4921,6 +5178,7 @@
     "metadataSource": "page-metadata"
   },
   "https://r-pas.org/Home/About": {
+    "url": "https://r-pas.org/Home/About",
     "title": "About the Rorschach Performance Assessment System",
     "organization": "R-PAS, LLC",
     "summary": "The official system description explains that R-PAS uses detailed standardized administration procedures intended to optimize the number of responses and improve interpretive utility.",
@@ -4928,6 +5186,7 @@
     "metadataSource": "pack-authored"
   },
   "https://researchbasics.education.uconn.edu/standardized-scores/": {
+    "url": "https://researchbasics.education.uconn.edu/standardized-scores/",
     "title": "Standardized Scores and Score Transformations",
     "organization": "University of Connecticut, Neag School of Education",
     "summary": "This educational measurement resource explains that z scores locate observations in standard-deviation units and that T and IQ scores are linear transformations used to compare results from different raw-score systems.",
@@ -4935,6 +5194,7 @@
     "metadataSource": "pack-authored"
   },
   "https://schematherapysociety.org/Schema-Therapy": {
+    "url": "https://schematherapysociety.org/Schema-Therapy",
     "title": "Schema Therapy Central Concepts",
     "organization": "International Society of Schema Therapy",
     "summary": "The society defines early maladaptive schemas as broad dysfunctional themes about self and relationships, explains their developmental origins, and describes coping styles and moment-to-moment schema modes.",
@@ -5298,7 +5558,15 @@
     "credibility": "apa.org is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
     "metadataSource": "url-derived-reviewed-fallback"
   },
+  "https://www.apa.org/about/policy/multicultural-guidelines.pdf#page=4": {
+    "title": "Multicultural Guidelines: An Ecological Approach to Context, Identity, and Intersectionality",
+    "organization": "American Psychological Association",
+    "summary": "APA's official guidelines place psychological work in ecological context and call for awareness of the psychologist's attitudes, knowledge of intersecting identities, and culturally responsive application of research and practice.",
+    "credibility": "The American Psychological Association developed and adopted these professional guidelines through its policy process. They are a primary source for the framework tested here, while functioning as aspirational guidance rather than jurisdictional law.",
+    "metadataSource": "pack-authored"
+  },
   "https://www.apa.org/about/policy/telepsychology-revisions": {
+    "url": "https://www.apa.org/about/policy/telepsychology-revisions",
     "title": "APA Guidelines for the Practice of Telepsychology",
     "organization": "American Psychological Association",
     "summary": "The revised guidelines address psychologist competence, service suitability, informed consent, privacy and data security, emergencies, interjurisdictional practice, assessment, supervision, and emerging technologies.",
@@ -5313,6 +5581,7 @@
     "metadataSource": "url-derived-reviewed-fallback"
   },
   "https://www.apa.org/ethics/": {
+    "url": "https://www.apa.org/ethics/",
     "title": "American Psychological Association Ethics Office",
     "organization": "American Psychological Association",
     "summary": "The APA Ethics Office page provides the code's adoption and amendment history and identifies the code currently published by the association while revision work continues.",
@@ -5320,6 +5589,7 @@
     "metadataSource": "pack-authored"
   },
   "https://www.apa.org/ethics/code": {
+    "url": "https://www.apa.org/ethics/code",
     "title": "Ethical Principles of Psychologists and Code of Conduct",
     "organization": "American Psychological Association",
     "summary": "The published APA Ethics Code contains Standard 2.06, which addresses personal problems that may interfere with adequate work and the measures psychologists consider in response.",
@@ -5334,6 +5604,7 @@
     "metadataSource": "url-derived-reviewed-fallback"
   },
   "https://www.apa.org/ethics/code/ethics-code-2017.pdf": {
+    "url": "https://www.apa.org/ethics/code/ethics-code-2017.pdf",
     "title": "Ethical Principles of Psychologists and Code of Conduct",
     "organization": "American Psychological Association",
     "summary": "Standard 7.06 directs psychologists in academic and supervisory relationships to establish a timely, specific feedback process, explain it at the outset, and evaluate actual performance against established requirements.",
@@ -5341,6 +5612,7 @@
     "metadataSource": "pack-authored"
   },
   "https://www.apa.org/ethics/code/ethics-code-2017.pdf#page=14": {
+    "url": "https://www.apa.org/ethics/code/ethics-code-2017.pdf#page=14",
     "title": "APA Ethics Code Standard 9.06: Interpreting Assessment Results",
     "organization": "American Psychological Association",
     "summary": "Standard 9.06 requires consideration of the assessment purpose, test factors, test-taking abilities, and situational, personal, linguistic, and cultural characteristics that may affect accuracy.",
@@ -5348,6 +5620,7 @@
     "metadataSource": "pack-authored"
   },
   "https://www.apa.org/ethics/code/ethics-code-2017.pdf#page=5": {
+    "url": "https://www.apa.org/ethics/code/ethics-code-2017.pdf#page=5",
     "title": "APA Ethics Code Standard 2.03: Maintaining Competence",
     "organization": "American Psychological Association",
     "summary": "Standard 2.03 states that psychologists undertake ongoing efforts to develop and maintain their competence, establishing a continuing professional obligation rather than a one-time licensure threshold.",
@@ -5361,18 +5634,50 @@
     "credibility": "apa.org is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
     "metadataSource": "url-derived-reviewed-fallback"
   },
-  "https://www.apa.org/ethics/code#605": {
-    "title": "Ethical Principles of Psychologists and Code of Conduct - Standard 6.05",
+  "https://www.apa.org/ethics/code#202": {
+    "url": "https://www.apa.org/ethics/code#202",
+    "title": "Ethical Principles of Psychologists and Code of Conduct - Standard 2.02",
     "organization": "American Psychological Association",
+    "summary": "APA Ethics Code Standard 2.02 addresses emergency services when psychologists lack established competence and suitable mental health services are unavailable, permitting bounded care needed to prevent denial of services.",
+    "credibility": "The American Psychological Association publishes the operative professional Ethics Code. This section-specific official link is the primary source for the emergency competence exception, subject to applicable law and licensing requirements.",
+    "metadataSource": "pack-authored"
+  },
+  "https://www.apa.org/ethics/code#305": {
+    "url": "https://www.apa.org/ethics/code#305",
+    "title": "Ethical Principles of Psychologists and Code of Conduct - Standard 3.05",
+    "organization": "American Psychological Association",
+    "summary": "APA Ethics Code Standard 3.05 defines multiple relationships and directs psychologists to avoid those reasonably expected to impair objectivity, competence, or effectiveness or to risk exploitation or harm.",
+    "credibility": "The American Psychological Association publishes the operative professional Ethics Code. This section-specific official link is the primary source for evaluating multiple relationships, alongside governing law and licensing requirements.",
+    "metadataSource": "pack-authored"
+  },
+  "https://www.apa.org/ethics/code#4_03": {
+    "title": "Ethical Principles of Psychologists and Code of Conduct, Standard 4.03 Recording",
+    "organization": "American Psychological Association",
+    "summary": "The official APA Ethics Code states that psychologists obtain permission from individuals or their legal representatives before recording voices or images to which the professional services relate.",
+    "credibility": "The American Psychological Association issues and maintains the professional ethics code cited by the item. Its official page is the primary source for Standard 4.03; applicable law, regulation, and organizational policy may add requirements.",
+    "metadataSource": "pack-authored"
+  },
+  "https://www.apa.org/ethics/code#605": {
+    "url": "https://www.apa.org/ethics/code#605",
+    "title": "Ethical Principles of Psychologists and Code of Conduct - Standard 6.05",
     "summary": "APA Ethics Code Standard 6.05 addresses noncash exchanges for psychological services and conditions their acceptability on clinical appropriateness and freedom from exploitation.",
     "credibility": "The American Psychological Association publishes the operative text of its professional Ethics Code. This section-specific official link is the primary APA source for the barter standard, although applicable law and licensing rules may impose additional duties.",
+    "organization": "American Psychological Association",
+    "metadataSource": "pack-authored"
+  },
+  "https://www.apa.org/ethics/code#8_11": {
+    "title": "Ethical Principles of Psychologists and Code of Conduct, Standard 8.11 Plagiarism",
+    "organization": "American Psychological Association",
+    "summary": "The official APA Ethics Code states that psychologists do not present portions of another person's work or data as their own, including situations in which the other source is cited elsewhere in the product.",
+    "credibility": "The American Psychological Association issues and maintains the professional ethics code cited by the item. Its official code page is the primary source for Standard 8.11, although institutional rules and applicable law may impose additional obligations.",
     "metadataSource": "pack-authored"
   },
   "https://www.apa.org/ethics/code#901": {
+    "url": "https://www.apa.org/ethics/code#901",
     "title": "Ethical Principles of Psychologists and Code of Conduct - Standard 9.01",
-    "organization": "American Psychological Association",
     "summary": "APA Ethics Code Standard 9.01 requires psychologists to base assessment opinions, recommendations, and diagnostic or evaluative statements on information and techniques sufficient to substantiate their findings.",
     "credibility": "The American Psychological Association publishes the operative text of its professional Ethics Code. This section-specific official link is the primary APA source for the evidentiary basis required for assessment opinions, subject to applicable law and licensing rules.",
+    "organization": "American Psychological Association",
     "metadataSource": "pack-authored"
   },
   "https://www.apa.org/monitor/2016/10/apa-news": {
@@ -5390,6 +5695,7 @@
     "metadataSource": "url-derived-reviewed-fallback"
   },
   "https://www.apa.org/monitor/oct04/dilemmas": {
+    "url": "https://www.apa.org/monitor/oct04/dilemmas",
     "title": "Approaching Ethical Dilemmas",
     "organization": "Monitor on Psychology, American Psychological Association",
     "summary": "APA Monitor staff reports Ethics Committee guidance for applying Standard 3.05 to multiple relationships: assess whether the additional role could impair objectivity, competence, or effectiveness or create a risk of harm or exploitation, then consult and document the decision-making process.",
@@ -5401,6 +5707,13 @@
     "organization": "American Psychological Association",
     "summary": "The American Psychological Association developed these reporting standards to promote transparent, rigorous appraisal of qualitative and mixed-methods psychological research.",
     "credibility": "The American Psychological Association developed these reporting standards to promote transparent, rigorous appraisal of qualitative and mixed-methods psychological research.",
+    "metadataSource": "pack-authored"
+  },
+  "https://www.apa.org/practice/guidelines/child-custody-evaluations.pdf": {
+    "title": "Guidelines for Child Custody Evaluations in Family Law Proceedings",
+    "organization": "American Psychological Association",
+    "summary": "APA's 2022 professional guidelines address evaluator competence, scope, impartiality, role boundaries, culturally informed methods, information gathering, interpretation, and communication in custody-related forensic evaluations.",
+    "credibility": "The American Psychological Association developed and adopted these guidelines through its professional policy process. They are the primary national psychology guidance for this practice area, while remaining aspirational and subordinate to governing law.",
     "metadataSource": "pack-authored"
   },
   "https://www.apa.org/practice/guidelines/forensic-psychology": {
@@ -5467,10 +5780,11 @@
     "metadataSource": "url-derived-reviewed-fallback"
   },
   "https://www.apa.org/science/programs/research/codes.html": {
+    "url": "https://www.apa.org/science/programs/research/codes.html",
     "title": "Professional Codes of Conduct",
-    "organization": "American Psychological Association",
     "summary": "The APA explains that broad ethical principles are aspirational goals, whereas enforceable standards establish rules whose violation can support sanctions or other adjudicatory action.",
     "credibility": "This official American Psychological Association page directly explains the distinction between aspirational principles and enforceable standards. It is an authoritative organizational source for how APA structures professional ethics guidance and adjudication.",
+    "organization": "American Psychological Association",
     "metadataSource": "pack-authored"
   },
   "https://www.apa.org/topics/artificial-intelligence-machine-learning/ethical-guidance-ai-professional-practice.html": {
@@ -5485,6 +5799,14 @@
     "organization": "American Psychological Association Ethics Committee",
     "summary": "The APA Ethics Committee adopted this professional guidance on AI competence, transparency, informed consent, privacy, bias, evidence, human oversight, documentation, and accountability.",
     "credibility": "The APA Ethics Committee adopted this professional guidance on AI competence, transparency, informed consent, privacy, bias, evidence, human oversight, documentation, and accountability.",
+    "metadataSource": "pack-authored"
+  },
+  "https://www.apa.org/topics/lgbt/transgender": {
+    "url": "https://www.apa.org/topics/lgbt/transgender",
+    "title": "Understanding Transgender People, Gender Identity and Gender Expression",
+    "organization": "American Psychological Association",
+    "summary": "The APA resource distinguishes internal gender identity from outward gender expression and sexual orientation, describes varied pathways of awareness and expression, and explains that transgender identity is not itself a mental disorder.",
+    "credibility": "This is an official American Psychological Association educational resource grounded in professional definitions and psychological guidance. It directly supports the conceptual distinctions and nonpathologizing interpretation required by the item.",
     "metadataSource": "pack-authored"
   },
   "https://www.asha.org/certification/2020-Audiology-Certification-Standards/": {
@@ -5831,6 +6153,7 @@
     "metadataSource": "pack-authored"
   },
   "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-13": {
+    "url": "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-13",
     "title": "Chapter 13: Assessing Risk of Bias Due to Missing Evidence in a Meta-analysis",
     "organization": "Cochrane Handbook for Systematic Reviews of Interventions",
     "summary": "The chapter explains how selective availability based on a result's P value, magnitude, or direction biases syntheses and discusses searching registrations, databases, and unpublished sources.",
@@ -5929,6 +6252,7 @@
     "metadataSource": "pack-authored"
   },
   "https://www.ets.org/Media/Research/pdf/RM-12-12.pdf": {
+    "url": "https://www.ets.org/Media/Research/pdf/RM-12-12.pdf",
     "title": "Statistical Report of Fall 2009 CBAL Reading Tests",
     "organization": "Educational Testing Service",
     "summary": "This ETS research memorandum reports item statistics and operational differential-item-functioning analyses, including the need for expert review of substantially flagged items.",
@@ -5943,6 +6267,7 @@
     "metadataSource": "pack-authored"
   },
   "https://www.ets.org/pdfs/about/best-practices-validity-fairness-ela.pdf": {
+    "url": "https://www.ets.org/pdfs/about/best-practices-validity-fairness-ela.pdf",
     "title": "Guidelines for Best Test Development Practices to Ensure Validity and Fairness for International English Language Proficiency Assessments",
     "organization": "Educational Testing Service",
     "summary": "Young, So, and Ockey explain that the standard error of measurement estimates score accuracy and supports score intervals that communicate precision and encourage cautious individual decisions.",
@@ -6041,10 +6366,19 @@
     "metadataSource": "page-metadata"
   },
   "https://www.govinfo.gov/app/details/USREPORTS-362/USREPORTS-362-402": {
+    "url": "https://www.govinfo.gov/app/details/USREPORTS-362/USREPORTS-362-402",
     "title": "Dusky v. United States, 362 U.S. 402 (1960)",
     "organization": "Supreme Court of the United States; U.S. Government Publishing Office",
     "summary": "The Court's per curiam opinion states the competency-to-stand-trial test and explains that orientation to time and place plus some recollection of events does not by itself establish competency.",
     "credibility": "GovInfo provides the authenticated United States Reports decision through the U.S. Government Publishing Office. The opinion is the primary legal authority for the federal constitutional competency standard tested in the item.",
+    "metadataSource": "pack-authored"
+  },
+  "https://www.gse.harvard.edu/ideas/news/13/10/multiple-intelligences-are-not-learning-styles": {
+    "url": "https://www.gse.harvard.edu/ideas/news/13/10/multiple-intelligences-are-not-learning-styles",
+    "title": "Multiple Intelligences Are Not Learning Styles",
+    "organization": "Harvard Graduate School of Education",
+    "summary": "Howard Gardner explains that multiple intelligences concern distinct computational and intellectual capacities, whereas learning styles concern preferred approaches to material, and he rejects collapsing the two ideas into a sensory-matching prescription.",
+    "credibility": "This Harvard Graduate School of Education resource presents the theory developer's direct clarification of a widespread misinterpretation. It is authoritative for what Gardner's framework claims, though it does not resolve independent empirical critiques.",
     "metadataSource": "pack-authored"
   },
   "https://www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG-Edited-11162024.pdf": {
@@ -6237,6 +6571,7 @@
     "metadataSource": "page-metadata"
   },
   "https://www.itl.nist.gov/div898/handbook/pmd/section4/pmd431.htm": {
+    "url": "https://www.itl.nist.gov/div898/handbook/pmd/section4/pmd431.htm",
     "title": "4.4.3.1 Least Squares - NIST/SEMATECH e-Handbook of Statistical Methods",
     "organization": "National Institute of Standards and Technology",
     "summary": "The NIST handbook derives least-squares estimation and defines the estimated error-term standard deviation from the residual sum of squares and residual degrees of freedom, describing it as the residual standard deviation.",
@@ -6249,6 +6584,13 @@
     "summary": "This itl.nist.gov resource addresses Itl.Nist.Gov Resource. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
     "credibility": "itl.nist.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
     "metadataSource": "page-metadata"
+  },
+  "https://www.itl.nist.gov/div898/handbook/ppc/section4/ppc431.htm": {
+    "title": "Fitting Polynomial Models with Multiple Regression",
+    "organization": "National Institute of Standards and Technology",
+    "summary": "The NIST/SEMATECH e-Handbook presents regression models that relate one response to several explanatory terms, including main effects and interactions, and explains fitting those terms through multiple regression.",
+    "credibility": "NIST is the United States federal measurement-science agency, and its statistical handbook is a technically reviewed governmental reference. This section directly supports selecting a joint regression model with several predictors.",
+    "metadataSource": "pack-authored"
   },
   "https://www.itl.nist.gov/div898/handbook/prc/section1/prc131.htm": {
     "title": "7.1.3.1. Critical values and p values",
@@ -6433,6 +6775,7 @@
     "metadataSource": "pack-authored"
   },
   "https://www.ncbi.nlm.nih.gov/books/NBK10936/": {
+    "url": "https://www.ncbi.nlm.nih.gov/books/NBK10936/",
     "title": "Language and Lateralization",
     "organization": "NCBI Bookshelf, National Library of Medicine",
     "summary": "This neuroscience chapter reviews evidence that core language operations are commonly left-lateralized while also describing specialized regions, hemispheric differences, and the clinical interpretation of lateralization.",
@@ -6447,6 +6790,7 @@
     "metadataSource": "page-metadata"
   },
   "https://www.ncbi.nlm.nih.gov/books/NBK1504/": {
+    "url": "https://www.ncbi.nlm.nih.gov/books/NBK1504/",
     "title": "Phenylalanine Hydroxylase Deficiency",
     "organization": "GeneReviews, University of Washington; hosted by NCBI Bookshelf, U.S. National Library of Medicine",
     "summary": "This clinical genetics review describes PAH-deficiency diagnosis, the potentially irreversible consequences of late or absent treatment, and lifelong phenylalanine-restricted treatment with medical-food supplementation and monitoring.",
@@ -6468,6 +6812,7 @@
     "metadataSource": "pack-authored"
   },
   "https://www.ncbi.nlm.nih.gov/books/NBK279070/": {
+    "url": "https://www.ncbi.nlm.nih.gov/books/NBK279070/",
     "title": "Physiology of GnRH and Gonadotrophin Secretion",
     "organization": "Endotext, MDText.com; hosted by NCBI Bookshelf, U.S. National Library of Medicine",
     "summary": "This updated endocrine reference explains pulsatile hypothalamic GnRH regulation of pituitary LH and FSH and their downstream control of gonadal endocrine function and gamete maturation.",
@@ -6636,6 +6981,7 @@
     "metadataSource": "page-metadata"
   },
   "https://www.ncbi.nlm.nih.gov/books/NBK549835/": {
+    "url": "https://www.ncbi.nlm.nih.gov/books/NBK549835/",
     "title": "Neuroanatomy, Reticular Activating System",
     "organization": "NCBI Bookshelf, U.S. National Library of Medicine",
     "summary": "This clinical neuroanatomy review describes the brainstem reticular activating system and its roles in arousal, attention, focus, muscle tone, wakefulness, and sleep-wake regulation.",
@@ -6944,11 +7290,12 @@
     "metadataSource": "page-metadata"
   },
   "https://www.nimh.nih.gov/news/science-updates/2024/my-life-with-ocd": {
-    "title": "My Life With OCD",
-    "organization": "nimh.nih.gov",
-    "summary": "Graduate student and mental health advocate Uma Chatterjee, M.S., shares her personal journey navigating life with OCD.",
-    "credibility": "nimh.nih.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
-    "metadataSource": "page-metadata"
+    "url": "https://www.nimh.nih.gov/news/science-updates/2024/my-life-with-ocd",
+    "title": "My Life With OCD: Exposure and Response Prevention Treatment",
+    "organization": "National Institute of Mental Health",
+    "summary": "NIMH describes exposure and response prevention as safely contacting situations that trigger obsessions while resisting the associated compulsive response, including tolerating distress and delaying or refraining from rituals.",
+    "credibility": "The National Institute of Mental Health is the U.S. federal agency for mental-health research. This official government page provides an accurate procedure-level description of ERP and a concrete example of exposure paired with response prevention.",
+    "metadataSource": "pack-authored"
   },
   "https://www.nimh.nih.gov/research/research-conducted-at-nimh/asq-toolkit-materials/adult-ed/adult-emergency-department-brief-suicide-safety-assessment-guide": {
     "title": "Adult Emergency Department Brief Suicide Safety Assessment Guide",
@@ -7070,6 +7417,7 @@
     "metadataSource": "pack-authored"
   },
   "https://www.pearsonassessments.com/content/dam/school/global/clinical/us/assets/basc-3/basc-3-rating-scales-multirater-report-sample.pdf": {
+    "url": "https://www.pearsonassessments.com/content/dam/school/global/clinical/us/assets/basc-3/basc-3-rating-scales-multirater-report-sample.pdf",
     "title": "BASC-3 Rating Scales Multirater Report Sample",
     "organization": "Pearson Clinical Assessment",
     "summary": "Pearson's official sample report displays corresponding BASC-3 scale scores for multiple raters, flags statistically significant rater differences, reports profile similarity and validity information, and cautions against using the generated report as the sole basis for important decisions.",
@@ -7112,6 +7460,7 @@
     "metadataSource": "page-metadata"
   },
   "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Behavior/Behavior-Assessment-System-for-Children-C-Third-Edition/p/100001402": {
+    "url": "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Behavior/Behavior-Assessment-System-for-Children-C-Third-Edition/p/100001402",
     "title": "Behavior Assessment System for Children, Third Edition (BASC-3)",
     "organization": "Pearson Assessments",
     "summary": "Pearson's official BASC-3 documentation describes its triangulation of parent, teacher, and self perspectives, identifies the distinct home/community and school settings sampled by the rating forms, and documents direct-observation and developmental-history components that can supplement ratings.",
@@ -7182,11 +7531,12 @@
     "metadataSource": "page-metadata"
   },
   "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Personality-%26-Biopsychosocial/Beck-Depression-Inventory-II/p/100000159": {
-    "title": "BDI–2 - Beck Depression Inventory | Pearson Assessments US",
-    "organization": "pearsonassessments.com",
-    "summary": "Assess depression severity criteria of people ages 13 through 80 years old with BDI-2. Order the widely used Beck Depression Inventory & Scale today.",
-    "credibility": "pearsonassessments.com is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
-    "metadataSource": "page-metadata"
+    "url": "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Personality-%26-Biopsychosocial/Beck-Depression-Inventory-II/p/100000159",
+    "title": "BDI-2 Beck Depression Inventory - Pearson Assessments",
+    "organization": "Pearson Assessments",
+    "summary": "Pearson describes the BDI-II as a brief self-report inventory with 21 symptom items, a two-week assessment timeframe, and uses that include assessing self-reported depression severity and supporting identification and monitoring.",
+    "credibility": "Pearson is the instrument publisher and provides primary documentation for the BDI-II format, timeframe, administration, and intended uses. Publisher documentation does not by itself establish independent comparative validity or diagnostic sufficiency.",
+    "metadataSource": "pack-authored"
   },
   "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Personality-%26-Biopsychosocial/Millon-Clinical-Multiaxial-Inventory-IV/p/100001362": {
     "title": "MCMI-IV - Millon Clinical Multiaxial Inventory-IV | Pearson Assessments US",
@@ -7350,6 +7700,7 @@
     "metadataSource": "pack-authored"
   },
   "https://www.ptsd.va.gov/professional/treat/txessentials/cpt_for_ptsd_pro.asp": {
+    "url": "https://www.ptsd.va.gov/professional/treat/txessentials/cpt_for_ptsd_pro.asp",
     "title": "Cognitive Processing Therapy for PTSD",
     "organization": "U.S. Department of Veterans Affairs, National Center for PTSD",
     "summary": "The VA treatment overview explains assimilated and over-accommodated stuck points, contrasts them with balanced accommodation, and identifies cognitive restructuring toward accurate beliefs as a primary CPT goal.",
@@ -7364,6 +7715,7 @@
     "metadataSource": "page-metadata"
   },
   "https://www.ptsd.va.gov/professional/treat/txessentials/prolonged_exposure_pro.asp": {
+    "url": "https://www.ptsd.va.gov/professional/treat/txessentials/prolonged_exposure_pro.asp",
     "title": "Prolonged Exposure for PTSD",
     "organization": "National Center for PTSD, U.S. Department of Veterans Affairs",
     "summary": "This clinician resource describes PE as a manualized treatment and identifies psychoeducation, repeated in-vivo approach to avoided trauma reminders, repeated imaginal revisiting of the trauma memory, and processing as key procedures.",
@@ -7469,6 +7821,7 @@
     "metadataSource": "page-metadata"
   },
   "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf": {
+    "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf",
     "title": "Standards for Educational and Psychological Testing",
     "organization": "AERA, American Psychological Association, and NCME",
     "summary": "The joint professional Standards address reliability, measurement precision, errors of measurement, score interpretation, and appropriate reporting of uncertainty in educational and psychological testing.",
@@ -7546,6 +7899,7 @@
     "metadataSource": "pack-authored"
   },
   "https://www150.statcan.gc.ca/n1/en/pub/12-587-x/12-587-x2003001-eng.pdf": {
+    "url": "https://www150.statcan.gc.ca/n1/en/pub/12-587-x/12-587-x2003001-eng.pdf",
     "title": "Survey Methods and Practices",
     "organization": "Statistics Canada and Library and Archives Canada",
     "summary": "The official survey manual explains sample allocation across strata, distinguishes common-fraction proportional allocation from unequal-rate disproportionate allocation, and develops stratum-weighted estimators for stratified samples.",
@@ -7553,6 +7907,7 @@
     "metadataSource": "pack-authored"
   },
   "https://www150.statcan.gc.ca/n1/pub/12-001-x/2019002/article/00006/02-eng.htm": {
+    "url": "https://www150.statcan.gc.ca/n1/pub/12-001-x/2019002/article/00006/02-eng.htm",
     "title": "A General Sampling System for Multi-Objective Surveys: Section 2, Stratified Sampling",
     "organization": "Survey Methodology, Statistics Canada",
     "summary": "This section defines strata as well-defined, mutually exclusive, exhaustive population subgroups and explains that stratification can improve overall precision or control stratum-specific sample sizes and precision.",

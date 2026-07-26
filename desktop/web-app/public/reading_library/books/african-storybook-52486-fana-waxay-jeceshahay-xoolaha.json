@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52486-fana-waxay-jeceshahay-xoolaha",
+  "title": "Fana waxay jeceshahay xoolaha",
+  "description": "Fana waxay waqti la qaadataa xayawaanka, waxayna siisaa cunto oo way la ciyaartaa.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Foziya Mohammed"
+  ],
+  "illustrators": [
+    "Jesse Breytenbach"
+  ],
+  "translators": [
+    "Fosiyo Mohamud"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Foziya Mohammed",
+      "role": "Author"
+    },
+    {
+      "name": "Fosiyo Mohamud",
+      "role": "Translation"
+    },
+    {
+      "name": "Jesse Breytenbach",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Foziya Mohammed (Author); Fosiyo Mohamud (Translation); Jesse Breytenbach (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52486",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52486",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52486",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-60212d2fce02b80c",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/25266.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25265.png",
+      "text": "Fana iyo qoyskeedu waxay ku nool yihiin magaalo mashquul badan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52486#page=1",
+      "sourceDigest": "sha256:64b496f28bf154518a94ef55c744d92247709ab83410564f1fde5724fbd9f010"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25266.png",
+      "text": "Fana waxay leedahay bisad, laba digaag, ari, iyo qoolley.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52486#page=2",
+      "sourceDigest": "sha256:9f4ec41efb1e712a7d1e0032d464f129182d9663ebd374f30bec720457a441f1"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25267.png",
+      "text": "Maalin maalmaha ka mid ah, Fana waxay aragtay carruur dhagxaan ku tuuraya qoolleyda.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52486#page=3",
+      "sourceDigest": "sha256:e18d301f8b806a630aa48877656c75d192b201d73f26039d346da88c54e244b6"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25268.png",
+      "text": "Fana waxay ku orodday caruurtii. Weyna ku qaylisay, \"Joojiya dhagxeynta.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52486#page=4",
+      "sourceDigest": "sha256:5bd8421943f5370e82e66ba5d290b395a829f2fa1f00df71f8e714e89269c152"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25269.png",
+      "text": "Fana waxay gurigeeda geysay labadi qooley si ay u daryeesho.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52486#page=5",
+      "sourceDigest": "sha256:c49837444778ee83b40f9e51f0fbbb88a9eba54f1d985ec64d2528b00b519281"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25270.png",
+      "text": "Waxey siisay cunto waxeyna qoyskeeda u sheegtay sida ay u badbaadisay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52486#page=6",
+      "sourceDigest": "sha256:2f0136b9f44c4123c49ea7c0e957b6fa293ae3fa77e3a0b30e6570537127fb4e"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25271.png",
+      "text": "Fana iyo waalidiinteed waxay qooleyda ay geeyeen xarunta dhaqtarka xoolaha",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52486#page=7",
+      "sourceDigest": "sha256:78283f739c82305598ecd2a81d9e512b528189b8c2760f2777a1c116754f31bc"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25272.png",
+      "text": "Fana waxay saaxiibadeed u sheegtay, \"Xayawaanku waa saaxiibadeenna. Waa inaan ilaalinaa.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52486#page=8",
+      "sourceDigest": "sha256:fe5b55d65c3a84f93d3f4166b3b4dc21375389a5c9d848987d06629ed8c0a071"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 84
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:2052d5fc5262ca55e3015100803b561637ccc6895b7098099a97a2a34a47b83e"
+  }
+}

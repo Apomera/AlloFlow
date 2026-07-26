@@ -1,0 +1,169 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-31794-ba-niawu-bazali-boni",
+  "title": "Ba niawu bazali boni?",
+  "description": "Namoni ata niawu moko te na esika oyo bango nioso babungi bazalaki awa te.",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Nina Orange"
+  ],
+  "illustrators": [
+    "Jesse Breytenbach"
+  ],
+  "translators": [
+    "Theresa Nyemba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Nina Orange",
+      "role": "Author"
+    },
+    {
+      "name": "Theresa Nyemba",
+      "role": "Translation"
+    },
+    {
+      "name": "Jesse Breytenbach",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Nina Orange (Author); Theresa Nyemba (Translation); Jesse Breytenbach (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31794",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31794",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "31794",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-188410bfd153a0c1",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/12024.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12020.png",
+      "text": "Ba niawu bazali boni? Namoni ata niawu moko te, bango nionso babungi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31794#page=1",
+      "sourceDigest": "sha256:ee4f60aa2eea60a66063bf622e6617736c3d90e0d5ba8d276115896834d19b33"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12006.png",
+      "text": "Niawu azali boni? Namoni kaka niawu moko azali awa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31794#page=2",
+      "sourceDigest": "sha256:4dedde246d2b2f806553ca24589410efc7fe4007b84167fff7e5ddc12c801cde"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12018.png",
+      "text": "Ba niawu bazali boni? Namoni ba niawu bazali mibale.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31794#page=3",
+      "sourceDigest": "sha256:34bfaccefd933978e0b7447b1849aaf1e0b56c31c4476e669866aba0550e353f"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12019.png",
+      "text": "Ba niawu bazali boni? Namoni ba niawu bazali misato.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31794#page=4",
+      "sourceDigest": "sha256:ac989e95f2ed2c1e0ca765696363f1ca819c41affa9eec68e8845562db395610"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12414.png",
+      "text": "Ba niawu bazali boni? Namoni ba niawu bazali minei.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31794#page=5",
+      "sourceDigest": "sha256:804c3fcb9fa2e1429943ebbe067af593b419fb04575a4d6ea9e6e9c90421071d"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12021.png",
+      "text": "Ba niawu bazali boni? Namoni ba niawu bazali mitano.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31794#page=6",
+      "sourceDigest": "sha256:d688a5ee93ec034f06fbe96b02616c4fa0231609f251a027fba46eb8c3c95b3f"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12025.png",
+      "text": "Ba niawu bazali boni? Namoni ba niawu bazali motoba.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31794#page=7",
+      "sourceDigest": "sha256:46fa5c19d624156adb69a7a77769167e93b2c8a9a6a5dd05649c9af378715337"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12026.png",
+      "text": "Ba niawu bazali boni? Namoni ba niawu bazali sambo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31794#page=8",
+      "sourceDigest": "sha256:e0cce80ff447d553092f3d6c97bc539f6af74241ed5c3c7d398dc29633789a61"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12024.png",
+      "text": "Ba niawu bazali boni? Namoni ba niawu bazali muambe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31794#page=9",
+      "sourceDigest": "sha256:737c320f529c45558140fce6d68c086d77036be8803f918670ce0655266a843b"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12008.png",
+      "text": "Oyo nini nakomona! Niawu akangami likolo ya nzete, nakoya kobikisa ye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31794#page=10",
+      "sourceDigest": "sha256:bb4a3030d126aa120fbd5779f4015cdef8d533e777e8ccf8676ef3e6f070cd8a"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12028.png",
+      "text": "Maman, tokoki kobomba ye kaka mbala moko? Ba niawu bazali boni? Libua.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31794#page=11",
+      "sourceDigest": "sha256:ee3f2b139a57433c404b43c8950122b2f265e03b6864b8fea185fd56f51d9d46"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 107
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:f5bf47e6fc6502151574b8b82d7012742a465f76a1de090a755af6fb60e8e6a9"
+  }
+}

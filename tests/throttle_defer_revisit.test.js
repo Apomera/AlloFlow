@@ -17,7 +17,7 @@ const drain = async (chunks, initialDeferred, fixer) => {
   const fixed = chunks.slice(); // main pass left deferred chunks as their original
   let _todo = initialDeferred.slice();
   const log = [];
-  if (initialDeferred.length && initialDeferred.length < chunks.length) {
+  if (initialDeferred.length) {
     for (let round = 0; round < 2 && _todo.length; round++) {
       const nextDeferred = [];
       const again = [];
@@ -54,12 +54,12 @@ describe('defer-and-revisit catch-up: results splice back at the correct index',
     expect(fixed).toEqual(['A', 'B', 'C']); // C unchanged (never recovered)
     expect(stillDeferred).toEqual([2]);
   });
-  it('when ALL chunks were deferred the drain is SKIPPED (no spin on a total stall)', async () => {
+  it('when ALL chunks were deferred the bounded drain revisits every chunk', async () => {
     const chunks = ['A', 'B'];
     let calls = 0;
     const fixer = async (part) => { calls++; return { out: part, deferred: true }; };
     const { fixed } = await drain(chunks, [0, 1], fixer);
-    expect(calls).toBe(0); // never entered the drain
+    expect(calls).toBe(4); // two bounded recovery rounds for both chunks
     expect(fixed).toEqual(['A', 'B']);
   });
 });
@@ -89,9 +89,9 @@ describe('anti-drift: aiFixChunked records + revisits throttle-deferred chunks',
     expect(pipe).toMatch(/if \(_isThrottleErr\(e\)\) _deferredIdx\.push\(ci\)/);
     expect(pipe).toMatch(/var _isThrottleErr = function \(e\)/);
   });
-  it('the catch-up drain revisits them (skipped when ALL deferred) and splices by index', () => {
-    expect(pipe).toMatch(/if \(_deferredIdx\.length && _deferredIdx\.length < chunks\.length\)/);
-    expect(pipe).toContain('await waitForGeminiCalm({ maxWaitMs: 90000 })');
+  it('the catch-up drain revisits them, including an all-deferred pass, and splices by index', () => {
+    expect(pipe).toMatch(/if \(_deferredIdx\.length\) \{/);
+    expect(pipe).toMatch(/await waitForGeminiCalm\(\{ maxWaitMs: 90000,[^}]*signal:[^}]*owner:/);
     expect(pipe).not.toMatch(/Promise\.all\(_todo\.map/);
     expect(pipe).toMatch(/for \(const \{ ci, out \} of _again\) \{ if \(out != null\) fixed\[ci\] = out; \}/);
   });

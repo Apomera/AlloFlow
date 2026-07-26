@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1494-essential-mechanics-statics-and-strength-of-materials-with-matlab-and-oc",
+  "title": "Essential Mechanics - Statics and Strength of Materials with MATLAB and Octave",
+  "description": "Essential Mechanics - Statics and Strength of Materials with MATLAB and Octave combines two core engineering science courses - “Statics” and “Strength of Materials” - in mechanical, civil, and aerospace engineering. It weaves together various essential topics from Statics and Strength of Materials to allow discussing structural design from the very beginning. The traditional content of these courses are reordered to make it convenient to cover rigid body equilibrium and extend it to deformable body mechanics.The e-book covers the most useful topics from both courses with computational support through MATLAB/Octave. The traditional approach for engineering content is emphasized and is rigorously supported through graphics and analysis. Prior knowledge of MATLAB is not necessary. Instructions for its use in context is provided and explained. It takes advantage of the numerical, symbolic, and graphical capability of MATLAB for effective problem solving. This computational ability provides a natural procedure for What if? exploration that is important for design. The book also emphasizes graphics to understand, learn, and explore design. The idea for this book, the organization, and the flow of content is original and new. The integration of computation, and the marriage of analytical and computational skills is a new valuable experience provided by this e-book. Most importantly the book is very interactive with respect to the code as it appears along with the analysis.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology - Mechanical Engineering"
+  ],
+  "authors": [
+    "P. Venkataraman - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "RIT Scholar Works",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/essential-mechanics-statics-and-strength-of-materials-with-matlab-and-octave"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Essential Mechanics - Statics and Strength of Materials with MATLAB and Octave combines two core engineering science courses - “Statics” and “Strength of Materials” - in mechanical, civil, and aerospace engineering. It weaves together various essential topics from Statics and Strength of Materials to allow discussing structural design from the very beginning. The traditional content of these courses are reordered to make it convenient to cover rigid body equilibrium and extend it to deformable body mechanics.The e-book covers the most useful topics from both courses with computational support through MATLAB/Octave. The traditional approach for engineering content is emphasized and is rigorously supported through graphics and analysis. Prior knowledge of MATLAB is not necessary. Instructions for its use in context is provided and explained. It takes advantage of the numerical, symbolic, and graphical capability of MATLAB for effective problem solving. This computational ability provides a natural procedure for What if? exploration that is important for design. The book also emphasizes graphics to understand, learn, and explore design. The idea for this book, the organization, and the flow of content is original and new. The integration of computation, and the marriage of analytical and computational skills is a new valuable experience provided by this e-book. Most importantly the book is very interactive with respect to the code as it appears along with the analysis."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 245
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1494",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

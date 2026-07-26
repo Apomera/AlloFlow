@@ -1688,14 +1688,17 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     return /* @__PURE__ */ React.createElement("div", { className: "mt-5 w-full max-w-sm mx-auto text-left bg-black/30 rounded-xl p-3 max-h-44 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-widest text-white/70 mb-2" }, t("quiz.boss.debrief_title") || "Battle debrief \u2014 accuracy by question"), log.map((e, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-2 mb-1", title: qText(e.questionIndex) }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-white/80 w-7 shrink-0" }, "Q", (e.questionIndex ?? i) + 1), /* @__PURE__ */ React.createElement("div", { className: "flex-1 h-2.5 bg-white/15 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${e.accuracy >= 70 ? "bg-emerald-400" : e.accuracy >= 40 ? "bg-amber-400" : "bg-rose-500"}`, style: { width: `${Math.max(4, e.accuracy)}%` } })), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-white w-9 text-right shrink-0" }, e.accuracy, "%"), log.length > 1 && e === worst && /* @__PURE__ */ React.createElement("span", { className: "text-[9px] font-black text-rose-200 bg-rose-900/60 border border-rose-400/40 rounded px-1 py-0.5 shrink-0", title: t("quiz.boss.debrief_reteach_title") || "Lowest accuracy \u2014 a reteach candidate" }, t("quiz.boss.debrief_reteach") || "reteach?"))));
   };
   const handleEndQuiz = async () => {
-    addToast(t("quiz.session_ended_success") || "Session ended successfully.", "success");
     try {
       const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
       await updateDoc(sessionRef, {
-        "quizState.isActive": false
+        "quizState.isActive": false,
+        "quizState.phase": "closed",
+        "quizState.endedAt": Date.now()
       });
+      addToast(t("quiz.session_ended_success") || "Session ended successfully.", "success");
     } catch (err) {
       warnLog("Quiz end Firestore failed (Canvas sandbox):", err.message);
+      addToast("Could not end the live quiz. Please try again.", "error");
     }
   };
   const handleModeChange = async (e) => {

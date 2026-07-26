@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-923-general-psychology-for-honors-students",
+  "title": "General Psychology for Honors Students",
+  "description": "What are the most effective methods to study for a test? What are the meanings of dreams? How do illusions work? With whom are you most likely to fall in love? These are just a few of the questions that have been asked by psychologists since the birth of the field as an area of scientific research in the 1870’s. This text surveys the basic concepts, theories, and pivotal findings over the past 100 years in the science of Psychology, with special emphasis on contemporary concepts and findings focused on the relation of the brain to normal and pathological behaviors. Psychology has long evolved past the psychodynamic influence to include biological, social, learning, motivational, and developmental perspectives, to name a few. Contemporary psychologists go beyond philosophical or anecdotal speculation and rely on empirical evidence to inform their conclusions. Similarly, readers will push beyond pre-existing schemas and misconceptions of the field of psychology to an understanding of contemporary quantitative research methods as they are used to predict and test human behavior.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Psychology"
+  ],
+  "authors": [
+    "Kate Votaw - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Missouri - St. Louis",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/general-psychology-for-honors-students"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "What are the most effective methods to study for a test? What are the meanings of dreams? How do illusions work? With whom are you most likely to fall in love? These are just a few of the questions that have been asked by psychologists since the birth of the field as an area of scientific research in the 1870’s. This text surveys the basic concepts, theories, and pivotal findings over the past 100 years in the science of Psychology, with special emphasis on contemporary concepts and findings focused on the relation of the brain to normal and pathological behaviors. Psychology has long evolved past the psychodynamic influence to include biological, social, learning, motivational, and developmental perspectives, to name a few. Contemporary psychologists go beyond philosophical or anecdotal speculation and rely on empirical evidence to inform their conclusions. Similarly, readers will push beyond pre-existing schemas and misconceptions of the field of psychology to an understanding of contemporary quantitative research methods as they are used to predict and test human behavior."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 193
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "923",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

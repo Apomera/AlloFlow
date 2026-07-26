@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1140-forall-x-dortmund",
+  "title": "forall x: Dortmund",
+  "description": "forall x: Dortmund is an adaptation and German translation of forall x: Calgary. As such, it is a full-featured textbook on formal logic. It covers key notions of logic such as consequence and validity, the syntax of truth-functional (propositional) logic and truth-table semantics, the syntax of first-order (predicate) logic with identity and first-order interpretations, formalizing German in TFL and FOL, and Fitch-style natural deduction proof systems for both TFL and FOL. It also deals with some advanced topics such as the syntax and (Kripke-)semantics of modal logic. The book is provided in PDF and in LaTeX source code. A booklet with solutions for all exercises in the book is available.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Philosophy"
+  ],
+  "authors": [
+    "Simon Wimmer - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Simpson University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/forall-x-dortmund"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "forall x: Dortmund is an adaptation and German translation of forall x: Calgary. As such, it is a full-featured textbook on formal logic. It covers key notions of logic such as consequence and validity, the syntax of truth-functional (propositional) logic and truth-table semantics, the syntax of first-order (predicate) logic with identity and first-order interpretations, formalizing German in TFL and FOL, and Fitch-style natural deduction proof systems for both TFL and FOL. It also deals with some advanced topics such as the syntax and (Kripke-)semantics of modal logic. The book is provided in PDF and in LaTeX source code. A booklet with solutions for all exercises in the book is available."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 133
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1140",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

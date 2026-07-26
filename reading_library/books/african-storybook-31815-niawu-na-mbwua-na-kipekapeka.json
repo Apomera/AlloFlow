@@ -1,0 +1,190 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-31815-niawu-na-mbwua-na-kipekapeka",
+  "title": "Niawu na mbwua na kipekapeka",
+  "description": "Niawu na bwua bakotala na ezibeli. Tango bakotala na ezibeli, niawu na bwua bamoni kipekapeka.",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Elke and René Leisink"
+  ],
+  "illustrators": [
+    "Elke and René Leisink"
+  ],
+  "translators": [
+    "Theresa Nyemba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Elke and René Leisink",
+      "role": "Author"
+    },
+    {
+      "name": "Theresa Nyemba",
+      "role": "Translation"
+    },
+    {
+      "name": "Elke and René Leisink",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Elke and René Leisink (Author); Theresa Nyemba (Translation); Elke and René Leisink (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "31815",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-07a4efab09389bf9",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/25582.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25584.png",
+      "text": "Oyo ezali niawu. Oyo ezali mbwua.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=1",
+      "sourceDigest": "sha256:ee65a80113d010388e983d38d4212de475ae95f7cf161d6c3a369b6b7750ae01"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25585.png",
+      "text": "Niawu na mbwua bakotala na ezibeli. Bakotala na ezibeli.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=2",
+      "sourceDigest": "sha256:8cceb95ed60c87cc65b9bc50569f21553a4c75bfe1ff1fa493c0bcb99861a735"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25586.png",
+      "text": "Bongo niawu na mbwua bamoni kipekapeka. Kipekapeka ezali langi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=3",
+      "sourceDigest": "sha256:9e27796fc33d5924e16563b50ca7da3a34b44ff29a9015c4657e7b039b05313f"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25587.png",
+      "text": "Niawu na mbwua balingi kokanga kipekapeka. Niawu na mbwua balandi kipekapeka. Balandi kipekapeka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=4",
+      "sourceDigest": "sha256:6ffc17547fb08c3c54fe3b98411e1aafff3c78dd8df57048349e76d8c506d8dc"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25588.png",
+      "text": "Niawu na mbwua balandi kipekapeka na makolo. Bakotambola sima ya kipekapeka. Kasi kipekapeka akimi bango penza. Kipekapeka akimi bango penza kasi niawu na mbwua bazali kotambola malembe. Bazali kotambola malembe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=5",
+      "sourceDigest": "sha256:21ec8dba5ff5ede28263c05cfa6c245c29fe6529169dc16386ee1dcfbf03e283"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25589.png",
+      "text": "Niawu na mbwua bakolanda kipekapeka na mbangu. Bakolanda kipekapeka mbangu. Kasi kipekapeka aleki bango na mbangu. Kipekapeka azali kopumbwa mbangu, niawu na mbwua bazali kotambola malembe. Bazali kotambola malembe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=6",
+      "sourceDigest": "sha256:0cc52a9b04d1ec6f8e8dda69fe521501d5dbb1bdc1ef16455f21e954dc03cfaa"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25590.png",
+      "text": "Niawu na mbwua balandi kipekapeka na motuka. Bakopusa na sima ya kipekapeka. Kasi kipekapeka akopumbwa mbangu. Kipekapeka akopumbwa kaka mbangu, niawu na mbwua bakotambola malembe. Bango bazali kotambola malembe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=7",
+      "sourceDigest": "sha256:0097d55b4be8640239614a5a211553d54a41d23272b7892a1c13a44543cae0ed"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25591.png",
+      "text": "Niawu na bwua balandi kipekapeka na bwato. Bakwei na sima ya kipekapeka. Kasi kipekapeka aza bangu. Kipekapeka azali na bangu moko koleka, bongo niawu na mbwua bazali kotambola malembe. Bazali penza kotambola malembe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=8",
+      "sourceDigest": "sha256:f71e324a34bd3c19078d15c517bf51d9949e14af5feb1eecd009f1791a2844ed"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25592.png",
+      "text": "Niawu na mbwua balandi kipekapeka na nzela ya pepo. Ba pumbwe sima ya kipekapeka. Kasi kipekapeka aza pumbwa mbangu. Kipekapeka azali na mbangu moko koleka. Bango bazali kotambola malembe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=9",
+      "sourceDigest": "sha256:796159b35ba327546f221a7c5cd57ca7931ff47c1c9f04a74c6567f8bbbfa861"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25593.png",
+      "text": "Bongo niawu na mbwua batelemi. Batelemi pe bavandi. Bavandi na nse ya nzete. Bavandi na nse ya nzete ya monene. Kasi na sima...",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=10",
+      "sourceDigest": "sha256:52c780f165cdedd55962667077b4f6c43cdd45b4b04856df9a4a22ee6a8b06d6"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25594.png",
+      "text": "Bamoni kipekapeka moko likolo ya nzete. Bamoni ba kipekapeka mibale likolo ya nzete. Bamoni ba kipekapeka misato likolo ya nzete.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=11",
+      "sourceDigest": "sha256:376425d85c601f3cefb8d74daefdf7e3e14ac92e737f7e88b9067447ae5b1710"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25595.png",
+      "text": "Bamoni ba kipekapeka mokama.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=12",
+      "sourceDigest": "sha256:e3b72d814a03e7d1a7ca5a7e0e9fec6a5b81005087d1a48afea1e47023e259c0"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25596.png",
+      "text": "Tokende malamu niawu. Tokende malamu mbwua. Tokende malamu kipekapeka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=13",
+      "sourceDigest": "sha256:3e92d81aab09eaa1ec9142ce9517ff62802366138a5842ce8fc21a0b089c021c"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18782.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31815#page=14",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 243
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:41c3809941a604895a3c1aa42dde57565116daeb98e334601176ae219b9b6e48"
+  }
+}

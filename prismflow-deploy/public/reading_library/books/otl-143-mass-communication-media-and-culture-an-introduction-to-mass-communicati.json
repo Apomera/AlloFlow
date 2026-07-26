@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-143-mass-communication-media-and-culture-an-introduction-to-mass-communicati",
+  "title": "Mass Communication, Media, and Culture - An Introduction to Mass Communication",
+  "description": "According to the author, the world did not need another introductory text in mass communication. But the world did need another kind of introductory text in mass communication, and that is how Understanding Media and Culture: An Introduction to Mass Communication was birthed. The only question was: What would be the purpose of another introductory mass communication text? Understanding Media and Culture: An Introduction to Mass Communication was written to squarely emphasize media technology. The author believes that an introduction to mass communication text should be a compelling, historical narrative sketching the *ongoing evolution* of media technology and how that technology shapes and is shaped by culture — and that is what he set out to deliver with his new textbook. Today's students are immersed in media technology. They live in a world of cell phones, smart phones, video games, iPods, laptops, Facebook, Twitter, FourSquare, and more. They fully expect that new technology will be developed tomorrow. Yet students often lack an historical perspective on media technology. They lack knowledge of the social, political and economic forces that shape media technology. This is not knowledge for knowledge's sake. It is knowledge that can help them understand, comprehend, appreciate, anticipate, shape and control media technology. With this focus, Understanding Media and Culture becomes an appropriate title. Indeed, the title has particular significance. Marshall McLuhan's Understanding Media is a key text in media studies. Written in the 1960s, Understanding Media was the subject of intense debates that continue to this day. Its central message was that the technology of media — not their content — was their most important feature. In a typically pithy phrase, McLuhan said, \"The medium is the message.\" The title, Understanding Media and Culture: An Introduction to Mass Communication, situates the introductory text in a large, engrossing theoretical conversation. The goal is to adopt a textbook that will support and complement your teaching of this course. Understanding Media and Culture: An Introduction to Mass Communication will support an engaging and interesting course experience for students that will not only show them the powerful social, political and economic forces will affect the future of media technology, but will challenge students to do their part in shaping that future.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Journalism, Media Studies & Communications - New Media Journalism"
+  ],
+  "authors": [
+    "Open Textbook Library record"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Minnesota Libraries Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/understanding-media-and-culture-an-introduction-to-mass-communication"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "According to the author, the world did not need another introductory text in mass communication. But the world did need another kind of introductory text in mass communication, and that is how Understanding Media and Culture: An Introduction to Mass Communication was birthed. The only question was: What would be the purpose of another introductory mass communication text? Understanding Media and Culture: An Introduction to Mass Communication was written to squarely emphasize media technology. The author believes that an introduction to mass communication text should be a compelling, historical narrative sketching the *ongoing evolution* of media technology and how that technology shapes and is shaped by culture — and that is what he set out to deliver with his new textbook. Today's students are immersed in media technology. They live in a world of cell phones, smart phones, video games, iPods, laptops, Facebook, Twitter, FourSquare, and more. They fully expect that new technology will be developed tomorrow. Yet students often lack an historical perspective on media technology. They lack knowledge of the social, political and economic forces that shape media technology. This is not knowledge for knowledge's sake. It is knowledge that can help them understand, comprehend, appreciate, anticipate, shape and control media technology. With this focus, Understanding Media and Culture becomes an appropriate title. Indeed, the title has particular significance. Marshall McLuhan's Understanding Media is a key text in media studies. Written in the 1960s, Understanding Media was the subject of intense debates that continue to this day. Its central message was that the technology of media — not their content — was their most important feature. In a typically pithy phrase, McLuhan said, \"The medium is the message.\" The title, Understanding Media and Culture: An Introduction to Mass Communication, situates the introductory text in a large, engrossing theoretical conversation. The goal is to adopt a textbook that will support and complement your teaching of this course. Understanding Media and Culture: An Introduction to Mass Communication will support an engaging and interesting course experience for students that will not only show them the powerful social, political and economic forces will affect the future of media technology, but will challenge students to do their part in shaping that future."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 392
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "143",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

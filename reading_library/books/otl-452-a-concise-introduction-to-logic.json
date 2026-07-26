@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-452-a-concise-introduction-to-logic",
+  "title": "A Concise Introduction to Logic",
+  "description": "A Concise Introduction to Logic is an introduction to formal logic suitable for undergraduates taking a general education course in logic or critical thinking, and is accessible and useful to any interested in gaining a basic understanding of logic. This text takes the unique approach of teaching logic through intellectual history; the author uses examples from important and celebrated arguments in philosophy to illustrate logical principles. The text also includes a basic introduction to findings of advanced logic. As indicators of where the student could go next with logic, the book closes with an overview of advanced topics, such as the axiomatic method, set theory, Peano arithmetic, and modal logic. Throughout, the text uses brief, concise chapters that readers will find easy to read and to review.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Philosophy"
+  ],
+  "authors": [
+    "Craig DeLancey - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open SUNY",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-concise-introduction-to-logic"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A Concise Introduction to Logic is an introduction to formal logic suitable for undergraduates taking a general education course in logic or critical thinking, and is accessible and useful to any interested in gaining a basic understanding of logic. This text takes the unique approach of teaching logic through intellectual history; the author uses examples from important and celebrated arguments in philosophy to illustrate logical principles. The text also includes a basic introduction to findings of advanced logic. As indicators of where the student could go next with logic, the book closes with an overview of advanced topics, such as the axiomatic method, set theory, Peano arithmetic, and modal logic. Throughout, the text uses brief, concise chapters that readers will find easy to read and to review."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 150
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "452",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-644-delftse-foundations-of-computation-2nd-edition",
+  "title": "Delftse Foundations of Computation - 2nd Edition",
+  "description": "DELFTSE FOUNDATIONS OF COMPUTATION is a textbook for a one-quarter introductory course in theoretical computer science. It includes top-ics from propositional and predicate logic, proof techniques, discrete structures, set theory and the theory of computation, along with practical applications to computer science. It has no prerequisites other than a general familiarity with computer programming. This book is derived from Foundations of Computation by Carol Critchlow and David Eck, Version 2.3 (Summer 2011), which is licensed under CC BYNC-SA 4.0. Critchlow and Eck are not associated with the TU Delft editions. This book also uses some material from Wikipedia (English) (en.wikipedia. org), which is licensed under CC BY-SA 3.0. The authors of the TU Delft editions are responsible for any errors, and welcome bug reports and suggestions by email or in person. Thanks to M. de Jong, T. Klos, I. van Kreveld, F. Mulder, H. Tonino, E. Walraven, and all students who reported bugs or provided exercise solutions. This work can be redistributed in unmodified form, or in modified form with proper attribution and under the same licence as the original, for noncommercial uses only, as specified by the Creative Commons Attribution-Noncommercial-ShareAlike 4.0 Licence (creativecommons.org/licenses/by-ncsa/4.0/).",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science"
+  ],
+  "authors": [
+    "Stefan Hugtenburg - Author / Neil Yorke-Smith - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "TU Delft Open",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/delftse-foundations-of-computation"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "DELFTSE FOUNDATIONS OF COMPUTATION is a textbook for a one-quarter introductory course in theoretical computer science. It includes top-ics from propositional and predicate logic, proof techniques, discrete structures, set theory and the theory of computation, along with practical applications to computer science. It has no prerequisites other than a general familiarity with computer programming. This book is derived from Foundations of Computation by Carol Critchlow and David Eck, Version 2.3 (Summer 2011), which is licensed under CC BYNC-SA 4.0. Critchlow and Eck are not associated with the TU Delft editions. This book also uses some material from Wikipedia (English) (en.wikipedia. org), which is licensed under CC BY-SA 3.0. The authors of the TU Delft editions are responsible for any errors, and welcome bug reports and suggestions by email or in person. Thanks to M. de Jong, T. Klos, I. van Kreveld, F. Mulder, H. Tonino, E. Walraven, and all students who reported bugs or provided exercise solutions. This work can be redistributed in unmodified form, or in modified form with proper attribution and under the same licence as the original, for noncommercial uses only, as specified by the Creative Commons Attribution-Noncommercial-ShareAlike 4.0 Licence (creativecommons.org/licenses/by-ncsa/4.0/)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2022."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 217
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "644",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

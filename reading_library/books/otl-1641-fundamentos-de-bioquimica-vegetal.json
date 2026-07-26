@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1641-fundamentos-de-bioquimica-vegetal",
+  "title": "Fundamentos de Bioquímica Vegetal",
+  "description": "Se establecen los principios bioquímicos fundamentales que rigen el desarrollo de las plantas, explorando la composición y estructura de sus células. Además, se aborda la fotosíntesis como un proceso metabólico esencial. El metabolismo de biomoléculas, que incluye el transporte de nutrientes y la síntesis de carbohidratos, lípidos, proteínas y otros compuestos, es analizado en profundidad. Asimismo, se abordan temáticas cruciales como la respiración celular en plantas, la biosíntesis de metabolitos secundarios y el papel de las hormonas vegetales en el crecimiento y desarrollo. La enzimología vegetal, con énfasis en la cinética enzimática, se presenta como un componente esencial del metabolismo vegetal. Además, se examinan los mecanismos de defensa de las plantas frente al estrés abiótico y biótico, abordando la morfogénesis y los desafíos que enfrentan las plantas en su entorno. El libro concluye con una visión hacia el futuro en la investigación de la bioquímica vegetal.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Earth Sciences",
+    "Mathematics"
+  ],
+  "authors": [
+    "María de Lourdes Correa-Salgado - Author / Robinson Jasmany Herrera-Feijoo - Author / Clara Isabel Ruiz-Sánchez - Author / Santiago Alexander Guamán-Rivera - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/fundamentos-de-bioquimica-vegetal"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Se establecen los principios bioquímicos fundamentales que rigen el desarrollo de las plantas, explorando la composición y estructura de sus células. Además, se aborda la fotosíntesis como un proceso metabólico esencial. El metabolismo de biomoléculas, que incluye el transporte de nutrientes y la síntesis de carbohidratos, lípidos, proteínas y otros compuestos, es analizado en profundidad. Asimismo, se abordan temáticas cruciales como la respiración celular en plantas, la biosíntesis de metabolitos secundarios y el papel de las hormonas vegetales en el crecimiento y desarrollo. La enzimología vegetal, con énfasis en la cinética enzimática, se presenta como un componente esencial del metabolismo vegetal. Además, se examinan los mecanismos de defensa de las plantas frente al estrés abiótico y biótico, abordando la morfogénesis y los desafíos que enfrentan las plantas en su entorno. El libro concluye con una visión hacia el futuro en la investigación de la bioquímica vegetal."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 169
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1641",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

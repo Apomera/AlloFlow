@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1409-leveraging-data-visualization-to-communicate-effectively",
+  "title": "Leveraging Data Visualization to Communicate Effectively",
+  "description": "This textbook introduces students to the principles of effective data visualization and how to use visualization techniques to effectively communicate information and insights. Additionally, it shares presentation strategies to address communication gaps that could arise if the visualized data does not have the proper context and labeling. Students will learn how to select appropriate chart types and design effective visualizations that clearly convey data patterns and trends, to support data-driven decisions. The textbook also covers best practices for labeling, scaling, and annotating visualizations, as well as techniques for avoiding common pitfalls and biases in data visualization. Through hands-on exercises and projects, students will have the opportunity to practice creating a variety of visualizations using tools such as Excel, Power Business Intelligence (BI) and several problem-solving tools like Ishikawa, SWOT, PEST/LE, decision tree and more. Students will be able to process, analyze and visualize data to evaluate patterns and trends, and learn ways to communicate more effectively regardless of the setting or the type of audience.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Management"
+  ],
+  "authors": [
+    "Jennie L. Mitchell - Author / Trent Deckard - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "PALNI",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/leveraging-data-visualization-to-communicate-effectively"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This textbook introduces students to the principles of effective data visualization and how to use visualization techniques to effectively communicate information and insights. Additionally, it shares presentation strategies to address communication gaps that could arise if the visualized data does not have the proper context and labeling. Students will learn how to select appropriate chart types and design effective visualizations that clearly convey data patterns and trends, to support data-driven decisions. The textbook also covers best practices for labeling, scaling, and annotating visualizations, as well as techniques for avoiding common pitfalls and biases in data visualization. Through hands-on exercises and projects, students will have the opportunity to practice creating a variety of visualizations using tools such as Excel, Power Business Intelligence (BI) and several problem-solving tools like Ishikawa, SWOT, PEST/LE, decision tree and more. Students will be able to process, analyze and visualize data to evaluate patterns and trends, and learn ways to communicate more effectively regardless of the setting or the type of audience."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 188
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1409",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

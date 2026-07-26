@@ -381,6 +381,26 @@
         <button class="quiet" id="demoTemplateDeleteBtn" disabled>Delete template</button>
         <button class="quiet" id="demoTemplateUndoDeleteBtn" hidden disabled>Undo delete</button>
       </div>
+      <div class="row" style="margin:0 0 8px" aria-label="Portable tutorial template library">
+        <button class="quiet" id="demoTemplateExportBtn" disabled>Export selected</button>
+        <button class="quiet" id="demoTemplateExportAllBtn" disabled>Export library</button>
+        <button class="quiet" id="demoTemplateImportBtn">Import templates…</button>
+        <input type="file" id="demoTemplateImportInput" accept="application/json,.json" hidden>
+        <span class="status" id="demoTemplateTransferStatus" role="status" aria-live="polite" style="margin-top:0">Portable JSON packs stay local until you choose a file.</span>
+      </div>
+      <div id="demoTemplateImportReview" hidden style="border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:0 0 8px" aria-label="Tutorial template import review">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <strong>Review template import</strong>
+            <span class="status" id="demoTemplateImportReviewStatus" style="display:block;margin-top:2px">Nothing has been imported yet.</span>
+          </div>
+          <div class="row">
+            <button class="action" id="demoTemplateImportApplyBtn" disabled>Import reviewed templates</button>
+            <button class="quiet" id="demoTemplateImportCancelBtn">Cancel</button>
+          </div>
+        </div>
+        <div id="demoTemplateImportReviewList"></div>
+      </div>
       <p class="status" id="demoTemplateSafety" style="margin:-2px 0 8px">Saved templates are independent, editable copies. Video Studio revalidates their commands against the current AlloFlow window before recording.</p>
       <div class="row" style="margin:0 0 8px">
         <button class="quiet" id="demoOfficialTextBtn">Use official Text Adaptation tutorial</button>
@@ -10915,8 +10935,15 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var DEMO_CONTINUATION_KEY = 'vs_demo_continuation_v1';
   var DEMO_CONTINUATION_MAX_AGE = 12 * 60 * 60 * 1000;
   var DEMO_TEMPLATE_KEY = 'vs_demo_templates_v1';
+  var DEMO_TEMPLATE_TRASH_KEY = 'vs_demo_template_trash_v1';
+  var DEMO_TEMPLATE_TRASH_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+  var DEMO_TEMPLATE_PACK_TYPE = 'alloflow-demo-template-pack';
+  var DEMO_TEMPLATE_PACK_VERSION = 1;
+  var DEMO_TEMPLATE_PACK_MAX_BYTES = 1024 * 1024;
   var demoTemplates = [];
   var deletedDemoTemplate = null;
+  var demoTemplateImportReview = null;
+  var demoTemplateImportBusy = false;
   var demoState = { steps: null, originalSteps: null, activeSteps: [], active: false, activePolish: null, activeSeriesId: null, activeSeriesPart: 1, seriesId: null, seriesPart: 1, events: [], running: false, rehearsing: false, abandoned: false, voice: '', previousMicOn: null, officialId: null, preflightOk: false, commandReport: null, preflightVersion: 0, restoringDraft: false, continuation: null };
   var demoPreflightController = null;
   var demoStartPending = false;
@@ -11060,24 +11087,258 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       savedAt: Math.max(0, Number(t.savedAt) || Date.now())
     };
   }
+  function cleanDeletedDemoTemplate(value) {
+    var row = value && typeof value === 'object' ? value : {};
+    var item = cleanDemoTemplate(row.item);
+    if (!item) return null;
+    var now = Date.now();
+    var deletedAt = Math.max(0, Math.min(now, Number(row.deletedAt) || now));
+    if (now - deletedAt > DEMO_TEMPLATE_TRASH_MAX_AGE) return null;
+    return { item: item, index: Math.max(0, Math.round(Number(row.index) || 0)), deletedAt: deletedAt };
+  }
   function readDemoTemplates() {
     var rows = [];
     try { rows = JSON.parse(localStorage.getItem(DEMO_TEMPLATE_KEY) || '[]'); } catch (_) {}
     demoTemplates = (Array.isArray(rows) ? rows : []).map(cleanDemoTemplate).filter(Boolean).slice(0, 24);
     return demoTemplates;
   }
-  function writeDemoTemplates() {
-    try { localStorage.setItem(DEMO_TEMPLATE_KEY, JSON.stringify(demoTemplates.slice(0, 24))); return true; } catch (_) { return false; }
+  function readDeletedDemoTemplate() {
+    var row = null;
+    try { row = JSON.parse(localStorage.getItem(DEMO_TEMPLATE_TRASH_KEY) || 'null'); } catch (_) {}
+    deletedDemoTemplate = cleanDeletedDemoTemplate(row);
+    if (!deletedDemoTemplate) {
+      try { localStorage.removeItem(DEMO_TEMPLATE_TRASH_KEY); } catch (_) {}
+    }
+    return deletedDemoTemplate;
   }
-  function uniqueDemoTemplateName(base) {
+  function writeDemoTemplates(nextTemplates) {
+    var rows = Array.isArray(nextTemplates) ? nextTemplates : demoTemplates;
+    try { localStorage.setItem(DEMO_TEMPLATE_KEY, JSON.stringify(rows.slice(0, 24))); return true; } catch (_) { return false; }
+  }
+  function restoreDemoTemplateStorageValue(key, value) {
+    if (value == null) localStorage.removeItem(key);
+    else localStorage.setItem(key, value);
+  }
+  function writeDemoTemplateState(nextTemplates, nextDeleted) {
+    var priorTemplates = null, priorDeleted = null, captured = false;
+    try {
+      priorTemplates = localStorage.getItem(DEMO_TEMPLATE_KEY);
+      priorDeleted = localStorage.getItem(DEMO_TEMPLATE_TRASH_KEY);
+      captured = true;
+      localStorage.setItem(DEMO_TEMPLATE_KEY, JSON.stringify((nextTemplates || []).slice(0, 24)));
+      if (nextDeleted) localStorage.setItem(DEMO_TEMPLATE_TRASH_KEY, JSON.stringify(nextDeleted));
+      else localStorage.removeItem(DEMO_TEMPLATE_TRASH_KEY);
+      return true;
+    } catch (_) {
+      if (captured) {
+        try {
+          restoreDemoTemplateStorageValue(DEMO_TEMPLATE_KEY, priorTemplates);
+          restoreDemoTemplateStorageValue(DEMO_TEMPLATE_TRASH_KEY, priorDeleted);
+        } catch (_) {}
+      }
+      return false;
+    }
+  }
+  function uniqueDemoTemplateName(base, library) {
     var root = (String(base || 'Tutorial template').trim().slice(0, 70) || 'Tutorial template');
-    var names = demoTemplates.map(function (item) { return item.name.toLowerCase(); });
+    var rows = Array.isArray(library) ? library : demoTemplates;
+    var names = rows.map(function (item) { return item.name.toLowerCase(); });
     if (names.indexOf(root.toLowerCase()) < 0) return root;
     for (var i = 2; i < 100; i++) {
       var candidate = (root + ' ' + i).slice(0, 80);
       if (names.indexOf(candidate.toLowerCase()) < 0) return candidate;
     }
     return (root + ' ' + Date.now().toString(36)).slice(0, 80);
+  }
+  function uniqueDemoTemplateId(candidate, library) {
+    var rows = Array.isArray(library) ? library : demoTemplates;
+    var requested = String(candidate || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 60);
+    if (requested && !rows.some(function (item) { return item.id === requested; })) return requested;
+    var id = '';
+    do { id = ('tpl_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).slice(0, 60); }
+    while (rows.some(function (item) { return item.id === id; }));
+    return id;
+  }
+  function demoTemplateLibrarySignature(library) {
+    return JSON.stringify((Array.isArray(library) ? library : demoTemplates).map(function (item) { return [item.id, item.name, item.savedAt]; }));
+  }
+  function buildDemoTemplatePack(items) {
+    var templates = (Array.isArray(items) ? items : []).map(cleanDemoTemplate).filter(Boolean).slice(0, 24);
+    return {
+      type: DEMO_TEMPLATE_PACK_TYPE,
+      version: DEMO_TEMPLATE_PACK_VERSION,
+      exportedAt: new Date().toISOString(),
+      templates: templates
+    };
+  }
+  function parseDemoTemplatePack(text) {
+    var raw = null;
+    try { raw = JSON.parse(String(text || '')); }
+    catch (_) { throw new Error('That file is not valid JSON.'); }
+    if (!raw || raw.type !== DEMO_TEMPLATE_PACK_TYPE) throw new Error('That file is not an AlloFlow tutorial template pack.');
+    if (Number(raw.version) !== DEMO_TEMPLATE_PACK_VERSION) throw new Error('This tutorial template pack version is not supported.');
+    if (!Array.isArray(raw.templates) || !raw.templates.length) throw new Error('That pack does not contain any tutorial templates.');
+    if (raw.templates.length > 24) throw new Error('A tutorial template pack can contain at most 24 templates.');
+    return raw.templates.map(function (value, index) {
+      var template = cleanDemoTemplate(value);
+      if (!template) throw new Error('Template ' + (index + 1) + ' has no usable command steps.');
+      return template;
+    });
+  }
+  function planDemoTemplateImport(items) {
+    var sources = (Array.isArray(items) ? items : []).map(cleanDemoTemplate).filter(Boolean);
+    if (!sources.length) throw new Error('That pack does not contain any usable tutorial templates.');
+    if (demoTemplates.length + sources.length > 24) {
+      throw new Error('The complete pack will not fit. This library has room for ' + Math.max(0, 24 - demoTemplates.length) + ' more template' + (24 - demoTemplates.length === 1 ? '' : 's') + '; nothing was imported.');
+    }
+    var reserved = demoTemplates.slice();
+    return sources.map(function (source, index) {
+      var template = cleanDemoTemplate(source);
+      var originalName = template.name;
+      var originalId = template.id;
+      template.name = uniqueDemoTemplateName(template.name, reserved);
+      template.id = uniqueDemoTemplateId(template.id, reserved);
+      template.savedAt = Date.now() + index;
+      reserved.push(template);
+      return { template: template, originalName: originalName, renamed: template.name !== originalName, idChanged: template.id !== originalId };
+    });
+  }
+  function clearDemoTemplateImportReview() {
+    demoTemplateImportReview = null;
+    $('demoTemplateImportReview').hidden = true;
+    $('demoTemplateImportReviewList').innerHTML = '';
+    $('demoTemplateImportApplyBtn').disabled = true;
+    syncDemoTemplateControls();
+  }
+  function renderDemoTemplateImportReview(items, fileName) {
+    var sources = (Array.isArray(items) ? items : []).map(cleanDemoTemplate).filter(Boolean);
+    var planned = planDemoTemplateImport(sources);
+    demoTemplateImportReview = {
+      sourceItems: sources,
+      planned: planned,
+      signature: demoTemplateLibrarySignature(),
+      fileName: String(fileName || 'template pack').slice(0, 120)
+    };
+    var panel = $('demoTemplateImportReview');
+    var list = $('demoTemplateImportReviewList');
+    list.innerHTML = '';
+    panel.hidden = false;
+    var renamedCount = planned.filter(function (row) { return row.renamed; }).length;
+    $('demoTemplateImportReviewStatus').textContent = planned.length + ' template' + (planned.length === 1 ? '' : 's') + ' ready from ' + demoTemplateImportReview.fileName + '. Nothing changes until you import.' + (renamedCount ? ' ' + renamedCount + ' duplicate name' + (renamedCount === 1 ? ' will be' : 's will be') + ' renamed.' : '');
+    planned.forEach(function (row) {
+      var template = row.template;
+      var card = document.createElement('div');
+      card.style.cssText = 'border-top:1px solid var(--line);padding:8px 0';
+      var title = document.createElement('strong');
+      title.textContent = template.name;
+      card.appendChild(title);
+      var summary = document.createElement('p');
+      summary.className = 'status';
+      summary.style.margin = '3px 0 0';
+      summary.textContent = template.steps.length + ' reviewed command step' + (template.steps.length === 1 ? '' : 's') + ' · ' + (template.audioMode.indexOf('auto-') === 0 ? 'Automatic voice: ' + template.audioMode.slice(5) : template.audioMode) + ' · ' + (template.polish.openingEnabled ? 'opening title' : 'no opening title') + ' · ' + (template.polish.closingEnabled ? 'closing card' : 'no closing card');
+      card.appendChild(summary);
+      var commands = document.createElement('p');
+      commands.className = 'status';
+      commands.style.margin = '3px 0 0';
+      commands.textContent = 'Commands: ' + template.steps.map(function (step) { return step.label || step.commandId; }).join(' → ');
+      card.appendChild(commands);
+      var narration = document.createElement('p');
+      narration.className = 'status';
+      narration.style.margin = '3px 0 0';
+      narration.textContent = 'Narration: ' + template.steps.map(function (step) { return step.script || defaultDemoStepScript(step); }).join(' | ');
+      card.appendChild(narration);
+      var parameterLines = template.steps.map(function (step) {
+        var keys = Object.keys(step.params || {});
+        return keys.length ? ((step.label || step.commandId) + ': ' + keys.map(function (key) { return key + '=' + String(step.params[key]); }).join(', ')) : '';
+      }).filter(Boolean);
+      if (parameterLines.length) {
+        var parameters = document.createElement('p');
+        parameters.className = 'status';
+        parameters.style.margin = '3px 0 0';
+        parameters.textContent = 'Parameters: ' + parameterLines.join(' | ');
+        card.appendChild(parameters);
+      }
+      var goal = document.createElement('p');
+      goal.className = 'status';
+      goal.style.margin = '3px 0 0';
+      goal.textContent = template.goal ? ('Goal: ' + template.goal) : 'Goal: not included';
+      card.appendChild(goal);
+      if (row.renamed) {
+        var rename = document.createElement('p');
+        rename.className = 'status';
+        rename.style.margin = '3px 0 0';
+        rename.textContent = 'Name collision: “' + row.originalName + '” will import as “' + template.name + '”.';
+        card.appendChild(rename);
+      }
+      list.appendChild(card);
+    });
+    syncDemoTemplateControls();
+    $('demoTemplateImportApplyBtn').focus();
+  }
+  function exportDemoTemplatePack(selectedOnly) {
+    if (demoTemplateMutationLocked()) return;
+    var selected = demoTemplates.find(function (item) { return item.id === $('demoTemplateSelect').value; });
+    var rows = selectedOnly ? (selected ? [selected] : []) : demoTemplates.slice();
+    if (!rows.length) {
+      setStatus($('demoTemplateTransferStatus'), selectedOnly ? 'Select a tutorial template to export.' : 'Save or import a tutorial template before exporting the library.', 'warn');
+      return;
+    }
+    var pack = buildDemoTemplatePack(rows);
+    var filename = selectedOnly ? (safeName(rows[0].name) + '_tutorial_template.json') : 'alloflow_tutorial_template_library.json';
+    downloadBlobFile(new Blob([JSON.stringify(pack, null, 2)], { type: 'application/json;charset=utf-8' }), filename);
+    setStatus($('demoTemplateTransferStatus'), 'Exported ' + rows.length + ' sanitized tutorial template' + (rows.length === 1 ? '' : 's') + '. No video or audio files were included. Review template text and parameters before sharing.', 'ok');
+    announce('Tutorial template pack exported');
+  }
+  function reviewDemoTemplatePackFile(file) {
+    if (!file || demoTemplateMutationLocked()) return;
+    var looksJson = /\.json$/i.test(file.name || '') || /json/i.test(file.type || '');
+    if (!looksJson) { setStatus($('demoTemplateTransferStatus'), 'Choose an AlloFlow tutorial template JSON file.', 'warn'); return; }
+    if (Number(file.size) > DEMO_TEMPLATE_PACK_MAX_BYTES) { setStatus($('demoTemplateTransferStatus'), 'That template pack is larger than 1 MB, so it was not opened.', 'bad'); return; }
+    demoTemplateImportBusy = true;
+    syncDemoTemplateControls();
+    setStatus($('demoTemplateTransferStatus'), 'Reading ' + String(file.name || 'template pack').slice(0, 120) + ' locally…');
+    file.text().then(function (text) {
+      var items = parseDemoTemplatePack(text);
+      renderDemoTemplateImportReview(items, file.name);
+      setStatus($('demoTemplateTransferStatus'), 'Review the sanitized template details below. The current plan and library are unchanged.', 'ok');
+    }).catch(function (error) {
+      clearDemoTemplateImportReview();
+      setStatus($('demoTemplateTransferStatus'), 'Template import stopped: ' + String((error && error.message) || error).slice(0, 180) + ' Nothing changed.', 'bad');
+    }).finally(function () {
+      demoTemplateImportBusy = false;
+      syncDemoTemplateControls();
+    });
+  }
+  function applyDemoTemplateImport() {
+    if (demoTemplateMutationLocked() || !demoTemplateImportReview) return;
+    if (demoTemplateImportReview.signature !== demoTemplateLibrarySignature()) {
+      try {
+        var sourceItems = demoTemplateImportReview.sourceItems;
+        var sourceName = demoTemplateImportReview.fileName;
+        renderDemoTemplateImportReview(sourceItems, sourceName);
+        setStatus($('demoTemplateTransferStatus'), 'The template library changed, so the import preview was refreshed. Review it again before importing.', 'warn');
+      } catch (error) {
+        clearDemoTemplateImportReview();
+        setStatus($('demoTemplateTransferStatus'), String((error && error.message) || error).slice(0, 180) + ' Nothing changed.', 'bad');
+      }
+      return;
+    }
+    var planned = demoTemplateImportReview.planned;
+    var nextTemplates = planned.map(function (row) { return row.template; }).concat(demoTemplates);
+    if (!writeDemoTemplates(nextTemplates)) {
+      setStatus($('demoTemplateTransferStatus'), 'The browser could not store that template pack. Nothing changed; the review is still available.', 'bad');
+      return;
+    }
+    demoTemplates = nextTemplates;
+    var first = planned[0].template;
+    var count = planned.length;
+    clearDemoTemplateImportReview();
+    $('demoTemplateName').value = first.name;
+    renderDemoTemplateControls(first.id);
+    setStatus($('demoTemplateTransferStatus'), 'Imported ' + count + ' tutorial template' + (count === 1 ? '' : 's') + ' without overwriting existing templates.', 'ok');
+    setStatus($('demoStatus'), 'Imported tutorial templates. The current plan is unchanged; load one to rerun command readiness before recording.', 'ok');
+    announce(count + ' tutorial templates imported');
+    $('demoTemplateSelect').focus();
   }
   function currentDemoTemplate(name) {
     return cleanDemoTemplate({
@@ -11103,7 +11364,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   function demoTemplateMutationLocked() {
     var recording = !!demoState.running || !!(rec && rec.state !== 'inactive');
-    return recording || !!demoPlanSourceBusy || !!demoScriptDraftBusy || !!demoStartPending || !!demoRehearsePending || !!demoManualPreflightPending;
+    return recording || !!demoPlanSourceBusy || !!demoScriptDraftBusy || !!demoTemplateImportBusy || !!demoStartPending || !!demoRehearsePending || !!demoManualPreflightPending;
   }
   var DEMO_PLAN_EDITOR_STATIC_IDS = ['demoGoal', 'demoAudioMode', 'demoOpeningCardChk', 'demoOpeningTitle', 'demoTransitionStyle', 'demoCursorEmphasisChk', 'demoClosingCardChk', 'demoClosingText', 'demoScriptStyle', 'demoScriptDetail', 'demoPlanResetBtn', 'demoDraftClearBtn', 'demoRepairBtn', 'demoContinueBtn', 'demoContinueEditBtn', 'demoContinuationDismissBtn', 'demoContinuationDismissEditBtn'];
   var DEMO_PLAN_EDITOR_BASE_IDS = ['demoScriptDraftBtn', 'demoPacingFitBtn', 'demoScriptUndoBtn', 'demoScriptRedoBtn'];
@@ -11133,7 +11394,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var locked = demoTemplateMutationLocked();
     select.disabled = locked;
     $('demoTemplateName').disabled = locked;
-    $('demoTemplateSaveBtn').disabled = locked || !hasPlan;
+    $('demoTemplateSaveBtn').disabled = locked || !hasPlan || demoTemplates.length >= 24;
     $('demoDuplicateBtn').disabled = locked || (!hasPlan && !selected);
     $('demoTemplateLoadBtn').disabled = locked || !selected;
     $('demoTemplateDeleteBtn').disabled = locked || !selected;
@@ -11141,6 +11402,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var canUndoDelete = !!(deletedDemoTemplate && deletedDemoTemplate.item);
     undoDelete.hidden = !canUndoDelete;
     undoDelete.disabled = locked || !canUndoDelete;
+    undoDelete.title = canUndoDelete ? ('Restore “' + deletedDemoTemplate.item.name + '” — available for seven days after deletion.') : '';
+    $('demoTemplateExportBtn').disabled = locked || !selected;
+    $('demoTemplateExportAllBtn').disabled = locked || !demoTemplates.length;
+    $('demoTemplateImportBtn').disabled = locked;
+    $('demoTemplateImportApplyBtn').disabled = locked || !demoTemplateImportReview;
+    $('demoTemplateImportCancelBtn').disabled = !!demoTemplateImportBusy;
   }
   function loadDemoTemplate(item) {
     var template = cleanDemoTemplate(item);
@@ -11165,14 +11432,15 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   function saveCurrentDemoTemplate(name, copyPrefix) {
     if (demoTemplateMutationLocked() || !demoState.steps || !demoState.steps.length) return null;
+    if (demoTemplates.length >= 24) { setStatus($('demoStatus'), 'The template library is full. Delete or export a template before saving another one.', 'warn'); return null; }
     var fallback = $('demoGoal').value.trim().replace(/^Official tutorial:\s*/i, '').slice(0, 60) || 'Tutorial template';
     var desired = String(name || fallback).trim();
     if (copyPrefix) desired = 'Copy of ' + desired.replace(/^Copy of\s+/i, '');
     var item = currentDemoTemplate(uniqueDemoTemplateName(desired));
     if (!item) return null;
-    demoTemplates.unshift(item);
-    demoTemplates = demoTemplates.slice(0, 24);
-    if (!writeDemoTemplates()) { demoTemplates.shift(); setStatus($('demoStatus'), 'The browser could not save that tutorial template.', 'warn'); return null; }
+    var nextTemplates = [item].concat(demoTemplates);
+    if (!writeDemoTemplates(nextTemplates)) { setStatus($('demoStatus'), 'The browser could not save that tutorial template. Nothing changed.', 'warn'); return null; }
+    demoTemplates = nextTemplates;
     $('demoTemplateName').value = item.name;
     renderDemoTemplateControls(item.id);
     return item;
@@ -12066,6 +12334,21 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var item = demoTemplates.find(function (row) { return row.id === $('demoTemplateSelect').value; });
     if (item) loadDemoTemplate(item);
   });
+  $('demoTemplateExportBtn').addEventListener('click', function () { exportDemoTemplatePack(true); });
+  $('demoTemplateExportAllBtn').addEventListener('click', function () { exportDemoTemplatePack(false); });
+  $('demoTemplateImportBtn').addEventListener('click', function () { if (!demoTemplateMutationLocked()) $('demoTemplateImportInput').click(); });
+  $('demoTemplateImportInput').addEventListener('change', function () {
+    var file = $('demoTemplateImportInput').files[0];
+    $('demoTemplateImportInput').value = '';
+    reviewDemoTemplatePackFile(file);
+  });
+  $('demoTemplateImportApplyBtn').addEventListener('click', applyDemoTemplateImport);
+  $('demoTemplateImportCancelBtn').addEventListener('click', function () {
+    if (demoTemplateImportBusy) return;
+    clearDemoTemplateImportReview();
+    setStatus($('demoTemplateTransferStatus'), 'Template import cancelled. Nothing changed.', 'ok');
+    $('demoTemplateImportBtn').focus();
+  });
   $('demoDuplicateBtn').addEventListener('click', function () {
     if (demoTemplateMutationLocked()) return;
     var selected = demoTemplates.find(function (row) { return row.id === $('demoTemplateSelect').value; });
@@ -12092,21 +12375,23 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var index = demoTemplates.findIndex(function (row) { return row.id === id; });
     var item = index >= 0 ? demoTemplates[index] : null;
     if (!item) return;
-    var priorTemplates = demoTemplates.slice();
     var deleted = cleanDemoTemplate(item);
     if (!deleted) return;
-    demoTemplates.splice(index, 1);
-    if (!writeDemoTemplates()) {
-      demoTemplates = priorTemplates;
+    var nextTemplates = demoTemplates.slice();
+    nextTemplates.splice(index, 1);
+    var nextDeleted = { item: deleted, index: index, deletedAt: Date.now() };
+    if (!writeDemoTemplateState(nextTemplates, nextDeleted)) {
       renderDemoTemplateControls(id);
       setStatus($('demoStatus'), 'The browser could not delete that tutorial template. Nothing changed.', 'warn');
       return;
     }
-    deletedDemoTemplate = { item: deleted, index: index };
+    demoTemplates = nextTemplates;
+    deletedDemoTemplate = nextDeleted;
+    clearDemoTemplateImportReview();
     $('demoTemplateName').value = '';
     renderDemoTemplateControls('');
-    setStatus($('demoStatus'), 'Deleted tutorial template: ' + item.name + '. The current plan is unchanged; Undo delete is available.', 'ok');
-    announce('Tutorial template deleted. Undo is available.');
+    setStatus($('demoStatus'), 'Deleted tutorial template: ' + item.name + '. The current plan is unchanged; Undo delete remains available for seven days.', 'ok');
+    announce('Tutorial template deleted. Undo is available after reopening Video Studio.');
     $('demoTemplateUndoDeleteBtn').focus();
   });
   $('demoTemplateUndoDeleteBtn').addEventListener('click', function () {
@@ -12116,20 +12401,21 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       return;
     }
     var restored = cleanDemoTemplate(deletedDemoTemplate.item);
-    if (!restored) { deletedDemoTemplate = null; syncDemoTemplateControls(); return; }
-    if (demoTemplates.some(function (row) { return row.id === restored.id; })) restored.id = ('tpl_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)).slice(0, 60);
-    if (demoTemplates.some(function (row) { return row.name.toLowerCase() === restored.name.toLowerCase(); })) restored.name = uniqueDemoTemplateName(restored.name);
+    if (!restored) return;
+    restored.id = uniqueDemoTemplateId(restored.id, demoTemplates);
+    restored.name = uniqueDemoTemplateName(restored.name, demoTemplates);
     var restoreAt = Math.max(0, Math.min(demoTemplates.length, Math.round(Number(deletedDemoTemplate.index) || 0)));
-    var priorTemplates = demoTemplates.slice();
-    demoTemplates.splice(restoreAt, 0, restored);
-    if (!writeDemoTemplates()) {
-      demoTemplates = priorTemplates;
+    var nextTemplates = demoTemplates.slice();
+    nextTemplates.splice(restoreAt, 0, restored);
+    if (!writeDemoTemplateState(nextTemplates, null)) {
       renderDemoTemplateControls('');
       setStatus($('demoStatus'), 'The browser could not restore that tutorial template. Undo is still available.', 'warn');
       $('demoTemplateUndoDeleteBtn').focus();
       return;
     }
+    demoTemplates = nextTemplates;
     deletedDemoTemplate = null;
+    clearDemoTemplateImportReview();
     $('demoTemplateName').value = restored.name;
     renderDemoTemplateControls(restored.id);
     setStatus($('demoStatus'), 'Restored tutorial template: ' + restored.name + '.', 'ok');
@@ -12315,6 +12601,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   $('demoPreflightBtn').addEventListener('click', runManualDemoPreflight);
   $('demoAudioMode').addEventListener('change', function () { demoState.preflightOk = false; saveDemoDraft(); if (demoState.steps) runDemoPreflight(); });
   readDemoTemplates();
+  readDeletedDemoTemplate();
   renderDemoTemplateControls();
   restoreDemoDraft();
   restoreDemoContinuation();

@@ -1,0 +1,170 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-22260-untitled-ti",
+  "title": "ሃፍቲ ዝሓዘ ሰለስተ ሰናዱቕ",
+  "description": "ኣቦይ ሓጎስ ዝተብሃሉ ዓብዪ ወላዲ ምስ ሰለስተ ደቆም ነበሩ፡፡ ቅድሚ ሙሟቶም ዘለዎም ሃፍቲ ንደቆም ከውርስዎም ደለዩ እሞ ሰለስተ ሰናዱቕ ነንሕድሕድኦም ኣዳለዉሎም፡፡",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "ሰለሙን, ተኹሉ ይግዛው"
+  ],
+  "illustrators": [
+    "Adonay Gebru"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "ሰለሙን, ተኹሉ ይግዛው",
+      "role": "Author"
+    },
+    {
+      "name": "Adonay Gebru",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "ሰለሙን, ተኹሉ ይግዛው (Author); Adonay Gebru (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "22260",
+    "bookType": "1",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-b1e58521baa1f99e",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/26153.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26150.png",
+      "text": "ኣቦይ ሓጎስ ዝተብሃሉ ዓብዪ ወላዲ ምስ ሰለስተ ደቆም ነበሩ፡፡ ቅድሚ ሙሟቶም ዘለዎም ሃፍቲ ንደቆም ከውርስዎም ደለዩ እሞ ሰለስተ ሰናዱቕ ነንሕድሕድኦም ኣዳለዉሎም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260#page=1",
+      "sourceDigest": "sha256:0af133dffad75cecfb2992335ff1db04a909c891584fd9143477fafc8922d0a8"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26151.png",
+      "text": "ኣቦይ ሓጎስ ናብ ጎረቤቶም ኣቶ ሃይለ ብምኻድ ኸምዚ በልዎም፤ «ኣነ ዘለኒ ሃፍቲ ንደቀይ ከውርሶም ደልየ ኣለኹ ስለዝዀነ ድማ ሰለስተ ሰናዱቕ ነንሕድሕዲኦም ኣዳልየሎም ኣለኹ፡፡ እዘን ሰለስተ ሰናዱቕ ድሕሪ ሞተይ ኣብ ኢድ ደቀይ ክበፅሓ ይደሊ እየ» በልዎም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260#page=2",
+      "sourceDigest": "sha256:87515e97bdd7c1acc8fbc3057000beb7d0097bbdf338cbe9e673b13c920b6f48"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26152.png",
+      "text": "ድሕሪ ሞት ኣቦይ ሓጎስ ኣቶ ሃይለ ነቶም ሰለስተ ኣሕዋት ይፅውዕዎም እሞ «እዞም ደቀይ ኣቦኹም ንዓኹም ዝኸውን ውርሲ ገዲፎሙልኩም ኣለዉ፡፡ እዚ ውርሲ ድማ በቢ ሽምኩም ዝተፅሓፈለን ሰለስተ ሰናዱቕ እየን ሞ ነናይ ባዕልኹም ውህብቶ ውሰዱ» በልዎም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260#page=3",
+      "sourceDigest": "sha256:bf90f1eeaaea90e90a08e31a3123595172ff01d296a9b0c7250f7a00a430cf83"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26153.png",
+      "text": "እቶም ሰለስተ ኣሕዋት ነናይ ባዕሎም ሳንዱ ወሲዶም ከፊቶም ረኣይዎ፡፡ ናይቲ ቦኽሪ ወዶም ወርቂ ዝሓዘት ሳንዱቕ፣ ናይቲ ካልኣይ ወዶም ሓመድ ዝሓዘት ሳንዱቕ፣ ናይቲ ሳልሳይ ድማ ኩቦ ዝሓዘት ሳንዱቕ ኰይነን ረኸብወን፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260#page=4",
+      "sourceDigest": "sha256:f11baed541fe48e37564ef38df5071299700fc09bdd386856f8c74deeff35a90"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26154.png",
+      "text": "እቲ ወርቂ ዝረኸበ ብጣዕሚ እንትሕጎሰ እቶም ሓመድን ኩቦን ዝረኸቡ ግን ብጓሂ ሕርር በሉ ሞ ክልቲኦም ኰይኖም ነቲ ወርቂ ዝረኸበ ዓብዪ ሓዎም ክበኣስዎን ክጨኻጨኽዎን ጀመሩ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260#page=5",
+      "sourceDigest": "sha256:b0187571a50ab5108bf32ad5e22a5fecbbfc96a284b904895ee45b7b32dd4fba"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26155.png",
+      "text": "ኣቶ ሃይለ ነቶም ሰለስተ ኣሕዋት «ዞም ደቀይ በዚ እማ ክትበኣሱ የብልኩምን፤ ሞንጎኛ ኰይኖም ዝዓርቁ ዓብዪ ወላዲ ኣለዉ እሞ ናባኦም ክወስደኩም» በልዎም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260#page=6",
+      "sourceDigest": "sha256:4da384271b1351346e450b1086425ad2978f74dfbdc2a0641189f4fd7e6dcdd3"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26156.png",
+      "text": "ኣቶ ሃይለ ነዞም ኣሕዋት ናብቶም ዓብዪ ወላዲ ወሰድዎም፡፡ «ከመይ ሓዲርኩም ኣቦይ ግደይ» በሉ ኣቶ ሃይለ፡፡ «እሞ ብዛዕባ ውርሲ ምኽርኹም ክትህቡና ኢና መፂእና ዘለና» በሉዎም፡፡ ኣቦይ ግደይ «ድሓንዶ ሓዲርኩም እንታይ ክሕግዘኩም ትደልዩ?» በሉ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260#page=7",
+      "sourceDigest": "sha256:6d14b26fb91b0e0b5b4fe456c453569932967eb46a4a75dcbee51b74131bdaad"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26157.png",
+      "text": "«እዞም ሰለስተ ኣሕዋት ወላዲኦም ካብዛ ዓለም ብሞት እንትፍለዩ ዝገደፉሎም ውርሲ ነቲ ቦኽሪ ወርቂ ዝመልአ ሳንዱቕ፣ ነቲ ካልኣይ ሓመድ ዝመልአ ሳንዱቕ፣ነቲ ሳልሳይ ድማ ኩቦ ዝመልአ ሳንዱቕ ኣውሪሶምዎም፡፡ ኣብ መንጎኦ ድማ ባእሲ ፈጢሩሎም» በሉ አይተ ሃይለ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260#page=8",
+      "sourceDigest": "sha256:55e4a2dad1a12577b9427ba15ca99b949ef8cb7e5a29d35b94382e1a2196fd67"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26158.png",
+      "text": "ኣቦይ ግደይ «ዞም ደቀይ እቲ ዝተውሃበኩም ውርሻ ብዘይ ምኽንያት ኣይኮነን ፤ ነንሕድሕደኹም ብዝጠቅም መንገዲ እዮም ኣውሪሶምኹም» በሉዎም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260#page=9",
+      "sourceDigest": "sha256:09dd894369fce7fb5b1bf045039ccb7c8c30a6c68400e8a01eedc2991ec460fc"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26159.png",
+      "text": "ኣቦይ ግደይ ብምቕፃል «ኣንታ ወርቂ ዝገደፉልካ ነጋዳይ ክትከውን ፣ ኣንታ ሓመድ ዝገደፉልካ ብሕርሻ ክትናበር እዩ» በልዎም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260#page=10",
+      "sourceDigest": "sha256:dd2eacb250c61229ff8b61415fe0e51d7d9418c51d7a216b48128b8363302beb"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26160.png",
+      "text": "ኣቦይ ግደይ ምኽሮም ብምቕፃል «ኣንታ ኩቦ ዝገደፉልካ ድማ ብምርባሕ እንስሳት ክትነብር ኢሎም ኢዮም፤ ተዓዚብኩም ዶ? ነናይ ባዕልኹም ዝዀነ ሃፍቲ እዮም ገዲፎሙልኩም» በልዎም፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260#page=11",
+      "sourceDigest": "sha256:d92f0c46590d146800e8f5043bad5099c81974f267da87cc67b42580f2785b69"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/26161.png",
+      "text": "እቶም ሰለስተ ኣሕዋት ድሕሪ ምኽሪ ኣቦይ ግደይ የቐንየልና ብምባል ተዓሪቆም ብዓባር ናብ ገዝኦም ተመለሱ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22260#page=12",
+      "sourceDigest": "sha256:f2de1e28765e0ee62945f38aceb40a007c268b7bca57d07c97314663131c07cf"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 299
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:edf16a881eb45edbab9dc90572c121e4140d3da0875748cb8b17246f6b76474f"
+  }
+}

@@ -1,0 +1,211 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-31818-niawu-na-mbwua-bakosala-langi",
+  "title": "Niawu na mbwua bakosala langi",
+  "description": "Niawu na bwua bazali ba baninga. Bazali na esengo ya kozala makambo na bango elongo.",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Elke and René Leisink"
+  ],
+  "illustrators": [
+    "Elke and René Leisink"
+  ],
+  "translators": [
+    "Theresa Nyemba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Elke and René Leisink",
+      "role": "Author"
+    },
+    {
+      "name": "Theresa Nyemba",
+      "role": "Translation"
+    },
+    {
+      "name": "Elke and René Leisink",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Elke and René Leisink (Author); Theresa Nyemba (Translation); Elke and René Leisink (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "31818",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-4684db7f738e8c9c",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/18659.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18660.png",
+      "text": "Oyo niawu na mbwua.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=1",
+      "sourceDigest": "sha256:affcda53f51414a3d4c8a3c4f4a332ea6d0de367b75e97216a75c478ec17caba"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18661.png",
+      "text": "Niawu na mbwua balingi kotonga. Niawu na mbwua balingi langi. Niawu na mbwua balingi bikeko. Mbwua abandi, azui ekomeli na likasa mpe abandi. Kokangisa likasa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=2",
+      "sourceDigest": "sha256:5677a5fd80afa0ab765e0938707823291e51f37f4b25120f1838efa97c8039a4"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18662.png",
+      "text": "Liboso mbwua atongi libungutulu. Libungutulu ezali nzoto ya niawu. Nionso ezali malamu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=3",
+      "sourceDigest": "sha256:2a198714dabe4f37db1ba5d7d299c698e720da3f90de02b6d9c84d677ebe2cd8"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18663.png",
+      "text": "Sima ba tongi triangele moko likolo ya libungutulu. Ba triangele mibale ezali na matoyi pe niawu na ye batongi triangele moko ya moyindu na libungutulu. Triangele ya moyindu ezali na zolo pe niawu na ye bazali nzela likolo ya zolo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=4",
+      "sourceDigest": "sha256:2f6562876404aef30b03c175283051d2123bfc96ca25f02fd6592d1550867b06"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18664.png",
+      "text": "Sika awa ye atongi miso, na miso ya motane ya niawu. Miso ezali na ba mbuma mibale. Miso motané ezali na banzela mibale. Oyo ezali pasi te.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=5",
+      "sourceDigest": "sha256:94e57aebb3b5506d020a3af77f4d6312a7b5c7f2b18162dfb988c711470c0bff"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18665.png",
+      "text": "Sima batongi monoko ya niawu. Monoko ezali na nzela. Ezali lokola makomi 'w' pe suki misato na loboko ya mobali.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=6",
+      "sourceDigest": "sha256:2291741fbf23a8b81c82783681ba6796e4fe56388b950054c356e2beb784ad36"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18666.png",
+      "text": "Sima kotonga nionso esili. Ye atongi loboko na lokolo ya niawu. Loboko na lokolo ezali na nzela pe ye atongi misapi ya niawu. Misapi ya niawu ezali na bokangi pe ye atongi molayi ya niawu. Molayi ya niawu ezali na nzela.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=7",
+      "sourceDigest": "sha256:b5ad927e59061f10403f37f44dcb0afba01461e818a21c408712f7237083950d"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18667.png",
+      "text": "Ye atongi biloko na nzoto ya niawu pe langi ya pembe. Pe botongi esili. Ezalaki kitoko mingi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=8",
+      "sourceDigest": "sha256:abbf097d338211a2dbdcab8741c5307cf9ee1f928512f04fd71748e5cd4e6bca"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18668.png",
+      "text": "Sikoyo esali tango ya niawu. Ye asali ekomeli pe ya asali lokasa. Lokasa ezali rectangolo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=9",
+      "sourceDigest": "sha256:607ffd237c1d995ba55fae75a5dd632bac9a2f602fe1bff1abb891942191c899"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18669.png",
+      "text": "Liboso atongi libungutulu. Libungutulu esali nzoto ya mbwua. Ezali malamu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=10",
+      "sourceDigest": "sha256:ad389dbce326538b62be66309dd7e5714674754aabd3aa0274fe0d4e2eb460f6"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18670.png",
+      "text": "Ye atongi biloko mibala ya moyindu likolo ya libungutulu. Libungutulu esali lokola matoyi ya mbwua na libungutulu ya moyindu. Libulu esali monoko ya mbwua pe ye atongi nzela likolo ya monoko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=11",
+      "sourceDigest": "sha256:e236ffe90714d0d3c626a5269a3ad4e233371266ccfaebe7ad4d62627dc29930"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18671.png",
+      "text": "Sikoyo ye atongi miso likolo pe miso motane ya mbwua. Miso ezali na ba mbuma mibale. Miso motane ezali na ba nzela mibale. Ya solo, ezali kitoko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=12",
+      "sourceDigest": "sha256:df0277d23c26a661c544454bdc233bfeb96d4b41bee78aefecb54cc2bd9dd0e2"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18672.png",
+      "text": "Sima ye batongi monoko ya mbwua. Monoko ya mbwua ezali na nzela. Ezali lokola 'w' pe ba mbuma singa singa ya monoko ya mbwua. Nzete misato ya loboko ya mwasi pe nzete misato ya loboko ya mobali.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=13",
+      "sourceDigest": "sha256:4f39a8742a77691a3ad874aeb61032e6925330e456f7571210741e722a843a03"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18673.png",
+      "text": "Botongi nionso esili. Ye atongi maboko na makolo ya mbwua. Maboko na makolo ezali na nzela pe misapi ya mbwua. Misapi ya mbwua ezali na libulu pe atongi molayi ya mbwua. Molayi esali lokola fololo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=14",
+      "sourceDigest": "sha256:3c0e3efbb9e60371a0a46fe1d2d31b7bce66763f8e805a4ba09379d16f9e618c"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18674.png",
+      "text": "Ye atongi libulu ya moyindu na nzoto ya mbwua pe na langi ya moyindu. Kotonga esili. Ya solo ezalaki kitoko koleka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=15",
+      "sourceDigest": "sha256:8dd9cfe92655db887becc3c4cba28d138ec94149fb564007fbb0fc96ea6ecce6"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18675.png",
+      "text": "Kende malamu niawu, kende malamu mbwua.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=16",
+      "sourceDigest": "sha256:6926ba48dcbc245813c690aac00abdc18baf16172fc2fcd5f6392f5350581537"
+    },
+    {
+      "n": 17,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18782.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31818#page=17",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "stats": {
+    "pages": 17,
+    "words": 368
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:7a7cf426b725435a118cc085ada8f69283ee174bef144f8d0be291b447365e48"
+  }
+}

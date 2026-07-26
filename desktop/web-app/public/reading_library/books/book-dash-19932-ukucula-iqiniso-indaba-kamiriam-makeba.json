@@ -1,0 +1,86 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-19932-ukucula-iqiniso-indaba-kamiriam-makeba",
+  "title": "Ukucula iqiniso: Indaba kaMiriam Makeba",
+  "description": "Kudala kakhulu, edolobheni elikhulu laseGoli, kwazalwa ingane yentombazane. Leyo ngane kwakuyimina. Umama wangibiza ngokuthi nginguZenzile Miriam Makeba.",
+  "language": "isiZulu",
+  "langCode": "zul",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Heritage, diversity, and inclusivity",
+    "Let's play!",
+    "Powerful female characters"
+  ],
+  "authors": [
+    "Jade Mathieson"
+  ],
+  "illustrators": [
+    "Louwrisa Blaauw"
+  ],
+  "contributors": [
+    {
+      "name": "Louwrisa Blaauw",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Jade Mathieson",
+      "role": "Writer"
+    },
+    {
+      "name": "Bianca de Jong",
+      "role": "Designer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/ukucula-iqiniso-indaba-kamiriam-makeba/",
+    "attributionUrl": "https://bookdash.org/books/ukucula-iqiniso-indaba-kamiriam-makeba/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=singing-the-truth"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/02/singing-the-truth_isizulu_20171012_cover-1-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/02/singing-the-truth_isizulu_20171012_cover-1.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Kudala kakhulu, edolobheni elikhulu laseGoli, kwazalwa ingane yentombazane. Leyo ngane kwakuyimina. Umama wangibiza ngokuthi nginguZenzile Miriam Makeba."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Louwrisa Blaauw (Illustrator); Jade Mathieson (Writer); Bianca de Jong (Designer)\n\nLanguage: isiZulu. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=singing-the-truth"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 81
+  }
+}

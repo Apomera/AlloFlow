@@ -1,0 +1,170 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-14770-letsatsi-la-likela",
+  "title": "Letsatsi la likela",
+  "description": "Ka letsatsi le leng letsatsi la likela. Ha a ne a tsamaile, lintho tsa kala ho fetoha.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Khothatso Ranoosi, Marion Drew"
+  ],
+  "illustrators": [
+    "Jesse Breytenbach"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Author"
+    },
+    {
+      "name": "Jesse Breytenbach",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Khothatso Ranoosi, Marion Drew (Author); Jesse Breytenbach (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://paleng.weebly.com/.",
+    "editionId": "14770",
+    "bookType": "1",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-75a939611d8c20cf",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/14611.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14612.png",
+      "text": "Maobane hoseng, 'M'e oa rona Letsatsi, a be a chakela ausi oa hae, Khoeli. Ausi oa hae o ne a lula lehlakoreng le leng la leholimo. Eaba Letsatsi lere, \"Seka ferekana ketla khutla.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770#page=1",
+      "sourceDigest": "sha256:86063da549e6f6059d6fbcf69943795cd271edd675ef20ee8ffe711e71606930"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14598.png",
+      "text": "Eare ha antse a le siko, Lithaba tsabe li roala lituku tse ts'oeu. Moea oa be o se o ba lekhang le lifate.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770#page=2",
+      "sourceDigest": "sha256:3af1977432d0af908fe46111d691829700d1971b7c7aad090793421ca9fccb95"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14600.png",
+      "text": "Lifate tsa koata. Tsa lahla makhasi a tsona a fefoloa ke moea. Eaba leholimo le lona lea koata. Lafetoha laba maru a mats'o. Maru a ne a koatile ha a bona tsena. Maru a kalella ho lla.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770#page=3",
+      "sourceDigest": "sha256:4bf4c35a57e3d4b764a9ff608f7ac9dff10cd910593a4e7d4d51fa6c62108c3a"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14602.png",
+      "text": "A ne a le meokho e mengata. Lefats'e ka bophara le le metsi hohle.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770#page=4",
+      "sourceDigest": "sha256:fb6c360b82160430fe4d23500f027fa20453b40dc8f763ea780ba58b88c190b4"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14604.png",
+      "text": "Eare ka tinare Letsatsi la meta ausi oa lona, lare, \"Sala hantle.\" Letsatsi la khutlela hae.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770#page=5",
+      "sourceDigest": "sha256:bb350cc2aed6f30f500212e3171e9a1851e6bf3c5cb325a22732105d86378adc"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14605.png",
+      "text": "Leholimo lona la fetoha laba leputsoa hape. La bulela Letsatsi lemati. Lithaba tsa rola lituku tsa tsona. Tsa tena mese e metle e metalana.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770#page=6",
+      "sourceDigest": "sha256:6027babfc1da843e9fdbb2fe5cf7a0c33895f32dc14e5d24b05271096ab191d5"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14606.png",
+      "text": "Moea oa khutla oalo robala.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770#page=7",
+      "sourceDigest": "sha256:2e9b322734012a4ee75b3a370a08e95c46a247662b5b1c3e02237a1510e91126"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14607.png",
+      "text": "Lifate tsa ikutlolla makala tsa bososela.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770#page=8",
+      "sourceDigest": "sha256:fdc3c19e691bed98bd251d3e48d9bd065ba346b480782f891656d464fb631a45"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14608.png",
+      "text": "Maru a thaba ha a bona 'Me' oa rona letsatsi hape. Maru a tsamaea holo bapala.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770#page=9",
+      "sourceDigest": "sha256:b7c1c9d8d0434e443d7034de73cc8282c6dbc507fbf14a1d898de3640fd60b47"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14609.png",
+      "text": "Limela tse ngata tsohle tsenyane tsa qala ho hlaha, hotlo lumelisa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770#page=10",
+      "sourceDigest": "sha256:646d39748e5fc9a6b1e957aeb079b24de0729429662833c111297e2ee24b5936"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14610.png",
+      "text": "Lefats'e lohle ka bophare la chaba.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770#page=11",
+      "sourceDigest": "sha256:f84ee50b75c933d5fb846a747d36602ed9245dc26508d2e2358244bc91ce1641"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14611.png",
+      "text": "Letsatsi lare, \"O ea bona, ke o bolelletse hore ketla khutla!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14770#page=12",
+      "sourceDigest": "sha256:5ffb002f77408828a663ecb9fcd0e7dc3214f4e3d04cdeac01aca2deaaa691a9"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 202
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:005d1aeecd597e34725028b557d21303eca48d0f0662bd23dca961eec7b0115b"
+  }
+}

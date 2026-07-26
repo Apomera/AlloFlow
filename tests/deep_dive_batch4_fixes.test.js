@@ -35,12 +35,13 @@ describe('M3 — busy gate keeps its earned storm state at run entry', () => {
 
 describe('M5 — estimated-minimum provenance is partial-inflation-free', () => {
   it('the loop tracks the latest FULL-coverage AI reading and returns it', () => {
-    expect(dp).toContain('let _lastFullCoverageAiScore = (verification && !verification._partialAudit');
-    expect(dp).toContain('if (reVerify && !_rePartial && Number.isFinite(newAiScore) && !reVerify._scoreDegraded && !reVerify.synthesized) _lastFullCoverageAiScore = Math.round(newAiScore);');
+    expect(dp).toContain('const _initialAiUsable = _alloUsableCompleteAiAudit(verification);');
+    expect(dp).toContain('let _lastFullCoverageAiScore = _initialAiUsable ? bestAiScore : null;');
+    expect(dp).toContain('if (_reAiUsable) _lastFullCoverageAiScore = Math.round(newAiScore);');
     expect(dp).toContain('lastFullCoverageAiScore: _lastFullCoverageAiScore };');
   });
   it('_lastSuccessfulAiScore rejects partial scores in BOTH branches (primary + fallback)', () => {
-    expect(dp).toContain("verification._scoreDegraded || verification.synthesized || verification._partialAudit)))");
+    expect(dp).toContain('const _lastSuccessfulAiScore = _alloUsableCompleteAiAudit(verification)');
     expect(dp).toContain(': (Number.isFinite(_lastFullCoverageAiScore) ? Math.round(_lastFullCoverageAiScore) : null);');
     // the old fallback to the possibly-partial-inflated bestAiScore is gone
     expect(dp).not.toContain(': (Number.isFinite(bestAiScore) ? Math.round(bestAiScore) : null);');
@@ -49,11 +50,13 @@ describe('M5 — estimated-minimum provenance is partial-inflation-free', () => 
 
 describe('M8 — the fix loop stops grinding when superseded', () => {
   it('fixAndVerifyPdf builds a run-scope staleness probe and threads it into the loop ctx', () => {
-    expect(dp).toContain("const _runGenStale = () => (!_silentMode && typeof window !== 'undefined' && (window.__alloPdfRunGen || 0) !== _myRunGen);");
-    expect(dp).toContain('genStale: _runGenStale });');
+    expect(dp).toContain('const _runAbortSignal =');
+    expect(dp).toContain('const _runGenStale = () => !!(_runAbortSignal && _runAbortSignal.aborted)');
+    expect(dp).toContain('genStale: _runGenStale, signal: _runAbortSignal, owner: _runTelemetry');
   });
   it('the pass loop breaks on staleness at each boundary', () => {
-    expect(dp).toContain('if (typeof loopCtx.genStale === \'function\' && loopCtx.genStale()) {');
+    expect(dp).toContain('const _shouldAbort = () => {');
+    expect(dp).toContain('if (_shouldAbort()) {');
     expect(dp).toContain('Run superseded (generation bump) — ending the fix loop');
   });
 });
@@ -68,7 +71,13 @@ describe('M9 — a stale run never stomps the fresh run\'s UI', () => {
   });
   it('host: runAutoFixLoop\'s finally guards the spinner/status and clears the running flag on OWNERSHIP', () => {
     expect(anti).toContain("warnLog('[AutoContinue] Stale loop exiting (gen bump) — leaving the fresh run\\'s UI untouched.');");
-    expect(anti).toContain('if (pdfAutoContinueAbortCtrlRef.current === _abortCtrl || pdfAutoContinueAbortCtrlRef.current === null) {');
+    expect(anti).toContain('const _ownsExit = pdfAutoContinueAbortCtrlRef.current === _abortCtrl;');
+    expect(anti).toContain('if (!_staleAtExit && _ownsExit) {');
+    expect(anti).toContain('if (_ownsExit) {');
+    expect(view).toContain("selectChunkVersion?.(chunk.index, 'original'");
+    expect(view).toContain("selectChunkVersion?.(chunk.index, 'fixed'");
+    expect(view).not.toContain('cs.fixedChunks[chunk.index] =');
+    expect(anti).toContain('const selectChunkVersion = _docPipeline ? _docPipeline.selectChunkVersion');
   });
 });
 
@@ -76,7 +85,7 @@ describe('M7 — the 12-min dead-man is heartbeat-aware', () => {
   it('re-arms on alloflow:pipeline-warn and fires only after 12 SILENT minutes', () => {
     const at = anti.indexOf('pdfAutoContinueRunning stuck on');
     expect(at).toBeGreaterThan(-1);
-    const block = anti.slice(at - 2200, at + 1200);
+    const block = anti.slice(at - 2200, at + 1600);
     expect(block).toContain("window.addEventListener('alloflow:pipeline-warn', onActivity);");
     expect(block).toContain('const arm = () => { if (id) clearTimeout(id); id = setTimeout(fire, 12 * 60 * 1000); };');
     expect(block).toContain('no pipeline heartbeat');
@@ -104,7 +113,9 @@ describe('M21/M22 — fidelity panel honesty', () => {
     expect(view).toContain('some source text may not have carried over');
   });
   it('M22: Fix-Remaining keeps the coverage<90 half of fidelityLimited', () => {
-    expect(view).toContain("fidelityLimited: _refixNotes.length > 0 || (typeof pdfFixResult.integrityCoverage === 'number' && pdfFixResult.integrityCoverage < 90) },");
+    expect(view).toContain('const fidelityLimited = _refixNotes.length > 0');
+    expect(view).toContain("_fixRemainingSource.integrityCoverage < 90");
+    expect(view).toContain('fidelityLimited,');
   });
 });
 

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1847-making-public-histories-australian-history-beyond-the-university",
+  "title": "Making Public Histories: Australian History Beyond the University",
+  "description": "This book is created for, and ultimately with, students in Making History HIS3MHI. It is used heavily in this capstone history subject to harness the principles and power of open education. This is a book and subject that asks broadly what it means to ‘make history’ – in particular, what history means beyond schools and universities. We ask, what are the different forms and functions of historical knowledge in the modern and contemporary world? What does history mean in the public sphere, in parks, on webpages, in museums, and in people’s homes? What happens when historians operate in the public sphere? How is the past utilised by politicians? How does it bind us (or not) as a nation? How is it used to inform debates about the future both inside and outside universities, in schools, and in the mainstream community? How is history presented in commemorations, films, heritage sites, historical fiction, memorials, museums, re-enactments, and tours? What are the ethical and moral obligations historians have as ‘gatekeepers’ of the past?",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - History"
+  ],
+  "authors": [
+    "Nikita Vanderbyl - Author / Kat Ellinghaus - Author / Clare O'Hanlon - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Council of Australian University Librarians",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/making-public-histories-australian-history-beyond-the-university"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is created for, and ultimately with, students in Making History HIS3MHI. It is used heavily in this capstone history subject to harness the principles and power of open education. This is a book and subject that asks broadly what it means to ‘make history’ – in particular, what history means beyond schools and universities. We ask, what are the different forms and functions of historical knowledge in the modern and contemporary world? What does history mean in the public sphere, in parks, on webpages, in museums, and in people’s homes? What happens when historians operate in the public sphere? How is the past utilised by politicians? How does it bind us (or not) as a nation? How is it used to inform debates about the future both inside and outside universities, in schools, and in the mainstream community? How is history presented in commemorations, films, heritage sites, historical fiction, memorials, museums, re-enactments, and tours? What are the ethical and moral obligations historians have as ‘gatekeepers’ of the past?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 193
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1847",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

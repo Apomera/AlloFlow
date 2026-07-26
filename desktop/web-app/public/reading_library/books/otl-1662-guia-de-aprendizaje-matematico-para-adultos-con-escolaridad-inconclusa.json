@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1662-guia-de-aprendizaje-matematico-para-adultos-con-escolaridad-inconclusa",
+  "title": "Guía de Aprendizaje Matemático para Adultos con Escolaridad Inconclusa",
+  "description": "El aprendizaje matemático para adultos con escolaridad inconclusa es un tema crucial para mejorar la calidad de vida y las oportunidades laborales de muchas personas. Estas personas pueden enfrentar desafíos únicos debido a lagunas en su educación formal, pero aún así, es posible desarrollar habilidades matemáticas sólidas. Un enfoque efectivo para enseñar matemáticas a adultos con escolaridad inconclusa es utilizar métodos prácticos y contextualizados. Esto significa vincular los conceptos matemáticos con situaciones de la vida real que los adultos puedan encontrar en su trabajo, hogar o comunidad. Por ejemplo, enseñar habilidades financieras básicas como el presupuesto, el manejo de dinero y el cálculo de intereses puede ser extremadamente útil y motivador. Además, es importante crear un ambiente de aprendizaje seguro y de apoyo que fomente la confianza y la participación activa. Los adultos pueden sentir vergüenza o ansiedad debido a sus experiencias previas de aprendizaje, por lo que es crucial proporcionarles retroalimentación constructiva y celebrar sus logros, por pequeños que sean. La tecnología también puede desempeñar un papel importante en el aprendizaje matemático para adultos con escolaridad inconclusa. Las aplicaciones y programas educativos pueden ofrecer lecciones interactivas, ejercicios prácticos y seguimiento del progreso, todo lo cual puede ayudar a los adultos a mejorar sus habilidades matemáticas de manera autodidacta y a su propio ritmo. El aprendizaje matemático para adultos con escolaridad inconclusa es un proceso desafiante pero fundamental para mejorar su calidad de vida y oportunidades futuras. Al adoptar un enfoque práctico, contextualizado y de apoyo, es posible ayudar a estos adultos a adquirir las habilidades matemáticas necesarias para tener éxito en la vida cotidiana y en el lugar de trabajo.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics"
+  ],
+  "authors": [
+    "Jessica Gabriela Grandes-Padilla - Author / Paola Jacqueline Duque-Sánchez - Author / Hugo Patricio Barrionuevo-Montalvo - Author / Miguel Angel Casa-Chicaiza - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/guia-de-aprendizaje-matematico-para-adultos-con-escolaridad-inconclusa"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "El aprendizaje matemático para adultos con escolaridad inconclusa es un tema crucial para mejorar la calidad de vida y las oportunidades laborales de muchas personas. Estas personas pueden enfrentar desafíos únicos debido a lagunas en su educación formal, pero aún así, es posible desarrollar habilidades matemáticas sólidas. Un enfoque efectivo para enseñar matemáticas a adultos con escolaridad inconclusa es utilizar métodos prácticos y contextualizados. Esto significa vincular los conceptos matemáticos con situaciones de la vida real que los adultos puedan encontrar en su trabajo, hogar o comunidad. Por ejemplo, enseñar habilidades financieras básicas como el presupuesto, el manejo de dinero y el cálculo de intereses puede ser extremadamente útil y motivador. Además, es importante crear un ambiente de aprendizaje seguro y de apoyo que fomente la confianza y la participación activa. Los adultos pueden sentir vergüenza o ansiedad debido a sus experiencias previas de aprendizaje, por lo que es crucial proporcionarles retroalimentación constructiva y celebrar sus logros, por pequeños que sean. La tecnología también puede desempeñar un papel importante en el aprendizaje matemático para adultos con escolaridad inconclusa. Las aplicaciones y programas educativos pueden ofrecer lecciones interactivas, ejercicios prácticos y seguimiento del progreso, todo lo cual puede ayudar a los adultos a mejorar sus habilidades matemáticas de manera autodidacta y a su propio ritmo. El aprendizaje matemático para adultos con escolaridad inconclusa es un proceso desafiante pero fundamental para mejorar su calidad de vida y oportunidades futuras. Al adoptar un enfoque práctico, contextualizado y de apoyo, es posible ayudar a estos adultos a adquirir las habilidades matemáticas necesarias para tener éxito en la vida cotidiana y en el lugar de trabajo."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 294
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1662",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

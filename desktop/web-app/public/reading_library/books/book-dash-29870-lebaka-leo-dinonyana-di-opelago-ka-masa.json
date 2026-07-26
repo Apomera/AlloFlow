@@ -1,0 +1,88 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-29870-lebaka-leo-dinonyana-di-opelago-ka-masa",
+  "title": "Lebaka leo dinonyana di opelago ka masa",
+  "description": "Go wele komelelo Happy-Land, gomme Nonyana ya Mma e ya go nyaka seboko sa maleatlana sa go hlola pula. Go na le yo a ka opelago a mo thuša gore a kgone go boya gae?",
+  "language": "Sepedi",
+  "langCode": "nso",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Nature and looking after our planet"
+  ],
+  "authors": [
+    "Zanele Dlamini"
+  ],
+  "illustrators": [
+    "Emmanuel Grebo"
+  ],
+  "contributors": [
+    {
+      "name": "Joseph Kiugu",
+      "role": "Designer"
+    },
+    {
+      "name": "Joey Kok",
+      "role": "Editor"
+    },
+    {
+      "name": "Emmanuel Grebo",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Zanele Dlamini",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/lebaka-leo-dinonyana-di-opelago-ka-masa/",
+    "attributionUrl": "https://bookdash.org/books/lebaka-leo-dinonyana-di-opelago-ka-masa/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=why-birds-sing-at-dawn"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2022/10/why-birds-sing-at-dawn_nso_978-1-77632-512-2-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2022/10/why-birds-sing-at-dawn_nso_978-1-77632-512-2-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Go wele komelelo Happy-Land, gomme Nonyana ya Mma e ya go nyaka seboko sa maleatlana sa go hlola pula. Go na le yo a ka opelago a mo thuša gore a kgone go boya gae?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Joseph Kiugu (Designer); Joey Kok (Editor); Emmanuel Grebo (Illustrator); Zanele Dlamini (Writer)\n\nLanguage: Sepedi. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=why-birds-sing-at-dawn"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 101
+  }
+}

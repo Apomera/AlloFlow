@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-13",
+  "reviewedAt": "2026-07-25",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next eight unreviewed items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "domainsCovered": 4,
+    "appliedOrAnalysisItems": 8,
+    "keyPositionsPreserved": 8,
+    "optionSpecificExplanations": 32,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 161,
+      "asymmetricExtremeDistractorCandidates": 325,
+      "advancedDirectRecallCandidates": 23,
+      "semanticConceptDuplicatePairs": 262,
+      "semanticConceptDuplicateClusters": 125,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 154,
+      "asymmetricExtremeDistractorCandidates": 317,
+      "advancedDirectRecallCandidates": 22,
+      "semanticConceptDuplicatePairs": 262,
+      "semanticConceptDuplicateClusters": 125,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-b005-intervention-1",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "intervention-cultural-adaptation-integrity-and-fit",
+      "sourceCheck": "The meta-analysis supports beneficial average outcomes for culturally adapted care and identifies language and client-specific cultural targeting as relevant moderators. It supports responsive adaptation but does not justify stereotypes or imply that any modification preserves an intervention's active mechanisms.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b005-intervention-2",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-pediatric-adhd-age-specific-multimodal-plan",
+      "sourceCheck": "Key Action Statement 5b gives an age-specific recommendation for approved medication with parent training and/or classroom behavioral intervention, preferably both, and identifies educational supports as necessary. Key Action Statement 6 supports titration to benefit with tolerable adverse effects.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b013-lifespan-2",
+      "domainId": "lifespan",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "lifespan-soc-distinguish-compensation-from-selection-optimization",
+      "sourceCheck": "The foundational model distinguishes selection of goals, optimization of goal-relevant means, and compensation through alternative means after loss. The scenario already supplies selection and optimization, so the keyed adaptation isolates compensation rather than merely naming the full model.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b017-research-1",
+      "domainId": "research",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "research-method-reporting-transparency-and-reproducibility",
+      "sourceCheck": "JARS-Quant explicitly calls for participant characteristics and sampling procedures, measures and psychometric information, research design and assignment, and data-collection procedures. These elements directly repair the omissions in the scenario and serve evaluation and reproducibility.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b025-lifespan-1",
+      "domainId": "lifespan",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "lifespan-gender-concepts-differential-interpretation",
+      "sourceCheck": "The APA resource distinguishes identity, expression, and orientation; notes that experiences and awareness vary; and explains that identity is not itself a disorder. The item therefore tests accurate classification while reserving clinical conclusions for separate assessment of distress or impairment.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b026-lifespan-3",
+      "domainId": "lifespan",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "lifespan-object-permanence-behavioral-inference",
+      "sourceCheck": "The study operationalizes object permanence through manual search for fully hidden objects and shows that performance varies across occlusion conditions and ages. This supports keyed search behavior while cautioning against interpreting one response as a context-free developmental switch.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-biological-014",
+      "domainId": "biological",
+      "difficulty": "advanced",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "biological-adult-neurogenesis-evidence-and-inference-limits",
+      "sourceCheck": "The systematic review reports robust converging evidence for adult-primate dentate-gyrus neurogenesis that declines with age, while heterogeneity limits quantitative synthesis and neuropsychological function needs better characterization. The revised key preserves that evidentiary boundary.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "advanced-direct-recall"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-biological-041",
+      "domainId": "biological",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "biological-prosopagnosia-network-localization-differential",
+      "sourceCheck": "The study found that many causal lesions did not intersect the right fusiform face area but shared a characteristic connectivity pattern, supporting a distributed network. The revised answer therefore mentions common right occipitotemporal involvement without claiming a universal single lesion.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

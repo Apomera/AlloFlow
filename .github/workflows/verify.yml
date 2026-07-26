@@ -77,12 +77,29 @@ jobs:
         run: npx playwright test tests/e2e/adventure-journey.spec.ts
 
   unit:
-    name: Unit + golden-master tests (vitest)
-    # BLOCKING. The vitest suite (~1,485 tests as of 2026-06) is deterministic and green; it
-    # includes the golden-master characterization tests (word_sounds, arc_city,
-    # symbol_studio, dino_lab) that pin tool render + data behavior. Previously
-    # these ran only locally — CI never executed `npm test`, so a render/data
-    # regression in a pinned tool could reach main ungated.
+    name: Unit tests (shard ${{ matrix.shard }}/8)
+    # BLOCKING. Sharding keeps the 1,200+ file Vitest suite bounded while every
+    # test still runs on each push and pull request. fail-fast is disabled so a
+    # failure in one shard does not hide independent regressions in another.
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm install --no-audit --no-fund
+      - name: Install React 18 for golden-master harnesses
+        run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
+      - name: Run Vitest shard
+        run: npm run test:ci:shard -- --shard=${{ matrix.shard }}/8
+
+  research-integrations:
+    name: Research integration contracts + accessibility
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -91,14 +108,10 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm install --no-audit --no-fund
-      # The golden-master harnesses render with REAL React 18 resolved from
-      # desktop/web-app/node_modules (git-ignored, not populated by the root
-      # install). Install just react + react-dom there so the harnesses load.
-      - name: Install React 18 for golden-master harnesses
+      - name: Install React 18 for Research Hub runtime tests
         run: npm install --no-audit --no-fund --no-save --prefix desktop/web-app react@^18.2.0 react-dom@^18.2.0
-      - name: npm test (golden masters + unit suites)
-        run: npm test
-
+      - name: Verify research integrations
+        run: npm run verify:research-integrations
   verify-full:
     name: Full verify suite (non-blocking visibility)
     runs-on: windows-latest

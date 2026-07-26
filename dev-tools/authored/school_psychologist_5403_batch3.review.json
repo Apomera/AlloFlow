@@ -1,0 +1,364 @@
+{
+  "reviewedFile": "dev-tools/authored/school_psychologist_5403_batch3.json",
+  "reviewedAt": "2026-07-25",
+  "reviewer": "OpenAI Codex independent cross-review",
+  "itemCount": 100,
+  "verdict": "pass - independently authored School Psychologist 5403 draft; credential, safety, equity, editorial, originality, and structural review complete",
+  "blockers": [],
+  "correctionsMade": [
+    {
+      "scope": "permeating-practices originality cross-review",
+      "correction": "Replaced 12 lexically original but semantically reused scenarios after direct comparison with the released data-integration, assessment, and consultation source kernels and learning checks.",
+      "affectedLocalItems": [
+        6,
+        9,
+        14,
+        18,
+        23,
+        24,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "result": "The final 32-item module retains the exact 11/11/10 allocation, has zero shared warning findings, and its replacement decisions are materially distinct from released prompts and checks."
+    },
+    {
+      "scope": "student-level safety and originality cross-review",
+      "correction": "Clarified the safety screen before a solution-focused academic conversation, replaced a duplicated supported-referral kernel with a break-card implementation decision, and strengthened five distractor sets as plausible sequencing or implementation errors.",
+      "affectedLocalItems": [
+        7,
+        8,
+        10,
+        11,
+        15,
+        22
+      ],
+      "result": "A separate reviewer passed all 23 keys and 69 distractors with no safety, crisis, diagnosis, treatment, role, access, or semantic-duplication blocker."
+    },
+    {
+      "scope": "systems-level semantic and source-scope cross-review",
+      "correction": "Replaced eight scenarios that reused released program, interpreter, home-routine, provider-coordination, transition, or outreach decisions; removed an IDEA-dependent decision from a skill without that released source; refined postvention communication wording.",
+      "affectedLocalItems": [
+        1,
+        6,
+        7,
+        14,
+        15,
+        16,
+        17,
+        19,
+        20
+      ],
+      "result": "Independent re-review passed the final 7/7/6 allocation, all keys and distractors, school-psychologist scope, safety, privacy, equity, source alignment, and semantic distinctness."
+    },
+    {
+      "scope": "foundations semantic, legal, equity, and technical review",
+      "correction": "Replaced six reused decision kernels and corrected terminology or distractor precision for attrition, implementation confounds, remote assessment, supervision, demographic self-identification, and evidence disclosure.",
+      "affectedLocalItems": [
+        1,
+        5,
+        6,
+        8,
+        9,
+        11,
+        16,
+        19,
+        22,
+        24
+      ],
+      "result": "Independent re-review passed all 25 final exported items, including the remote-assessment, supervision, intersectional-access, privacy, and translated-notice scenarios."
+    },
+    {
+      "scope": "answer-choice cue control",
+      "correction": "Substantively strengthened plausible competing distractors instead of adding filler, eliminating the systematic keyed-longest pattern in all 23 student-level and all 20 systems-level items.",
+      "result": "The combined 100-item bank has 23 keyed-longest-or-tied responses, below the maximum of 35, while answer positions remain exactly 25/25/25/25."
+    },
+    {
+      "scope": "encoding and editorial integrity",
+      "correction": "Restored corrupted possessive apostrophes and quotation marks found during independent re-review and reran syntax, Unicode, feedback-detail, and shared-warning checks.",
+      "result": "No mojibake, replacement characters, question-mark possessives, actionable warning codes, thin option feedback, or malformed choices remain."
+    }
+  ],
+  "checks": {
+    "lineByLineCredentialReview": {
+      "status": "pass",
+      "reviewedItems": 100,
+      "reviewedItemIds": [
+        "sp5403-b3-001",
+        "sp5403-b3-002",
+        "sp5403-b3-003",
+        "sp5403-b3-004",
+        "sp5403-b3-005",
+        "sp5403-b3-006",
+        "sp5403-b3-007",
+        "sp5403-b3-008",
+        "sp5403-b3-009",
+        "sp5403-b3-010",
+        "sp5403-b3-011",
+        "sp5403-b3-012",
+        "sp5403-b3-013",
+        "sp5403-b3-014",
+        "sp5403-b3-015",
+        "sp5403-b3-016",
+        "sp5403-b3-017",
+        "sp5403-b3-018",
+        "sp5403-b3-019",
+        "sp5403-b3-020",
+        "sp5403-b3-021",
+        "sp5403-b3-022",
+        "sp5403-b3-023",
+        "sp5403-b3-024",
+        "sp5403-b3-025",
+        "sp5403-b3-026",
+        "sp5403-b3-027",
+        "sp5403-b3-028",
+        "sp5403-b3-029",
+        "sp5403-b3-030",
+        "sp5403-b3-031",
+        "sp5403-b3-032",
+        "sp5403-b3-033",
+        "sp5403-b3-034",
+        "sp5403-b3-035",
+        "sp5403-b3-036",
+        "sp5403-b3-037",
+        "sp5403-b3-038",
+        "sp5403-b3-039",
+        "sp5403-b3-040",
+        "sp5403-b3-041",
+        "sp5403-b3-042",
+        "sp5403-b3-043",
+        "sp5403-b3-044",
+        "sp5403-b3-045",
+        "sp5403-b3-046",
+        "sp5403-b3-047",
+        "sp5403-b3-048",
+        "sp5403-b3-049",
+        "sp5403-b3-050",
+        "sp5403-b3-051",
+        "sp5403-b3-052",
+        "sp5403-b3-053",
+        "sp5403-b3-054",
+        "sp5403-b3-055",
+        "sp5403-b3-056",
+        "sp5403-b3-057",
+        "sp5403-b3-058",
+        "sp5403-b3-059",
+        "sp5403-b3-060",
+        "sp5403-b3-061",
+        "sp5403-b3-062",
+        "sp5403-b3-063",
+        "sp5403-b3-064",
+        "sp5403-b3-065",
+        "sp5403-b3-066",
+        "sp5403-b3-067",
+        "sp5403-b3-068",
+        "sp5403-b3-069",
+        "sp5403-b3-070",
+        "sp5403-b3-071",
+        "sp5403-b3-072",
+        "sp5403-b3-073",
+        "sp5403-b3-074",
+        "sp5403-b3-075",
+        "sp5403-b3-076",
+        "sp5403-b3-077",
+        "sp5403-b3-078",
+        "sp5403-b3-079",
+        "sp5403-b3-080",
+        "sp5403-b3-081",
+        "sp5403-b3-082",
+        "sp5403-b3-083",
+        "sp5403-b3-084",
+        "sp5403-b3-085",
+        "sp5403-b3-086",
+        "sp5403-b3-087",
+        "sp5403-b3-088",
+        "sp5403-b3-089",
+        "sp5403-b3-090",
+        "sp5403-b3-091",
+        "sp5403-b3-092",
+        "sp5403-b3-093",
+        "sp5403-b3-094",
+        "sp5403-b3-095",
+        "sp5403-b3-096",
+        "sp5403-b3-097",
+        "sp5403-b3-098",
+        "sp5403-b3-099",
+        "sp5403-b3-100"
+      ],
+      "scope": [
+        "one-best-answer credential accuracy",
+        "100 keys and 300 distractors",
+        "four-choice feedback",
+        "school-psychologist role, consent, privacy, and safety boundaries",
+        "equity, accessibility, language, culture, and assessment fairness",
+        "source, skill, chapter, difficulty, and cognitive-level linkage"
+      ]
+    },
+    "blueprintAlignment": {
+      "status": "pass",
+      "expectedDomainCounts": {
+        "permeating-practices": 32,
+        "student-level-services": 23,
+        "systems-level-services": 20,
+        "foundations": 25
+      },
+      "actualDomainCounts": {
+        "permeating-practices": 32,
+        "student-level-services": 23,
+        "systems-level-services": 20,
+        "foundations": 25
+      },
+      "expectedSkillCounts": {
+        "problem-solving-data-integration": 11,
+        "measurement-assessment-special-populations": 11,
+        "consultation-collaboration": 10,
+        "academic-instructional-interventions": 8,
+        "mental-behavioral-health": 8,
+        "behavior-counseling-crisis": 7,
+        "schoolwide-learning-mtss": 7,
+        "safe-supportive-schools": 7,
+        "family-school-community": 6,
+        "equitable-diverse-practice": 9,
+        "research-program-evaluation": 8,
+        "legal-ethical-professional": 8
+      },
+      "actualSkillCounts": {
+        "problem-solving-data-integration": 11,
+        "measurement-assessment-special-populations": 11,
+        "consultation-collaboration": 10,
+        "academic-instructional-interventions": 8,
+        "mental-behavioral-health": 8,
+        "behavior-counseling-crisis": 7,
+        "schoolwide-learning-mtss": 7,
+        "safe-supportive-schools": 7,
+        "family-school-community": 6,
+        "equitable-diverse-practice": 9,
+        "research-program-evaluation": 8,
+        "legal-ethical-professional": 8
+      },
+      "officialBlueprint": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf"
+    },
+    "answerPositionBalance": {
+      "status": "pass",
+      "countsByZeroBasedIndex": {
+        "0": 25,
+        "1": 25,
+        "2": 25,
+        "3": 25
+      },
+      "expectedCountsByZeroBasedIndex": {
+        "0": 25,
+        "1": 25,
+        "2": 25,
+        "3": 25
+      }
+    },
+    "independentAuthorshipAndOriginality": {
+      "status": "pass",
+      "authorship": "assistant-authored-independent",
+      "releasedComparisonItems": 200,
+      "exactPromptCollisionsAgainstReleasedSource": 0,
+      "responseKernelCollisionsAgainstReleasedSource": 0,
+      "contentKernelCollisionsAgainstReleasedSource": 0,
+      "intraBatchPromptCollisions": 0,
+      "intraBatchResponseKernelCollisions": 0,
+      "intraBatchContentKernelCollisions": 0,
+      "maximumPromptTokenJaccardAgainstReleasedSource200": 0.2222,
+      "closestPromptPairAgainstReleasedSource": {
+        "score": 0.2222222222222222,
+        "newItemId": "sp5403-b3-093",
+        "comparisonItemId": "sp5403-b1-001"
+      },
+      "maximumIntraBatchPromptTokenJaccard": 0.2069,
+      "closestIntraBatchPromptPair": {
+        "score": 0.20689655172413793,
+        "newItemId": "sp5403-b3-050",
+        "comparisonItemId": "sp5403-b3-078"
+      },
+      "maximumRationaleTokenJaccardAgainstReleasedSource": 0.1538,
+      "closestRationalePairAgainstReleasedSource": {
+        "score": 0.15384615384615385,
+        "newItemId": "sp5403-b3-036",
+        "comparisonItemId": "sp5403-b1-003"
+      }
+    },
+    "keysDistractorsAndFeedback": {
+      "status": "pass",
+      "keysReviewed": 100,
+      "distractorsReviewed": 300,
+      "choiceFeedbackEntriesReviewed": 400,
+      "unresolvedWrongKeys": 0,
+      "unresolvedMultipleCorrectChoices": 0,
+      "unresolvedImplausibleDistractors": 0,
+      "unresolvedGenericFeedback": 0
+    },
+    "warningHeuristicReview": {
+      "status": "pass",
+      "actionableWarningsRemaining": 0,
+      "lexicalAdvisoriesReviewedAsNonclues": 13,
+      "lexicalAdvisoryItemIds": [
+        "sp5403-b3-078",
+        "sp5403-b3-079",
+        "sp5403-b3-080",
+        "sp5403-b3-082",
+        "sp5403-b3-083",
+        "sp5403-b3-085",
+        "sp5403-b3-086",
+        "sp5403-b3-090",
+        "sp5403-b3-091",
+        "sp5403-b3-092",
+        "sp5403-b3-093",
+        "sp5403-b3-094",
+        "sp5403-b3-096"
+      ]
+    },
+    "answerLengthBalance": {
+      "status": "pass",
+      "keyedLongestOrTiedCount": 23,
+      "nonKeyedStrictlyLongerCount": 77,
+      "maximumAllowedKeyedLongestOrTiedCount": 35,
+      "keyPositionsChanged": 0
+    },
+    "credentialScopeAccessibilityAndBias": {
+      "status": "pass",
+      "schoolPsychologistRoleBoundariesReviewed": 100,
+      "unresolvedLegalOrPolicyOverclaims": 0,
+      "unresolvedUnsafeCrisisOrDisclosureGuidance": 0,
+      "unresolvedDiagnosisOrTreatmentRoleDrift": 0,
+      "unresolvedStereotypeOrDeficitFraming": 0,
+      "unresolvedPrivacyOrStudentDignityHarmsInKeys": 0,
+      "unresolvedAccessibilityOrLanguageBarriersInKeys": 0
+    },
+    "referencesAndLearningLinks": {
+      "status": "pass",
+      "itemsWithOfficialEtsBlueprint": 100,
+      "itemsWithResolvedNamedReferences": 100,
+      "itemsWithResolvedSkillAndChapter": 100
+    }
+  },
+  "artifactBinding": {
+    "algorithm": "sha256",
+    "sha256": "81a113bc1a2114e5a9d385ec95040f3f9d7e7213035e1b50a571b93dcb841109"
+  },
+  "integration": {
+    "packId": "praxis-school-psychologist-5403",
+    "batchNumber": 3,
+    "expectedInsertionTier": "assistant-authored-independent",
+    "expectedDiagnosticBankSize": 100,
+    "manifestSchemaVersion": 2,
+    "expectedManifestEntry": {
+      "id": "independent-diagnostic-batch-3",
+      "expectedPackId": "praxis-school-psychologist-5403",
+      "reviewEvidenceProfile": "hash-bound-independent-cross-review-v1",
+      "files": [
+        "school_psychologist_5403_batch3.json"
+      ],
+      "reviewReports": [
+        "school_psychologist_5403_batch3.review.json"
+      ]
+    }
+  }
+}

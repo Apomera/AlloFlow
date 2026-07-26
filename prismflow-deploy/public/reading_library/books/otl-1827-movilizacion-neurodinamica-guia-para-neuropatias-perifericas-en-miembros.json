@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1827-movilizacion-neurodinamica-guia-para-neuropatias-perifericas-en-miembros",
+  "title": "Movilización neurodinámica: Guía para neuropatías periféricas en miembros superiores e inferiores",
+  "description": "La neurodinamia representa una herramienta importante en el campo de la fisioterapia. Esta técnica innovadora fusiona los principios de la mecánica y la fisiología del sistema nervioso para abordar una amplia variedad de trastornos musculoesqueléticos. Al adentrarse en el estudio de la anatomía y función de los nervios, los terapeutas pueden identificar con mayor precisión las causas subyacentes del dolor y diseñar tratamientos altamente personalizados. Este libro se erige como una guía completa para aquellos profesionales interesados en dominar la neurodinamia. A través de un análisis exhaustivo de los fundamentos neurofisiológicos, el texto explora cómo el conocimiento del sistema nervioso puede revolucionar la práctica clínica. Además, presenta un conjunto de técnicas específicas y basadas en evidencia para el manejo de neuropatías en las extremidades. En definitiva, esta obra proporciona a los fisioterapeutas las herramientas necesarias para optimizar los resultados terapéuticos en sus pacientes. Al integrar la neurodinamia en sus tratamientos, los profesionales de la salud pueden ofrecer una atención más efectiva y holística, mejorando así la calidad de vida sus pacientes.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine"
+  ],
+  "authors": [
+    "David Marcelo Guevara-Hernández - Author / Shirley Mireya Ortiz-Pérez - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/movilizacion-neurodinamica-guia-para-neuropatias-perifericas-en-miembros-superiores-e-inferiores"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "La neurodinamia representa una herramienta importante en el campo de la fisioterapia. Esta técnica innovadora fusiona los principios de la mecánica y la fisiología del sistema nervioso para abordar una amplia variedad de trastornos musculoesqueléticos. Al adentrarse en el estudio de la anatomía y función de los nervios, los terapeutas pueden identificar con mayor precisión las causas subyacentes del dolor y diseñar tratamientos altamente personalizados. Este libro se erige como una guía completa para aquellos profesionales interesados en dominar la neurodinamia. A través de un análisis exhaustivo de los fundamentos neurofisiológicos, el texto explora cómo el conocimiento del sistema nervioso puede revolucionar la práctica clínica. Además, presenta un conjunto de técnicas específicas y basadas en evidencia para el manejo de neuropatías en las extremidades. En definitiva, esta obra proporciona a los fisioterapeutas las herramientas necesarias para optimizar los resultados terapéuticos en sus pacientes. Al integrar la neurodinamia en sus tratamientos, los profesionales de la salud pueden ofrecer una atención más efectiva y holística, mejorando así la calidad de vida sus pacientes."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 194
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1827",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

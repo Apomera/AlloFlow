@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-11551-njoetse-hona-joale-thabo-e-hokoata",
+  "title": "Njoetse hona joale … Thabo e hokoata",
+  "description": "Hobaneng ngoana alla? Hobaneng moshanyana a koatile?",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Madhav Chavan"
+  ],
+  "illustrators": [
+    "Rijuta Ghate"
+  ],
+  "translators": [
+    "Khothatso Ranoosi, Marion Drew"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Madhav Chavan",
+      "role": "Author"
+    },
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Translation"
+    },
+    {
+      "name": "Rijuta Ghate",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Madhav Chavan (Author); Khothatso Ranoosi, Marion Drew (Translation); Rijuta Ghate (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "11551",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-5d0eabb1ee113b3e",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/1891.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1892.png",
+      "text": "Hobaneng ngoana alla?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551#page=1",
+      "sourceDigest": "sha256:d73b9d10a66ab76778cc3104b79305f76bed4d476ef45262919bd67ac0e28965"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1893.png",
+      "text": "Ke nahana o lapile.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551#page=2",
+      "sourceDigest": "sha256:364ca51792f18f2e93b2a99b5dff2db0e3cae3d21bd0fa41b7d00ebf923818f2"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1894.png",
+      "text": "Hobaneng moshanyana a koatile?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551#page=3",
+      "sourceDigest": "sha256:75d840b64d2309645c00840d7e67d575d79d8d9a9f956f34f809bba0ba1673b0"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1895.png",
+      "text": "Ke nahana o hlolohetse ntate oa hae.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551#page=4",
+      "sourceDigest": "sha256:dbf3a9b26a1b75fc7eb525d0c4dbe5bbd107e8ba0b878628f324146bb504cc00"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1896.png",
+      "text": "Hobaneng ngoanana a thabile?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551#page=5",
+      "sourceDigest": "sha256:b5b75fe17ea38df0555984a3e768b02f781f0d4e2e2ea3c4f843ee34c6f656e2"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1897.png",
+      "text": "O na le mose o mocha.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551#page=6",
+      "sourceDigest": "sha256:ff2cbaf422ef4627128e9ff2bfb3a388747bc0205547078a445c5674837058f0"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1898.png",
+      "text": "Hobaneng ntate a moholo a ts'eha?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551#page=7",
+      "sourceDigest": "sha256:f2207d3ef5a511d933d8539bba04305627e6b8cc3bf18de7d14ea85328378d2b"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1899.png",
+      "text": "O balile ntho e soasoang.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551#page=8",
+      "sourceDigest": "sha256:44ccc1c56a54ebcfc2df6c94b9268a49c313f069c36079369fa4a0f5f0485a81"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1900.png",
+      "text": "Hobaneng 'M'e a bososela?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551#page=9",
+      "sourceDigest": "sha256:60799238da4a22eb043a3f98f0e793f10437c7f9531c7b952e1cb301016d4bad"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1901.png",
+      "text": "Bana bahae ba bala ba thotse.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551#page=10",
+      "sourceDigest": "sha256:0940d82ca1649df065af33209e9d7a48df1a402c52b7804b238478a372fdea20"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1902.png",
+      "text": "'M'e eoo, o ikutloa joang?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551#page=11",
+      "sourceDigest": "sha256:a0103536dfe6f1d67cdafe9991e09c91bd8efa38346c6aedf45fe846e70314ab"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1903.png",
+      "text": "Ke nahana hore o ikutloa ale litlhong?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=11551#page=12",
+      "sourceDigest": "sha256:124b77bbed1ebd8c8ebad16017403b140c8edf51e4ae9c6cf9929264484a4afb"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 61
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:caaa0f651532e6278a55434a9f88cc6a0d188276af8d091a26f7d8d817725a9b"
+  }
+}

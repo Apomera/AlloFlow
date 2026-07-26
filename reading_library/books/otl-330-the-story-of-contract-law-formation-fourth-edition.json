@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-330-the-story-of-contract-law-formation-fourth-edition",
+  "title": "The Story of Contract Law: Formation - Fourth Edition",
+  "description": "This book, revised as the Third Edition July 2019, is designed to teach contract doctrine beginning with the most fundamental concepts and building on these until the structure of contract doctrine as coherent and cohesive regulation appears. The order of presentation is, in fact, the order in which contract doctrine developed historically, but it is also, in general, the order in which arguments are introduced in litigation. The book begins with the most basic, core concept of contract law—exchange. The book teaches exchange using simple cases drawn from the actual development of the exchange concept’s most obvious manifestation—the doctrine of consideration. These cases have basic but engaging facts. They do not take long to read, but they must be read carefully. They make an excellent introduction to law study. Logically, every doctrine of contract formation is centered on whether and when a fair exchange occurred. In litigation, the plaintiff alleges a promise and consideration—an exchange (a plausible one, and therefore fair enough at that point). Defenses to formation are a response to the allegation that a fair exchange occurred. Allegations of both promise and consideration show that the defendant assented. As between assent and exchange, exchange is the more fundamental concept, but because the law talks so often about assent, assent is covered at length afterward so that the function of the assent doctrines is apparent. Other doctrines, such as remedies (just an introduction in this first volume), waiver, seals, the Statute of Frauds, definiteness, and general public policy limitations are placed where students can best grasp their import in the context of the other doctrines. Along the way, most of the doctrines in the book are repeated in the cases, questions, or in class discussion. This repetition cements understanding, builds trust, and also allows students to see how the doctrines mesh together to regulate coherently.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law - Contract Law"
+  ],
+  "authors": [
+    "Val Ricks - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CALI's eLangdell® Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-story-of-contract-law-formation"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book, revised as the Third Edition July 2019, is designed to teach contract doctrine beginning with the most fundamental concepts and building on these until the structure of contract doctrine as coherent and cohesive regulation appears. The order of presentation is, in fact, the order in which contract doctrine developed historically, but it is also, in general, the order in which arguments are introduced in litigation. The book begins with the most basic, core concept of contract law—exchange. The book teaches exchange using simple cases drawn from the actual development of the exchange concept’s most obvious manifestation—the doctrine of consideration. These cases have basic but engaging facts. They do not take long to read, but they must be read carefully. They make an excellent introduction to law study. Logically, every doctrine of contract formation is centered on whether and when a fair exchange occurred. In litigation, the plaintiff alleges a promise and consideration—an exchange (a plausible one, and therefore fair enough at that point). Defenses to formation are a response to the allegation that a fair exchange occurred. Allegations of both promise and consideration show that the defendant assented. As between assent and exchange, exchange is the more fundamental concept, but because the law talks so often about assent, assent is covered at length afterward so that the function of the assent doctrines is apparent. Other doctrines, such as remedies (just an introduction in this first volume), waiver, seals, the Statute of Frauds, definiteness, and general public policy limitations are placed where students can best grasp their import in the context of the other doctrines. Along the way, most of the doctrines in the book are repeated in the cases, questions, or in class discussion. This repetition cements understanding, builds trust, and also allows students to see how the doctrines mesh together to regulate coherently."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 329
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "330",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

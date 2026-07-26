@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-97-precalculus-an-investigation-of-functions",
+  "title": "Precalculus: An Investigation of Functions",
+  "description": "Precalculus: An Investigation of Functions is a free, open textbook covering a two-quarter pre-calculus sequence including trigonometry. The first portion of the book is an investigation of functions, exploring the graphical behavior of, interpretation of, and solutions to problems involving linear, polynomial, rational, exponential, and logarithmic functions. An emphasis is placed on modeling and interpretation, as well as the important characteristics needed in calculus. The second portion of the book introduces trigonometry. Trig is introduced through an integrated circle/triangle approach. Identities are introduced in the first chapter, and revisited throughout. Likewise, solving is introduced in the second chapter and revisited more extensively in the third chapter. As with the first part of the book, an emphasis is placed on motivating the concepts and on modeling and interpretation. In addition to the paper homework sets, algorithmetically generated online homework is available as part of a complete course shell package, which also includes a sample syllabus, teacher notes with lecture examples, sample quizzes and exams, printable classwork sheets and handouts, and chapter review problems. If you teach in Washington State, you can find the course shell in the WAMAP.org template course list. For those located elsewhere, you can access the course shell at MyOpenMath.com. A self-study version of the online course exercises is also available on MyOpenMath.com for students wanting to learn the material on their own, or who need a refresher.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Calculus",
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "David Lippman - Author / Melonie Rasmussen - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "David Lippman and Melonie Rasmussen",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/precalculus-an-investigation-of-functions"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Precalculus: An Investigation of Functions is a free, open textbook covering a two-quarter pre-calculus sequence including trigonometry. The first portion of the book is an investigation of functions, exploring the graphical behavior of, interpretation of, and solutions to problems involving linear, polynomial, rational, exponential, and logarithmic functions. An emphasis is placed on modeling and interpretation, as well as the important characteristics needed in calculus. The second portion of the book introduces trigonometry. Trig is introduced through an integrated circle/triangle approach. Identities are introduced in the first chapter, and revisited throughout. Likewise, solving is introduced in the second chapter and revisited more extensively in the third chapter. As with the first part of the book, an emphasis is placed on motivating the concepts and on modeling and interpretation. In addition to the paper homework sets, algorithmetically generated online homework is available as part of a complete course shell package, which also includes a sample syllabus, teacher notes with lecture examples, sample quizzes and exams, printable classwork sheets and handouts, and chapter review problems. If you teach in Washington State, you can find the course shell in the WAMAP.org template course list. For those located elsewhere, you can access the course shell at MyOpenMath.com. A self-study version of the online course exercises is also available on MyOpenMath.com for students wanting to learn the material on their own, or who need a refresher."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 253
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "97",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

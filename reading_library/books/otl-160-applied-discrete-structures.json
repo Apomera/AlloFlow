@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-160-applied-discrete-structures",
+  "title": "Applied Discrete Structures",
+  "description": "In writing this book, care was taken to use language and examples that gradually wean students from a simpleminded mechanical approach andmove them toward mathematical maturity. We also recognize that many students who hesitate to ask for help from an instructor need a readable text, and we have tried to anticipate the questions that go unasked. The wide range of examples in the text are meant to augment the \"favorite examples\" that most instructors have for teaching the topcs in discrete mathematics. To provide diagnostic help and encouragement, we have included solutions and/or hints to the odd-numbered exercises. These solutions include detailed answers whenever warranted and complete proofs, not just terse outlines of proofs. Our use of standard terminology and notation makes Applied Discrete Structures a valuable reference book for future courses. Although many advanced books have a short review of elementary topics, they cannot be complete. The text is divided into lecture-length sections, facilitating the organization of an instructor's presentation.Topics are presented in such a way that students' understanding can be monitored through thought-provoking exercises. The exercises require an understanding of the topics and how they are interrelated, not just a familiarity with the key words. An Instructor's Guide is available to any instructor who uses the text. It includes: Chapter-by-chapter comments on subtopics that emphasize the pitfalls to avoid; Suggested coverage times; Detailed solutions to most even-numbered exercises; Sample quizzes, exams, and final exams. This textbook has been used in classes atCasper College (WY), Grinnell College (IA), Luzurne Community College (PA), University of the Puget Sound (WA).",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Applied"
+  ],
+  "authors": [
+    "Alan Doerr - Author / Kenneth Levasseur - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Alan Doerr & Kenneth Levasseur",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/applied-discrete-structures"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "In writing this book, care was taken to use language and examples that gradually wean students from a simpleminded mechanical approach andmove them toward mathematical maturity. We also recognize that many students who hesitate to ask for help from an instructor need a readable text, and we have tried to anticipate the questions that go unasked. The wide range of examples in the text are meant to augment the \"favorite examples\" that most instructors have for teaching the topcs in discrete mathematics. To provide diagnostic help and encouragement, we have included solutions and/or hints to the odd-numbered exercises. These solutions include detailed answers whenever warranted and complete proofs, not just terse outlines of proofs. Our use of standard terminology and notation makes Applied Discrete Structures a valuable reference book for future courses. Although many advanced books have a short review of elementary topics, they cannot be complete. The text is divided into lecture-length sections, facilitating the organization of an instructor's presentation.Topics are presented in such a way that students' understanding can be monitored through thought-provoking exercises. The exercises require an understanding of the topics and how they are interrelated, not just a familiarity with the key words. An Instructor's Guide is available to any instructor who uses the text. It includes: Chapter-by-chapter comments on subtopics that emphasize the pitfalls to avoid; Suggested coverage times; Detailed solutions to most even-numbered exercises; Sample quizzes, exams, and final exams. This textbook has been used in classes atCasper College (WY), Grinnell College (IA), Luzurne Community College (PA), University of the Puget Sound (WA)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 282
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "160",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

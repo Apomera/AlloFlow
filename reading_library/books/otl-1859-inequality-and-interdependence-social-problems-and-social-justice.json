@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1859-inequality-and-interdependence-social-problems-and-social-justice",
+  "title": "Inequality and Interdependence: Social Problems and Social Justice",
+  "description": "Inequality and Interdependence: Social Problems and Social Justice examines the persistent social problems of our world, asking both who suffers and who benefits. We explore inequality in issues that challenge communities today, such as education, mental health, death and dying, and disaster recovery, among others. We invite students to celebrate the work of those who remind us of our interdependence, to imagine powerful equitable solutions, and to co-create a more just world.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Sociology"
+  ],
+  "authors": [
+    "Kimberly Puttman - Author / Kathryn Burrows - Author / Bethany Grace Howe - Author / Nora Karena - Author / Patricia Antoine - Author / Kelly Szott - Author / Avery Temple - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Oregon Educational Resources",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/inequality-and-interdependence-social-problems-and-social-justice"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Inequality and Interdependence: Social Problems and Social Justice examines the persistent social problems of our world, asking both who suffers and who benefits. We explore inequality in issues that challenge communities today, such as education, mental health, death and dying, and disaster recovery, among others. We invite students to celebrate the work of those who remind us of our interdependence, to imagine powerful equitable solutions, and to co-create a more just world."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 95
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1859",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

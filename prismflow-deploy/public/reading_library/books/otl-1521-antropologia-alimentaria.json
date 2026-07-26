@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1521-antropologia-alimentaria",
+  "title": "Antropología Alimentaria",
+  "description": "El libro presenta una exploración profunda de la relación entre la alimentación y la evolución humana. Inicia descifrando los cambios dietéticos de los primeros homínidos y cómo estos cambios influenciaron su desarrollo físico y cognitivo, desde la dentición hasta el aumento del tamaño cerebral. Luego analiza la influencia cultural y sociopolítica en la dieta de antiguas civilizaciones como Egipto, Roma y China. Se destaca la alimentación en culturas precolombinas, resaltando la diversidad agrícola, sus prácticas sostenibles y la conexión cósmica con la tierra. Aborda también, la Revolución Industrial y cómo transformó los patrones alimentarios, llevando a problemas de salud en la modernidad. También se discute la \"revolución verde\" y las tecnologías para mejorar la producción alimentaria. Y finalmente se explica sobre la sostenibilidad en los sistemas alimentarios y las innovaciones para el futuro, como la carne de laboratorio y la nutrición basada en insectos. El libro concluye reconociendo la nutrición como una ciencia multidisciplinaria, que busca garantizar la salud y calidad de vida. Esta obra es el resultado de un esfuerzo colectivo de académicos que buscan entender la alimentación humana desde sus orígenes hasta el presente.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - History"
+  ],
+  "authors": [
+    "Carmen Patricia Viteri-Robayo - Author / Fatima Vanessa Mallitasig-Endara - Author / Sayuri Adalid Tapia-Barahona - Author / Verónica Alexandra Robayo-Zurita - Author / Leticia Andreina Lozada-Tobar - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/antropologia-alimentaria"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "El libro presenta una exploración profunda de la relación entre la alimentación y la evolución humana. Inicia descifrando los cambios dietéticos de los primeros homínidos y cómo estos cambios influenciaron su desarrollo físico y cognitivo, desde la dentición hasta el aumento del tamaño cerebral. Luego analiza la influencia cultural y sociopolítica en la dieta de antiguas civilizaciones como Egipto, Roma y China. Se destaca la alimentación en culturas precolombinas, resaltando la diversidad agrícola, sus prácticas sostenibles y la conexión cósmica con la tierra. Aborda también, la Revolución Industrial y cómo transformó los patrones alimentarios, llevando a problemas de salud en la modernidad. También se discute la \"revolución verde\" y las tecnologías para mejorar la producción alimentaria. Y finalmente se explica sobre la sostenibilidad en los sistemas alimentarios y las innovaciones para el futuro, como la carne de laboratorio y la nutrición basada en insectos. El libro concluye reconociendo la nutrición como una ciencia multidisciplinaria, que busca garantizar la salud y calidad de vida. Esta obra es el resultado de un esfuerzo colectivo de académicos que buscan entender la alimentación humana desde sus orígenes hasta el presente."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 209
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1521",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

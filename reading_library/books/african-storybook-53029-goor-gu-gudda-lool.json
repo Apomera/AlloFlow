@@ -1,0 +1,169 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-53029-goor-gu-gudda-lool",
+  "title": "Góor Gu Gudda Lool",
+  "description": "Góor gi ci nettali bii gudd na lool ba lépp lu ko wër dafa gatt walla tuuti lool. Mu solvee jafe-jafe bii ci def ay mbir yu méngoo ak tolluwaayam.",
+  "language": "Wolof",
+  "langCode": "wo",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Cornelius Wambi Gulere"
+  ],
+  "illustrators": [
+    "Catherine Groenewald"
+  ],
+  "translators": [
+    "ak Cornelius Wambi Gulere"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Cornelius Wambi Gulere",
+      "role": "Author"
+    },
+    {
+      "name": "ak Cornelius Wambi Gulere",
+      "role": "Translation"
+    },
+    {
+      "name": "Catherine Groenewald",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Cornelius Wambi Gulere (Author); ak Cornelius Wambi Gulere (Translation); Catherine Groenewald (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=53029",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=53029",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "53029",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-578ba7bacc1e830e",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/309.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/309.png",
+      "text": "Ay paxam dafa gatt lool.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=53029#page=1",
+      "sourceDigest": "sha256:35fb3acd7f958d309dc38bf588299b2686adefa22fbeb9568a5353a9042519e5"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/310.png",
+      "text": "Buntam dafa suufe lool.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=53029#page=2",
+      "sourceDigest": "sha256:33ecd324a0d36567fb703b70a57386f75d64d2d9b963ad8da502754fdda6ec18"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/311.png",
+      "text": "Lalam dafa gatt lool.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=53029#page=3",
+      "sourceDigest": "sha256:1f7f1b7620ed8f01f70c64c490925d541f12fc25090bf03ee20e49d9b464f0a6"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/314.png",
+      "text": "Ay bisikletam dafa gatt lool.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=53029#page=4",
+      "sourceDigest": "sha256:6bd6f0e25c128ead6310ef80e75de83619f0df318c5c7bea45da16d7044c3a9b"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/313.png",
+      "text": "Góor gii gudd na lool!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=53029#page=5",
+      "sourceDigest": "sha256:ded661484b0f9fde309eca9f070d8e796da6823593c87d4d467e83c74aac14f5"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/316.png",
+      "text": "Moo def bant bu gudd.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=53029#page=6",
+      "sourceDigest": "sha256:14afc925fc1a4e2791fcd067714e695610aaea1b21090f60fafaba8583d249e4"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/315.png",
+      "text": "Moo def bunt yu kawe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=53029#page=7",
+      "sourceDigest": "sha256:5f09711355408c9aafa88d53f274f9969ae2fd558d273d96c76a821c858a50c3"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/317.png",
+      "text": "Moo jënd bisiklet bu kawe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=53029#page=8",
+      "sourceDigest": "sha256:d8e56184183bc2c657084aaa173e4f2e9b481bcf4c126e4fa07dd8826c60633d"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/318.png",
+      "text": "Moo def lal bu gudd.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=53029#page=9",
+      "sourceDigest": "sha256:0b37e2a4de617145007eb8e4d0b3d0e3a835b48395f83ac8bd4f2107254c1399"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/319.png",
+      "text": "Moo toog ci toogu bu kawe. Moo lekk ak furset bu gudd.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=53029#page=10",
+      "sourceDigest": "sha256:5c0d9831a2075f635e4f5a0a1021dd13599278eabb64c34c4ac644a8caaae71e"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/320.png",
+      "text": "Mu génn këram dem dëkk ci àll bu mag. Mu dund at yu bare.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=53029#page=11",
+      "sourceDigest": "sha256:5b57a25bf7cb4a23750952aac8bb1370436187ffd566de97b7dca8ee03269929"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 69
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:72be7ba00aea268862bdf2efd5c0037fd40e19131422d480a77c648319337e75"
+  }
+}

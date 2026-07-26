@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1947-human-anatomy-and-physiology-laboratory-booklet",
+  "title": "Human Anatomy and Physiology Laboratory Booklet",
+  "description": "This laboratory manual presents a diverse collection of hands-on and interactive activities designed to enhance understanding of human anatomy and physiology. Students will engage with skeletal anatomy by creating and decoding messages using bone terminology with anatomical models and by performing bone measurements to analyze relationships with physical attributes. The manual delves into neuroscience by investigating the perception of binaural beats through auditory experiments and by utilizing the Neuronify simulation tool to construct and analyze neural circuits demonstrating synaptic summation. Physiological concepts are explored through experiments on respiratory rate dynamics in response to exercise and the principles of lung surfactant action. Additionally, students will apply anatomical terminology to describe dance movements. These activities collectively foster skills in data collection, critical analysis, and collaborative learning.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine - Anatomy"
+  ],
+  "authors": [
+    "Martilias Farrell - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "The Pennsylvania Alliance for Design of Open Textbooks (PA-ADOPT)",
+  "license": "CC0 1.0 catalog metadata · linked title: No Rights Reserved",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/human-anatomy-and-physiology-laboratory-booklet"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "No Rights Reserved"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This laboratory manual presents a diverse collection of hands-on and interactive activities designed to enhance understanding of human anatomy and physiology. Students will engage with skeletal anatomy by creating and decoding messages using bone terminology with anatomical models and by performing bone measurements to analyze relationships with physical attributes. The manual delves into neuroscience by investigating the perception of binaural beats through auditory experiments and by utilizing the Neuronify simulation tool to construct and analyze neural circuits demonstrating synaptic summation. Physiological concepts are explored through experiments on respiratory rate dynamics in response to exercise and the principles of lung surfactant action. Additionally, students will apply anatomical terminology to describe dance movements. These activities collectively foster skills in data collection, critical analysis, and collaborative learning."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: No Rights Reserved. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 149
+  },
+  "linkedContentLicense": "No Rights Reserved",
+  "externalRecordId": "1947",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

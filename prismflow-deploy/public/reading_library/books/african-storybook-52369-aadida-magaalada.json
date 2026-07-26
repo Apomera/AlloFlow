@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52369-aadida-magaalada",
+  "title": "Aadida Magaalada",
+  "description": "Wiil ayaa markii ugu horreysay booqanaya adeerkiis magaalada weyn!",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Lesley Koyi"
+  ],
+  "illustrators": [
+    "Brian Wambi"
+  ],
+  "translators": [
+    "Ibrahim Hussein"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Lesley Koyi",
+      "role": "Author"
+    },
+    {
+      "name": "Ibrahim Hussein",
+      "role": "Translation"
+    },
+    {
+      "name": "Brian Wambi",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Lesley Koyi (Author); Ibrahim Hussein (Translation); Brian Wambi (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52369",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-0d750619223e127a",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/15008.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14993.png",
+      "text": "Boostaajada baska ee magaaladayda dad ayaa ka buuxay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=1",
+      "sourceDigest": "sha256:68e4178be756ca71e74cfbbd51e9bf5c5abf87d8bdbf03c62bf0d5ff749b7763"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14994.png",
+      "text": "Kaaliyaha baska ayaa qayliyay, \"Magaalada ayaan tegaynaa! Hadda ayaan dhaqaaqeynaa!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=2",
+      "sourceDigest": "sha256:f2156465c7632eacd60a923cf8214d2ed19d36bea1ef60c6581d7bb872629182"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14995.png",
+      "text": "Dadka ayaa is-riixayay si ay baska u fuulaan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=3",
+      "sourceDigest": "sha256:a67df67f6663e933db4faacdcb76275cb38322ca31b9730a0c769c3a9fd30602"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14997.png",
+      "text": "Dumarkii ciyaalka haystay ayaa fadhiistay. Safarku wuxuu ahaa mid dheer.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=4",
+      "sourceDigest": "sha256:414c6cb9a6749e1fb60ebd5bb17b8baae85660a439efcd614ccf7ac6baad6e9d"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14996.png",
+      "text": "Waxaan fadhiistay dhanka dariishada, nin agtiis.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=5",
+      "sourceDigest": "sha256:b8045d6e49e6bbab93bcc5e243fa0804a41acdd9d72096fd019150760fb08c8e"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14998.png",
+      "text": "Waxaan is iri, \"Magaalada weyn ayaan tegayaa! Gurigayga waan u xiisi doonaa.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=6",
+      "sourceDigest": "sha256:1711c9634b4f999f994c9eb85848a165307b1211879ec8102908c43c5d42574e"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14999.png",
+      "text": "Waxaa jiray dad badan oo wadooyinka ku iibinayay alaabtooda.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=7",
+      "sourceDigest": "sha256:4e50cc94dab7fbd9aac00b1c1a2d142f8ce264642f46436726cac19ec45ebf83"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15000.png",
+      "text": "Rakaabka qaarkood waxay iibsadeen alaabo. Anigu lacag uma haynin inaan wax iibsado.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=8",
+      "sourceDigest": "sha256:1f7eae8c5412282cb0e18b767e33b494603be0fcd8732f74f1e9a4bb4569bc7f"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15001.png",
+      "text": "Si kedis ah, darawalkii ayaa yeeriyay hoonka. Waqtigii bixitaanka ayaa la gaaray.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=9",
+      "sourceDigest": "sha256:3c265a4d734e797bb57b1bd3a35d0ccb98950497effe2467335fccc162f83552"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15002.png",
+      "text": "Dadkii wadooyinka ku iibinayay alaabta ayaa is riixay si ay uga baxaan baska.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=10",
+      "sourceDigest": "sha256:4299d9a1896a00bde71af8e54216b0b6515f299964a320d2e3738f1481ad5854"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15003.png",
+      "text": "\"Goormee ayaan laabanayaa?\" anigaa is weydiiyay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=11",
+      "sourceDigest": "sha256:c6b7c56beccbe5ab3effda50de629420e29f58d17233af38ee0a24c700918987"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15004.png",
+      "text": "Baska gudihiisa kuleel ayuu ahaa. Indhaha ayan isku qabtay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=12",
+      "sourceDigest": "sha256:77ba10ef08d4cfb490b8f97602a97a6a9c00d9b59af0506072c53a5f84e9bed2"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15005.png",
+      "text": "Waxaan ka fikiray hooyaday iyo walaalkay guriga.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=13",
+      "sourceDigest": "sha256:90f3d1b093de28b11d3225da9171618091c48d126f9c50f797c08a40065a901e"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15006.png",
+      "text": "Si tartiib ah ayaan u seexday.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=14",
+      "sourceDigest": "sha256:3869c815f6a98981f200641b48d7eea6329b74a33162afe64b84fd19cccfaf66"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15007.png",
+      "text": "Saacado badan ka dib ayaan soo toosay. Dadka intoodii badneyd way baxeen.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=15",
+      "sourceDigest": "sha256:d6c7db37f90a2cdadf83440cd2e1f56752aee0fd5c4e0232d19d0c4064abb251"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15008.png",
+      "text": "Waqtigii la raadin lahaa guriga adeerkey ayaa la gaaray.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52369#page=16",
+      "sourceDigest": "sha256:dcb9b5828a75e38f88669073768f83b6bc52e6f5a367a679b1b09d69f72ab608"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 149
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:3104924639d24dff4129a00b1aa45b908063e4fb9a68a6bfbef2f7d577b09f54"
+  }
+}

@@ -51,6 +51,46 @@ class FakeAudio {
   addEventListener(type, listener) { this.listeners.set(type, listener); }
 }
 
+class SequenceAudio extends FakeAudio {
+  constructor(src) {
+    super(src);
+    this.muted = false;
+    this.preload = '';
+    this.load = vi.fn();
+  }
+}
+
+function makePlaySequenceDeps(overrides = {}) {
+  return {
+    isPlaying: true,
+    isPaused: false,
+    isMuted: false,
+    selectedVoice: 'Kore',
+    voiceSpeed: 1,
+    voiceVolume: 1,
+    currentUiLanguage: 'English',
+    leveledTextLanguage: 'English',
+    playbackSessionRef: { current: 17 },
+    audioRef: { current: null },
+    playbackRateRef: { current: 1 },
+    audioBufferRef: { current: {} },
+    setPlaybackState: vi.fn(),
+    setIsGeneratingAudio: vi.fn(),
+    setIsPlaying: vi.fn(),
+    stopPlayback: vi.fn(),
+    callTTS: vi.fn(async (text) => `blob:${text}`),
+    addBlobUrl: vi.fn(),
+    releaseBlob: vi.fn(),
+    warnLog: vi.fn(),
+    debugLog: vi.fn(),
+    playSequence: vi.fn(),
+    personaState: {},
+    _ttsState: {},
+    _isCanvasEnv: false,
+    ...overrides,
+  };
+}
+
 beforeAll(() => {
   React = require(resolve(MODULES_DIR, 'react'));
   ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
@@ -167,6 +207,78 @@ describe('sequenceBufferKey (cross-resource buffer identity)', () => {
     const b = PK.sequenceBufferKey(0, 'Kore', 'New resource sentence.');
     expect(a).not.toBe(b);
     expect(PK.sequenceBufferKey(0, 'Kore', 'Old resource sentence.')).toBe(a);
+  });
+});
+
+describe('playSequence silent-unit and look-ahead resilience', () => {
+  it('advances past a citation-only current unit without highlighting or requesting TTS', async () => {
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const stalePreload = { pause: vi.fn() };
+    const deps = makePlaySequenceDeps();
+    const sentences = ['[6]', 'Next sentence.'];
+
+    await PK.playSequence(
+      0, sentences, 17, 'standard', {}, null, stalePreload, 0, null, deps, 'alignment-test'
+    );
+
+    expect(stalePreload.pause).toHaveBeenCalledTimes(1);
+    expect(deps.callTTS).not.toHaveBeenCalled();
+    expect(deps.setPlaybackState).not.toHaveBeenCalled();
+    expect(deps.setIsGeneratingAudio).not.toHaveBeenCalled();
+    expect(audioInstances).toHaveLength(0);
+    expect(deps.playSequence).toHaveBeenCalledTimes(1);
+    const handoff = deps.playSequence.mock.calls[0];
+    expect(handoff[0]).toBe(1);
+    expect(handoff[1]).toBe(sentences);
+    expect(handoff[2]).toBe(17);
+    expect(handoff[6]).toBeNull();
+  });
+
+  it('does not synthesize or preload an Audio element for an empty look-ahead unit', async () => {
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const deps = makePlaySequenceDeps();
+    const sentences = ['First sentence.', '[6]'];
+
+    await PK.playSequence(
+      0, sentences, 17, 'standard', {}, null, null, 0, null, deps, 'alignment-test'
+    );
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(deps.callTTS.mock.calls.map((call) => call[0])).toEqual(['First sentence.']);
+    expect(audioInstances.map((audio) => audio.src)).toEqual(['blob:First sentence.']);
+
+    await audioInstances[0].onended();
+    const handoff = deps.playSequence.mock.calls[0];
+    expect(handoff[0]).toBe(1);
+    expect(handoff[6]).toBeNull();
+  });
+
+  it('never constructs Audio with a null look-ahead URL and hands off without a preload', async () => {
+    audioInstances = [];
+    vi.stubGlobal('Audio', SequenceAudio);
+    const callTTS = vi.fn()
+      .mockResolvedValueOnce('blob:first')
+      .mockResolvedValueOnce(null);
+    const deps = makePlaySequenceDeps({ callTTS });
+    const sentences = ['First sentence.', 'Second sentence.'];
+
+    await PK.playSequence(
+      0, sentences, 17, 'standard', {}, null, null, 0, null, deps, 'alignment-test'
+    );
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(callTTS.mock.calls.map((call) => call[0])).toEqual(sentences);
+    expect(audioInstances.map((audio) => audio.src)).toEqual(['blob:first']);
+    expect(audioInstances.some((audio) => audio.src == null)).toBe(false);
+
+    await audioInstances[0].onended();
+    const handoff = deps.playSequence.mock.calls[0];
+    expect(handoff[0]).toBe(1);
+    expect(handoff[6]).toBeNull();
   });
 });
 

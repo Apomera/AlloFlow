@@ -1,0 +1,232 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-10647-nonyana-ea-pula",
+  "title": "Nonyana ea pula",
+  "description": "Nonyana ea pula e lula ka morung. Ha metse e efepa lijo, e tlisa pula. Baba botsoa ba lebala ka eona. Ea emisa ho tlisa pula. Ngoanana ea monyane ea bitsoang Palesa a thusa batho ba motse ho baruta ka nonyana, hape nonyana ea pula ea tlisa pula hape.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Joanne Bloch (retold folktale)"
+  ],
+  "illustrators": [
+    "Wiehan de Jager"
+  ],
+  "translators": [
+    "Khothatso Ranoosi, Marion Drew"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Joanne Bloch (retold folktale)",
+      "role": "Author"
+    },
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Translation"
+    },
+    {
+      "name": "Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY-NC 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/3.0/",
+  "attribution": "Joanne Bloch (retold folktale) (Author); Khothatso Ranoosi, Marion Drew (Translation); Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "10647",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution. This edition is restricted to noncommercial use."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY-NC 3.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-c753ca1c7a6922c0",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/2156.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2156.png",
+      "text": "Ka hara naha e bitsoang Gabon, hone hona le motse o monyane pela moru oa lifate. Ka hara moru hone ho ena le sefate se seholo. Ka hare ho sefate seo, hone ho lula nonyana e ikhethileng. Ene e le nonyana ea pula.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=1",
+      "sourceDigest": "sha256:6df9c84187da35df989ea21335305caaf40483efbcba41465ce8be8c7299a6a4"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2159.png",
+      "text": "Lilemo-lemo tse ngata batho ba motse ba ne ba hlokomela nonyana ba ethabisa. Beke engoe le engoe, bane ba etlisetsa lijo tse monate. Bane ba beha lijo tsa eona tlasa sefate. Ba e letsetsa 'mino o monate ka lesiba.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=2",
+      "sourceDigest": "sha256:97e7310258bc80803423df4d089e93ec31c3ed5e9cf4b25f6dd8e465a222d693"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2160.png",
+      "text": "Eaba nonyana e ea theoha sefateng hoea lonoa metsi le hoja. Ha e khotsofetse ea bina 'mino o monate. Eare ha e qeta, ea ikotlolla mapheeo, eaba pula e eana.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=3",
+      "sourceDigest": "sha256:9607c283d528f806241901600dc2fcf282d02288f89b6a1c4f0cb082a717c5da"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2161.png",
+      "text": "Limela tsa hola hantle. Eaba hoba le lijo tse ngata, emong le emong o eaja. Empa lintho tsa fetoha. Batho ba motse oo, baba botsoa. Ba buoa bare, \"Hare e batle nonyana rona, rena le lijo tsengata tseo re lijang.\" Ba emisa ka hofepa nonyana.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=4",
+      "sourceDigest": "sha256:b52c38860f4346fc2de138a30b8f27badb83683f35cc3a900322cd4ee5ce1895"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2162.png",
+      "text": "Empa bane basa etse hantle. Pula ea emisa ka hona. Eaba joale ba hloka lijo tse ngata. Ba tlamaha hotsamaea ho ea hole, balo sheba chelete ea lijo. Empa hontse hole joalo, eaba haba nahane ka nonyana ea pula. Ba seke ba e fepa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=5",
+      "sourceDigest": "sha256:34e92a556cabddfb6bdc9600aa5705866676236d2aa790156c0dd1a2d8e0ba49"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2163.png",
+      "text": "Ka letsatsi leleng ho chesa haholo, ngoanana ea monyane ea bitsoang Palesa, o ne a ea hae a tsoa sekolong. A be a ea ka morung alo phola. A be a ea sefateng se seholo moo, nonyana ea pula e neng e lula teng. Eaba Palesa o re, \"Ke hopola ha rene retla mona le nkhono oaka pele a hlokahala retlo fepa nonyana ea pula.\" Ants'a bohobe bahae ka sekotlolong sa hae, a bobeha tlasa sefate. A bina pina ea khale eoo, nkhono oa hae a neng a morutile eona.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=6",
+      "sourceDigest": "sha256:97a5e4dcd7ec84c6773fdaf02bc2b1056e5d726dedf8d6680d3ccec787582358"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2163.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=7",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2164.png",
+      "text": "Hang-hang nonyana entle ea fofela fats'e hotloha sefateng. Ea kalella hoja bohobe. Eare ha e khotsofetse ea kalella ho bina pina ea eona e monate. Ea its'arolla mapheeo. Eaba Palesa o utloa letolo. Pele a fihla hae, pula ea na. Eana hape.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=8",
+      "sourceDigest": "sha256:a39aa91c584fbccd819e41f1c800581ba3429f8a78000a2ac9a00236f0e9d178"
+    },
+    {
+      "n": 9,
+      "img": null,
+      "text": "Palesa o ne a thabile haholo, alo koqela batsoali bahae hore na ho etsahetse eng. Eaba 'Me' oa hae o re, \"Sekaba sethoto tjena oena, a se nonyana e tlisitseng pula.\" Ntate oa hae a re, \"'M'e oa hao o buoa nnete. O se hlole o fepa nonyana eno e meharo hape. Honajoale rena le pula, kaofela re hantle.\" Palesa ahla a tseba hore batsoali bahae haba buoe nnete. Eaba Palesa o re, \"Ke lakatsa hore e ke nkhono oaka a kabe a leteng, o ne a tla lumellana le nna.\" Ntho eo, nkhono oa hae a neng a mosiile le eona, e ne e le lesiba.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=9",
+      "sourceDigest": "sha256:efc260a9446e795e35bdf28276a2513a1c1e815af73d59197fa0eae15fcead38"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2165.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=10",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2166.png",
+      "text": "Beke tse peli tsa feta. Letsatsi lene le chesa haholo le pula e le siko. Limela li sa hole. Liphoofolo line li lapile haholo. Palesa a re, \"Hake tsotelle hore na batsoali baka bakare eng. Re batla pula. Hosasa ketlo fepa nonyana hape ka morung.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=11",
+      "sourceDigest": "sha256:8cbc69f75b524c28d801d99ce00cb752aee24fbc3aa6ce6e0863b916775c557f"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2167.png",
+      "text": "Joale ka hoseng hohong, Palesa a nka bohobe le morara ka ntlong eoo ho pheheloang ka ho eona. A ea ka morung holo fepa nonyana. O ne a sa tsebe hore Ntate oa hae o 'mone hanka lijo. O ne a tseba hore Palesa o lo fepa nonyana.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=12",
+      "sourceDigest": "sha256:2868bfd988686287815f5b08e2576da132548ec52c94eb96ff9d66dc61e3adc5"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2168.png",
+      "text": "O ne a koatile haholo. Ntate oa hae a re, \"e noa ngoanana ketla moruta ntho ea sa e tsebeng.\" A nka motsu le seqha sa hae a mosala morao hoea ka morung. Palesa a be a beha lijo tsa nonyana tlasa sefate. Nonyana ea be e fofela fats'e holo ja.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=13",
+      "sourceDigest": "sha256:e97f5b2dfde99e932450376b501a1f3f389fb3fe9df6765250f2571197002e54"
+    },
+    {
+      "n": 14,
+      "img": null,
+      "text": "Ntate oa Palesa a be a betsa nonyana e na ka seqha a e otla pelong ka motsu. Empa motsu oa seke oa bolaha nonyana eno. Motsu oabe o khutlela ho Ntate oa Palesa, oa motla pelong a oela fat'se. Palesa a be a hetla a sheba Ntate oa hae. A bona Ntate oa hae a oela. Motsu oa seqha o ne o mohlabile pelong. O ne a shoele. Nonyana ea fofa e khutlela holima sefate.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=14",
+      "sourceDigest": "sha256:cf803efc15221121528ddef8caac12b3654921c380965d2085f3f5746019167c"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2168.png",
+      "text": "",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=15",
+      "sourceDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2169.png",
+      "text": "Palesa a baleha a tsoa ka morung. A balehela hae motseng. A bona liphoofelo kaofela li shoele le batho ba hlokahetse kaofela. Palesa a re, \"Nonyana ea pula e ne e koatile, keka hona liphoofolo li shoeleng le batho ba hlokahetseng ka o fela.\" Palesa a re, \"Ketlameha ho etsa nonyana ena hore e thabe. Ke tlamehile.\" A fumana lesiba la Nkhono oa hae la khale.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=16",
+      "sourceDigest": "sha256:71c1b3a5c90575b2a5bc419fe4fb928dab499beba335c4402460db29f14dd5b0"
+    },
+    {
+      "n": 17,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2170.png",
+      "text": "Palesa a be a mathela ka morung. A bona Ntate oa hae a kakalletse fats'e. A be a lula tlasa sefate se seholo a bapala lesiba la Nkhono oa hae. A le letsa. A letsa hofihletse menoana ea hae e le bohloko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=17",
+      "sourceDigest": "sha256:f68c25a843bbe0339b154bcf20cdf2d9eb9ea64806c91f8a34c61ce8de62e599"
+    },
+    {
+      "n": 18,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2172.png",
+      "text": "Ho fihleletse nonyana e na e fofela fats'e hotsoa sefateng. Eaja bohobe bobonyane le moraranyana o mong. Palesa a be a e letsatsa lesiba. Nonyana ea be e bina hanyanenyana. Palesa eaba o ntse a tsoela pela ka ho bapala lesiba. Nonyana ea its'arolla mapheeo Palesa a utloa molumo ka morahae.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=18",
+      "sourceDigest": "sha256:66eae218dc1e3fb155bcd46f0fe2f598f38df9c678b8814801a99bcb322e9e55"
+    },
+    {
+      "n": 19,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2173.png",
+      "text": "E ne e le ntate oa hae. A boela a phela hape. Eaba ore, \"Nts'oarele! Nts'oarele,\" a buoa ho nonyana ea pula ka makhetlo a mangata. A ts'oara Palesa ka letsoho ba khutlela hae motseng. Ha bafihla moo, ba fumana liphoofolo tsohle Ii phela hape le batho bohle ba phela hape.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=19",
+      "sourceDigest": "sha256:1ca464fd5c282646596683892731e252b483f40aed28cf97f4487ec29b25c4b5"
+    },
+    {
+      "n": 20,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2174.png",
+      "text": "Bosiung boo, batho ba motse baba le kopano. Ba lumellana hore ba ithutile ho hong. Joale, hotloha kaleo letsatsi hoea hoile, haho fete le beke basa etela morung hoealo fepa nonyana e ba tlisetsang pula.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=10647#page=20",
+      "sourceDigest": "sha256:a7c8a389ad680b07923a70ced4c8972ac5419b2c908496e99c9a3c9b9316b224"
+    }
+  ],
+  "stats": {
+    "pages": 20,
+    "words": 905
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:2757dd187df02b6f8e6f3304e5d906c2a2d763e8f292d10538a6cc4e3cded7d2"
+  }
+}

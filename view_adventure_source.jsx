@@ -132,6 +132,7 @@ function AdventureView(props) {
   var handleToggleImmersiveShowChoices = props.handleToggleImmersiveShowChoices;
   var handleUseItem = props.handleUseItem;
   var toggleDemocracyMode = props.toggleDemocracyMode;
+  var openAdventureActionVote = props.openAdventureActionVote;
   // Pure helpers
   var renderFormattedText = props.renderFormattedText;
   var formatInteractiveText = props.formatInteractiveText;
@@ -463,7 +464,7 @@ function AdventureView(props) {
                                     <Pencil size={14} aria-hidden="true" /> <span className="hidden xl:inline">{t('adventure.edit_options_btn')}</span>
                                 </button>
                             )}
-                            {activeSessionCode && (
+                            {isTeacherMode && activeSessionCode && !adventureFreeResponseEnabled && (
                                 <button type="button"
                                     data-help-key="democracy_toggle" onClick={toggleDemocracyMode}
                                     className={`min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 ${
@@ -1234,29 +1235,50 @@ function AdventureView(props) {
                                                     adventureState.currentScene && (
                                                         adventureFreeResponseEnabled ? (
                                                             <div className="flex flex-col gap-3">
-                                                                {renderStrategyHintCard(true)}
-                                                                <textarea
-                                                                    aria-label={t('adventure.aria_free_response') || 'Type your adventure action'}
-                                                                    data-help-key="adventure_input_field" value={adventureTextInput}
-                                                                    onChange={(e) => setAdventureTextInput(e.target.value)}
-                                                                    onKeyDown={(e) => {
-                                                                        if (e.key === 'Enter' && !e.shiftKey && adventureTextInput.trim() && !adventureState.isLoading) {
-                                                                            e.preventDefault();
-                                                                            handleAdventureTextSubmit();
-                                                                        }
-                                                                    }}
-                                                                    placeholder={t('adventure.action_placeholder_short')}
-                                                                    className="w-full bg-black/50 text-white border border-white/30 rounded-xl p-3 focus:border-white focus:ring-2 focus:ring-white/20 outline-none resize-none h-24 text-sm font-medium placeholder:text-white/50 backdrop-blur-sm"
-                                                                    autoFocus
-                                                                />
-                                                                <button
-                                                                    type="button" data-help-key="adventure_input_send" onClick={() => handleAdventureTextSubmit()}
-                                                                    disabled={!adventureTextInput.trim() || adventureState.isLoading}
-                                                                    className="min-h-11 w-full bg-white/10 hover:bg-white/20 border border-white/30 hover:border-white text-white p-3 rounded-xl font-bold transition-all active:scale-95 motion-reduce:transform-none backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                                                                >
-                                                                    <Send size={16} aria-hidden="true" /> {t('adventure.send_action')}
-                                                                </button>
-                                                                {renderStrategyHintButton(true)}
+                                                                {!isTeacherMode && activeSessionCode ? (
+                                                                    <div role="status" className="rounded-xl border border-indigo-300 bg-indigo-950/80 p-4 text-sm text-indigo-100">
+                                                                        <strong className="block text-white">{t('adventure.teacher_controls_live') || 'The teacher controls this class adventure.'}</strong>
+                                                                        <span className="mt-1 block">{t('adventure.wait_for_action_round') || 'When a class-action round opens, submit your idea in the private live prompt. Free responses and votes are sent peer to peer.'}</span>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        {isTeacherMode && activeSessionCode && typeof openAdventureActionVote === 'function' ? (
+                                                                            <div className="rounded-xl border border-emerald-300 bg-emerald-950/70 p-3">
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={openAdventureActionVote}
+                                                                                    className="min-h-11 w-full rounded-lg border border-emerald-300 bg-emerald-700 px-3 py-2 text-sm font-black text-white hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                                                                                >
+                                                                                    <Users size={16} aria-hidden="true" /> {t('adventure.collect_class_actions') || 'Collect and vote on class actions'}
+                                                                                </button>
+                                                                                <p className="m-0 mt-2 text-[11px] leading-snug text-emerald-100">{t('adventure.collect_class_actions_privacy') || 'Student proposals and votes use the existing peer-to-peer Live Polling channel and are not written to the session document.'}</p>
+                                                                            </div>
+                                                                        ) : null}
+                                                                        {renderStrategyHintCard(true)}
+                                                                        <textarea
+                                                                            aria-label={t('adventure.aria_free_response') || 'Type your adventure action'}
+                                                                            data-help-key="adventure_input_field" value={adventureTextInput}
+                                                                            onChange={(e) => setAdventureTextInput(e.target.value)}
+                                                                            onKeyDown={(e) => {
+                                                                                if (e.key === 'Enter' && !e.shiftKey && adventureTextInput.trim() && !adventureState.isLoading) {
+                                                                                    e.preventDefault();
+                                                                                    handleAdventureTextSubmit();
+                                                                                }
+                                                                            }}
+                                                                            placeholder={t('adventure.action_placeholder_short')}
+                                                                            className="w-full bg-black/50 text-white border border-white/30 rounded-xl p-3 focus:border-white focus:ring-2 focus:ring-white/20 outline-none resize-none h-24 text-sm font-medium placeholder:text-white/50 backdrop-blur-sm"
+                                                                            autoFocus
+                                                                        />
+                                                                        <button
+                                                                            type="button" data-help-key="adventure_input_send" onClick={() => handleAdventureTextSubmit()}
+                                                                            disabled={!adventureTextInput.trim() || adventureState.isLoading}
+                                                                            className="min-h-11 w-full bg-white/10 hover:bg-white/20 border border-white/30 hover:border-white text-white p-3 rounded-xl font-bold transition-all active:scale-95 motion-reduce:transform-none backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                                                                        >
+                                                                            <Send size={16} aria-hidden="true" /> {t('adventure.send_action')}
+                                                                        </button>
+                                                                        {renderStrategyHintButton(true)}
+                                                                    </>
+                                                                )}
                                                             </div>
                                                         ) : (
                                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

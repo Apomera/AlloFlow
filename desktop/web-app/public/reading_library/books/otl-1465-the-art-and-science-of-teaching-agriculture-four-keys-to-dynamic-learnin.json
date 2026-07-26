@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1465-the-art-and-science-of-teaching-agriculture-four-keys-to-dynamic-learnin",
+  "title": "The Art and Science of Teaching Agriculture: Four Keys to Dynamic Learning",
+  "description": "The Art and Science of Teaching Agriculture: Four Keys to Dynamic Learning is a methods of teaching book. Specifically, it is a collection of thoughts, best practices, strategies, and techniques for planning, delivering, and assessing teaching and learning. This resource is assembled from among the best teaching professors in agricultural communication, education, and leadership in America. They have narrated their favorite class sessions … sessions chosen with the goal of making us all better teachers. You will quickly grasp the four fundamental keys of solid, basic, time-tested formal and nonformal teaching: Laying the Foundation, Connecting with Students, Designing Instruction, and Applying Learning. These keys are shared with you through the unique voices of the authors to provide a multiperspective approach to teaching. The authors offer both secondary and postsecondary educators in both formal and nonformal educational environments the opportunity to build confidence in planning, delivering, and assessing the depths of the variables inherent in learning. You will acquire the foundation to teach so your learners can learn dynamically. Are you reviewing or adopting this book for a course? Please help us understand your use by filling out this form: https://bit.ly/teachagriculture_interest",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Curriculum & Instruction",
+    "Education"
+  ],
+  "authors": [
+    "M. Susie Whittington - Editor / Rick Rudd - Editor / Jack Elliot - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Virginia Tech Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-art-and-science-of-teaching-agriculture-four-keys-to-dynamic-learning"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Art and Science of Teaching Agriculture: Four Keys to Dynamic Learning is a methods of teaching book. Specifically, it is a collection of thoughts, best practices, strategies, and techniques for planning, delivering, and assessing teaching and learning. This resource is assembled from among the best teaching professors in agricultural communication, education, and leadership in America. They have narrated their favorite class sessions … sessions chosen with the goal of making us all better teachers. You will quickly grasp the four fundamental keys of solid, basic, time-tested formal and nonformal teaching: Laying the Foundation, Connecting with Students, Designing Instruction, and Applying Learning. These keys are shared with you through the unique voices of the authors to provide a multiperspective approach to teaching. The authors offer both secondary and postsecondary educators in both formal and nonformal educational environments the opportunity to build confidence in planning, delivering, and assessing the depths of the variables inherent in learning. You will acquire the foundation to teach so your learners can learn dynamically. Are you reviewing or adopting this book for a course? Please help us understand your use by filling out this form: https://bit.ly/teachagriculture_interest"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 213
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1465",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

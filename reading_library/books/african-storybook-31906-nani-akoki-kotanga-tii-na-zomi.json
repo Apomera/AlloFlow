@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-31906-nani-akoki-kotanga-tii-na-zomi",
+  "title": "Nani akoki kotanga tii na zomi?",
+  "description": "Nani akokamba baniama soki Mokonzi Nkoyi atiki?",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "5",
+  "readingLevelLabel": "Read aloud",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Athieno Gertrude, Owino Ogot"
+  ],
+  "illustrators": [
+    "Salim Kasamba"
+  ],
+  "translators": [
+    "Theresa Nyemba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Athieno Gertrude, Owino Ogot",
+      "role": "Author"
+    },
+    {
+      "name": "Theresa Nyemba",
+      "role": "Translation"
+    },
+    {
+      "name": "Salim Kasamba",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Athieno Gertrude, Owino Ogot (Author); Theresa Nyemba (Translation); Salim Kasamba (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "31906",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-0de02e571d1aaab1",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/25319.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25317.png",
+      "text": "Mikolo mingi eleki, na kati ya zamba, Mokonzi Nkoyi abandi kokanisa oyo ekoya. Akanisi, nakomi mokolo, mpe tango mosusu na kokufa, banani bakozua bokonzi pe bakozala bilenge na nzoto kolongonu. Sikoyo Mokonzi Nkoyi akopona nani? Alingi baniama nionso ndenge moko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=1",
+      "sourceDigest": "sha256:d4857fb9cd053568ac6ae36cd17b7445874d7f85ee07a148f248f81172ac1e51"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25318.png",
+      "text": "Mokonzi Nkoyi azui likanisi. Atindi molobeli libanda na zamba. Alobi naye, kende benga baniama nionso baya na lopango ya Mokonzi. Tokozala na limpati monene pe akosakola likambo moko ya monene. Maloba epanzani, epai ya baniama nionso na zamba.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=2",
+      "sourceDigest": "sha256:c2bb6dd57af9266951f1e4741f0317105df8cb5766eeeaca01f360e8cffaa790"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25319.png",
+      "text": "Na butu ya limpati, baniama nionso bazalaki na lopango ya Mokonzi. Bazalaki koyemba pe kobina pe bazalaki na esengo. Sima sanza ebimi likolo ya nzete, Mokonzi Nkoyi aye pe atelemi na katikati na bango. Baniama nionso batiki koyemba pe kobina. Bakomi koyoka malamu. Alobi yango nakanisi boye totika lingomba bapona po na ngai.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=3",
+      "sourceDigest": "sha256:9402164f39f83e2d8d0eb4e05e7f99430dc26c068b177cb2535b8bfc7cbe1707"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25320.png",
+      "text": "Alobi na bango malamu, \"Nakomi kokanisa te ekomi ngonga na ngai naluka nani oyo akokonza bino. Kasi nalingi bino nionso ndenge moko. Nakoki te kopona na kati na bino nani azali malamu. Yango, nakanisi boye totika lingomba bapona po na ngai.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=4",
+      "sourceDigest": "sha256:d4ba27e8f5a894c63ef21d53ec94b1f5e73d3b569b47ea588e56a026b82509c7"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25321.png",
+      "text": "Mokonzi Nkoyi atelemi. Alobi, \"Nakati na bino nani oyo akoki kobuaka likonga monene oyo na likolo pe atanga yango ti na zomi liboso etuta na mabelé? Bongo akozua bokonzi.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=5",
+      "sourceDigest": "sha256:19764d85ebb20f672e4ade82c5d1fa9ab8a92cec05c2e8a792c92dc20b059bcd"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25322.png",
+      "text": "Ngai Mokonzi Nkoyi nasilisi koloba, baniama bagangi makasi na sima na ye. Sima babaluki pe bamoni Nzoku atelemi pe abuaki ekoti na kati. Bolongwa liboso na ngai. Nazali monene. Nakokoma mokonzi. Elobi Nzoku.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=6",
+      "sourceDigest": "sha256:eb50eb43edb1aa3536b1d5628ae4696693d69feae15b511d1452940b85f08459"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25323.png",
+      "text": "Nzoku azui likonga ya monene pe atindiki yango na motuka ya monene. Atiyi mutu na ye sima pe abwuaki likonga ya monene likoyo ya mapata. \"Moko! Mibale! Misato! Oo!\" Nzoku azalaki ya kosilika pe atelemi. Mokonzi Nkoyi alobi na ye, \"Okokaki kokanga chance nayo.\" Na sima Nzoku akei.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=7",
+      "sourceDigest": "sha256:88255ef58da69b5e47d9de107ffdd21b4f23a6d695b888ef8d470b4e6652d9df"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25324.png",
+      "text": "Na sima Nzoku akei, baniama babandi kolobana bango na bango. Bakomi lisusu koganga makasi makelele na sima ya Mokonzi. Nioka aye koloba, \"Bobima libanda na nzela na ngai. Bobima libanda na nzela na ngai. Naye kokoma Mokonzi.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=8",
+      "sourceDigest": "sha256:0f921b3f84f8d514600bf2c9dd29844622b820382b808292dd6a0e914ad32a04"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25325.png",
+      "text": "Nioka azongi sima, abwuaki likonga monene, pe abwuaki yango na mapata. \"Moko! Mibale! Misato! Minei! Mitano! Oo!\" agangi. Likonga ya monene ekweyi tango batangi motoba pe azalaki na kanda. Asopi soyi na likolo. Nkoyi alobi naye \"Nioka, obwaki kaka mbala moko pe ozali na chance na yo te.\" Nioka akei.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=9",
+      "sourceDigest": "sha256:8a1a07b094a9898f5ca4b2fdaa07eace943d6577ca0ef2066361e5f969eeabed"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25326.png",
+      "text": "Na sima na yango, baniama bakomi koloba, \"Bokonzi oyo ezali mpasi! Nzoku akokaki kozwua yango, pe azali ya solo monene. Nioka akoki kozwua yango te, pe azali makasi. Moko te akozwua bokonzi oyo!\" Sikoyo, bayoki makelele mosusu ekowuta na sima ya mokonzi tango baniama bakotala pembeni, bakoki kondimela miso na bango te.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=10",
+      "sourceDigest": "sha256:242fed9e7481a34273bae043b54fed8a2335e2d2b70162cfdbcf8b2079a3c07d"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25327.png",
+      "text": "Bamoni ape ya monene akoya liboso na bango. Ape aningani, ayembi, \"Nakoki kosala yango. Nayebi yango. Nakoki kosala yango.\" Ape azwui likonga monene pe abwuaki yango. Atindiki yango na loboko, liboso, pe epumbwe likolo na mopepe pe abwuaki likonga likolo na mapata. \"Moko! Mibale! Misato! Minei! Mitano! Motoba! Sambo! Oo!\" Ape agangi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=11",
+      "sourceDigest": "sha256:c7f541f0661495a5bc55eddcf48a11d5d9bd1afb11ca9d6decd4204cf1a48c89"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25328.png",
+      "text": "Likonga monene etuti mabele tango batangi muambe. Ape azalaki na kanda. Asilikaki makasi, abaluki, nakoloba pe kozwua makanisi mosusu. Kasi Mokonzi Nkoyi alobi na ye, \"Te, Ape, osengeli kozua chance mosusu.\" Pe Ape akei naye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=12",
+      "sourceDigest": "sha256:bae8f5b7aa4b8faa8f963aa9edb063af0c775f249073d1f28451951f05918b07"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25329.png",
+      "text": "Baniama mosusu babaluki pe babandi kozonga na ndako. Tango bakomi kozonga, bamoni mwana ya Mboloko akoya pembeni na bokonzi. Akokoka! Balobi, zela, zela, botika nameka. Nakoki kosala yango. Botika nameka. Tango baniama bayoki maloba naye, bango nionso babandi koseka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=13",
+      "sourceDigest": "sha256:aa35eb26dc4e9e60b8d4f6ea87685db642e730ea1b3c9efe0adf518de888b88a"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25330.png",
+      "text": "Monkonzi Nkoyi a pumbwe likolo pe angangi makasi nakanda, \"Botika makelele! Botika koseka Mboloko! Nani wana akoloba te ye azali niama ya moke akokoka te lokola baniama ya minene nde bakoki? Soki Mboloko alingi azwua chance, tokopesa lokola baniama nionso. Sikoyo botelema pe botika Mboloko abwuaka likonga monene.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=14",
+      "sourceDigest": "sha256:6acfba748fd14e6c021ef15ef8f6a033f0c34e49308b62344b40fc8646ad314f"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25331.png",
+      "text": "Mbokolo afukameli Mokonzi, abaluki pe azui likonga monene na monoko naye. Atali na sima, pe na makasi nioso na moke ya nzoto naye abandi kokima. Tango akomi na kati esika ya polele, apumbwe likolo. Apemi makasi, abwuaki likonga ya monene pe agangi, \"Mitano na mitano ezali zomi.\" Pe likonga monene etuti mabele.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=15",
+      "sourceDigest": "sha256:01183c00397056e78b57f59f72754e39ce3cfe24ed148f24ce26e42b3d0e4881"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25332.png",
+      "text": "Baniama nionso bafandi kimia. Bamiyebi lisusu te. Mokonzi Nkoyi alobi, \"Ya solo, Mboloko! Mitano na mitano ezali na ndenge mosusu ya kotanga po okoma na zomi.\" Bokonzi ezalaka te toluka niama ya monene to niama ya makasi. Ezalaki toluka niama ya malamu! Yango wana Mboloko akomaki Mokonzi tango Nkoyi akufaki.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=31906#page=16",
+      "sourceDigest": "sha256:0d60caea9b1011f443b6f5934db8f18e54a079d7f6b7df7d434df33ea93fc9f6"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 697
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:e84532267c6fb014554eec18ce3470643e07fb2eb257b581ec989b3978d8b90a"
+  }
+}

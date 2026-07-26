@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-395-proofs-and-concepts-the-fundamentals-of-abstract-mathematics",
+  "title": "Proofs and Concepts: The Fundamentals of Abstract Mathematics",
+  "description": "This free undergraduate textbook provides an introduction to proofs, logic, sets, functions, and other fundamental topics of abstract mathematics. It is designed to be the textbook for a bridge course that introduces undergraduates to abstract mathematics, but it is also suitable for independent study by undergraduates (or mathematically mature high-school students), or for use as a very inexpensive supplement to undergraduate courses in any field of abstract mathematics.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "Dave Witte Morris - Author / Joy Morris - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Dave Witte Morris, Joy Morris",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/proofs-and-concepts-the-fundamentals-of-abstract-mathematics"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This free undergraduate textbook provides an introduction to proofs, logic, sets, functions, and other fundamental topics of abstract mathematics. It is designed to be the textbook for a bridge course that introduces undergraduates to abstract mathematics, but it is also suitable for independent study by undergraduates (or mathematically mature high-school students), or for use as a very inexpensive supplement to undergraduate courses in any field of abstract mathematics."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2013."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 91
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "395",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

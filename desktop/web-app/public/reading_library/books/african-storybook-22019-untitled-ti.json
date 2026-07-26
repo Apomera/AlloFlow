@@ -1,0 +1,170 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-22019-untitled-ti",
+  "title": "ትምክሕተኛ ጊሐ",
+  "description": "ንባዕልኻ ካብ ካልኦት ዝበለፅካ ጌርካ ብምሕሳብ ኣብ ልዕሊ ካልኦት ትምክሕትን ሓይልን ምርኣይ ሓደጋ እዩ፡፡",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "ተኽለወይኒ ገብረኣሊፍ , ኣቡን ፍስሃ"
+  ],
+  "illustrators": [
+    "Adonay Gebru"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "ተኽለወይኒ ገብረኣሊፍ , ኣቡን ፍስሃ",
+      "role": "Author"
+    },
+    {
+      "name": "Adonay Gebru",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "ተኽለወይኒ ገብረኣሊፍ , ኣቡን ፍስሃ (Author); Adonay Gebru (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "22019",
+    "bookType": "1",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-ad522234a53cd008",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/25756.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25753.png",
+      "text": "ሓደ እዋን ኣብ ከውሒ ዝነብራ ብዙሓት መሓዙት ጊሐታት ነበራ፡፡ ካብኣተን ሓንቲ ጊሐ ንኹለን ትበልፀን ከም ዝዀነት ትነግረን ነበረት፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019#page=1",
+      "sourceDigest": "sha256:ce7f7f864b3248a1ecdfd790e2458bef3c121ce591ea7fa0f26cfc725758373f"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25754.png",
+      "text": "ንኹለን መሓዙታ ድማ ትፀርፈንን ትወቕሰንን ነይራ፡፡ ንሳተን ድማ ብተግባራ ኣዝየን ይሓርቃ ነይረን፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019#page=2",
+      "sourceDigest": "sha256:93f7c91cdb5cc6ae4499176c4039eb5df17b1ae01ae6c582f9c25660947dcec0"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25755.png",
+      "text": "ከምዚ ኢለን እናነበራ እንከለዋ ፤ ሓደ መዓልቲ በዚ መፀ ዘይተብሃለ ሓደ ወደል ስልሕልሖት ናብቲ ከባቢ መፀ፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019#page=3",
+      "sourceDigest": "sha256:d555a71b84696c91e06b00c2aee84632668484b83ab2ddfc5656f04cbc021b2f"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25756.png",
+      "text": "እታ ትምክሕተኛ ጊሐ ድማ ኣብ ዘለቶ ጠጠው ኢላ ጠመተቶ እሞ ፣\" እንታይ እዩ ክገብር? እስኪ ይምፃእ ፥ክሳዱ ሓኒቐ ክድርብዮ እየ\" በለተን፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019#page=4",
+      "sourceDigest": "sha256:9e5413a4beae9588572329a1e959739f2696297183e10e23171530d5a1b203d5"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25757.png",
+      "text": "እተን ካልኦት ጊሐታት ድማ ፣\"ንዒ ምስ ዘይዓቕምና ኣይንበኣስ ኣየዋፀአናን\" እንተበልኣ ንሳ ድማ ፣ \"ኪዳ ኪዳ ፈራሓት\" በለተን፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019#page=5",
+      "sourceDigest": "sha256:dbb2b984cfe0263ff2bedffabca4a42e317ee37ca2cd0df8e3438de7aec05303"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25758.png",
+      "text": "እቲ ስልሕልሖት ድማ ነጢሩ መፀ፡፡ ነታ ምክሕቲ ጊሐ ብኽሳዳ ሓነቓ ፡፡ ወያ ምክሕቲ ጊሐ \"እ. እ. እ ኣንትን መሓዙተይ በጃኽን እባ ኣገላግሉኒ?\" በለት፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019#page=6",
+      "sourceDigest": "sha256:8cbab5687a65fc872b3ac269ab887110cfdf55352964d8c84702f6f76fc53df0"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25759.png",
+      "text": "ንሳተን ድማ ፣\"ንባዕልና ክንብላዕ እንዲና ከመይ ገይርና ክነገላግለኪ\" በላኣ፡፡ ኣብ ኣፍደገ ጉድጓደን ኰይነን ድማ እንታይ ከም እትገብር ይዕዘባኣ ነበራ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019#page=7",
+      "sourceDigest": "sha256:98b05573d596237aa916e9bd80322a372a1851cd437d877a2fecd55eabcc1506"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25760.png",
+      "text": "እታ ምክሕቲ ጊሐ ፣ ከምዚ በለት ፤ \"እንታይ እየ ዝገብሮ እንታይ እዩ ወሪዱኒ ጨካን ስልሕልሖት ሎሚ ረኺቡኒ በጃኽን መሓዙተይ ኣገላግላኒ?\" ኢላ ለመነተን፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019#page=8",
+      "sourceDigest": "sha256:54eaf1e7c0d76a42d1b5e5336e215d6600800122a892564227e6709639f3523c"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25761.png",
+      "text": "መሓዙታ ድማ ከምዚ በለኣ ፤ \"ወዮ እቲ ሓይልኺ ወዮ እቲ ጃህራኺ ናበይ ድኣኸይዱ ሐዚ ዝበኸኺ ዘይሰድድ ሓያል ሎሚ ረኺቡኪ ንሕናስ ሰኪሕና ብሕማቕ ተግባርኪ ፋሕጠርጠር ድኣ በሊ ኣምልጢ ብዓልኺ\" በለኣ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019#page=9",
+      "sourceDigest": "sha256:f2053dba70a0539190aaf5d2be110e2f21b41aabdc57f141f84fa304d986bde0"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25762.png",
+      "text": "እቲ ስልሕልሖት ነታ ምክሕቲ ጊሐ ቁርጥምጥም ኣቢሉ በልዓ፡፡ ነተን ዝተረፋ ጊሐታት ድማ ክበልዐን ከደ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019#page=10",
+      "sourceDigest": "sha256:6eb9bc9f945ec0029f23c1c62a8a7412efca46f1d4707104c8d8e634196193ff"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25763.png",
+      "text": "እተን ጊሐታት ድማ ናብኣተን ዝመፅእ ምህላው ፈሊጠን ፤ ኣጀኹን ፤ ኣይትፍርሐ ኩልና ብሓደ ኾይና ነኺስና ነኺስና ክንቀትሎ ኢና\" በላ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019#page=11",
+      "sourceDigest": "sha256:79dad55bb2df7f4dcc9d797b38ea18b0325cf7385ad2671dbf865bb18f24b13a"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25764.png",
+      "text": "ወዮ ስልሕልሖት ድማ ናብኣተን ምስ ቀረበ ፤ እታ ሓንቲ ብኣፉ ፣ እታ ሓንቲ ብኸብዱ፣ እታ ሓንቲ ብጭርኡ ብምሓዝ ነኺሰን ነኺሰን ቀተልኦ፡፡ ብሰላም ድማ ምንባር ጀመራ ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=22019#page=12",
+      "sourceDigest": "sha256:b4aa1d7336b7c38262786981c4a985ed64155b7e2e32862105dc345d233855b2"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 236
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:beddc23e25c30d0d156b7c2852aae2c0055f8c481b5531608d3cde909b40a61b"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-34-principles-of-management",
+  "title": "Principles of Management",
+  "description": "Principles of Management teaches management principles to tomorrow's business leaders by weaving three threads through every chapter: strategy, entrepreneurship and active leadership. Strategic — All business school teachings have some orientation toward performance and strategy and are concerned with making choices that lead to high performance. Principles of Management will frame performance using the notion of the triple bottom-line — the idea that economic performance allows individuals and organizations to perform positively in social and environmental ways as well. The triple bottom line is financial, social, and environmental performance. It is important for all students to understand the interdependence of these three facets of organizational performance. The Entrepreneurial Manager — While the \"General Management\" course at Harvard Business School was historically one of its most popular and impactful courses (pioneered in the 1960s by Joe Bower), recent Harvard MBAs did not see themselves as \"general managers.\" This course was relabeled \"The Entrepreneurial Manager\" in 2006, and has regained its title as one of the most popular courses. This reflects and underlying and growing trend that students, including the undergraduates this book targets, can see themselves as entrepreneurs and active change agents, but not just as managers. By starting fresh with an entrepreneurial/change management orientation, this text provides an exciting perspective on the art of management that students can relate to. At the same time, this perspective is as relevant to existing for-profit organizations (in the form intrapreneurship) as it is to not-for-profits and new entrepreneurial ventures. Active Leadership — Starting with the opening chapter, Principles of Management shows students how leaders and leadership are essential to personal and organizational effectiveness and effective organizational change. Students are increasingly active as leaders at an early age, and are sometimes painfully aware of the leadership failings they see in public and private organizations. It is the leader and leadership that combine the principles of management (the artist's palette, tools, and techniques) to create the art of management. This book's modular format easily maps to a POLC (Planning, Organizing, Leading, and Controlling) course organization, which was created by Henri Fayol (General and industrial management (1949). London: Pitman Publishing company), and suits the needs of both undergraduate and graduate course in Principles of Management. This textbook has been used in classes at: College of Alameda, Columbia Basin College, Flagler College, Johnson County Community College, Pasadena City College, Penn State University, Renton Technical College, San Diego Mesa College, Sierra College, Yuba College.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Management"
+  ],
+  "authors": [
+    "Open Textbook Library record"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Minnesota Libraries Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/principles-of-management"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Principles of Management teaches management principles to tomorrow's business leaders by weaving three threads through every chapter: strategy, entrepreneurship and active leadership. Strategic — All business school teachings have some orientation toward performance and strategy and are concerned with making choices that lead to high performance. Principles of Management will frame performance using the notion of the triple bottom-line — the idea that economic performance allows individuals and organizations to perform positively in social and environmental ways as well. The triple bottom line is financial, social, and environmental performance. It is important for all students to understand the interdependence of these three facets of organizational performance. The Entrepreneurial Manager — While the \"General Management\" course at Harvard Business School was historically one of its most popular and impactful courses (pioneered in the 1960s by Joe Bower), recent Harvard MBAs did not see themselves as \"general managers.\" This course was relabeled \"The Entrepreneurial Manager\" in 2006, and has regained its title as one of the most popular courses. This reflects and underlying and growing trend that students, including the undergraduates this book targets, can see themselves as entrepreneurs and active change agents, but not just as managers. By starting fresh with an entrepreneurial/change management orientation, this text provides an exciting perspective on the art of management that students can relate to. At the same time, this perspective is as relevant to existing for-profit organizations (in the form intrapreneurship) as it is to not-for-profits and new entrepreneurial ventures. Active Leadership — Starting with the opening chapter, Principles of Management shows students how leaders and leadership are essential to personal and organizational effectiveness and effective organizational change. Students are increasingly active as leaders at an early age, and are sometimes painfully aware of the leadership failings they see in public and private organizations. It is the leader and leadership that combine the principles of management (the artist's palette, tools, and techniques) to create the art of management. This book's modular format easily maps to a POLC (Planning, Organizing, Leading, and Controlling) course organization, which was created by Henri Fayol (General and industrial management (1949). London: Pitman Publishing company), and suits the needs of both undergraduate and graduate course in Principles of Management. This textbook has been used in classes at: College of Alameda, Columbia Basin College, Flagler College, Johnson County Community College, Pasadena City College, Penn State University, Renton Technical College, San Diego Mesa College, Sierra College, Yuba College."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 429
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "34",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

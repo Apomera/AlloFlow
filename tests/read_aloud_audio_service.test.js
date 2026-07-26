@@ -396,6 +396,7 @@ describe('ReadAloudAudioService structured store inspection', () => {
         synthesisProfile: { voice: 'Puck' },
         legacy: false,
       })),
+      get: vi.fn(() => 'blob:stored-stale'),
       has: vi.fn(() => false),
       getCompatible: vi.fn(() => null),
     };
@@ -413,12 +414,16 @@ describe('ReadAloudAudioService structured store inspection', () => {
       persistencePolicy: 'durable',
     });
 
-    expect(controller.inspect('a')).toMatchObject({
+    const inspection = controller.inspect('a');
+    expect(inspection).toMatchObject({
       status: 'stale',
+      url: null,
+      storedUrl: 'blob:stored-stale',
       source: 'ai-generated',
       identity: { identityVersion: 4, segmentId: 'stable-segment' },
     });
     expect(structuredStore.inspect).toHaveBeenCalledWith('Edited answer.', expect.objectContaining({ voice: 'Kore' }));
+    expect(structuredStore.get).toHaveBeenCalledWith('Edited answer.');
     expect(structuredStore.has).not.toHaveBeenCalled();
     expect(structuredStore.getCompatible).not.toHaveBeenCalled();
   });
@@ -698,6 +703,15 @@ describe('ReadAloudAudioService legacy bridge identity safety', () => {
     });
 
     expect(harness.bridge.summary()).toMatchObject({ total: 2, ready: 1, stale: 1, missing: 0 });
+    expect(harness.bridge.inspect('Edited answer.')).toMatchObject({
+      status: 'stale',
+      url: null,
+      storedUrl: expect.stringMatching(/^blob:stored-/),
+      segment: {
+        segmentId: 'faq/0/answer',
+        spokenText: 'Edited answer.',
+      },
+    });
     const storedAnswer = Object.values(harness.referenceStore.serialize().entries)
       .find((entry) => entry.identity.segmentId === 'faq/0/answer');
     expect(storedAnswer.identity.spokenText).toBe('Original answer.');

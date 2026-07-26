@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1599-action-research",
+  "title": "Action Research",
+  "description": "Action research is a common journey for graduate students in education and other human science fields. This book attempts to meet the needs of graduate students, in-service teachers, and any other educators interested in action research and/or self-study. The chapters of this book draw on our collective experiences as educators in a variety of educational contexts, and our roles guiding educator/researchers in various settings. All of our experiences have enabled us to question and refine our own understanding of action research as a process and means for pedagogical improvement. The primary purpose of this book is to offer clear steps and practical guidance to those who intend to carry out action research for the first time. As educators begin their action research journey, we feel it is vital to pose four questions: 1) What is action research, and how is it distinct from other educational research?; 2) When is it appropriate for an educator to conduct an action research project in their context?; 3) How does an educator conduct an action research project?; 4) What does an educator do with the data once the action research project has been conducted? We have attempted to address all four questions in the chapters of this book.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Higher Education"
+  ],
+  "authors": [
+    "J. Spencer Clark - Author / Suzanne Porath - Author / Julie Thiele - Author / Morgan Jobe - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "New Prairie Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/action-research"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Action research is a common journey for graduate students in education and other human science fields. This book attempts to meet the needs of graduate students, in-service teachers, and any other educators interested in action research and/or self-study. The chapters of this book draw on our collective experiences as educators in a variety of educational contexts, and our roles guiding educator/researchers in various settings. All of our experiences have enabled us to question and refine our own understanding of action research as a process and means for pedagogical improvement. The primary purpose of this book is to offer clear steps and practical guidance to those who intend to carry out action research for the first time. As educators begin their action research journey, we feel it is vital to pose four questions: 1) What is action research, and how is it distinct from other educational research?; 2) When is it appropriate for an educator to conduct an action research project in their context?; 3) How does an educator conduct an action research project?; 4) What does an educator do with the data once the action research project has been conducted? We have attempted to address all four questions in the chapters of this book."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 227
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1599",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

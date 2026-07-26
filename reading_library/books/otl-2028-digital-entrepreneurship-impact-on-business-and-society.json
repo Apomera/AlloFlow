@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-2028-digital-entrepreneurship-impact-on-business-and-society",
+  "title": "Digital Entrepreneurship: Impact on Business and Society",
+  "description": "This open access book explores the global challenges and experiences related to digital entrepreneurial activities, using carefully selected examples from leading companies and economies that shape world business today and tomorrow. Digital entrepreneurship and the companies steering it have an enormous global impact; they promise to transform the business world and change the way we communicate with each other. These companies use digitalization and artificial intelligence to enhance the quality of decisions and augment their business and customer operations. This book demonstrates how cloud services are continuing to evolve; how cryptocurrencies are traded in the banking industry; how platforms are created to commercialize business, and how, taken together, these developments provide new opportunities in the digitalized era. Further, it discusses a wide range of digital factors changing the way businesses operate, including artificial intelligence, chatbots, voice search, augmented and virtual reality, as well as cyber threats and data privacy management.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business",
+    "Business - Entrepreneurship"
+  ],
+  "authors": [
+    "Mariusz Soltanifar - Editor / Mathew Hughes - Editor / Lutz Göcke - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Springer",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/digital-entrepreneurship-impact-on-business-and-society"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This open access book explores the global challenges and experiences related to digital entrepreneurial activities, using carefully selected examples from leading companies and economies that shape world business today and tomorrow. Digital entrepreneurship and the companies steering it have an enormous global impact; they promise to transform the business world and change the way we communicate with each other. These companies use digitalization and artificial intelligence to enhance the quality of decisions and augment their business and customer operations. This book demonstrates how cloud services are continuing to evolve; how cryptocurrencies are traded in the banking industry; how platforms are created to commercialize business, and how, taken together, these developments provide new opportunities in the digitalized era. Further, it discusses a wide range of digital factors changing the way businesses operate, including artificial intelligence, chatbots, voice search, augmented and virtual reality, as well as cyber threats and data privacy management."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 173
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "2028",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

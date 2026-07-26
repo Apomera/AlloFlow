@@ -120,7 +120,11 @@ describe('remaining remediation view async ownership', () => {
     expect(preview).toContain("const operationTicket = _beginRemediationOperation('preview-' + kind + '-audit'");
     expect(preview).toContain("getPdfPreviewHtml() === html");
     expect(preview.match(/if \(!previewIsCurrent\(\)\)/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(preview.match(/_commitAsyncHtmlIfCurrent\(operationTicket\.htmlToken/g)?.length).toBe(2);
+    expect(preview.match(/_commitHtmlPendingVerification\(operationTicket, html/g)?.length).toBe(2);
+    const pendingCommit = around('const _commitHtmlPendingVerification =', 0, 2500);
+    expect(pendingCommit).toContain('_remediationOperationIsCurrent(operationTicket)');
+    expect(pendingCommit).toContain('token.documentEpoch !== operationTicket.documentEpoch');
+    expect(pendingCommit).toContain('_commitAsyncHtmlIfCurrent(token');
     expect(preview).toContain('if (_completeRemediationOperation(operationTicket)) setPreviewAuditBusy');
 
     const audio = between('const _audioSourceSnapshotForJob =', '// Rebuild the job a saved project describes');
@@ -128,7 +132,9 @@ describe('remaining remediation view async ownership', () => {
     expect(audio).toContain("sourceVariant: 'plain'");
     expect(audio).toContain('fetch(url, { signal: operationTicket.controller');
     expect(audio.match(/_audioOperationIsCurrent\(operationTicket, j\)/g)?.length).toBeGreaterThanOrEqual(6);
-    expect(audio).toContain('_commitAsyncHtmlIfCurrent(ticket.htmlToken');
+    expect(audio).toContain('const token = _captureAsyncHtmlToken();');
+    expect(audio).toContain('token.documentEpoch !== ticket.documentEpoch || token.html !== ticket.htmlToken.html');
+    expect(audio).toContain('_commitAsyncHtmlIfCurrent(token');
     expect(audio).toContain('await _stitchAudioJob(true, operationTicket)');
     expect(audio).toContain('_completeRemediationOperation(operationTicket)');
   });

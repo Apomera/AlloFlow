@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-215-introduction-to-financial-accounting-2024-a-d",
+  "title": "Introduction to Financial Accounting - 2024-A-D",
+  "description": "Introduction to Financial Accounting, originally by D. Annand and H. Dauderis, is intended for a first course in introductory financial accounting. It has been extensively edited by Athabasca University and reflects current International Financial Reporting Standards (IFRS). A corporate approach is utilized, versus beginning with a sole proprietorship emphasis and then converting to a corporate approach. The textbook focuses on core introductory financial accounting topics that match pre-requisite requirements for students advancing to intermediate financial accounting. The textbook covers all essential topics, including: the accounting cycle; merchandising; assigning costs to inventory; cash and receivables; property, plant and equipment; debt financing; equity financing; statement of cash flows; financial statement analysis; and proprietorships and partnerships. The original Annand/Dauderis version of the textbook including .docx files and ancillary material remains available upon request to D. Annand (davida@athabascau.ca).",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Accounting",
+    "Business"
+  ],
+  "authors": [
+    "David Annand - Author / Henry Dauderis - Author / Tilly Jensen - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Lyryx",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-financial-accounting"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Introduction to Financial Accounting, originally by D. Annand and H. Dauderis, is intended for a first course in introductory financial accounting. It has been extensively edited by Athabasca University and reflects current International Financial Reporting Standards (IFRS). A corporate approach is utilized, versus beginning with a sole proprietorship emphasis and then converting to a corporate approach. The textbook focuses on core introductory financial accounting topics that match pre-requisite requirements for students advancing to intermediate financial accounting. The textbook covers all essential topics, including: the accounting cycle; merchandising; assigning costs to inventory; cash and receivables; property, plant and equipment; debt financing; equity financing; statement of cash flows; financial statement analysis; and proprietorships and partnerships. The original Annand/Dauderis version of the textbook including .docx files and ancillary material remains available upon request to D. Annand (davida@athabascau.ca)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 157
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "215",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

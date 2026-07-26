@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1499-a-developmental-systems-guide-for-child-and-adolescent-behavioral-health",
+  "title": "A Developmental Systems Guide for Child and Adolescent Behavioral Health Practitioners",
+  "description": "A Developmental Systems Guide for Child and Adolescent Behavioral Health Practitioners provides clinicians with actionable evidence-based practices for the assessment, diagnosis, and treatment of child and adolescent mental and behavioral health. This approach combines developmental psychology and ecological systems in recognition of the fact that children’s developmental challenges, tasks, and capacities intersect with the risks and protective factors of their environment. Chapters feature detailed case studies and conclude with conversations with clinicians in which they share targeted recommendations for patient evaluation, treatment approaches, and family engagement and support.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine"
+  ],
+  "authors": [
+    "Sean E. Snyder - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "North Broad Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-developmental-systems-guide-for-child-and-adolescent-behavioral-health-practitioners"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A Developmental Systems Guide for Child and Adolescent Behavioral Health Practitioners provides clinicians with actionable evidence-based practices for the assessment, diagnosis, and treatment of child and adolescent mental and behavioral health. This approach combines developmental psychology and ecological systems in recognition of the fact that children’s developmental challenges, tasks, and capacities intersect with the risks and protective factors of their environment. Chapters feature detailed case studies and conclude with conversations with clinicians in which they share targeted recommendations for patient evaluation, treatment approaches, and family engagement and support."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 111
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1499",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

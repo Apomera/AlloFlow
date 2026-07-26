@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-36347-lipotso-tsa-karabo",
+  "title": "Lipotso tsa Karabo",
+  "description": "Karabo o ne a khothalelitsoe ke batsoali ba hae ho botsa lipotso. Ho botsa lipotso ho lebisitse ho fumaneng ka sesebediswa sa 'Tippy Tap' le bohlokoa ba ho hlapa matsoho pele ho ho ja.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Jean de Dieu Bavugempore"
+  ],
+  "illustrators": [
+    "Rob Owen"
+  ],
+  "translators": [
+    "Khothatso Ranoosi, Marion Drew"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Jean de Dieu Bavugempore",
+      "role": "Author"
+    },
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Translation"
+    },
+    {
+      "name": "Rob Owen",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Jean de Dieu Bavugempore (Author); Khothatso Ranoosi, Marion Drew (Translation); Rob Owen (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "36347",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-fd8856cb5fc8a34a",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/25965.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25964.png",
+      "text": "Karabo o ne a rata ho botsa lipotso. O tloaelitsoe ke batsoali ba hae. Ba ne ba mo joetsa hore, \"Haeba u sa botse lipotso u sa le monyane, u tla hola u be motho e moholo ea sa tsebeng letho.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347#page=1",
+      "sourceDigest": "sha256:670f1e4d63632c1082dc4e46c7f5280c93c5bf6f2732991ec6962a9bc2b606e6"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25965.png",
+      "text": "Ka tsatsi le leng Karabo a botsa tichere ea hae, \"Hobaneng ha batsoali ba rona ba re joetsa hore re hlatsoe matsoho mehlaena pele reja, leha matsoho a rona a ntse a hloekile?\" Barutoana 'moho le eena ba rata potso ea hae. Bane ba sa rate ho joetsoa hore ba hlatsoe matsoho a bona!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347#page=2",
+      "sourceDigest": "sha256:b0eda39381c0c629f8539e9f0403f21392d51f89a9e0d1670d4610e844a633c7"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25966.png",
+      "text": "Tichere a araba, \"Potso e ntle! Leha matsoho a rona a shebahala a hloekile, a ka ba le likokoana-hloko ho ona.\" Tichere a hlalosa, \"Likokoana-hloko li baka mafu. Re ke ke ra bona likokoana-hloko ka mahlo fela, re hloka ntho e'ngoe e matla ho bona likokoana-hloko.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347#page=3",
+      "sourceDigest": "sha256:53beea3def6694e1175fce9836f5e3c77c8b20c251ddd778013ae8dabc9db3e7"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25967.png",
+      "text": "Tichere ea nts'a maekoroskoupu ka kh'aboteng. \"Maekoroskoupu ke sesebelisoa seo re se sebelisang ho bona lintho tse nyane haholo sebakeng sa mahlo a batho,\" ho rialo tichere. Tichere ea ngoapa matsoho a Karabo ka thupa 'me a e phumula khaleseng ea maekoroskoupu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347#page=4",
+      "sourceDigest": "sha256:563f6d54ae3dd7662eac14ffdc2925bd87f36f70e839844b935fe9c3e27682ff"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25968.png",
+      "text": "Tichere ea beha khalese holima maekoroskoupu. 'Me ke seo ba ileng ba se bona ka maekoroskoupu. Leha e le hore matsoho a Karabo a ne a sa shebahale a le lits'ila, a ne a ena le likokoana-hloko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347#page=5",
+      "sourceDigest": "sha256:879270e9cf7d839bfb735630140116c91db3ac2a07d17e88cd4c1c43420612b5"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25969.png",
+      "text": "\"Likokoana-hloko li re potipotile hohle, linthong tseo re li ts'oarang ka tlelaseng ya rona, lebaleng la lipapali kapa hae. Likoakoana-hloko tsena li ka re kulisa haholo,\" tichere ea ba hlokomelisa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347#page=6",
+      "sourceDigest": "sha256:bff390850ee926880c279df7b7714993f40351c940b1daba102c41e4c68bb8c9"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25970.png",
+      "text": "Tichere ea tsoela pele, \"Ho bolaea likokoana-hloko tsena, re hloka ho hlatsoa matsoho a rona ka metsi a hloekileng le sesepa, haholo-holo pele re ja. Hape ha re kula re tlameha ho hlatsoa matsoho a rona e le hore re se ke ra fetisetsa likokoana-hloko ho ba bang.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347#page=7",
+      "sourceDigest": "sha256:2ad39d32728c6afc81682ddb3a6682dc0f1ea5f2546d977ba0937c1702fa0ddb"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25971.png",
+      "text": "Eare ha Karabo a fihla hae, a fumana ntate oa hae a ntse a etsa sesebelisoa se khahlang. \"U etsang?\" a botsa. \"Sesebelisoa sena bitsoa, 'tippy tap',\" ho rialo ntate oa hae. \"U se sebelisa ho hlapa matsoho a hao.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347#page=8",
+      "sourceDigest": "sha256:18b79e324cbd630afe650c9d5d54797051da1064b141797e3c6100569c3e8627"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25972.png",
+      "text": "Karabo a makala eaba o re, \"Oho eea! Tichere ea rona e ile ea re bolella ka sesebelisoa sena. Empa bongata ba rona re ne re sa tsebe ka sona. Se sebelisoa joang?\" O ile a ts'eha a re ho eena, \"Atamela ke tlo u bonts'a morali oa ka.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347#page=9",
+      "sourceDigest": "sha256:848174f65e92d8a51a0c2657014c9f2bb16b420be7b5b386b303181cd360dff0"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25973.png",
+      "text": "\"Pele, hata thupanyana ena e fats'e,\" ho rialo ntate.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347#page=10",
+      "sourceDigest": "sha256:ee5078a547250d03becc844708bc9631260a7256a1d7eebfce10d7c36f2c72d6"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25974.png",
+      "text": "\"Joale, sekupu sa metsi se tla sekama se nts'etse metsi matsohong a hao. Hopola ho hlapa ka sesepa,\" a joetsa Karabo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347#page=11",
+      "sourceDigest": "sha256:39f2008b89fb13228ccb3d7c00ac8da885dfd65f34a42f7ec36ac292cdfb4ada"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25975.png",
+      "text": "Karabo o ne a thabile a re, \"Ke ne ke tla tseba joang hoja ka se ke ka botsa lipotso? Ke 'nete hore lipotso li etsa hore re be le tsebo.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36347#page=12",
+      "sourceDigest": "sha256:c1cfca334a9a250738bd3ac51751de67eeedc8a5511f0e746c36f39bce5e51fe"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 448
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:e5712cad04f602dfc45fc9c94aa16a9ff989b0c3345fd08466fb42a4952373e0"
+  }
+}

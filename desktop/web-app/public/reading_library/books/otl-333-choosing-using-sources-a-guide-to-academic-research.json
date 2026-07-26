@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-333-choosing-using-sources-a-guide-to-academic-research",
+  "title": "Choosing & Using Sources: A Guide to Academic Research",
+  "description": "Choosing & Using Sources presents a process for academic research and writing, from formulating your research question to selecting good information and using it effectively in your research assignments. Additional chapters cover understanding types of sources, searching for information, and avoiding plagiarism. Each chapter includes self-quizzes and activities to reinforce core concepts and help you apply them. There are also appendices for quick reference on search tools, copyright basics, and fair use. What experts are saying about Choosing & Using Sources: A Guide to Academic Research: “…a really fantastic contribution that offers a much needed broadened perspective on the process of research, and is packed to the brim with all kinds of resources and advice on how to effectively use them. The chapter on plagiarism is really excellent, and the chapter on searching for sources is utterly brilliant.” – Chris Manion, PhDCoordinator of Writing Across the Curriculum at Ohio State University “… an excellent resource for students, with engaging content, graphics, and examples—very compelling. The coverage of copyright is outstanding.” – J. Craig GibsonCo-chair of ACRL's Task Force on Information Literacy Competency Standards for Higher Education",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education",
+    "Student Success"
+  ],
+  "authors": [
+    "Cheryl Lowry - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Ohio State University Libraries",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/choosing-using-sources-a-guide-to-academic-research"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Choosing & Using Sources presents a process for academic research and writing, from formulating your research question to selecting good information and using it effectively in your research assignments. Additional chapters cover understanding types of sources, searching for information, and avoiding plagiarism. Each chapter includes self-quizzes and activities to reinforce core concepts and help you apply them. There are also appendices for quick reference on search tools, copyright basics, and fair use. What experts are saying about Choosing & Using Sources: A Guide to Academic Research: “…a really fantastic contribution that offers a much needed broadened perspective on the process of research, and is packed to the brim with all kinds of resources and advice on how to effectively use them. The chapter on plagiarism is really excellent, and the chapter on searching for sources is utterly brilliant.” – Chris Manion, PhDCoordinator of Writing Across the Curriculum at Ohio State University “… an excellent resource for students, with engaging content, graphics, and examples—very compelling. The coverage of copyright is outstanding.” – J. Craig GibsonCo-chair of ACRL's Task Force on Information Literacy Competency Standards for Higher Education"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 209
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "333",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

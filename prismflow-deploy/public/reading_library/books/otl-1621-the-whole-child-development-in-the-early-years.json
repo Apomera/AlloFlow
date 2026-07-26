@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1621-the-whole-child-development-in-the-early-years",
+  "title": "The Whole Child: Development in the Early Years",
+  "description": "The Whole Child is a textbook that gives an overview of development, beginning in the mother’s womb through the age of eight. It starts with a look at perspectives of early childhood, including how children have been viewed historically as well as cross-culturally. There is a complete overview of the important theorists that have helped to deepen and bring clarity to how children develop. These theories include psychodynamic, behavioral, social cognitive theory, cognitive theory, humanistic, multiple intelligence, growth mindset, and Bloom’s taxonomy. Understanding the implications of each theory is important foundational knowledge for the study of development. Developmental domains at each stage is examined alongside important milestones. The biology of the brain is given important consideration. Some of the many factors that influence a young child’s development are also included in this text.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Early Childhood"
+  ],
+  "authors": [
+    "Deirdre Budzyna - Author / Doris Buckley - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "ROTEL",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-whole-child-development-in-the-early-years"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Whole Child is a textbook that gives an overview of development, beginning in the mother’s womb through the age of eight. It starts with a look at perspectives of early childhood, including how children have been viewed historically as well as cross-culturally. There is a complete overview of the important theorists that have helped to deepen and bring clarity to how children develop. These theories include psychodynamic, behavioral, social cognitive theory, cognitive theory, humanistic, multiple intelligence, growth mindset, and Bloom’s taxonomy. Understanding the implications of each theory is important foundational knowledge for the study of development. Developmental domains at each stage is examined alongside important milestones. The biology of the brain is given important consideration. Some of the many factors that influence a young child’s development are also included in this text."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 156
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1621",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -5,7 +5,7 @@ import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
 const modulesDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
-let React, ReactDOMClient, act, Lingua, BookReader, root, host;
+let React, ReactDOMClient, act, Lingua, BookReader, root, host, originalFetch, originalMatcher;
 
 beforeAll(() => {
   React = require(resolve(modulesDir, 'react'));
@@ -13,6 +13,8 @@ beforeAll(() => {
   ({ act } = require(resolve(modulesDir, 'react-dom/test-utils')));
   global.React = window.React = React;
   global.IS_REACT_ACT_ENVIRONMENT = true;
+  originalFetch = window.fetch;
+  originalMatcher = window.AlloLangMatcher;
   loadAlloModule('lingua_practice_module.js');
   loadAlloModule('reading_library_module.js');
   Lingua = window.AlloModules.LinguaPractice;
@@ -23,6 +25,8 @@ afterEach(() => {
   if (root) { act(() => root.unmount()); root = null; }
   if (host) { host.remove(); host = null; }
   localStorage.clear();
+  if (originalFetch === undefined) delete window.fetch; else window.fetch = originalFetch;
+  if (originalMatcher === undefined) delete window.AlloLangMatcher; else window.AlloLangMatcher = originalMatcher;
 });
 
 function button(text) {
@@ -125,7 +129,7 @@ describe('Lingua Practice render flow', () => {
     expect(host.textContent).toContain('El ciclo del agua · Pages 2-3');
     expect(host.querySelector('#lingua-source').value).toContain('El agua cambia');
     expect(host.querySelector('select[aria-label="I am learning"]').value).toBe('Spanish');
-    expect(host.querySelector('input').value).toBe('Discussing El ciclo del agua');
+    expect(host.querySelector('#lingua-topic').value).toBe('Discussing El ciclo del agua');
     expect(consumed).toBe(1);
   });
   it('renders an honest per-language progress summary', async () => {
@@ -245,10 +249,84 @@ describe('Reading Library handoff', () => {
       selectionLabel: 'Whole text',
     });
     expect(selection.text).toContain('Hola clase. Necesito un lápiz.');
+    expect(selection.wholeText).toContain('Hola clase. Necesito un lápiz.');
+  });
+});
+
+describe('Lingua Practice speech preferences', () => {
+  it('persists dialect and communication style and sends them to lesson generation', async () => {
+    let prompt = '';
+    const callGemini = async (value) => {
+      prompt = value;
+      return JSON.stringify({ title: 'Quebec weather', goal: 'Discuss weather politely.', scenario: 'A forecast.', vocabulary: [{ term: 'bonjour', meaning: 'hello' }], phrases: [{ target: 'Bonjour.', translation: 'Hello.' }], conversation: [{ coach: 'Quel temps fait-il?', translation: 'What is the weather?', sample: 'Il fait froid.' }] });
+    };
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, callGemini }));
+    const target = host.querySelector('select[aria-label="I am learning"]');
+    await act(async () => { target.value = 'French'; target.dispatchEvent(new Event('change', { bubbles: true })); });
+    const dialect = host.querySelector('#lingua-dialect');
+    const inputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    await act(async () => { inputSetter.call(dialect, 'Canada / Quebec'); dialect.dispatchEvent(new Event('input', { bubbles: true })); });
+    const register = host.querySelector('select[aria-label="Communication style"]');
+    await act(async () => { register.value = 'Polite'; register.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(host.textContent).toContain('Speech locale: fr-CA');
+    await act(async () => { button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); await Promise.resolve(); });
+    expect(prompt).toContain('Dialect or regional variety: Canada / Quebec');
+    expect(prompt).toContain('Communication style: Polite');
+    expect(JSON.parse(localStorage.getItem('allo_lingua_profile_v1'))).toMatchObject({ target: 'French', dialect: 'Canada / Quebec', register: 'Polite' });
+  });
+
+  it('explains speech fallbacks and disables unavailable speech controls', async () => {
+    const oldVoice = window.AlloFlowVoice; const oldPlayer = window.AlloSpeechPlayer;
+    const oldSynthesis = window.speechSynthesis; const oldUtterance = window.SpeechSynthesisUtterance;
+    try {
+      delete window.AlloFlowVoice; delete window.AlloSpeechPlayer; delete window.speechSynthesis; delete window.SpeechSynthesisUtterance;
+      await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {} }));
+      expect(host.textContent).toContain('Speech features');
+      expect(host.textContent).toContain('Typing remains available in every activity');
+      expect(host.textContent).toContain('Audio playback is not available in this browser');
+      expect(button('Slow').disabled).toBe(true);
+      await act(async () => { button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+      await act(async () => { button('Practice speaking').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      const speakButton = Array.from(host.querySelectorAll('main button')).find((node) => node.textContent.includes('Speak'));
+      expect(speakButton.disabled).toBe(false);
+      expect(host.querySelector('#lingua-speak-response')).toBeTruthy();
+    } finally {
+      if (oldVoice === undefined) delete window.AlloFlowVoice; else window.AlloFlowVoice = oldVoice;
+      if (oldPlayer === undefined) delete window.AlloSpeechPlayer; else window.AlloSpeechPlayer = oldPlayer;
+      if (oldSynthesis === undefined) delete window.speechSynthesis; else window.speechSynthesis = oldSynthesis;
+      if (oldUtterance === undefined) delete window.SpeechSynthesisUtterance; else window.SpeechSynthesisUtterance = oldUtterance;
+    }
   });
 });
 
 describe('Lingua Practice custom language', () => {
+  it('preserves a custom Reading Library language and lets the learner switch source scope', async () => {
+    await mount(React.createElement(Lingua, {
+      isOpen: true, onClose: () => {},
+      initialSource: {
+        text: 'Boozhoo. This is the selected page.',
+        wholeText: 'Boozhoo. This is the selected page. Aaniin. This is the rest of the reading.',
+        title: 'An Ojibwe reading', selectionLabel: 'Page 1', wholeLabel: 'Whole text', language: 'Ojibwe',
+      },
+    }));
+
+    expect(host.querySelector('select[aria-label="I am learning"]').value).toBe('__other__');
+    expect(host.querySelector('input[aria-label="I am learning: type a language"]').value).toBe('Ojibwe');
+    expect(host.textContent).toContain('An Ojibwe reading');
+    expect(button('Use whole reading')).toBeTruthy();
+
+    await act(async () => { button('Use whole reading').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.querySelector('#lingua-source').value).toContain('rest of the reading');
+    expect(host.textContent).toContain('Whole text');
+    await act(async () => { button('Use selection').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.querySelector('#lingua-source').value).toBe('Boozhoo. This is the selected page.');
+
+    const source = host.querySelector('#lingua-source');
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+    await act(async () => { setter.call(source, 'My replacement notes.'); source.dispatchEvent(new Event('input', { bubbles: true })); });
+    expect(host.textContent).not.toContain('Imported from Reading Library');
+  });
+
   it('accepts a free-typed target language and uses it when building a set', async () => {
     let prompt = '';
     const callGemini = async (p) => {
@@ -295,7 +373,43 @@ describe('Lingua Practice UI localization', () => {
 });
 
 describe('Lingua Practice runtime auto-localization', () => {
+  it('prefers and caches a reviewed static language pack before calling the AI', async () => {
+    const previousFetch = window.fetch;
+    const previousMatcher = window.AlloLangMatcher;
+    const staticPack = {};
+    Object.keys(Lingua._uiStrings.English).forEach((key) => { staticPack[key] = 'STATIC:' + Lingua._uiStrings.English[key]; });
+    const fetched = [];
+    let aiCalls = 0;
+
+    try {
+      window.AlloLangMatcher = { match: async () => ({ slug: 'vietnamese' }) };
+      window.fetch = async (url) => {
+        fetched.push(String(url));
+        return { ok: true, json: async () => ({ lingua: staticPack }) };
+      };
+      await mount(React.createElement(Lingua, {
+        isOpen: true,
+        onClose: () => {},
+        callGemini: async () => { aiCalls += 1; return '{}'; },
+      }));
+
+      const known = host.querySelector('select[aria-label="I know"]');
+      await act(async () => { known.value = 'Vietnamese'; known.dispatchEvent(new Event('change', { bubbles: true })); });
+      await act(async () => { await new Promise((resolveWait) => setTimeout(resolveWait, 900)); });
+
+      expect(fetched[0]).toContain('/vietnamese.js');
+      expect(aiCalls).toBe(0);
+      expect(Array.from(host.querySelectorAll('nav button')).map((node) => node.textContent).join('|')).toContain('STATIC:Setup');
+      expect(JSON.parse(localStorage.getItem('allo_lingua_pack_i18n_v1')).Vietnamese.nav_vocabulary).toBe('STATIC:Vocabulary');
+      expect(host.querySelector('[role="dialog"]').getAttribute('lang')).toBe('vi-VN');
+    } finally {
+      if (previousFetch === undefined) delete window.fetch; else window.fetch = previousFetch;
+      if (previousMatcher === undefined) delete window.AlloLangMatcher; else window.AlloLangMatcher = previousMatcher;
+    }
+  });
+
   it('auto-translates the UI for an unbundled known language via the AI and caches it', async () => {
+    window.fetch = async () => ({ ok: false });
     let uiCalls = 0;
     const callGemini = async (prompt) => {
       if (typeof prompt === 'string' && prompt.includes('Localize the user-interface labels')) {
@@ -344,6 +458,7 @@ describe('Lingua Practice localized chrome details', () => {
   });
 
   it('flips the dialog to RTL once translated chrome exists for an RTL known language', async () => {
+    window.fetch = async () => ({ ok: false });
     const callGemini = async (prompt) => {
       if (typeof prompt === 'string' && prompt.includes('Localize the user-interface labels')) {
         const en = JSON.parse(prompt.slice(prompt.indexOf('{"')));
@@ -396,6 +511,37 @@ describe('Lingua Practice progress quick-switch', () => {
   });
 });
 
+describe('Lingua Practice storage safety', () => {
+  it('enforces the word-bank limit before another word is saved', async () => {
+    const saved = Array.from({ length: Lingua._maxSavedWords }, (_, index) => ({ language: 'Spanish', term: 'saved-' + index, meaning: 'meaning' }));
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved }));
+    const lesson = {
+      title: 'One more word', goal: 'Practice one word.', scenario: 'A greeting.',
+      vocabulary: [{ term: 'hola', meaning: 'hello', example: 'Hola.', translation: 'Hello.' }],
+      phrases: [{ target: 'Hola.', translation: 'Hello.' }], conversation: [{ coach: 'Hola.', translation: 'Hello.', sample: 'Hola.' }],
+    };
+    const toasts = [];
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, callGemini: async () => JSON.stringify(lesson), addToast: (m, t) => toasts.push({ m, t }) }));
+    await act(async () => { button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); await Promise.resolve(); });
+    const save = host.querySelector('button[aria-label="Save word"]');
+    await act(async () => { save.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(JSON.parse(localStorage.getItem('allo_lingua_progress_v1')).saved).toHaveLength(Lingua._maxSavedWords);
+    expect(toasts.some((item) => item.m.includes('full at 500 words') && item.t === 'error')).toBe(true);
+  });
+
+  it('warns once when learner data cannot be written to browser storage', async () => {
+    const toasts = []; const originalSetItem = window.Storage.prototype.setItem;
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, addToast: (m, t) => toasts.push({ m, t }) }));
+    try {
+      window.Storage.prototype.setItem = function () { throw new Error('quota'); };
+      const level = host.querySelector('select[aria-label="My level"]');
+      await act(async () => { level.value = 'Advanced'; level.dispatchEvent(new Event('change', { bubbles: true })); });
+      await act(async () => { level.value = 'Intermediate'; level.dispatchEvent(new Event('change', { bubbles: true })); });
+      expect(toasts.filter((item) => item.m.includes('could not save')).length).toBe(1);
+    } finally { window.Storage.prototype.setItem = originalSetItem; }
+  });
+});
+
 describe('Lingua Practice word-bank download', () => {
   it('downloads the saved words as a local CSV file', async () => {
     localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({
@@ -424,6 +570,44 @@ describe('Lingua Practice word-bank download', () => {
       window.URL.createObjectURL = originalCreate;
       window.URL.revokeObjectURL = originalRevoke;
     }
+  });
+  it('downloads a complete backup and clears Lingua data after confirmation', async () => {
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [{ language: 'Spanish', term: 'hola', meaning: 'hello' }] }));
+    const clicks = []; const toasts = [];
+    const originalClick = window.HTMLAnchorElement.prototype.click; const originalCreate = window.URL.createObjectURL; const originalRevoke = window.URL.revokeObjectURL; const originalConfirm = window.confirm;
+    window.HTMLAnchorElement.prototype.click = function () { clicks.push(this.getAttribute('download')); };
+    window.URL.createObjectURL = () => 'blob:lingua-backup'; window.URL.revokeObjectURL = () => {}; window.confirm = () => true;
+    try {
+      await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, addToast: (m, t) => toasts.push({ m, t }) }));
+      await act(async () => { button('Saved words').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      await act(async () => { button('Download backup').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(clicks).toContain('lingua-backup.json');
+      await act(async () => { button('Clear Lingua data').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(localStorage.getItem('allo_lingua_progress_v1')).toBe(null);
+      expect(host.textContent).not.toContain('hola');
+      expect(toasts.some((item) => item.m.includes('cleared') && item.t === 'success')).toBe(true);
+    } finally {
+      window.HTMLAnchorElement.prototype.click = originalClick; window.URL.createObjectURL = originalCreate; window.URL.revokeObjectURL = originalRevoke; window.confirm = originalConfirm;
+    }
+  });
+
+  it('restores a validated Lingua backup through the data controls', async () => {
+    const backup = Lingua._createBackup(
+      { known: 'English', target: 'French', level: 'Beginner', topic: 'Introductions' },
+      { saved: [{ language: 'French', term: 'bonjour', meaning: 'hello', reviewStage: 2, nextReviewAt: 10 }] }, {}, {},
+      { audioSlow: true, pictureOnlyReview: false }, Date.now(),
+    );
+    const toasts = [];
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, addToast: (m, t) => toasts.push({ m, t }) }));
+    await act(async () => { button('Saved words').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const input = host.querySelector('#lingua-backup-file');
+    Object.defineProperty(input, 'files', { configurable: true, value: [{ text: async () => JSON.stringify(backup) }] });
+    await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })); await Promise.resolve(); await Promise.resolve(); });
+    await act(async () => { button('Saved words').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('bonjour');
+    expect(JSON.parse(localStorage.getItem('allo_lingua_profile_v1')).target).toBe('French');
+    expect(localStorage.getItem('allo_lingua_slow_v1')).toBe('1');
+    expect(toasts.some((item) => item.m.includes('restored') && item.t === 'success')).toBe(true);
   });
 });
 

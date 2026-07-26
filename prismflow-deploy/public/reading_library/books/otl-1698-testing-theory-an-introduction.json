@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1698-testing-theory-an-introduction",
+  "title": "Testing theory: an introduction",
+  "description": "These lecture notes are a follow up on Adjustment theory. Adjustment theory deals with the optimal combination of redundant measurements together with the estimation of unknown parameters. There are two main reasons for performing redundant measurements. First, the wish to increase the accuracy of the results computed. Second, the requirement to be able to check for mistakes or errors. The present book addresses this second topic. Although one always will try one's best to avoid making mistakes, they can and will occasionally happen. It is therefore of importance to have ways of detecting and identifying such mistakes. Mistakes or errors can come in many different guises. They could be caused by mistakes made by the observer, or by the fact that defective instruments are used, or by wrong assumptions about the functional relations between the observables. When passed unnoticed, these errors will deteriorate the final results. The goal of this introductory course on testing theory is therefore to convey the necessary knowledge for testing the validity of both the measurements and the mathematical model. Typical questions that will be addressed are: 'How to check the validity of the mathematical model? How to search for certain mistakes or errors? How well can errors be traced? And how do undetected errors affect the final results?' The theory is worked out in detail for the important case of linear(ized) models. Both the parametric form (observation equations) and the implicit form (condition equations) of linear models are treated. As an additional aid in understanding the basic principles involved, a geometric interpretation is given throughout. Attention is also paid to the performance of the testing procedures. The closely related concept of reliability is introduced and diagnostic measures are given to determine the size of the minimal detectable biases. In this introductory text the methodology of testing is emphasized, although various examples are given to illustrate the theory. The methods discussed form the basis for geodetic quality control and they provide the ingredients for the formulation of guidelines for the reliable design of measurement set-ups.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology",
+    "Mathematics"
+  ],
+  "authors": [
+    "Peter J.G. Teunissen - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "TU Delft Open",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/testing-theory-an-introduction"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "These lecture notes are a follow up on Adjustment theory. Adjustment theory deals with the optimal combination of redundant measurements together with the estimation of unknown parameters. There are two main reasons for performing redundant measurements. First, the wish to increase the accuracy of the results computed. Second, the requirement to be able to check for mistakes or errors. The present book addresses this second topic. Although one always will try one's best to avoid making mistakes, they can and will occasionally happen. It is therefore of importance to have ways of detecting and identifying such mistakes. Mistakes or errors can come in many different guises. They could be caused by mistakes made by the observer, or by the fact that defective instruments are used, or by wrong assumptions about the functional relations between the observables. When passed unnoticed, these errors will deteriorate the final results. The goal of this introductory course on testing theory is therefore to convey the necessary knowledge for testing the validity of both the measurements and the mathematical model. Typical questions that will be addressed are: 'How to check the validity of the mathematical model? How to search for certain mistakes or errors? How well can errors be traced? And how do undetected errors affect the final results?' The theory is worked out in detail for the important case of linear(ized) models. Both the parametric form (observation equations) and the implicit form (condition equations) of linear models are treated. As an additional aid in understanding the basic principles involved, a geometric interpretation is given throughout. Attention is also paid to the performance of the testing procedures. The closely related concept of reliability is introduced and diagnostic measures are given to determine the size of the minimal detectable biases. In this introductory text the methodology of testing is emphasized, although various examples are given to illustrate the theory. The methods discussed form the basis for geodetic quality control and they provide the ingredients for the formulation of guidelines for the reliable design of measurement set-ups."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 362
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1698",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

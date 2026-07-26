@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-199-native-peoples-of-north-america",
+  "title": "Native Peoples of North America",
+  "description": "Native Peoples of North America is intended to be an introductory text about the Native peoples of North America (primarily the United States and Canada) presented from an anthropological perspective. As such, the text is organized around anthropological concepts such as language, kinship, marriage and family life, political and economic organization, food getting, spiritual and religious practices, and the arts. Prehistoric, historic and contemporary information is presented. Each chapter begins with an example from the oral tradition that reflects the theme of the chapter. The text includes suggested readings, videos, and classroom activities. This text was updated September 2019; the changes are detailed in an errata section in the text.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Anthropology",
+    "Social Sciences - Cultural & Ethnic Studies"
+  ],
+  "authors": [
+    "Susan Stebbins - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open SUNY",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/native-peoples-of-north-america"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Native Peoples of North America is intended to be an introductory text about the Native peoples of North America (primarily the United States and Canada) presented from an anthropological perspective. As such, the text is organized around anthropological concepts such as language, kinship, marriage and family life, political and economic organization, food getting, spiritual and religious practices, and the arts. Prehistoric, historic and contemporary information is presented. Each chapter begins with an example from the oral tradition that reflects the theme of the chapter. The text includes suggested readings, videos, and classroom activities. This text was updated September 2019; the changes are detailed in an errata section in the text."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2013."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 133
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "199",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

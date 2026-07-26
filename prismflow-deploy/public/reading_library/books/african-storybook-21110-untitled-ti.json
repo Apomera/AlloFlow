@@ -1,0 +1,232 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-21110-untitled-ti",
+  "title": "ህበይን ዋዓግን",
+  "description": "ብዛዕባ ዕርክነትን፣ ካብ ጉንቦ መሸላ ዝተረኸበ ትርፍን ተዘንቱ መስሓቒት ነበረያነበረ።",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Cornelius Gulere"
+  ],
+  "illustrators": [
+    "Brian Wambi"
+  ],
+  "translators": [
+    "Angesom Abadi"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Cornelius Gulere",
+      "role": "Author"
+    },
+    {
+      "name": "Angesom Abadi",
+      "role": "Translation"
+    },
+    {
+      "name": "Brian Wambi",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Cornelius Gulere (Author); Angesom Abadi (Translation); Brian Wambi (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://ugcla.org",
+    "editionId": "21110",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-b63bf52b7a98eaaf",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/15478.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15471.png",
+      "text": "ቐደም ቐደም፣ ህበይን ዋዓግን ምግቢ እናተማቐሉ ብሓደ ይነብሩ ነበሩ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=1",
+      "sourceDigest": "sha256:4211cf152633106b65918c2f0b3b196d2ee3da9a1e856ac5ee7b8ddd3e729341"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15472.png",
+      "text": "ህበይ ንዋዓግ “ብሓደ ንሕረስ እሞ ብሓደ ክንበልዕ” በሎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=2",
+      "sourceDigest": "sha256:628ef89c1498393909209a03aa9be708bb1cb9e636ac7f3474ea4b01a46e76d4"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15473.png",
+      "text": "ህበይ ንዋዓግ “ንስኻ ዃዓት እሞ ኣነ ክዘርእ” በሎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=3",
+      "sourceDigest": "sha256:673b7d426c10887e311560441f82d48985311e0b1e74fc3a3568b638f96cbb68"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15474.png",
+      "text": "ህበይ ንዋዓግ “ንስኻ ዝራእ እሞ ኣነ ክፅሂ” በሎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=4",
+      "sourceDigest": "sha256:fc52690790dfbc53ba0cfd91c071eff8898833d99a5aa8d834791daf8efdffad"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15475.png",
+      "text": "እቲ መሸላ ምስ በፅሐ፣ ህበይ ንዋዓግ እቲ ምህርቲ ኣክቦ በሎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=5",
+      "sourceDigest": "sha256:33edae0107a17a4a80044f25dc5a56ae66c47ddb8015c809ec83a0598e5a14d7"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15476.png",
+      "text": "ህበይ “ንስኻ ኣክቦ እሞ ኣነ ናብ መኽዘን ክወስዶ” በለ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=6",
+      "sourceDigest": "sha256:46599315946a4fcd27a0508b4ca99b7bdb7cba54df32ad671c0b3a031e641db8"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15477.png",
+      "text": "ህበይ ሰነፍ እዩ ነይሩ። ዋዓግ ሓንቲ ጉንቦ መሸላ ጥራሕ እዩ ሂብዎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=7",
+      "sourceDigest": "sha256:98a795f6df62baebf7d341b97d87c91ad317d85a4f06ac71259ece41372971bc"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15478.png",
+      "text": "ህበይ ነቲ ጉንቦ መሸላ ወሲዱ። ኣብ መንገዲ ሓንቲ ደርሆ ረኸበ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=8",
+      "sourceDigest": "sha256:63caba3d0bed88a0ab46dfb1c5861128b6c4fc314d0fe5a8f4e1d3d81786587c"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15479.png",
+      "text": "እታ ደርሆ ኩሉ እቲ መሸላ በሊዓቶ። ንህበይ እንቋቕሖ ሂባቶ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=9",
+      "sourceDigest": "sha256:59ef9d13cc726c7f207e3d4d01f8bb4e41f0e9e8daa8561c030feed7e1ff90ca"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15480.png",
+      "text": "ህበይ ቖልዑ ረኺቡ። እቶም ቖልዑ ነቲ እንቋቕሖ ሰቢረሞ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=10",
+      "sourceDigest": "sha256:f87b605a99b7963adf8a0bfeec2740dc1524c45492f944be80aa32225a150b03"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15481.png",
+      "text": "እቶም ቖልዑ ንህበይ ማንጎ ሂበሞ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=11",
+      "sourceDigest": "sha256:2f773956665d72edf6ccbf968e90c2350de33115059a4a99a867d1df77ed60b6"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15482.png",
+      "text": "ህበይ ሕንፃይ ረኺቡ። ሕንፃይ ነቲ ማንጎ በሊዓ ክንቲት ሂባቶ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=12",
+      "sourceDigest": "sha256:b0f3bda0b8ecd9e4dc6dc7b37555470fbdc7566740efe18e7bb6d6151d1acdd9"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15483.png",
+      "text": "ቃላይ ነቲ ክንቲት ወሲዱ ንህበይ ማይ ሃቦ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=13",
+      "sourceDigest": "sha256:3bf208d34d847f5c8ddf5f2b7b5b70b734ef8fe76bbeeb39d7cc5aba07e53617"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15484.png",
+      "text": "ህበይ በቲ ማይ ናይ ፈሓም መፍሓምቲ ሓዊ ኣጥፍኣሉ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=14",
+      "sourceDigest": "sha256:8bc479ce3e52c63cc0bd7807f7fadf6ab868902308879d204d9ae4bc702500ad"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15485.png",
+      "text": "እቶምፈሓም መፍሓምቲ ንህበይ ፋስ ሃብዎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=15",
+      "sourceDigest": "sha256:99c7c0e3485b3c45c6944ed21171ab5c57a59114d52ddca3a7400c9f4bcba70a"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15486.png",
+      "text": "ህበይ ሓረድቲ ከፍቲ ረኸበ። ነቲ ፋስ ድማ ሰበርዎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=16",
+      "sourceDigest": "sha256:f7a7f1b198f3b6c3c3bc5efc0c75586a89c6978b70dec2c913d9fb8f3f0fca90"
+    },
+    {
+      "n": 17,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15487.png",
+      "text": "እቶም ሓረድቲ ከፍቲ ንህበይ ርእስን ጭራን ከፍቲ ሃብዎ። ህበይ ዝገበሮ ተዓዘቡ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=17",
+      "sourceDigest": "sha256:50825695f62d0988920052ea1b6c5a38fcb96f70a28099ffeacf5c9296f99012"
+    },
+    {
+      "n": 18,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15488.png",
+      "text": "ህበይ “ናይ ንጉስ ብዕራይ ኣብ ጭቓ ተዋሒጡ ” ኢሉ ኣእወየ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=18",
+      "sourceDigest": "sha256:24c27c45333eade4175697f67306b886f284a7a368f0f4f43d3c19519eeb3388"
+    },
+    {
+      "n": 19,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15489.png",
+      "text": "ሰባት ተኣኪቦም ክሕግዙ መፁ። “ብርእሱን ብጭርኡን ሒዝኩም ስሓብዎ” በለ ህበይ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=19",
+      "sourceDigest": "sha256:326695b4538a0e34f7b88752f59e1c14dd3e5f618cdc1142d4ef6cab12adace3"
+    },
+    {
+      "n": 20,
+      "img": "https://www.africanstorybook.org/illustrations/pages/15490.png",
+      "text": "ህበይ “እቲ ብዕራይ ቐቲልክሞ፤ በሉ ከፍቲ ኣዋፂኩም ሃቡኒ ንንጉስ ክህቦ” በሎም ነቶም ሰባት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21110#page=20",
+      "sourceDigest": "sha256:4de01f3fde33b891bfab11cdbfbe1a8529e3e2ab996dd5630bcb2a17964c19f6"
+    }
+  ],
+  "stats": {
+    "pages": 20,
+    "words": 176
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:b2d31629bb679178289f7d0646ccf6c4d9b53cbc495c87840d25713c4e78407f"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-25240-peo-e-nyane",
+  "title": "Peo e nyane",
+  "description": "Motsaneng o tlase ho Mount Kenya mane Afrika Botjhabela, ngwanyanana o ne a sebetsa masimong le mmae. Lebitso la hae e ne e le Wangari…",
+  "language": "Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Nature and looking after our planet",
+    "Powerful female characters"
+  ],
+  "authors": [
+    "Nicola Rijsdijk"
+  ],
+  "illustrators": [
+    "Maya Marshak"
+  ],
+  "contributors": [
+    {
+      "name": "Maya Marshak",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Nicola Rijsdijk",
+      "role": "Writer"
+    },
+    {
+      "name": "Tarryn-Anne Anderson",
+      "role": "Designer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/peo-e-nyane/",
+    "attributionUrl": "https://bookdash.org/books/peo-e-nyane/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=a-tiny-seed"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/02/a-tiny-seed_st_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/02/a-tiny-seed_st_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Motsaneng o tlase ho Mount Kenya mane Afrika Botjhabela, ngwanyanana o ne a sebetsa masimong le mmae. Lebitso la hae e ne e le Wangari…"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Maya Marshak (Illustrator); Nicola Rijsdijk (Writer); Tarryn-Anne Anderson (Designer)\n\nLanguage: Sesotho. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=a-tiny-seed"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 88
+  }
+}

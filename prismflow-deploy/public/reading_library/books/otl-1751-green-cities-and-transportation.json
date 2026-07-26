@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1751-green-cities-and-transportation",
+  "title": "Green Cities and Transportation",
+  "description": "This textbook equips advanced undergraduate and graduate students with the knowledge, skills, and multidisciplinary perspectives needed to understand how sustainable mobility and infrastructure can support climate change mitigation and transportation equity for low-income commuters. The textbook is organized into three sections: Sustainability, Transportation Equity, and Planning. Case Studies and Lessons from the North and South. Greenhouse Gas Emissions, Cities, and Mobility. It includes eleven chapters, each featuring discussion questions, reading materials, and in-class exercises designed to help students develop a research paper on transportation. This textbook is part of a six-volume series produced under the grant OERTransport: Enabling Transportation Planning Professional Advancement awarded to the University of Texas-Arlington (UTA) in consortium with California Polytechnic State University (Cal Poly) and the University of South Florida (USF). It was developed under an Open Textbooks Pilot grant from the Fund for the Improvement of Postsecondary Education (FIPSE), U.S. Department of Education. However, its contents do not necessarily represent the policy of the Department of Education, and no endorsement by the Federal Government should be assumed.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences"
+  ],
+  "authors": [
+    "Ariadna Reyes - Author / Soheil Sharif-Asl - Author / Ladan Mozaffarian - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Mavs Open Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/green-cities-and-transportation"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This textbook equips advanced undergraduate and graduate students with the knowledge, skills, and multidisciplinary perspectives needed to understand how sustainable mobility and infrastructure can support climate change mitigation and transportation equity for low-income commuters. The textbook is organized into three sections: Sustainability, Transportation Equity, and Planning. Case Studies and Lessons from the North and South. Greenhouse Gas Emissions, Cities, and Mobility. It includes eleven chapters, each featuring discussion questions, reading materials, and in-class exercises designed to help students develop a research paper on transportation. This textbook is part of a six-volume series produced under the grant OERTransport: Enabling Transportation Planning Professional Advancement awarded to the University of Texas-Arlington (UTA) in consortium with California Polytechnic State University (Cal Poly) and the University of South Florida (USF). It was developed under an Open Textbooks Pilot grant from the Fund for the Improvement of Postsecondary Education (FIPSE), U.S. Department of Education. However, its contents do not necessarily represent the policy of the Department of Education, and no endorsement by the Federal Government should be assumed."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 195
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1751",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

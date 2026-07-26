@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-641-the-story-of-contract-law-implementing-the-bargain-4th-edition",
+  "title": "The Story of Contract Law: Implementing the Bargain - 4th Edition",
+  "description": "This book is a companion volume to Volume I, \"The Story of Contract Law: Formation.\" Volume I introduces students to law study and teaches basic doctrines of contract formation along with formation defenses. This book, Volume II, The Story of Contract Law: Implementing the Bargain, covers the rest of basic contract doctrine, namely, laws that1) determine the content of the bargain (plain meaning, usage and custom, good faith, mistake in transmission, parol evidence, and express and constructive conditions);2) govern the effect of events that occur after formation (impracticability, frustration, failure of consideration, and risk of loss);3) set remedies—rescission, damages, specific performance—available to courts when liability exists; and4) establish the rights of third parties in contracts by assignment or delegation or as third-party beneficiaries. This book includes many classic teaching cases and introduces new ones. The book also includes many problems, most based on actual cases. The book takes especial care with the doctrine of concurrent conditions, a common-law rule adopted in the late 1700s that required doctrinal readjustment across all the law governing contract performance and remedies. This volume also continues several themes from Volume I. Volume II continues to tie rules to contract law’s central structural idea, that of fair exchange. Also, to the extent helpful to student understanding, Volume II explains doctrines in part through their chronological development. The book introduces the doctrines in the order best conducive to students’ understanding contract law as a regulatory whole; for this volume, it is the order in which the doctrines arise in litigation. Finally, where possible, this volume repeats ideas at helpful points and suggests ties between doctrines so that the structural coherence of contract doctrine becomes easier to understand.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law - Contract Law"
+  ],
+  "authors": [
+    "Val Ricks - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CALI's eLangdell® Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-story-of-contract-law-implementing-the-bargain"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is a companion volume to Volume I, \"The Story of Contract Law: Formation.\" Volume I introduces students to law study and teaches basic doctrines of contract formation along with formation defenses. This book, Volume II, The Story of Contract Law: Implementing the Bargain, covers the rest of basic contract doctrine, namely, laws that1) determine the content of the bargain (plain meaning, usage and custom, good faith, mistake in transmission, parol evidence, and express and constructive conditions);2) govern the effect of events that occur after formation (impracticability, frustration, failure of consideration, and risk of loss);3) set remedies—rescission, damages, specific performance—available to courts when liability exists; and4) establish the rights of third parties in contracts by assignment or delegation or as third-party beneficiaries. This book includes many classic teaching cases and introduces new ones. The book also includes many problems, most based on actual cases. The book takes especial care with the doctrine of concurrent conditions, a common-law rule adopted in the late 1700s that required doctrinal readjustment across all the law governing contract performance and remedies. This volume also continues several themes from Volume I. Volume II continues to tie rules to contract law’s central structural idea, that of fair exchange. Also, to the extent helpful to student understanding, Volume II explains doctrines in part through their chronological development. The book introduces the doctrines in the order best conducive to students’ understanding contract law as a regulatory whole; for this volume, it is the order in which the doctrines arise in litigation. Finally, where possible, this volume repeats ideas at helpful points and suggests ties between doctrines so that the structural coherence of contract doctrine becomes easier to understand."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 303
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "641",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

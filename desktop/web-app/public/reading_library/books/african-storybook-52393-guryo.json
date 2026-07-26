@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52393-guryo",
+  "title": "Guryo",
+  "description": "Arag aqalada kala duwan ee dadku daganyihiin. Aqalkee ayaad jeceshahay?",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Clare Verbeek, Thembani Dladla, Zanele Buthelezi"
+  ],
+  "illustrators": [
+    "Kathy Arbuckle"
+  ],
+  "translators": [
+    "Abdikadir Ibrahim"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi",
+      "role": "Author"
+    },
+    {
+      "name": "Abdikadir Ibrahim",
+      "role": "Translation"
+    },
+    {
+      "name": "Kathy Arbuckle",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY-NC 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/3.0/",
+  "attribution": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi (Author); Abdikadir Ibrahim (Translation); Kathy Arbuckle (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52393",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52393",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://cae.ukzn.ac.za/resources/seedbooks.aspx",
+    "editionId": "52393",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution. This edition is restricted to noncommercial use."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY-NC 3.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-c4e547a0a363b8c5",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/1591.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1591.png",
+      "text": "Mzi waxay degan tahay guri korkiisu yahay cows iyo qoryo yaryar.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52393#page=1",
+      "sourceDigest": "sha256:503eea328ecbb71f46a3d6b687096df364c8f7bb0e556673c699354e66e2c23f"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1592.png",
+      "text": "Thulani wuxuu degan yahay guri afar geesa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52393#page=2",
+      "sourceDigest": "sha256:6605322cdaeb8bbdf51cd1f0f05d4e3270dd7f77648d3890bfe8e4d15122a507"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1593.png",
+      "text": "Kani waa guri muuqaal dheerlah.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52393#page=3",
+      "sourceDigest": "sha256:9293ea54fb6968dd76a303736e33dcb3a9b81c49d893317998a7baa7143449b6"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1594.png",
+      "text": "Saqafka gurigan waa seddax gees.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52393#page=4",
+      "sourceDigest": "sha256:0fa93a62a669d5f85dc2508ce5b30982afec69f975c9113889a7bc69add47fc1"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1595.png",
+      "text": "Ninkani gurigiisi buu dhisanayaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52393#page=5",
+      "sourceDigest": "sha256:10b1646b8e33e86aa49871129ba6ca2008be144c182f4df2fce472f2ea3d64d7"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1596.png",
+      "text": "Gurigan wuu cusubyahay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52393#page=6",
+      "sourceDigest": "sha256:32e6ad3f82bc071727304d0a710828a1f65bd17c75b002b02acb49987778a542"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1597.png",
+      "text": "Gurigani waa duug.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52393#page=7",
+      "sourceDigest": "sha256:637c43e4f19ddf86fd6c4b50afa1707eba97747fc971d1e54b91c9005f5b5b59"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1598.png",
+      "text": "Waxaan jeclaanlahaa in aan gurigan ku noolaan lahaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52393#page=8",
+      "sourceDigest": "sha256:d3487a8ea6d58ce9152326d68a406adf3f271a9e7a899ebd4bc5e500342f8c12"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 46
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:7c2c1c3309e876b22a5530f6ca85291cdf589d76ebb3b505be1782b14f7d2d8d"
+  }
+}

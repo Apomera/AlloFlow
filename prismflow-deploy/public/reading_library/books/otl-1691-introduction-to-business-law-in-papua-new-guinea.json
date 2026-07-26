@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1691-introduction-to-business-law-in-papua-new-guinea",
+  "title": "Introduction to business law in Papua New Guinea",
+  "description": "“Introduction to Business Law in Papua New Guinea” is an introductory text designed to support students enrolled in LEGL1007 Introduction to the Business Law of Papua New Guinea at Southern Cross University. The book is structured into five parts: Part 1 provides an introduction to studying business law, including writing legal essays and problem questions; Part 2 covers negligence; Part 3 discusses contract law; Part 4 addresses consumer law; and Part 5 focuses on agency within the Papua New Guinea legal system.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law"
+  ],
+  "authors": [
+    "Andrew Gibson - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Southern Cross University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-business-law-in-papua-new-guinea"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "“Introduction to Business Law in Papua New Guinea” is an introductory text designed to support students enrolled in LEGL1007 Introduction to the Business Law of Papua New Guinea at Southern Cross University. The book is structured into five parts: Part 1 provides an introduction to studying business law, including writing legal essays and problem questions; Part 2 covers negligence; Part 3 discusses contract law; Part 4 addresses consumer law; and Part 5 focuses on agency within the Papua New Guinea legal system."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 105
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1691",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

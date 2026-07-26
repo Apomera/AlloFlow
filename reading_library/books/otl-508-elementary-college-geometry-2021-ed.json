@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-508-elementary-college-geometry-2021-ed",
+  "title": "Elementary College Geometry - 2021 ed.",
+  "description": "This text is intended for a brief introductory course in plane geometry. It covers the topics from elementary geometry that are most likely to be required for more advanced mathematics courses. The only prerequisite is a semester of algebra. The emphasis is on applying basic geometric principles to the numerical solution of problems. For this purpose the number of theorems and definitions is kept small. Proofs are short and intuitive, mostly in the style of those found in a typical trigonometry or precalculus text. There is little attempt to teach theorem-proving or formal methods of reasoning. However the topics are ordered so that they may be taught deductively. The problems are arranged in pairs so that just the odd-numbered or just the even-numbered can be assigned. For assistance, the student may refer to a large number of completely worked-out examples. Most problems are presented in diagram form so that the difficulty of translating words into pictures is avoided. Many problems require the solution of algebraic equations in a geometric context. These are included to reinforce the student's algebraic and numerical skills, A few of the exercises involve the application of geometry to simple practical problems. These serve primarily to convince the student that what he or she is studying is useful. Historical notes are added where appropriate to give the student a greater appreciation of the subject. This book is suitable for a course of about 45 semester hours. A shorter course may be devised by skipping proofs, avoiding the more complicated problems and omitting less crucial topics.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Geometry and Trigonometry"
+  ],
+  "authors": [
+    "Henry Africk - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CUNY Academic Works",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/elementary-college-geometry"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This text is intended for a brief introductory course in plane geometry. It covers the topics from elementary geometry that are most likely to be required for more advanced mathematics courses. The only prerequisite is a semester of algebra. The emphasis is on applying basic geometric principles to the numerical solution of problems. For this purpose the number of theorems and definitions is kept small. Proofs are short and intuitive, mostly in the style of those found in a typical trigonometry or precalculus text. There is little attempt to teach theorem-proving or formal methods of reasoning. However the topics are ordered so that they may be taught deductively. The problems are arranged in pairs so that just the odd-numbered or just the even-numbered can be assigned. For assistance, the student may refer to a large number of completely worked-out examples. Most problems are presented in diagram form so that the difficulty of translating words into pictures is avoided. Many problems require the solution of algebraic equations in a geometric context. These are included to reinforce the student's algebraic and numerical skills, A few of the exercises involve the application of geometry to simple practical problems. These serve primarily to convince the student that what he or she is studying is useful. Historical notes are added where appropriate to give the student a greater appreciation of the subject. This book is suitable for a course of about 45 semester hours. A shorter course may be devised by skipping proofs, avoiding the more complicated problems and omitting less crucial topics."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 281
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "508",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-432-introductory-business-statistics-with-interactive-spreadsheets-1st-canad",
+  "title": "Introductory Business Statistics with Interactive Spreadsheets - 1st Canadian Edition",
+  "description": "Introductory Business Statistics with Interactive Spreadsheets – 1st Canadian Edition is an adaptation of Thomas K. Tiemann's book, Introductory Business Statistics. This new edition still contains the basic ideas behind statistics, such as populations, samples, the difference between data and information, and sampling distributions as well as information on descriptive statistics and frequency distributions, normal and t-distributions, hypothesis testing, t-tests, f-tests, analysis of variance, non-parametric tests, and regression basics. New topics include the chi-square test and categorical variables, null and alternative hypotheses for the test of independence, simple linear regression model, least squares method, coefficient of determination, confidence interval for the average of the dependent variable, and prediction interval for a specific value of the dependent variable. This new edition also allows readers to learn the basic and most commonly applied statistical techniques in business in an interactive way — when using the web version — through interactive Excel spreadsheets. For each topic, a customized interactive template has been created within which selected values can be repeatedly changed to observe how the entire process, as well as the outcomes, are automatically adjusted. Also, in this adapted edition, the real-world examples throughout the text, and the information in general, have been revised to reflect Canadian content.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business",
+    "Mathematics - Applied"
+  ],
+  "authors": [
+    "Mohammad Mahbobi - Author / Thomas K. Tiemann - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "BCcampus",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introductory-business-statistics-with-interactive-spreadsheets-1st-canadian-edition"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Introductory Business Statistics with Interactive Spreadsheets – 1st Canadian Edition is an adaptation of Thomas K. Tiemann's book, Introductory Business Statistics. This new edition still contains the basic ideas behind statistics, such as populations, samples, the difference between data and information, and sampling distributions as well as information on descriptive statistics and frequency distributions, normal and t-distributions, hypothesis testing, t-tests, f-tests, analysis of variance, non-parametric tests, and regression basics. New topics include the chi-square test and categorical variables, null and alternative hypotheses for the test of independence, simple linear regression model, least squares method, coefficient of determination, confidence interval for the average of the dependent variable, and prediction interval for a specific value of the dependent variable. This new edition also allows readers to learn the basic and most commonly applied statistical techniques in business in an interactive way — when using the web version — through interactive Excel spreadsheets. For each topic, a customized interactive template has been created within which selected values can be repeatedly changed to observe how the entire process, as well as the outcomes, are automatically adjusted. Also, in this adapted edition, the real-world examples throughout the text, and the information in general, have been revised to reflect Canadian content."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2010."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 228
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "432",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

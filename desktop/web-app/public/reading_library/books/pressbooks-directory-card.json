@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "pressbooks-directory-card",
+  "title": "Pressbooks Directory",
+  "description": "Search thousands of accessible open textbooks, manuals, monographs, and course resources.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "pressbooks",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Open textbooks",
+    "College",
+    "Career education",
+    "Reference"
+  ],
+  "authors": [
+    "Pressbooks"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Pressbooks Directory",
+  "license": "Directory discovery · linked title licenses vary",
+  "licenseUrl": "https://guide.pressbooks.com/chapter/find-books-on-the-pressbooks-directory/",
+  "source": {
+    "id": "pressbooks",
+    "name": "Pressbooks Directory",
+    "url": "https://pressbooks.directory/"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://guide.pressbooks.com/chapter/find-books-on-the-pressbooks-directory/",
+    "reason": "Pressbooks titles span multiple licenses. This card links to the directory and does not copy title content."
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Search thousands of accessible open textbooks, manuals, monographs, and course resources."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Open the official source to browse and read available materials."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Pressbooks titles span multiple licenses. This card links to the directory and does not copy title content."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 38
+  },
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://guide.pressbooks.com/chapter/find-books-on-the-pressbooks-directory/",
+    "note": "Pressbooks titles span multiple licenses. This card links to the directory and does not copy title content."
+  }
+}

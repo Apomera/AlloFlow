@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1186-a-la-defensa-del-disenso-1st-edition",
+  "title": "A la defensa del disenso - 1st Edition",
+  "description": "A la defensa del disenso es una introducción a la criptografía que atiende los efectos sociales de la vigilancia, así como el potencial de protección que brinda el cifrado, con un enfoque en los movimientos sociales nacidos en Estados Unidos. Cada capítulo termina con una historia que aporta un contexto social al material: desde la vigilancia contra protestas contemporáneas en Estados Unidos, hasta la forma en que el Congreso Nacional Africano usó cifrado parcialmente manual para luchar contra el Apartheid en la Sudáfrica de los años 80 del siglo pasado.Puedes leer este libro en forma lineal o puedes elegir los temas sobre los cuales te gustaría aprender. Al inicio de cada capítulo se menciona lo que deberías leer primero (como antecedente) y al final, lo que podría ser de tu interés a continuación.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Political Science"
+  ],
+  "authors": [
+    "Glencora Borradaile - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oregon State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-la-defensa-del-disenso"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A la defensa del disenso es una introducción a la criptografía que atiende los efectos sociales de la vigilancia, así como el potencial de protección que brinda el cifrado, con un enfoque en los movimientos sociales nacidos en Estados Unidos. Cada capítulo termina con una historia que aporta un contexto social al material: desde la vigilancia contra protestas contemporáneas en Estados Unidos, hasta la forma en que el Congreso Nacional Africano usó cifrado parcialmente manual para luchar contra el Apartheid en la Sudáfrica de los años 80 del siglo pasado.Puedes leer este libro en forma lineal o puedes elegir los temas sobre los cuales te gustaría aprender. Al inicio de cada capítulo se menciona lo que deberías leer primero (como antecedente) y al final, lo que podría ser de tu interés a continuación."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 156
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1186",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

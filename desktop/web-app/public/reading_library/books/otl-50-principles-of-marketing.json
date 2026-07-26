@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-50-principles-of-marketing",
+  "title": "Principles of Marketing",
+  "description": "Principles of Marketing teaches the experience and process of actually doing marketing – not just the vocabulary. It carries five dominant themes throughout in order to expose students to marketing in today's environment: Service dominant logic — This textbook employs the term \"offering\" instead of the more traditional First \"P\" — product. That is because consumers don't sacrifice value when alternating between a product and a service. They are evaluating the entire experience, whether they interact with a product, a service, or a combination. So the fundamental focus is providing value throughout the value chain, whether that value chain encompasses a product, service, or both. Sustainability — Increasingly, companies are interested in the impact they are having on their local community as well as the overall environment. This is often referred to as the \"triple bottom line\" of financial, social, and environment performance. Ethics and social responsibility — Following on the sustainability notion is the broader importance of ethics and social responsibility in creating successful organizations. The authors make consistent references to ethical situations throughout chapter coverage, and end of chapter material in most chapters will encompass ethical situations. Global coverage — the authors deliberately entitled Chapter 1 \"What is Marketing?\" Whether it is today's price of gasoline, the current U.S. presidential race, or Midwestern U.S. farming, almost every industry and company needs strong global awareness. And today's marketing professionals must understand the world in which they and their companies operate. Metrics — Firms today have the potential to gather more information than ever before about their current and potential customers. That information gathering can be costly, but it can also be very revealing. With the potential to capture so much more detail about micro transactions, firms should now be more able to answer \"well, what this marketing strategy really worth it?\" And \"what is the marketing ROI?\" And finally, \"what is this customer or set of customers worth to us over their lifetime?\"",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Marketing"
+  ],
+  "authors": [
+    "Open Textbook Library record"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Minnesota Libraries Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/principles-of-marketing"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Principles of Marketing teaches the experience and process of actually doing marketing – not just the vocabulary. It carries five dominant themes throughout in order to expose students to marketing in today's environment: Service dominant logic — This textbook employs the term \"offering\" instead of the more traditional First \"P\" — product. That is because consumers don't sacrifice value when alternating between a product and a service. They are evaluating the entire experience, whether they interact with a product, a service, or a combination. So the fundamental focus is providing value throughout the value chain, whether that value chain encompasses a product, service, or both. Sustainability — Increasingly, companies are interested in the impact they are having on their local community as well as the overall environment. This is often referred to as the \"triple bottom line\" of financial, social, and environment performance. Ethics and social responsibility — Following on the sustainability notion is the broader importance of ethics and social responsibility in creating successful organizations. The authors make consistent references to ethical situations throughout chapter coverage, and end of chapter material in most chapters will encompass ethical situations. Global coverage — the authors deliberately entitled Chapter 1 \"What is Marketing?\" Whether it is today's price of gasoline, the current U.S. presidential race, or Midwestern U.S. farming, almost every industry and company needs strong global awareness. And today's marketing professionals must understand the world in which they and their companies operate. Metrics — Firms today have the potential to gather more information than ever before about their current and potential customers. That information gathering can be costly, but it can also be very revealing. With the potential to capture so much more detail about micro transactions, firms should now be more able to answer \"well, what this marketing strategy really worth it?\" And \"what is the marketing ROI?\" And finally, \"what is this customer or set of customers worth to us over their lifetime?\""
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 347
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "50",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

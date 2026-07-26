@@ -81,6 +81,14 @@ export function setupHub() {
       buildCslJson: buildCslJson,
       buildRoCrate: buildRoCrate,
       buildInteroperabilityBundle: buildInteroperabilityBundle,
+      validateEvidenceGraph: validateEvidenceGraph,
+      validateInteroperabilityBundle: validateInteroperabilityBundle,
+      importPortableBundle: importPortableBundle,
+      parsePortfolioImport: parsePortfolioImport,
+      mergeImportedJournal: mergeImportedJournal,
+      writeRecoverySnapshot: writeRecoverySnapshot,
+      readRecoverySnapshot: readRecoverySnapshot,
+      extractLargeResearchMedia: extractLargeResearchMedia,
       stampNewInquiryArtifacts: stampNewInquiryArtifacts,
       applyMethodPackSelection: applyMethodPackSelection,
       stripPedagogicalFootguns: stripPedagogicalFootguns,
@@ -93,6 +101,8 @@ export function setupHub() {
       MAX_CAPTURE_INBOX_ITEMS: MAX_CAPTURE_INBOX_ITEMS,
       MAX_CAPTURES_PER_TOOL_PER_MINUTE: MAX_CAPTURES_PER_TOOL_PER_MINUTE,
       RESEARCH_STORAGE_SOFT_LIMIT_BYTES: RESEARCH_STORAGE_SOFT_LIMIT_BYTES,
+      MAX_PORTFOLIO_IMPORT_BYTES: MAX_PORTFOLIO_IMPORT_BYTES,
+      MEDIA_INLINE_THRESHOLD_BYTES: MEDIA_INLINE_THRESHOLD_BYTES,
       MAX_AI_CALLS_PER_SESSION: MAX_AI_CALLS_PER_SESSION,
       // PER_TOUCHPOINT_CAP is defined inside makeAskResearchCoach (deeper
       // closure). We re-construct an instance to capture it.

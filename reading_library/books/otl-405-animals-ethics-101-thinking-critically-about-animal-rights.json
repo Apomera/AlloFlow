@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-405-animals-ethics-101-thinking-critically-about-animal-rights",
+  "title": "Animals & Ethics 101: Thinking Critically About Animal Rights",
+  "description": "This book provides an overview of the current debates about the nature and extent of our moral obligations to animals. Which, if any, uses of animals are morally wrong, which are morally permissible (i.e., not wrong) and why? What, if any, moral obligations do we, individually and as a society (and a global community), have towards animals and why? How should animals be treated? Why? We will explore the most influential and most developed answers to these questions – given by philosophers, scientists, and animal advocates and their critics – to try to determine which positions are supported by the best moral reasons.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Philosophy"
+  ],
+  "authors": [
+    "Nathan Nobis - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Philosophy Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/animals-ethics-101-thinking-critically-about-animal-rights"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book provides an overview of the current debates about the nature and extent of our moral obligations to animals. Which, if any, uses of animals are morally wrong, which are morally permissible (i.e., not wrong) and why? What, if any, moral obligations do we, individually and as a society (and a global community), have towards animals and why? How should animals be treated? Why? We will explore the most influential and most developed answers to these questions – given by philosophers, scientists, and animal advocates and their critics – to try to determine which positions are supported by the best moral reasons."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 126
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "405",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

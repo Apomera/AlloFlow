@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-883-ac-electrical-circuit-analysis-a-practical-approach",
+  "title": "AC Electrical Circuit Analysis: A Practical Approach",
+  "description": "Welcome to the AC Electrical Circuit Analysis, an open educational resource (OER). The goal of this text is to introduce the theory and practical application of analysis of AC electrical circuits. It assumes familiarity with DC circuit analysis. If you have not studied DC circuit analysis, it is strongly recommended that you read the companion OER text, DC Electrical Circuit Analysis before continuing. Both texts are offered free of charge under a Creative Commons non-commercial, share-alike with attribution license. For your convenience, along with the free pdf and odt files, print copies are available at a very modest charge. Check my web sites for links. This text is based on the earlier Workbook for AC Electrical Circuits, which it replaces. The original expository text has been greatly expanded and includes many examples along with computer simulations. For the convenience of those who used the Workbook, many of the problem sets are the same, with some re-ordering depending on the chapter.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology - Electrical Engineering"
+  ],
+  "authors": [
+    "James M. Fiore - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "dissidents",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/ac-electrical-circuit-analysis-a-practical-approach-fiore"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Welcome to the AC Electrical Circuit Analysis, an open educational resource (OER). The goal of this text is to introduce the theory and practical application of analysis of AC electrical circuits. It assumes familiarity with DC circuit analysis. If you have not studied DC circuit analysis, it is strongly recommended that you read the companion OER text, DC Electrical Circuit Analysis before continuing. Both texts are offered free of charge under a Creative Commons non-commercial, share-alike with attribution license. For your convenience, along with the free pdf and odt files, print copies are available at a very modest charge. Check my web sites for links. This text is based on the earlier Workbook for AC Electrical Circuits, which it replaces. The original expository text has been greatly expanded and includes many examples along with computer simulations. For the convenience of those who used the Workbook, many of the problem sets are the same, with some re-ordering depending on the chapter."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 183
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "883",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

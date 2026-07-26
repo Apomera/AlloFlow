@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-159-the-adventure-of-physics-vol-vi-the-strand-model-a-speculation-on-unific",
+  "title": "The Adventure of Physics - Vol. VI: The Strand Model - A Speculation on Unification",
+  "description": "This book is written for anybody who is intensely curious about nature and motion. Have you ever asked: Why do people, animals, things, images and empty space move? The answer leads to many adventures, and this book presents one of the best of them: the search for a precise, unified and final description of all motion. The wish to describe all motion is a large endeavour. Fortunately, this large endeavour can be structured in the simple diagram shown in Figure 1. The final and unified descrip- tion of motion, the topic of this book, corresponds to the highest point in the diagram. Searching for this final and unified description is an old quest. In the following, I briefly summarize its history and then present an intriguing, though speculative solution to the riddle. The search for the final, unified description of motion is a story of many surprises. For example, twentieth-century research has shown that there is a smallest distance in nature. Research has also shown that matter cannot be distinguished from empty space at those small distances. A last surprise dates from this century: particles and space are best described as made of strands, instead of little spheres or points. The present text explains how to reach these unexpected conclusions. In particular, quantum field theory, the standard model of particle physics, general relativity and cosmology are shown to follow from strands. The three gauge interactions, the three particle generations and the three dimensions of space turn out to be due to strands. In fact, all the open questions of twentieth-century physics about the foundations of motion, all the millennium issues, can be solved with the help of strands. The strand model, as presented in this text, is an unexpected result from a threefold aim that I have pursued since 1990, in the five previous volumes of this series: to present the basics of motion in a way that is up to date, captivating and simple. In retrospect, the aim for maximum simplicity has been central in deducing this speculation. While the previous volumes introduced, in an entertaining way, the established parts of physics, this volume presents, in the same entertaining and playful way, a speculation about uni- fication. Nothing in this volume is established knowledge – yet. The text is the original presentation of the topic. The search for a final theory is one of the great adventures of life: it leads to the limits of thought. The search overthrows our thinking habits about nature. A change in think- ing habits can produce fear, often hidden by anger. But by overcoming our fears we gain strength and serenity. Changing thinking habits thus requires courage, but it also pro- duces intense and beautiful emotions. Enjoy them!",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Physics"
+  ],
+  "authors": [
+    "Christoph Schiller - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Motion Mountain",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-NoDerivs",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-adventure-of-physics-vol-vi-the-strand-model-a-speculation-on-unification"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-NoDerivs"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is written for anybody who is intensely curious about nature and motion. Have you ever asked: Why do people, animals, things, images and empty space move? The answer leads to many adventures, and this book presents one of the best of them: the search for a precise, unified and final description of all motion. The wish to describe all motion is a large endeavour. Fortunately, this large endeavour can be structured in the simple diagram shown in Figure 1. The final and unified descrip- tion of motion, the topic of this book, corresponds to the highest point in the diagram. Searching for this final and unified description is an old quest. In the following, I briefly summarize its history and then present an intriguing, though speculative solution to the riddle. The search for the final, unified description of motion is a story of many surprises. For example, twentieth-century research has shown that there is a smallest distance in nature. Research has also shown that matter cannot be distinguished from empty space at those small distances. A last surprise dates from this century: particles and space are best described as made of strands, instead of little spheres or points. The present text explains how to reach these unexpected conclusions. In particular, quantum field theory, the standard model of particle physics, general relativity and cosmology are shown to follow from strands. The three gauge interactions, the three particle generations and the three dimensions of space turn out to be due to strands. In fact, all the open questions of twentieth-century physics about the foundations of motion, all the millennium issues, can be solved with the help of strands. The strand model, as presented in this text, is an unexpected result from a threefold aim that I have pursued since 1990, in the five previous volumes of this series: to present the basics of motion in a way that is up to date, captivating and simple. In retrospect, the aim for maximum simplicity has been central in deducing this speculation. While the previous volumes introduced, in an entertaining way, the established parts of physics, this volume presents, in the same entertaining and playful way, a speculation about uni- fication. Nothing in this volume is established knowledge – yet. The text is the original presentation of the topic. The search for a final theory is one of the great adventures of life: it leads to the limits of thought. The search overthrows our thinking habits about nature. A change in think- ing habits can produce fear, often hidden by anger. But by overcoming our fears we gain strength and serenity. Changing thinking habits thus requires courage, but it also pro- duces intense and beautiful emotions. Enjoy them!"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-NoDerivs. Copyright year: 2008."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 478
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-NoDerivs",
+  "externalRecordId": "159",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

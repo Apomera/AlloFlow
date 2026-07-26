@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-3219-senzo-and-the-sun",
+  "title": "Senzo and the Sun",
+  "description": "The morning sun creeps over the horizon and peeps through the leaves, waking Senzo. Gogo’s rooster shakes his wings, stretches his neck and crows, Koek-a-loek-a-loo! Join Senzo and the sun as they journey through the day.",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Let's learn!",
+    "My body, identity, and daily routines"
+  ],
+  "authors": [
+    "Sarah McGregor"
+  ],
+  "illustrators": [
+    "Adrie Le Roux"
+  ],
+  "contributors": [
+    {
+      "name": "Liam Longland",
+      "role": "Designer"
+    },
+    {
+      "name": "Elise Varga",
+      "role": "Editor"
+    },
+    {
+      "name": "Sarah McGregor",
+      "role": "Writer"
+    },
+    {
+      "name": "Adrie Le Roux",
+      "role": "Illustrator"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/senzo-and-the-sun/",
+    "attributionUrl": "https://bookdash.org/books/senzo-and-the-sun/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=senzo-and-the-sun"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2017/03/senzo-and-the-sun_english_20170320_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2017/03/senzo-and-the-sun_english_20170320_cover.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The morning sun creeps over the horizon and peeps through the leaves, waking Senzo. Gogo’s rooster shakes his wings, stretches his neck and crows, Koek-a-loek-a-loo! Join Senzo and the sun as they journey through the day."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Liam Longland (Designer); Elise Varga (Editor); Sarah McGregor (Writer); Adrie Le Roux (Illustrator)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=senzo-and-the-sun"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 103
+  }
+}

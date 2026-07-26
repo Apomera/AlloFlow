@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-312-working-with-academic-literacies-case-studies-towards-transformative-pra",
+  "title": "Working With Academic Literacies: Case Studies Towards Transformative Practice",
+  "description": "The editors and contributors to this collection explore what it means to adopt an \"academic literacies\" approach in policy and pedagogy. Transformative practice is illustrated through case studies and critical commentaries from teacher-researchers working in a range of higher education contexts—from undergraduate to postgraduate levels, across disciplines, and spanning geopolitical regions including Australia, Brazil, Canada, Cataluña, Finland, France, Ireland, Portugal, South Africa, the United Kingdom, and the United States. Key questions addressed include: How can a wider range of semiotic resources and technologies fruitfully serve academic meaning and knowledge making? What kinds of writing spaces do we need and how can these be facilitated? How can theory and practice from \"Academic Literacies\" be used to open up debate about writing pedagogy at institutional and policy levels?",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Higher Education",
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Theresa Lillis - Author / Kathy Harrington - Author / Mary Lea - Author / Sally Mitchell - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "WAC Clearinghouse",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-NoDerivs",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/working-with-academic-literacies-case-studies-towards-transformative-practice"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-NoDerivs"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The editors and contributors to this collection explore what it means to adopt an \"academic literacies\" approach in policy and pedagogy. Transformative practice is illustrated through case studies and critical commentaries from teacher-researchers working in a range of higher education contexts—from undergraduate to postgraduate levels, across disciplines, and spanning geopolitical regions including Australia, Brazil, Canada, Cataluña, Finland, France, Ireland, Portugal, South Africa, the United Kingdom, and the United States. Key questions addressed include: How can a wider range of semiotic resources and technologies fruitfully serve academic meaning and knowledge making? What kinds of writing spaces do we need and how can these be facilitated? How can theory and practice from \"Academic Literacies\" be used to open up debate about writing pedagogy at institutional and policy levels?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-NoDerivs. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 149
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-NoDerivs",
+  "externalRecordId": "312",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

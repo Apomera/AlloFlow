@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-449-intellectual-property-law-the-information-society-cases-and-materials",
+  "title": "Intellectual Property: Law & the Information Society—Cases and Materials",
+  "description": "This book is an introduction to intellectual property law, the set of private legal rights that allows individuals and corporations to control intangible creations and marks—from logos to novels to drug formulae—and the exceptions and limitations that define those rights. It focuses on the three graphmain forms of US federal intellectual property—trademark, copyright and patent—but many of the ideas discussed here apply far beyond those legal areas and far beyond the law of the United States. The book is intended to be a textbook for the basic Intellectual Property class, but because it is an open coursebook, which can be freely edited and customized, it is also suitable for an undergraduate class, or for a business, library studies, communications or other graduate school class. Each chapter contains cases and secondary readings and a set of problems or role-playing exercises involving the material. The problems range from a video of the Napster oral argument to counseling clients about search engines and trademarks, applying the First Amendment to digital rights management and copyright or commenting on the Supreme Court's rulings on gene patents.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law - Civil Law",
+    "Law"
+  ],
+  "authors": [
+    "James Boyle - Author / Jennifer Jenkins - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "James Boyle, Jennifer Jenkins",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/intellectual-property-law-the-information-society-cases-and-materials"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is an introduction to intellectual property law, the set of private legal rights that allows individuals and corporations to control intangible creations and marks—from logos to novels to drug formulae—and the exceptions and limitations that define those rights. It focuses on the three graphmain forms of US federal intellectual property—trademark, copyright and patent—but many of the ideas discussed here apply far beyond those legal areas and far beyond the law of the United States. The book is intended to be a textbook for the basic Intellectual Property class, but because it is an open coursebook, which can be freely edited and customized, it is also suitable for an undergraduate class, or for a business, library studies, communications or other graduate school class. Each chapter contains cases and secondary readings and a set of problems or role-playing exercises involving the material. The problems range from a video of the Napster oral argument to counseling clients about search engines and trademarks, applying the First Amendment to digital rights management and copyright or commenting on the Supreme Court's rulings on gene patents."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 204
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "449",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

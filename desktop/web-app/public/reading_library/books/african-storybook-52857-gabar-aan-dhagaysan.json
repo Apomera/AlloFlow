@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52857-gabar-aan-dhagaysan",
+  "title": "Gabar aan dhagaysan",
+  "description": "Maxaa dhacaya marka qofka uusan dhagaysan talo xikmad leh?",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Joseph Sanchez Nadimo"
+  ],
+  "illustrators": [
+    "Rob Owen"
+  ],
+  "translators": [
+    "Ibrahim Hussein"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Joseph Sanchez Nadimo",
+      "role": "Author"
+    },
+    {
+      "name": "Ibrahim Hussein",
+      "role": "Translation"
+    },
+    {
+      "name": "Rob Owen",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Joseph Sanchez Nadimo (Author); Ibrahim Hussein (Translation); Rob Owen (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52857",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-429c6858b8099835",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/10763.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10763.png",
+      "text": "Tuulada Sinyare agteeda waxaa ku noolaa mas wayn oo la oran jiray Lego.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857#page=1",
+      "sourceDigest": "sha256:c582c997a02107bda162ba08ccd15a77fa5d3bb9b166c3ac111d0b4ba12e8c3c"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10765.png",
+      "text": "Apiyo, Ajoh iyo Atieno xaabo ayay raadsadeen. \"Iska ilaaliya Lego,\" ayeyo ayaa tiri.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857#page=2",
+      "sourceDigest": "sha256:c1d9c10fd0aa4254e1d459ba616893580de37ff04acbe069b51d9865907e9891"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10766.png",
+      "text": "Gabdhihii waxay diyariyeen cunto. Maalin dheer ayay noqonaysaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857#page=3",
+      "sourceDigest": "sha256:de9ef93e5439506612fde0e406ffb171fd166595a157516b5e585480f04581a3"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10767.png",
+      "text": "Apiyo ayaa tiri, \"Aan aamusno. Lego meelahan ayuu ku noolyahay.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857#page=4",
+      "sourceDigest": "sha256:ead1705b1e2138f951a1a9859ddc58183d6dc0df809431b5a408b3397428d193"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10769.png",
+      "text": "Ajoh waxay rabtay ilkaha Lego. Apiyo waxay tiri, \"Xasuusnow waanada ayeeyo.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857#page=5",
+      "sourceDigest": "sha256:4b7a807da9814cfeaccb44f33f53e124d4264cf03de0b023e7ccb06911d31e9c"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10770.png",
+      "text": "Ajoh ma aysan danayn. \"Aniga waxaan rabaa ilka dahabka ah ee Lego,\" ayay tiri.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857#page=6",
+      "sourceDigest": "sha256:53efc21b84b92c3d67176303ad2623df1c311df5919f1b7d46ab44f98b95977f"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10771.png",
+      "text": "Lego ma helin ilkihisii dahabka ahaa. Wuu is qariyey, wuuna sugay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857#page=7",
+      "sourceDigest": "sha256:701631675b3b2badf41ca1373a46d6b7e4c9a9d406035916a9cf5c87d5f2c34c"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10772.png",
+      "text": "Gabdhaha waxay maqlayn \"Hssssss!\" Lego waxuu diyaar u ahaa in uu tuugga qaniino.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857#page=8",
+      "sourceDigest": "sha256:43f0346f075e37c3c6f7fd6fb826a430f86ab19919b2d960357278eccedac24e"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10773.png",
+      "text": "Lego wuxuu yiri, \"Tuuggu imtixaankayga kama gudbi doono.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857#page=9",
+      "sourceDigest": "sha256:102e7a3733db4861e070fa0ab2452974a9deb6c32ad3095e37bdfdba1b8c25bf"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10774.png",
+      "text": "Apiyo iyo Atieno si wanaagsan bay u heeseen. Waa na gudbeen imtixaanka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857#page=10",
+      "sourceDigest": "sha256:faaba9b4724adc46c13587dda24f862a13a4732d79a67f96388c1460f1675f5f"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10775.png",
+      "text": "Ajoh si wanaagsan uma heesin. Lego wuu ogaa cidda tuugga ahayd.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857#page=11",
+      "sourceDigest": "sha256:2260b39bf28ffb4dd11812ec30fdf8db2894ab229e3db1721e979f2a844a613c"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10776.png",
+      "text": "Lego wuxuu liqay Ajoh! Ayeeyo waxay tiri, \"Haddii ay i dhagaysan lahayd.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52857#page=12",
+      "sourceDigest": "sha256:ee52bdda015e3e7e63a147035b5da0c28a366f25aa4ae9c1a4c636ac9179bf21"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 136
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:6a03e54380d657450e896158839ca64f9bd57f91fb1b92a77a0feeda94c8daf6"
+  }
+}

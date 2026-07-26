@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1938-the-craft-of-sociological-research",
+  "title": "The Craft of Sociological Research",
+  "description": "The Craft of Sociological Research: Principles and Methods of Collecting, Analyzing, and Presenting Social Science Data was developed with the goal of developing an open educational resource (OER) that makes well-written and engaging methods-training materials available for free to students. The manuscript was written by a team of authors at Virginia Commonwealth University who are all researchers as well as teachers of undergraduate methods courses. Some portions of the text were adapted from existing OER social scientific methods textbooks, and others are original. Our aim is to provide broad but sound coverage of widely used methodologies, giving students the background they need to both evaluate and conduct research. While targeted at undergraduates, the textbook includes optional sections that provide more advanced methodological training. It also features Q&As with prominent sociologists and sidebars on topical issues that social scientific research has helped illuminate. We hope the text is accessible to students with a variety of backgrounds and interests, and to that end we have tried to make the writing lively and clear throughout and provide supplemental online and multimedia resources when possible. This project was funded with the generous support of the Virtual Library of Virginia (VIVA), a program of the State Council of Higher Education for Virginia (SCHEV), and VCU Libraries’ Open and Affordable Course Content Initiative.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Sociology"
+  ],
+  "authors": [
+    "Victor Tan Chen - Author / Gabriela León-Pérez - Author / Julie Honnold - Author / Volkan Aytar - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Virginia's Academic Library Consortium (VIVA)",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-craft-of-sociological-research"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Craft of Sociological Research: Principles and Methods of Collecting, Analyzing, and Presenting Social Science Data was developed with the goal of developing an open educational resource (OER) that makes well-written and engaging methods-training materials available for free to students. The manuscript was written by a team of authors at Virginia Commonwealth University who are all researchers as well as teachers of undergraduate methods courses. Some portions of the text were adapted from existing OER social scientific methods textbooks, and others are original. Our aim is to provide broad but sound coverage of widely used methodologies, giving students the background they need to both evaluate and conduct research. While targeted at undergraduates, the textbook includes optional sections that provide more advanced methodological training. It also features Q&As with prominent sociologists and sidebars on topical issues that social scientific research has helped illuminate. We hope the text is accessible to students with a variety of backgrounds and interests, and to that end we have tried to make the writing lively and clear throughout and provide supplemental online and multimedia resources when possible. This project was funded with the generous support of the Virtual Library of Virginia (VIVA), a program of the State Council of Higher Education for Virginia (SCHEV), and VCU Libraries’ Open and Affordable Course Content Initiative."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 240
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1938",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

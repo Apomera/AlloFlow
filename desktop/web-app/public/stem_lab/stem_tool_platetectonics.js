@@ -207,7 +207,9 @@
     var React = window.React;
     if (!React) return null;
     var h = React.createElement;
-    var isDark = !!(props && props.darkMode);
+    var isContrast = !!(props && props.isContrast);
+    var isDark = !!(props && props.darkMode) || isContrast;
+    var palette = (props && props.palette) || { bg: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), text: isContrast ? '#ffffff' : (isDark ? '#f1f5f9' : '#0f172a'), border: isContrast ? '#fbbf24' : (isDark ? '#475569' : '#cbd5e1') };
     var announceToSR = props && props.announceToSR;
     var addToast = (props && props.addToast) || null;
     var useState = React.useState;
@@ -252,6 +254,8 @@
     drawRef.current = draw;
     var isDarkRef = useRef(isDark);
     isDarkRef.current = isDark;
+    var isContrastRef = useRef(isContrast);
+    isContrastRef.current = isContrast;
 
     // S-P time for a station given current epicenter
     function spTime(station, epi) {
@@ -300,7 +304,7 @@
       var _lastSig = null;
       function frame() {
         if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; }
-        var sig = JSON.stringify(sRef.current) + '|' + JSON.stringify(stationsRef.current) + '|' + isDarkRef.current;
+        var sig = JSON.stringify(sRef.current) + '|' + JSON.stringify(stationsRef.current) + '|' + isDarkRef.current + '|' + isContrastRef.current;
         if (sig !== _lastSig) { _lastSig = sig; (drawRef.current || draw)(ctx, sRef.current); }
         if (!prefersReduced) animRef.current = requestAnimationFrame(frame);
       }
@@ -311,7 +315,10 @@
     function draw(ctx, cur) {
       // Map background -- soft topographic look
       var bg = ctx.createLinearGradient(0, 0, 0, H_CANVAS);
-      if (isDark) {
+      if (isContrast) {
+        bg.addColorStop(0, palette.bg);
+        bg.addColorStop(1, palette.bg);
+      } else if (isDark) {
         bg.addColorStop(0, '#0b1220');
         bg.addColorStop(1, '#1e293b');
       } else {
@@ -322,7 +329,7 @@
       ctx.fillRect(0, 0, W_CANVAS, H_CANVAS);
 
       // Grid (each cell = 100 km)
-      ctx.strokeStyle = isDark ? 'rgba(148,163,184,0.18)' : 'rgba(15,118,110,0.18)';
+      ctx.strokeStyle = isContrast ? palette.border : (isDark ? 'rgba(148,163,184,0.18)' : 'rgba(15,118,110,0.18)');
       ctx.lineWidth = 1;
       var stepPx = 100 / KM_PER_PX; // 25 px = 100 km
       for (var gx = 0; gx <= W_CANVAS; gx += stepPx) {
@@ -332,10 +339,10 @@
         ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W_CANVAS, gy); ctx.stroke();
       }
       // Scale bar
-      ctx.fillStyle = isDark ? 'rgba(226,232,240,0.7)' : 'rgba(15,23,42,0.7)';
+      ctx.fillStyle = isContrast ? palette.text : (isDark ? 'rgba(226,232,240,0.7)' : 'rgba(15,23,42,0.7)');
       ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'left';
       ctx.fillText('100 km', 12, H_CANVAS - 10);
-      ctx.strokeStyle = isDark ? '#e2e8f0' : '#0f172a'; ctx.lineWidth = 2;
+      ctx.strokeStyle = isContrast ? palette.border : (isDark ? '#e2e8f0' : '#0f172a'); ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(50, H_CANVAS - 14); ctx.lineTo(50 + stepPx, H_CANVAS - 14); ctx.stroke();
 
       var stations = stationsRef.current;
@@ -536,14 +543,16 @@
     });
 
     var containerClass = 'rounded-2xl border-2 overflow-hidden mt-5 ' + (isDark ? 'border-slate-800' : 'border-emerald-400');
-    var containerStyle = isDark
-      ? { background: 'linear-gradient(135deg, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 0%, var(--allo-stem-panel, rgba(15,23,42,0.7)) 100%)' }
-      : { background: 'linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 100%)' };
+    var containerStyle = isContrast
+      ? { background: palette.bg, color: palette.text, borderColor: palette.border }
+      : isDark
+        ? { background: 'linear-gradient(135deg, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 0%, var(--allo-stem-panel, rgba(15,23,42,0.7)) 100%)' }
+        : { background: 'linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 100%)' };
     var headerStyle = isDark ? { background: 'rgba(16,185,129,0.15)' } : { background: 'rgba(16,185,129,0.2)' };
     var titleClass = 'text-sm font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-900');
     var subtitleClass = 'text-[11px] ' + (isDark ? 'text-slate-400' : 'text-emerald-800');
 
-    return h('div', { className: containerClass, style: containerStyle, role: 'region', 'aria-label': 'Interactive epicenter triangulation' },
+    return h('div', { className: containerClass, style: containerStyle, role: 'region', 'aria-label': 'Interactive epicenter triangulation', 'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
       h('div', { className: 'px-3 py-2 flex items-center gap-2 border-b ' + (isDark ? 'border-slate-800' : 'border-emerald-300'), style: headerStyle },
         h('span', { className: 'px-2 py-0.5 rounded-full text-[10px] font-bold text-white', style: { background: '#059669' } }, '🎮 INTERACTIVE'),
         h('span', { className: titleClass }, 'Epicenter Triangulation'),
@@ -630,7 +639,9 @@
   window.AlloTectonicsInteractive = function(props) {
     var React = window.React;
     var h = React.createElement;
-    var isDark = !!(props && props.darkMode);
+    var isContrast = !!(props && props.isContrast);
+    var isDark = !!(props && props.darkMode) || isContrast;
+    var palette = (props && props.palette) || { bg: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), text: isContrast ? '#ffffff' : (isDark ? '#f1f5f9' : '#0f172a'), border: isContrast ? '#fbbf24' : (isDark ? '#475569' : '#cbd5e1') };
     var announceToSR = props && props.announceToSR;
     var useState = React.useState;
     var useRef = React.useRef;
@@ -1060,7 +1071,7 @@
      'Deepest active focus: ' + deepestActive + ' km (shallow)');
 
   var containerClass = 'rounded-2xl border-2 overflow-hidden mt-5 plate-tectonics-container ' + (isDark ? 'border-slate-800 text-slate-200' : 'border-orange-400');
-  var containerStyle = isDark ? { background: 'linear-gradient(135deg, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 0%, var(--allo-stem-panel, rgba(30,41,59,0.7)) 100%)', backdropFilter: 'blur(12px)' } : { background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)' };
+  var containerStyle = isContrast ? { background: palette.bg, color: palette.text, borderColor: palette.border } : isDark ? { background: 'linear-gradient(135deg, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 0%, var(--allo-stem-panel, rgba(30,41,59,0.7)) 100%)', backdropFilter: 'blur(12px)' } : { background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)' };
   var headerStyle = isDark ? { background: 'rgba(30,41,59,0.5)' } : { background: 'rgba(234,88,12,0.15)' };
   var headerBorderClass = isDark ? 'px-3 py-2 flex items-center gap-2 border-b border-slate-800' : 'px-3 py-2 flex items-center gap-2 border-b border-orange-300';
   var badgeClass = 'px-2 py-0.5 rounded-full text-[10px] font-bold text-white';
@@ -1068,7 +1079,7 @@
   var titleClass = 'text-sm font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-900');
   var subtitleClass = 'text-[11px] ' + (isDark ? 'text-slate-400' : 'text-orange-800');
 
-  return h('div', { className: containerClass, style: containerStyle },
+  return h('div', { className: containerClass, style: containerStyle, 'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
     h('div', { className: headerBorderClass, style: headerStyle },
       h('span', { className: badgeClass, style: badgeStyle }, '🎮 INTERACTIVE'),
       h('span', { className: titleClass }, 'Plate Boundary Simulator'),
@@ -1241,7 +1252,7 @@
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
-      var props = ctx.props;
+      var props = Object.assign({}, ctx.props || {}, { darkMode: !!ctx.isDark || !!ctx.isContrast, isContrast: !!ctx.isContrast, palette: ctx.pal || null });
       var canvasNarrate = ctx.canvasNarrate;
 
       // â”€â”€ Tool body (plateTectonics) â”€â”€
@@ -5340,7 +5351,9 @@ var d = labToolData.plateTectonics || {};
 
 
 
-          var isDark = !!(props && props.darkMode);
+          var isContrast = !!(props && props.isContrast);
+          var isDark = !!(props && props.darkMode) || isContrast;
+          var palette = (props && props.palette) || { bg: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), text: isContrast ? '#ffffff' : (isDark ? '#f1f5f9' : '#0f172a'), border: isContrast ? '#fbbf24' : (isDark ? '#475569' : '#cbd5e1') };
           var _gRed = isDark ? 'linear-gradient(135deg, #991b1b, #7f1d1d, #450a0a)' : 'linear-gradient(135deg, #dc2626, #ef4444, #f87171)';
           var _gCard = isDark ? 'linear-gradient(135deg, var(--allo-stem-panel, rgba(30,41,59,0.7)) 0%, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 100%)' : 'linear-gradient(135deg, #fef2f2, #fee2e2, #fef2f2)';
 
@@ -22212,10 +22225,10 @@ var d = labToolData.plateTectonics || {};
             ),
 
             // ═══ INTERACTIVE PLATE BOUNDARY SIMULATOR ═══
-            React.createElement(window.AlloTectonicsInteractive),
+            React.createElement(window.AlloTectonicsInteractive, { darkMode: isDark, isContrast: isContrast, palette: props.palette, announceToSR: announceToSR }),
 
             // ═══ INTERACTIVE EPICENTER TRIANGULATION ═══
-            React.createElement(window.AlloTectonicsEpicenter)
+            React.createElement(window.AlloTectonicsEpicenter, { darkMode: isDark, isContrast: isContrast, palette: props.palette, announceToSR: announceToSR, addToast: addToast })
 
           );
       })();

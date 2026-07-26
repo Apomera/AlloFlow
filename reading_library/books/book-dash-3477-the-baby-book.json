@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-3477-the-baby-book",
+  "title": "The Baby Book",
+  "description": "This book will help you understand your wonderful body and how babies are made.",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Family, friends, and home",
+    "My body, identity, and daily routines"
+  ],
+  "authors": [
+    "Diane Awerbuck"
+  ],
+  "illustrators": [
+    "Alex Latimer"
+  ],
+  "contributors": [
+    {
+      "name": "Christian .",
+      "role": "Designer"
+    },
+    {
+      "name": "Martha Evans",
+      "role": "Editor"
+    },
+    {
+      "name": "Diane Awerbuck",
+      "role": "Writer"
+    },
+    {
+      "name": "Alex Latimer",
+      "role": "Illustrator"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/the-baby-book/",
+    "attributionUrl": "https://bookdash.org/books/the-baby-book/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=the-baby-book"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2017/05/the-baby-book_english_20170220_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2017/05/the-baby-book_english_20170220_cover.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book will help you understand your wonderful body and how babies are made."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Christian . (Designer); Martha Evans (Editor); Diane Awerbuck (Writer); Alex Latimer (Illustrator)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=the-baby-book"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 80
+  }
+}

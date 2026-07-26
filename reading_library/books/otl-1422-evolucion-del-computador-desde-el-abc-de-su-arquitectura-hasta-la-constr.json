@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1422-evolucion-del-computador-desde-el-abc-de-su-arquitectura-hasta-la-constr",
+  "title": "Evolución del Computador desde el ABC de su Arquitectura hasta la Construcción de una PC Gamer",
+  "description": "El libro es una obra completa que aborda distintos aspectos importantes de la informática, desde la arquitectura y organización de la computadora hasta la construcción de una PC gamer. En el primer capítulo se explica de manera detallada la arquitectura y organización de los ordenadores, mientras que en el segundo se analizan las diferentes generaciones de ordenadores y su evolución a lo largo del tiempo, llegando hasta la inteligencia artificial. El tercer capítulo está dedicado a la memoria de la computadora y su funcionamiento, mientras que en el cuarto se explican las herramientas necesarias para el mantenimiento y la reparación de la PC, desde la clonación de discos duros hasta la construcción de dispositivos multi boot. Por último, el quinto capítulo se enfoca en las PC gamer's y ofrece una guía completa para los entusiastas de los juegos, brindando un procedimiento paso a paso para construir su propio PC gamer. Este libro es valioso tanto para estudiantes de sistemas como para profesionales de la computación, ya que cubre temas fundamentales como la arquitectura y organización de computadoras, historia y evolución, el diseño de computadoras, la memoria, las herramientas de mantenimiento y reparación de computadoras, y cómo armar una computadora de mayor rendimiento para usuarios jugadores. En resumen, esta obra ofrece información útil y completa sobre la evolución de la computadora, desde sus inicios hasta la actualidad, y brinda herramientas y consejos prácticos para su uso y mantenimiento",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science"
+  ],
+  "authors": [
+    "Gerardo Alfredo Solano-Gutiérrez - Author / Luis Alfonso Núñez-Freire - Author / José Javier Mendoza-Loor - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/evolucion-del-computador-desde-el-abc-de-su-arquitectura-hasta-la-construccion-de-una-pc-gamer"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "El libro es una obra completa que aborda distintos aspectos importantes de la informática, desde la arquitectura y organización de la computadora hasta la construcción de una PC gamer. En el primer capítulo se explica de manera detallada la arquitectura y organización de los ordenadores, mientras que en el segundo se analizan las diferentes generaciones de ordenadores y su evolución a lo largo del tiempo, llegando hasta la inteligencia artificial. El tercer capítulo está dedicado a la memoria de la computadora y su funcionamiento, mientras que en el cuarto se explican las herramientas necesarias para el mantenimiento y la reparación de la PC, desde la clonación de discos duros hasta la construcción de dispositivos multi boot. Por último, el quinto capítulo se enfoca en las PC gamer's y ofrece una guía completa para los entusiastas de los juegos, brindando un procedimiento paso a paso para construir su propio PC gamer. Este libro es valioso tanto para estudiantes de sistemas como para profesionales de la computación, ya que cubre temas fundamentales como la arquitectura y organización de computadoras, historia y evolución, el diseño de computadoras, la memoria, las herramientas de mantenimiento y reparación de computadoras, y cómo armar una computadora de mayor rendimiento para usuarios jugadores. En resumen, esta obra ofrece información útil y completa sobre la evolución de la computadora, desde sus inicios hasta la actualidad, y brinda herramientas y consejos prácticos para su uso y mantenimiento"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 260
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1422",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

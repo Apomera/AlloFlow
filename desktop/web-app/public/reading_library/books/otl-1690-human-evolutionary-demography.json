@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1690-human-evolutionary-demography",
+  "title": "Human Evolutionary Demography",
+  "description": "Human evolutionary demography is an emerging field blending natural science with social science. This edited volume provides a much-needed, interdisciplinary introduction to the field and highlights cutting-edge research for interested readers and researchers in demography, the evolutionary behavioural sciences, biology, and related disciplines. By bridging the boundaries between social and biological sciences, the volume stresses the importance of a unified understanding of both in order to grasp past and current demographic patterns. Demographic traits, and traits related to demographic outcomes, including fertility and mortality rates, marriage, parental care, menopause, and cooperative behavior are subject to evolutionary processes. Bringing an understanding of evolution into demography therefore incorporates valuable insights into this field; just as knowledge of demography is key to understanding evolutionary processes. By asking questions about old patterns from a new perspective, the volume—composed of contributions from established and early-career academics—demonstrates that a combination of social science research and evolutionary theory offers holistic understandings and approaches that benefit both fields. Human Evolutionary Demography introduces an emerging field in an accessible style. It is suitable for graduate courses in demography, as well as upper-level undergraduates. Its range of research is sure to be of interest to academics working on demographic topics (anthropologists, sociologists, demographers), natural scientists working on evolutionary processes, and disciplines which cross-cut natural and social science, such as evolutionary psychology, human behavioral ecology, cultural evolution, and evolutionary medicine. As an accessible introduction, it should interest readers whether or not they are currently familiar with human evolutionary demography.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences",
+    "Social Sciences"
+  ],
+  "authors": [
+    "Oskar Burger - Author / Ronald Lee - Author / Rebecca Sear - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Book Publishers",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/human-evolutionary-demography"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Human evolutionary demography is an emerging field blending natural science with social science. This edited volume provides a much-needed, interdisciplinary introduction to the field and highlights cutting-edge research for interested readers and researchers in demography, the evolutionary behavioural sciences, biology, and related disciplines. By bridging the boundaries between social and biological sciences, the volume stresses the importance of a unified understanding of both in order to grasp past and current demographic patterns. Demographic traits, and traits related to demographic outcomes, including fertility and mortality rates, marriage, parental care, menopause, and cooperative behavior are subject to evolutionary processes. Bringing an understanding of evolution into demography therefore incorporates valuable insights into this field; just as knowledge of demography is key to understanding evolutionary processes. By asking questions about old patterns from a new perspective, the volume—composed of contributions from established and early-career academics—demonstrates that a combination of social science research and evolutionary theory offers holistic understandings and approaches that benefit both fields. Human Evolutionary Demography introduces an emerging field in an accessible style. It is suitable for graduate courses in demography, as well as upper-level undergraduates. Its range of research is sure to be of interest to academics working on demographic topics (anthropologists, sociologists, demographers), natural scientists working on evolutionary processes, and disciplines which cross-cut natural and social science, such as evolutionary psychology, human behavioral ecology, cultural evolution, and evolutionary medicine. As an accessible introduction, it should interest readers whether or not they are currently familiar with human evolutionary demography."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 271
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1690",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

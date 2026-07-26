@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-21105-untitled-ti",
+  "title": "ኣንጭዋን ድሙን",
+  "description": "ሓንቲ ለባም ሽማግለ ኣንጭዋ ፀላኢና ፈታዊ መሲሉ እንትቐርብ፣ ክንርሕቖ ከም ዘለና ኣምሂራትና።",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Merga Debelo, Elizabeth Laird"
+  ],
+  "illustrators": [
+    "Jacob Kono"
+  ],
+  "translators": [
+    "Angesom Abadi"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Merga Debelo, Elizabeth Laird",
+      "role": "Author"
+    },
+    {
+      "name": "Angesom Abadi",
+      "role": "Translation"
+    },
+    {
+      "name": "Jacob Kono",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Merga Debelo, Elizabeth Laird (Author); Angesom Abadi (Translation); Jacob Kono (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "21105",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-f198ff08c1994c89",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/18908.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18908.png",
+      "text": "ቐደም፣ እንዳ ድሙን እንዳ ኣንጭዋን ኣዕርኽቲ እዮም ነይሮም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=1",
+      "sourceDigest": "sha256:28d5d6a7dce952a8b44b11e97ef534a4feb0cd2a9cac837a9dc1e7ad8f6fe88f"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18909.png",
+      "text": "ድሕሪ ግዜ፣ እንዳ ኣንጭዋ ኣዝማድ ክጠፍእዎም ጀመሩ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=2",
+      "sourceDigest": "sha256:32f1411155adae2e486b34d211c1eada7724f12e9ecac0f4df02219177f7f6ba"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18910.png",
+      "text": "ሽማግለ ኣንጭዋ “ደማሙ እዮም ዝበልዑና ዘለው” በለት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=3",
+      "sourceDigest": "sha256:71fb1735d5775617da6ec4b75af0fd2fa27ab83ea7e0c4dda6d6e1d0a090e98d"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18911.png",
+      "text": "ኣዴታት ንደቀን “ተጠንቐቁ ፤ ንደገ ከይትወፁ” ኢለን ነገራ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=4",
+      "sourceDigest": "sha256:37e9c221c6cc0d00bf3aedd9d370f1626492b0bc8c794b707b81c0e094054540"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18912.png",
+      "text": "ኩሎም ኣናፁ ድማ ይጥንቀቑ ነበሩ። ኩሎም ድማ ካብ ጉድጓዶም ኣይወፁን።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=5",
+      "sourceDigest": "sha256:8a47bdf5e3fd30062afb22da2d5e56e0e493f70811a6dead872f3c021b2fc7f9"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18913.png",
+      "text": "እቶም ዝጠመዩ ደማሙ “ኣበይ ኣለው እዞም ኩሎም ኣናፁ?” በሉ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=6",
+      "sourceDigest": "sha256:31c615ba63ccdb9e885ae71f36770d1db2f4fb33ac8cfbf6c1e544e3a9942b1d"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18932.png",
+      "text": "እቶም ደማሙ ንኣንጭዋታት ክጥይቕዎምን መርዓ ከዳልውን ወሰኑ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=7",
+      "sourceDigest": "sha256:64de5f5ec4a32945acce7697471d8d3745bfd1b1dc0cc2f39518e8e791db6470"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18933.png",
+      "text": "ከምዚ ድማ በሉ፣ “ሓንቲ ጓልኩም ምስ ሓደ ወድና ነመርዕዎም?”",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=8",
+      "sourceDigest": "sha256:d47e65a1bc552766c5ab3e6367f089517a799d1eae50eff679eed18f56298932"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18934.png",
+      "text": "እቶም ኣናፁ ነቶም ደማሙ “ክትበልዑና ኢኹም ደሊኹም” በልዎም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=9",
+      "sourceDigest": "sha256:bf28d589e8923ca64d114bb3b8c69e0e3441169dbb5dbc4fa3ff6ba15e44b956"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18935.png",
+      "text": "ደሓር ግን እቲ መርዓ ክካየድ እንዳ ድሙን እንዳ ኣንጭዋን ተሰማምዑ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=10",
+      "sourceDigest": "sha256:05c6e0d28dae8628733bc5e53a0ea0054c5d8e557986b38f2f5023b637221fea"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18936.png",
+      "text": "እቶም ደማሙ እናተሓጎሱ፣ ከንፈሮም እናላሓሱ ንገዝኦም ከይዶም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=11",
+      "sourceDigest": "sha256:bade8be1d1ead7488a7540b1aad58f0e8fcb6406867715c7b36293d31ce0ce59"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18937.png",
+      "text": "ኣብቲ መርዓ መዓልቲ፣ እቶም ኣናፁ ተጠንቂቖም እዮም ነይሮም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=12",
+      "sourceDigest": "sha256:970a8b0c0bb5cdb88309682d18dea453193a07f0d9e5b5cd1a6d9ab1aaa8b5b6"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18938.png",
+      "text": "እቶም ደማሙ ናይ መርዓ ደርፊ እናደረፉ መፁ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=13",
+      "sourceDigest": "sha256:c0d65c176f6f4d917c5c2a1fdf37c0731be55752c137f0b5f37799d2514a5adf"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18939.png",
+      "text": "እቲ ደርፊ “ሒዝኩም ብልዕዎም!” ዝብል እዩ ነይሩ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=14",
+      "sourceDigest": "sha256:ecb674baccd35a55345bfdc4660099566fdf5d8f3fb80b85226a6d923bedfc70"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18940.png",
+      "text": "እታ ሽማግለ ኣንጭዋ ድማ “ጉየዩ ኣናፁ፣ ጉየዩ!” ኢላ ደረፈት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=15",
+      "sourceDigest": "sha256:375ecc42ede626ce7a73c6c77c84335dd34f870452f15681769609799008b5fb"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18941.png",
+      "text": "እታ ሽማግለ ኣንጭዋ “በዚ ሕዚ ኣዕርኽቲ ኣይኮናን” ኢላ ንደማሙ ነገረቶም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21105#page=16",
+      "sourceDigest": "sha256:2763cf711102a2e624b5cc69405ff8e56fa5c36edbb17bea308d5acbc30004dd"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 131
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:b664077506cc3ef3165d8f41783de775e9857597f40a7037982b744da8a7e002"
+  }
+}

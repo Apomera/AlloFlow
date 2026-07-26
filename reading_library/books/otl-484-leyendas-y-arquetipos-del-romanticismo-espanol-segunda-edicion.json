@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-484-leyendas-y-arquetipos-del-romanticismo-espanol-segunda-edicion",
+  "title": "Leyendas y arquetipos del Romanticismo español - Segunda edición",
+  "description": "Leyendas y arquetipos del Romanticismo español is an introduction to nineteenth-century Spanish literature with a thematic focus on legends and archetypes. It presents Romanticism in the context of nineteenth-century literary and social movements. It is designed as a first anthology for intermediate Spanish students at American universities. Although brief, it includes poetry, drama in verse and short story. The works have been selected for their literary interest and the social importance of their themes. They are all by canonical authors. New for the Second Edition: over 4000 vocabulary, historical and cultural annotations to facilitate reading and comprehension. The Prologue and chapter introductions use circumlocution to facilitate comprehension, and include concrete examples of the concepts presented. The author biographies are brief and should not be used as study materials, but rather as starting points for students' own exploration. Many students prefer following their own interests when researching author biographies, and the internet makes accessible a plethora of bibliographic resources, such as the Biblioteca Virtual Miguel de Cervantes, the Centro Virtual Cervantes of the Cervantes Institute, or the Biblioteca Digital Hispánica of the Spanish National Library. Student participation in the selection of topics and sources emphasizes the investigative process and leads to richer class discussions.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Robert Sanders - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Portland State University Library",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/leyendas-y-arquetipos-del-romanticismo-espanol-segunda-edicion"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Leyendas y arquetipos del Romanticismo español is an introduction to nineteenth-century Spanish literature with a thematic focus on legends and archetypes. It presents Romanticism in the context of nineteenth-century literary and social movements. It is designed as a first anthology for intermediate Spanish students at American universities. Although brief, it includes poetry, drama in verse and short story. The works have been selected for their literary interest and the social importance of their themes. They are all by canonical authors. New for the Second Edition: over 4000 vocabulary, historical and cultural annotations to facilitate reading and comprehension. The Prologue and chapter introductions use circumlocution to facilitate comprehension, and include concrete examples of the concepts presented. The author biographies are brief and should not be used as study materials, but rather as starting points for students' own exploration. Many students prefer following their own interests when researching author biographies, and the internet makes accessible a plethora of bibliographic resources, such as the Biblioteca Virtual Miguel de Cervantes, the Centro Virtual Cervantes of the Cervantes Institute, or the Biblioteca Digital Hispánica of the Spanish National Library. Student participation in the selection of topics and sources emphasizes the investigative process and leads to richer class discussions."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 226
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "484",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

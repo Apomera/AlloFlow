@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "oapen-library-card",
+  "title": "OAPEN Library",
+  "description": "A quality-controlled library of peer-reviewed open-access scholarly books.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "oapen",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Scholarly books",
+    "Research",
+    "Open access",
+    "Multilingual"
+  ],
+  "authors": [
+    "OAPEN Foundation"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OAPEN Library",
+  "license": "CC0 catalog metadata · linked title licenses vary",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "oapen",
+    "name": "OAPEN Library",
+    "url": "https://library.oapen.org/"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.oapen.org/article/metadata",
+    "reason": "OAPEN metadata is CC0, while book licenses vary by title. This card does not mirror book content."
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A quality-controlled library of peer-reviewed open-access scholarly books."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Open the official source to browse and read available materials."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OAPEN metadata is CC0, while book licenses vary by title. This card does not mirror book content."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 35
+  },
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://www.oapen.org/article/metadata",
+    "note": "OAPEN metadata is CC0, while book licenses vary by title. This card does not mirror book content."
+  }
+}

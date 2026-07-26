@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1524-pastos-tropicales-de-la-amazonia-ecuatoriana-tomo-i-avances-cientificos-",
+  "title": "Pastos Tropicales de la Amazonia Ecuatoriana Tomo I: Avances científicos sobre sistemas silvopastoriles como estrategia de reconversión de la ganadería",
+  "description": "La rápida expansión de la frontera agrícola como consecuencia desmesurada de la deforestación y cambios antropogénicos a nivel mundial, es un tema de preocupación por la comunidad científica internacional. Además, frente a una lucha contra el cambio climático por efecto de la ganadería, una de las principales estrategias para la mitigación de gases de efecto invernadero, lo constituyen alternativas sostenibles si uso de productos con alta huella de carbono, revalorizando, además, los recursos locales. En el caso de la zona norte de Ecuador, a pesar de los limitados atributos respecto a gradiente de fertilidad de los suelos, la cría de ganado ya sea de leche y/o doble propósito representa uno de los eslabones más fuertes dentro de la economía de las familias. Por lo tanto, es menester investigar alternativas de producción que nos permitan conservar los recursos naturales dada la fragilidad de estos ecosistemas megadiversos. Mediante este libro se plasma que el uso de sistemas ganaderos convencionales, degradan los recursos naturales con mermas significativas de la productividad, así como bajo réditos económicos. En consecuencia, la implementación de sistemas silvopastoriles como alternativa tecnológica de fácil instalación, es sin duda el camino para alcanzar sistemas ganaderos más eficientes, amigables con el medio ambiente, diversificando además los ingresos económicos de la población.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Earth Sciences",
+    "Medicine"
+  ],
+  "authors": [
+    "Raúl Lorenzo González-Marcillo - Author / Santiago Alexander Guamán-Rivera - Author / Angela Edith Guerrero-Pincay - Author / Nelson René Ortiz-Naveda - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/pastos-tropicales-de-la-amazonia-ecuatoriana-tomo-i-avances-cientificos-sobre-sistemas-silvopastoriles-como-estrategia-de-reconversion-de-la-ganaderia"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "La rápida expansión de la frontera agrícola como consecuencia desmesurada de la deforestación y cambios antropogénicos a nivel mundial, es un tema de preocupación por la comunidad científica internacional. Además, frente a una lucha contra el cambio climático por efecto de la ganadería, una de las principales estrategias para la mitigación de gases de efecto invernadero, lo constituyen alternativas sostenibles si uso de productos con alta huella de carbono, revalorizando, además, los recursos locales. En el caso de la zona norte de Ecuador, a pesar de los limitados atributos respecto a gradiente de fertilidad de los suelos, la cría de ganado ya sea de leche y/o doble propósito representa uno de los eslabones más fuertes dentro de la economía de las familias. Por lo tanto, es menester investigar alternativas de producción que nos permitan conservar los recursos naturales dada la fragilidad de estos ecosistemas megadiversos. Mediante este libro se plasma que el uso de sistemas ganaderos convencionales, degradan los recursos naturales con mermas significativas de la productividad, así como bajo réditos económicos. En consecuencia, la implementación de sistemas silvopastoriles como alternativa tecnológica de fácil instalación, es sin duda el camino para alcanzar sistemas ganaderos más eficientes, amigables con el medio ambiente, diversificando además los ingresos económicos de la población."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 232
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1524",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

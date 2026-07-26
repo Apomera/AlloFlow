@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T17:25:06.370Z",
+  "generatedAt": "2026-07-25T21:23:21.142Z",
   "packId": "praxis-special-education-severe-profound-5547",
   "standard": {
     "label": "AlloFlow 5547 source, blueprint, feedback, learning, safety, source-parity, key-integrity, encoding, and editorial QA v2",
@@ -25,7 +25,13 @@
     "diagnosticBanksSemantics": "legacy-total-learning-activity-bank-alias",
     "sourceDiagnosticBanks": 2,
     "guidedReviewBanks": 3,
-    "learningActivityBanks": 5
+    "learningActivityBanks": 5,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
+    "distinctIndependentContentKernels": 103,
+    "parallelIndependentVariants": 97,
+    "assistantAuthoredIndependentBanks": 0,
+    "independentDiagnosticBanks": 2
   },
   "expansion": {
     "independentQuestionTarget": 500,
@@ -33,8 +39,12 @@
     "batchSize": 100,
     "learningActivityBanks": 5,
     "sourceItems": 200,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
     "distinctSourceContentKernels": 103,
     "parallelSourceVariants": 97,
+    "distinctIndependentContentKernels": 103,
+    "parallelIndependentVariants": 97,
     "guidedReasoningItems": 300,
     "newIndependentItemsNeeded": 397,
     "structurallyReviewedItems": 500,
@@ -45,7 +55,7 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
+    "method": "Manifest-backed independent additions passed exact artifact review, blueprint, key, distractor, feedback, source, learning-link, originality, balance, and structural validation. Remaining transformations are guided practice only.",
     "findings": []
   },
   "contentBinding": {

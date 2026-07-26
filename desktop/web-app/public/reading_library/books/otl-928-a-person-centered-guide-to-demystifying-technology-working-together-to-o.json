@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-928-a-person-centered-guide-to-demystifying-technology-working-together-to-o",
+  "title": "A Person-Centered Guide to Demystifying Technology: Working together to observe, question, design, prototype, and implement/reject technology in support of people's valued beings and doings - 2nd Edition",
+  "description": "Digital technologies old and new are not objects that can be packed inside a box. They are a seamless, indivisible combination of people, organizations, policies, economies, histories, cultures, knowledge, and material things that are continuously shaped and reshaped. Every one of us innovates-in-use our everyday technologies; we just do not always know it. We are shaped by the networked information tools in our midst, and we shape them and thereby shape others. While many of the chapters in this book can be approached as standalone explorations, as many around the world have done, its full potential comes when collaboratively taken as a journey through twelve sessions. Each session in this second, revised edition includes two thematically linked chapters, one more socially oriented and one more technically oriented. Sessions are brought together into three larger generative themes that are built from three decades of participatory design in and with community, and from the teaching of these concepts and practices in courses and workshops. Approached within a community of practice, learning outcomes include discovering ways to advance power, both power within and power with others; advancing our technical skills, but also and even more, our progressive community engagement skills, our critical sociotechnical skills, and our cognitive, information, and social-emotional skills; and progressing our culturally competent collective leadership through social justice storytelling within a framing of reciprocity. In so doing, this textbook seeks to address the call placed by the Rev. Dr. Martin Luther King, Jr. – to rapidly shift from a ‘thing-oriented’ society to a ‘person-oriented’ society.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science - Information Systems"
+  ],
+  "authors": [
+    "Martin Wolske - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Illinois Library - Urbana",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-person-centered-guide-to-demystifying-technology-working-together-to-observe-question-design-prototype-and-implement-reject-technology-in-support-of-people-s-valued-beings-and-doings"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Digital technologies old and new are not objects that can be packed inside a box. They are a seamless, indivisible combination of people, organizations, policies, economies, histories, cultures, knowledge, and material things that are continuously shaped and reshaped. Every one of us innovates-in-use our everyday technologies; we just do not always know it. We are shaped by the networked information tools in our midst, and we shape them and thereby shape others. While many of the chapters in this book can be approached as standalone explorations, as many around the world have done, its full potential comes when collaboratively taken as a journey through twelve sessions. Each session in this second, revised edition includes two thematically linked chapters, one more socially oriented and one more technically oriented. Sessions are brought together into three larger generative themes that are built from three decades of participatory design in and with community, and from the teaching of these concepts and practices in courses and workshops. Approached within a community of practice, learning outcomes include discovering ways to advance power, both power within and power with others; advancing our technical skills, but also and even more, our progressive community engagement skills, our critical sociotechnical skills, and our cognitive, information, and social-emotional skills; and progressing our culturally competent collective leadership through social justice storytelling within a framing of reciprocity. In so doing, this textbook seeks to address the call placed by the Rev. Dr. Martin Luther King, Jr. – to rapidly shift from a ‘thing-oriented’ society to a ‘person-oriented’ society."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 278
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "928",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

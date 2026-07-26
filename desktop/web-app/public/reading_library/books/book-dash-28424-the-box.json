@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-28424-the-box",
+  "title": "The Box",
+  "description": "Dad comes home with a box. Boring. Until Max and Andi’s friends come to play… What will they do with the box?",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Family, friends, and home",
+    "Let's play!"
+  ],
+  "authors": [
+    "Tania Kliphuis"
+  ],
+  "illustrators": [
+    "Nicola Anne Smith"
+  ],
+  "contributors": [
+    {
+      "name": "Angela Briggs",
+      "role": "Editor"
+    },
+    {
+      "name": "Tania Kliphuis",
+      "role": "Writer"
+    },
+    {
+      "name": "Mari Retief",
+      "role": "Designer"
+    },
+    {
+      "name": "Nicola Anne Smith",
+      "role": "Illustrator"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/the-box/",
+    "attributionUrl": "https://bookdash.org/books/the-box/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=the-box"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2022/06/the-box_en_20220606_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2022/06/the-box_en_20220606_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Dad comes home with a box. Boring. Until Max and Andi’s friends come to play… What will they do with the box?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Angela Briggs (Editor); Tania Kliphuis (Writer); Mari Retief (Designer); Nicola Anne Smith (Illustrator)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=the-box"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 89
+  }
+}

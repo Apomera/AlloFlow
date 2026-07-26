@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-458-the-economics-of-food-and-agricultural-markets-2nd-edition",
+  "title": "The Economics of Food and Agricultural Markets - 2nd Edition",
+  "description": "The Second Edition of Economics of Food and Agricultural Markets (2019) is written for applied intermediate microeconomics courses. The book showcases the power of economic principles to explain and predict issues and current events in the food, agricultural, agribusiness, international trade, labor markets, and natural resource sectors. The field of agricultural economics is relevant, important and interesting. The study of market structures, also called industrial organization, provides powerful, timely, and useful tools for any individual or group making personal choices, business decisions, or public policies in food and agricultural industries. Readers will benefit from a large number of real-world examples and applications of the economic concepts under discussion. The book introduces economic principles in a succinct and reader-friendly format, providing students and instructors with a clear, up-to-date, and straightforward approach to learning how a market-based economy functions, and how to use simple economic principles for improved decision making. The principles are applied to timely, interesting, and important real-world issues through words, graphs, and simple algebra and calculus. This book is intended for students who study agricultural economics, microeconomics, rural development and/or environmental policy. The goal of the book is to encourage students to learn to “think like an economist” through application of benefits and costs to every decision, idea, and strategic decision. This objective is accomplished by including extended examples that cover a broad range of topics including the analysis of consumer decisions, supply and demand, and market efficiency; the design of pricing strategies; advertising and marketing decisions; and public policy analysis. Contents The book begins with a review and introduction of economic principles, including markets, scarcity, and the scientific method. Supply and demand are examined carefully and completely, with numerous real-world examples. The power of the market model is employed to explain and predict economic phenomena and current events. Elasticities are defined, explained, and put to use in decision making for all individuals, businesses, and policy makers. Next, the motivation for and consequences of globalization, immigration, and international trade are explored. Government policies are surveyed, including taxes, subsidies, trade policies, and immigration policies. Monopoly and monopsony are presented, using numerous real-world examples and anecdotes. Pricing strategies are comprehensively discussed, including price discrimination, peak-load pricing, two-part pricing, bundling, and advertising. Monopolistic competition and oligopoly are defined, explained, and used to understand real-world markets. Game theory, or strategic decision making, is introduced and used to demonstrate how to make better decisions in numerous situations when other individuals and groups are affected by a choice or strategy. Repeated games, sequential games, and first-mover advantage are carefully presented and considered.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Economics"
+  ],
+  "authors": [
+    "Andrew Barkley - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "New Prairie Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-economics-of-food-and-agricultural-markets"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Second Edition of Economics of Food and Agricultural Markets (2019) is written for applied intermediate microeconomics courses. The book showcases the power of economic principles to explain and predict issues and current events in the food, agricultural, agribusiness, international trade, labor markets, and natural resource sectors. The field of agricultural economics is relevant, important and interesting. The study of market structures, also called industrial organization, provides powerful, timely, and useful tools for any individual or group making personal choices, business decisions, or public policies in food and agricultural industries. Readers will benefit from a large number of real-world examples and applications of the economic concepts under discussion. The book introduces economic principles in a succinct and reader-friendly format, providing students and instructors with a clear, up-to-date, and straightforward approach to learning how a market-based economy functions, and how to use simple economic principles for improved decision making. The principles are applied to timely, interesting, and important real-world issues through words, graphs, and simple algebra and calculus. This book is intended for students who study agricultural economics, microeconomics, rural development and/or environmental policy. The goal of the book is to encourage students to learn to “think like an economist” through application of benefits and costs to every decision, idea, and strategic decision. This objective is accomplished by including extended examples that cover a broad range of topics including the analysis of consumer decisions, supply and demand, and market efficiency; the design of pricing strategies; advertising and marketing decisions; and public policy analysis. Contents The book begins with a review and introduction of economic principles, including markets, scarcity, and the scientific method. Supply and demand are examined carefully and completely, with numerous real-world examples. The power of the market model is employed to explain and predict economic phenomena and current events. Elasticities are defined, explained, and put to use in decision making for all individuals, businesses, and policy makers. Next, the motivation for and consequences of globalization, immigration, and international trade are explored. Government policies are surveyed, including taxes, subsidies, trade policies, and immigration policies. Monopoly and monopsony are presented, using numerous real-world examples and anecdotes. Pricing strategies are comprehensively discussed, including price discrimination, peak-load pricing, two-part pricing, bundling, and advertising. Monopolistic competition and oligopoly are defined, explained, and used to understand real-world markets. Game theory, or strategic decision making, is introduced and used to demonstrate how to make better decisions in numerous situations when other individuals and groups are affected by a choice or strategy. Repeated games, sequential games, and first-mover advantage are carefully presented and considered."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 450
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "458",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

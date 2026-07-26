@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1911-anatomia-y-patologia-nerviosa-de-los-miembros-superior-e-inferior-guia-p",
+  "title": "Anatomía y patología nerviosa de los miembros superior e inferior: Guía para la movilización neural",
+  "description": "El libro constituye una guía especializada que integra de manera sistemática la anatomía y la patología del sistema nervioso periférico de los miembros superior e inferior, con un énfasis particular en la movilización neural como estrategia terapéutica dentro del ámbito de la fisioterapia. Basado en una revisión rigurosa de la literatura científica, el texto describe con precisión las trayectorias anatómicas de los principales nervios periféricos, sus zonas de mayor vulnerabilidad, los mecanismos fisiopatológicos de lesión y las manifestaciones clínicas asociadas. Asimismo, se desarrolla de forma detallada la aplicación clínica de las técnicas de movilización neural, presentadas mediante una metodología paso a paso que facilita su incorporación en la práctica profesional. Esta obra está dirigida tanto a estudiantes de ciencias de la salud como a fisioterapeutas en ejercicio, con el objetivo de fortalecer la capacidad diagnóstica y terapéutica en el abordaje de disfunciones neurodinámicas. El contenido se complementa con ilustraciones anatómicas precisas, esquemas funcionales y ejemplos de evaluación y tratamiento, lo que contribuye a consolidar el aprendizaje y a estimular el razonamiento clínico. En conjunto, esta obra representa una herramienta de consulta académica y profesional que promueve una intervención segura, basada en la evidencia y orientada a la optimización del funcionamiento neuromusculoesquelético.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine - Anatomy"
+  ],
+  "authors": [
+    "Johannes Alejandro Hernández-Amaguaya - Author / Shirley Mireya Ortiz-Pérez - Author / David Marcelo Guevara-Hernández - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/anatomia-y-patologia-nerviosa-de-los-miembros-superior-e-inferior-guia-para-la-movilizacion-neural"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "El libro constituye una guía especializada que integra de manera sistemática la anatomía y la patología del sistema nervioso periférico de los miembros superior e inferior, con un énfasis particular en la movilización neural como estrategia terapéutica dentro del ámbito de la fisioterapia. Basado en una revisión rigurosa de la literatura científica, el texto describe con precisión las trayectorias anatómicas de los principales nervios periféricos, sus zonas de mayor vulnerabilidad, los mecanismos fisiopatológicos de lesión y las manifestaciones clínicas asociadas. Asimismo, se desarrolla de forma detallada la aplicación clínica de las técnicas de movilización neural, presentadas mediante una metodología paso a paso que facilita su incorporación en la práctica profesional. Esta obra está dirigida tanto a estudiantes de ciencias de la salud como a fisioterapeutas en ejercicio, con el objetivo de fortalecer la capacidad diagnóstica y terapéutica en el abordaje de disfunciones neurodinámicas. El contenido se complementa con ilustraciones anatómicas precisas, esquemas funcionales y ejemplos de evaluación y tratamiento, lo que contribuye a consolidar el aprendizaje y a estimular el razonamiento clínico. En conjunto, esta obra representa una herramienta de consulta académica y profesional que promueve una intervención segura, basada en la evidencia y orientada a la optimización del funcionamiento neuromusculoesquelético."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 224
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1911",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

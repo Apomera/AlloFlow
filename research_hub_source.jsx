@@ -70,12 +70,15 @@
   var evidenceGraphApi = window.AlloFlowResearchEvidenceGraph;
   function buildEvidenceGraph(journal) {
     if (evidenceGraphApi && typeof evidenceGraphApi.buildEvidenceGraph === 'function') return evidenceGraphApi.buildEvidenceGraph(journal);
-    return { schemaVersion: 1, generatorVersion: 'unavailable', generatedAt: new Date().toISOString(), nodes: [], edges: [], counts: {}, claimViews: [], diagnostics: [{ severity: 'action', code: 'evidence_graph_unavailable', message: 'The evidence graph module did not load.' }], status: 'action_needed' };
+    return { schemaVersion: 2, generatorVersion: 'unavailable', generatedAt: new Date().toISOString(), nodes: [], edges: [], counts: {}, claimViews: [], diagnostics: [{ severity: 'action', code: 'evidence_graph_unavailable', message: 'The evidence graph module did not load.' }], status: 'action_needed' };
   }
   function buildW3CWebAnnotations(journal, graph) { return evidenceGraphApi.toW3CWebAnnotations(journal, graph); }
   function buildCslJson(journal) { return evidenceGraphApi.toCslJson(journal); }
   function buildRoCrate(journal, graph) { return evidenceGraphApi.toRoCrate(journal, graph); }
-  function buildInteroperabilityBundle(journal) { return evidenceGraphApi.buildInteroperabilityBundle(journal); }
+  function buildInteroperabilityBundle(journal, options) { return evidenceGraphApi.buildInteroperabilityBundle(journal, options); }
+  function validateEvidenceGraph(graph) { return evidenceGraphApi && evidenceGraphApi.validateEvidenceGraph ? evidenceGraphApi.validateEvidenceGraph(graph) : { ok: false, errors: ['Evidence Graph validator unavailable.'] }; }
+  function validateInteroperabilityBundle(bundle) { return evidenceGraphApi && evidenceGraphApi.validateInteroperabilityBundle ? evidenceGraphApi.validateInteroperabilityBundle(bundle) : { ok: false, errors: ['Interoperability validator unavailable.'] }; }
+  function importPortableBundle(bundle) { return evidenceGraphApi && evidenceGraphApi.importPortableBundle ? evidenceGraphApi.importPortableBundle(bundle) : { ok: false, errors: ['Interoperability importer unavailable.'], portfolio: null }; }
 
   // ───────────────────────────────────────────────────────────────────────
   // Constants
@@ -83,6 +86,10 @@
   var STORAGE_KEY = 'alloflow_research_hub_v1';
   var RECOVERY_STORAGE_KEY = 'alloflow_research_hub_recovery_v1';
   var CAPTURE_INBOX_KEY = 'alloflow_research_capture_inbox_v1';
+  var MEDIA_DB_NAME = 'alloflow-research-media-v1';
+  var MEDIA_STORE_NAME = 'media';
+  var MEDIA_INLINE_THRESHOLD_BYTES = 2048;
+  var MAX_PORTFOLIO_IMPORT_BYTES = 12 * 1024 * 1024;
   var MAX_CAPTURE_BYTES = 60000;
   var MAX_CAPTURE_INBOX_ITEMS = 20;
   var MAX_CAPTURES_PER_TOOL_PER_MINUTE = 5;
@@ -371,29 +378,55 @@
 
   function EvidenceGraphView(props) {
     var graph = props.graph || { nodes: [], edges: [], counts: {}, claimViews: [], diagnostics: [], status: 'ready' };
+    var _drafts = useState({});
+    var drafts = _drafts[0]; var setDrafts = _drafts[1];
     var relationshipColors = { supports: '#166534', complicates: '#9a3412', contradicts: '#b91c1c', contextualizes: '#1d4ed8' };
+    var evidenceNodes = (graph.nodes || []).filter(function (node) { return ['source','evidence','tool_artifact','annotation','test_result','model'].indexOf(node.type) !== -1; });
     var unlinkedCount = (graph.diagnostics || []).filter(function (item) { return item.code === 'unlinked_graph_evidence'; }).length;
     var actionCount = (graph.diagnostics || []).filter(function (item) { return item.severity === 'action'; }).length;
     var reviewCount = (graph.diagnostics || []).filter(function (item) { return item.severity !== 'action'; }).length;
-    return <details data-research-evidence-graph="true" style={{ marginTop: '12px', borderRadius: '12px', border: '1px solid ' + (graph.status === 'ready' ? '#86efac' : graph.status === 'action_needed' ? '#fca5a5' : '#fcd34d'), background: '#fff' }}>
-      <summary style={{ cursor: 'pointer', padding: '10px 12px', fontSize: '11px', fontWeight: 900, color: '#1e293b', background: 'linear-gradient(90deg,#f8fafc,#f0fdfa)' }}>
-        Evidence map: {(graph.claimViews || []).length} claim{(graph.claimViews || []).length === 1 ? '' : 's'} · {(graph.edges || []).filter(function (edge) { return ['supports','complicates','contradicts','contextualizes'].indexOf(edge.type) !== -1; }).length} reasoning link(s)
+    var hasClaims = (graph.claimViews || []).length > 0;
+    var warrantPrompt = props.devLevel === 'k2' ? 'Tell how this evidence helps you know.' : props.devLevel === '3_5' ? 'Explain how this evidence connects to the idea.' : 'Explain why this evidence bears on the claim, including limits or qualifications.';
+    function updateDraft(claimId, patch) {
+      setDrafts(function (prev) { return Object.assign({}, prev, { [claimId]: Object.assign({}, prev[claimId] || { relationship: 'supports', evidenceId: '', warrant: '' }, patch) }); });
+    }
+    function submitRelationship(claim, draft) {
+      var evidence = evidenceNodes.filter(function (node) { return node.id === draft.evidenceId; })[0];
+      if (!evidence || !String(draft.warrant || '').trim()) return;
+      props.onSaveRelationship({ claimNode: claim, evidenceNode: evidence, relationship: draft.relationship || 'supports', warrant: String(draft.warrant).trim(), edgeId: draft.edgeId || null });
+      setDrafts(function (prev) { var next = Object.assign({}, prev); delete next[claim.id]; return next; });
+    }
+    return <details data-research-evidence-graph="true" style={{ marginTop: '12px', borderRadius: '12px', border: '1px solid ' + (graph.status === 'ready' && hasClaims ? '#86efac' : graph.status === 'action_needed' ? '#fca5a5' : '#fcd34d'), background: '#fff' }}>
+      <summary style={{ cursor: 'pointer', padding: '12px 14px', fontSize: '14px', lineHeight: 1.4, fontWeight: 900, color: '#1e293b', background: 'linear-gradient(90deg,#f8fafc,#f0fdfa)' }}>
+        Evidence workbench: {(graph.claimViews || []).length} claim{(graph.claimViews || []).length === 1 ? '' : 's'} · {(graph.edges || []).filter(function (edge) { return ['supports','complicates','contradicts','contextualizes'].indexOf(edge.type) !== -1; }).length} reasoning link(s)
       </summary>
-      <div style={{ padding: '0 12px 12px' }}>
-        <p style={{ margin: '9px 0', fontSize: '10px', color: '#475569' }}>This map keeps scientific results, humanistic passages, design tests, sources, and tool outputs distinct while showing the relationships you explicitly authored. It does not infer agreement or grade the argument.</p>
-        {(graph.claimViews || []).length ? <div role="list" aria-label="Claims and their evidence relationships" style={{ display: 'grid', gap: '9px' }}>
-          {graph.claimViews.map(function (view) { return <article key={view.claim.id} role="listitem" data-evidence-claim-node={view.claim.type} style={{ borderRadius: '10px', border: '1px solid #cbd5e1', padding: '10px', background: '#f8fafc' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'flex-start' }}><strong style={{ fontSize: '11px', color: '#0f172a' }}>{view.claim.label}</strong><span style={{ flex: '0 0 auto', borderRadius: '999px', padding: '2px 6px', background: '#e0e7ff', color: '#4338ca', fontSize: '8px', fontWeight: 900 }}>{view.claim.discipline}</span></div>
-            {view.relationships.length ? <ul style={{ margin: '8px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: '6px' }}>{view.relationships.map(function (row) { return <li key={row.edge.id} data-evidence-relationship={row.edge.type} style={{ borderLeft: '3px solid ' + (relationshipColors[row.edge.type] || '#64748b'), padding: '6px 8px', background: '#fff', fontSize: '10px', color: '#334155' }}><strong style={{ color: relationshipColors[row.edge.type] || '#475569' }}>{row.edge.type}</strong>{' ← ' + row.evidence.label}{row.edge.warrant ? <div style={{ marginTop: '3px', color: '#64748b' }}><strong>Warrant:</strong> {row.edge.warrant}</div> : <div style={{ marginTop: '3px', color: '#b91c1c', fontWeight: 800 }}>Warrant needed: explain why this evidence bears on the claim.</div>}</li>; })}</ul> : <div style={{ marginTop: '7px', padding: '7px', borderRadius: '7px', background: '#fef2f2', color: '#991b1b', fontSize: '10px', fontWeight: 800 }}>No explicit supporting evidence is connected yet.</div>}
-          </article>; })}
-        </div> : <div style={{ padding: '8px', borderRadius: '8px', background: '#f8fafc', color: '#64748b', fontSize: '10px' }}>Create a claim, design claim, or humanities position to begin the evidence map.</div>}
-        {(actionCount || reviewCount) ? <div role="status" style={{ marginTop: '9px', padding: '8px', borderRadius: '8px', background: actionCount ? '#fef2f2' : '#fffbeb', color: actionCount ? '#991b1b' : '#92400e', fontSize: '10px' }}><strong>{actionCount} action · {reviewCount} review</strong>{unlinkedCount ? ' · ' + unlinkedCount + ' recorded evidence item(s) are not connected to an argument.' : ''}</div> : <div role="status" style={{ marginTop: '9px', color: '#166534', fontSize: '10px', fontWeight: 800 }}>Every current claim has explicit support, warrants are present, and counterevidence is represented.</div>}
-        <div aria-label="Portable inquiry exports" style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
-          <button type="button" onClick={props.onDownloadGraph} style={{ minHeight: '40px', padding: '6px 9px', borderRadius: '8px', border: '1px solid #475569', background: '#fff', color: '#334155', fontSize: '9px', fontWeight: 900 }}>Evidence graph JSON</button>
-          <button type="button" onClick={props.onDownloadAnnotations} disabled={!graph.counts.annotation} style={{ minHeight: '40px', padding: '6px 9px', borderRadius: '8px', border: '1px solid #7c3aed', background: '#fff', color: '#6d28d9', fontSize: '9px', fontWeight: 900, opacity: graph.counts.annotation ? 1 : .5 }}>W3C annotations</button>
-          <button type="button" onClick={props.onDownloadCitations} style={{ minHeight: '40px', padding: '6px 9px', borderRadius: '8px', border: '1px solid #0369a1', background: '#fff', color: '#0369a1', fontSize: '9px', fontWeight: 900 }}>CSL citations</button>
-          <button type="button" onClick={props.onDownloadRoCrate} style={{ minHeight: '40px', padding: '6px 9px', borderRadius: '8px', border: '1px solid #0f766e', background: '#fff', color: '#0f766e', fontSize: '9px', fontWeight: 900 }}>RO-Crate 1.3 metadata</button>
-          <button type="button" onClick={props.onDownloadBundle} style={{ minHeight: '40px', padding: '6px 9px', borderRadius: '8px', border: 0, background: '#312e81', color: '#fff', fontSize: '9px', fontWeight: 900 }}>Complete interoperability bundle</button>
+      <div style={{ padding: '0 14px 14px' }}>
+        <p style={{ margin: '12px 0', fontSize: '13px', lineHeight: 1.55, color: '#475569' }}>Connect evidence, explain the warrant, and represent support, complication, contradiction, or context. The workbench never infers agreement or grades the argument.</p>
+        {hasClaims ? <div role="list" aria-label="Claims and their evidence relationships" style={{ display: 'grid', gap: '12px' }}>
+          {graph.claimViews.map(function (view) {
+            var draft = drafts[view.claim.id] || { relationship: 'supports', evidenceId: '', warrant: '' };
+            return <article key={view.claim.id} id={'evidence-claim-' + view.claim.id.replace(/[^a-z0-9_-]/gi, '-')} role="listitem" data-evidence-claim-node={view.claim.type} style={{ borderRadius: '10px', border: '1px solid #cbd5e1', padding: '12px', background: '#f8fafc' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'flex-start' }}><strong style={{ fontSize: '14px', lineHeight: 1.45, color: '#0f172a' }}>{view.claim.label}</strong><span style={{ flex: '0 0 auto', borderRadius: '999px', padding: '3px 8px', background: '#e0e7ff', color: '#4338ca', fontSize: '11px', fontWeight: 900 }}>{view.claim.discipline}</span></div>
+              {view.relationships.length ? <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: '8px' }}>{view.relationships.map(function (row) { return <li key={row.edge.id} data-evidence-relationship={row.edge.type} style={{ borderLeft: '4px solid ' + (relationshipColors[row.edge.type] || '#64748b'), padding: '9px 10px', background: '#fff', fontSize: '13px', lineHeight: 1.5, color: '#334155' }}><strong style={{ color: relationshipColors[row.edge.type] || '#475569' }}>{row.edge.type}</strong>{' ← ' + row.evidence.label}{row.edge.warrant ? <div style={{ marginTop: '4px', color: '#475569' }}><strong>Warrant:</strong> {row.edge.warrant}</div> : <div style={{ marginTop: '4px', color: '#b91c1c', fontWeight: 800 }}>{warrantPrompt}</div>}<div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}><button type="button" onClick={function () { updateDraft(view.claim.id, { evidenceId: row.evidence.id, relationship: row.edge.type, warrant: row.edge.warrant || '', edgeId: row.edge.id }); }} style={{ minHeight: '44px', padding: '7px 11px', borderRadius: '8px', border: '1px solid #64748b', background: '#fff', color: '#334155', fontSize: '12px', fontWeight: 800 }}>Revise link</button><button type="button" onClick={function () { props.onRemoveRelationship({ claimNode: view.claim, evidenceNode: row.evidence, edge: row.edge }); }} style={{ minHeight: '44px', padding: '7px 11px', borderRadius: '8px', border: '1px solid #fca5a5', background: '#fff', color: '#b91c1c', fontSize: '12px', fontWeight: 800 }}>Remove link</button></div></li>; })}</ul> : <div style={{ marginTop: '9px', padding: '10px', borderRadius: '7px', background: '#fef2f2', color: '#991b1b', fontSize: '13px', lineHeight: 1.5, fontWeight: 800 }}>No explicit supporting evidence is connected yet.</div>}
+              <details data-evidence-repair-form="true" open={!!draft.edgeId} style={{ marginTop: '10px', border: '1px solid #bfdbfe', borderRadius: '9px', background: '#eff6ff' }}>
+                <summary style={{ cursor: 'pointer', padding: '10px', minHeight: '44px', boxSizing: 'border-box', fontSize: '13px', fontWeight: 900, color: '#1d4ed8' }}>{draft.edgeId ? 'Revise this relationship' : 'Connect evidence'}</summary>
+                <div style={{ padding: '0 10px 10px', display: 'grid', gap: '9px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 800, color: '#334155' }}>Evidence record<select aria-label={'Evidence for ' + view.claim.label} value={draft.evidenceId} onChange={function (event) { updateDraft(view.claim.id, { evidenceId: event.target.value }); }} style={{ display: 'block', width: '100%', minHeight: '44px', marginTop: '4px', borderRadius: '8px', border: '1px solid #94a3b8', padding: '7px', fontSize: '13px' }}><option value="">Choose evidence…</option>{evidenceNodes.map(function (node) { return <option key={node.id} value={node.id}>{node.type.replace('_',' ') + ': ' + node.label}</option>; })}</select></label>
+                  <label style={{ fontSize: '12px', fontWeight: 800, color: '#334155' }}>Relationship<select aria-label={'Relationship for ' + view.claim.label} value={draft.relationship} onChange={function (event) { updateDraft(view.claim.id, { relationship: event.target.value }); }} style={{ display: 'block', width: '100%', minHeight: '44px', marginTop: '4px', borderRadius: '8px', border: '1px solid #94a3b8', padding: '7px', fontSize: '13px' }}><option value="supports">Supports</option><option value="complicates">Complicates</option><option value="contradicts">Contradicts</option><option value="contextualizes">Contextualizes</option></select></label>
+                  <label style={{ fontSize: '12px', fontWeight: 800, color: '#334155' }}>{warrantPrompt}<textarea aria-label={'Warrant for ' + view.claim.label} value={draft.warrant} onChange={function (event) { updateDraft(view.claim.id, { warrant: event.target.value.slice(0, 900) }); }} rows={3} maxLength={900} style={{ display: 'block', width: '100%', boxSizing: 'border-box', marginTop: '4px', borderRadius: '8px', border: '1px solid #94a3b8', padding: '8px', fontSize: '13px', lineHeight: 1.5 }} /></label>
+                  <button type="button" disabled={!draft.evidenceId || String(draft.warrant || '').trim().length < 4} onClick={function () { submitRelationship(view.claim, draft); }} style={{ minHeight: '44px', border: 0, borderRadius: '8px', background: draft.evidenceId && String(draft.warrant || '').trim().length >= 4 ? '#1d4ed8' : '#94a3b8', color: '#fff', fontSize: '13px', fontWeight: 900 }}>{draft.edgeId ? 'Save revised relationship' : 'Add relationship'}</button>
+                </div>
+              </details>
+            </article>;
+          })}
+        </div> : <div role="status" style={{ padding: '10px', borderRadius: '8px', background: '#f8fafc', color: '#475569', fontSize: '13px', lineHeight: 1.5 }}>Create a claim, design claim, or humanities position to begin the evidence workbench. No rigor status is assigned until a claim exists.</div>}
+        {(actionCount || reviewCount) ? <div role="status" style={{ marginTop: '11px', padding: '10px', borderRadius: '8px', background: actionCount ? '#fef2f2' : '#fffbeb', color: actionCount ? '#991b1b' : '#92400e', fontSize: '13px', lineHeight: 1.5 }}><strong>{actionCount} action · {reviewCount} review</strong>{unlinkedCount ? ' · ' + unlinkedCount + ' recorded evidence item(s) are not connected to an argument.' : ''}<ul style={{ margin: '6px 0 0', paddingLeft: '20px' }}>{(graph.diagnostics || []).filter(function (item) { return ['dangling_graph_reference','ambiguous_graph_reference','duplicate_graph_id','cyclic_graph_provenance'].indexOf(item.code) !== -1; }).map(function (item, index) { return <li key={item.code + index}>{item.message}</li>; })}</ul></div> : hasClaims ? <div role="status" style={{ marginTop: '11px', color: '#166534', fontSize: '13px', lineHeight: 1.5, fontWeight: 800 }}>Every current claim has explicit support, warrants are present, and counterevidence is represented.</div> : null}
+        <div aria-label="Portable inquiry exports" style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          <button type="button" onClick={props.onDownloadGraph} style={{ minHeight: '44px', padding: '8px 11px', borderRadius: '8px', border: '1px solid #475569', background: '#fff', color: '#334155', fontSize: '12px', fontWeight: 900 }}>Evidence graph JSON</button>
+          <button type="button" onClick={props.onDownloadAnnotations} disabled={!graph.counts.annotation} style={{ minHeight: '44px', padding: '8px 11px', borderRadius: '8px', border: '1px solid #7c3aed', background: '#fff', color: '#6d28d9', fontSize: '12px', fontWeight: 900, opacity: graph.counts.annotation ? 1 : .5 }}>W3C annotations</button>
+          <button type="button" onClick={props.onDownloadCitations} style={{ minHeight: '44px', padding: '8px 11px', borderRadius: '8px', border: '1px solid #0369a1', background: '#fff', color: '#0369a1', fontSize: '12px', fontWeight: 900 }}>CSL citations</button>
+          <button type="button" onClick={props.onDownloadRoCrate} style={{ minHeight: '44px', padding: '8px 11px', borderRadius: '8px', border: '1px solid #0f766e', background: '#fff', color: '#0f766e', fontSize: '12px', fontWeight: 900 }}>RO-Crate 1.3 metadata</button>
+          <button type="button" onClick={props.onDownloadBundle} style={{ minHeight: '44px', padding: '8px 11px', borderRadius: '8px', border: 0, background: '#312e81', color: '#fff', fontSize: '12px', fontWeight: 900 }}>Complete interoperability bundle</button>
         </div>
       </div>
     </details>;
@@ -577,6 +610,119 @@
       return true;
     } catch (_) { return false; }
   }
+  function researchMediaHash(value) {
+    var input = String(value == null ? '' : value);
+    var out = 2166136261;
+    for (var i = 0; i < input.length; i++) { out ^= input.charCodeAt(i); out = Math.imul(out, 16777619); }
+    return (out >>> 0).toString(16).padStart(8, '0');
+  }
+
+  function extractLargeResearchMedia(journal) {
+    var clone = safeJsonClone(journal) || {};
+    var entries = [];
+    var refs = [];
+    function walk(value, path) {
+      if (!value || typeof value !== 'object') return;
+      if (Array.isArray(value)) { value.forEach(function (item, index) { walk(item, path.concat(index)); }); return; }
+      Object.keys(value).forEach(function (key) {
+        var child = value[key];
+        if (/Ref$/.test(key) && typeof child === 'string' && child.indexOf('media:') === 0) refs.push(child);
+        if (/^(audioBase64|sketchDataUrl|imageDataUrl)$/i.test(key) && typeof child === 'string' && utf8ByteLength(child) >= MEDIA_INLINE_THRESHOLD_BYTES) {
+          var ref = 'media:' + researchMediaHash(path.concat(key).join('.') + '|' + child.length + '|' + child.slice(0, 256));
+          entries.push({ id: ref, value: child, updatedAt: Date.now() });
+          refs.push(ref);
+          value[key] = null;
+          value[key + 'Ref'] = ref;
+          return;
+        }
+        walk(child, path.concat(key));
+      });
+    }
+    walk(clone, []);
+    return { journal: clone, entries: entries, refs: Array.from(new Set(refs)) };
+  }
+
+  function openResearchMediaDb() {
+    return new Promise(function (resolve, reject) {
+      if (!window.indexedDB) { reject(new Error('IndexedDB unavailable')); return; }
+      var request = window.indexedDB.open(MEDIA_DB_NAME, 1);
+      request.onupgradeneeded = function () {
+        var db = request.result;
+        if (!db.objectStoreNames.contains(MEDIA_STORE_NAME)) db.createObjectStore(MEDIA_STORE_NAME, { keyPath: 'id' });
+      };
+      request.onsuccess = function () { resolve(request.result); };
+      request.onerror = function () { reject(request.error || new Error('IndexedDB open failed')); };
+    });
+  }
+
+  function persistResearchMedia(extracted) {
+    if (!extracted || (!extracted.entries.length && !extracted.refs.length)) return Promise.resolve(false);
+    return openResearchMediaDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var transaction = db.transaction(MEDIA_STORE_NAME, 'readwrite');
+        var store = transaction.objectStore(MEDIA_STORE_NAME);
+        extracted.entries.forEach(function (entry) { store.put(entry); });
+        var active = {};
+        extracted.refs.forEach(function (ref) { active[ref] = true; });
+        var cursorRequest = store.openCursor();
+        cursorRequest.onsuccess = function () {
+          var cursor = cursorRequest.result;
+          if (!cursor) return;
+          if (!active[cursor.key]) cursor.delete();
+          cursor.continue();
+        };
+        transaction.oncomplete = function () { db.close(); resolve(true); };
+        transaction.onerror = function () { db.close(); reject(transaction.error || new Error('IndexedDB write failed')); };
+        transaction.onabort = transaction.onerror;
+      });
+    }).catch(function () { return false; });
+  }
+
+  function hydrateResearchMedia(journal) {
+    var clone = safeJsonClone(journal) || journal;
+    var targets = [];
+    function collect(value) {
+      if (!value || typeof value !== 'object') return;
+      if (Array.isArray(value)) { value.forEach(collect); return; }
+      Object.keys(value).forEach(function (key) {
+        var child = value[key];
+        if (/Ref$/.test(key) && typeof child === 'string' && child.indexOf('media:') === 0) targets.push({ owner: value, key: key.slice(0, -3), ref: child });
+        else collect(child);
+      });
+    }
+    collect(clone);
+    if (!targets.length) return Promise.resolve({ journal: clone, hydrated: false, missing: [] });
+    return openResearchMediaDb().then(function (db) {
+      return new Promise(function (resolve) {
+        var transaction = db.transaction(MEDIA_STORE_NAME, 'readonly');
+        var store = transaction.objectStore(MEDIA_STORE_NAME);
+        var pending = targets.length;
+        var hydrated = false;
+        var missing = [];
+        targets.forEach(function (target) {
+          var request = store.get(target.ref);
+          request.onsuccess = function () {
+            if (request.result && typeof request.result.value === 'string') { target.owner[target.key] = request.result.value; hydrated = true; }
+            else missing.push(target.ref);
+            pending -= 1;
+            if (!pending) { db.close(); resolve({ journal: clone, hydrated: hydrated, missing: missing }); }
+          };
+          request.onerror = function () { missing.push(target.ref); pending -= 1; if (!pending) { db.close(); resolve({ journal: clone, hydrated: hydrated, missing: missing }); } };
+        });
+      });
+    }).catch(function () { return { journal: clone, hydrated: false, missing: targets.map(function (target) { return target.ref; }) }; });
+  }
+
+  function clearResearchMediaStore() {
+    return openResearchMediaDb().then(function (db) {
+      return new Promise(function (resolve) {
+        var transaction = db.transaction(MEDIA_STORE_NAME, 'readwrite');
+        transaction.objectStore(MEDIA_STORE_NAME).clear();
+        transaction.oncomplete = function () { db.close(); resolve(true); };
+        transaction.onerror = function () { db.close(); resolve(false); };
+      });
+    }).catch(function () { return false; });
+  }
   // Inquiry Portfolio substrate — the ONE shared object every inquiry method
   // writes into. `journal` remains the internal name for backward compatibility
   // with saved sessions and lane plugins; in the interface it is presented as
@@ -672,6 +818,94 @@
     };
   }
 
+  function normalizeImportedPortfolioRecord(record) {
+    if (!isPlainRecord(record)) return { ok: false, errors: ['Portfolio data must be an object.'], journal: null };
+    var version = Number(record.v);
+    if (!Number.isInteger(version) || version < 1 || version > 6) return { ok: false, errors: ['Supported portfolio schema versions are 1 through 6.'], journal: null };
+    var fresh = emptyJournal();
+    Object.keys(fresh).forEach(function (key) {
+      if (record[key] !== undefined) fresh[key] = safeJsonClone(record[key]);
+    });
+    Object.keys(emptyJournal()).filter(function (field) { return Array.isArray(emptyJournal()[field]); }).forEach(function (field) { if (!Array.isArray(fresh[field])) fresh[field] = []; });
+    fresh.v = 6;
+    fresh.createdAt = Number(fresh.createdAt) || Date.now();
+    fresh.updatedAt = Number(fresh.updatedAt) || fresh.createdAt;
+    delete fresh.loadWarning;
+    delete fresh.originalSchemaVersion;
+    return { ok: true, errors: [], journal: fresh, sourceVersion: version };
+  }
+
+  function parsePortfolioImport(input) {
+    var payload = input;
+    try { if (typeof payload === 'string') payload = JSON.parse(payload); }
+    catch (_) { return { ok: false, errors: ['The selected file is not valid JSON.'], journal: null }; }
+    if (!isPlainRecord(payload)) return { ok: false, errors: ['The selected JSON must contain an object.'], journal: null };
+    var record = null;
+    var format = String(payload.format || 'raw-portfolio');
+    if (format === 'alloflow-inquiry-interoperability-bundle') {
+      var importedBundle = importPortableBundle(payload);
+      if (!importedBundle.ok) return { ok: false, errors: importedBundle.errors, journal: null, format: format };
+      record = importedBundle.portfolio;
+    } else if (format === 'alloflow-inquiry-portfolio') record = payload.journal;
+    else if (payload.original) record = payload.original;
+    else if (payload.raw && typeof payload.raw === 'string') {
+      try { record = JSON.parse(payload.raw); } catch (_) { return { ok: false, errors: ['Recovery data contains invalid JSON.'], journal: null, format: 'recovery' }; }
+    } else record = payload;
+    var normalized = normalizeImportedPortfolioRecord(record);
+    normalized.format = format;
+    if (normalized.ok) normalized.summary = {
+      question: String(normalized.journal.questionTitle || '').slice(0, 160),
+      claims: (normalized.journal.claims || []).length + (normalized.journal.designClaims || []).length + (normalized.journal.humanitiesPosition ? 1 : 0),
+      evidence: (normalized.journal.evidenceCards || []).length + (normalized.journal.sources || []).length + (normalized.journal.capturedArtifacts || []).length,
+      revisions: (normalized.journal.loopBacks || []).length
+    };
+    return normalized;
+  }
+
+  function mergeImportedJournal(current, incoming, mode) {
+    var normalized = normalizeImportedPortfolioRecord(incoming);
+    if (!normalized.ok) return { ok: false, errors: normalized.errors, journal: current };
+    if (mode === 'replace') {
+      normalized.journal.updatedAt = Date.now();
+      return { ok: true, errors: [], journal: normalized.journal };
+    }
+    var base = safeJsonClone(current) || emptyJournal();
+    var imported = normalized.journal;
+    Object.keys(emptyJournal()).filter(function (field) { return Array.isArray(emptyJournal()[field]); }).forEach(function (field) {
+      var seen = {};
+      var merged = [];
+      (Array.isArray(base[field]) ? base[field] : []).concat(Array.isArray(imported[field]) ? imported[field] : []).forEach(function (item) {
+        var fingerprint = item && item.id ? 'id:' + item.id : 'value:' + researchMediaHash(JSON.stringify(item || null));
+        if (!seen[fingerprint]) { seen[fingerprint] = true; merged.push(item); }
+      });
+      base[field] = merged;
+    });
+    ['questionTitle','activeLane','activeMethodPack','activeInquiryEpisodeId','activeStage'].forEach(function (field) {
+      if (!base[field] && imported[field]) base[field] = imported[field];
+    });
+    ['humanitiesPosition','stakeholderProfile','stakesAudience','genreChoice'].forEach(function (field) {
+      if (!base[field] && imported[field]) base[field] = imported[field];
+    });
+    base.stageNotes = Object.assign({}, imported.stageNotes || {}, base.stageNotes || {});
+    base.positionality = base.positionality && (base.positionality.text || base.positionality.audioBase64) ? base.positionality : imported.positionality;
+    base.v = 6;
+    base.updatedAt = Date.now();
+    return { ok: true, errors: [], journal: base };
+  }
+
+  function writeRecoverySnapshot(journal, reason) {
+    try {
+      return safeLocal(RECOVERY_STORAGE_KEY, JSON.stringify({ sourceVersion: journal && journal.v, backedUpAt: Date.now(), reason: reason || 'manual', raw: JSON.stringify(journal || {}) })) === true;
+    } catch (_) { return false; }
+  }
+
+  function readRecoverySnapshot() {
+    try {
+      var recovery = JSON.parse(safeLocal(RECOVERY_STORAGE_KEY) || 'null');
+      if (!recovery) return { ok: false, errors: ['No recovery snapshot is available.'], journal: null };
+      return parsePortfolioImport(recovery);
+    } catch (_) { return { ok: false, errors: ['The recovery snapshot is unreadable.'], journal: null }; }
+  }
   function loadJournal() {
     var raw = safeLocal(STORAGE_KEY);
     if (!raw) return emptyJournal();
@@ -801,7 +1035,15 @@
       var snapshot = Object.assign({}, journal);
       delete snapshot.originalSchemaVersion;
       snapshot.updatedAt = Date.now();
-      return safeLocal(STORAGE_KEY, JSON.stringify(snapshot)) === true;
+      var serialized = JSON.stringify(snapshot);
+      var savedInline = safeLocal(STORAGE_KEY, serialized) === true;
+      var extracted = extractLargeResearchMedia(snapshot);
+      if (window.indexedDB && extracted.entries.length) {
+        persistResearchMedia(extracted).then(function (stored) {
+          if (stored) safeLocal(STORAGE_KEY, JSON.stringify(extracted.journal));
+        });
+      }
+      return savedInline;
     } catch (_) { return false; }
   }
 
@@ -2100,6 +2342,11 @@
     var artifactArchiveReady = _archiveReady[0]; var setArtifactArchiveReady = _archiveReady[1];
     var _legacyDrafts = useState({});
     var legacyDrafts = _legacyDrafts[0]; var setLegacyDrafts = _legacyDrafts[1];
+    var _importPreview = useState(null);
+    var importPreview = _importPreview[0]; var setImportPreview = _importPreview[1];
+    var _mediaStatus = useState('checking');
+    var mediaStatus = _mediaStatus[0]; var setMediaStatus = _mediaStatus[1];
+    var importInputRef = useRef(null);
     var closeHandlerRef = useRef(onClose);
     closeHandlerRef.current = onClose;
 
@@ -2142,6 +2389,16 @@
         var next = (typeof updater === 'function') ? updater(prev) : updater;
         return stampNewInquiryArtifacts(prev, next);
       });
+    }, []);
+
+    useEffect(function () {
+      var active = true;
+      hydrateResearchMedia(latestJournalRef.current).then(function (result) {
+        if (!active) return;
+        if (result.hydrated) setJournalState(result.journal);
+        setMediaStatus(result.missing.length ? 'missing' : result.hydrated ? 'hydrated' : 'ready');
+      });
+      return function () { active = false; };
     }, []);
 
     useEffect(function () {
@@ -2230,6 +2487,7 @@
     var integrationHealth = useMemo(function () { return summarizeIntegrationHealth(journal.capturedArtifacts || []); }, [journal.capturedArtifacts]);
     var storageHealth = useMemo(function () { return researchStorageHealth(journal); }, [journal]);
     var legacyArtifacts = (journal.capturedArtifacts || []).filter(function (artifact) { return artifact && (!artifact.integrationContract || artifact.integrationContractStatus === 'legacy_contract'); });
+    var recoveryAvailable = safeLocal(RECOVERY_STORAGE_KEY) != null;
     var researchNextMove = !researchMilestones[0].complete
       ? 'Write a question worth investigating'
       : !activeLane
@@ -2252,6 +2510,88 @@
     var researchQuestionReady = researchQuestionSignals.filter(function (signal) { return signal.met; }).length;
     var researchMethodMatch = matchMethodPackForQuestion(researchQuestionText);
 
+    function graphRecordId(node) {
+      return node && node.record && node.record.id ? node.record.id : node && node.id ? node.id.replace(/^[^:]+:/, '') : '';
+    }
+    function removeGraphRelationshipFromJournal(previous, payload) {
+      var next = Object.assign({}, previous);
+      var claimId = graphRecordId(payload.claimNode);
+      var evidenceId = graphRecordId(payload.evidenceNode);
+      next.claimEvidenceLinks = (previous.claimEvidenceLinks || []).map(function (link) {
+        var linkedClaim = link && (link.claimId || link.claim && link.claim.id || link.claim);
+        if (String(linkedClaim) !== String(claimId)) return link;
+        var copy = Object.assign({}, link);
+        copy.evidenceIds = (link.evidenceIds || []).filter(function (id) { return String(id) !== String(evidenceId); });
+        copy.counterEvidenceIds = (link.counterEvidenceIds || link.counterevidenceIds || []).filter(function (id) { return String(id) !== String(evidenceId); });
+        return copy;
+      }).filter(function (link) { return (link.evidenceIds || []).length || (link.counterEvidenceIds || []).length; });
+      if (payload.edge && payload.edge.declaredBy === 'source.humanitiesContext.inquiryRelationship') {
+        next.sources = (previous.sources || []).map(function (source) { return String(source.id) === String(evidenceId) ? Object.assign({}, source, { humanitiesContext: Object.assign({}, source.humanitiesContext || {}, { inquiryRelationship: '' }) }) : source; });
+      }
+      if (payload.edge && payload.edge.declaredBy === 'designClaim.claimEvidenceRunIds') {
+        next.designClaims = (previous.designClaims || []).map(function (claim) { return String(claim.id) === String(claimId) ? Object.assign({}, claim, { claimEvidenceRunIds: (claim.claimEvidenceRunIds || []).filter(function (id) { return String(id) !== String(evidenceId); }) }) : claim; });
+      }
+      if (payload.edge && payload.edge.declaredBy === 'annotation stance') {
+        next.capturedArtifacts = (previous.capturedArtifacts || []).map(function (artifact) {
+          var copy = safeJsonClone(artifact) || artifact;
+          var bundle = copy && copy.data && copy.data.annotations;
+          if (bundle && Array.isArray(bundle.annotations)) bundle.annotations = bundle.annotations.map(function (annotation) {
+            if (String(annotation.id) !== String(evidenceId)) return annotation;
+            var updated = Object.assign({}, annotation); delete updated.targetClaimId; delete updated.claimId; return updated;
+          });
+          return copy;
+        });
+      }
+      next.updatedAt = Date.now();
+      return next;
+    }
+    var saveEvidenceRelationship = useCallback(function (payload) {
+      var claimId = graphRecordId(payload && payload.claimNode);
+      var evidenceId = graphRecordId(payload && payload.evidenceNode);
+      if (!claimId || !evidenceId) { addToast('This relationship cannot be saved until both records have stable IDs.', 'error'); return; }
+      setJournal(function (previous) {
+        var next = removeGraphRelationshipFromJournal(previous, payload || {});
+        next.claimEvidenceLinks = (next.claimEvidenceLinks || []).concat([{
+          id: researchId('relationship_'), claimId: claimId, evidenceIds: [evidenceId],
+          relationship: payload.relationship || 'supports', warrant: String(payload.warrant || '').slice(0, 900),
+          methodPackId: previous.activeMethodPack || null, inquiryEpisodeId: previous.activeInquiryEpisodeId || null, ts: Date.now()
+        }]);
+        return next;
+      });
+      addToast('Evidence relationship saved with its warrant.', 'success');
+    }, []);
+    var removeEvidenceRelationship = useCallback(function (payload) {
+      setJournal(function (previous) { return removeGraphRelationshipFromJournal(previous, payload || {}); });
+      addToast('Evidence relationship removed. The underlying records were kept.', 'success');
+    }, []);
+
+    var handlePortfolioFile = useCallback(function (event) {
+      var file = event && event.target && event.target.files && event.target.files[0];
+      if (!file) return;
+      if (file.size > MAX_PORTFOLIO_IMPORT_BYTES) { setImportPreview({ ok: false, errors: ['The selected file exceeds the 12 MB import limit.'] }); event.target.value = ''; return; }
+      file.text().then(function (raw) {
+        var parsed = parsePortfolioImport(raw);
+        parsed.fileName = file.name;
+        setImportPreview(parsed);
+      }).catch(function () { setImportPreview({ ok: false, errors: ['The selected file could not be read.'] }); });
+      event.target.value = '';
+    }, []);
+    var applyPortfolioImport = useCallback(function (mode) {
+      if (!importPreview || !importPreview.ok) return;
+      writeRecoverySnapshot(journal, 'before_import_' + mode);
+      var result = mergeImportedJournal(journal, importPreview.journal, mode);
+      if (!result.ok) { setImportPreview(Object.assign({}, importPreview, { ok: false, errors: result.errors })); return; }
+      setJournal(result.journal);
+      setImportPreview(null);
+      addToast(mode === 'replace' ? 'Portfolio replaced. The previous version is available as a recovery snapshot.' : 'Portfolio merged. The previous version is available as a recovery snapshot.', 'success');
+    }, [importPreview, journal]);
+    var restoreRecoveryPortfolio = useCallback(function () {
+      var recovery = readRecoverySnapshot();
+      if (!recovery.ok) { addToast(recovery.errors.join(' '), 'error'); return; }
+      writeRecoverySnapshot(journal, 'before_recovery_restore');
+      setJournal(recovery.journal);
+      addToast('Recovery snapshot restored.', 'success');
+    }, [journal]);
     var setActiveLane = useCallback(function (laneId) {
       setJournal(function (prev) {
         var next = Object.assign({}, prev);
@@ -2353,6 +2693,8 @@
     };
 
     var downloadEvidenceGraph = function () {
+      var validation = validateEvidenceGraph(evidenceGraph);
+      if (!validation.ok) { addToast('Evidence graph export blocked: ' + validation.errors[0], 'error'); return; }
       if (!downloadJsonFile('alloflow-evidence-graph.json', evidenceGraph)) addToast('Evidence graph download is unavailable in this browser.', 'error');
       else addToast('Evidence graph downloaded with explicit claims, evidence, warrants, and counterevidence relationships.', 'success');
     };
@@ -2373,8 +2715,10 @@
     };
     var downloadInteroperabilityBundle = function () {
       var bundle = buildInteroperabilityBundle(journal);
+      var validation = validateInteroperabilityBundle(bundle);
+      if (!validation.ok) { addToast('Interoperability export blocked: ' + validation.errors[0], 'error'); return; }
       if (!downloadJsonFile('alloflow-inquiry-interoperability-bundle.json', bundle)) addToast('Interoperability bundle download is unavailable in this browser.', 'error');
-      else addToast('Portable evidence graph, annotations, citations, and RO-Crate metadata downloaded as one bounded bundle.', 'success');
+      else addToast('Portable portfolio, evidence graph, annotations, citations, and RO-Crate metadata downloaded as one validated bundle.', 'success');
     };
     var downloadToolArtifactArchive = function () {
       var artifacts = journal.capturedArtifacts || [];
@@ -2438,6 +2782,8 @@
     }, []);
 
     var confirmClearJournal = useCallback(function () {
+      writeRecoverySnapshot(journal, 'before_reset');
+      clearResearchMediaStore();
       var fresh = emptyJournal();
       // Preserve dev level — most likely the same student.
       fresh.devLevel = journal.devLevel;
@@ -2894,7 +3240,20 @@
                 {legacyArtifacts.length > 0 && <details data-legacy-artifact-repair="true" style={{ marginTop: '9px', borderRadius: '10px', border: '1px solid #fcd34d', background: '#fffbeb' }}>
                   <summary style={{ cursor: 'pointer', padding: '9px 10px', fontSize: '10px', fontWeight: 900, color: '#92400e' }}>{legacyArtifacts.length} legacy tool artifact(s) need context</summary>
                   <div style={{ padding: '0 10px 10px', display: 'grid', gap: '8px' }}>{legacyArtifacts.map(function (artifact) { var draft = legacyDrafts[artifact.id] || ''; return <div key={artifact.id} style={{ padding: '8px', borderRadius: '8px', background: '#fff', border: '1px solid #fde68a' }}><strong style={{ fontSize: '10px', color: '#78350f' }}>{artifact.title || artifact.sourceToolName || 'Legacy artifact'}</strong><div style={{ marginTop: '3px', fontSize: '9px', color: '#92400e' }}>Original contract, version, license, or receipt data was not recorded. Do not reconstruct it from memory.</div>{artifact.legacyContextNote ? <div style={{ marginTop: '5px', fontSize: '10px', color: '#475569' }}><strong>Learner-added context:</strong> {artifact.legacyContextNote}</div> : <div style={{ marginTop: '6px' }}><textarea aria-label={'Context for ' + (artifact.title || 'legacy artifact')} value={draft} onChange={function (e) { var value = e.target.value.slice(0, 2000); setLegacyDrafts(function (prev) { return Object.assign({}, prev, { [artifact.id]: value }); }); }} rows={2} maxLength={2000} placeholder="What do you know about how you used this output? Leave unknown original metadata unknown." style={{ width: '100%', boxSizing: 'border-box', padding: '6px', borderRadius: '6px', border: '1px solid #d6d3d1', fontSize: '10px', fontFamily: 'inherit' }} /><button type="button" disabled={draft.trim().length < 12} onClick={function () { saveLegacyArtifactContext(artifact.id); }} style={{ marginTop: '5px', minHeight: '36px', padding: '5px 9px', borderRadius: '7px', border: 0, background: draft.trim().length >= 12 ? '#b45309' : '#cbd5e1', color: '#fff', fontWeight: 800, fontSize: '10px' }}>Save learner context</button></div>}</div>; })}</div>
-                </details>}                <details data-inquiry-evidence-audit="true" open={inquiryAudit.status === 'action_needed'} style={{ marginTop: '12px', borderRadius: '12px', border: '1px solid ' + (inquiryAudit.status === 'ready' ? '#86efac' : inquiryAudit.status === 'action_needed' ? '#fca5a5' : '#fcd34d'), background: inquiryAudit.status === 'ready' ? '#f0fdf4' : inquiryAudit.status === 'action_needed' ? '#fef2f2' : '#fffbeb' }}>
+                </details>}                <section data-portfolio-import-recovery="true" aria-labelledby="portfolio-import-title" style={{ marginTop: '12px', padding: '12px', borderRadius: '12px', border: '1px solid #bfdbfe', background: '#eff6ff' }}>
+                  <h4 id="portfolio-import-title" style={{ margin: 0, fontSize: '14px', color: '#1e3a8a' }}>Import and recovery</h4>
+                  <p style={{ margin: '5px 0 10px', fontSize: '13px', lineHeight: 1.5, color: '#475569' }}>Import an AlloFlow portfolio or validated interoperability bundle. Nothing changes until you review the summary and choose merge or replace.</p>
+                  <input ref={importInputRef} type="file" accept="application/json,.json,.jsonld" onChange={handlePortfolioFile} aria-label="Choose an AlloFlow portfolio JSON file" style={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }} />
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    <button type="button" onClick={function () { if (importInputRef.current) importInputRef.current.click(); }} style={{ minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: 0, background: '#1d4ed8', color: '#fff', fontSize: '12px', fontWeight: 900 }}>Choose portfolio to import</button>
+                    <button type="button" disabled={!recoveryAvailable} onClick={restoreRecoveryPortfolio} style={{ minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #64748b', background: '#fff', color: '#334155', fontSize: '12px', fontWeight: 900, opacity: recoveryAvailable ? 1 : .55 }}>Restore recovery snapshot</button>
+                  </div>
+                  {mediaStatus === 'missing' && <div role="alert" style={{ marginTop: '8px', color: '#991b1b', fontSize: '13px', fontWeight: 800 }}>Some detached media could not be restored. Textual portfolio records remain available.</div>}
+                  {mediaStatus === 'hydrated' && <div role="status" style={{ marginTop: '8px', color: '#166534', fontSize: '12px' }}>Large media restored from protected browser storage.</div>}
+                  {importPreview && <div role={importPreview.ok ? 'status' : 'alert'} data-import-preview="true" style={{ marginTop: '10px', padding: '10px', borderRadius: '8px', background: importPreview.ok ? '#fff' : '#fef2f2', border: '1px solid ' + (importPreview.ok ? '#93c5fd' : '#fca5a5'), fontSize: '13px', lineHeight: 1.5 }}>
+                    {importPreview.ok ? <><strong>Ready to import: {importPreview.fileName || 'portfolio'}</strong><div>{importPreview.summary.question || 'Untitled inquiry'} · {importPreview.summary.claims} claim(s) · {importPreview.summary.evidence} evidence record(s) · {importPreview.summary.revisions} revision(s)</div><p style={{ margin: '6px 0' }}>Merge keeps current records and adds new unique records. Replace uses the imported portfolio. Both choices save the current portfolio as a recovery snapshot first.</p><div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}><button type="button" onClick={function () { applyPortfolioImport('merge'); }} style={{ minHeight: '44px', padding: '8px 12px', border: 0, borderRadius: '8px', background: '#166534', color: '#fff', fontSize: '12px', fontWeight: 900 }}>Merge portfolios</button><button type="button" onClick={function () { applyPortfolioImport('replace'); }} style={{ minHeight: '44px', padding: '8px 12px', border: '1px solid #b91c1c', borderRadius: '8px', background: '#fff', color: '#b91c1c', fontSize: '12px', fontWeight: 900 }}>Replace after backup</button><button type="button" onClick={function () { setImportPreview(null); }} style={{ minHeight: '44px', padding: '8px 12px', border: '1px solid #64748b', borderRadius: '8px', background: '#fff', color: '#334155', fontSize: '12px', fontWeight: 900 }}>Cancel</button></div></> : <><strong>Import blocked</strong><ul style={{ margin: '5px 0 0', paddingLeft: '20px' }}>{(importPreview.errors || []).map(function (error, index) { return <li key={index}>{error}</li>; })}</ul><button type="button" onClick={function () { setImportPreview(null); }} style={{ marginTop: '8px', minHeight: '44px', padding: '8px 12px', border: '1px solid #64748b', borderRadius: '8px', background: '#fff', color: '#334155', fontSize: '12px', fontWeight: 900 }}>Dismiss</button></>}
+                  </div>}
+                </section>                <details data-inquiry-evidence-audit="true" open={inquiryAudit.status === 'action_needed'} style={{ marginTop: '12px', borderRadius: '12px', border: '1px solid ' + (inquiryAudit.status === 'ready' ? '#86efac' : inquiryAudit.status === 'action_needed' ? '#fca5a5' : '#fcd34d'), background: inquiryAudit.status === 'ready' ? '#f0fdf4' : inquiryAudit.status === 'action_needed' ? '#fef2f2' : '#fffbeb' }}>
                   <summary style={{ cursor: 'pointer', padding: '10px 12px', fontSize: '11px', fontWeight: 900, color: '#334155' }}>
                     Argument & evidence audit: {inquiryAudit.status === 'ready' ? 'ready' : inquiryAudit.counts.action + ' action / ' + inquiryAudit.counts.review + ' review'}
                   </summary>
@@ -2907,7 +3266,7 @@
                     <div style={{ marginTop: '7px', fontStyle: 'italic' }}>This is a reasoning check, not an automatic grade. The portfolio export includes the audit and integration-health receipt.</div>
                   </div>
                 </details>
-                <EvidenceGraphView graph={evidenceGraph} onDownloadGraph={downloadEvidenceGraph} onDownloadAnnotations={downloadWebAnnotations} onDownloadCitations={downloadCslCitations} onDownloadRoCrate={downloadRoCrate} onDownloadBundle={downloadInteroperabilityBundle} />                {integrationHealth.total > 0 && <div data-integration-health-summary="true" style={{ marginTop: '8px', padding: '8px 10px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #cbd5e1', fontSize: '10px', color: '#475569' }}><strong>Tool integration health:</strong> {integrationHealth.healthy} healthy · {integrationHealth.needsReview} review · {integrationHealth.actionNeeded} action needed.</div>}
+                <EvidenceGraphView graph={evidenceGraph} devLevel={journal.devLevel} onSaveRelationship={saveEvidenceRelationship} onRemoveRelationship={removeEvidenceRelationship} onDownloadGraph={downloadEvidenceGraph} onDownloadAnnotations={downloadWebAnnotations} onDownloadCitations={downloadCslCitations} onDownloadRoCrate={downloadRoCrate} onDownloadBundle={downloadInteroperabilityBundle} />                {integrationHealth.total > 0 && <div data-integration-health-summary="true" style={{ marginTop: '8px', padding: '8px 10px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #cbd5e1', fontSize: '10px', color: '#475569' }}><strong>Tool integration health:</strong> {integrationHealth.healthy} healthy · {integrationHealth.needsReview} review · {integrationHealth.actionNeeded} action needed.</div>}
                 <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end', gap: '8px', flexWrap: 'wrap' }}>
                   <button type="button" onClick={downloadToolArtifactArchive} disabled={!(journal.capturedArtifacts || []).length} style={{ minHeight: '44px', padding: '7px 12px', borderRadius: '10px', background: '#fff', border: '1px solid #0d9488', color: '#0f766e', fontWeight: 800, fontSize: '10px', cursor: (journal.capturedArtifacts || []).length ? 'pointer' : 'not-allowed' }}>Download artifact archive</button>
                   {artifactArchiveReady && <button type="button" data-remove-downloaded-artifacts="true" onClick={removeDownloadedToolArtifacts} style={{ minHeight: '44px', padding: '7px 12px', borderRadius: '10px', background: '#fff7ed', border: '1px solid #ea580c', color: '#9a3412', fontWeight: 900, fontSize: '10px', cursor: 'pointer' }}>Remove downloaded artifacts from this device</button>}                  <button type="button" onClick={downloadInquiryPortfolio} style={{ minHeight: '44px', padding: '7px 12px', borderRadius: '10px', background: '#fff', border: '1px solid #818cf8', color: '#4338ca', fontWeight: 800, fontSize: '10px', cursor: 'pointer' }}>Download portfolio + provenance</button>
@@ -3092,6 +3451,8 @@
       MAX_CAPTURE_INBOX_ITEMS: MAX_CAPTURE_INBOX_ITEMS,
       MAX_CAPTURES_PER_TOOL_PER_MINUTE: MAX_CAPTURES_PER_TOOL_PER_MINUTE,
       RESEARCH_STORAGE_SOFT_LIMIT_BYTES: RESEARCH_STORAGE_SOFT_LIMIT_BYTES,
+      MAX_PORTFOLIO_IMPORT_BYTES: MAX_PORTFOLIO_IMPORT_BYTES,
+      MEDIA_INLINE_THRESHOLD_BYTES: MEDIA_INLINE_THRESHOLD_BYTES,
       MAX_AI_CALLS_PER_SESSION: MAX_AI_CALLS_PER_SESSION,
       VOICE_NOTE_MAX_SECONDS: VOICE_NOTE_MAX_SECONDS,
       DEV_LEVELS: DEV_LEVELS,
@@ -3121,6 +3482,15 @@
       buildCslJson: buildCslJson,
       buildRoCrate: buildRoCrate,
       buildInteroperabilityBundle: buildInteroperabilityBundle,
+      validateEvidenceGraph: validateEvidenceGraph,
+      validateInteroperabilityBundle: validateInteroperabilityBundle,
+      importPortableBundle: importPortableBundle,
+      parsePortfolioImport: parsePortfolioImport,
+      mergeImportedJournal: mergeImportedJournal,
+      writeRecoverySnapshot: writeRecoverySnapshot,
+      readRecoverySnapshot: readRecoverySnapshot,
+      extractLargeResearchMedia: extractLargeResearchMedia,
+      hydrateResearchMedia: hydrateResearchMedia,
       stampNewInquiryArtifacts: stampNewInquiryArtifacts,
       applyMethodPackSelection: applyMethodPackSelection,
     };

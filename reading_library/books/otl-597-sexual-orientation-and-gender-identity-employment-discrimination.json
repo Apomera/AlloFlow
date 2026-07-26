@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-597-sexual-orientation-and-gender-identity-employment-discrimination",
+  "title": "Sexual Orientation and Gender Identity Employment Discrimination",
+  "description": "This Chapter will address the current protections that are available to lesbian, gay, bisexual and transgender (“LGBT”) individuals who allege they have been victims of employment discrimination. The Chapter's primary focus will be on federal statutory law, particularly Title VII of the Civil Rights Act of 1964. Although the focus here is on federal law, Appendix I to this Chapter lists the states that protect individuals from public and/or private discrimination under state laws. This topic is explored in four parts: (1) a brief overview of congressional efforts to enact a statute to protect individuals from employment discrimination on the basis of sexual orientation and gender identity; (2) discusses Title VII and sexual orientation; (3) discusses ways in which recent courts have handled sexual orientation discrimination under Title VII; and (4) similarly examines early judicial treatment of claims brought by individuals alleging discrimination on the basis of their gender identity and/or expression and explores how the law has developed in this area as well.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Gender & Sexuality Studies",
+    "Law"
+  ],
+  "authors": [
+    "Matthew William Green - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CALI's eLangdell® Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/sexual-orientation-and-gender-identity-employment-discrimination"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This Chapter will address the current protections that are available to lesbian, gay, bisexual and transgender (“LGBT”) individuals who allege they have been victims of employment discrimination. The Chapter's primary focus will be on federal statutory law, particularly Title VII of the Civil Rights Act of 1964. Although the focus here is on federal law, Appendix I to this Chapter lists the states that protect individuals from public and/or private discrimination under state laws. This topic is explored in four parts: (1) a brief overview of congressional efforts to enact a statute to protect individuals from employment discrimination on the basis of sexual orientation and gender identity; (2) discusses Title VII and sexual orientation; (3) discusses ways in which recent courts have handled sexual orientation discrimination under Title VII; and (4) similarly examines early judicial treatment of claims brought by individuals alleging discrimination on the basis of their gender identity and/or expression and explores how the law has developed in this area as well."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 187
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "597",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

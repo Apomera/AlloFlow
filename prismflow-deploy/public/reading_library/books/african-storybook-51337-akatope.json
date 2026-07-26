@@ -1,0 +1,190 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-51337-akatope",
+  "title": "Akatope",
+  "description": "ሓንቲ ሰበይቲ ንፈለማ እዋን ዉላድ ረኸበት። ግዳኸ ንእለቱ ከሰረታ። ብድሕሪኡ እንታይ ኣጋጢሙ ይስዕብ።",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Alice Kariuki"
+  ],
+  "illustrators": [
+    "Catherine Groenewald, Wiehan de Jager"
+  ],
+  "translators": [
+    "Thomas Tsegai"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Alice Kariuki",
+      "role": "Author"
+    },
+    {
+      "name": "Thomas Tsegai",
+      "role": "Translation"
+    },
+    {
+      "name": "Catherine Groenewald, Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Alice Kariuki (Author); Thomas Tsegai (Translation); Catherine Groenewald, Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "51337",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-cc614d00f06692a9",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/1096.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1109.png",
+      "text": "ካብ ዕለታት ሓደ መዓልቲ፡ ወትሩ ውላድ ትብህግ ሰበይቲ ትነብር ነበረት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=1",
+      "sourceDigest": "sha256:1507a6a55bc57f95c76cca9a374a29c116412f6858abb311bd686ec17d116a60"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "እዛ ሰበይቲ ዝበለጸ ዋላኻ ኣናደየት እሞ፡ ጓል ድማ ኽትጥፍጥፍ ጀመረት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=2",
+      "sourceDigest": "sha256:ce2388d514919479e3ea26a99d07e52d9c6e2405792503eb63435697d0be9341"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1096.png",
+      "text": "እዛ ኻብ ጭቃ ዝተሰርሐት ጓል ህይወት ዘርአት። እታ ሰበይቲ ነዛ ጓል ኣካቶፐ ኽትብል ሰየመታ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=3",
+      "sourceDigest": "sha256:dcf5605d00d32ca74d8609ce2d08bf04185bf4de739df5ce12fd93f9f28b627b"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1095.png",
+      "text": "እታ ሰበይቲ ኣዝያ ተሓጎሰት። ንኣካቶፐ ኣዝያ ኣፍቀረታ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=4",
+      "sourceDigest": "sha256:80de2d3d3b67ad6083cc054c1fee7ccf803ffd8202bca19d8e97eadf3daa16c3"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1097.png",
+      "text": "እታ ሰበይቲ ንኣካቶፐ ወትሩ ካብቲ ኣጉዶ ከይትወጽእ ተጠንቅቃ ነበረት። ግዳ ኣይሰምዐትን። ኣደኣ ገዛ ኣብ ዘይትህልወሉ፡ ወትሩ ደገ ወጺኣ ምስ'ቶም ቆልዑ ደቂ ቁሸታ ትጻወት ነበረት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=5",
+      "sourceDigest": "sha256:9ccf2186748ec9db074204025110f116f88a8f653f63886263964dc100eee672"
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "ሓደ መዓልቲ፡ ኣካቶፐ ምስ ካልኦት ቆልዑ ኣብ ደገ ናተጻወተት እንኮላ ዝናብ ክዘንብ ጀመረ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=6",
+      "sourceDigest": "sha256:46ad347f68ee5309e57b50b90d8c8bf287eaebd5fe7284858adc4257d65ddc25"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1099.png",
+      "text": "እቶም ካልኦት ቆልዑ ንናብ ኣጓዶኦም ጎየዩ። ኣካቶፐ ኽትጎዪ ተፈተነት ግና ኣእጋራ በቲ ማይ ክሓቁ ጀመሩ። ብድሕርዚ ኣብ መንጎ'ቶም ኣግራብ ተኾርምያ ተረፈት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=7",
+      "sourceDigest": "sha256:48bd9d649c80c35b0337743aa5834572f610d3e4aea8c189c41335e9ca65d5da"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1371.png",
+      "text": "እቶም ቆልዑ ንኣካቶፐ ዘጋጠማ ንወለዶም ምስ ነገርዎም ኣዝዮም ሓዘኑን ሰንበዱን።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=8",
+      "sourceDigest": "sha256:6313428cc6e999f5bfe3bb7fc796126859397a013ad3feb56c58d51a0ea41a92"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1382.png",
+      "text": "እታ ሰበይቲ ንኣካቶፐ ዘጋጠማ ምስ ሰምዐት፡ ንብዙሕ መዓልታት በኸየት። እቶም ደቂ ቁሸታ ድማ ወለዲ ዘይነበርዋ ካልእ ህጻን ምስኣ ኽትዓቢ ኣበርከቱላ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=9",
+      "sourceDigest": "sha256:06749b3d5381fff036398715d0f1a580d60059adf25d13faa6b8cdef6df6d1ca"
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "ግዳ እዚ ኣድላይነት ኣይነበሮን። ነታ ሰበይቲ ብስራት ይጽበያ ነበረ!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=10",
+      "sourceDigest": "sha256:396527c55dac0c6fbc65ee763cbd03b86cc6d06119e82f61d372e04fc3e3c847"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1299.png",
+      "text": "ሓደ ለይቲ፡ ቤታ ብቀስታ ተዃሕኵሐ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=11",
+      "sourceDigest": "sha256:2fa5553fd489897b4189b0578de02fea0d8af969fc339bdfdbbcbfb35a5e67a7"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1853.png",
+      "text": "እታ ሰበይቲ፡ \"መን ድኣሉ፧\" በለት ምስ ነብሳ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=12",
+      "sourceDigest": "sha256:c7f05ae7bd0c92e75ad4c67776c86c2c9f859c396d7f00f26582dd039fd7dbba"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1104.png",
+      "text": "ኣካቶፐ ናብ ቤታ ተመልሰት። ግዳ ደኺማን ጸምልያን ነበረት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=13",
+      "sourceDigest": "sha256:952bf7df87d2ba4fcc7eebe61a998d54779ae92f8342caf54c3b81c1eef3740d"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1812.png",
+      "text": "ኣደ ኣካቶፐ ኵሉ ትውንኖ ሸጠት። ነቲ ገንዘብ ኣካቶፐ ኣብ ምሕካም ኣውዓለቶ። ኣካቶፐ ምስ ጎበዘት፡ እታ ዝቆንጀወት ጓል ኣብቲ ቁሸት ኮነት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51337#page=14",
+      "sourceDigest": "sha256:7d04579eda3313fa38c333041cf9825412a4b99d88b9d58ff5a35328a2046a53"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 178
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:8a2014044f1bbc7f4659fdc7dc2f5030f48d8eeb8a815e56a587244e234dc1ea"
+  }
+}

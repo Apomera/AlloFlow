@@ -9,8 +9,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  var VERSION = '1.0.0';
-  var SCHEMA_VERSION = 1;
+  var VERSION = '1.1.0';
+  var SCHEMA_VERSION = 2;
   var RELATION_TYPES = ['supports', 'complicates', 'contradicts', 'contextualizes', 'derivedFrom', 'requiresWarrant', 'frames'];
   var ARGUMENT_RELATIONS = ['supports', 'complicates', 'contradicts', 'contextualizes'];
   var EVIDENCE_TYPES = ['source', 'evidence', 'tool_artifact', 'annotation', 'test_result', 'model'];
@@ -35,6 +35,12 @@
   function identifier(prefix, raw, fallback) {
     var existing = clip(raw && raw.id, 160);
     return prefix + ':' + (existing || hash(fallback || JSON.stringify(raw || {})));
+  }
+  function exportTimestamp(journal) {
+    return timestamp(journal && (journal.updatedAt || journal.createdAt)) || '1970-01-01T00:00:00.000Z';
+  }
+  function recordRef(collection, raw, fallbackId) {
+    return { collection: collection, id: clip(raw && raw.id, 160) || clip(fallbackId, 160) };
   }
   function timestamp(value) {
     if (!value) return '';
@@ -62,15 +68,25 @@
     var edges = [];
     var byId = {};
     var aliases = {};
+    var integrityIssues = [];
 
     function addNode(node, rawAliases) {
-      if (!node || !node.id || byId[node.id]) return byId[node && node.id];
+      if (!node || !node.id) return null;
+      if (byId[node.id]) {
+        integrityIssues.push({ severity: 'action', code: 'duplicate_graph_id', nodeId: node.id, message: 'More than one portfolio record resolves to ' + node.id + '. Assign unique record IDs before relying on this graph.' });
+        integrityIssues.push({ severity: 'action', code: 'ambiguous_graph_reference', reference: node.id, message: 'The duplicated record ID ' + node.id + ' is ambiguous and cannot safely identify one record.' });
+        return byId[node.id];
+      }
       node.label = redact(node.label, 180) || 'Untitled ' + node.type;
       node.description = redact(node.description, 1600);
       nodes.push(node);
       byId[node.id] = node;
       [node.id].concat(rawAliases || []).filter(Boolean).forEach(function (alias) {
-        aliases[String(alias)] = node.id;
+        var key = String(alias);
+        if (aliases[key] && aliases[key] !== node.id) {
+          integrityIssues.push({ severity: 'action', code: 'ambiguous_graph_reference', reference: key, message: 'The reference "' + redact(key, 120) + '" matches more than one graph node.' });
+          aliases[key] = null;
+        } else if (aliases[key] !== null) aliases[key] = node.id;
       });
       return node;
     }
@@ -78,19 +94,36 @@
       if (value && typeof value === 'object') value = value.id || value.claimId || value.text;
       var key = String(value == null ? '' : value);
       if (aliases[key]) return aliases[key];
+      if (Object.prototype.hasOwnProperty.call(aliases, key) && aliases[key] === null) return null;
       var normalized = clip(key, 500).toLowerCase();
-      var match = nodes.find(function (node) {
+      var matches = nodes.filter(function (node) {
         return clip(node.label, 500).toLowerCase() === normalized || clip(node.description, 500).toLowerCase() === normalized;
       });
-      return match && match.id;
+      if (matches.length > 1) {
+        integrityIssues.push({ severity: 'action', code: 'ambiguous_graph_reference', reference: key, message: 'The text reference "' + redact(key, 120) + '" is ambiguous. Link records by ID instead.' });
+        return null;
+      }
+      return matches[0] && matches[0].id;
     }
     function addEdge(from, type, to, details) {
       var fromId = resolve(from) || from;
       var toId = resolve(to) || to;
-      if (!byId[fromId] || !byId[toId] || fromId === toId) return null;
+      var info = details || {};
+      if (!byId[fromId] || !byId[toId]) {
+        integrityIssues.push({
+          severity: 'action', code: 'dangling_graph_reference',
+          reference: !byId[fromId] ? clip(from, 180) : clip(to, 180),
+          declaredBy: clip(info.declaredBy, 160),
+          message: 'A relationship from ' + (info.declaredBy || 'the portfolio') + ' points to a missing or ambiguous record.'
+        });
+        return null;
+      }
+      if (fromId === toId) {
+        integrityIssues.push({ severity: 'action', code: 'self_graph_reference', nodeId: fromId, declaredBy: clip(info.declaredBy, 160), message: 'A graph relationship cannot point a record to itself.' });
+        return null;
+      }
       var edgeType = relation(type, type);
       if (RELATION_TYPES.indexOf(edgeType) === -1) return null;
-      var info = details || {};
       var edge = {
         id: 'edge:' + hash([fromId, edgeType, toId, clip(info.warrant, 800), clip(info.declaredBy, 120)].join('|')),
         from: fromId,
@@ -117,7 +150,7 @@
     list(j.claims).forEach(function (claim) {
       var id = identifier('claim', claim, claim && claim.text);
       claimNodes.push(addNode({
-        id: id, type: 'claim', discipline: 'scientific', label: nodeLabel(claim, 'Scientific claim'),
+        id: id, type: 'claim', discipline: 'scientific', record: recordRef('claims', claim, claim && claim.text), label: nodeLabel(claim, 'Scientific claim'),
         description: redact(claim && (claim.warrantText || claim.calibrationResponse), 1200),
         createdAt: timestamp(claim && (claim.ts || claim.createdAt)),
         provenance: { methodPackId: claim && claim.methodPackId || null, inquiryEpisodeId: claim && claim.inquiryEpisodeId || null }
@@ -125,7 +158,7 @@
     });
     if (j.humanitiesPosition && clip(j.humanitiesPosition.text, 1200)) {
       claimNodes.push(addNode({
-        id: identifier('position', j.humanitiesPosition, j.humanitiesPosition.text), type: 'humanities_position', discipline: 'humanities',
+        id: identifier('position', j.humanitiesPosition, j.humanitiesPosition.text), type: 'humanities_position', discipline: 'humanities', record: recordRef('humanitiesPosition', j.humanitiesPosition, 'humanitiesPosition'),
         label: nodeLabel(j.humanitiesPosition, 'Humanities position'),
         description: redact(j.humanitiesPosition.whatThisClaimDoesNotSpeakTo || j.humanitiesPosition.positionalityLinkText, 1200),
         createdAt: timestamp(j.humanitiesPosition.ts),
@@ -134,7 +167,7 @@
     }
     list(j.designClaims).forEach(function (claim) {
       claimNodes.push(addNode({
-        id: identifier('design-claim', claim, claim && claim.text), type: 'design_claim', discipline: 'engineering',
+        id: identifier('design-claim', claim, claim && claim.text), type: 'design_claim', discipline: 'engineering', record: recordRef('designClaims', claim, claim && claim.text),
         label: nodeLabel(claim, 'Design claim'), description: redact(claim && (claim.limitations || claim.calibrationResponse), 1200),
         createdAt: timestamp(claim && claim.ts),
         provenance: { methodPackId: claim && claim.methodPackId || null, inquiryEpisodeId: claim && claim.inquiryEpisodeId || null }
@@ -144,7 +177,7 @@
 
     list(j.sources).forEach(function (source) {
       addNode({
-        id: identifier('source', source, source && source.citation), type: 'source', discipline: source && source.domain || 'cross-disciplinary',
+        id: identifier('source', source, source && source.citation), type: 'source', record: recordRef('sources', source, source && source.citation), discipline: source && source.domain || 'cross-disciplinary',
         label: nodeLabel(source, 'Recorded source'),
         description: redact(source && (source.notes || source.context || source.historicalContext || source.humanitiesContext && source.humanitiesContext.historicalContext), 1500),
         url: clip(source && (source.url || source.stableUrl), 500), createdAt: timestamp(source && source.ts),
@@ -153,14 +186,14 @@
     });
     list(j.evidenceCards).forEach(function (card) {
       addNode({
-        id: identifier('evidence', card, card && card.text), type: 'evidence', discipline: 'cross-disciplinary',
+        id: identifier('evidence', card, card && card.text), type: 'evidence', record: recordRef('evidenceCards', card, card && card.text), discipline: 'cross-disciplinary',
         label: nodeLabel(card, 'Evidence card'), description: redact(card && card.text, 1400), createdAt: timestamp(card && card.ts),
         provenance: { tag: clip(card && card.tag, 120), methodPackId: card && card.methodPackId || null, inquiryEpisodeId: card && card.inquiryEpisodeId || null, toolArtifactId: card && card.toolArtifactId || null }
       }, [card && card.id]);
     });
     list(j.modelSnapshots).forEach(function (model) {
       addNode({
-        id: identifier('model', model, model && model.text), type: 'model', discipline: 'scientific',
+        id: identifier('model', model, model && model.text), type: 'model', record: recordRef('modelSnapshots', model, 'model-v' + (model && model.v)), discipline: 'scientific',
         label: nodeLabel(model, 'Model snapshot'), description: redact(model && (model.knownUnknowns || model.deltaFromPrior), 1200), createdAt: timestamp(model && model.ts),
         provenance: { confidence: model && model.confidence, methodPackId: model && model.methodPackId || null, inquiryEpisodeId: model && model.inquiryEpisodeId || null }
       }, [model && model.id, 'model-v' + (model && model.v)]);
@@ -168,7 +201,7 @@
     list(j.testRun).forEach(function (run) {
       addNode({
         id: identifier('test-result', run, [run && run.criterionId, run && run.measured, run && run.unit].join('|')),
-        type: 'test_result', discipline: 'engineering', label: nodeLabel(run, 'Test result'),
+        type: 'test_result', discipline: 'engineering', record: recordRef('testRun', run, [run && run.criterionId, run && run.measured, run && run.unit].join('|')), label: nodeLabel(run, 'Test result'),
         description: redact(run && run.observationText, 1200), createdAt: timestamp(run && run.ts),
         provenance: { criterionId: run && run.criterionId, measured: run && run.measured, unit: clip(run && run.unit, 80), passed: run && run.passed }
       }, [run && run.id]);
@@ -176,7 +209,7 @@
 
     list(j.capturedArtifacts).forEach(function (artifact) {
       var artifactNode = addNode({
-        id: identifier('artifact', artifact, artifact && artifact.captureFingerprint), type: 'tool_artifact',
+        id: identifier('artifact', artifact, artifact && artifact.captureFingerprint), type: 'tool_artifact', record: recordRef('capturedArtifacts', artifact, artifact && artifact.captureFingerprint),
         discipline: artifact && artifact.integrationContract && artifact.integrationContract.supportedMethodPacks || [],
         label: nodeLabel(artifact, 'Tool artifact'), description: redact(artifact && (artifact.learnerNote || artifact.summary), 1500),
         url: clip(artifact && artifact.sourceUrl, 500), createdAt: timestamp(artifact && (artifact.acceptedAt || artifact.generatedAt || artifact.queuedAt)),
@@ -193,7 +226,7 @@
         var target = annotation && (annotation.target || annotation.inquiryTarget) || {};
         var annotationNode = addNode({
           id: identifier('annotation', annotation, [artifactNode.id, annotation && annotation.note, target.excerpt].join('|')),
-          type: 'annotation', discipline: 'humanities', label: redact(annotation && (annotation.note || annotation.content), 180) || 'Close-reading annotation',
+          type: 'annotation', discipline: 'humanities', record: recordRef('annotations', annotation, annotation && annotation.note), label: redact(annotation && (annotation.note || annotation.content), 180) || 'Close-reading annotation',
           description: redact(annotation && (annotation.note || annotation.content), 900), createdAt: timestamp(annotation && annotation.createdAt),
           provenance: {
             stance: relation(annotation && (annotation.stance || annotation.inquiryStance), annotation && (annotation.stance || annotation.inquiryStance)),
@@ -205,23 +238,23 @@
           }
         }, [annotation && annotation.id]);
         addEdge(annotationNode.id, 'derivedFrom', artifactNode.id, { declaredBy: 'tool annotation bundle' });
-        var targetClaim = resolve(annotation && (annotation.targetClaimId || annotation.claimId));
+        var targetClaim = annotation && (annotation.targetClaimId || annotation.claimId);
         if (targetClaim) addEdge(annotationNode.id, relation(annotation.stance || annotation.inquiryStance, 'contextualizes'), targetClaim, { warrant: annotation.note || annotation.content, declaredBy: 'annotation stance' });
       });
     });
 
     list(j.evidenceCards).forEach(function (card) {
-      if (card && card.toolArtifactId) addEdge(resolve(card.id), 'derivedFrom', resolve(card.toolArtifactId), { declaredBy: 'evidenceCard.toolArtifactId' });
+      if (card && card.toolArtifactId) addEdge(card.id, 'derivedFrom', card.toolArtifactId, { declaredBy: 'evidenceCard.toolArtifactId' });
     });
     list(j.claimEvidenceLinks).forEach(function (link) {
-      var claimId = resolve(link && (link.claimId || link.claim));
+      var claimId = link && (link.claimId || link.claim);
       list(link && link.evidenceIds).forEach(function (evidenceId) {
-        addEdge(resolve(evidenceId), relation(link.relationship || link.relation, 'supports'), claimId, {
+        addEdge(evidenceId, relation(link.relationship || link.relation, 'supports'), claimId, {
           warrant: link.warrant, qualifier: link.qualifier, rebuttal: link.rebuttal, declaredBy: 'claimEvidenceLinks'
         });
       });
       list(link && (link.counterEvidenceIds || link.counterevidenceIds)).forEach(function (evidenceId) {
-        addEdge(resolve(evidenceId), 'complicates', claimId, { warrant: link.rebuttal || link.warrant, declaredBy: 'claimEvidenceLinks.counterEvidenceIds' });
+        addEdge(evidenceId, 'complicates', claimId, { warrant: link.rebuttal || link.warrant, declaredBy: 'claimEvidenceLinks.counterEvidenceIds' });
       });
     });
 
@@ -229,23 +262,54 @@
     list(j.sources).forEach(function (source) {
       var relationship = source && source.humanitiesContext && source.humanitiesContext.inquiryRelationship;
       if (!relationship || !humanitiesTarget) return;
-      addEdge(resolve(source.id), relation(relationship, 'contextualizes'), humanitiesTarget.id, {
+      addEdge(source.id, relation(relationship, 'contextualizes'), humanitiesTarget.id, {
         warrant: source.notes || source.humanitiesContext.historicalContext, declaredBy: 'source.humanitiesContext.inquiryRelationship'
       });
     });
     list(j.designClaims).forEach(function (claim) {
-      var claimId = resolve(claim && claim.id);
+      var claimId = claim && claim.id;
       list(claim && claim.claimEvidenceRunIds).forEach(function (runId) {
-        addEdge(resolve(runId), 'supports', claimId, { warrant: claim.text, declaredBy: 'designClaim.claimEvidenceRunIds' });
+        addEdge(runId, 'supports', claimId, { warrant: claim.text, declaredBy: 'designClaim.claimEvidenceRunIds' });
       });
     });
+
+    var citationKeys = {};
+    list(j.sources).forEach(function (source) {
+      var bibliographic = source && (source.citationData || source.bibliography) || {};
+      var key = clip(bibliographic.DOI || bibliographic.doi || source && source.doi, 300).toLowerCase() ||
+        clip(source && (source.url || source.stableUrl), 500).toLowerCase().replace(/[?#].*$/, '') ||
+        [clip(source && (source.title || source.citation), 300).toLowerCase(), clip(bibliographic.issued || source && source.publicationDate, 40)].join('|');
+      if (!key || key === '|') return;
+      if (citationKeys[key]) integrityIssues.push({ severity: 'review', code: 'duplicate_citation_record', nodeId: identifier('source', source, source && source.citation), message: 'Two source records appear to describe the same work. Review them before citation export.' });
+      else citationKeys[key] = true;
+    });
+
+    var derivedAdjacency = {};
+    edges.filter(function (edge) { return edge.type === 'derivedFrom'; }).forEach(function (edge) {
+      if (!derivedAdjacency[edge.from]) derivedAdjacency[edge.from] = [];
+      derivedAdjacency[edge.from].push(edge.to);
+    });
+    var visitState = {};
+    var cycleNodes = {};
+    function visitDerived(nodeId, trail) {
+      if (visitState[nodeId] === 1) {
+        trail.slice(Math.max(0, trail.indexOf(nodeId))).forEach(function (id) { cycleNodes[id] = true; });
+        return;
+      }
+      if (visitState[nodeId] === 2) return;
+      visitState[nodeId] = 1;
+      (derivedAdjacency[nodeId] || []).forEach(function (nextId) { visitDerived(nextId, trail.concat(nodeId)); });
+      visitState[nodeId] = 2;
+    }
+    Object.keys(derivedAdjacency).forEach(function (nodeId) { visitDerived(nodeId, []); });
+    if (Object.keys(cycleNodes).length) integrityIssues.push({ severity: 'action', code: 'cyclic_graph_provenance', nodeIds: Object.keys(cycleNodes), message: 'Derived-from relationships contain a cycle, so provenance order is not trustworthy.' });
 
     var incomingByClaim = {};
     claimNodes.filter(Boolean).forEach(function (claim) { incomingByClaim[claim.id] = []; });
     edges.forEach(function (edge) {
       if (incomingByClaim[edge.to] && ARGUMENT_RELATIONS.indexOf(edge.type) !== -1) incomingByClaim[edge.to].push(edge);
     });
-    var diagnostics = [];
+    var diagnostics = integrityIssues.slice();
     claimNodes.filter(Boolean).forEach(function (claim) {
       var incoming = incomingByClaim[claim.id] || [];
       if (!incoming.some(function (edge) { return edge.type === 'supports'; })) diagnostics.push({ severity: 'action', code: 'unsupported_graph_claim', nodeId: claim.id, message: claim.label + ' has no explicit supporting evidence relationship.' });
@@ -272,8 +336,9 @@
     });
     var counts = {};
     nodes.forEach(function (node) { counts[node.type] = (counts[node.type] || 0) + 1; });
+    var snapshotId = 'snapshot:' + hash(JSON.stringify({ nodes: nodes.map(function (node) { return [node.id, node.type, node.label, node.description, node.createdAt, node.provenance, node.record]; }), edges: edges }));
     return {
-      schemaVersion: SCHEMA_VERSION, generatorVersion: VERSION, generatedAt: new Date().toISOString(),
+      schemaVersion: SCHEMA_VERSION, generatorVersion: VERSION, snapshotId: snapshotId, generatedAt: exportTimestamp(j),
       questionNodeId: question && question.id, nodes: nodes, edges: edges, counts: counts, claimViews: claimViews,
       diagnostics: diagnostics,
       status: diagnostics.some(function (item) { return item.severity === 'action'; }) ? 'action_needed' : diagnostics.length ? 'review_recommended' : 'ready'
@@ -285,7 +350,7 @@
     var annotations = evidenceGraph.nodes.filter(function (node) { return node.type === 'annotation'; });
     return {
       '@context': 'http://www.w3.org/ns/anno.jsonld',
-      id: 'urn:alloflow:annotation-page:' + hash(evidenceGraph.generatedAt + '|' + annotations.map(function (node) { return node.id; }).join('|')),
+      id: 'urn:alloflow:annotation-page:' + hash((evidenceGraph.snapshotId || '') + '|' + annotations.map(function (node) { return node.id; }).join('|')),
       type: 'AnnotationPage',
       generated: evidenceGraph.generatedAt,
       items: annotations.map(function (node) {
@@ -304,36 +369,77 @@
     };
   }
 
+  function normalizeCslDate(value) {
+    if (!value) return undefined;
+    if (value['date-parts']) return value;
+    if (/^\d{4}$/.test(String(value).trim())) return { 'date-parts': [[Number(value)]] };
+    var date = new Date(value);
+    if (!Number.isNaN(date.getTime())) return { 'date-parts': [[date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate()]] };
+    var year = String(value).match(/\b(1[5-9]\d{2}|20\d{2}|21\d{2})\b/);
+    return year ? { 'date-parts': [[Number(year[1])]] } : undefined;
+  }
+  function normalizeCslNames(value) {
+    var names = Array.isArray(value) ? value : value ? [value] : [];
+    return names.map(function (name) {
+      if (typeof name === 'string') return { literal: redact(name, 300) };
+      if (!name || typeof name !== 'object') return null;
+      var normalized = {};
+      if (clip(name.family, 160)) normalized.family = redact(name.family, 160);
+      if (clip(name.given, 160)) normalized.given = redact(name.given, 160);
+      if (clip(name.literal, 300)) normalized.literal = redact(name.literal, 300);
+      if (clip(name['non-dropping-particle'], 80)) normalized['non-dropping-particle'] = redact(name['non-dropping-particle'], 80);
+      return Object.keys(normalized).length ? normalized : null;
+    }).filter(Boolean);
+  }
+  function cleanUndefined(record) {
+    Object.keys(record).forEach(function (key) { if (record[key] === undefined || record[key] === null || record[key] === '') delete record[key]; });
+    return record;
+  }
   function toCslJson(journal) {
     var rows = [];
+    var seen = {};
     list(journal && journal.sources).forEach(function (source, index) {
-      var creator = clip(source && (source.creator || source.author), 300);
-      var item = {
+      var meta = source && (source.citationData || source.bibliography) || {};
+      var creator = meta.author || source && (source.creator || source.author);
+      var item = cleanUndefined({
         id: clip(source && source.id, 160) || 'alloflow-source-' + (index + 1),
-        type: /book/i.test(source && source.kind || '') ? 'book' : /journal|article/i.test(source && source.kind || '') ? 'article-journal' : /web|site/i.test(source && source.kind || '') ? 'webpage' : 'document',
-        title: redact(source && (source.title || source.citation), 500) || 'Untitled source',
-        URL: clip(source && (source.url || source.stableUrl), 500) || undefined,
-        author: creator ? [{ literal: redact(creator, 300) }] : undefined,
-        note: redact(source && (source.notes || source.humanitiesContext && source.humanitiesContext.historicalContext), 1200) || undefined
-      };
-      Object.keys(item).forEach(function (key) { if (item[key] === undefined) delete item[key]; });
-      rows.push(item);
+        type: clip(meta.type, 80) || (/book/i.test(source && source.kind || '') ? 'book' : /journal|article/i.test(source && source.kind || '') ? 'article-journal' : /web|site/i.test(source && source.kind || '') ? 'webpage' : 'document'),
+        title: redact(meta.title || source && (source.title || source.citation), 500) || 'Untitled source',
+        'container-title': redact(meta['container-title'] || meta.containerTitle, 300) || undefined,
+        publisher: redact(meta.publisher, 240) || undefined,
+        'publisher-place': redact(meta['publisher-place'] || meta.publisherPlace, 180) || undefined,
+        URL: clip(meta.URL || meta.url || source && (source.url || source.stableUrl), 500) || undefined,
+        DOI: clip(meta.DOI || meta.doi || source && source.doi, 200) || undefined,
+        ISBN: clip(meta.ISBN || meta.isbn || source && source.isbn, 80) || undefined,
+        ISSN: clip(meta.ISSN || meta.issn, 80) || undefined,
+        author: normalizeCslNames(creator).length ? normalizeCslNames(creator) : undefined,
+        editor: normalizeCslNames(meta.editor).length ? normalizeCslNames(meta.editor) : undefined,
+        issued: normalizeCslDate(meta.issued || meta.publicationDate || source && source.publicationDate),
+        accessed: normalizeCslDate(meta.accessed || source && source.accessedAt),
+        volume: clip(meta.volume, 40) || undefined,
+        issue: clip(meta.issue, 40) || undefined,
+        page: clip(meta.page || meta.pages || source && source.locator, 80) || undefined,
+        language: clip(meta.language || source && source.language, 40) || undefined,
+        note: redact(meta.note || source && (source.notes || source.humanitiesContext && source.humanitiesContext.historicalContext), 1200) || undefined
+      });
+      var key = (item.DOI ? 'doi:' + item.DOI.toLowerCase() : item.URL ? 'url:' + item.URL.toLowerCase().replace(/[?#].*$/, '') : 'title:' + item.title.toLowerCase() + '|' + JSON.stringify(item.issued || ''));
+      if (!seen[key]) { seen[key] = true; rows.push(item); }
     });
     list(journal && journal.capturedArtifacts).forEach(function (artifact, index) {
       var citation = artifact && artifact.integrationContract && artifact.integrationContract.citation || {};
       if (!clip(citation.text, 500) && !clip(citation.url, 500)) return;
-      rows.push({
+      rows.push(cleanUndefined({
         id: 'alloflow-tool-artifact-' + (clip(artifact.id, 120) || index + 1), type: 'dataset',
         title: redact(artifact.title, 500) || 'AlloFlow tool artifact',
         URL: clip(citation.url || artifact.sourceUrl, 500) || undefined,
         author: artifact.sourceToolName ? [{ literal: redact(artifact.sourceToolName, 180) }] : undefined,
         version: clip(artifact.sourceToolVersion, 80) || undefined,
+        issued: normalizeCslDate(artifact.acceptedAt || artifact.generatedAt),
         note: redact(citation.text || artifact.summary, 1200) || undefined
-      });
+      }));
     });
     return rows;
   }
-
   function toRoCrate(journal, graph) {
     var evidenceGraph = graph || buildEvidenceGraph(journal);
     var exportedAt = evidenceGraph.generatedAt;
@@ -380,17 +486,86 @@
     return { '@context': 'https://w3id.org/ro/crate/1.3/context', '@graph': entities };
   }
 
-  function buildInteroperabilityBundle(journal) {
+  function sanitizePortableJournal(journal) {
+    function walk(value, key, depth) {
+      if (depth > 18) return '[depth limit reached]';
+      if (value == null || typeof value === 'number' || typeof value === 'boolean') return value;
+      if (typeof value === 'string') {
+        if (/Ref$/.test(key || '') && value.indexOf('media:') === 0) return undefined;
+        if (/^(audioBase64|sketchDataUrl|rawFile|fileBytes)$/i.test(key || '') || /^data:(audio|image|video)\//i.test(value)) return undefined;
+        return redact(value, 12000);
+      }
+      if (Array.isArray(value)) return value.slice(0, 3000).map(function (item) { return walk(item, '', depth + 1); }).filter(function (item) { return item !== undefined; });
+      if (typeof value !== 'object') return undefined;
+      var out = {};
+      Object.keys(value).slice(0, 500).forEach(function (childKey) {
+        if (childKey === 'loadWarning' || childKey === 'originalSchemaVersion') return;
+        var child = walk(value[childKey], childKey, depth + 1);
+        if (child !== undefined) out[childKey] = child;
+      });
+      return out;
+    }
+    return walk(journal || {}, '', 0) || {};
+  }
+
+  function validateEvidenceGraph(graph) {
+    var errors = [];
+    if (!graph || typeof graph !== 'object') return { ok: false, errors: ['graph must be an object'] };
+    if (graph.schemaVersion !== SCHEMA_VERSION) errors.push('unsupported evidence graph schemaVersion');
+    if (!Array.isArray(graph.nodes)) errors.push('nodes must be an array');
+    if (!Array.isArray(graph.edges)) errors.push('edges must be an array');
+    var ids = {};
+    list(graph.nodes).forEach(function (node, index) {
+      if (!node || !clip(node.id, 200) || !clip(node.type, 80)) errors.push('node ' + index + ' requires id and type');
+      else if (ids[node.id]) errors.push('duplicate node id: ' + node.id);
+      else ids[node.id] = true;
+    });
+    var edgeIds = {};
+    list(graph.edges).forEach(function (edge, index) {
+      if (!edge || !clip(edge.id, 200) || RELATION_TYPES.indexOf(edge.type) === -1) errors.push('edge ' + index + ' has an invalid id or relationship type');
+      else if (edgeIds[edge.id]) errors.push('duplicate edge id: ' + edge.id);
+      else edgeIds[edge.id] = true;
+      if (edge && (!ids[edge.from] || !ids[edge.to])) errors.push('edge ' + (edge.id || index) + ' references a missing node');
+    });
+    return { ok: errors.length === 0, errors: errors };
+  }
+
+  function validateInteroperabilityBundle(bundle) {
+    var errors = [];
+    if (!bundle || typeof bundle !== 'object') return { ok: false, errors: ['bundle must be an object'] };
+    if (bundle.format !== 'alloflow-inquiry-interoperability-bundle') errors.push('unsupported bundle format');
+    if (bundle.schemaVersion !== SCHEMA_VERSION) errors.push('unsupported bundle schemaVersion');
+    var graphResult = validateEvidenceGraph(bundle.evidenceGraph);
+    if (!graphResult.ok) errors = errors.concat(graphResult.errors.map(function (error) { return 'evidenceGraph: ' + error; }));
+    if (!bundle.portfolio || typeof bundle.portfolio !== 'object') errors.push('portable portfolio is required');
+    if (!bundle.webAnnotations || bundle.webAnnotations.type !== 'AnnotationPage' || !Array.isArray(bundle.webAnnotations.items)) errors.push('W3C AnnotationPage is invalid');
+    if (!Array.isArray(bundle.cslJson)) errors.push('cslJson must be an array');
+    if (!bundle.roCrateMetadata || !Array.isArray(bundle.roCrateMetadata['@graph'])) errors.push('RO-Crate @graph is required');
+    return { ok: errors.length === 0, errors: errors };
+  }
+
+  function importPortableBundle(bundle) {
+    var validation = validateInteroperabilityBundle(bundle);
+    if (!validation.ok) return { ok: false, errors: validation.errors, portfolio: null };
+    return { ok: true, errors: [], portfolio: JSON.parse(JSON.stringify(bundle.portfolio)) };
+  }
+
+  function buildInteroperabilityBundle(journal, options) {
     var graph = buildEvidenceGraph(journal);
-    return {
+    var opts = options || {};
+    var bundle = {
       format: 'alloflow-inquiry-interoperability-bundle',
-      schemaVersion: 1,
-      exportedAt: graph.generatedAt,
+      schemaVersion: SCHEMA_VERSION,
+      snapshotId: graph.snapshotId,
+      exportedAt: timestamp(opts.exportedAt) || new Date().toISOString(),
+      portfolio: sanitizePortableJournal(journal),
       evidenceGraph: graph,
       webAnnotations: toW3CWebAnnotations(journal, graph),
       cslJson: toCslJson(journal),
       roCrateMetadata: toRoCrate(journal, graph)
     };
+    bundle.validation = validateInteroperabilityBundle(bundle);
+    return bundle;
   }
 
   return {
@@ -401,6 +576,9 @@
     toW3CWebAnnotations: toW3CWebAnnotations,
     toCslJson: toCslJson,
     toRoCrate: toRoCrate,
+    sanitizePortableJournal: sanitizePortableJournal,
+    validateEvidenceGraph: validateEvidenceGraph,
+    validateInteroperabilityBundle: validateInteroperabilityBundle,
+    importPortableBundle: importPortableBundle,
     buildInteroperabilityBundle: buildInteroperabilityBundle
-  };
-});
+  };});

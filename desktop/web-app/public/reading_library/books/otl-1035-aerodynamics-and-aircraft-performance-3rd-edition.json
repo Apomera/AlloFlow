@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1035-aerodynamics-and-aircraft-performance-3rd-edition",
+  "title": "Aerodynamics and Aircraft Performance - 3rd edition",
+  "description": "Aerodynamics and Aircraft Performance, 3rd edition is a college undergraduate-level introduction to aircraft aerodynamics and performance. This text is designed for a course in Aircraft Performance that is taught before the students have had any course in fluid mechanics, fluid dynamics, or aerodynamics. The text is meant to provide the essential information from these types of courses that is needed for teaching basic subsonic aircraft performance, and it is assumed that the students will learn the full story of aerodynamics in other, later courses. The text assumes that the students will have had a university level Physics sequence in which they will have been introduced to the most fundamental concepts of statics, dynamics, fluid mechanics, and basic conservation laws that are needed to understand the coverage that follows. It is also assumed that students will have completed first year university level calculus sequence plus a course in multi-variable calculus. Separate courses in engineering statics and dynamics are helpful but not necessary. Any student who takes a course using this text after completing courses in aerodynamics or fluid dynamics should find the chapters of this book covering those subjects an interesting review of the material. The 236-page text was created specifically for use by undergraduate students in Aerospace Engineering and was based on Professor Marchman’s many years of experience teaching related subject matter as well as his numerous wind tunnel research projects related to aircraft aerodynamics and his personal experience as the owner and pilot of a general aviation airplane. It has been used at Virginia Tech and other universities. Instructors reviewing, adopting, or adapting parts or the whole of the text are requested to register their interest at: https://bit.ly/aerodynamics_interest.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology - Mechanical Engineering",
+    "Natural Sciences - Physics"
+  ],
+  "authors": [
+    "James F. Marchman III - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Virginia Tech Libraries",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/aerodynamics-and-aircraft-performance"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Aerodynamics and Aircraft Performance, 3rd edition is a college undergraduate-level introduction to aircraft aerodynamics and performance. This text is designed for a course in Aircraft Performance that is taught before the students have had any course in fluid mechanics, fluid dynamics, or aerodynamics. The text is meant to provide the essential information from these types of courses that is needed for teaching basic subsonic aircraft performance, and it is assumed that the students will learn the full story of aerodynamics in other, later courses. The text assumes that the students will have had a university level Physics sequence in which they will have been introduced to the most fundamental concepts of statics, dynamics, fluid mechanics, and basic conservation laws that are needed to understand the coverage that follows. It is also assumed that students will have completed first year university level calculus sequence plus a course in multi-variable calculus. Separate courses in engineering statics and dynamics are helpful but not necessary. Any student who takes a course using this text after completing courses in aerodynamics or fluid dynamics should find the chapters of this book covering those subjects an interesting review of the material. The 236-page text was created specifically for use by undergraduate students in Aerospace Engineering and was based on Professor Marchman’s many years of experience teaching related subject matter as well as his numerous wind tunnel research projects related to aircraft aerodynamics and his personal experience as the owner and pilot of a general aviation airplane. It has been used at Virginia Tech and other universities. Instructors reviewing, adopting, or adapting parts or the whole of the text are requested to register their interest at: https://bit.ly/aerodynamics_interest."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2004."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 302
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1035",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

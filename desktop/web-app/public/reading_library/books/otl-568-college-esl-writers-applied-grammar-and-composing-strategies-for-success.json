@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-568-college-esl-writers-applied-grammar-and-composing-strategies-for-success",
+  "title": "College ESL Writers: Applied Grammar and Composing Strategies for Success",
+  "description": "College ESL Writers: Applied Grammar and Composing Strategies for Success is designed as a comprehensive grammar and writing etext for high intermediate and advanced level non-native speakers of English. We open the text with a discussion on the sentence and then break it down into its elemental components, before reconstructing them into effective sentences with paragraphs and larger academic assignments. Following that, we provide instruction in paragraph and essay writing with several opportunities to both review the fundamentals as well as to demonstrate mastery and move on to more challenging assignments.We have structured the etext into three basic parts. Part I, Composing Strategies and Techniques, includes a sequenced discussion from composing effective sentences through paragraph and essay writing. This includes the prewriting and planning stages of writing as well as the revising and editing stage in the first five chapters. Part II, Language Use, Grammar, and Mechanics, is meant to be used as a grammar and mechanics handbook as well as the practice and review of idiomatic wording. Part III, All About Writing: Samples, Topics, and Rubrics, has chapters with additional writing topics for practice, sample student papers, and rubrics for evaluating writing.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages",
+    "Humanities"
+  ],
+  "authors": [
+    "Barbara Hall - Author / Elizabeth Wallace - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University System of Georgia",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/college-esl-writers-applied-grammar-and-composing-strategies-for-success"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "College ESL Writers: Applied Grammar and Composing Strategies for Success is designed as a comprehensive grammar and writing etext for high intermediate and advanced level non-native speakers of English. We open the text with a discussion on the sentence and then break it down into its elemental components, before reconstructing them into effective sentences with paragraphs and larger academic assignments. Following that, we provide instruction in paragraph and essay writing with several opportunities to both review the fundamentals as well as to demonstrate mastery and move on to more challenging assignments.We have structured the etext into three basic parts. Part I, Composing Strategies and Techniques, includes a sequenced discussion from composing effective sentences through paragraph and essay writing. This includes the prewriting and planning stages of writing as well as the revising and editing stage in the first five chapters. Part II, Language Use, Grammar, and Mechanics, is meant to be used as a grammar and mechanics handbook as well as the practice and review of idiomatic wording. Part III, All About Writing: Samples, Topics, and Rubrics, has chapters with additional writing topics for practice, sample student papers, and rubrics for evaluating writing."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 216
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "568",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

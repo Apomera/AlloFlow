@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-593-implementing-a-one-address-cpu-in-logisim",
+  "title": "Implementing a One Address CPU in Logisim",
+  "description": "Most computer users have an incorrect, but useful, cognitive metaphor for computers in which the user says (or types or clicks) something and a mystical, almost intelligent or magical, behavior happens. It is not a stretch to describe computer users as believing computers follow the laws of magic, where some magic incantation is entered, and the computer responds with an expected, but magical, behavior. This magic computer does not actually exist. In reality computer are machines, and every action a computer performs reduces to a set of mechanical operations. In fact the first complete definition of a working computer was a mechanical machine designed by Charles Babbage in 1834, and would have run on steam power. Probably the biggest success of Computer Science (CS) in the 20th century was the development of abstractions that hide the mechanical nature of computers. The fact that average people use computers without ever considering that they are mechanistic is a triumph of CS designers. This purpose of this monograph is to break the abstract understanding of a computer, and to explain a computer's behavior in completely in mechanistic terms. It will deal specifically with the Central Processing Unit (CPU) of the computer, as this is where the magic happens. All other parts of a computer can be seen as just providing information for the CPU to operate on. This monograph will deal with a specific type of CPU, a one-address CPU, and will explain this CPU using only standard gates, specifically AND, OR, NOT, NAND and XOR gates, and 4 basic Integrated Circuits (ICs), the Decoder, Multiplexer, Adder, and Flip Flop. All of these gates and components can be described as mechanical transformations of input data to output data, and the overall CPU can then be seen as a mechanical device.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science"
+  ],
+  "authors": [
+    "Charles W. Kann - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "A.T. Still University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/implementing-a-one-address-cpu-in-logisim"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Most computer users have an incorrect, but useful, cognitive metaphor for computers in which the user says (or types or clicks) something and a mystical, almost intelligent or magical, behavior happens. It is not a stretch to describe computer users as believing computers follow the laws of magic, where some magic incantation is entered, and the computer responds with an expected, but magical, behavior. This magic computer does not actually exist. In reality computer are machines, and every action a computer performs reduces to a set of mechanical operations. In fact the first complete definition of a working computer was a mechanical machine designed by Charles Babbage in 1834, and would have run on steam power. Probably the biggest success of Computer Science (CS) in the 20th century was the development of abstractions that hide the mechanical nature of computers. The fact that average people use computers without ever considering that they are mechanistic is a triumph of CS designers. This purpose of this monograph is to break the abstract understanding of a computer, and to explain a computer's behavior in completely in mechanistic terms. It will deal specifically with the Central Processing Unit (CPU) of the computer, as this is where the magic happens. All other parts of a computer can be seen as just providing information for the CPU to operate on. This monograph will deal with a specific type of CPU, a one-address CPU, and will explain this CPU using only standard gates, specifically AND, OR, NOT, NAND and XOR gates, and 4 basic Integrated Circuits (ICs), the Decoder, Multiplexer, Adder, and Flip Flop. All of these gates and components can be described as mechanical transformations of input data to output data, and the overall CPU can then be seen as a mechanical device."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 320
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "593",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

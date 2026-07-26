@@ -18,13 +18,13 @@ const openStaxManifest = JSON.parse(fs.readFileSync(path.join(LIB, 'openstax_mir
 const openStaxImporter = require(path.join(LIB, 'import_openstax_chapters.js'));
 
 describe('textbook source catalog contract', () => {
-  it('publishes thirty readable, license-audited OpenStax chapter mirrors', () => {
+  it('publishes every readable, license-audited OpenStax chapter mirror in the manifest', () => {
     const chapters = openStax.filter((book) => book.contentType === 'open-textbook-chapter');
-    expect(chapters).toHaveLength(30);
+    expect(chapters).toHaveLength(openStaxManifest.books.length);
     for (const entry of chapters) {
       expect(entry.license).toBe('CC BY-NC-SA 4.0');
       expect(entry.licenseUrl).toBe('https://creativecommons.org/licenses/by-nc-sa/4.0/');
-      expect(entry.file).toMatch(/^books\/openstax-.+-chapter-(?:[1-9]|10)\.json$/);
+      expect(entry.file).toMatch(/^books\/openstax-.+-chapter-\d+\.json$/);
       const book = JSON.parse(fs.readFileSync(path.join(LIB, entry.file), 'utf8'));
       expect(book.usagePolicy).toMatchObject({
         access: 'mirrored',
@@ -36,7 +36,7 @@ describe('textbook source catalog contract', () => {
         attributionRequired: true,
         shareAlike: true
       });
-      expect(book.source.attributionUrl).toMatch(/^https:\/\/openstax\.org\/books\/.+\/pages\/1-introduction$/);
+      expect(book.source.attributionUrl).toMatch(/^https:\/\/openstax\.org\/books\/.+\/pages\/1-/);
       expect(book.usagePolicy.reason).toMatch(/generative AI offerings/i);
       expect(book.pages.length).toBeGreaterThanOrEqual(3);
       expect(book.mirror.contentDigest).toBe('sha256:' + crypto.createHash('sha256')

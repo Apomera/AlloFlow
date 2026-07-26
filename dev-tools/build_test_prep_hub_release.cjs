@@ -394,18 +394,25 @@ if(specialEducationIntellectualDisabilities5322Pack.id!=='praxis-special-educati
 if(plt595623Pack.id!=='praxis-plt-grades-5-9-5623'||plt595623Pack.items?.length!==500)throw Error('PLT Grades 5–9 5623 release pack invalid');
 if(plt7125624Pack.id!=='praxis-plt-grades-7-12-5624'||plt7125624Pack.items?.length!==500)throw Error('PLT Grades 7–12 5624 release pack invalid');
 if(schoolLibrarian5312Pack.id!=='praxis-school-librarian-5312'||schoolLibrarian5312Pack.items?.length!==500)throw Error('School Librarian 5312 release pack invalid');
-// Slim-embed: expanded packs ship only their 200 source items in the module —
-// the 300 guided activities are a pure derivation (shared core), re-derived at
-// registration. Parity-gate first so the runtime derivation can never diverge
-// from the shipped test_prep/*_items.json.
+// Split-payload release: retain every source-reviewed and independently
+// authored item in the module, but reconstruct deterministic guided-review
+// banks at registration. The complete 500-item JSON remains deployed beside
+// the module. Parity-gate every omitted item before writing the release.
 const guidedCore = require('./test_prep_guided_expansion_core.cjs');
 function embedPack(pack) {
-  if (!pack || !Array.isArray(pack.items) || pack.items.length !== 500 || pack.guidedReviewBatchCount !== 3) return pack;
-  const derived = guidedCore.deriveGuidedReviewItems(pack.items.slice(0, 200));
-  if (JSON.stringify(derived) !== JSON.stringify(pack.items.slice(200))) {
+  if (!pack || !Array.isArray(pack.items) || pack.items.length !== 500) return pack;
+  const batchSize = Math.max(1, Number(pack.batchSize) || 100);
+  const guidedItemCount = Math.max(0, Number(pack.guidedReviewBatchCount) || 0) * batchSize;
+  if (!guidedItemCount) return pack;
+  const embeddedItemCount = pack.items.length - guidedItemCount;
+  const sourceItemCount = Math.max(batchSize * 2, Number(pack.sourceQuestionItems) || 0);
+  const derived = guidedCore
+    .deriveGuidedReviewItems(pack.items.slice(0, sourceItemCount))
+    .slice(0, guidedItemCount);
+  if (JSON.stringify(derived) !== JSON.stringify(pack.items.slice(embeddedItemCount))) {
     throw new Error((pack.id || 'pack') + ': runtime guided-review derivation diverges from the shipped items JSON — update test_prep_guided_expansion_core.cjs and re-run the expansion.');
   }
-  return { ...pack, items: pack.items.slice(0, 200) };
+  return { ...pack, items: pack.items.slice(0, embeddedItemCount) };
 }
 const prelude = 'const TEST_PREP_GUIDED_EXPANSION = (' + guidedCore.factorySource + ')();\n\n'
   + 'const TEST_PREP_REFERENCE_CATALOG = ' + JSON.stringify(referenceCatalog) + ';\n\n'
@@ -433,7 +440,10 @@ const prelude = 'const TEST_PREP_GUIDED_EXPANSION = (' + guidedCore.factorySourc
   + 'const PLT_5_9_5623_PRACTICE_PACK = ' + JSON.stringify(embedPack(plt595623Pack)) + ';\n\n'
   + 'const PLT_7_12_5624_PRACTICE_PACK = ' + JSON.stringify(embedPack(plt7125624Pack)) + ';\n\n'
   + 'const SCHOOL_LIBRARIAN_5312_PRACTICE_PACK = ' + JSON.stringify(embedPack(schoolLibrarian5312Pack)) + ';\n\n';
-writeGeneratedFile(tempEntryPath, '/* global React */\n\n' + prelude + source + '\n');
+// Compile only the JSX source. Keeping the already-serialized data prelude
+// out of esbuild prevents its printer from re-inserting megabytes of optional
+// whitespace into otherwise compact JSON literals.
+writeGeneratedFile(tempEntryPath, '/* global React */\n\n' + source + '\n');
 
 try {
   const esbuildPath = path.join(root, 'node_modules', 'esbuild', 'bin', 'esbuild');
@@ -463,7 +473,7 @@ try {
   var React = window.React;
   if (!React) { console.error('[TestPrepHub] React not found on window'); return; }
 
-${compiled}
+${prelude}${compiled}
 
   window.AlloModules.TestPrepHub = Object.assign(TestPrepHub, {
     TestPrepHub: TestPrepHub,

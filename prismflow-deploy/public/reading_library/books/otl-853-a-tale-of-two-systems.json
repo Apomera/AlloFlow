@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-853-a-tale-of-two-systems",
+  "title": "A Tale of Two Systems",
+  "description": "This is the story of a web-based information system rebuild. The system in question is www.teachengineering.org, a digital library of K-12 engineering curriculum that was built from the ground up with established technology and which for 13 years enjoyed lasting support from its growing user community and its sponsors. These 13 years, however, cover the period during which smart phones and tablets became commonplace, during which the Internet of Things started replacing the Semantic Web, during which NoSQL databases made their way out of the research labs and into everyday development shops, during which we collectively started moving IT functions and services into ‘the cloud,’ and during which computing performance doubled a few times, yet again. During this same period, TeachEngineering’s user base grew from a few hundred to more than 3 million users annually, its collection size quadrupled, it went through several user interface renewals, and significant functionality was added while having an exemplary service record, and it enjoyed continued financial support from its sponsors. In this monograph we provide a side-by-side of this rebuild. We lay out the choices made in the old architecture —we refer to it as TE 1.0— and compare and contrast them with the choices made for TE 2.0. We explain why both the 1.0 and 2.0 choices were made and discuss the advantages and disadvantages associated with them.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science - Information Systems"
+  ],
+  "authors": [
+    "René Reitsma - Author / Kevin Krueger - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oregon State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-tale-of-two-systems-reitsma"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This is the story of a web-based information system rebuild. The system in question is www.teachengineering.org, a digital library of K-12 engineering curriculum that was built from the ground up with established technology and which for 13 years enjoyed lasting support from its growing user community and its sponsors. These 13 years, however, cover the period during which smart phones and tablets became commonplace, during which the Internet of Things started replacing the Semantic Web, during which NoSQL databases made their way out of the research labs and into everyday development shops, during which we collectively started moving IT functions and services into ‘the cloud,’ and during which computing performance doubled a few times, yet again. During this same period, TeachEngineering’s user base grew from a few hundred to more than 3 million users annually, its collection size quadrupled, it went through several user interface renewals, and significant functionality was added while having an exemplary service record, and it enjoyed continued financial support from its sponsors. In this monograph we provide a side-by-side of this rebuild. We lay out the choices made in the old architecture —we refer to it as TE 1.0— and compare and contrast them with the choices made for TE 2.0. We explain why both the 1.0 and 2.0 choices were made and discuss the advantages and disadvantages associated with them."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 248
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "853",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

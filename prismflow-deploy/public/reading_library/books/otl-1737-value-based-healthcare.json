@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1737-value-based-healthcare",
+  "title": "Value-based Healthcare",
+  "description": "This open textbook presents a contemporary overview of Value-based Healthcare: a healthcare delivery and reimbursement model that focuses on achieving the best possible health outcomes for patients while controlling costs. It represents a shift of focus from quantity to quality, and aims to align incentives to bring together the interests of patients, healthcare providers, and payers. The resource covers core content in the following topics: an introduction to value based healthcare, funding models, leadership and governance, models of care, shared decision making models, case studies, global perspectives, resources management and cost control. This text is for Masters-level courses in health administration, public health, nursing, or health information. It will also be useful more broadly for anyone studying health or working in the health sector including clinicians, managers, and policy makers.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine - Public Health"
+  ],
+  "authors": [
+    "Hanan Khalil - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "La Trobe University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/value-based-healthcare"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This open textbook presents a contemporary overview of Value-based Healthcare: a healthcare delivery and reimbursement model that focuses on achieving the best possible health outcomes for patients while controlling costs. It represents a shift of focus from quantity to quality, and aims to align incentives to bring together the interests of patients, healthcare providers, and payers. The resource covers core content in the following topics: an introduction to value based healthcare, funding models, leadership and governance, models of care, shared decision making models, case studies, global perspectives, resources management and cost control. This text is for Masters-level courses in health administration, public health, nursing, or health information. It will also be useful more broadly for anyone studying health or working in the health sector including clinicians, managers, and policy makers."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 153
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1737",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

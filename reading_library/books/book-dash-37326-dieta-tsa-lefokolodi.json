@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-37326-dieta-tsa-lefokolodi",
+  "title": "Dieta tsa Lefokolodi",
+  "description": "Lefokolodi o lahlehetswe ke dieta tsa hae, mme diphoofolo tse ding HA DI BATLE ho mo thusa. Na o tla qetella a di fumane?",
+  "language": "Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Family, friends, and home"
+  ],
+  "authors": [
+    "Jacqui L’Ange"
+  ],
+  "illustrators": [
+    "Megan Lötter"
+  ],
+  "contributors": [
+    {
+      "name": "Megan Lötter",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Marteli Kleyn",
+      "role": "Designer"
+    },
+    {
+      "name": "Judith Browne",
+      "role": "Editor"
+    },
+    {
+      "name": "Jacqui L’Ange",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/dieta-tsa-lefokolodi/",
+    "attributionUrl": "https://bookdash.org/books/dieta-tsa-lefokolodi/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=shongololos-shoes"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2024/11/shongololos-shoes_st_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2024/11/shongololos-shoes_st_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Lefokolodi o lahlehetswe ke dieta tsa hae, mme diphoofolo tse ding HA DI BATLE ho mo thusa. Na o tla qetella a di fumane?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Megan Lötter (Illustrator); Marteli Kleyn (Designer); Judith Browne (Editor); Jacqui L’Ange (Writer)\n\nLanguage: Sesotho. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=shongololos-shoes"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 90
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1787-semiconductor-physics-theory-and-experiments-with-applications-to-diode-",
+  "title": "Semiconductor Physics: Theory and Experiments. With applications to Diode, Light Emitting Diode, Transistor, and Solar Cell",
+  "description": "In 2005, I was asked to give a course in semiconductor physics for physics and engineering students that includes both theory and experiments. I could not find a textbook that met the constraints for the course which was a 4th semester course in semiconductor physics for physics and engineering students some of them with no knowledge of statistical mechanics. Existing textbooks are either too simplistic and do not include a comprehensive physical model description of semiconductors which must include a basic amount of both statistical mechanics, quantum mechanics, and solid-state physics. Alternative textbooks are way too lengthy to fit in a 4th semester course of maximum 5 ECTS length and don’t include experiments. I therefore started to develop a course where only the essential elements of the underlying theory is included. But still keeping the basic physical description of the phenomena at a sober level. So, this is a comprehensive short introductory course and includes both theory and experiments, but it does not substitute for an advanced semiconductor physics course. It is also noted that this course does not include the MOSFET transistor.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Physics"
+  ],
+  "authors": [
+    "Sven Tougaard - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Zenodo",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/semiconductor-physics-theory-and-experiments-with-applications-to-diode-light-emitting-diode-transistor-and-solar-cell"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "In 2005, I was asked to give a course in semiconductor physics for physics and engineering students that includes both theory and experiments. I could not find a textbook that met the constraints for the course which was a 4th semester course in semiconductor physics for physics and engineering students some of them with no knowledge of statistical mechanics. Existing textbooks are either too simplistic and do not include a comprehensive physical model description of semiconductors which must include a basic amount of both statistical mechanics, quantum mechanics, and solid-state physics. Alternative textbooks are way too lengthy to fit in a 4th semester course of maximum 5 ECTS length and don’t include experiments. I therefore started to develop a course where only the essential elements of the underlying theory is included. But still keeping the basic physical description of the phenomena at a sober level. So, this is a comprehensive short introductory course and includes both theory and experiments, but it does not substitute for an advanced semiconductor physics course. It is also noted that this course does not include the MOSFET transistor."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 206
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1787",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

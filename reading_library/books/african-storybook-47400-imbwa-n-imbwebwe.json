@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47400-imbwa-n-imbwebwe",
+  "title": "Imbwa n'Imbwebwe",
+  "description": "Imbwa n'Imbwebwe zakorera Nduwimana...Imbwa n'Imbwebwe zakorera Nduwimana...",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Baudouin Habingabwa"
+  ],
+  "illustrators": [
+    "Rob Owen"
+  ],
+  "translators": [
+    "Selemani Sindakira"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Baudouin Habingabwa",
+      "role": "Author"
+    },
+    {
+      "name": "Selemani Sindakira",
+      "role": "Translation"
+    },
+    {
+      "name": "Rob Owen",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Baudouin Habingabwa (Author); Selemani Sindakira (Translation); Rob Owen (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47400",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47400",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47400",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-24bbb16d36870251",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/25374.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25372.png",
+      "text": "Imbwa n'Imbwebwe n'abakozi ba Nduwimana. Zamuhigira umunsi wose.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47400#page=1",
+      "sourceDigest": "sha256:5cd320a85dd03dc85a34a8aa9a663e618da84dc3dfb887487faeb0662e602d81"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25375.png",
+      "text": "Zacungera urugo rwiwe mwijoro.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47400#page=2",
+      "sourceDigest": "sha256:9b7852ad926f8ec86b90af5fbb4318ac1aae4b916afed3f68bec32378a3302ef"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25373.png",
+      "text": "Iminsi yose mw'ijoro, Nduwimana yarya inyama. Ariko agaha amagufa Imbwa n'Imbwebwe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47400#page=3",
+      "sourceDigest": "sha256:01848b216c51ba680afea33e583553809e4845f5dc1c78bffec45c30f94f181a"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25374.png",
+      "text": "Umunsi umwe, Imbwebwe ibwira Imbwa, \"Dutegerezwa guhakana ingene Nduwimana adufata nabi. Twomoke!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47400#page=4",
+      "sourceDigest": "sha256:570c059df04a659a5e6cbf6c3d0db6562075f3dd0d33d764a6e12e6e00e3b88f"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25378.png",
+      "text": "Ariko kubwo gutinya n'ukwubaha, Imbwa ihitamwo gusigara. Imbwebwe iromoka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47400#page=5",
+      "sourceDigest": "sha256:c74903b3fb552a4fe75947e3ae64121abba25bebce890df30813dbbc52eb8e52"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25377.png",
+      "text": "Nduwimana aramenya ko Imbwebwe yomotse. \"Umuhigi wanje ari hehe?\" abaza Imbwa. Imbwa iramubwira inkuru yose.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47400#page=6",
+      "sourceDigest": "sha256:e517d465a42949371606b0293685b1430de8c4e6e49c3419cbd742d0deecdd56"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25379.png",
+      "text": "Igihe cose Imbwebwe itaragaruka. Nduwimana yahiga wenyene akarya inyama yihigiye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47400#page=7",
+      "sourceDigest": "sha256:f2b33730d21e616bb8efe701f1251e4cbeb286a0d52d6a207d1bd1076dd8bb6f"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25380.png",
+      "text": "Ariko Imbwa ibandanya irya amagufa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47400#page=8",
+      "sourceDigest": "sha256:ee6f0c0fbd3fe41ac5412c8e9b897f21ecd0405c9c6306acaec954f3530d5547"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 74
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:e0045d4b83babb411e875f8daeed5eae630c92712703d948f37f325da41612ec"
+  }
+}

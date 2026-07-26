@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1475-romance-lands-and-conservation-in-the-greater-yellowstone-ecosystem",
+  "title": "Romance Lands and Conservation in the Greater Yellowstone Ecosystem",
+  "description": "To fully grasp the significance of this story we explore the history of the West, the development of Yellowstone National Park, something about the discipline of conservation biology and related policy sciences, Grizzly bear recovery, and eventually the contemporary economy and social setting of the region. The Greater Yellowstone is a model of how to build a regional system of international importance and local well-being.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Political Science"
+  ],
+  "authors": [
+    "Jerry Johnson - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Montana State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/romance-lands-and-conservation-in-the-greater-yellowstone-ecosystem"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "To fully grasp the significance of this story we explore the history of the West, the development of Yellowstone National Park, something about the discipline of conservation biology and related policy sciences, Grizzly bear recovery, and eventually the contemporary economy and social setting of the region. The Greater Yellowstone is a model of how to build a regional system of international importance and local well-being."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 88
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1475",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

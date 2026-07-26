@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1725-fundamentals-of-math-physics-and-statistics-for-future-transportation-pr",
+  "title": "Fundamentals of Math, Physics, and Statistics for Future Transportation Professionals",
+  "description": "This textbook and OER material cover tools and basic knowledge required to master the prerequisite essentials of physics, mathematics, and statistics applied in transportation engineering. To our knowledge, no such textbook currently exists to build the KSTs (Knowledge, Skills, Tools) for college freshmen’ remedial courses required by most transportation engineering graduate programs that admit non-engineers (e.g., PHYS 141, MATH 142, STAT 321 at California Polytechnic State University, San Luis Obispo). The textbook modules are intended for students with undergraduate degrees in planning and other less technical fields who are interested in pursuing transportation careers where background engineering knowledge is required. This textbook is a product of the grant OERTransport: Enabling Transportation Planning Professional Advancement awarded to the University of Texas-Arlington (UTA) in consortium with California Polytechnic State University (Cal Poly) and the University of South Florida (USF). It was developed under an Open Textbooks Pilot grant from the Fund for the Improvement of Postsecondary Education (FIPSE), U.S. Department of Education. However, its contents do not necessarily represent the policy of the Department of Education, and no endorsement by the Federal Government should be assumed",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology - Civil Engineering"
+  ],
+  "authors": [
+    "Anurag Pande - Author / Peyton Ratto - Author / Ahmed Farid - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Mavs Open Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/fundamentals-of-math-physics-and-statistics-for-future-transportation-professionals"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This textbook and OER material cover tools and basic knowledge required to master the prerequisite essentials of physics, mathematics, and statistics applied in transportation engineering. To our knowledge, no such textbook currently exists to build the KSTs (Knowledge, Skills, Tools) for college freshmen’ remedial courses required by most transportation engineering graduate programs that admit non-engineers (e.g., PHYS 141, MATH 142, STAT 321 at California Polytechnic State University, San Luis Obispo). The textbook modules are intended for students with undergraduate degrees in planning and other less technical fields who are interested in pursuing transportation careers where background engineering knowledge is required. This textbook is a product of the grant OERTransport: Enabling Transportation Planning Professional Advancement awarded to the University of Texas-Arlington (UTA) in consortium with California Polytechnic State University (Cal Poly) and the University of South Florida (USF). It was developed under an Open Textbooks Pilot grant from the Fund for the Improvement of Postsecondary Education (FIPSE), U.S. Department of Education. However, its contents do not necessarily represent the policy of the Department of Education, and no endorsement by the Federal Government should be assumed"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 207
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1725",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

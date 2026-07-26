@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-51993-dareenadu-way-yimaadaan-wayna-tagaan",
+  "title": "Dareenadu way yimaadaan wayna tagaan",
+  "description": "Buuggani wuxuu sahminayaa dareenada kala duwan ee qof walba oo dareemo wuxuu ka cawiyaa caruurta inay aqoonsadaan oo ogaadaan dareenkooda.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Mimi Werna"
+  ],
+  "illustrators": [
+    ", Joe Werna"
+  ],
+  "translators": [
+    "Fosiyo Mohamud"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Mimi Werna",
+      "role": "Author"
+    },
+    {
+      "name": "Fosiyo Mohamud",
+      "role": "Translation"
+    },
+    {
+      "name": ", Joe Werna",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Mimi Werna (Author); Fosiyo Mohamud (Translation); , Joe Werna (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "51993",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-cd8affb459f318b3",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/85590230.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590231.png",
+      "text": "Ada way qoslaysaa sababtoo ah waxay maqashay sheeko qosol leh. Way dhoola caddaynaysaa. Maxay Ada dareemaysaa?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=1",
+      "sourceDigest": "sha256:b8ae91b1df0e5f5517f9befd0f01cf2ba66d070931d8897b6c849d70a0cb3e37"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590232.png",
+      "text": "Gisa wuxuu daremayaa xanaaq. Wajigiisa waxaa ka muuqda caro. Muxuu u xanaaqsanyahay?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=2",
+      "sourceDigest": "sha256:76f1b812c3b758ac83eac145302a87e93cdfe7a630768890430cf02e92e3d63f"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590299.png",
+      "text": "Yuadoo way ka baqaysaa mugdiga. Qof walba wuxuu dareema cabsi mararka qaar. Laakiin Yuadoo way weydiisan kartaa caawimaad.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=3",
+      "sourceDigest": "sha256:7af216ef40ec1fb9d5e65b147351efdd4d8db43261e66258dbe40d184125a0b5"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590300.png",
+      "text": "Chidubem wuu ka welwelsan yahay shaqadiisa dugsiga. Wuu u sheegi karaa macallinkiisa. Wuu weydiisan karaa caawimaad.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=4",
+      "sourceDigest": "sha256:bd6c877de7f535cb2890038f42e31bc31fc0f1361f36fa0b5aa5ed1c8989ce04"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590301.png",
+      "text": "Lushan wuu ciyaarayaa! Mararka qaar inaad noqoto nacas.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=5",
+      "sourceDigest": "sha256:414a814cda481d795f3f398b489ae06cfb7810a28d3c75a55d6f6bf816238601"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590302.png",
+      "text": "Eruro way murugaysan tahay. Waa caadi in la ooyo. Dareenku way yimaadaan wayna tagaan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=6",
+      "sourceDigest": "sha256:93e093ce8bf389e9d234525efc7b4ee7b2f0c8791e7db3808e845941bc5656f5"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590230.png",
+      "text": "Ayator farxad ayad ka buuxdo. Wuu faraxsan yahay. Dareenadu way yimaadaan wayna tagaan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=7",
+      "sourceDigest": "sha256:291a7377b8b49c19ad26f5621eb1a20ecc6b4ae0cf91545a56fea0b8f7bcd9cb"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590312.png",
+      "text": "Hadiza way caajisantahay. Waxay u baahan tahay inay hesho wax ay qabato.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=8",
+      "sourceDigest": "sha256:e5e592d8295111b9eae6236db0d11bd12b51394694d85d2b572767a1696ffe44"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590304.png",
+      "text": "Ayo wuu xanaaqsan yahay. Wuu niyad-jabsan yahay. Xanaaqu waa dareen adag.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=9",
+      "sourceDigest": "sha256:4406b9c787ce147e43899307adae898bf9ce91f5bbe981867af7ecd8c3c6847f"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590305.png",
+      "text": "Labake way faraxsan tahay. Waa maxay sababta farxaddeeda? Hooyo waxay u sameeysay cuntadeeda ay ugu jeceshahay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=10",
+      "sourceDigest": "sha256:c1b2199ae7785667ac163cfc4ba00010a87343515a35d8f291f431acb37b9a98"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590306.png",
+      "text": "Zege wuxuu dareemay hurdo. Aad buu u daalana. \"Laakiin sug, 'hurdo' ma dareen baa?\" ayay waydiisay Efe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=11",
+      "sourceDigest": "sha256:7bd22335320536c364698db3164cd41cbb3a447c340b6be915f88f31ac52c2d4"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590307.png",
+      "text": "Efe wuu wareersan yahay! Ma ka jawaabi kartaa su'aashiisa?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=12",
+      "sourceDigest": "sha256:63601f00b5577188b9655f2026da229a5c939f14ee3b2f5624ed99d7ea474bf0"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590308.png",
+      "text": "Tega waxa uu dareemayaa yaab iyo naxdin. Wuxuu maqlay xan. Ma run baa?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=13",
+      "sourceDigest": "sha256:0bb209d8a184418f63e5643a23d8936a405ae45112bf25a5c9d7d19e3a81b752"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590309.png",
+      "text": "Yebo waa jiran tahay. Waxay dareemeysaa murugo. Waxay u baahan tahay daawo iyo nasasho si ay u dareento fiicnaan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=14",
+      "sourceDigest": "sha256:805b8020dba5a930e1bf88a8c7d92000dc3bb072dee8b813f4d1a3af8f34370d"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590310.png",
+      "text": "Sekyen waxay dareemaysaa qanacsanaan. Waxay dhamaysay shaqooyinkeedii guriga. Hadda way ciyaari kartaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=15",
+      "sourceDigest": "sha256:69656d62cc70117852b57583f3a78def970f3531bbfba8639dbc491b56878be3"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85590311.png",
+      "text": "Vandefan ma haysto hawlaha guriga. Wuxuu muujinayaa laba farood kor ugu taagay Sekyen. \"Shaqo fiican, hadda aan ciyaarno!\" ayuu yiri.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51993#page=16",
+      "sourceDigest": "sha256:eaa70dff17faa3e342f882ac07831997aed7b040180cdecffac2871c1ac0e2fb"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 226
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:5fe0692a824bf252d431e2f80009b3e034f5b91ccc7d00b9e69b57bd76a1af0c"
+  }
+}

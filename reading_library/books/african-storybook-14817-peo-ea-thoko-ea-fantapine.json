@@ -1,0 +1,212 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-14817-peo-ea-thoko-ea-fantapine",
+  "title": "Peo ea Thoko ea Fantapine",
+  "description": "Ka letsatsi le leng Thoko a akhela lekotikoti la FantaPine ts'imong ea Ntate oa oa hae. Ntate oa hae a koata haholo. Ka bomalimatle, Thoko a nahana hantle. Pale ena e felella ha monate.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Khothatso Ranoosi, Marion Drew"
+  ],
+  "illustrators": [
+    "Paleng Children’s Centre"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Author"
+    },
+    {
+      "name": "Paleng Children’s Centre",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Khothatso Ranoosi, Marion Drew (Author); Paleng Children’s Centre (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://paleng.weebly.com/",
+    "editionId": "14817",
+    "bookType": "1",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-8fa9358746052c3a",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/14084.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14066.png",
+      "text": "Hone ho futhumetse Malealea. Thoko o ne a lutse holima sekosekara sa Ntate oa hae. Sene se laetse poone e ngata. Bana bale bangata ka sekosekareng. Ba qetile lets'eare kaofela bale masimong, joale baea hae. Kaofela ba sebelitse ka thata lets'eareng leo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=1",
+      "sourceDigest": "sha256:6d60426cb5f524a92a37fce35018ce364713c8a5a525b61e23357cab6e5e4fee"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14067.png",
+      "text": "Thoko o ne a le lehlohonolo haholo. O ne a sebetsa ka thata haholo hofeta bana ba bang. Joale Ntate oa hae, a morekela FantaPine ea terinki khoebong eaha 'M'e Pontso. \"Mmmmm, mmmmm e monate,\" ho rialo Thoko. Ene ele terinki eo, Thoko a e ratang haholo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=2",
+      "sourceDigest": "sha256:1f70f8e0c8e01c55f0c4f98863ac6f3254c9238ba8d44173a76a0eff89dab62c"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14068.png",
+      "text": "A eqantha hanyane. Abatla e monke nako hofihlela a fihla ka holima leralla. Ntate oa hae ha afihla ka holimo, a ema hore, lipholo tsa hae li phomole. Ntate a re, \"Re lula sebakeng se setle bana baka.\" \"Relehlohonolo ho lula sebakeng se hloekileng, se pholileng.\" A bososela. Ba tsoela pele.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=3",
+      "sourceDigest": "sha256:f727940eded08f5c3a74b72d0952c190acf8206f1b990a304d3f131e6372982f"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14069.png",
+      "text": "Hone ho futhumetse ke letsatsi. Sekosekara sene se sekama butle-butle ka lehlakore ho lehlakore joalo ka liphoofolo li hulang ka teng. Bana bantse ba buisana ha monate. Thoko a otsela ke boroko. A batla ho kakalla holima poone a robale. A sheba lekolokoti la fantapine a lets'oereng ka letsoho. Boinahanong ba hae a re, \"Ke khathetse ke hots'oara lekolokoti lena ka letsohong laka.\" Aipotsa, nkaetsang ka lekolokoti lee?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=4",
+      "sourceDigest": "sha256:856d658089b3e1e9cc1f81498c8a850150eb38dca08a45fe11d27e9b9a3fe46a"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14070.png",
+      "text": "Thoko a inahana motsotso. Eaba o akhela lekolokoti la fantapine hole ka mokhoa a ka khonang ka teng ts'imong.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=5",
+      "sourceDigest": "sha256:4f9ad41ea61edf5746c6dad8e33b744ba6e2aaefab93d9f843a372ea5be8e037"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14071.png",
+      "text": "Wheeeeeeeee! Lekolokoti lena la oela ts'imong. Kotuu! La oela ka forong. Bana ba ts'eha. Bare, \"Aiee, Thoko o tseba ho betsa.\" Bonang o betselitse lekolokoti la FantaPine hole ha kakang!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=6",
+      "sourceDigest": "sha256:7703ce3efb224e5bea92c8783f777ad2e36830e98fef2868ea1a12e9afa97032"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14072.png",
+      "text": "Ntate oa Thoko a hetla. A emisa sekosekara. Abotsa, \"Ke eng eo o e betsetsang ts'imong eaka?\" Thoko a re, \"Ke betsitse lekolokoti laka la fantapine.\" Ntate oa hae a botsa, \"Hobaneng o etsa joalo?\" Thoko a re, \"Kene ke khathetse keho lets'oara, hape le khokhamela menoana eaka.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=7",
+      "sourceDigest": "sha256:5f3335d2a305724b29e5441a190b1a41c71799c1036aef52b6554ce12b6f23b5"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14073.png",
+      "text": "Ntate oa Thoko a re, \"Ere ke o botse Thoko.\" \"Ke eleme FantaPine ts'imong eaka?\" \"Hahahahahahaha,\" bana ba ts'eha. Thoko a re, \"Aiee, aee Ntate oaka, ka'nete ha o ke o leme FantaPine ts'imong ea hao.\" Abotsa Ntate oa Thoko, \"U kile oa bona FantaPine e hlaha tlhakeng hlabula Thoko?\" Bana ba ts'eha, \"Heeeehahahahahaha!\" Thoko a re, \"Hohang-hang Ntate.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=8",
+      "sourceDigest": "sha256:7b8d8ef257abf4cd36878216ee94085010006948873044f29e114d5cdf1258e6"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14074.png",
+      "text": "Abotsa Thoko, \"Ukile oabona ts'imong eaka re kotula FantaPine mariha Thoko?\" Bana ba ts'eha. \"Whooo, heeee, ha, haaaaa!\" Thoko a re, \"Aee Ntate. Hareso etse joalo.\" Ntate oa hae a tsoela pele kaho buoa, \"U bona re laetse FantaPine ka sekosekareng saka relo eja hae?\" Thoko a re, \"Ka'nete Ntate, haho joalo.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=9",
+      "sourceDigest": "sha256:1b1766cd738532987c94ea79d2d761ce39a45a3b931139323c97c2f15150a75d"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14075.png",
+      "text": "\" 'M'e oa hao, o kile oa mobona a losila makolokoti a liFantaPine leloaleng ho o etsetsa lesheleshele Thoko?\" Bana ba ts'eha ba keketeha, ba ba baitsoareletsa ka lehlakore la sekosekara baseke ba oela. Empa Thoko a hlokomela hore, Ntate oa hae ha athaba. Thoko a re, \"hohang Ntate.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=10",
+      "sourceDigest": "sha256:ca5d447138b958e6be6325770312214e4265aadc876a808b5be33c5c88bfb7d9"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14076.png",
+      "text": "Ntate oa Thoko a re, \"Joale Thoko, kekopa o 'nkarabe hee. Ke eleme eng ts'imong eaka?\" Araba Thoko, \"O lema poone le mabele Ntate oaka ts'imong ea hao.\" \"Eea Thoko. U buoa 'nete. Joale keipotsa potso. Hobaneng mora oaka a lema lekolokoti la FantaPine ts'imong eaka, fela a tseba hore, ke lema poone le mabele?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=11",
+      "sourceDigest": "sha256:bff8b772e2ead420757e8d55e6bd46cd451b16c181609cdaaca37cfd0d3f3ad3"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14077.png",
+      "text": "Bana ba emisa ka hots'eha. Ba thola. Thoko a sheba Ntate oa hae mahlong. Ntate oa hae, a sosobantse sefahleho ke ho koata. A re, \"Thoko tsoaha ka sekosekareng saka kamona hona joale. U tsamahe u lo batla lekolokoti leo la FantaPine otle le lona hang-hang!\" A buoile ka bohale ba lentsoe le letenya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=12",
+      "sourceDigest": "sha256:48413f1417afb25c3f6d4b18dc685111f54f91db7fb218b8106408e4d3658e96"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14078.png",
+      "text": "Thoko a soaba. A theohela fats'e ka sekosekareng a ea ts'imong eo a lahletseng lekolokoti la FantaPine teng. A lesheba lekolokoti la hae la FantaPine. Kelaaane! Molebenyang teng ke letsatsi. Eea ho lona. Eare ha a lokela ho lenka, a hlokomela chakase e ts'oehlang pela teng. Thoko a ema, a nahana ka chakase ena. Eaba o ea ho eona o ea ethoanaka. A khutlela sekosekareng.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=13",
+      "sourceDigest": "sha256:7942e5493c127d4a539c1d4214d0d501baad538710e7d614a46f4148fd826b6d"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14079.png",
+      "text": "Ntate oa hae o ne a moemetse. Abotsa, \"Ke eng lintho tseo u linkileng Thoko?\" Thoko a re, \"Ke nkile lekolokoti la FantaPine le chakase Ntate.\" Ntate oa hae a re, \"Kea bona.\" Thoko a re, \"Eea, keipolelletse hore, Ntate oaka o lema fela poone le mabele ts'imong ea hae. Ha a leme makolokoti a liFantaPine hape ha a leme lichakase ts'imong ea hae.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=14",
+      "sourceDigest": "sha256:fdb6af12906fed65e0abc9d327e5b3f91b17434a214f35cd820412645461a2ba"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14080.png",
+      "text": "Ntate oa hae a re, \"Ke motlotlo ka oena mora oaka.\" \"Bana, hareng kaofela ts'imong. Retla bona haeba hona le lichakase tseling le makolokoti le lintho tseling tseo resa lilemeng,\" ho rialo Ntate oa Thoko. \"Mmm, maikutlo a matle!\" ho rialo Thoko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=15",
+      "sourceDigest": "sha256:dbdd3c785641901920c3b07efd21eaacaf894bf25bf5f6c95710b48201c29679"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14081.png",
+      "text": "Bana ba opa liatla eaba ba qothomela fats'e hotsoa ka sekosekareng. Ba mathela ts'imong. Ba fumana lichakase, lipampiri, makolokoti le mabokose mono. Bare, \"Tsena hase lintho tse lengoang masimong.\" Habase ba khutlela sekosekareng, mahafi a bona a ne a tletse bohlasoa botsoang ts'imong.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=16",
+      "sourceDigest": "sha256:361458b8a7319841fcf7525be658f8eacedb91ab46b628a49b063afe9de7d86f"
+    },
+    {
+      "n": 17,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14082.png",
+      "text": "Ntate oa Thoko a re, \"Libeheng mona bashana.\" Retla linka re liise hae re lichese. Harebatle lintho tsena masimong a rona. Lintho tsena hare lileme. Lintho tsena halia loka mobung.\" Bana bare, \"Eeeea!\" Emong le emong ba khutlela ka sekosekareng hape.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=17",
+      "sourceDigest": "sha256:98b571d7c8ea20758643362a881cba890b13f7c639e1ff6446680bcb5e3ed1d3"
+    },
+    {
+      "n": 18,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14083.png",
+      "text": "Ntate oa Thoko a letsetsa lipholo tsa hae mololi. Sekosekara saqala ho tsamaea hape. Ntate oa Thoko a re, \"Njoetse mora oaka, u nahana hore ts'imo ea rona e hantle.\" Thoko le ena a bososela a re, \"Eea Ntate, le'na ke thabile hona joale.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=14817#page=18",
+      "sourceDigest": "sha256:0dd227d3b11c9c4e6d18ead04091e6b6d9ed1a03f9196ae5c09300cf432afa8a"
+    }
+  ],
+  "stats": {
+    "pages": 18,
+    "words": 873
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:faf812ca637fdcee7159a97f6866400588c5f955f5d8bab4b97e087a88979656"
+  }
+}

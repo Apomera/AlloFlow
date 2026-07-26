@@ -15,7 +15,7 @@ if (!fs.existsSync(SOURCE)) {
 }
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
-const entry = `/* global React */\n\n${source}\n\nwindow.__liveLessonRunExports = { buildLiveLessonSteps, resolveLiveLessonIndex, adjacentLiveLessonIndex, buildLiveLessonAudiences, resolveLiveLessonAudience, summarizeLiveLessonDelivery, sanitizeLiveActivitySnapshot, upsertLiveActivitySnapshot, selectLiveActivityPulse, liveActivityKindLabel, liveActivityPhaseLabel, LiveLessonRunPanel };\n`;
+const entry = `/* global React */\n\n${source}\n\nwindow.__liveLessonRunExports = { buildLiveLessonSteps, resolveLiveLessonIndex, adjacentLiveLessonIndex, buildLiveLessonAudiences, resolveLiveLessonAudience, summarizeLiveLessonDelivery, sanitizeLiveActivitySnapshot, upsertLiveActivitySnapshot, selectLiveActivityPulse, buildLiveActivityTimeline, buildLiveAttentionQueue, liveAttentionReasonLabel, buildLiveQuizActivitySnapshot, liveActivityKindLabel, liveActivityPhaseLabel, LiveLessonRunPanel };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 console.log('Compiling view_live_lesson_run_source.jsx with esbuild...');
 
@@ -65,6 +65,10 @@ ${compiled}
     sanitizeLiveActivitySnapshot: sanitizeLiveActivitySnapshot,
     upsertLiveActivitySnapshot: upsertLiveActivitySnapshot,
     selectLiveActivityPulse: selectLiveActivityPulse,
+    buildLiveActivityTimeline: buildLiveActivityTimeline,
+    buildLiveAttentionQueue: buildLiveAttentionQueue,
+    liveAttentionReasonLabel: liveAttentionReasonLabel,
+    buildLiveQuizActivitySnapshot: buildLiveQuizActivitySnapshot,
     liveActivityKindLabel: liveActivityKindLabel,
     liveActivityPhaseLabel: liveActivityPhaseLabel,
     LiveLessonRunPanel: LiveLessonRunPanel

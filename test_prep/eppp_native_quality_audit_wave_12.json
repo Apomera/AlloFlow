@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-12",
+  "reviewedAt": "2026-07-25",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next eight unreviewed items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "domainsCovered": 3,
+    "appliedOrAnalysisItems": 8,
+    "keyPositionsPreserved": 8,
+    "optionSpecificExplanations": 32,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 162,
+      "asymmetricExtremeDistractorCandidates": 332,
+      "advancedDirectRecallCandidates": 23,
+      "semanticConceptDuplicatePairs": 272,
+      "semanticConceptDuplicateClusters": 128,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 161,
+      "asymmetricExtremeDistractorCandidates": 325,
+      "advancedDirectRecallCandidates": 23,
+      "semanticConceptDuplicatePairs": 262,
+      "semanticConceptDuplicateClusters": 125,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v2-social-cultural-009",
+      "domainId": "social-cultural",
+      "difficulty": "intermediate",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "social-contact-program-design-optimal-conditions",
+      "sourceCheck": "The meta-analysis supports a general prejudice-reducing association for intergroup contact and reports stronger effects when Allport-favorable features are present, justifying a best-design question without claiming that each condition is universally necessary.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b010-intervention-2",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-evidence-based-treatment-selection-integration",
+      "sourceCheck": "The APA task-force report explicitly integrates research evidence, clinical expertise, and patient characteristics, culture, and preferences, supporting selection of an empirically supported intervention delivered competently and adapted collaboratively.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-intervention-062",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "intervention-evidence-based-response-monitoring-adjustment",
+      "sourceCheck": "The APA framework treats research, expertise, and patient characteristics as interacting sources for clinical decisions and emphasizes monitoring progress, so poor response and cultural mismatch should prompt collaborative reassessment rather than allegiance to one pillar.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-social-cultural-055",
+      "domainId": "social-cultural",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "social-contact-program-condition-degradation",
+      "sourceCheck": "The meta-analysis finds that contact effects occur broadly and are typically stronger under Allport-favorable conditions, supporting identification of a redesign that removes equal status and cooperation while avoiding the overstatement that contact works only under those conditions.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-001",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "cognitive-emotional-ability-model-applied-branches",
+      "sourceCheck": "The model developers describe emotional intelligence as mental ability with branches spanning perception, use or facilitation, understanding, and management of emotion, supporting the integrated performance interpretation rather than mood, verbal-IQ, or suppression substitutes.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-001",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "cognitive-source-attribution-content-origin-dissociation",
+      "sourceCheck": "The foundational framework distinguishes memory for content from judgments about its origin and explains source errors through misclassification of qualitative contextual information, directly matching accurate warning content attributed to the wrong encounter.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b020-intervention-2",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-rebt-belief-disputation-applied",
+      "sourceCheck": "The scholarly account describes adversity, belief, and consequence, followed by disputation of empirically invalid, illogical, or unhelpful beliefs and assimilation of adaptive alternatives, supporting the keyed intervention's sequence and targets.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-intervention-064",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "intervention-ipt-role-dispute-case-formulation",
+      "sourceCheck": "The reviewed IPT literature defines role disputes as conflicts involving nonreciprocal expectations with significant others and recommends selecting the interpersonal area most closely linked to depression, which supports focusing on the partner conflict rather than the well-adjusted move.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

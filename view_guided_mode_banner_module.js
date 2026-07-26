@@ -718,6 +718,7 @@ function GuidedModeBanner({
   resetGuidedProgress,
   guidedPresets,
   applyGuidedPreset,
+  generateGuidedPlanFromGoal,
   guidedPhases,
   guidedDeliveryGroups,
   openGuidedDocumentBuilder,
@@ -790,6 +791,46 @@ function GuidedModeBanner({
     const cleanCount = (item) => Math.max(0, Math.min(999, Number.isFinite(Number(item)) ? Math.floor(Number(item)) : 0));
     return { ...value, completedAt, completedCount: cleanCount(value.completedCount), skippedCount: cleanCount(value.skippedCount), resourceCount: cleanCount(value.resourceCount) };
   };
+  const normalizeSavedGuidedPlans = (value) => {
+    if (!Array.isArray(value)) return [];
+    const clean = (item, max) => String(item || "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
+    return value.filter((item) => item && typeof item === "object" && Array.isArray(item.stepIds)).slice(-12).map((item, index) => ({
+      id: clean(item.id, 80) || "saved-plan-" + index,
+      name: clean(item.name || item.title, 80) || "Saved Guided plan",
+      title: clean(item.title, 90) || "Saved Guided plan",
+      summary: clean(item.summary, 320),
+      rationale: clean(item.rationale, 420),
+      goal: clean(item.goal, 1200),
+      originalGoal: clean(item.originalGoal || item.goal, 1200),
+      clarificationAnswers: item.clarificationAnswers && typeof item.clarificationAnswers === "object" ? Object.fromEntries(Object.entries(item.clarificationAnswers).slice(0, 4).map(([key, answer]) => [clean(key, 30), clean(answer, 120)]).filter(([, answer]) => answer)) : {},
+      stepIds: Array.from(new Set(item.stepIds.map((id) => clean(id, 60)).filter(Boolean))).slice(0, 14),
+      stepReasons: item.stepReasons && typeof item.stepReasons === "object" ? item.stepReasons : {},
+      estimatedMinutes: Math.max(5, Math.min(180, Math.round(Number(item.estimatedMinutes) || 20))),
+      deliverySetting: ["take-home", "print", "live", "lms"].includes(item.deliverySetting) ? item.deliverySetting : "take-home",
+      deliveryPriority: ["accessible", "editable", "assessment", "interactive", "low-connectivity"].includes(item.deliveryPriority) ? item.deliveryPriority : "accessible",
+      assumptions: Array.isArray(item.assumptions) ? item.assumptions.map((value2) => clean(value2, 160)).filter(Boolean).slice(0, 4) : [],
+      savedAt: typeof item.savedAt === "string" && Number.isFinite(Date.parse(item.savedAt)) ? item.savedAt : (/* @__PURE__ */ new Date(0)).toISOString()
+    }));
+  };
+  const normalizeGuidedPlannerDraft = (value) => {
+    if (!value || typeof value !== "object") return null;
+    const clean = (item, max) => String(item || "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
+    const goal = clean(value.goal, 1200);
+    const plan = value.plan && Array.isArray(value.plan.stepIds) ? normalizeSavedGuidedPlans([{ ...value.plan, id: "planner-draft", name: value.plan.title || "Planning draft" }])[0] : null;
+    if (!goal && !plan) return null;
+    const updatedAt = typeof value.updatedAt === "string" && Number.isFinite(Date.parse(value.updatedAt)) ? value.updatedAt : (/* @__PURE__ */ new Date()).toISOString();
+    return {
+      version: 1,
+      goal,
+      plan,
+      updatedAt,
+      answers: value.answers && typeof value.answers === "object" ? Object.fromEntries(Object.entries(value.answers).slice(0, 4).map(([key, answer]) => [clean(key, 30), clean(answer, 120)]).filter(([, answer]) => answer)) : {},
+      messages: Array.isArray(value.messages) ? value.messages.slice(-8).map((message) => ({ role: message?.role === "teacher" ? "teacher" : "planner", text: clean(message?.text, 500) })).filter((message) => message.text) : [],
+      refinement: clean(value.refinement, 500),
+      savedName: clean(value.savedName, 80),
+      activeSavedId: clean(value.activeSavedId, 80)
+    };
+  };
   const rawStep = GUIDED_STEPS[guidedStep] || {};
   const step = { ...rawStep, label: localizeStep(rawStep, "label"), action: localizeStep(rawStep, "action"), success: localizeStep(rawStep, "success") };
   const isLast = guidedStep >= GUIDED_STEPS.length - 1;
@@ -854,8 +895,41 @@ function GuidedModeBanner({
       return {};
     }
   });
-  const [deliverySetting, setDeliverySetting] = React.useState("take-home");
-  const [deliveryPriority, setDeliveryPriority] = React.useState("accessible");
+  const _savedDeliveryPreferences = React.useRef((() => {
+    try {
+      const value = JSON.parse(localStorage.getItem("allo_guided_delivery_preferences") || "{}");
+      return value && typeof value === "object" ? value : {};
+    } catch (_) {
+      return {};
+    }
+  })()).current;
+  const [deliverySetting, setDeliverySetting] = React.useState(["take-home", "print", "live", "lms"].includes(_savedDeliveryPreferences.setting) ? _savedDeliveryPreferences.setting : "take-home");
+  const [deliveryPriority, setDeliveryPriority] = React.useState(["accessible", "editable", "assessment", "interactive", "low-connectivity"].includes(_savedDeliveryPreferences.priority) ? _savedDeliveryPreferences.priority : "accessible");
+  const [showAiPlanner, setShowAiPlanner] = React.useState(false);
+  const [aiPlannerGoal, setAiPlannerGoal] = React.useState("");
+  const [aiPlannerPlan, setAiPlannerPlan] = React.useState(null);
+  const [aiPlannerBusy, setAiPlannerBusy] = React.useState(false);
+  const [aiPlannerError, setAiPlannerError] = React.useState("");
+  const [aiPlannerRefinement, setAiPlannerRefinement] = React.useState("");
+  const [aiPlannerMessages, setAiPlannerMessages] = React.useState([]);
+  const [aiPlannerLastChanges, setAiPlannerLastChanges] = React.useState([]);
+  const [plannerDirty, setPlannerDirty] = React.useState(false);
+  const [pendingPlannerClose, setPendingPlannerClose] = React.useState(false);
+  const [plannerRecoveryDraft, setPlannerRecoveryDraft] = React.useState(null);
+  const [aiPlannerQuestions, setAiPlannerQuestions] = React.useState([]);
+  const [aiPlannerAnswers, setAiPlannerAnswers] = React.useState({});
+  const [savedAiPlans, setSavedAiPlans] = React.useState(() => {
+    try {
+      return normalizeSavedGuidedPlans(JSON.parse(localStorage.getItem("allo_guided_saved_plans") || "[]"));
+    } catch (_) {
+      return [];
+    }
+  });
+  const [savedAiPlanName, setSavedAiPlanName] = React.useState("");
+  const [activeSavedAiPlanId, setActiveSavedAiPlanId] = React.useState(null);
+  const [savedAiPlanStatus, setSavedAiPlanStatus] = React.useState("");
+  const [pendingDeleteSavedAiPlanId, setPendingDeleteSavedAiPlanId] = React.useState(null);
+  const [pendingAiPlanApply, setPendingAiPlanApply] = React.useState(false);
   const [readinessChecks, setReadinessChecks] = React.useState(() => {
     try {
       const value = JSON.parse(localStorage.getItem("allo_guided_readiness_checks") || "{}");
@@ -887,6 +961,28 @@ function GuidedModeBanner({
     } catch (_) {
     }
   }, [readinessChecks]);
+  React.useEffect(() => {
+    try {
+      localStorage.setItem("allo_guided_delivery_preferences", JSON.stringify({ setting: deliverySetting, priority: deliveryPriority }));
+    } catch (_) {
+    }
+  }, [deliverySetting, deliveryPriority]);
+  React.useEffect(() => {
+    try {
+      localStorage.setItem("allo_guided_saved_plans", JSON.stringify(savedAiPlans));
+    } catch (_) {
+    }
+  }, [savedAiPlans]);
+  React.useEffect(() => {
+    if (!showAiPlanner || !plannerDirty || !String(aiPlannerGoal || "").trim() && !aiPlannerPlan && !String(aiPlannerRefinement || "").trim()) return;
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem("allo_guided_planner_draft", JSON.stringify({ version: 1, goal: aiPlannerGoal, plan: aiPlannerPlan, answers: aiPlannerAnswers, messages: aiPlannerMessages, refinement: aiPlannerRefinement, savedName: savedAiPlanName, activeSavedId: activeSavedAiPlanId, updatedAt: (/* @__PURE__ */ new Date()).toISOString() }));
+      } catch (_) {
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [showAiPlanner, plannerDirty, aiPlannerGoal, aiPlannerPlan, aiPlannerAnswers, aiPlannerMessages, aiPlannerRefinement, savedAiPlanName, activeSavedAiPlanId]);
   React.useEffect(() => {
     const current = String(inputText || "").trim();
     const hasResources = Array.isArray(guidedCreatedHistoryIds) && guidedCreatedHistoryIds.length > 0;
@@ -952,6 +1048,55 @@ function GuidedModeBanner({
       }
     };
   }, [showFullLesson]);
+  const _aiPlannerDialogRef = React.useRef(null);
+  const _aiPlannerReturnRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!showAiPlanner) return;
+    _aiPlannerReturnRef.current = typeof document !== "undefined" ? document.activeElement : null;
+    const root = _aiPlannerDialogRef.current;
+    const priorOverflow = typeof document !== "undefined" ? document.body.style.overflow : "";
+    try {
+      if (typeof document !== "undefined") document.body.style.overflow = "hidden";
+      if (root) root.focus();
+    } catch (_) {
+    }
+    const onKey = (event) => {
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        if (plannerDirty) setPendingPlannerClose(true);
+        else {
+          setShowAiPlanner(false);
+          setPendingAiPlanApply(false);
+        }
+        return;
+      }
+      if (event.key !== "Tab" || !root) return;
+      const items = root.querySelectorAll('button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])');
+      if (!items.length) {
+        event.preventDefault();
+        root.focus();
+        return;
+      }
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => {
+      document.removeEventListener("keydown", onKey, true);
+      try {
+        document.body.style.overflow = priorOverflow;
+        const opener = _aiPlannerReturnRef.current;
+        if (opener?.focus && document.contains(opener)) opener.focus();
+      } catch (_) {
+      }
+    };
+  }, [showAiPlanner, plannerDirty]);
   const GUIDED_CLICK_STEPS = ["math"];
   const STEP_HISTORY_TYPES = {
     "analysis": ["analysis"],
@@ -1065,7 +1210,7 @@ function GuidedModeBanner({
     }
   };
   const allSteps = allGuidedSteps || GUIDED_STEPS;
-  const isStepOn = (id) => !guidedSelectedIds || id === "source-input" || id === "package-deliver" || id === "_final" || guidedSelectedIds.indexOf(id) !== -1;
+  const isStepOn = (id) => !guidedSelectedIds || id === "source-input" || id === "directions" || id === "package-deliver" || id === "_final" || guidedSelectedIds.indexOf(id) !== -1;
   const humanize = (type) => getDefaultTitle ? getDefaultTitle(type) : String(type || "").replace(/[-_]/g, " ");
   const _createdIdSet = new Set(Array.isArray(guidedCreatedHistoryIds) ? guidedCreatedHistoryIds : []);
   const recapItems = isLast ? (history || []).filter((h) => h && h.id && _createdIdSet.has(h.id)).map((item) => ({ item, title: item.title || humanize(item.type) })) : [];
@@ -1089,16 +1234,36 @@ function GuidedModeBanner({
   ];
   const readinessCount = readinessItems.filter((item) => item.verified || readinessChecks[item.id]).length;
   const readinessTotal = readinessItems.length;
-  const deliveryRecommendation = (() => {
-    if (deliveryPriority === "low-connectivity") return { primary: "Self-contained HTML", backup: "PDF / Print", why: "Both routes can be used without a continuous connection." };
-    if (deliveryPriority === "editable") return { primary: "Accessible Word (.docx)", backup: "OpenDocument (.odt)", why: "Both preserve an editable teacher copy." };
-    if (deliveryPriority === "assessment") return { primary: deliverySetting === "lms" ? "QTI quiz package" : "PDF / Print", backup: deliverySetting === "lms" ? "IMS content package" : "Accessible Word (.docx)", why: "This keeps scoring or review practical in the selected setting." };
-    if (deliveryPriority === "interactive") return { primary: deliverySetting === "lms" ? "H5P interactive activity" : deliverySetting === "live" ? "Live class session" : "Interactive HTML", backup: deliverySetting === "lms" ? "IMS content package" : "PDF / Print", why: "Students get an interactive route plus a broadly compatible fallback." };
-    if (deliverySetting === "print") return { primary: "PDF / Print", backup: "Accessible Word (.docx)", why: "Print is predictable, while Word supports zoom, reflow, and editing." };
-    if (deliverySetting === "live") return { primary: "Live class session", backup: "Class Mailbox / hosted QR", why: "The class can participate together and still reconnect asynchronously." };
-    if (deliverySetting === "lms") return { primary: "IMS content package", backup: "Accessible Word (.docx)", why: "IMS fits most LMS imports and Word provides an accessible fallback." };
+  const getDeliveryRecommendation = (setting, priority) => {
+    if (priority === "low-connectivity") return { primary: "Self-contained HTML", backup: "PDF / Print", why: "Both routes can be used without a continuous connection." };
+    if (priority === "editable") return { primary: "Accessible Word (.docx)", backup: "OpenDocument (.odt)", why: "Both preserve an editable teacher copy." };
+    if (priority === "assessment") return { primary: setting === "lms" ? "QTI quiz package" : "PDF / Print", backup: setting === "lms" ? "IMS content package" : "Accessible Word (.docx)", why: "This keeps scoring or review practical in the selected setting." };
+    if (priority === "interactive") return { primary: setting === "lms" ? "H5P interactive activity" : setting === "live" ? "Live class session" : "Interactive HTML", backup: setting === "lms" ? "IMS content package" : "PDF / Print", why: "Students get an interactive route plus a broadly compatible fallback." };
+    if (setting === "print") return { primary: "PDF / Print", backup: "Accessible Word (.docx)", why: "Print is predictable, while Word supports zoom, reflow, and editing." };
+    if (setting === "live") return { primary: "Live class session", backup: "Class Mailbox / hosted QR", why: "The class can participate together and still reconnect asynchronously." };
+    if (setting === "lms") return { primary: "IMS content package", backup: "Accessible Word (.docx)", why: "IMS fits most LMS imports and Word provides an accessible fallback." };
     return { primary: "Homework QR / self-contained link", backup: "PDF / Print", why: "Students get a simple take-home route with an offline fallback." };
+  };
+  const deliveryRecommendation = getDeliveryRecommendation(deliverySetting, deliveryPriority);
+  const aiPlanRoadmapSteps = aiPlannerPlan ? (allSteps || []).filter((item) => ["source-input", "directions", "package-deliver", "_final"].includes(item.id) || aiPlannerPlan.stepIds.includes(item.id)) : [];
+  const aiPlanPhaseGroups = aiPlannerPlan ? phaseDefinitions.map((phase) => ({ ...phase, steps: aiPlanRoadmapSteps.filter((item) => item.phase === phase.id) })).filter((phase) => phase.steps.length) : [];
+  const aiPlanResourceLabels = aiPlanRoadmapSteps.filter((item) => !["source-input", "package-deliver", "_final"].includes(item.id)).map((item) => localizeStep(item, "label"));
+  const aiPlanDeliveryRecommendation = aiPlannerPlan ? getDeliveryRecommendation(aiPlannerPlan.deliverySetting || "take-home", aiPlannerPlan.deliveryPriority || "accessible") : null;
+  const aiPlanReadinessItems = (() => {
+    if (!aiPlannerPlan || !aiPlanDeliveryRecommendation) return [];
+    const selected = new Set(aiPlannerPlan.stepIds || []);
+    const items = [{ id: "source", state: String(inputText || "").trim().length > 20 ? "ready" : "planned", label: String(inputText || "").trim().length > 20 ? t("guided.ai_plan_ready_source") || "Source material is already available." : t("guided.ai_plan_ready_source_later") || "Source material is still needed; Guided Mode will request it first." }];
+    if (aiPlanDeliveryRecommendation.primary.includes("QTI")) items.push({ id: "qti-quiz", state: selected.has("quiz") ? "ready" : "attention", label: selected.has("quiz") ? t("guided.ai_plan_ready_qti") || "Quiz content is included for the planned QTI package." : t("guided.ai_plan_needs_quiz") || "QTI packaging requires quiz content. Add the Assess step.", action: "quiz" });
+    if (aiPlanDeliveryRecommendation.primary.includes("H5P")) items.push({ id: "h5p", state: "conditional", label: t("guided.ai_plan_h5p_condition") || "H5P requires compatible generated content and destination libraries; verify these during delivery." });
+    const setting = aiPlannerPlan.deliverySetting || "take-home";
+    if ((setting === "print" || setting === "lms") && typeof openGuidedDocumentBuilder !== "function") items.push({ id: "documents", state: "attention", label: t("guided.ai_plan_route_unavailable_documents") || "Document and LMS packaging is unavailable in this build. Choose another setting." });
+    else if (setting === "take-home" && typeof createGuidedHomeworkShare !== "function") items.push({ id: "share", state: "attention", label: t("guided.ai_plan_route_unavailable_share") || "Take-home link creation is unavailable in this build. Choose print or another setting." });
+    else if (setting === "live" && typeof startGuidedLiveSession !== "function") items.push({ id: "live", state: "attention", label: t("guided.ai_plan_route_unavailable_live") || "Live sessions are unavailable in this build. Choose another setting." });
+    else items.push({ id: "delivery", state: "ready", label: (t("guided.ai_plan_route_ready") || "{route} is available as the planned primary route.").replace("{route}", aiPlanDeliveryRecommendation.primary) });
+    items.push({ id: "milestones", state: "ready", label: t("guided.ai_plan_ready_milestones") || "Directions, learner preview, packaging, and final review remain protected milestones." });
+    return items;
   })();
+  const aiPlanReadinessAttentionCount = aiPlanReadinessItems.filter((item) => item.state === "attention").length;
   const detailEntry = typeof GUIDED_DETAIL !== "undefined" && GUIDED_DETAIL[step.id] || null;
   const _gdTab = (on) => ({ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "5px", padding: "7px 8px", fontSize: "12px", fontWeight: 700, color: on ? "#fde68a" : "#c7d2fe", background: on ? "rgba(251,191,36,0.16)" : "rgba(255,255,255,0.06)", border: "1px solid " + (on ? "rgba(251,191,36,0.55)" : "rgba(165,180,252,0.3)"), borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" });
   const _gdPanel = { marginBottom: "10px", padding: "11px 13px", background: "rgba(255,255,255,0.05)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)" };
@@ -1106,6 +1271,15 @@ function GuidedModeBanner({
   const _gdLi = { fontSize: "12px", color: "rgba(203,213,225,0.92)", lineHeight: "1.5", marginBottom: "3px", display: "flex", gap: "6px" };
   const _gdPre = { margin: "6px 0 0", whiteSpace: "pre-wrap", wordBreak: "break-word", fontSize: "12px", lineHeight: "1.6", color: "rgba(226,232,240,0.92)", fontFamily: "inherit", background: "rgba(15,23,42,0.55)", borderRadius: "8px", padding: "10px 12px", border: "1px solid rgba(255,255,255,0.06)" };
   const STEP_META = { "source-input": ["1\u20132 min", "manual"], "ui-tool-wordsounds": ["2\u20134 min", "interactive"], math: ["3\u20138 min", "interactive"], image: ["1\u20133 min", "image_ai"], directions: ["2\u20134 min", "manual"], "package-deliver": ["2\u20135 min", "export"], "_final": ["1 min", "manual"] };
+  const AI_PLAN_DEFAULT_MINUTES = { analysis: 2, glossary: 2, simplified: 2, "ui-tool-wordsounds": 3, outline: 2, "anchor-chart": 2, image: 2, faq: 2, "sentence-frames": 2, "note-taking": 2, brainstorm: 2, persona: 4, timeline: 2, "concept-sort": 2, dbq: 3, math: 6, adventure: 5, quiz: 3, alignment: 2, "lesson-plan": 3 };
+  const estimateAiPlanMinutes = (stepIds) => {
+    const optionalMinutes = (Array.isArray(stepIds) ? stepIds : []).reduce((total, id) => {
+      const observed = Number(durationStats[String(guidedProviderProfile || "default") + ":" + id]?.averageMs);
+      const minutes = Number.isFinite(observed) && observed >= 1e3 && observed <= 20 * 60 * 1e3 ? Math.max(1, Math.round(observed / 6e4)) : AI_PLAN_DEFAULT_MINUTES[id] || 2;
+      return total + minutes;
+    }, 0);
+    return Math.max(8, Math.min(180, optionalMinutes + 8));
+  };
   const _durationKey = String(guidedProviderProfile || "default") + ":" + step.id;
   const _rawObservedDuration = Number(durationStats[_durationKey]?.averageMs);
   const _observedDuration = Number.isFinite(_rawObservedDuration) && _rawObservedDuration >= 1e3 && _rawObservedDuration <= 20 * 60 * 1e3 ? _rawObservedDuration : 0;
@@ -1143,7 +1317,7 @@ function GuidedModeBanner({
   })();
   const _errorLower = guidedErrorText.toLowerCase();
   const guidedErrorGuidance = _errorLower.includes("network") || _errorLower.includes("fetch") || _errorLower.includes("connection") ? t("guided.error_network") || "Check your connection, then try again." : _errorLower.includes("rate") || _errorLower.includes("quota") ? t("guided.error_rate_limit") || "The service is busy. Wait a moment, then retry." : step.id === "image" ? t("guided.error_image") || "Check the image settings or try a simpler visual request." : t("guided.error_default") || "Review the source and settings, then retry. Your completed work is safe.";
-  const presetStepIds = (preset) => Array.isArray(preset?.stepIds) ? Array.from(/* @__PURE__ */ new Set(["source-input", ...preset.stepIds, "package-deliver", "_final"])) : allSteps.map((item) => item.id);
+  const presetStepIds = (preset) => Array.isArray(preset?.stepIds) ? Array.from(/* @__PURE__ */ new Set(["source-input", ...preset.stepIds, "directions", "package-deliver", "_final"])) : allSteps.map((item) => item.id);
   const isPresetActive = (preset) => {
     const a = presetStepIds(preset).slice().sort();
     const b = (guidedSelectedIds || allSteps.map((item) => item.id)).slice().sort();
@@ -1171,6 +1345,272 @@ function GuidedModeBanner({
     setPendingPreset(null);
     setShowPicker(false);
     rememberPathChoice();
+  };
+  const resetPlannerWorkspace = () => {
+    setAiPlannerGoal("");
+    setAiPlannerPlan(null);
+    setAiPlannerError("");
+    setAiPlannerRefinement("");
+    setAiPlannerMessages([]);
+    setAiPlannerLastChanges([]);
+    setAiPlannerQuestions([]);
+    setAiPlannerAnswers({});
+    setSavedAiPlanName("");
+    setActiveSavedAiPlanId(null);
+    setSavedAiPlanStatus("");
+    setPendingAiPlanApply(false);
+    setPendingPlannerClose(false);
+    setPlannerRecoveryDraft(null);
+    setPlannerDirty(false);
+  };
+  const clearPlannerDraft = () => {
+    try {
+      localStorage.removeItem("allo_guided_planner_draft");
+    } catch (_) {
+    }
+  };
+  const persistPlannerDraftNow = () => {
+    try {
+      localStorage.setItem("allo_guided_planner_draft", JSON.stringify({ version: 1, goal: aiPlannerGoal, plan: aiPlannerPlan, answers: aiPlannerAnswers, messages: aiPlannerMessages, refinement: aiPlannerRefinement, savedName: savedAiPlanName, activeSavedId: activeSavedAiPlanId, updatedAt: (/* @__PURE__ */ new Date()).toISOString() }));
+    } catch (_) {
+    }
+  };
+  const openAiPlanner = () => {
+    let recovered = null;
+    try {
+      recovered = normalizeGuidedPlannerDraft(JSON.parse(localStorage.getItem("allo_guided_planner_draft") || "null"));
+    } catch (_) {
+      recovered = null;
+    }
+    setPlannerRecoveryDraft(recovered);
+    setShowAiPlanner(true);
+    setShowPicker(false);
+    setAiPlannerError("");
+    setSavedAiPlanStatus("");
+    setPendingPlannerClose(false);
+  };
+  const requestCloseAiPlanner = () => {
+    if (plannerDirty) setPendingPlannerClose(true);
+    else {
+      setShowAiPlanner(false);
+      setPendingAiPlanApply(false);
+    }
+  };
+  const keepPlannerDraftAndClose = () => {
+    persistPlannerDraftNow();
+    setPendingPlannerClose(false);
+    setShowAiPlanner(false);
+    setPendingAiPlanApply(false);
+  };
+  const discardPlannerDraftAndClose = () => {
+    clearPlannerDraft();
+    resetPlannerWorkspace();
+    setShowAiPlanner(false);
+  };
+  const startFreshPlanner = () => {
+    clearPlannerDraft();
+    resetPlannerWorkspace();
+    setShowAiPlanner(true);
+  };
+  const resumePlannerDraft = () => {
+    const draft = plannerRecoveryDraft;
+    if (!draft) return;
+    setAiPlannerGoal(draft.goal || "");
+    setAiPlannerPlan(draft.plan ? { ...draft.plan, source: "draft" } : null);
+    setAiPlannerAnswers(draft.answers || {});
+    setAiPlannerQuestions([]);
+    setAiPlannerMessages(draft.messages || []);
+    setAiPlannerRefinement(draft.refinement || "");
+    setSavedAiPlanName(draft.savedName || draft.plan?.title || "");
+    setActiveSavedAiPlanId(draft.activeSavedId || null);
+    setAiPlannerLastChanges([]);
+    setPlannerRecoveryDraft(null);
+    setPendingPlannerClose(false);
+    setPlannerDirty(true);
+  };
+  const summarizeAiPlanChanges = (previous, next) => {
+    if (!previous || !next) return [];
+    const previousIds = new Set(previous.stepIds || []), nextIds = new Set(next.stepIds || []);
+    const labelFor = (id) => {
+      const item = (allSteps || []).find((stepItem) => stepItem.id === id);
+      return item ? localizeStep(item, "label") : id;
+    };
+    const added = (next.stepIds || []).filter((id) => !previousIds.has(id)).map(labelFor);
+    const removed = (previous.stepIds || []).filter((id) => !nextIds.has(id)).map(labelFor);
+    const changes = [];
+    if (added.length) changes.push((t("guided.ai_plan_changes_added") || "Added: {steps}").replace("{steps}", added.join(", ")));
+    if (removed.length) changes.push((t("guided.ai_plan_changes_removed") || "Removed: {steps}").replace("{steps}", removed.join(", ")));
+    const oldMinutes = Math.max(5, Number(previous.estimatedMinutes) || 0), newMinutes = Math.max(5, Number(next.estimatedMinutes) || 0);
+    if (oldMinutes !== newMinutes) changes.push((t("guided.ai_plan_changes_time") || "Estimated time: {before} \u2192 {after} minutes").replace("{before}", oldMinutes).replace("{after}", newMinutes));
+    if (previous.deliverySetting !== next.deliverySetting) changes.push((t("guided.ai_plan_changes_delivery") || "Delivery setting: {before} \u2192 {after}").replace("{before}", previous.deliverySetting || "\u2014").replace("{after}", next.deliverySetting || "\u2014"));
+    if (previous.deliveryPriority !== next.deliveryPriority) changes.push((t("guided.ai_plan_changes_priority") || "Top priority: {before} \u2192 {after}").replace("{before}", previous.deliveryPriority || "\u2014").replace("{after}", next.deliveryPriority || "\u2014"));
+    return changes.length ? changes : [t("guided.ai_plan_changes_same") || "The plan wording was refined without changing its steps, timing, or delivery settings."];
+  };
+  const AI_PLANNER_QUESTION_OPTIONS = {
+    time: [t("guided.ai_plan_answer_time_20") || "20 minutes", t("guided.ai_plan_answer_time_45") || "40\u201350 minutes", t("guided.ai_plan_answer_time_75") || "60\u201390 minutes", t("guided.ai_plan_answer_time_days") || "Multiple days"],
+    grade: [t("guided.ai_plan_answer_grade_elementary") || "Elementary (K\u20135)", t("guided.ai_plan_answer_grade_middle") || "Middle school (6\u20138)", t("guided.ai_plan_answer_grade_high") || "High school (9\u201312)", t("guided.ai_plan_answer_grade_mixed") || "Mixed ages / other"],
+    delivery: [t("guided.ai_plan_answer_delivery_live") || "Live class", t("guided.ai_plan_answer_delivery_print") || "Print / paper", t("guided.ai_plan_answer_delivery_lms") || "LMS / digital", t("guided.ai_plan_answer_delivery_home") || "Take-home / independent"],
+    evidence: [t("guided.ai_plan_answer_evidence_quick") || "Quick formative check", t("guided.ai_plan_answer_evidence_quiz") || "Quiz or scored assessment", t("guided.ai_plan_answer_evidence_discussion") || "Discussion or presentation", t("guided.ai_plan_answer_evidence_project") || "Project or created product"]
+  };
+  const getAiPlannerQuestions = (goal) => {
+    const lower = String(goal || "").toLowerCase();
+    const questions = [];
+    if (!/\b\d+\s*(min|minute|minutes|hour|hours)\b|class period|multi.?day|multiple days|\bweek\b/.test(lower)) questions.push({ id: "time", label: t("guided.ai_plan_question_time") || "How much lesson time is available?" });
+    if (!/\bgrade\b|\bgrader\b|kindergarten|elementary|middle school|high school|college|adult|\bage\b|\bages\b/.test(lower)) questions.push({ id: "grade", label: t("guided.ai_plan_question_grade") || "Which learner range should this fit?" });
+    if (!/print|paper|lms|canvas|schoology|moodle|classroom|take.?home|homework|live class|whole class|online|digital|offline|qr/.test(lower)) questions.push({ id: "delivery", label: t("guided.ai_plan_question_delivery") || "How will students receive or use the lesson?" });
+    if (!/assess|quiz|test|check|project|discussion|presentation|exit ticket|practice|worksheet|product|write|create|demonstrate/.test(lower)) questions.push({ id: "evidence", label: t("guided.ai_plan_question_evidence") || "What evidence of learning do you want?" });
+    return questions.slice(0, 2);
+  };
+  const normalizeAiPlannerResult = (result) => {
+    const validIds = new Set((allSteps || []).map((item) => item?.id).filter((id) => id && !["source-input", "directions", "package-deliver", "_final"].includes(id)));
+    const stepIds = Array.isArray(result?.stepIds) ? Array.from(new Set(result.stepIds.filter((id) => validIds.has(id)))) : [];
+    if (!stepIds.length) throw new Error(t("guided.ai_plan_no_steps") || "The plan did not include any supported steps.");
+    return { ...result, stepIds };
+  };
+  const requestAiGuidedPlan = async (skipClarification = false) => {
+    const goal = String(aiPlannerGoal || "").trim();
+    if (goal.length < 12) {
+      setAiPlannerError(t("guided.ai_plan_more_detail") || "Describe your lesson goal in a little more detail.");
+      return;
+    }
+    if (typeof generateGuidedPlanFromGoal !== "function") {
+      setAiPlannerError(t("guided.ai_plan_unavailable") || "AI planning is unavailable right now. Choose a ready-made path below.");
+      return;
+    }
+    const useBestJudgment = skipClarification === "best-judgment";
+    const missingQuestions = getAiPlannerQuestions(goal).filter((question) => !String(aiPlannerAnswers[question.id] || "").trim());
+    if (!skipClarification && !aiPlannerPlan && missingQuestions.length) {
+      setAiPlannerQuestions(missingQuestions);
+      setAiPlannerError("");
+      return;
+    }
+    if (!useBestJudgment && aiPlannerQuestions.length && aiPlannerQuestions.some((question) => !String(aiPlannerAnswers[question.id] || "").trim())) {
+      setAiPlannerError(t("guided.ai_plan_questions_required") || "Answer the short planning questions to continue.");
+      return;
+    }
+    const contextAnswers = useBestJudgment ? {} : aiPlannerAnswers;
+    const contextLines = Object.entries(contextAnswers).filter(([, answer]) => String(answer || "").trim()).map(([key, answer]) => `${key}: ${answer}`);
+    const planningGoal = contextLines.length ? `${goal}
+
+PLANNING CONTEXT:
+${contextLines.join("\n")}` : goal;
+    setAiPlannerBusy(true);
+    setAiPlannerError("");
+    setPendingAiPlanApply(false);
+    setSavedAiPlanStatus("");
+    try {
+      const generated = normalizeAiPlannerResult(await generateGuidedPlanFromGoal(planningGoal));
+      const result = { ...generated, originalGoal: goal, clarificationAnswers: { ...contextAnswers } };
+      setAiPlannerPlan(result);
+      setAiPlannerMessages([{ role: "teacher", text: goal }, ...contextLines.length ? [{ role: "teacher", text: (t("guided.ai_plan_context_message") || "Planning context: {context}").replace("{context}", contextLines.join(" \xB7 ")) }] : [], { role: "planner", text: result.summary || result.title }]);
+      setAiPlannerLastChanges([]);
+      setPlannerDirty(true);
+      setAiPlannerQuestions([]);
+      setAiPlannerRefinement("");
+      setActiveSavedAiPlanId(null);
+      setSavedAiPlanName(result.title || "");
+    } catch (error) {
+      setAiPlannerError(error?.message || (t("guided.ai_plan_error") || "The plan could not be created. Try again or choose a preset."));
+    } finally {
+      setAiPlannerBusy(false);
+    }
+  };
+  const requestAiPlanRefinement = async () => {
+    const refinement = String(aiPlannerRefinement || "").trim();
+    if (!aiPlannerPlan || refinement.length < 3) {
+      setAiPlannerError(t("guided.ai_plan_refine_more_detail") || "Tell the planner what you would like to change.");
+      return;
+    }
+    if (typeof generateGuidedPlanFromGoal !== "function") {
+      setAiPlannerError(t("guided.ai_plan_unavailable") || "AI planning is unavailable right now.");
+      return;
+    }
+    setAiPlannerBusy(true);
+    setAiPlannerError("");
+    setPendingAiPlanApply(false);
+    setSavedAiPlanStatus("");
+    try {
+      const result = normalizeAiPlannerResult(await generateGuidedPlanFromGoal(String(aiPlannerPlan.goal || aiPlannerGoal || "").trim(), { currentPlan: aiPlannerPlan, refinement }));
+      setAiPlannerLastChanges(summarizeAiPlanChanges(aiPlannerPlan, result));
+      setAiPlannerPlan(result);
+      setPlannerDirty(true);
+      setAiPlannerMessages((previous) => [...previous, { role: "teacher", text: refinement }, { role: "planner", text: result.summary || result.title }].slice(-8));
+      setAiPlannerRefinement("");
+    } catch (error) {
+      setAiPlannerError(error?.message || (t("guided.ai_plan_refine_error") || "The plan could not be updated. Your reviewed plan is unchanged."));
+    } finally {
+      setAiPlannerBusy(false);
+    }
+  };
+  const updateAiPlanStep = (id, enabled) => {
+    if (!aiPlannerPlan) return;
+    setAiPlannerPlan((previous) => {
+      const current = Array.isArray(previous?.stepIds) ? previous.stepIds : [];
+      const next = enabled ? Array.from(/* @__PURE__ */ new Set([...current, id])) : current.filter((stepId) => stepId !== id);
+      return { ...previous, stepIds: next, estimatedMinutes: estimateAiPlanMinutes(next) };
+    });
+    setAiPlannerLastChanges([]);
+    setSavedAiPlanStatus("");
+    setPlannerDirty(true);
+  };
+  const saveCurrentAiPlan = () => {
+    if (!aiPlannerPlan?.stepIds?.length) return;
+    const name = String(savedAiPlanName || aiPlannerPlan.title || "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80) || "Saved Guided plan";
+    const id = activeSavedAiPlanId || "guided-plan-" + Date.now().toString(36);
+    const saved = { ...aiPlannerPlan, id, source: "saved", name, title: aiPlannerPlan.title || name, goal: String(aiPlannerPlan.goal || aiPlannerGoal || "").slice(0, 1200), originalGoal: String(aiPlannerGoal || aiPlannerPlan.originalGoal || aiPlannerPlan.goal || "").slice(0, 1200), clarificationAnswers: { ...aiPlannerAnswers }, savedAt: (/* @__PURE__ */ new Date()).toISOString() };
+    setSavedAiPlans((previous) => normalizeSavedGuidedPlans(activeSavedAiPlanId ? previous.map((item) => item.id === id ? saved : item) : [...previous, saved]));
+    setActiveSavedAiPlanId(id);
+    setSavedAiPlanName(name);
+    setSavedAiPlanStatus(t("guided.ai_plan_saved_status") || "Plan saved on this device.");
+    setPlannerDirty(false);
+    clearPlannerDraft();
+  };
+  const loadSavedAiPlan = (saved) => {
+    try {
+      const plan = normalizeAiPlannerResult({ ...saved, source: "saved" });
+      setAiPlannerPlan(plan);
+      setAiPlannerGoal(saved.originalGoal || saved.goal || "");
+      setAiPlannerAnswers(saved.clarificationAnswers || {});
+      setAiPlannerQuestions([]);
+      setSavedAiPlanName(saved.name || saved.title || "");
+      setActiveSavedAiPlanId(saved.id);
+      setAiPlannerMessages([{ role: "planner", text: (t("guided.ai_plan_loaded_message") || "Loaded saved plan: {name}").replace("{name}", saved.name || saved.title || "") }]);
+      setAiPlannerRefinement("");
+      setAiPlannerLastChanges([]);
+      setAiPlannerError("");
+      setSavedAiPlanStatus(t("guided.ai_plan_loaded_status") || "Saved plan loaded for review.");
+      setPendingDeleteSavedAiPlanId(null);
+      setPlannerDirty(false);
+      clearPlannerDraft();
+    } catch (error) {
+      setAiPlannerError(error?.message || (t("guided.ai_plan_saved_invalid") || "This saved plan no longer contains supported steps."));
+    }
+  };
+  const deleteSavedAiPlan = (id) => {
+    setSavedAiPlans((previous) => previous.filter((item) => item.id !== id));
+    if (activeSavedAiPlanId === id) {
+      setActiveSavedAiPlanId(null);
+      setSavedAiPlanName(aiPlannerPlan?.title || "");
+    }
+    setPendingDeleteSavedAiPlanId(null);
+    setSavedAiPlanStatus(t("guided.ai_plan_deleted_status") || "Saved plan deleted.");
+  };
+  const applyAiPlanNow = () => {
+    if (!aiPlannerPlan || !Array.isArray(aiPlannerPlan.stepIds) || !aiPlannerPlan.stepIds.length) return;
+    applyGuidedPreset({ id: "ai-plan", label: aiPlannerPlan.title || "AI-planned lesson", description: aiPlannerPlan.summary || "", stepIds: aiPlannerPlan.stepIds });
+    setDeliverySetting(["take-home", "print", "live", "lms"].includes(aiPlannerPlan.deliverySetting) ? aiPlannerPlan.deliverySetting : "take-home");
+    setDeliveryPriority(["accessible", "editable", "assessment", "interactive", "low-connectivity"].includes(aiPlannerPlan.deliveryPriority) ? aiPlannerPlan.deliveryPriority : "accessible");
+    setPendingAiPlanApply(false);
+    setPendingPlannerClose(false);
+    setPlannerDirty(false);
+    clearPlannerDraft();
+    setShowAiPlanner(false);
+    setShowPicker(false);
+    rememberPathChoice();
+  };
+  const applyAiPlan = () => {
+    if (hasGuidedProgress) setPendingAiPlanApply(true);
+    else applyAiPlanNow();
   };
   const chooseStepToggle = (id) => {
     if (guidedBusy) return;
@@ -1224,7 +1664,7 @@ function GuidedModeBanner({
   const clearGuidedLocalData = () => {
     _skipUiPersistRef.current = true;
     try {
-      ["allo_guided_completed_runs", "allo_guided_last_completion", "allo_guided_duration_stats", "allo_guided_feedback", "allo_guided_ui_state", "allo_guided_path_prompt_seen", "allo_guided_auto_advance", "allo_guided_readiness_checks"].forEach((key) => localStorage.removeItem(key));
+      ["allo_guided_completed_runs", "allo_guided_last_completion", "allo_guided_duration_stats", "allo_guided_feedback", "allo_guided_ui_state", "allo_guided_path_prompt_seen", "allo_guided_auto_advance", "allo_guided_readiness_checks", "allo_guided_delivery_preferences", "allo_guided_saved_plans", "allo_guided_planner_draft"].forEach((key) => localStorage.removeItem(key));
     } catch (_) {
     }
     setLastCompletion(null);
@@ -1234,6 +1674,25 @@ function GuidedModeBanner({
     setFeedbackSaved(false);
     setShowFeedbackHistory(false);
     setReadinessChecks({});
+    setDeliverySetting("take-home");
+    setDeliveryPriority("accessible");
+    setShowAiPlanner(false);
+    setAiPlannerGoal("");
+    setAiPlannerPlan(null);
+    setAiPlannerError("");
+    setAiPlannerRefinement("");
+    setAiPlannerMessages([]);
+    setAiPlannerLastChanges([]);
+    setAiPlannerQuestions([]);
+    setAiPlannerAnswers({});
+    setSavedAiPlans([]);
+    setSavedAiPlanName("");
+    setActiveSavedAiPlanId(null);
+    setSavedAiPlanStatus("");
+    setPendingDeleteSavedAiPlanId(null);
+    setPendingPlannerClose(false);
+    setPlannerRecoveryDraft(null);
+    setPlannerDirty(false);
     setShowPicker(false);
     setInfoTab(null);
     setIsCollapsed(false);
@@ -1241,13 +1700,73 @@ function GuidedModeBanner({
     if (typeof setGuidedAutoAdvance === "function") setGuidedAutoAdvance(false);
     if (typeof setShowGuidedTip === "function") setShowGuidedTip(false);
   };
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("style", null, `@keyframes alloGuidedTargetPulse{0%,100%{outline-color:rgba(99,102,241,.8);box-shadow:0 0 0 2px rgba(99,102,241,.7),0 0 22px rgba(99,102,241,.45)}50%{outline-color:rgba(129,140,248,1);box-shadow:0 0 0 3px rgba(129,140,248,.95),0 0 36px rgba(99,102,241,.65)}}:where(.allo-guided-target,[data-allo-guided-target="true"]){outline:3px solid rgba(99,102,241,.8)!important;outline-offset:3px;animation:alloGuidedTargetPulse 2s ease-in-out infinite}.allo-guided-banner button,.allo-guided-banner select{min-height:40px}.allo-guided-banner button:disabled,.allo-guided-banner select:disabled{cursor:not-allowed!important;opacity:.58!important}body:has([aria-modal="true"]) :where(.allo-guided-target,[data-allo-guided-target="true"]){animation-play-state:paused!important;outline-color:transparent!important;box-shadow:none!important}@media (forced-colors:active){:where(.allo-guided-target,[data-allo-guided-target="true"]){outline:3px solid Highlight!important;box-shadow:none!important}.allo-guided-banner{border:1px solid CanvasText!important}}@media (max-width:480px){.allo-guided-banner{padding:12px!important;border-radius:14px!important;overflow-wrap:anywhere}}@media (prefers-reduced-motion: reduce){:where(.allo-guided-target,[data-allo-guided-target="true"]){animation:none !important}.allo-guided-banner *,.allo-guided-dialog *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}}`), /* @__PURE__ */ React.createElement("div", { className: "allo-guided-banner", role: "region", "aria-label": t("guided.indicator_title") || "Guided mode", style: { background: "linear-gradient(135deg, #312e81, #1e3a5f)", borderRadius: "20px", padding: "16px", marginBottom: "16px", border: "1px solid rgba(99,102,241,0.3)", flexShrink: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginBottom: isCollapsed ? 0 : "8px" } }, /* @__PURE__ */ React.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", fontWeight: 800, color: "white", display: "block" } }, t("guided.indicator_title")), isCollapsed && /* @__PURE__ */ React.createElement("span", { style: { display: "block", fontSize: "12px", color: "#c7d2fe", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, step.label || "Complete!")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", color: "#c7d2fe", fontWeight: 600 } }, (t("guided.step_of") || "Step {current} of {total}").replace("{current}", Math.min(guidedStep + 1, GUIDED_STEPS.length)).replace("{total}", GUIDED_STEPS.length)), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-expanded": !isCollapsed, "aria-controls": "guided-banner-details", "aria-label": isCollapsed ? t("guided.expand") || "Expand Guided Mode" : t("guided.collapse") || "Collapse Guided Mode", onClick: () => setIsCollapsed((v) => !v), style: { minWidth: "38px", minHeight: "38px", padding: "6px 9px", color: "white", background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.2)", borderRadius: "9px", cursor: "pointer" } }, isCollapsed ? "\u25BE" : "\u25B4"))), !isCollapsed && /* @__PURE__ */ React.createElement("div", { id: "guided-banner-details" }, showInitialPath && !hasGuidedProgress && Array.isArray(guidedPresets) && /* @__PURE__ */ React.createElement("div", { role: "region", "aria-labelledby": "guided-path-title", style: { marginBottom: "11px", padding: "11px", borderRadius: "12px", background: "rgba(15,23,42,.45)", border: "1px solid rgba(167,243,208,.4)" } }, /* @__PURE__ */ React.createElement("strong", { id: "guided-path-title", style: { display: "block", color: "white", fontSize: "13px", marginBottom: "3px" } }, t("guided.choose_goal_title") || "What would you like to build?"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#c7d2fe", fontSize: "12px", lineHeight: 1.45, marginBottom: "8px" } }, t("guided.choose_goal_hint") || "Choose a focused path now, or keep the complete tour."), lastCompletion && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "8px", padding: "8px", borderRadius: "8px", background: "rgba(16,185,129,.12)", border: "1px solid rgba(110,231,183,.3)", color: "#d1fae5", fontSize: "12px" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "white" } }, t("guided.last_completion") || "Last completed run"), new Date(lastCompletion.completedAt).toLocaleDateString(), " \xB7 ", Number(lastCompletion.completedCount) || 0, " ", t("guided.summary_completed") || "completed", " \xB7 ", Number(lastCompletion.resourceCount) || 0, " ", t("guided.summary_resources") || "resources", /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("style", null, `@keyframes alloGuidedTargetPulse{0%,100%{outline-color:rgba(99,102,241,.8);box-shadow:0 0 0 2px rgba(99,102,241,.7),0 0 22px rgba(99,102,241,.45)}50%{outline-color:rgba(129,140,248,1);box-shadow:0 0 0 3px rgba(129,140,248,.95),0 0 36px rgba(99,102,241,.65)}}:where(.allo-guided-target,[data-allo-guided-target="true"]){outline:3px solid rgba(99,102,241,.8)!important;outline-offset:3px;animation:alloGuidedTargetPulse 2s ease-in-out infinite}.allo-guided-banner button,.allo-guided-banner select{min-height:40px}.allo-guided-banner button:disabled,.allo-guided-banner select:disabled{cursor:not-allowed!important;opacity:.58!important}body:has([aria-modal="true"]) :where(.allo-guided-target,[data-allo-guided-target="true"]){animation-play-state:paused!important;outline-color:transparent!important;box-shadow:none!important}.allo-guided-planning-backdrop{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:12px;background:rgba(2,6,23,.78);backdrop-filter:blur(5px)}.allo-guided-planning-studio{width:min(940px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain;padding:0 22px 22px;border-radius:18px;background:linear-gradient(145deg,#064e3b,#172554 58%,#1e1b4b);border:1px solid rgba(110,231,183,.55);box-shadow:0 28px 90px rgba(2,6,23,.72);color:white}.allo-guided-planning-studio :where(button,input,textarea,select){font-size:13px!important}.allo-guided-planning-studio :where(p,label,li,span){font-size:12px!important}.allo-guided-planning-studio :where(strong,legend){font-size:13px!important}.allo-guided-planning-header strong{font-size:20px!important}.allo-guided-planning-header span{font-size:13px!important}.allo-guided-planning-header{position:sticky;top:0;z-index:3;margin:0 -22px 14px;padding:18px 22px 14px;background:linear-gradient(180deg,#064e3b 72%,rgba(6,78,59,.96));border-bottom:1px solid rgba(110,231,183,.3)}.allo-guided-planning-actions{position:sticky;bottom:-1px;z-index:3;margin:12px -10px -10px;padding:10px;background:rgba(15,23,42,.96);border-top:1px solid rgba(110,231,183,.3);box-shadow:0 -12px 24px rgba(2,6,23,.3)}@media (forced-colors:active){:where(.allo-guided-target,[data-allo-guided-target="true"]){outline:3px solid Highlight!important;box-shadow:none!important}.allo-guided-banner{border:1px solid CanvasText!important}}@media (max-width:640px){.allo-guided-planning-backdrop{padding:0;place-items:stretch}.allo-guided-planning-studio{width:100vw;max-height:100vh;border-radius:0;padding:0 14px 18px}.allo-guided-planning-header{margin:0 -14px 12px;padding:14px}.allo-guided-planning-studio :where(button,input,textarea,select){font-size:16px!important}}@media (max-width:480px){.allo-guided-banner{padding:12px!important;border-radius:14px!important;overflow-wrap:anywhere}}@media (prefers-reduced-motion: reduce){:where(.allo-guided-target,[data-allo-guided-target="true"]){animation:none !important}.allo-guided-banner *,.allo-guided-dialog *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}}`), /* @__PURE__ */ React.createElement("div", { className: "allo-guided-banner", role: "region", "aria-label": t("guided.indicator_title") || "Guided mode", style: { background: "linear-gradient(135deg, #312e81, #1e3a5f)", borderRadius: "20px", padding: "16px", marginBottom: "16px", border: "1px solid rgba(99,102,241,0.3)", flexShrink: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginBottom: isCollapsed ? 0 : "8px" } }, /* @__PURE__ */ React.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", fontWeight: 800, color: "white", display: "block" } }, t("guided.indicator_title")), isCollapsed && /* @__PURE__ */ React.createElement("span", { style: { display: "block", fontSize: "12px", color: "#c7d2fe", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, step.label || "Complete!")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", color: "#c7d2fe", fontWeight: 600 } }, (t("guided.step_of") || "Step {current} of {total}").replace("{current}", Math.min(guidedStep + 1, GUIDED_STEPS.length)).replace("{total}", GUIDED_STEPS.length)), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-expanded": !isCollapsed, "aria-controls": "guided-banner-details", "aria-label": isCollapsed ? t("guided.expand") || "Expand Guided Mode" : t("guided.collapse") || "Collapse Guided Mode", onClick: () => setIsCollapsed((v) => !v), style: { minWidth: "38px", minHeight: "38px", padding: "6px 9px", color: "white", background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.2)", borderRadius: "9px", cursor: "pointer" } }, isCollapsed ? "\u25BE" : "\u25B4"))), !isCollapsed && /* @__PURE__ */ React.createElement("div", { id: "guided-banner-details" }, showInitialPath && !hasGuidedProgress && Array.isArray(guidedPresets) && /* @__PURE__ */ React.createElement("div", { role: "region", "aria-labelledby": "guided-path-title", style: { marginBottom: "11px", padding: "11px", borderRadius: "12px", background: "rgba(15,23,42,.45)", border: "1px solid rgba(167,243,208,.4)" } }, /* @__PURE__ */ React.createElement("strong", { id: "guided-path-title", style: { display: "block", color: "white", fontSize: "13px", marginBottom: "3px" } }, t("guided.choose_goal_title") || "What would you like to build?"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#c7d2fe", fontSize: "12px", lineHeight: 1.45, marginBottom: "8px" } }, t("guided.choose_goal_hint") || "Choose a focused path now, or keep the complete tour."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openAiPlanner, style: { width: "100%", padding: "10px", marginBottom: "8px", textAlign: "left", borderRadius: "10px", border: "1px solid rgba(110,231,183,.55)", background: "linear-gradient(135deg, rgba(16,185,129,.2), rgba(99,102,241,.2))", color: "white" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "flex", alignItems: "center", gap: "6px", fontSize: "13px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"), t("guided.ai_plan_button") || "Plan with AI"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", marginTop: "3px", color: "#d1fae5", fontSize: "12px", lineHeight: 1.4 } }, t("guided.ai_plan_button_hint") || "Describe your lesson goals, timing, learners, and delivery needs. Review the proposed path before applying it.")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "7px", margin: "7px 0", color: "#a5b4fc", fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: ".05em" } }, /* @__PURE__ */ React.createElement("span", { style: { flex: 1, height: "1px", background: "rgba(165,180,252,.25)" } }), t("guided.ai_plan_or_presets") || "Or choose a ready-made path", /* @__PURE__ */ React.createElement("span", { style: { flex: 1, height: "1px", background: "rgba(165,180,252,.25)" } })), lastCompletion && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "8px", padding: "8px", borderRadius: "8px", background: "rgba(16,185,129,.12)", border: "1px solid rgba(110,231,183,.3)", color: "#d1fae5", fontSize: "12px" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "white" } }, t("guided.last_completion") || "Last completed run"), new Date(lastCompletion.completedAt).toLocaleDateString(), " \xB7 ", Number(lastCompletion.completedCount) || 0, " ", t("guided.summary_completed") || "completed", " \xB7 ", Number(lastCompletion.resourceCount) || 0, " ", t("guided.summary_resources") || "resources", /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     try {
       localStorage.removeItem("allo_guided_last_completion");
     } catch (_) {
     }
     setLastCompletion(null);
-  }, style: { display: "block", marginTop: "5px", padding: "5px 7px", borderRadius: "6px", border: "1px solid rgba(255,255,255,.2)", background: "transparent", color: "#d1fae5" } }, t("guided.dismiss_summary") || "Dismiss summary")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gap: "6px" } }, guidedPresets.map((preset) => /* @__PURE__ */ React.createElement("button", { type: "button", key: preset.id, onClick: () => choosePreset(preset), style: { textAlign: "left", padding: "8px 9px", borderRadius: "8px", border: "1px solid rgba(129,140,248,.4)", background: "rgba(99,102,241,.16)", color: "white" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", fontSize: "12px" } }, t("guided.preset_" + preset.id + "_label") || preset.label), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#c7d2fe", fontSize: "12px", marginTop: "2px" } }, t("guided.preset_" + preset.id + "_description") || preset.description)))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: rememberPathChoice, style: { width: "100%", marginTop: "7px", padding: "7px", borderRadius: "8px", border: "1px solid rgba(255,255,255,.2)", background: "transparent", color: "#e0e7ff" } }, t("guided.decide_later") || "Decide later")), currentPhase && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("guided.phase_context") || "Guided phase", title: currentPhaseDescription, style: { display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap", margin: "0 0 6px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", fontWeight: 900, color: "#312e81", background: "#c7d2fe", borderRadius: "999px", padding: "3px 8px" } }, (t("guided.phase_of") || "Phase {current} of {total}").replace("{current}", currentPhaseIndex + 1).replace("{total}", activePhaseDefinitions.length)), /* @__PURE__ */ React.createElement("span", { style: { color: "#a7f3d0", fontSize: "12px", fontWeight: 800 } }, currentPhaseLabel)), /* @__PURE__ */ React.createElement("p", { style: { fontSize: "13px", color: "#e0e7ff", margin: "0 0 6px", fontWeight: 700 } }, step.label || (t("guided.complete") || "Complete!")), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("guided.estimate_label") || "Step estimate", style: { display: "flex", gap: "6px", marginBottom: "10px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", color: "#e0e7ff", background: "rgba(255,255,255,.08)", borderRadius: "999px", padding: "3px 8px" } }, stepMeta[0]), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", color: "#e0e7ff", background: "rgba(255,255,255,.08)", borderRadius: "999px", padding: "3px 8px" } }, t("guided.kind_" + stepMeta[1]) || stepMeta[1])), /* @__PURE__ */ React.createElement("label", { htmlFor: "guided-step-jump", style: { display: "block", fontSize: "12px", color: "#c7d2fe", marginBottom: "4px", fontWeight: 700 } }, t("guided.jump_to_step") || "Jump to step"), /* @__PURE__ */ React.createElement("select", { id: "guided-step-jump", value: guidedStep, disabled: guidedBusy, onChange: (event) => requestGuidedJump(event.target.value), style: { width: "100%", minHeight: "40px", marginBottom: pendingJump ? "6px" : "10px", padding: "7px 9px", borderRadius: "9px", border: "1px solid rgba(165,180,252,.45)", background: "#172554", color: "white", fontSize: "13px", opacity: guidedBusy ? 0.65 : 1 } }, GUIDED_STEPS.map((item, index) => /* @__PURE__ */ React.createElement("option", { key: item.id, value: index }, index + 1, ". ", localizeStep(item, "label")))), pendingJump && /* @__PURE__ */ React.createElement("div", { role: "alert", style: { marginBottom: "10px", padding: "9px", borderRadius: "9px", border: "1px solid rgba(251,191,36,.5)", background: "rgba(120,53,15,.3)", color: "#fef3c7", fontSize: "12px" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "white", marginBottom: "3px" } }, t("guided.jump_confirm_title") || "Jump forward?"), (t("guided.jump_confirm_text") || "{count} unfinished steps will be marked skipped.").replace("{count}", pendingJump.bypassedIds.length), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "7px", marginTop: "7px" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: confirmGuidedJump, style: { flex: 1, border: 0, borderRadius: "7px", fontWeight: 800 } }, t("guided.jump_and_skip") || "Jump and mark skipped"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPendingJump(null), style: { flex: 1, borderRadius: "7px", border: "1px solid rgba(255,255,255,.25)", background: "transparent", color: "white" } }, t("common.cancel") || "Cancel"))), /* @__PURE__ */ React.createElement("div", { role: "progressbar", "aria-valuenow": Math.min(guidedStep + 1, GUIDED_STEPS.length), "aria-valuemin": 1, "aria-valuemax": GUIDED_STEPS.length, "aria-label": (t("guided.progress_label") || "Guided tour progress") + ": " + Math.min(guidedStep + 1, GUIDED_STEPS.length) + "/" + GUIDED_STEPS.length, style: { display: "flex", gap: GUIDED_STEPS.length > 14 ? "2px" : "3px", marginBottom: "12px" } }, GUIDED_STEPS.map((s, i) => {
+  }, style: { display: "block", marginTop: "5px", padding: "5px 7px", borderRadius: "6px", border: "1px solid rgba(255,255,255,.2)", background: "transparent", color: "#d1fae5" } }, t("guided.dismiss_summary") || "Dismiss summary")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gap: "6px" } }, guidedPresets.map((preset) => /* @__PURE__ */ React.createElement("button", { type: "button", key: preset.id, onClick: () => choosePreset(preset), style: { textAlign: "left", padding: "8px 9px", borderRadius: "8px", border: "1px solid rgba(129,140,248,.4)", background: "rgba(99,102,241,.16)", color: "white" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", fontSize: "12px" } }, t("guided.preset_" + preset.id + "_label") || preset.label), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#c7d2fe", fontSize: "12px", marginTop: "2px" } }, t("guided.preset_" + preset.id + "_description") || preset.description)))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: rememberPathChoice, style: { width: "100%", marginTop: "7px", padding: "7px", borderRadius: "8px", border: "1px solid rgba(255,255,255,.2)", background: "transparent", color: "#e0e7ff" } }, t("guided.decide_later") || "Decide later")), showAiPlanner && /* @__PURE__ */ React.createElement("div", { className: "allo-guided-planning-backdrop", role: "presentation" }, /* @__PURE__ */ React.createElement("div", { ref: _aiPlannerDialogRef, className: "allo-guided-planning-studio", role: "dialog", "aria-modal": "true", "aria-labelledby": "guided-ai-planner-title", "aria-describedby": "guided-ai-planner-intro", tabIndex: -1 }, /* @__PURE__ */ React.createElement("div", { className: "allo-guided-planning-header", style: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { id: "guided-ai-planner-title", style: { display: "block", color: "white", fontSize: "20px" } }, "\u2728 ", t("guided.ai_plan_studio_title") || "Guided Planning Studio"), /* @__PURE__ */ React.createElement("span", { id: "guided-ai-planner-intro", style: { display: "block", color: "#d1fae5", fontSize: "13px", lineHeight: 1.5, marginTop: "4px" } }, t("guided.ai_plan_studio_intro") || "Describe the lesson, answer only the context questions that matter, then review the full path before applying it.")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": t("common.close") || "Close", onClick: requestCloseAiPlanner, style: { minWidth: "44px", minHeight: "44px", borderRadius: "10px", border: "1px solid rgba(255,255,255,.3)", background: "rgba(15,23,42,.3)", color: "white" } }, "\xD7")), pendingPlannerClose && /* @__PURE__ */ React.createElement("div", { role: "alert", "aria-labelledby": "guided-planner-close-title", style: { marginBottom: "12px", padding: "12px", borderRadius: "10px", background: "rgba(120,53,15,.42)", border: "1px solid rgba(251,191,36,.6)", color: "#fef3c7" } }, /* @__PURE__ */ React.createElement("strong", { id: "guided-planner-close-title", style: { display: "block", color: "white" } }, t("guided.ai_plan_unsaved_title") || "Keep this unfinished plan?"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", marginTop: "3px" } }, t("guided.ai_plan_unsaved_text") || "Your work can be kept as a private draft on this device, or discarded without affecting saved plans."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "7px", flexWrap: "wrap", marginTop: "9px" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: keepPlannerDraftAndClose, style: { flex: 1, minWidth: "150px", border: 0, borderRadius: "8px", background: "#10b981", color: "#052e2b", fontWeight: 900 } }, t("guided.ai_plan_keep_draft") || "Keep draft and close"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: discardPlannerDraftAndClose, style: { flex: 1, minWidth: "130px", borderRadius: "8px", border: "1px solid rgba(248,113,113,.5)", background: "transparent", color: "#fecaca", fontWeight: 800 } }, t("guided.ai_plan_discard_draft") || "Discard and close"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPendingPlannerClose(false), style: { flex: 1, minWidth: "130px", borderRadius: "8px", border: "1px solid rgba(255,255,255,.3)", background: "transparent", color: "white" } }, t("guided.ai_plan_continue_editing") || "Continue editing"))), plannerRecoveryDraft ? /* @__PURE__ */ React.createElement("div", { role: "region", "aria-labelledby": "guided-planner-recovery-title", style: { padding: "18px", borderRadius: "12px", background: "rgba(79,70,229,.22)", border: "1px solid rgba(165,180,252,.5)" } }, /* @__PURE__ */ React.createElement("strong", { id: "guided-planner-recovery-title", style: { display: "block", color: "white", fontSize: "16px" } }, t("guided.ai_plan_recovery_title") || "Resume your unfinished plan?"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#c7d2fe", marginTop: "5px", lineHeight: 1.5 } }, (t("guided.ai_plan_recovery_text") || "A private draft from {date} is available on this device.").replace("{date}", new Date(plannerRecoveryDraft.updatedAt).toLocaleString())), plannerRecoveryDraft.goal && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "9px", padding: "9px", borderRadius: "8px", background: "rgba(15,23,42,.5)", color: "#e0e7ff" } }, plannerRecoveryDraft.goal), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "12px" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: resumePlannerDraft, style: { flex: 1, minWidth: "150px", border: 0, borderRadius: "8px", background: "#10b981", color: "#052e2b", fontWeight: 900 } }, t("guided.ai_plan_resume_draft") || "Resume draft"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: startFreshPlanner, style: { flex: 1, minWidth: "150px", borderRadius: "8px", border: "1px solid rgba(255,255,255,.3)", background: "transparent", color: "white" } }, t("guided.ai_plan_start_fresh") || "Discard draft and start fresh"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, savedAiPlans.length > 0 && /* @__PURE__ */ React.createElement("div", { role: "region", "aria-labelledby": "guided-saved-plans-title", style: { marginBottom: "9px", padding: "8px", borderRadius: "9px", background: "rgba(99,102,241,.12)", border: "1px solid rgba(165,180,252,.28)" } }, /* @__PURE__ */ React.createElement("strong", { id: "guided-saved-plans-title", style: { display: "block", color: "white", fontSize: "12px", marginBottom: "5px" } }, t("guided.ai_plan_saved_title") || "Your saved Guided plans"), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gap: "5px" } }, savedAiPlans.map((saved) => /* @__PURE__ */ React.createElement("div", { key: saved.id, style: { padding: "6px 7px", borderRadius: "7px", background: "rgba(15,23,42,.42)" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: "7px", alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { style: { minWidth: 0 } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "#e0e7ff", fontSize: "11px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, saved.name), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#a5b4fc", fontSize: "10px" } }, saved.stepIds.length + 4, " ", t("guided.ai_plan_total_steps") || "total steps", " \xB7 ", saved.estimatedMinutes, " ", t("guided.ai_plan_minutes_short") || "min")), /* @__PURE__ */ React.createElement("span", { style: { display: "flex", gap: "4px", flexShrink: 0 } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => loadSavedAiPlan(saved), disabled: aiPlannerBusy, style: { minHeight: "34px", padding: "4px 7px", border: 0, borderRadius: "6px", fontWeight: 800 } }, t("guided.ai_plan_load") || "Load"), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": (t("guided.ai_plan_delete_named") || "Delete {name}").replace("{name}", saved.name), onClick: () => setPendingDeleteSavedAiPlanId(saved.id), disabled: aiPlannerBusy, style: { minHeight: "34px", padding: "4px 7px", borderRadius: "6px", border: "1px solid rgba(248,113,113,.4)", background: "transparent", color: "#fecaca" } }, t("guided.ai_plan_delete") || "Delete"))), pendingDeleteSavedAiPlanId === saved.id && /* @__PURE__ */ React.createElement("div", { role: "alert", style: { marginTop: "5px", color: "#fecaca", fontSize: "10px" } }, t("guided.ai_plan_delete_confirm") || "Delete this reusable plan?", /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "4px", marginTop: "4px" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => deleteSavedAiPlan(saved.id), style: { minHeight: "32px", border: 0, borderRadius: "6px", background: "#b91c1c", color: "white" } }, t("guided.ai_plan_delete_now") || "Delete plan"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPendingDeleteSavedAiPlanId(null), style: { minHeight: "32px", borderRadius: "6px", border: "1px solid rgba(255,255,255,.25)", background: "transparent", color: "white" } }, t("common.cancel") || "Cancel"))))))), /* @__PURE__ */ React.createElement("label", { htmlFor: "guided-ai-goal", style: { display: "block", color: "white", fontSize: "12px", fontWeight: 800, marginBottom: "4px" } }, t("guided.ai_plan_goal_label") || "Lesson goals and plan"), /* @__PURE__ */ React.createElement("textarea", { id: "guided-ai-goal", value: aiPlannerGoal, maxLength: 1200, disabled: aiPlannerBusy, onChange: (event) => {
+    setAiPlannerGoal(event.target.value);
+    setAiPlannerQuestions([]);
+    setAiPlannerAnswers({});
+    setAiPlannerLastChanges([]);
+    setPlannerDirty(true);
+    setAiPlannerError("");
+  }, placeholder: t("guided.ai_plan_placeholder") || "Example: I have 40 minutes with seventh graders. Build vocabulary and a visual explanation, then a short independent assessment. I need printable work with an LMS backup.", style: { width: "100%", minHeight: "112px", resize: "vertical", padding: "9px 10px", borderRadius: "9px", border: "1px solid rgba(167,243,208,.5)", background: "rgba(15,23,42,.7)", color: "white", fontSize: "13px", lineHeight: 1.45 } }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: "8px", marginTop: "3px", color: "#a7f3d0", fontSize: "10px" } }, /* @__PURE__ */ React.createElement("span", null, t("guided.ai_plan_privacy") || "Do not include student names or sensitive personal information."), /* @__PURE__ */ React.createElement("span", { "aria-label": t("guided.ai_plan_character_count") || "Character count" }, aiPlannerGoal.length, "/1200")), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("guided.ai_plan_examples") || "Example lesson goals", style: { display: "flex", gap: "5px", flexWrap: "wrap", marginTop: "7px" } }, [
+    t("guided.ai_plan_example_short") || "Fit this into 25 minutes with printable independent work.",
+    t("guided.ai_plan_example_language") || "Support multilingual learners with vocabulary, visuals, and discussion.",
+    t("guided.ai_plan_example_project") || "Plan an engaging project with formative assessment and an LMS backup."
+  ].map((example) => /* @__PURE__ */ React.createElement("button", { type: "button", key: example, disabled: aiPlannerBusy, onClick: () => {
+    setAiPlannerGoal(example);
+    setAiPlannerPlan(null);
+    setAiPlannerQuestions([]);
+    setAiPlannerAnswers({});
+    setAiPlannerLastChanges([]);
+    setPlannerDirty(true);
+    setAiPlannerError("");
+  }, style: { minHeight: "34px", padding: "5px 7px", borderRadius: "999px", border: "1px solid rgba(165,180,252,.35)", background: "rgba(255,255,255,.07)", color: "#e0e7ff", fontSize: "10px" } }, example))), aiPlannerQuestions.length === 0 && /* @__PURE__ */ React.createElement("button", { type: "button", disabled: aiPlannerBusy || aiPlannerGoal.trim().length < 12, onClick: () => requestAiGuidedPlan(false), style: { width: "100%", marginTop: "10px", padding: "10px 12px", border: 0, borderRadius: "10px", background: "linear-gradient(135deg, #10b981, #6366f1)", color: "white", fontWeight: 900 } }, aiPlannerBusy ? t("guided.ai_plan_building") || "Creating your Guided plan\u2026" : aiPlannerPlan ? t("guided.ai_plan_regenerate") || "Regenerate plan" : t("guided.ai_plan_create") || "Create my Guided plan"), aiPlannerQuestions.length > 0 && !aiPlannerPlan && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "guided-ai-questions-title", style: { marginTop: "10px", padding: "12px", borderRadius: "11px", background: "rgba(79,70,229,.2)", border: "1px solid rgba(165,180,252,.45)" } }, /* @__PURE__ */ React.createElement("strong", { id: "guided-ai-questions-title", style: { display: "block", color: "white", fontSize: "14px" } }, t("guided.ai_plan_questions_title") || "Two quick questions will improve this plan"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#c7d2fe", marginTop: "3px", lineHeight: 1.45 } }, t("guided.ai_plan_questions_hint") || "Guided Mode asks only for important context missing from your description."), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "10px", marginTop: "10px" } }, aiPlannerQuestions.map((question) => /* @__PURE__ */ React.createElement("label", { key: question.id, htmlFor: "guided-ai-question-" + question.id, style: { display: "block", color: "#e0e7ff", fontWeight: 800 } }, question.label, /* @__PURE__ */ React.createElement("select", { id: "guided-ai-question-" + question.id, value: aiPlannerAnswers[question.id] || "", onChange: (event) => {
+    setAiPlannerAnswers((previous) => ({ ...previous, [question.id]: event.target.value }));
+    setPlannerDirty(true);
+    setAiPlannerError("");
+  }, style: { display: "block", width: "100%", marginTop: "5px", padding: "8px", borderRadius: "8px", border: "1px solid rgba(165,180,252,.45)", background: "#172554", color: "white" } }, /* @__PURE__ */ React.createElement("option", { value: "" }, t("guided.ai_plan_choose_answer") || "Choose an answer"), (AI_PLANNER_QUESTION_OPTIONS[question.id] || []).map((option) => /* @__PURE__ */ React.createElement("option", { key: option, value: option }, option)))))), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: aiPlannerBusy || aiPlannerQuestions.some((question) => !aiPlannerAnswers[question.id]), onClick: () => requestAiGuidedPlan(true), style: { width: "100%", marginTop: "10px", padding: "10px 12px", border: 0, borderRadius: "9px", background: "#10b981", color: "#052e2b", fontWeight: 900 } }, aiPlannerBusy ? t("guided.ai_plan_building") || "Creating your Guided plan\u2026" : t("guided.ai_plan_questions_continue") || "Continue and create plan"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: aiPlannerBusy, onClick: () => requestAiGuidedPlan("best-judgment"), style: { width: "100%", marginTop: "6px", padding: "8px 10px", borderRadius: "9px", border: "1px solid rgba(165,180,252,.45)", background: "transparent", color: "#e0e7ff", fontWeight: 800 } }, t("guided.ai_plan_use_best_judgment") || "Use your best judgment"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", marginTop: "4px", color: "#a5b4fc", fontSize: "10px", lineHeight: 1.4 } }, t("guided.ai_plan_use_best_judgment_hint") || "Skip these questions and let the planner choose sensible defaults.")), aiPlannerBusy && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", style: { marginTop: "6px", color: "#d1fae5", fontSize: "12px" } }, t("guided.ai_plan_building_hint") || "Matching your goals to the available tools and delivery routes."), aiPlannerError && /* @__PURE__ */ React.createElement("div", { role: "alert", style: { marginTop: "7px", padding: "8px", borderRadius: "8px", background: "rgba(127,29,29,.35)", border: "1px solid rgba(248,113,113,.55)", color: "#fecaca", fontSize: "12px" } }, aiPlannerError), aiPlannerPlan && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "9px", padding: "10px", borderRadius: "10px", background: "rgba(15,23,42,.48)", border: "1px solid rgba(165,180,252,.3)" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("strong", { style: { color: "white", fontSize: "14px" } }, aiPlannerPlan.title || (t("guided.ai_plan_review_title") || "Proposed Guided plan")), /* @__PURE__ */ React.createElement("span", { style: { padding: "2px 6px", borderRadius: "999px", background: aiPlannerPlan.source === "fallback" ? "rgba(251,191,36,.16)" : "rgba(16,185,129,.18)", color: aiPlannerPlan.source === "fallback" ? "#fde68a" : "#a7f3d0", fontSize: "10px", fontWeight: 900 } }, aiPlannerPlan.source === "fallback" ? t("guided.ai_plan_local_badge") || "Local fallback" : aiPlannerPlan.source === "saved" ? t("guided.ai_plan_saved_badge") || "Saved plan" : aiPlannerPlan.source === "draft" ? t("guided.ai_plan_draft_badge") || "Recovered draft" : t("guided.ai_plan_ai_badge") || "AI configured"), /* @__PURE__ */ React.createElement("span", { style: { color: "#c7d2fe", fontSize: "11px" } }, Math.max(5, Number(aiPlannerPlan.estimatedMinutes) || 0), " ", t("guided.ai_plan_minutes") || "min to build"), /* @__PURE__ */ React.createElement("span", { style: { color: "#a5b4fc", fontSize: "10px" } }, t("guided.ai_plan_estimate_dynamic") || "Updates as you edit")), /* @__PURE__ */ React.createElement("p", { style: { margin: "5px 0 0", color: "#e0e7ff", fontSize: "12px", lineHeight: 1.5 } }, aiPlannerPlan.summary), aiPlannerPlan.rationale && /* @__PURE__ */ React.createElement("p", { style: { margin: "5px 0 0", color: "#c7d2fe", fontSize: "11px", lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("strong", { style: { color: "#a7f3d0" } }, t("guided.ai_plan_why") || "Why this fits", ":"), " ", aiPlannerPlan.rationale), aiPlannerPlan.fallbackReason && /* @__PURE__ */ React.createElement("div", { role: "status", style: { marginTop: "6px", padding: "7px", borderRadius: "7px", background: "rgba(120,53,15,.28)", color: "#fde68a", fontSize: "11px" } }, aiPlannerPlan.fallbackReason), Array.isArray(aiPlannerPlan.assumptions) && aiPlannerPlan.assumptions.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "7px" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "#fef3c7", fontSize: "11px" } }, t("guided.ai_plan_assumptions") || "Review these assumptions"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "3px 0 0", paddingLeft: "18px", color: "#e0e7ff", fontSize: "11px", lineHeight: 1.45 } }, aiPlannerPlan.assumptions.map((item, index) => /* @__PURE__ */ React.createElement("li", { key: index }, item)))), aiPlannerLastChanges.length > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-labelledby": "guided-ai-changes-title", style: { marginTop: "8px", padding: "9px", borderRadius: "8px", background: "rgba(6,78,59,.34)", border: "1px solid rgba(110,231,183,.38)" } }, /* @__PURE__ */ React.createElement("strong", { id: "guided-ai-changes-title", style: { display: "block", color: "#a7f3d0", fontSize: "12px" } }, t("guided.ai_plan_changes_title") || "What changed"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#d1fae5", fontSize: "10px", marginTop: "2px" } }, t("guided.ai_plan_changes_hint") || "Review the latest AI adjustment before using the plan."), /* @__PURE__ */ React.createElement("ul", { style: { margin: "5px 0 0", paddingLeft: "18px", color: "#e0e7ff", fontSize: "11px", lineHeight: 1.45 } }, aiPlannerLastChanges.map((change, index) => /* @__PURE__ */ React.createElement("li", { key: index }, change)))), /* @__PURE__ */ React.createElement("div", { role: "region", "aria-labelledby": "guided-ai-refine-title", style: { marginTop: "9px", padding: "8px", borderRadius: "8px", background: "rgba(99,102,241,.12)", border: "1px solid rgba(165,180,252,.3)" } }, /* @__PURE__ */ React.createElement("strong", { id: "guided-ai-refine-title", style: { display: "block", color: "white", fontSize: "12px" } }, t("guided.ai_plan_conversation_title") || "Refine this plan with a message"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", marginTop: "2px", color: "#c7d2fe", fontSize: "10px", lineHeight: 1.4 } }, t("guided.ai_plan_conversation_hint") || "Ask for a shorter path, another support, a different assessment, or a new delivery constraint."), aiPlannerMessages.length > 0 && /* @__PURE__ */ React.createElement("div", { role: "log", "aria-live": "polite", "aria-label": t("guided.ai_plan_conversation_log") || "Planning conversation", style: { display: "grid", gap: "4px", maxHeight: "120px", overflowY: "auto", marginTop: "6px" } }, aiPlannerMessages.map((message, index) => /* @__PURE__ */ React.createElement("div", { key: index, style: { justifySelf: message.role === "teacher" ? "end" : "start", maxWidth: "92%", padding: "5px 7px", borderRadius: "7px", background: message.role === "teacher" ? "rgba(79,70,229,.38)" : "rgba(16,185,129,.16)", color: "#e0e7ff", fontSize: "10px", lineHeight: 1.35 } }, /* @__PURE__ */ React.createElement("strong", { style: { color: message.role === "teacher" ? "#c7d2fe" : "#a7f3d0" } }, message.role === "teacher" ? t("guided.ai_plan_you") || "You" : t("guided.ai_plan_planner") || "Planner", ":"), " ", message.text))), /* @__PURE__ */ React.createElement("label", { htmlFor: "guided-ai-refinement", style: { display: "block", color: "#e0e7ff", fontSize: "11px", fontWeight: 800, marginTop: "7px" } }, t("guided.ai_plan_refinement_label") || "What should change?"), /* @__PURE__ */ React.createElement("textarea", { id: "guided-ai-refinement", value: aiPlannerRefinement, maxLength: 500, disabled: aiPlannerBusy, onChange: (event) => {
+    setAiPlannerRefinement(event.target.value);
+    setPlannerDirty(true);
+    setAiPlannerError("");
+  }, onKeyDown: (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") requestAiPlanRefinement();
+  }, placeholder: t("guided.ai_plan_refinement_placeholder") || "Example: Make it 30 minutes, keep vocabulary support, and prioritize printable work.", style: { width: "100%", minHeight: "66px", marginTop: "3px", resize: "vertical", padding: "7px 8px", borderRadius: "7px", border: "1px solid rgba(165,180,252,.4)", background: "rgba(15,23,42,.7)", color: "white", fontSize: "11px", lineHeight: 1.4 } }), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("guided.ai_plan_quick_refinements") || "Quick refinements", style: { display: "flex", gap: "4px", flexWrap: "wrap", marginTop: "5px" } }, [
+    t("guided.ai_plan_refine_shorter") || "Make it shorter",
+    t("guided.ai_plan_refine_vocabulary") || "Add vocabulary support",
+    t("guided.ai_plan_refine_print") || "Prioritize printable options",
+    t("guided.ai_plan_refine_assessment") || "Add a quick assessment"
+  ].map((suggestion) => /* @__PURE__ */ React.createElement("button", { type: "button", key: suggestion, disabled: aiPlannerBusy, onClick: () => {
+    setAiPlannerRefinement(suggestion);
+    setPlannerDirty(true);
+  }, style: { minHeight: "32px", padding: "4px 6px", borderRadius: "999px", border: "1px solid rgba(165,180,252,.3)", background: "rgba(255,255,255,.05)", color: "#e0e7ff", fontSize: "9px" } }, suggestion))), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: aiPlannerBusy || aiPlannerRefinement.trim().length < 3, onClick: requestAiPlanRefinement, style: { width: "100%", marginTop: "6px", padding: "7px 9px", border: 0, borderRadius: "7px", background: "#4f46e5", color: "white", fontWeight: 900 } }, aiPlannerBusy ? t("guided.ai_plan_updating") || "Updating plan\u2026" : t("guided.ai_plan_update") || "Update this plan")), /* @__PURE__ */ React.createElement("fieldset", { style: { margin: "9px 0 0", padding: 0, border: 0 } }, /* @__PURE__ */ React.createElement("legend", { style: { color: "white", fontSize: "12px", fontWeight: 900 } }, t("guided.ai_plan_steps_title") || "Review and edit the steps"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "5px", maxHeight: "190px", overflowY: "auto", display: "grid", gap: "4px", paddingRight: "3px" } }, (allSteps || []).filter((item) => !["source-input", "directions", "package-deliver", "_final"].includes(item.id)).map((item) => {
+    const checked = aiPlannerPlan.stepIds.includes(item.id);
+    const reason = aiPlannerPlan.stepReasons?.[item.id];
+    return /* @__PURE__ */ React.createElement("label", { key: item.id, style: { display: "flex", alignItems: "flex-start", gap: "7px", padding: "6px 7px", borderRadius: "7px", background: checked ? "rgba(16,185,129,.12)" : "rgba(255,255,255,.04)", color: "white", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked, onChange: (event) => updateAiPlanStep(item.id, event.target.checked) }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", { style: { display: "block" } }, localizeStep(item, "label")), checked && reason && /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#c7d2fe", marginTop: "2px", lineHeight: 1.35 } }, reason)));
+  }))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "7px", padding: "7px", borderRadius: "7px", border: "1px solid rgba(110,231,183,.25)", color: "#d1fae5", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("strong", null, t("guided.ai_plan_protected") || "Always included", ":"), " ", t("guided.ai_plan_protected_steps") || "Source Material, Assignment Directions & Goals, Preview/Package/Deliver, and Review & Finish."), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "6px", marginTop: "8px" } }, /* @__PURE__ */ React.createElement("label", { style: { color: "#e0e7ff", fontSize: "11px" } }, t("guided.delivery_setting") || "Teaching setting", /* @__PURE__ */ React.createElement("select", { value: aiPlannerPlan.deliverySetting || "take-home", onChange: (event) => {
+    setAiPlannerPlan((previous) => ({ ...previous, deliverySetting: event.target.value }));
+    setAiPlannerLastChanges([]);
+    setPlannerDirty(true);
+    setSavedAiPlanStatus("");
+  }, style: { display: "block", width: "100%", marginTop: "3px", padding: "6px", borderRadius: "7px", background: "#172554", color: "white" } }, /* @__PURE__ */ React.createElement("option", { value: "take-home" }, t("guided.delivery_setting_take_home") || "Take-home"), /* @__PURE__ */ React.createElement("option", { value: "print" }, t("guided.delivery_setting_print") || "Print / paper"), /* @__PURE__ */ React.createElement("option", { value: "live" }, t("guided.delivery_setting_live") || "Live class"), /* @__PURE__ */ React.createElement("option", { value: "lms" }, t("guided.delivery_setting_lms") || "LMS"))), /* @__PURE__ */ React.createElement("label", { style: { color: "#e0e7ff", fontSize: "11px" } }, t("guided.delivery_priority") || "Top priority", /* @__PURE__ */ React.createElement("select", { value: aiPlannerPlan.deliveryPriority || "accessible", onChange: (event) => {
+    setAiPlannerPlan((previous) => ({ ...previous, deliveryPriority: event.target.value }));
+    setAiPlannerLastChanges([]);
+    setPlannerDirty(true);
+    setSavedAiPlanStatus("");
+  }, style: { display: "block", width: "100%", marginTop: "3px", padding: "6px", borderRadius: "7px", background: "#172554", color: "white" } }, /* @__PURE__ */ React.createElement("option", { value: "accessible" }, t("guided.delivery_priority_accessible") || "Accessibility"), /* @__PURE__ */ React.createElement("option", { value: "editable" }, t("guided.delivery_priority_editable") || "Editable"), /* @__PURE__ */ React.createElement("option", { value: "assessment" }, t("guided.delivery_priority_assessment") || "Assessment"), /* @__PURE__ */ React.createElement("option", { value: "interactive" }, t("guided.delivery_priority_interactive") || "Interactive"), /* @__PURE__ */ React.createElement("option", { value: "low-connectivity" }, t("guided.delivery_priority_offline") || "Low connectivity")))), /* @__PURE__ */ React.createElement("div", { role: "region", "aria-labelledby": "guided-ai-roadmap-title", style: { marginTop: "9px", padding: "9px", borderRadius: "9px", background: "rgba(15,23,42,.55)", border: "1px solid rgba(110,231,183,.28)" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", gap: "7px", alignItems: "baseline" } }, /* @__PURE__ */ React.createElement("strong", { id: "guided-ai-roadmap-title", style: { color: "white", fontSize: "12px" } }, t("guided.ai_plan_roadmap_title") || "Before you begin: lesson roadmap"), /* @__PURE__ */ React.createElement("span", { style: { color: "#a7f3d0", fontSize: "10px" } }, aiPlanRoadmapSteps.length, " ", t("guided.ai_plan_total_steps") || "total steps", " \xB7 ", aiPlanResourceLabels.length, " ", t("guided.ai_plan_resources_short") || "resources", " \xB7 ", Math.max(5, Number(aiPlannerPlan.estimatedMinutes) || 0), " ", t("guided.ai_plan_minutes_short") || "min")), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#c7d2fe", fontSize: "10px", marginTop: "2px", lineHeight: 1.4 } }, t("guided.ai_plan_roadmap_hint") || "This is the path Guided Mode will walk through after you approve it."), /* @__PURE__ */ React.createElement("ol", { "aria-label": t("guided.ai_plan_phase_roadmap") || "Guided phase roadmap", style: { listStyle: "none", margin: "7px 0 0", padding: 0, display: "grid", gap: "5px" } }, aiPlanPhaseGroups.map((phase, phaseIndex) => {
+    const phaseKey = "guided.phase_" + phase.id;
+    const translated = t(phaseKey);
+    const phaseName = translated && translated !== phaseKey ? translated : phase.label;
+    return /* @__PURE__ */ React.createElement("li", { key: phase.id, style: { display: "grid", gridTemplateColumns: "22px minmax(0, 1fr)", gap: "6px", alignItems: "start" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { width: "22px", height: "22px", display: "grid", placeItems: "center", borderRadius: "999px", background: "#4f46e5", color: "white", fontSize: "10px", fontWeight: 900 } }, phaseIndex + 1), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "#a7f3d0", fontSize: "10px" } }, phaseName), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#e0e7ff", fontSize: "10px", lineHeight: 1.35 } }, phase.steps.map((item) => localizeStep(item, "label")).join(" \u2192 "))));
+  })), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "7px", paddingTop: "7px", borderTop: "1px solid rgba(255,255,255,.1)" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "#fef3c7", fontSize: "10px" } }, t("guided.ai_plan_expected_resources") || "Expected lesson resources"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", marginTop: "2px", color: "#e0e7ff", fontSize: "10px", lineHeight: 1.4 } }, aiPlanResourceLabels.join(" \xB7 "))), aiPlanDeliveryRecommendation && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "7px", padding: "7px", borderRadius: "7px", background: "rgba(16,185,129,.1)", color: "#d1fae5", fontSize: "10px", lineHeight: 1.4 } }, /* @__PURE__ */ React.createElement("strong", null, t("guided.ai_plan_delivery_preview") || "Planned delivery", ":"), " ", aiPlanDeliveryRecommendation.primary, " ", /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2192"), " ", /* @__PURE__ */ React.createElement("strong", null, t("guided.delivery_backup") || "Backup", ":"), " ", aiPlanDeliveryRecommendation.backup, /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#a7f3d0", marginTop: "2px" } }, aiPlanDeliveryRecommendation.why))), /* @__PURE__ */ React.createElement("div", { role: "region", "aria-labelledby": "guided-ai-readiness-title", style: { marginTop: "10px", padding: "10px", borderRadius: "10px", background: aiPlanReadinessAttentionCount ? "rgba(120,53,15,.22)" : "rgba(6,78,59,.3)", border: "1px solid " + (aiPlanReadinessAttentionCount ? "rgba(251,191,36,.5)" : "rgba(110,231,183,.4)") } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" } }, /* @__PURE__ */ React.createElement("strong", { id: "guided-ai-readiness-title", style: { color: "white", fontSize: "13px" } }, t("guided.ai_plan_readiness_title") || "Plan readiness"), /* @__PURE__ */ React.createElement("span", { style: { padding: "3px 7px", borderRadius: "999px", background: aiPlanReadinessAttentionCount ? "rgba(251,191,36,.16)" : "rgba(16,185,129,.18)", color: aiPlanReadinessAttentionCount ? "#fde68a" : "#a7f3d0", fontWeight: 900 } }, aiPlanReadinessAttentionCount ? (t("guided.ai_plan_readiness_attention") || "{count} needs attention").replace("{count}", aiPlanReadinessAttentionCount) : t("guided.ai_plan_readiness_ready") || "Ready to start")), /* @__PURE__ */ React.createElement("ul", { "aria-live": "polite", style: { listStyle: "none", padding: 0, margin: "7px 0 0", display: "grid", gap: "5px" } }, aiPlanReadinessItems.map((item) => /* @__PURE__ */ React.createElement("li", { key: item.id, style: { display: "flex", alignItems: "flex-start", gap: "7px", color: item.state === "attention" ? "#fde68a" : item.state === "ready" ? "#d1fae5" : "#e0e7ff", lineHeight: 1.45 } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { flexShrink: 0 } }, item.state === "attention" ? "\u26A0" : item.state === "ready" ? "\u2713" : "\u2139"), /* @__PURE__ */ React.createElement("span", { style: { flex: 1 } }, item.label, item.action === "quiz" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => updateAiPlanStep("quiz", true), style: { display: "block", marginTop: "5px", padding: "5px 8px", minHeight: "34px", border: 0, borderRadius: "7px", background: "#f59e0b", color: "#451a03", fontWeight: 900 } }, t("guided.ai_plan_add_assess") || "Add Assess step")))))), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "guided-ai-save-title", style: { marginTop: "8px", padding: "8px", borderRadius: "8px", background: "rgba(255,255,255,.05)" } }, /* @__PURE__ */ React.createElement("strong", { id: "guided-ai-save-title", style: { display: "block", color: "white", fontSize: "11px" } }, t("guided.ai_plan_save_title") || "Save this path for another lesson"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "5px", marginTop: "5px" } }, /* @__PURE__ */ React.createElement("label", { htmlFor: "guided-ai-save-name", style: { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clip: "rect(0, 0, 0, 0)", whiteSpace: "nowrap", border: 0 } }, t("guided.ai_plan_save_name") || "Saved plan name"), /* @__PURE__ */ React.createElement("input", { id: "guided-ai-save-name", value: savedAiPlanName, maxLength: 80, onChange: (event) => {
+    setSavedAiPlanName(event.target.value);
+    setPlannerDirty(true);
+    setSavedAiPlanStatus("");
+  }, placeholder: aiPlannerPlan.title || (t("guided.ai_plan_save_name") || "Saved plan name"), style: { minWidth: 0, flex: 1, padding: "6px 7px", borderRadius: "7px", border: "1px solid rgba(165,180,252,.35)", background: "#172554", color: "white", fontSize: "11px" } }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveCurrentAiPlan, disabled: aiPlannerBusy, style: { padding: "6px 8px", border: 0, borderRadius: "7px", background: "#0f766e", color: "white", fontWeight: 900, fontSize: "10px" } }, activeSavedAiPlanId ? t("guided.ai_plan_save_changes") || "Save changes" : t("guided.ai_plan_save") || "Save plan")), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#a5b4fc", fontSize: "9px", marginTop: "3px" } }, t("guided.ai_plan_save_local") || "Saved only on this device. Generated lesson content is not included."), savedAiPlanStatus && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", style: { color: "#a7f3d0", fontSize: "10px", marginTop: "4px" } }, savedAiPlanStatus)), /* @__PURE__ */ React.createElement("div", { className: "allo-guided-planning-actions" }, pendingAiPlanApply && /* @__PURE__ */ React.createElement("div", { role: "alert", style: { marginTop: "8px", padding: "8px", borderRadius: "8px", background: "rgba(120,53,15,.32)", border: "1px solid rgba(251,191,36,.55)", color: "#fef3c7", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "white" } }, t("guided.ai_plan_replace_title") || "Apply this new path?"), t("guided.ai_plan_replace_text") || "Guided progress will restart at Source Material. Your generated resources remain in History.", /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "6px", marginTop: "7px" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: applyAiPlanNow, style: { flex: 1, border: 0, borderRadius: "7px", fontWeight: 900 } }, t("guided.ai_plan_apply_confirm") || "Apply and restart path"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPendingAiPlanApply(false), style: { flex: 1, borderRadius: "7px", border: "1px solid rgba(255,255,255,.25)", background: "transparent", color: "white" } }, t("common.cancel") || "Cancel"))), !pendingAiPlanApply && /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !aiPlannerPlan.stepIds.length, onClick: applyAiPlan, style: { width: "100%", marginTop: "9px", padding: "8px 10px", border: 0, borderRadius: "9px", background: "#10b981", color: "#052e2b", fontWeight: 900 } }, t("guided.ai_plan_apply") || "Use this Guided plan")))))), currentPhase && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("guided.phase_context") || "Guided phase", title: currentPhaseDescription, style: { display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap", margin: "0 0 6px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", fontWeight: 900, color: "#312e81", background: "#c7d2fe", borderRadius: "999px", padding: "3px 8px" } }, (t("guided.phase_of") || "Phase {current} of {total}").replace("{current}", currentPhaseIndex + 1).replace("{total}", activePhaseDefinitions.length)), /* @__PURE__ */ React.createElement("span", { style: { color: "#a7f3d0", fontSize: "12px", fontWeight: 800 } }, currentPhaseLabel)), /* @__PURE__ */ React.createElement("p", { style: { fontSize: "13px", color: "#e0e7ff", margin: "0 0 6px", fontWeight: 700 } }, step.label || (t("guided.complete") || "Complete!")), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("guided.estimate_label") || "Step estimate", style: { display: "flex", gap: "6px", marginBottom: "10px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", color: "#e0e7ff", background: "rgba(255,255,255,.08)", borderRadius: "999px", padding: "3px 8px" } }, stepMeta[0]), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", color: "#e0e7ff", background: "rgba(255,255,255,.08)", borderRadius: "999px", padding: "3px 8px" } }, t("guided.kind_" + stepMeta[1]) || stepMeta[1])), /* @__PURE__ */ React.createElement("label", { htmlFor: "guided-step-jump", style: { display: "block", fontSize: "12px", color: "#c7d2fe", marginBottom: "4px", fontWeight: 700 } }, t("guided.jump_to_step") || "Jump to step"), /* @__PURE__ */ React.createElement("select", { id: "guided-step-jump", value: guidedStep, disabled: guidedBusy, onChange: (event) => requestGuidedJump(event.target.value), style: { width: "100%", minHeight: "40px", marginBottom: pendingJump ? "6px" : "10px", padding: "7px 9px", borderRadius: "9px", border: "1px solid rgba(165,180,252,.45)", background: "#172554", color: "white", fontSize: "13px", opacity: guidedBusy ? 0.65 : 1 } }, GUIDED_STEPS.map((item, index) => /* @__PURE__ */ React.createElement("option", { key: item.id, value: index }, index + 1, ". ", localizeStep(item, "label")))), pendingJump && /* @__PURE__ */ React.createElement("div", { role: "alert", style: { marginBottom: "10px", padding: "9px", borderRadius: "9px", border: "1px solid rgba(251,191,36,.5)", background: "rgba(120,53,15,.3)", color: "#fef3c7", fontSize: "12px" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "white", marginBottom: "3px" } }, t("guided.jump_confirm_title") || "Jump forward?"), (t("guided.jump_confirm_text") || "{count} unfinished steps will be marked skipped.").replace("{count}", pendingJump.bypassedIds.length), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "7px", marginTop: "7px" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: confirmGuidedJump, style: { flex: 1, border: 0, borderRadius: "7px", fontWeight: 800 } }, t("guided.jump_and_skip") || "Jump and mark skipped"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPendingJump(null), style: { flex: 1, borderRadius: "7px", border: "1px solid rgba(255,255,255,.25)", background: "transparent", color: "white" } }, t("common.cancel") || "Cancel"))), /* @__PURE__ */ React.createElement("div", { role: "progressbar", "aria-valuenow": Math.min(guidedStep + 1, GUIDED_STEPS.length), "aria-valuemin": 1, "aria-valuemax": GUIDED_STEPS.length, "aria-label": (t("guided.progress_label") || "Guided tour progress") + ": " + Math.min(guidedStep + 1, GUIDED_STEPS.length) + "/" + GUIDED_STEPS.length, style: { display: "flex", gap: GUIDED_STEPS.length > 14 ? "2px" : "3px", marginBottom: "12px" } }, GUIDED_STEPS.map((s, i) => {
     const done = _effectiveCompletedSet.has(s.id);
     const skipped = Array.isArray(guidedSkippedIds) && guidedSkippedIds.includes(s.id);
     const current = i === guidedStep;
@@ -1272,13 +1791,13 @@ function GuidedModeBanner({
       if (typeof resetGuidedProgress === "function") resetGuidedProgress();
       handleExitGuidedMode();
     }
-  }, style: { flex: 1, padding: "6px 12px", fontSize: "12px", fontWeight: 700, color: "white", background: "linear-gradient(135deg, #818cf8, #6366f1)", border: "none", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, readinessCount === readinessTotal ? t("guided.all_done") || "Finish Guided Mode" : t("guided.finish_with_checks_remaining") || "Finish with checks remaining"), toggleGuidedStepId && /* @__PURE__ */ React.createElement("button", { type: "button", disabled: guidedBusy, onClick: () => setShowPicker((p) => !p), "aria-label": t("guided.customize") || "Choose which steps to include", "aria-expanded": showPicker, "aria-controls": "guided-step-picker", title: t("guided.customize") || "Choose which steps to include", style: { padding: "6px 10px", fontSize: "12px", fontWeight: 700, color: showPicker ? "white" : "#c7d2fe", background: showPicker ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, "\u2699"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowGuidedTip((p) => !p), "aria-expanded": showGuidedTip, "aria-controls": "guided-about-panel", style: { padding: "6px 12px", fontSize: "12px", fontWeight: 700, color: showGuidedTip ? "white" : "#c7d2fe", background: showGuidedTip ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, showGuidedTip ? "\u2715" : "\u2139\uFE0F", " ", t("guided.about")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: guidedBusy, onClick: handleExitGuidedMode, title: t("guided.resume_later_hint") || "Save your place and return from Setup", style: { padding: "6px 12px", fontSize: "12px", fontWeight: 700, color: "#fde68a", background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, t("guided.resume_later") || "Resume later")), showPicker && toggleGuidedStepId && /* @__PURE__ */ React.createElement("div", { id: "guided-step-picker", role: "group", "aria-label": t("guided.choose_steps") || "Choose which steps to include", style: { marginTop: "10px", padding: "10px 12px", background: "rgba(255,255,255,0.06)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", maxHeight: "340px", overflowY: "auto", animation: "fadeIn 0.3s ease-out" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 800, color: "rgba(165,180,252,0.95)", marginBottom: "8px" } }, t("guided.choose_steps") || "Choose which steps to include", " (", allSteps.filter((s) => isStepOn(s.id)).length, "/", allSteps.length, ")"), Array.isArray(guidedPresets) && typeof applyGuidedPreset === "function" && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("guided.preset_group") || "Goal-based Guided Mode paths", style: { display: "grid", gap: "7px", marginBottom: "10px" } }, guidedPresets.map((preset) => {
+  }, style: { flex: 1, padding: "6px 12px", fontSize: "12px", fontWeight: 700, color: "white", background: "linear-gradient(135deg, #818cf8, #6366f1)", border: "none", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, readinessCount === readinessTotal ? t("guided.all_done") || "Finish Guided Mode" : t("guided.finish_with_checks_remaining") || "Finish with checks remaining"), toggleGuidedStepId && /* @__PURE__ */ React.createElement("button", { type: "button", disabled: guidedBusy, onClick: () => setShowPicker((p) => !p), "aria-label": t("guided.customize") || "Choose which steps to include", "aria-expanded": showPicker, "aria-controls": "guided-step-picker", title: t("guided.customize") || "Choose which steps to include", style: { padding: "6px 10px", fontSize: "12px", fontWeight: 700, color: showPicker ? "white" : "#c7d2fe", background: showPicker ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, "\u2699"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowGuidedTip((p) => !p), "aria-expanded": showGuidedTip, "aria-controls": "guided-about-panel", style: { padding: "6px 12px", fontSize: "12px", fontWeight: 700, color: showGuidedTip ? "white" : "#c7d2fe", background: showGuidedTip ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, showGuidedTip ? "\u2715" : "\u2139\uFE0F", " ", t("guided.about")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: guidedBusy, onClick: handleExitGuidedMode, title: t("guided.resume_later_hint") || "Save your place and return from Setup", style: { padding: "6px 12px", fontSize: "12px", fontWeight: 700, color: "#fde68a", background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: "10px", cursor: "pointer", transition: "all 0.2s" } }, t("guided.resume_later") || "Resume later")), showPicker && toggleGuidedStepId && /* @__PURE__ */ React.createElement("div", { id: "guided-step-picker", role: "group", "aria-label": t("guided.choose_steps") || "Choose which steps to include", style: { marginTop: "10px", padding: "10px 12px", background: "rgba(255,255,255,0.06)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", maxHeight: "340px", overflowY: "auto", animation: "fadeIn 0.3s ease-out" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 800, color: "rgba(165,180,252,0.95)", marginBottom: "8px" } }, t("guided.choose_steps") || "Choose which steps to include", " (", allSteps.filter((s) => isStepOn(s.id)).length, "/", allSteps.length, ")"), typeof generateGuidedPlanFromGoal === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", disabled: guidedBusy, onClick: openAiPlanner, style: { width: "100%", marginBottom: "9px", padding: "9px 10px", textAlign: "left", borderRadius: "9px", border: "1px solid rgba(110,231,183,.48)", background: "rgba(16,185,129,.13)", color: "white" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", fontSize: "13px" } }, "\u2728 ", t("guided.ai_plan_refine") || "Plan or refine this path with AI"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#d1fae5", fontSize: "11px", marginTop: "2px" } }, t("guided.ai_plan_refine_hint") || "Describe a goal or constraint and review a new path before replacing the current one.")), Array.isArray(guidedPresets) && typeof applyGuidedPreset === "function" && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("guided.preset_group") || "Goal-based Guided Mode paths", style: { display: "grid", gap: "7px", marginBottom: "10px" } }, guidedPresets.map((preset) => {
     const active = isPresetActive(preset);
     const count = presetStepIds(preset).length;
     return /* @__PURE__ */ React.createElement("button", { type: "button", key: preset.id, disabled: guidedBusy, "aria-pressed": active, onClick: () => choosePreset(preset), style: { textAlign: "left", padding: "9px 10px", borderRadius: "9px", border: "1px solid " + (active ? "#6ee7b7" : "rgba(129,140,248,.35)"), background: active ? "rgba(16,185,129,.18)" : "rgba(99,102,241,.12)", color: "white" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", fontSize: "13px" } }, t("guided.preset_" + preset.id + "_label") || preset.label, active ? " " + (t("guided.preset_active") || "(active)") : ""), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#c7d2fe", fontSize: "12px", marginTop: "3px", lineHeight: 1.4 } }, t("guided.preset_" + preset.id + "_description") || preset.description), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#a7f3d0", fontSize: "12px", marginTop: "4px" } }, (t("guided.preset_meta") || "{count} steps \xB7 about {minutes} min").replace("{count}", count).replace("{minutes}", Math.max(4, count * 2))));
   })), pendingPreset && /* @__PURE__ */ React.createElement("div", { role: "alert", style: { marginBottom: "10px", padding: "10px", borderRadius: "9px", border: "1px solid rgba(251,191,36,.55)", background: "rgba(120,53,15,.3)", color: "#fef3c7", fontSize: "12px" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "white", marginBottom: "4px" } }, t("guided.preset_confirm_title") || "Change Guided path?"), t("guided.preset_confirm_text") || "This restarts Guided progress. Your generated resources remain in History.", /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "7px", marginTop: "8px" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: confirmPreset, style: { flex: 1, padding: "7px", borderRadius: "7px", border: 0, fontWeight: 800 } }, t("guided.change_path") || "Change path"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPendingPreset(null), style: { flex: 1, padding: "7px", borderRadius: "7px", border: "1px solid rgba(255,255,255,.25)", background: "transparent", color: "white" } }, t("common.cancel") || "Cancel"))), pendingStepId && /* @__PURE__ */ React.createElement("div", { role: "alert", style: { marginBottom: "10px", padding: "10px", borderRadius: "9px", border: "1px solid rgba(251,191,36,.55)", background: "rgba(120,53,15,.3)", color: "#fef3c7", fontSize: "12px" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "white", marginBottom: "4px" } }, t("guided.step_change_confirm_title") || "Change included steps?"), t("guided.step_change_confirm_text") || "This returns Guided Mode to step 1. Completed resources remain in History.", /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "7px", marginTop: "8px" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: confirmStepToggle, style: { flex: 1, padding: "7px", borderRadius: "7px", border: 0, fontWeight: 800 } }, t("guided.change_steps") || "Change steps"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPendingStepId(null), style: { flex: 1, padding: "7px", borderRadius: "7px", border: "1px solid rgba(255,255,255,.25)", background: "transparent", color: "white" } }, t("common.cancel") || "Cancel"))), "            ", typeof setGuidedAutoAdvance === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", role: "switch", "aria-checked": !!guidedAutoAdvance, disabled: guidedBusy, onClick: () => setGuidedAutoAdvance((value) => !value), style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", width: "100%", padding: "9px 10px", marginBottom: "10px", borderRadius: "9px", border: "1px solid rgba(165,180,252,.35)", background: "rgba(255,255,255,.06)", color: "white", textAlign: "left" } }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", fontSize: "13px" } }, t("guided.auto_advance") || "Automatically continue"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", color: "#c7d2fe", fontSize: "12px", marginTop: "2px" } }, t("guided.auto_advance_hint") || "Move to the next step after a resource finishes.")), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { flexShrink: 0, width: "34px", height: "20px", borderRadius: "999px", padding: "2px", background: guidedAutoAdvance ? "#10b981" : "#475569" } }, /* @__PURE__ */ React.createElement("span", { style: { display: "block", width: "16px", height: "16px", borderRadius: "50%", background: "white", transform: guidedAutoAdvance ? "translateX(14px)" : "translateX(0)", transition: "transform .15s" } }))), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "10px", padding: "9px 10px", borderRadius: "9px", border: "1px solid rgba(148,163,184,.28)", background: "rgba(15,23,42,.25)" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "white", fontSize: "13px" } }, t("guided.local_data_title") || "Local Guided data"), /* @__PURE__ */ React.createElement("span", { style: { display: "block", margin: "3px 0 7px", color: "#c7d2fe", fontSize: "12px", lineHeight: 1.4 } }, t("guided.local_data_hint") || "Clear completed-run summaries, timing history, reflections, and Guided preferences stored on this device. Your current lesson and generated resources stay intact."), !pendingClearGuidedData ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPendingClearGuidedData(true), style: { width: "100%", borderRadius: "7px", border: "1px solid rgba(248,113,113,.45)", background: "transparent", color: "#fecaca", padding: "7px 9px", fontWeight: 800 } }, t("guided.clear_local_data") || "Clear Guided history & preferences") : /* @__PURE__ */ React.createElement("div", { role: "alert", style: { padding: "8px", borderRadius: "8px", background: "rgba(127,29,29,.3)", color: "#fecaca", fontSize: "12px" } }, /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "white", marginBottom: "5px" } }, t("guided.clear_local_confirm") || "Clear local Guided data?"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "7px" } }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearGuidedLocalData, style: { flex: 1, border: 0, borderRadius: "7px", fontWeight: 800 } }, t("guided.clear_now") || "Clear now"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPendingClearGuidedData(false), style: { flex: 1, borderRadius: "7px", border: "1px solid rgba(255,255,255,.25)", background: "transparent", color: "white" } }, t("common.cancel") || "Cancel")))), allSteps.map((s, index) => {
     const on = isStepOn(s.id);
-    const locked = s.id === "source-input" || s.id === "package-deliver" || s.id === "_final";
+    const locked = s.id === "source-input" || s.id === "directions" || s.id === "package-deliver" || s.id === "_final";
     const phaseDef = phaseDefinitions.find((item) => item.id === s.phase) || { id: s.phase || "other", label: s.phase || "Other" };
     const previousPhase = index > 0 ? allSteps[index - 1]?.phase : null;
     const showPhaseHeading = index === 0 || previousPhase !== s.phase;

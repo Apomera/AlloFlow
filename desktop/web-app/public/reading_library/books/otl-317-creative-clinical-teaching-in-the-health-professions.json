@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-317-creative-clinical-teaching-in-the-health-professions",
+  "title": "Creative Clinical Teaching In The Health Professions",
+  "description": "This peer reviewed e-book is a must-read for nurses and other health professionals who strive to teach with creativity and excellence in clinical settings. Each chapter presents current evidence informed educational practice knowledge. Each topic is also presented with text boxes describing ‘Creative Strategies' that clinical teachers from across Canada have successfully implemented. For those who are interested in background knowledge, the authors provided a comprehensive literature base. And, for those interested mainly in 'what to do,' the text box summaries offer step-by-step directions for creative, challenging activities that both new and experienced instructors can begin using immediately.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine"
+  ],
+  "authors": [
+    "Sherri Melrose - Author / Caroline Park - Author / Beth Perry - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Athabasca University Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/creative-clinical-teaching-in-the-health-professions"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This peer reviewed e-book is a must-read for nurses and other health professionals who strive to teach with creativity and excellence in clinical settings. Each chapter presents current evidence informed educational practice knowledge. Each topic is also presented with text boxes describing ‘Creative Strategies' that clinical teachers from across Canada have successfully implemented. For those who are interested in background knowledge, the authors provided a comprehensive literature base. And, for those interested mainly in 'what to do,' the text box summaries offer step-by-step directions for creative, challenging activities that both new and experienced instructors can begin using immediately."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 121
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "317",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

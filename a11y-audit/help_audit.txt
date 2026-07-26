@@ -2,14 +2,31 @@
   HELP MODE COVERAGE AUDIT
 ====================================================
 
-Files scanned: 584
+Files scanned: 978
 Defined help keys (help_strings.js): 927
-Referenced help keys (data-help-key attrs): 891
-  - With definition: 891
-  - MISSING definition: 0
-Dead entries (defined but never referenced): 36
+Referenced help keys (data-help-key attrs): 893
+  - With definition: 887
+  - MISSING definition: 6
+Dead entries (defined but never referenced): 40
 
 --- MISSING help strings (referenced, no definition) ---
+  header_student_actions  [4x in 4 file(s)]
+     - desktop/web-app/build/view_header_module.js
+     - desktop/web-app/public/view_header_module.js
+  history_device_storage  [5x in 5 file(s)]
+     - desktop/app-build/view_history_panel_module.js
+     - desktop/web-app/build/view_history_panel_module.js
+  learning_hub_text_inquiry_card  [4x in 4 file(s)]
+     - desktop/web-app/build/view_learning_hub_modal_module.js
+     - desktop/web-app/public/view_learning_hub_modal_module.js
+  pdf_audit_view_batch_resume_pending_btn  [4x in 4 file(s)]
+     - desktop/web-app/build/view_pdf_audit_module.js
+     - desktop/web-app/public/view_pdf_audit_module.js
+  research_hub_method_  [5x in 5 file(s)]
+     - desktop/app-build/research_hub_module.js
+     - desktop/web-app/build/research_hub_module.js
+  tool_directions  [2x in 1 file(s)]
+     - AlloFlowANTI.txt
 
 --- DEAD entries (defined but never used) ---
   alignment_generate_button
@@ -33,6 +50,10 @@ Dead entries (defined but never referenced): 36
   math_show_work
   persona_custom_instructions_detailed
   persona_mode_toggle
+  quiz_image_style_input
+  quiz_question_count
+  quiz_reflection_count
+  research_hub_lane_
   settings_adventure_xp
   settings_base_xp
   settings_free_response
@@ -50,3 +71,9 @@ Dead entries (defined but never referenced): 36
   wizard_url_source
 
 --- Top sections of MISSING keys (by snake_case prefix) ---
+     1  header
+     1  history
+     1  learning
+     1  pdf
+     1  research
+     1  tool

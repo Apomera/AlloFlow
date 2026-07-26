@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-480-cicero-on-pompey-s-command-de-imperio-27-49-latin-text-study-aids-with-v",
+  "title": "Cicero, On Pompey’s Command (De Imperio), 27-49. Latin Text, Study Aids with Vocabulary, Commentary, and Translation",
+  "description": "In republican times, one of Rome's deadliest enemies was King Mithridates of Pontus. In 66 BCE, after decades of inconclusive struggle, the tribune Manilius proposed a bill that would give supreme command in the war against Mithridates to Pompey the Great, who had just swept the Mediterranean clean of another menace: the pirates. While powerful aristocrats objected to the proposal, which would endow Pompey with unprecedented powers, the bill proved hugely popular among the people, and one of the praetors, Marcus Tullius Cicero, also hastened to lend it his support. In his first ever political speech, variously entitled pro lege Manilia or de imperio Gnaei Pompei, Cicero argues that the war against Mithridates requires the appointment of a perfect general and that the only man to live up to such lofty standards is Pompey. In the section under consideration here, Cicero defines the most important hallmarks of the ideal military commander and tries to demonstrate that Pompey is his living embodiment. This course book offers a portion of the original Latin text, study aids with vocabulary, and a commentary. Designed to stretch and stimulate readers, the incisive commentary will be of particular interest to students of Latin at both AS and undergraduate level. It extends beyond detailed linguistic analysis and historical background to encourage critical engagement with Cicero's prose and discussion of the most recent scholarly thought.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Ingo Gildenhard - Author / Louise Hodgson - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Book Publishers",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/cicero-on-pompey-s-command-de-imperio-27-49-latin-text-study-aids-with-vocabulary-commentary-and-translation"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "In republican times, one of Rome's deadliest enemies was King Mithridates of Pontus. In 66 BCE, after decades of inconclusive struggle, the tribune Manilius proposed a bill that would give supreme command in the war against Mithridates to Pompey the Great, who had just swept the Mediterranean clean of another menace: the pirates. While powerful aristocrats objected to the proposal, which would endow Pompey with unprecedented powers, the bill proved hugely popular among the people, and one of the praetors, Marcus Tullius Cicero, also hastened to lend it his support. In his first ever political speech, variously entitled pro lege Manilia or de imperio Gnaei Pompei, Cicero argues that the war against Mithridates requires the appointment of a perfect general and that the only man to live up to such lofty standards is Pompey. In the section under consideration here, Cicero defines the most important hallmarks of the ideal military commander and tries to demonstrate that Pompey is his living embodiment. This course book offers a portion of the original Latin text, study aids with vocabulary, and a commentary. Designed to stretch and stimulate readers, the incisive commentary will be of particular interest to students of Latin at both AS and undergraduate level. It extends beyond detailed linguistic analysis and historical background to encourage critical engagement with Cicero's prose and discussion of the most recent scholarly thought."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2014."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 250
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "480",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

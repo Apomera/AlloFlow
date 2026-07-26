@@ -1,0 +1,127 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-51992-dareenno",
+  "title": "Dareenno",
+  "description": "Sahmin sida aan u dareemno waxyaabaha kala duwan iyo dadka.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Clare Verbeek, Thembani Dladla, Zanele Buthelezi"
+  ],
+  "illustrators": [
+    "Kathy Arbuckle"
+  ],
+  "translators": [
+    "Fosiyo Mohamud"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi",
+      "role": "Author"
+    },
+    {
+      "name": "Fosiyo Mohamud",
+      "role": "Translation"
+    },
+    {
+      "name": "Kathy Arbuckle",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY-NC 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/3.0/",
+  "attribution": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi (Author); Fosiyo Mohamud (Translation); Kathy Arbuckle (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51992",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51992",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://cae.ukzn.ac.za/resources/seedbooks.aspx",
+    "editionId": "51992",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution. This edition is restricted to noncommercial use."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY-NC 3.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-23d1c089e7f5ab44",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/28597.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28598.png",
+      "text": "Qalbigeeygu wuxuu dareemaa waxyaabo badan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51992#page=1",
+      "sourceDigest": "sha256:2c87d359a581db7abb49bd18fb235f470cb5e42afd004c06dd8f1d1fac093a65"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28599.png",
+      "text": "Waxaan dareemaa farxad marki ayeeyday habeenkii noo shegto sheekooyin.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51992#page=2",
+      "sourceDigest": "sha256:2f55f04869f1ad81068dfdeb01ae81810249e469492558fe82deb2dde299e515"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28600.png",
+      "text": "Waxaan dareemaa nacasnimo markaan la ciyaaro saaxiibkay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51992#page=3",
+      "sourceDigest": "sha256:a8ff8ba0cebbdbd6e1a99d57c57a21f34ec7aaf6c5f7040def16b7ed97845ec8"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28601.png",
+      "text": "Waxaan dareemaa murugo marka aabbahay yiraahdo ma hay lacag.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51992#page=4",
+      "sourceDigest": "sha256:695dd171fa0ede1341bb7c8300d1cb15f6fad56453c607e1ec108c2a77214941"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/28602.png",
+      "text": "Waxaan dareemaa jacayl marka hooyaday i hab isiiso.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=51992#page=5",
+      "sourceDigest": "sha256:c37d236dfd3b46198effc2a9512670dda0eace919425a01007b4ab7497070857"
+    }
+  ],
+  "stats": {
+    "pages": 5,
+    "words": 38
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:506e47bb33b18715c7aeca1640057de47f58d462a63ad0092f9f4c9e4e49631a"
+  }
+}

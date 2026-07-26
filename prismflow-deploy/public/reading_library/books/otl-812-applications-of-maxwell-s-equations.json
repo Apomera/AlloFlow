@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-812-applications-of-maxwell-s-equations",
+  "title": "Applications of Maxwell's Equations",
+  "description": "This book was developed at Simon Fraser University for an upper-level physics course. Along with a careful exposition of electricity and magnetism, it devotes a chapter to ferromagnets. According to the course description, the topics covered were “electromagnetics, magnetostatics, waves, transmission lines, wave guides,antennas, and radiating systems.”",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Physics"
+  ],
+  "authors": [
+    "John F. Cochran - Author / Bretislav Heinrich - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "John F. Cochran, Bretislav Heinrich",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/applications-of-maxwell-s-equations"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book was developed at Simon Fraser University for an upper-level physics course. Along with a careful exposition of electricity and magnetism, it devotes a chapter to ferromagnets. According to the course description, the topics covered were “electromagnetics, magnetostatics, waves, transmission lines, wave guides,antennas, and radiating systems.”"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2004."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 70
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "812",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

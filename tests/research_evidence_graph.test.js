@@ -85,7 +85,8 @@ function portfolioFixture() {
 describe('AlloFlow Research Evidence Graph', () => {
   it('keeps disciplinary node types distinct while creating explicit reasoning links', () => {
     const graph = evidenceGraph.buildEvidenceGraph(portfolioFixture());
-    expect(graph.schemaVersion).toBe(1);
+    expect(graph.schemaVersion).toBe(2);
+    expect(graph.snapshotId).toMatch(/^snapshot:/);
     expect(graph.nodes.map((node) => node.type)).toEqual(expect.arrayContaining([
       'question', 'claim', 'humanities_position', 'design_claim', 'source',
       'evidence', 'test_result', 'tool_artifact', 'annotation',
@@ -135,6 +136,47 @@ describe('AlloFlow Research Evidence Graph', () => {
       '@id': 'ro-crate-metadata.json',
       conformsTo: { '@id': 'https://w3id.org/ro/crate/1.3' },
     }));
+  });
+
+  it('reports dangling, duplicate, and ambiguous references instead of silently dropping them', () => {
+    const graph = evidenceGraph.buildEvidenceGraph({
+      updatedAt: Date.parse('2026-07-25T12:00:00Z'),
+      claims: [{ id: 'duplicate', text: 'First claim' }, { id: 'duplicate', text: 'Second claim' }],
+      evidenceCards: [{ id: 'e1', text: 'Repeated label' }, { id: 'e2', text: 'Repeated label' }],
+      claimEvidenceLinks: [{ claimId: 'missing-claim', evidenceIds: ['missing-evidence'], warrant: 'Broken reference' }],
+    });
+    expect(graph.diagnostics.map((item) => item.code)).toEqual(expect.arrayContaining([
+      'duplicate_graph_id', 'ambiguous_graph_reference', 'dangling_graph_reference',
+    ]));
+  });
+
+  it('exports richer CSL fields, deduplicates source records, and round-trips a validated bundle', () => {
+    const journal = portfolioFixture();
+    journal.createdAt = Date.parse('2026-01-01T00:00:00Z');
+    journal.updatedAt = Date.parse('2026-07-25T12:00:00Z');
+    journal.v = 6;
+    journal.sources[0].citationData = {
+      title: 'A public-domain narrative', author: [{ family: 'Writer', given: 'A.' }],
+      containerTitle: 'Collected Narratives', publisher: 'Example Press', publicationDate: '1892',
+      DOI: '10.1234/example', ISBN: '9780000000000', page: '12-14', language: 'en',
+    };
+    journal.sources.push({ ...journal.sources[0], id: 'source-duplicate' });
+    const citations = evidenceGraph.toCslJson(journal);
+    expect(citations.filter((item) => item.DOI === '10.1234/example')).toHaveLength(1);
+    expect(citations[0]).toMatchObject({
+      'container-title': 'Collected Narratives', publisher: 'Example Press', DOI: '10.1234/example',
+      ISBN: '9780000000000', page: '12-14', language: 'en', issued: { 'date-parts': [[1892]] },
+    });
+    const first = evidenceGraph.buildEvidenceGraph(journal);
+    const second = evidenceGraph.buildEvidenceGraph(journal);
+    expect(first.snapshotId).toBe(second.snapshotId);
+    expect(first.generatedAt).toBe('2026-07-25T12:00:00.000Z');
+    const bundle = evidenceGraph.buildInteroperabilityBundle(journal, { exportedAt: '2026-07-25T13:00:00Z' });
+    expect(evidenceGraph.validateEvidenceGraph(bundle.evidenceGraph)).toEqual({ ok: true, errors: [] });
+    expect(evidenceGraph.validateInteroperabilityBundle(bundle)).toEqual({ ok: true, errors: [] });
+    const imported = evidenceGraph.importPortableBundle(bundle);
+    expect(imported.ok).toBe(true);
+    expect(imported.portfolio.questionTitle).toBe(journal.questionTitle);
   });
 
   it('produces stable graph identifiers and omits raw audio and direct identifiers', () => {

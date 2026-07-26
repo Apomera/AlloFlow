@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-22338-indebe-yemiqhathane-mayiwe",
+  "title": "Indebe yemiqhathane mayiwe",
+  "description": "UMicki nabahlobo bakhe, uLolo noUnathi, babefunda iincwadi zabo abazithanda kunene. “Ukuba nincedise uMicki ukuba aqoqoshe igumbi lakhe lokulala,” watsho uPrudence, “nonke niyakufumana imiqhathane nakuba nigqibile…”",
+  "language": "isiXhosa",
+  "langCode": "xho",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Emotions and life skills",
+    "Family, friends, and home"
+  ],
+  "authors": [
+    "Nozizwe Herero"
+  ],
+  "illustrators": [
+    "Siya Masuku"
+  ],
+  "contributors": [
+    {
+      "name": "Nozizwe Herero",
+      "role": "Writer"
+    },
+    {
+      "name": "Siya Masuku",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Nadene Kriel",
+      "role": "Designer"
+    },
+    {
+      "name": "Glynis Lloyd",
+      "role": "Editor"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/indebe-yemiqhathane-mayiwe/",
+    "attributionUrl": "https://bookdash.org/books/indebe-yemiqhathane-mayiwe/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=the-biscuit-jar-must-fall"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/02/the-biscuit-jar-must-fall_xh_20180122_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/02/the-biscuit-jar-must-fall_xh_20180122_cover.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "UMicki nabahlobo bakhe, uLolo noUnathi, babefunda iincwadi zabo abazithanda kunene. “Ukuba nincedise uMicki ukuba aqoqoshe igumbi lakhe lokulala,” watsho uPrudence, “nonke niyakufumana imiqhathane nakuba nigqibile…”"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Nozizwe Herero (Writer); Siya Masuku (Illustrator); Nadene Kriel (Designer); Glynis Lloyd (Editor)\n\nLanguage: isiXhosa. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=the-biscuit-jar-must-fall"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 91
+  }
+}

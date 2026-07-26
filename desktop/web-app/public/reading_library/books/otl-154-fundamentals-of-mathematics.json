@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-154-fundamentals-of-mathematics",
+  "title": "Fundamentals of Mathematics",
+  "description": "Fundamentals of Mathematics is a work text that covers the traditional study in a modern prealgebra course, as well as the topics of estimation, elementary analytic geometry, and introductory algebra. It is intended for students who: have had previous courses in prealgebra wish to meet the prerequisites of higher level courses such as elementary algebra need to review fundamental mathematical concenpts and techniques This text will help the student devlop the insight and intuition necessary to master arithmetic techniques and manipulative skills. It was written with the following main objectives: to provide the student with an understandable and usable source of information to provide the student with the maximum oppurtinity to see that arithmetic concepts and techniques are logically based to instill in the student the understanding and intuitive skills necessary to know how and when to use particular arithmetic concepts in subsequent material cources and nonclassroom situations to give the students the ability to correctly interpret arithmetically obtained results We have tried to meet these objects by presenting material dynamically much the way an instructure might present the material visually in a classroom. (See the development of the concept of addition and subtraction of fractions in section 5.3 for examples) Intuition and understanding are some of the keys to creative thinking, we belive that the material presented in this text will help students realize that mathematics is a creative subject.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "Denny Burzynski - Author / Wade Ellis - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax CNX",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/fundamentals-of-mathematics"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Fundamentals of Mathematics is a work text that covers the traditional study in a modern prealgebra course, as well as the topics of estimation, elementary analytic geometry, and introductory algebra. It is intended for students who: have had previous courses in prealgebra wish to meet the prerequisites of higher level courses such as elementary algebra need to review fundamental mathematical concenpts and techniques This text will help the student devlop the insight and intuition necessary to master arithmetic techniques and manipulative skills. It was written with the following main objectives: to provide the student with an understandable and usable source of information to provide the student with the maximum oppurtinity to see that arithmetic concepts and techniques are logically based to instill in the student the understanding and intuitive skills necessary to know how and when to use particular arithmetic concepts in subsequent material cources and nonclassroom situations to give the students the ability to correctly interpret arithmetically obtained results We have tried to meet these objects by presenting material dynamically much the way an instructure might present the material visually in a classroom. (See the development of the concept of addition and subtraction of fractions in section 5.3 for examples) Intuition and understanding are some of the keys to creative thinking, we belive that the material presented in this text will help students realize that mathematics is a creative subject."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2008."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 254
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "154",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

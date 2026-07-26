@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47401-akagomba-n-inkoko",
+  "title": "Akagomba n'Inkoko",
+  "description": "Inkoko ihemukira ibikoko vyose, gushika hamwe akagomba kabona ibanga ry'inkoko.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Vincent Afeku"
+  ],
+  "illustrators": [
+    "Wiehan de Jager"
+  ],
+  "translators": [
+    "Selemani Sindakira"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Vincent Afeku",
+      "role": "Author"
+    },
+    {
+      "name": "Selemani Sindakira",
+      "role": "Translation"
+    },
+    {
+      "name": "Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Vincent Afeku (Author); Selemani Sindakira (Translation); Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47401",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-dcb8a3b7b4ba5b2a",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/14805.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14795.png",
+      "text": "Harabaye igihe ibikoko vyose vyabana hamwe nk'ibigenzi. Umunsi umwe, ibikoko vyose bigira inama yugutora umwami wavyo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401#page=1",
+      "sourceDigest": "sha256:1b9858f6b0857d3a7fcbc5d9b4c06ba294ef63e7f988779dab6e8dbc61a75cc9"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14796.png",
+      "text": "Inkoko yashaka kuba umwami. Maze ihenda ibindi bikoko vyose. Ibibwira, \"Umubiko utukura k'umutwe wanje ni umuriro! Mwirinde kuwukorako!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401#page=2",
+      "sourceDigest": "sha256:6ffab14eaceea84a275204a2453c618397f400d0229f2f18515201033015d124"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14797.png",
+      "text": "Ibindi bikoko birizera inkoko. Bihitamwo gutora inkoko nk'umwami wavyo. Ibikoko vyizera yuko umuriro w'inkoko ushobora kubifasha igihe hakanye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401#page=3",
+      "sourceDigest": "sha256:3698e76e4b2186cdbde0a0c07b1d8bfa955199c9e2919ea8f82fe465503b9c96"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14798.png",
+      "text": "Igihe kimwe imvura iragwa. Irongera iragwa. Irongera iragwa. Hari hakanye. Ibintu vyose vyari bitose kandi bikanye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401#page=4",
+      "sourceDigest": "sha256:1d6ef2c485390ca4cfd7c97146cd6e8e849f121878d755d9f6ed6a0ab23e734a"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14799.png",
+      "text": "Agakwavu kabaza ibindi bikoko, \"Ni hehe tworonka umuriro kugira twishushe?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401#page=5",
+      "sourceDigest": "sha256:a6e2b14bd0d79bec2ba5e1e199c28ce7fd10e248c037ec8dd5fc361529388728"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14800.png",
+      "text": "Inkende iravuga, \"Dushobora kuronka umuriro k'umubiko uri k'umutwe w'Inkoko. Inkoko n'umwami wacu kubera afise umuriro k'umutwe.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401#page=6",
+      "sourceDigest": "sha256:d384b356bf934b21df17cf3dcb3dfb35fd3893c4db1b51f46facf33d5020955a"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14801.png",
+      "text": "Ibikoko vyose biremeranya n'inkende. Birungika akagomba kuzana umuriro k'umwami Inkoko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401#page=7",
+      "sourceDigest": "sha256:8723600b4cb3c7b1384e9482b48eb5b3f1272c0f4a23d20eb8bb00c372b59d0e"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14802.png",
+      "text": "Akagomba gasanga inkoko isinziriye cane. Gahitamwo gufata umucanwa katabajije inkoko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401#page=8",
+      "sourceDigest": "sha256:0ada18e8cf5cf1fb91c0b6058bdc61947b902abc268f42fe45729d30f4acb35b"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14803.png",
+      "text": "Akagomba karatoragura ivyatsi vyumye. Gatora ivyatsi kavyegereza umutwe w'Inkoko. Ntacabaye. Ivyatsi ntivyahiye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401#page=9",
+      "sourceDigest": "sha256:d45a07cd5b952043187201ebb5092f381fbceb9c4379f221150f832a6510af56"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14804.png",
+      "text": "\"Vyuka Mwami!\" Akagomba karavuga. \"Dushaka umuriro.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401#page=10",
+      "sourceDigest": "sha256:61ec6f116974e8a46f54631a723409a0686125460eb02139850e4a4173ed8b23"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14805.png",
+      "text": "Ariko Inkoko ntiyashobora guha umuriro Akagomba. Akagomba karashavura, gasubira inyuma kubindi bikoko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401#page=11",
+      "sourceDigest": "sha256:09b6103f7c8c5dcf200e5a8cdcc8dd40035bd4d09f2bdee0825f285bd9d8d369"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/14806.png",
+      "text": "Gasubira inyuma kubindi bikoko. Kabibwira ukwuri kwose kuvyerekeye umubiko uri k'umutwe w'Inkoko. Kuva ico gihe, ntagikoko casubiye gutinya Inkoko. Hama ubugomba burya inkoko zose.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47401#page=12",
+      "sourceDigest": "sha256:709eb3a876e726bd029f18066fbf44ffa46ca9c4fb93092af521544a2de3d8a1"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 168
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:09eda718564ee8bdae67e55b98b403ac928744a8161b3301cfb95936171487a2"
+  }
+}

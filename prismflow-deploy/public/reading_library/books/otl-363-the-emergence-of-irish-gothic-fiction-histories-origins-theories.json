@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-363-the-emergence-of-irish-gothic-fiction-histories-origins-theories",
+  "title": "The Emergence of Irish Gothic Fiction - Histories, Origins, Theories?",
+  "description": "Provides a new account of the emergence of Irish gothic fiction in mid-eighteenth century. This book provides a robustly theorised and thoroughly historicised account of the ‘beginnings' of Irish gothic fiction, maps the theoretical terrain covered by other critics, and puts forward a new history of the emergence of the genre in Ireland. The main argument the book makes is that the Irish gothic should be read in the context of the split in Irish Anglican public opinion that opened in the 1750s, and seen as a fictional instrument of liberal Anglican opinion in a changing political landscape. By providing a fully historicized account of the beginnings of the genre in Ireland, the book also addresses the theoretical controversies that have bedevilled discussion of the Irish gothic in the 1980s, 1990s and 2000s. The book gives ample space to the critical debate, and rigorously defends a reading of the Irish gothic as an Anglican, Patriot tradition. This reading demonstrates the connections between little-known Irish gothic fictions of the mid-eighteenth century (The Adventures of Miss Sophia Berkley and Longsword), and the Irish gothic tradition more generally, and also the gothic as a genre of global significance. Key Features * Examines gothic texts including Mary Shelley's Frankenstein, Horace Walpole's The Castle of Otranto, Bram Stoker's Dracula, Charles Robert Maturin's Melmoth the Wanderer, (Anon), The Adventures of Miss Sophia Berkley and Thomas Leland's Longsword * Provides a rigorous and robust theory of the Irish Gothic * Reads early Irish gothic fully into the political context of mid-eighteenth century Ireland This title was made Open Access by libraries from around the world through Knowledge Unlatched.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities"
+  ],
+  "authors": [
+    "Jarlath Killeen - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Edinburgh University Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-emergence-of-irish-gothic-fiction-histories-origins-theories"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Provides a new account of the emergence of Irish gothic fiction in mid-eighteenth century. This book provides a robustly theorised and thoroughly historicised account of the ‘beginnings' of Irish gothic fiction, maps the theoretical terrain covered by other critics, and puts forward a new history of the emergence of the genre in Ireland. The main argument the book makes is that the Irish gothic should be read in the context of the split in Irish Anglican public opinion that opened in the 1750s, and seen as a fictional instrument of liberal Anglican opinion in a changing political landscape. By providing a fully historicized account of the beginnings of the genre in Ireland, the book also addresses the theoretical controversies that have bedevilled discussion of the Irish gothic in the 1980s, 1990s and 2000s. The book gives ample space to the critical debate, and rigorously defends a reading of the Irish gothic as an Anglican, Patriot tradition. This reading demonstrates the connections between little-known Irish gothic fictions of the mid-eighteenth century (The Adventures of Miss Sophia Berkley and Longsword), and the Irish gothic tradition more generally, and also the gothic as a genre of global significance. Key Features * Examines gothic texts including Mary Shelley's Frankenstein, Horace Walpole's The Castle of Otranto, Bram Stoker's Dracula, Charles Robert Maturin's Melmoth the Wanderer, (Anon), The Adventures of Miss Sophia Berkley and Thomas Leland's Longsword * Provides a rigorous and robust theory of the Irish Gothic * Reads early Irish gothic fully into the political context of mid-eighteenth century Ireland This title was made Open Access by libraries from around the world through Knowledge Unlatched."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2014."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 294
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "363",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

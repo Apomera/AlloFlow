@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1041-graduate-research-methods-in-social-work",
+  "title": "Graduate Research Methods in Social Work",
+  "description": "We designed our book to help graduate social work students through every step of the research process, from conceptualization to dissemination. Our textbook centers cultural humility, information literacy, pragmatism, and an equal emphasis on quantitative and qualitative methods. It includes extensive content on literature reviews, cultural bias and respectfulness, and qualitative methods, in contrast to traditionally used commercial textbooks in social work research. Our author team spans across academic, public, and nonprofit social work research. We love research, and we endeavored through our book to make research more engaging, less painful, and easier to understand. Our textbook exercises direct students to apply content as they are reading the book to an original research project. By breaking it down step-by-step, writing in approachable language, as well as using stories from our life, practice, and research experience, our textbook helps professors overcome students’ research methods anxiety and antipathy. If you decide to adopt our resource, we ask that you complete this short Adopter’s Survey that helps us keep track of our community impact. You can also contact profmattdecarlo@gmail.com for a student workbook, homework assignments, slideshows, a draft bank of quiz questions, and a course calendar.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences",
+    "Student Success"
+  ],
+  "authors": [
+    "Matt DeCarlo - Author / Cory Cummings - Author / Kate Agnelli - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Social Work Education",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/graduate-research-methods-in-social-work"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "We designed our book to help graduate social work students through every step of the research process, from conceptualization to dissemination. Our textbook centers cultural humility, information literacy, pragmatism, and an equal emphasis on quantitative and qualitative methods. It includes extensive content on literature reviews, cultural bias and respectfulness, and qualitative methods, in contrast to traditionally used commercial textbooks in social work research. Our author team spans across academic, public, and nonprofit social work research. We love research, and we endeavored through our book to make research more engaging, less painful, and easier to understand. Our textbook exercises direct students to apply content as they are reading the book to an original research project. By breaking it down step-by-step, writing in approachable language, as well as using stories from our life, practice, and research experience, our textbook helps professors overcome students’ research methods anxiety and antipathy. If you decide to adopt our resource, we ask that you complete this short Adopter’s Survey that helps us keep track of our community impact. You can also contact profmattdecarlo@gmail.com for a student workbook, homework assignments, slideshows, a draft bank of quiz questions, and a course calendar."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 216
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1041",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

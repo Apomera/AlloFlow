@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-6341-the-very-tired-lioness",
+  "title": "The Very Tired Lioness",
+  "description": "The lioness is tired. Her sisters and daughters want her to join the hunt. But the sun is calling her.",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Emotions and life skills"
+  ],
+  "authors": [
+    "Maren Bodenstein"
+  ],
+  "illustrators": [
+    "Imile Wepener"
+  ],
+  "contributors": [
+    {
+      "name": "Nathan McKay",
+      "role": "Designer"
+    },
+    {
+      "name": "Margot Bertelsmann",
+      "role": "Editor"
+    },
+    {
+      "name": "Maren Bodenstein",
+      "role": "Writer"
+    },
+    {
+      "name": "Imile Wepener",
+      "role": "Illustrator"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/the-very-tired-lioness/",
+    "attributionUrl": "https://bookdash.org/books/the-very-tired-lioness/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=the-very-tired-lioness"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2018/12/the-very-tired-lioness_en_20181205_cover-3-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2018/12/the-very-tired-lioness_en_20181205_cover-3-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The lioness is tired. Her sisters and daughters want her to join the hunt. But the sun is calling her."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Nathan McKay (Designer); Margot Bertelsmann (Editor); Maren Bodenstein (Writer); Imile Wepener (Illustrator)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=the-very-tired-lioness"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 86
+  }
+}

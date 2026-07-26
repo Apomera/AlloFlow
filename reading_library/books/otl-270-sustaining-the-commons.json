@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-270-sustaining-the-commons",
+  "title": "Sustaining the Commons",
+  "description": "This textbook discusses the main framework, concepts and applications of the work of Elinor Ostrom and her colleagues for an undergraduate audience. We began teaching a course on collective and the commons in 2007 at Arizona State University. Initially we made use of Ostrom's classic book “Governing the Commons”, but this book was not written for an undergraduate audience. Moreover, many new insights have been developed since the 1990 publication of “Governing the Commons”. Therefore we decided to write our own textbook, which we have been using since the Spring of 2012. In this book you will learn about institutions–the rules and norms that guide the interactions among us. Those rules and norms can be found from traffic rules, rules in sports, regulations on when and where alcohol can be consumed, to constitutional rules that define who can become president of the United States of America. Rules and norms guide us to cooperative outcomes of so-called collective action problems. If we rely on voluntary contributions only to get anything done, this may not lead to the best results. But research also shows that coercion of people to comply to strict rules do not necessary lead to good outcomes. What combination of sticks and carrots is needed to be successful to solve collective action problems such as sustaining the commons? The book is based on the work of Elinor Ostrom and her colleagues. Ostrom is best known as the 2009 co-recipient of the Nobel Prize in Economics “for her analysis of economic governance, especially the commons”. Elinor Ostrom was a professor at Indiana University since the mid 1960s, and a part-time research professor at Arizona State University since 2006. She was active in research and teaching until her death at the age of 78 on June 12, 2012.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Economics",
+    "Social Sciences - Political Science"
+  ],
+  "authors": [
+    "John M. Anderies - Author / Marco A. Janssen - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Arizona State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-NoDerivs",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/sustaining-the-commons"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-NoDerivs"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This textbook discusses the main framework, concepts and applications of the work of Elinor Ostrom and her colleagues for an undergraduate audience. We began teaching a course on collective and the commons in 2007 at Arizona State University. Initially we made use of Ostrom's classic book “Governing the Commons”, but this book was not written for an undergraduate audience. Moreover, many new insights have been developed since the 1990 publication of “Governing the Commons”. Therefore we decided to write our own textbook, which we have been using since the Spring of 2012. In this book you will learn about institutions–the rules and norms that guide the interactions among us. Those rules and norms can be found from traffic rules, rules in sports, regulations on when and where alcohol can be consumed, to constitutional rules that define who can become president of the United States of America. Rules and norms guide us to cooperative outcomes of so-called collective action problems. If we rely on voluntary contributions only to get anything done, this may not lead to the best results. But research also shows that coercion of people to comply to strict rules do not necessary lead to good outcomes. What combination of sticks and carrots is needed to be successful to solve collective action problems such as sustaining the commons? The book is based on the work of Elinor Ostrom and her colleagues. Ostrom is best known as the 2009 co-recipient of the Nobel Prize in Economics “for her analysis of economic governance, especially the commons”. Elinor Ostrom was a professor at Indiana University since the mid 1960s, and a part-time research professor at Arizona State University since 2006. She was active in research and teaching until her death at the age of 78 on June 12, 2012."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-NoDerivs. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 320
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-NoDerivs",
+  "externalRecordId": "270",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

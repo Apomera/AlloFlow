@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-492-greek-and-latin-roots-part-ii-greek",
+  "title": "Greek and Latin Roots: Part II - Greek",
+  "description": "Greek and Latin Roots: Part II - Greek is part two of a two part series. This series examines the systematic principles by which a large portion of English vocabulary has evolved from Latin and (to a lesser degree) from Greek. This book focuses on Greek roots. A link to the first part focusing on the Latin roots can be found below. Part II will try to impart some skill in the recognition and proper use of words derived from Greek. There is a stress on principles: although students will be continually looking at interesting individual words, their constant aim will be to discover predictable general patterns of historical development, so that they may be able to cope with new and unfamiliar words of any type that they have studied. They will be shown how to approach the problem by a procedure known as “word analysis,” which is roughly comparable to the dissection of an interesting specimen in the biology laboratory. The text assumes no previous knowledge of Greek, and does not involve the grammatical study of this language—except for a few basic features of noun and verb formation that will help students to understand the Greek legacy in English. All students will be asked to learn the Greek alphabet. This skill is not absolutely essential for a general knowledge of Greek roots in English. However, it will help students understand a number of otherwise puzzling features of spelling and usage. Although there will be some attention paid to the historical interaction of Greek with English, this text is definitely not a systematic history of the English language. It focuses on only those elements within English that have been directly or indirectly affected by this classical language. In order to provide the broadest possible service to students, the text emphasizes standard English vocabulary in current use. The more exotic technical vocabulary of science and medicine can be extremely interesting, but is explored in only summary fashion. Nevertheless, this text should be of considerable value, say, to a would-be botanist or medical doctor, if only by providing the foundation for further specialized enquiry.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages"
+  ],
+  "authors": [
+    "Peter Smith - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "BCcampus",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/greek-and-latin-roots-part-ii-greek"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Greek and Latin Roots: Part II - Greek is part two of a two part series. This series examines the systematic principles by which a large portion of English vocabulary has evolved from Latin and (to a lesser degree) from Greek. This book focuses on Greek roots. A link to the first part focusing on the Latin roots can be found below. Part II will try to impart some skill in the recognition and proper use of words derived from Greek. There is a stress on principles: although students will be continually looking at interesting individual words, their constant aim will be to discover predictable general patterns of historical development, so that they may be able to cope with new and unfamiliar words of any type that they have studied. They will be shown how to approach the problem by a procedure known as “word analysis,” which is roughly comparable to the dissection of an interesting specimen in the biology laboratory. The text assumes no previous knowledge of Greek, and does not involve the grammatical study of this language—except for a few basic features of noun and verb formation that will help students to understand the Greek legacy in English. All students will be asked to learn the Greek alphabet. This skill is not absolutely essential for a general knowledge of Greek roots in English. However, it will help students understand a number of otherwise puzzling features of spelling and usage. Although there will be some attention paid to the historical interaction of Greek with English, this text is definitely not a systematic history of the English language. It focuses on only those elements within English that have been directly or indirectly affected by this classical language. In order to provide the broadest possible service to students, the text emphasizes standard English vocabulary in current use. The more exotic technical vocabulary of science and medicine can be extremely interesting, but is explored in only summary fashion. Nevertheless, this text should be of considerable value, say, to a would-be botanist or medical doctor, if only by providing the foundation for further specialized enquiry."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 375
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "492",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

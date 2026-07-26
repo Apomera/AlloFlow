@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-20177-lara-maleshwane-e-mosehla",
+  "title": "Lara, maleshwane e mosehla",
+  "description": "Lara, eo e leng maleshwane, e ne e le mofuta o ikgethileng wa kokwana. Ho fapana le metswalle yohle ya hae, o ne a ena le mapheo a kganyang a masehla…",
+  "language": "Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Emotions and life skills",
+    "My body, identity, and daily routines"
+  ],
+  "authors": [
+    "Martha Evans"
+  ],
+  "illustrators": [
+    "Catherine Holtzhausen"
+  ],
+  "contributors": [
+    {
+      "name": "Catherine Holtzhausen",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Nadene Kriel",
+      "role": "Designer"
+    },
+    {
+      "name": "Martha Evans",
+      "role": "Writer"
+    },
+    {
+      "name": "Ester Levinrad",
+      "role": "Editor"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/lara-maleshwane-e-mosehla/",
+    "attributionUrl": "https://bookdash.org/books/lara-maleshwane-e-mosehla/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=lara-the-yellow-ladybird"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/02/lara-the-yellow-ladybird_st_20180117_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/02/lara-the-yellow-ladybird_st_20180117_cover.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Lara, eo e leng maleshwane, e ne e le mofuta o ikgethileng wa kokwana. Ho fapana le metswalle yohle ya hae, o ne a ena le mapheo a kganyang a masehla…"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Catherine Holtzhausen (Illustrator); Nadene Kriel (Designer); Martha Evans (Writer); Ester Levinrad (Editor)\n\nLanguage: Sesotho. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=lara-the-yellow-ladybird"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 97
+  }
+}

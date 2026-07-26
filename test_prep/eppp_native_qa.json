@@ -1,6 +1,6 @@
 {
   "schemaVersion": 5,
-  "generatedAt": "2026-07-23T21:02:34.419Z",
+  "generatedAt": "2026-07-25T22:31:03.939Z",
   "packId": "eppp-part-one",
   "packVersion": "3.1.0",
   "standard": {
@@ -5002,7 +5002,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.apa.org/ethics/code"
+        "https://www.apa.org/ethics/code#305"
       ]
     },
     {
@@ -5687,7 +5687,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1037/0033-3204.43.4.531"
+        "https://pubmed.ncbi.nlm.nih.gov/22122142/"
       ]
     },
     {
@@ -10716,7 +10716,7 @@
       ],
       "findings": [],
       "references": [
-        "https://pubmed.ncbi.nlm.nih.gov/16719673/"
+        "https://doi.org/10.1037/0003-066X.61.4.271"
       ]
     },
     {
@@ -16859,7 +16859,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1037/a0021250"
+        "https://www.apa.org/practice/guidelines/child-custody-evaluations.pdf"
       ]
     },
     {
@@ -16984,7 +16984,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1002/(SICI)1096-9861(19971020)387:2"
+        "https://doi.org/10.1038/s41583-021-00507-y"
       ]
     },
     {
@@ -17728,7 +17728,7 @@
       ],
       "findings": [],
       "references": [
-        "https://apastyle.apa.org/style-grammar-guidelines/paper-format/sample-papers"
+        "https://apastyle.apa.org/jars/quantitative"
       ]
     },
     {
@@ -20580,7 +20580,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1177/2158244019850246"
+        "https://doi.org/10.1016/j.paid.2006.08.022"
       ]
     },
     {
@@ -26223,7 +26223,7 @@
       ],
       "findings": [],
       "references": [
-        "https://dictionary.apa.org/gender-identity"
+        "https://www.apa.org/topics/lgbt/transgender"
       ]
     },
     {
@@ -27711,7 +27711,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+        "https://pubmed.ncbi.nlm.nih.gov/25364086/"
       ]
     },
     {
@@ -29819,7 +29819,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1037/a0021250"
+        "https://www.apa.org/practice/guidelines/child-custody-evaluations.pdf"
       ]
     },
     {
@@ -30749,7 +30749,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.nimh.nih.gov/health/topics/obsessive-compulsive-disorder-ocd"
+        "https://www.nimh.nih.gov/news/science-updates/2024/my-life-with-ocd"
       ]
     },
     {
@@ -31928,7 +31928,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/3-4-the-brain-and-spinal-cord"
+        "https://pubmed.ncbi.nlm.nih.gov/39558003/"
       ]
     },
     {
@@ -33602,7 +33602,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/5-introduction"
+        "https://pubmed.ncbi.nlm.nih.gov/31740940/"
       ]
     },
     {
@@ -33850,7 +33850,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/5-introduction"
+        "https://pubmed.ncbi.nlm.nih.gov/29856366/"
       ]
     },
     {
@@ -34222,7 +34222,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/10-introduction"
+        "https://doi.org/10.1177/1754073916639667"
       ]
     },
     {
@@ -34594,7 +34594,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/8-introduction"
+        "https://doi.org/10.1016/S0022-5371(77)80016-9"
       ]
     },
     {
@@ -35090,7 +35090,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/8-introduction"
+        "https://doi.org/10.1177/1745691612460685"
       ]
     },
     {
@@ -36330,7 +36330,8 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/10-introduction"
+        "https://www.gse.harvard.edu/ideas/news/13/10/multiple-intelligences-are-not-learning-styles",
+        "https://pubmed.ncbi.nlm.nih.gov/24234985/"
       ]
     },
     {
@@ -37632,7 +37633,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/7-introduction"
+        "https://doi.org/10.1016/0749-5978(85)90049-4"
       ]
     },
     {
@@ -38748,7 +38749,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/12-5-prejudice-and-discrimination"
+        "https://pubmed.ncbi.nlm.nih.gov/16737372/"
       ]
     },
     {
@@ -43213,7 +43214,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC11169091/"
       ]
     },
     {
@@ -44268,7 +44269,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
+        "https://doi.org/10.1177/21676968251322822"
       ]
     },
     {
@@ -49602,7 +49603,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-3-treatment-modalities"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3215582/"
       ]
     },
     {
@@ -51153,7 +51154,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-2-types-of-treatment"
+        "https://pubmed.ncbi.nlm.nih.gov/6076856/"
       ]
     },
     {
@@ -51401,7 +51402,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-2-types-of-treatment"
+        "https://pubmed.ncbi.nlm.nih.gov/28003656/"
       ]
     },
     {
@@ -51463,7 +51464,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-3-treatment-modalities"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC6007584/"
       ]
     },
     {
@@ -52641,7 +52642,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-2-types-of-treatment"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC2846577/"
       ]
     },
     {
@@ -53757,7 +53758,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-2-types-of-treatment"
+        "https://doi.org/10.1177/09731342241238096"
       ]
     },
     {
@@ -54501,7 +54502,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.itl.nist.gov/div898/handbook/glossary.htm"
+        "https://www.itl.nist.gov/div898/handbook/ppc/section4/ppc431.htm"
       ]
     },
     {
@@ -55059,7 +55060,8 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/2-introduction"
+        "https://pubmed.ncbi.nlm.nih.gov/22799624/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC2981013/"
       ]
     },
     {
@@ -57911,7 +57913,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.apa.org/ethics/code"
+        "https://www.apa.org/ethics/code#8_11"
       ]
     },
     {
@@ -59276,7 +59278,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.apa.org/about/policy/multicultural-guidelines.pdf"
+        "https://www.apa.org/about/policy/multicultural-guidelines.pdf#page=4"
       ]
     },
     {
@@ -59958,7 +59960,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.apa.org/ethics/code"
+        "https://www.apa.org/ethics/code#4_03"
       ]
     },
     {
@@ -72607,7 +72609,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/12-introduction"
+        "https://pubmed.ncbi.nlm.nih.gov/16737372/"
       ]
     },
     {
@@ -81664,7 +81666,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-introduction"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4475575/"
       ]
     },
     {
@@ -85012,7 +85014,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1016/j.brat.2005.06.006"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC5509623/"
       ]
     },
     {
@@ -85260,7 +85262,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-introduction"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC7001362/"
       ]
     },
     {
@@ -91524,7 +91526,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.apa.org/ethics/code"
+        "https://www.apa.org/ethics/code#305"
       ]
     },
     {
@@ -92640,7 +92642,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.apa.org/ethics/code"
+        "https://www.apa.org/ethics/code#202"
       ]
     },
     {

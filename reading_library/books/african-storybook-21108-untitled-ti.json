@@ -1,0 +1,183 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-21108-untitled-ti",
+  "title": "ገዝሚ",
+  "description": "እዚ ታሪኽ ብዛዕባ ሓደ ወዲን ካብ እናሓጉኡ ዝተዋሃበቶ እንቋቕሖን እዩ።እቲ ወዲ ነታ እንቋቕሖ ብትኽክል ኣይሓዛን ፤ ዕድለኛ ኾይኑ ግን ናብ ፅቡቕ መሪሓቶ።",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Nambi Sseppuuya Community Resource Centre"
+  ],
+  "illustrators": [
+    "Wiehan de Jager"
+  ],
+  "translators": [
+    "Angesom Abadi"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Nambi Sseppuuya Community Resource Centre",
+      "role": "Author"
+    },
+    {
+      "name": "Angesom Abadi",
+      "role": "Translation"
+    },
+    {
+      "name": "Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Nambi Sseppuuya Community Resource Centre (Author); Angesom Abadi (Translation); Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://ugcla.org",
+    "editionId": "21108",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-175b87c462b6cb83",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/6733.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/6733.png",
+      "text": "ሓንቲ ሽማግለ ሰበይቲ ንወዲ ወዳ እንቋቕሖ ሃበቶ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108#page=1",
+      "sourceDigest": "sha256:6ff3d35a49909e9eb3b830cc626e7865ee86317f85d2a8bad59dfc5c04a3acb3"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/6732.png",
+      "text": "እቲ ወዲ ነታ እንቋቕሖ ንጨርገፍቲ ፍረ ሂብዎም ንሶም ድማ ሰበርዋ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108#page=2",
+      "sourceDigest": "sha256:4d5f838ed5e5926f30a024decf66994c5e660ff80c309a2900451f7f75afb740"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/6731.png",
+      "text": "እቲ ወዲ “እታ እንቋቕሖ ንገዝሚ እያ ነይራ” ኢሉ በኸየ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108#page=3",
+      "sourceDigest": "sha256:7aa4b98bb6434b7447bc3cc8e16de9785b3a3b62da9a191a8388a66aea6fb3a3"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/6734.png",
+      "text": "እቶም ጨርገፍቲ ፍረ በትሪ ሃብዎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108#page=4",
+      "sourceDigest": "sha256:e0d130c4b432b8ef307da856f37cdd0f8bd624cb0443ca62741872109b4a0d15"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/6735.png",
+      "text": "እቲ ወዲ ነቲ በትሪ ንሃነፅቲ ሂብዎም፣ ንሶም ድማ ሰበርዎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108#page=5",
+      "sourceDigest": "sha256:64b5e3994916d259fc7c60102c2bce2a142a0a2d46e46f51fd1ae1b36736c2ee"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/6742.png",
+      "text": "እቲ ወዲ “እቲ በትሪ ናይቶም ጨርገፍቲ ፍረ እዩ” ኢሉ በኸየ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108#page=6",
+      "sourceDigest": "sha256:71cad6265c756412f3c991cb2c529b1278789fea2f5211827624885bf1b1a4de"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/6737.png",
+      "text": "እቶም ሃነፅቲ ድማ ጥማር ሓሰር ሃብዎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108#page=7",
+      "sourceDigest": "sha256:e76594ead636302b493cde3d21879f4452aa1983acb8c4d5f1b3ac80c4516b21"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/6736.png",
+      "text": "እቲ ወዲ ሓላዊ ከብቲ ረኸበ። ሓንቲ ላሕሚ ነቲ ሓሰር በልዓቶ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108#page=8",
+      "sourceDigest": "sha256:942f4bfbec1429e9739d318cf33074fb190660ca1a344f2ce8bc3568091f1393"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/6738.png",
+      "text": "እቲ ወዲ “እቲ ሓሰር ናይ እቶም ሃነፅቲ እዩ” ኢሉ በኸየ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108#page=9",
+      "sourceDigest": "sha256:bfd002eccf1ccee2bc8efbfa06dd28ade608068c502094334d3ecc0625d7cf8e"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/6739.png",
+      "text": "እቲ ሓላዊ ኸፍቲ ላሕሚ ሂብዎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108#page=10",
+      "sourceDigest": "sha256:ef091bebc0c47a8be8d622fd5ccf4f8aa11eb50f7072c2fe7325793360b5746d"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/6743.png",
+      "text": "እቲ ወዲ መርዓ ረኸበ። ኣብቲ መርዓ ነታ ላሕሚ ሓረድዋ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108#page=11",
+      "sourceDigest": "sha256:3d2754e485b381fdddce738e1f57088403428a6fd4ebb773b39bfc67ea6ff19c"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/6740.png",
+      "text": "እቲ ወዲ “እታ ላሕሚ ናይ እቲ ሓላዊ ኸፍቲ እያ” ኢሉ በኸየ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108#page=12",
+      "sourceDigest": "sha256:7b18f265d417ea6116c5ca1bb065643d4e7ed33c417e5e7a61fdb513f954c00d"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/6741.png",
+      "text": "እቶም ናይ መርዓት ቤተሰብ ነታ መርዓት ሃብዎ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21108#page=13",
+      "sourceDigest": "sha256:bdf28c65757a8a429233d613938e7263be77be79d9aa4fcd383cdd5003ba0230"
+    }
+  ],
+  "stats": {
+    "pages": 13,
+    "words": 108
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:b586baf1255a974b1b9a3dd88536c8da81a2becfd2f078b4f4519c270b018360"
+  }
+}

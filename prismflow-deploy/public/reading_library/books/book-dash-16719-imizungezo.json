@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-16719-imizungezo",
+  "title": "Imizungezo",
+  "description": "UMama uNqe uthatha Inqe Elincane liyondiza okokuqala. Kumambo lwabo, babona inyamazane efayo. Ubonisa indodana yakhe ukuthi ukufa kwesinye isilwane kungukuqala kwesiyingi sempilo esisha kwezinye izidalwa.",
+  "language": "isiZulu",
+  "langCode": "zul",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Emotions and life skills"
+  ],
+  "authors": [
+    "Alex Latimer"
+  ],
+  "illustrators": [
+    "Patrick Latimer"
+  ],
+  "contributors": [
+    {
+      "name": "Patrick Latimer",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Gordon Latimer",
+      "role": "Designer"
+    },
+    {
+      "name": "Diane Awerbuck",
+      "role": "Editor"
+    },
+    {
+      "name": "Alex Latimer",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/imizungezo/",
+    "attributionUrl": "https://bookdash.org/books/imizungezo/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=circles"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/02/circles_zu_20200413_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/02/circles_zu_20200413_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "UMama uNqe uthatha Inqe Elincane liyondiza okokuqala. Kumambo lwabo, babona inyamazane efayo. Ubonisa indodana yakhe ukuthi ukufa kwesinye isilwane kungukuqala kwesiyingi sempilo esisha kwezinye izidalwa."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Patrick Latimer (Illustrator); Gordon Latimer (Designer); Diane Awerbuck (Editor); Alex Latimer (Writer)\n\nLanguage: isiZulu. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=circles"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 91
+  }
+}

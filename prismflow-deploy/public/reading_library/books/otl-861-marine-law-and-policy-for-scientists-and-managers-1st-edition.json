@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-861-marine-law-and-policy-for-scientists-and-managers-1st-edition",
+  "title": "Marine Law and Policy for Scientists and Managers - 1st Edition",
+  "description": "This open educational resource is designed for use by undergraduate and graduate ocean science, natural resource, fisheries and wildlife, and environmental policy students enrolled in a ten-week academic quarter. The purpose of this project is to provide students and non-law professionals with a freely accessible, clearly written guide to support engaging and effective learning. As such, the book serves as a gateway and an invitation to become a well informed, committed and involved ocean citizen as well as to explore the field beyond our course study.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law",
+    "Natural Sciences"
+  ],
+  "authors": [
+    "Holly V. Campbell - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oregon State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/marine-law-and-policy-for-scientists-and-managers-1st-edition-campbell"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This open educational resource is designed for use by undergraduate and graduate ocean science, natural resource, fisheries and wildlife, and environmental policy students enrolled in a ten-week academic quarter. The purpose of this project is to provide students and non-law professionals with a freely accessible, clearly written guide to support engaging and effective learning. As such, the book serves as a gateway and an invitation to become a well informed, committed and involved ocean citizen as well as to explore the field beyond our course study."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 109
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "861",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

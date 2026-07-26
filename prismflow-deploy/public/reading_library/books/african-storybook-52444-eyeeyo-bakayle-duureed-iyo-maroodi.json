@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52444-eyeeyo-bakayle-duureed-iyo-maroodi",
+  "title": "Eyeeyo, Bakayle-duureed iyo Maroodi",
+  "description": "Ilmo ayaa ka warramay/ sheegay sida ay Ayeydiis ugusheegi jirtay ,Sheekooyin ka hor inta aanay sariirta aadin.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Mutai Chepkoech"
+  ],
+  "illustrators": [
+    ", Marleen Visser"
+  ],
+  "translators": [
+    "Ubah Ali"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Mutai Chepkoech",
+      "role": "Author"
+    },
+    {
+      "name": "Ubah Ali",
+      "role": "Translation"
+    },
+    {
+      "name": ", Marleen Visser",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Mutai Chepkoech (Author); Ubah Ali (Translation); , Marleen Visser (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52444",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-821cefb9cab6d15b",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/18842.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18819.png",
+      "text": "Inta badan waxaan ku kulmi jirnay guriga ayeeyo si aan u dhageysanno sheekooyinkeeda. Waxaan ku wareegi jirnay dabka agtiisa, hoosna uga fadhiisan jirnay xiddigaha. Ayeeyo waxay billowday sheekadeedii ugu dambeysay ee habeenka, \"Bakayle iyo Maroodi waxay ahaayeen deris iyo saaxiibo.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444#page=1",
+      "sourceDigest": "sha256:6118bb14a282d42d2eed31e38f22b4683a2747adb16e14bca807a462de439d8b"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18831.png",
+      "text": "Bakayluhu wuxuu jeclaa likaha, laakiin aad buu u caajisnaa si uu u beerto. Sidaas darteed, wuxuu xaday likihii Maroodiga. Maroodigu sannadkaas wuxuu beeray moos iyo bocor. Sidaas awgeed, ma jirin liko uu Bakayluhu helo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444#page=2",
+      "sourceDigest": "sha256:616e464dcb932ceb53e892a248deb2c11d9d003e052b3a9182ea5e6694672fbf"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18832.png",
+      "text": "Bakayluhu wuxuu cunto la'aan ahaa maalmo badan. Dabadeed wuxuu go'aansaday inuu xado mooska Maroodiga. Maroodigu wuu ogaaday in qof uu ka xadayo mooskiisa. Wuxuu u tagay Bakaylaha oo ku yiri, \"Qof baa iga xadaya.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444#page=3",
+      "sourceDigest": "sha256:41c3a13e7af9e70cbbb28fdc978d14a243ce11baae7b31a49593d9d0d91e382b"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18833.png",
+      "text": "Bakayluhu wuxuu weydiiyay, \"Yaa tuugga ah?\" Maroodigu wuxuu bilaabay inuu heeso, \"Waan qaban doonaa tuugga! Aaah! Waan qaban doonaa tuugga! Ooo!\" Bakayluhu wuu cabsaday.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444#page=4",
+      "sourceDigest": "sha256:35db6a4f993cb6872b76855c0ca664993daf15099d7b3cc4ea921acf0ad4597a"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18834.png",
+      "text": "Maroodigu wuxuu Daanyeerka ka codsaday inuu ilaaliyo beertiisa. Laakiin Bakayluhu ma uusan xadin maalintaas iyo habeenkaas toona. Sidoo kale ma uusan xadin maalintii iyo habeenkii xigay. Daanyeerku wuu ka daalay ilaalinta.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444#page=5",
+      "sourceDigest": "sha256:c2d6849ecbb23b63c4b0046bac537aee7a4b1c7a8ec3acd2acaa5af029333488"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18835.png",
+      "text": "Maalintii xigtay, Bakayluhu wuxuu aaday beerta Maroodiga si uu mar kale u xado. Markii Maroodigu yimid si uu u hubiyo dalaggiisa, Bakayluhu wuxuu ku dhuuntay caleemaha bocorka dhexdiisa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444#page=6",
+      "sourceDigest": "sha256:8877bed50b197f4b45e0161308763344cb680bbc1fa6497db27ea4fe99e3395b"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18836.png",
+      "text": "Maroodigu wuxuu arkay caleemaha oo dhaqaaqaya wuxuuna bilaabay inuu heeso, \"Waan qabtay tuugga! Aaah! Waan qabtay tuugga! Ooo!\" Maroodigu wuxuu meel kasta ka raadiyay laakiin ma uusan helin tuugga.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444#page=7",
+      "sourceDigest": "sha256:534547d256530dbd1cc237a8d44af1a056eecf41c81122e9327294701409526d"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18837.png",
+      "text": "Maalin kale, Bakayluhu wuu joogay isagoo ka qaadanaya dalagga Maroodiga. Markii Maroodigu yimid beerta, Bakayluhu wuxuu dhex galay bocor weyn si uu u dhuunto.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444#page=8",
+      "sourceDigest": "sha256:88eebcaf7eef6d7272b90c1dd9563c7d14cc8672456a147e5e391fc5f1b11ff2"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18839.png",
+      "text": "Maroodigu wuxuu arkay bocorka weyn oo wuxuu yiri, \"Ooo! Waa bocor weyn. Waxaan cunayaa qadada.\" Wuxuuna bocorka oo dhan si buuxda u liqay!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444#page=9",
+      "sourceDigest": "sha256:3c5bb565f944080c92f3bd58127e3b7a141d5fd232bee0ee54fdfd16805b0e1e"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18840.png",
+      "text": "Bakayluhu wuu isku dayay inuu ka baxo bocorka, laakiin ma uusan ka bixin karin. Maroodigu wuxuu dareemay wax calooshisa ku boodaya wuxuuna ku yiri, \"Bocor noocee ah ayaa calooshayda ka dhex boodaya?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444#page=10",
+      "sourceDigest": "sha256:11bfda7c65e3c0959a50e2773d0493996fdaa1d9cb646650c514e1c40c628d25"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18841.png",
+      "text": "Maroodigu wuxuu bocorka calooshisa ka tuuray. Kahor intii uusan si fiican u baari karin, Bakayluhu wuxuu ka soo baxay bocorka oo sida ugu dhaqsiyaha badan u cararay. Maroodigu weligiis ma uusan qaban tuugga.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444#page=11",
+      "sourceDigest": "sha256:c710f6a373770a7cc5e03c884dbfe4cdc3f8339b9acfc9cae8a2202a846c092f"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/18842.png",
+      "text": "Ayeeyo waxay tidhi, \"Taasi waa dhammaadka sheekada.\" \"Mahadsanid ayeeyo,\" ayaan si hurdo leh u wada ku celinnay. Kadib waxaan u aadnay sariirta anagoo ka fikirayna sheekooyinkii ayeeyo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52444#page=12",
+      "sourceDigest": "sha256:661f4008cf6148de61016c6135fd8a8832ca55b008f8223419ce85eb94b1512b"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 359
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:5e84c5930a2da249c56278c6f10b49b4d53760f7bce9a406064e0c151a467aa8"
+  }
+}

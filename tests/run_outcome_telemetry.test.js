@@ -53,6 +53,10 @@ describe('run-outcome telemetry — honest tri-state (regression for A1)', () =>
     // 2 of 4 outcomed → 50%. The OLD code (numerator = outcomed − failed) said 75%.
     expect(successRate(rows)).toBe(50);
   });
+  it('cancelled runs are excluded from the reliability denominator', () => {
+    expect(successRate([{ outcome: 'success' }, { outcome: 'cancelled' }])).toBe(100);
+  });
+
   it('rows with no outcome (pre-telemetry / loaded snapshots) are excluded from the rate', () => {
     const rows = [{ outcome: 'success' }, {}, { foo: 1 }];
     expect(successRate(rows)).toBe(100); // only the 1 outcomed row counts

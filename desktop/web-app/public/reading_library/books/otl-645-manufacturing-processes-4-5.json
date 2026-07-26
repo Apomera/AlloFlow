@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-645-manufacturing-processes-4-5",
+  "title": "Manufacturing Processes 4-5",
+  "description": "This textbook provides an introduction to the important area of manufacturing processes. This text will explain the hows, whys, and whens of various machining operations, set-ups, and procedures. Throughout this text, you will learn how machine tools operate, and when to use one particular machine instead of another. It is organized for students who plan to enter the manufacturing technology field and for those who wish to develop the skills, techniques, and knowledge essential for advancement in this occupational cluster. The organization and contents of this text focus primarily on theory and practice. The machining processes and technology sections in this textbook cover such machine tools as surface grinders, bandsaws, drill presses, milling machines, and the engine lathe. Additionally, the importance of Computer Numerical Control (CNC) in the operation of the most machine tools is explained, and its role in automated manufacturing is explored thoroughly.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology - Mechanical Engineering"
+  ],
+  "authors": [
+    "LamNgeun Virasak - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Oregon Educational Resources",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/manufacturing-processes-4-5"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This textbook provides an introduction to the important area of manufacturing processes. This text will explain the hows, whys, and whens of various machining operations, set-ups, and procedures. Throughout this text, you will learn how machine tools operate, and when to use one particular machine instead of another. It is organized for students who plan to enter the manufacturing technology field and for those who wish to develop the skills, techniques, and knowledge essential for advancement in this occupational cluster. The organization and contents of this text focus primarily on theory and practice. The machining processes and technology sections in this textbook cover such machine tools as surface grinders, bandsaws, drill presses, milling machines, and the engine lathe. Additionally, the importance of Computer Numerical Control (CNC) in the operation of the most machine tools is explained, and its role in automated manufacturing is explored thoroughly."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 168
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "645",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

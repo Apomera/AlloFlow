@@ -2883,7 +2883,7 @@ function PdfAuditView(props) {
     createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, diffLibReady, downloadAccessiblePdf, downloadBatchResults,
     ensurePdfBase64, expertCommandInput, exportPreviewRef, extractedImagesList,
     extractionData, fidelityResult, fixAndVerifyPdf, fixContrastViolations,
-    fixIssuesList, generateAuditReportHtml, getChunkState, getPdfPreviewHtml,
+    fixIssuesList, generateAuditReportHtml, selectChunkVersion, getPdfPreviewHtml,
     imageReinsertionReport, insertBlockFilter, insertBlockOpenCats, insertBlockPickerRef,
     insertBlockRecent, isAgentRunning, isGeneratingStyle, liveChunkExpanded,
     liveChunkRejected, liveChunkSessionActive, liveChunkStream, pdfAuditLoading,
@@ -2916,6 +2916,8 @@ function PdfAuditView(props) {
     pdfRunHistory, setPdfRunHistory, _remediationMode
   } = props;
   const [remediationProgress, setRemediationProgress] = useState(null);
+  const remediationProgressOwnerRef = useRef({ documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0, startedAt: 0 });
+  const chunkTraceOwnerRef = useRef({ documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0 });
   const [showAgentTrace, setShowAgentTrace] = useState(false);
   const [liveChunkTrace, setLiveChunkTrace] = useState({});
   const [pdfConfirmRequest, setPdfConfirmRequest] = useState(null);
@@ -2970,6 +2972,13 @@ function PdfAuditView(props) {
     if (resolve) resolve(false);
   }, []);
   useEffect(() => {
+    // A document epoch is the hard ownership boundary for both the listener and
+    // its rendered snapshot. Reset both before replaying the latest event so a
+    // newly selected document can never briefly inherit the prior run's trace.
+    remediationProgressOwnerRef.current = { documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0, startedAt: 0 };
+    chunkTraceOwnerRef.current = { documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0 };
+    setRemediationProgress(null);
+    setLiveChunkTrace({});
     const appendTrace = (detail) => {
       if (!detail || !Number.isInteger(detail.index)) return;
       const safe = {
@@ -2990,11 +2999,65 @@ function PdfAuditView(props) {
       });
     };
     const _eventIsForCurrentDocument = (e) => !!(e && e.detail && Number.isInteger(e.detail.documentEpoch) && e.detail.documentEpoch === pdfDocumentEpoch);
-    const onProgress = (e) => { if (_eventIsForCurrentDocument(e) && e.detail.version === 1) setRemediationProgress(e.detail); };
-    const onChunkSessionStart = (e) => { if (_eventIsForCurrentDocument(e)) setLiveChunkTrace({}); };
-    const onChunkProgress = (e) => { if (_eventIsForCurrentDocument(e)) appendTrace(e.detail); };
+    const onProgress = (e) => {
+      if (!_eventIsForCurrentDocument(e) || e.detail.version !== 1) return;
+      const detail = e.detail;
+      if (!detail.runId) return;
+      let owner = remediationProgressOwnerRef.current;
+      if (!owner || owner.documentEpoch !== pdfDocumentEpoch) {
+        owner = { documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0, startedAt: 0 };
+      }
+      const eventStartedAt = Number(detail.startedAt) || 0;
+      const eventRunSequence = Number.isSafeInteger(detail.runSequence) && detail.runSequence > 0 ? detail.runSequence : 0;
+      const isRunStart = detail.status === 'running' && detail.step === 0;
+      if (!owner.runId || isRunStart) {
+        // Prefer the producer's monotonic sequence so equal timestamps or a wall-clock
+        // rollback cannot let a delayed older same-document run steal the panel back.
+        if (owner.runId && owner.runId !== detail.runId) {
+          if (eventRunSequence > 0 && owner.runSequence > 0) {
+            if (eventRunSequence <= owner.runSequence) return;
+          } else if (eventStartedAt < owner.startedAt) return;
+        }
+        owner = {
+          documentEpoch: pdfDocumentEpoch,
+          runId: detail.runId,
+          runSequence: eventRunSequence,
+          startedAt: Math.max(owner.startedAt || 0, eventStartedAt),
+        };
+        remediationProgressOwnerRef.current = owner;
+      }
+      if (owner.runId !== detail.runId) return;
+      setRemediationProgress(detail);
+    };
+    const _chunkOwnerFromEvent = (e) => {
+      const detail = e && e.detail;
+      const runSequence = detail && Number.isSafeInteger(detail.runSequence) && detail.runSequence > 0 ? detail.runSequence : 0;
+      if (!_eventIsForCurrentDocument(e) || !detail.runId || !runSequence) return null;
+      return { documentEpoch: pdfDocumentEpoch, runId: detail.runId, runSequence };
+    };
+    const _adoptChunkTraceOwner = (e) => {
+      const next = _chunkOwnerFromEvent(e);
+      if (!next) return false;
+      const owner = chunkTraceOwnerRef.current;
+      if (owner && owner.documentEpoch === pdfDocumentEpoch && owner.runId) {
+        if (next.runSequence < owner.runSequence) return false;
+        if (next.runSequence === owner.runSequence && next.runId !== owner.runId) return false;
+      }
+      chunkTraceOwnerRef.current = next;
+      return true;
+    };
+    const _chunkEventIsForActiveSession = (e) => {
+      const next = _chunkOwnerFromEvent(e);
+      const owner = chunkTraceOwnerRef.current;
+      return !!(next && owner
+        && owner.documentEpoch === next.documentEpoch
+        && owner.runId === next.runId
+        && owner.runSequence === next.runSequence);
+    };
+    const onChunkSessionStart = (e) => { if (_adoptChunkTraceOwner(e)) setLiveChunkTrace({}); };
+    const onChunkProgress = (e) => { if (_chunkEventIsForActiveSession(e)) appendTrace(e.detail); };
     const onChunkFixed = (e) => {
-      if (!_eventIsForCurrentDocument(e)) return;
+      if (!_chunkEventIsForActiveSession(e)) return;
       const d = (e && e.detail) || {};
       appendTrace({
         index: d.index,
@@ -3006,15 +3069,24 @@ function PdfAuditView(props) {
         usedOriginal: d.usedOriginal,
       });
     };
+    const onChunkRefixed = onChunkFixed;
     window.addEventListener('alloflow:remediation-progress', onProgress);
     window.addEventListener('alloflow:chunk-session-start', onChunkSessionStart);
+    // Progress starts synchronously, so a newly mounted view can otherwise miss the first event
+    // and look blank until the next API log. Hydrate only through the same strict epoch/run gate.
+    try {
+      const latest = window.__alloRemediationProgress;
+      if (latest) onProgress({ detail: latest });
+    } catch (_) {}
     window.addEventListener('alloflow:chunk-progress', onChunkProgress);
     window.addEventListener('alloflow:chunk-fixed', onChunkFixed);
+    window.addEventListener('alloflow:chunk-refixed', onChunkRefixed);
     return () => {
       window.removeEventListener('alloflow:remediation-progress', onProgress);
       window.removeEventListener('alloflow:chunk-session-start', onChunkSessionStart);
       window.removeEventListener('alloflow:chunk-progress', onChunkProgress);
       window.removeEventListener('alloflow:chunk-fixed', onChunkFixed);
+      window.removeEventListener('alloflow:chunk-refixed', onChunkRefixed);
     };
   }, [pdfDocumentEpoch]);
   const _legacyProgressPercent = pdfFixStep.includes('Step 1') ? 15 : pdfFixStep.includes('Step 2') ? 50 : pdfFixStep.includes('Step 3') ? 80 : pdfFixStep.includes('Step 4') ? 92 : (pdfFixStep.includes('Auto-fix') || pdfFixStep.includes('Auto-continue')) ? 96 : 5;
@@ -5034,6 +5106,8 @@ function PdfAuditView(props) {
         currentHtml: source.accessibleHtml,
         persistedState: source.chunkState,
         documentEpoch: operationTicket.documentEpoch,
+        runId: (source.chunkState && source.chunkState.runId) || source.runId || (source.pipelineStats && source.pipelineStats.runId) || null,
+        runSequence: (source.chunkState && source.chunkState.runSequence) || (source.pipelineStats && source.pipelineStats.runSequence) || 0,
         signal: operationTicket.controller && operationTicket.controller.signal,
         shouldAbort: () => !_remediationOperationIsCurrent(operationTicket),
       });
@@ -5957,7 +6031,12 @@ function PdfAuditView(props) {
                           if (!fixed.includes('Skip to') && !fixed.includes('skip-nav')) fixed = fixed.replace(/<body[^>]*>/, (m) => m + '\n<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px">Skip to main content</a>');
                           const preFixAxe = await _safeAudit(() => runAxeAudit(fixed));
                           let autoFix = null;
-                          if (preFixAxe) autoFix = await _safeAudit(() => autoFixAxeViolations(fixed, preFixAxe, pdfAutoFixPasses));
+                          if (preFixAxe) autoFix = await _safeAudit(() => autoFixAxeViolations(fixed, preFixAxe, pdfAutoFixPasses, {
+                            documentEpoch: _webRemediationToken.documentEpoch,
+                            signal: _webRemediationToken.controller && _webRemediationToken.controller.signal,
+                            shouldAbort: () => !_viewDocumentJobIsCurrent(_webRemediationToken),
+                          }));
+                          if (!_viewDocumentJobIsCurrent(_webRemediationToken) || (autoFix && autoFix.stale)) return;
                           if (autoFix?.html) fixed = autoFix.html;
                           // The shared axe fixer uses lang="en" as a generic missing-lang fallback. For
                           // language-unknown pasted/fetched source, remove that guess and keep WCAG 3.1.1
@@ -6636,9 +6715,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       addToast(t('toasts.remediation_already_running') || 'Remediation is already running. This click was ignored so the active run can finish.', 'info');
                       return;
                     }
-                    const _oneClickDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null;
-                    const _oneClickDocumentIsCurrent = () => _oneClickDocumentEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function'
-                      || isPdfDocumentIntakeCurrent(_oneClickDocumentEpoch);
+                    const _oneClickDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
+                    const _oneClickDocumentIsCurrent = () => Number.isInteger(_oneClickDocumentEpoch)
+                      && (typeof isPdfDocumentIntakeCurrent === 'function'
+                        ? isPdfDocumentIntakeCurrent(_oneClickDocumentEpoch) : _oneClickDocumentEpoch === pdfDocumentEpoch);
                     _oneClickRemediationBusyRef.current = true;
                     setOneClickRemediationBusy(true);
                     try {
@@ -6746,7 +6826,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const _runFix = async () => {
                       if (!_oneClickDocumentIsCurrent()) return;
                       _handsErr = null;
-                      try { _res = await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit }); }
+                      try { _res = await fixAndVerifyPdf({ documentEpoch: _oneClickDocumentEpoch, base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit }); }
                       catch (e) { _handsErr = e; /* fix surface shows its own errors */ }
                       if (!_oneClickDocumentIsCurrent()) { _res = null; return; }
                       if (!_handsErr) {
@@ -8511,8 +8591,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           let autoFixMeta = null;
                           if (ra && ra.totalViolations > 0) {
                             _setRemediationOperationStep(_sweepOperation, 'Fixing ' + ra.totalViolations + ' violations...');
-                            const fr = await autoFixAxeViolations(html, ra, pdfAutoFixPasses);
-                            if (!_remediationOperationIsCurrent(_sweepOperation)) return;
+                            const fr = await autoFixAxeViolations(html, ra, pdfAutoFixPasses, {
+                              documentEpoch: _sweepOperation.documentEpoch,
+                              signal: _sweepOperation.controller && _sweepOperation.controller.signal,
+                              shouldAbort: () => !_remediationOperationIsCurrent(_sweepOperation),
+                            });
+                            if (!_remediationOperationIsCurrent(_sweepOperation) || (fr && fr.stale)) return;
                             if (fr && fr.html) html = fr.html;
                             autoFixMeta = fr ? {
                               autoFixPasses: (_sweepSource.autoFixPasses || 0) + (fr.passes || 0),
@@ -8652,8 +8736,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const ra = await runAxeAudit(html, { signal: _fixRemainingOperation.controller && _fixRemainingOperation.controller.signal });
                               if (!_remediationOperationIsCurrent(_fixRemainingOperation)) return;
                               if (ra && ra.totalViolations > 0) {
-                                const fr = await autoFixAxeViolations(html, ra, 1);
-                                if (!_remediationOperationIsCurrent(_fixRemainingOperation)) return;
+                                const fr = await autoFixAxeViolations(html, ra, 1, {
+                                  documentEpoch: _fixRemainingOperation.documentEpoch,
+                                  signal: _fixRemainingOperation.controller && _fixRemainingOperation.controller.signal,
+                                  shouldAbort: () => !_remediationOperationIsCurrent(_fixRemainingOperation),
+                                });
+                                if (!_remediationOperationIsCurrent(_fixRemainingOperation) || (fr && fr.stale)) return;
                                 if (fr && fr.html) html = fr.html;
                               }
                               if (html !== (pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml)
@@ -8765,12 +8853,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <button onClick={async () => {
                         console.warn('[Fix&Verify btn] clicked — pendingPdfBase64:', !!pendingPdfBase64, 'pdfAuditResult:', !!pdfAuditResult, 'pageRange:', pdfPageRange);
                         if (!_requireRemediationReady()) return;
+                        const _fixDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
                         const freshBase64 = await ensurePdfBase64();
                         if (!freshBase64) return; // user cancelled re-attach
+                        if (typeof isPdfDocumentIntakeCurrent === 'function' && !isPdfDocumentIntakeCurrent(_fixDocumentEpoch)) return;
                         if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) {
-                          fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2: pipeline rethrows after toasting — swallow here (fire-and-forget button)
+                          fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2: pipeline rethrows after toasting — swallow here (fire-and-forget button)
                         } else {
-                          fixAndVerifyPdf({ base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2: pipeline rethrows after toasting
+                          fixAndVerifyPdf({ documentEpoch: _fixDocumentEpoch, base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2: pipeline rethrows after toasting
                         }
                       }} disabled={pdfFixLoading || remediationReady === false} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                         {pdfFixLoading ? <span className="animate-spin">⏳</span> : <Sparkles size={16} />}
@@ -10132,11 +10222,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             Resume where you left off or start fresh?
                           </p>
                           <div className="flex gap-2 mt-3">
-                            <button onClick={() => { setChunkResumePrompt(null); window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-accept')); }}
+                            <button onClick={() => { setChunkResumePrompt(null); window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-accept', { detail: { documentEpoch: chunkResumePrompt.documentEpoch, runId: chunkResumePrompt.runId, runSequence: chunkResumePrompt.runSequence } })); }}
                               className="px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors">
                               ▶ Resume ({chunkResumePrompt.completedChunks}/{chunkResumePrompt.totalChunks})
                             </button>
-                            <button onClick={() => { setChunkResumePrompt(null); window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-decline')); }}
+                            <button onClick={() => { setChunkResumePrompt(null); window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-decline', { detail: { documentEpoch: chunkResumePrompt.documentEpoch, runId: chunkResumePrompt.runId, runSequence: chunkResumePrompt.runSequence } })); }}
                               className="px-4 py-2 bg-white border border-amber-300 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-50 transition-colors">
                               Start Fresh
                             </button>
@@ -10242,7 +10332,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   >
                                     {isExpanded ? '▼ Hide Diff' : '▶ View Diff'}
                                   </button>
-                                  {!isRejected && !pdfFixLoading && (
+                                  {!isRejected && !pdfFixLoading && !pdfAutoContinueRunning && (
                                     <button
                                       onClick={() => { _runOwnedSectionRefix(chunk.index, chunk.index + 1); }}
                                       className="text-[11px] bg-indigo-600 text-white px-2 py-1 rounded-full font-bold hover:bg-indigo-700 transition-colors focus:ring-2 focus:ring-indigo-400"
@@ -10251,18 +10341,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       🔄 Re-fix
                                     </button>
                                   )}
-                                  {!isRejected && !pdfFixLoading && (
+                                  {!isRejected && !pdfFixLoading && !pdfAutoContinueRunning && (
                                     <button
                                       onClick={() => {
-                                        setLiveChunkRejected(prev => ({ ...prev, [chunk.index]: true }));
                                         try {
-                                          const cs = getChunkState?.();
-                                          if (cs && cs.fixedChunks && cs.originalChunks && cs.fixedChunks[chunk.index] !== undefined) {
-                                            cs.fixedChunks[chunk.index] = cs.originalChunks[chunk.index];
-                                            const revertedHtml = cs.preamble + '\n' + cs.fixedChunks.join('\n') + '\n' + cs.postamble;
-                                            setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: revertedHtml, htmlChars: revertedHtml.length } : prev);
-                                            addToast(`Section ${chunk.index + 1} reverted to original`, 'info');
+                                          const token = _captureAsyncHtmlToken();
+                                          const selection = selectChunkVersion?.(chunk.index, 'original', {
+                                            currentHtml: token && token.html,
+                                            documentEpoch: token && token.documentEpoch,
+                                          });
+                                          if (!selection || selection.stale || !selection.html) {
+                                            addToast('This section changed before it could be reverted. Refresh the live review and try again.', 'info');
+                                            return;
                                           }
+                                          if (!_commitAsyncHtmlIfCurrent(token, prev => prev ? { ...prev, accessibleHtml: selection.html, htmlChars: selection.html.length, chunkState: selection.chunkState, chunkWeightedScore: null, chunkReport: null } : prev)) {
+                                            addToast('The document changed before this section revert could be applied.', 'info');
+                                            return;
+                                          }
+                                          setLiveChunkRejected(prev => ({ ...prev, [chunk.index]: true }));
+                                          addToast(`Section ${chunk.index + 1} reverted to original`, 'info');
                                         } catch(e) { addToast(`Revert failed: ${e?.message}`, 'error'); }
                                       }}
                                       className="text-[11px] bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold hover:bg-red-200 transition-colors focus:ring-2 focus:ring-red-400"
@@ -10271,22 +10368,26 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       ✕ Reject
                                     </button>
                                   )}
-                                  {isRejected && !pdfFixLoading && (
+                                  {isRejected && !pdfFixLoading && !pdfAutoContinueRunning && (
                                     <button
                                       onClick={() => {
-                                        setLiveChunkRejected(prev => { const next = { ...prev }; delete next[chunk.index]; return next; });
                                         try {
-                                          const cs = getChunkState?.();
-                                          if (cs && cs.fixedChunks) {
-                                            const fixedHtml = cs.chunkResults?.[chunk.index]?.html;
-                                            if (fixedHtml !== undefined) {
-                                              cs.fixedChunks[chunk.index] = fixedHtml;
-                                              const restoredHtml = cs.preamble + '\n' + cs.fixedChunks.join('\n') + '\n' + cs.postamble;
-                                              setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: restoredHtml, htmlChars: restoredHtml.length } : prev);
-                                              addToast(`Section ${chunk.index + 1} restored`, 'success');
-                                            }
+                                          const token = _captureAsyncHtmlToken();
+                                          const selection = selectChunkVersion?.(chunk.index, 'fixed', {
+                                            currentHtml: token && token.html,
+                                            documentEpoch: token && token.documentEpoch,
+                                          });
+                                          if (!selection || selection.stale || !selection.html) {
+                                            addToast('This section changed before it could be restored. Refresh the live review and try again.', 'info');
+                                            return;
                                           }
-                                        } catch(e) { /* non-blocking */ }
+                                          if (!_commitAsyncHtmlIfCurrent(token, prev => prev ? { ...prev, accessibleHtml: selection.html, htmlChars: selection.html.length, chunkState: selection.chunkState, chunkWeightedScore: null, chunkReport: null } : prev)) {
+                                            addToast('The document changed before this section restore could be applied.', 'info');
+                                            return;
+                                          }
+                                          setLiveChunkRejected(prev => { const next = { ...prev }; delete next[chunk.index]; return next; });
+                                          addToast(`Section ${chunk.index + 1} restored`, 'success');
+                                        } catch(e) { addToast(`Restore failed: ${e?.message}`, 'error'); }
                                       }}
                                       className="text-[11px] bg-slate-200 text-slate-700 px-2 py-1 rounded-full font-bold hover:bg-slate-300 transition-colors"
                                       aria-label={`Restore fixed section ${chunk.index + 1}`}
@@ -13389,6 +13490,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const _lowConf = (typeof window !== 'undefined' && Array.isArray(window.__lastOcrLowConfidencePages)) ? window.__lastOcrLowConfidencePages : [];
                         const _lowPages = _lowConf.map((p) => p && p.pageNum).filter((n) => typeof n === 'number');
                         const _reRun = async (force) => {
+                          const _rescanDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : pdfDocumentEpoch;
                           // Re-scanning re-runs the WHOLE pipeline and REPLACES the current results (2026-06-23,
                           // maintainer Canvas test: this was wiping a good audit with no warning). When there's a
                           // result to lose, confirm first and offer to save the project so it isn't discarded.
@@ -13407,8 +13509,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           try { window.__alloForceOcr = force; } catch (_) {}
                           const fb = await ensurePdfBase64();
                           if (!fb) { try { window.__alloForceOcr = null; } catch (_) {} return; } // user cancelled re-attach
-                          if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2
-                          else fixAndVerifyPdf({ base64: fb, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2
+                          if (typeof isPdfDocumentIntakeCurrent === 'function' && !isPdfDocumentIntakeCurrent(_rescanDocumentEpoch)) { try { window.__alloForceOcr = null; } catch (_) {} return; }
+                          if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) fixAndVerifyPdf({ documentEpoch: _rescanDocumentEpoch, pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2
+                          else fixAndVerifyPdf({ documentEpoch: _rescanDocumentEpoch, base64: fb, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2
                         };
                         return (
                           <div className="mb-2">

@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-36351-khalimane-o-fana-ka-maoto",
+  "title": "Khalimane o fana ka maoto",
+  "description": "Khalimane o nka qeto ea ho fa liphoofolo tsohle maoto hore li natefeloe ke ho tsamaea joalo ka batho.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Mutugi Kamundi"
+  ],
+  "illustrators": [
+    "Wiehan de Jager"
+  ],
+  "translators": [
+    "Lineo Nkabane-Sekopo"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Mutugi Kamundi",
+      "role": "Author"
+    },
+    {
+      "name": "Lineo Nkabane-Sekopo",
+      "role": "Translation"
+    },
+    {
+      "name": "Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Mutugi Kamundi (Author); Lineo Nkabane-Sekopo (Translation); Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "36351",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-b411a8e73e8b8a38",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/13910.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13904.png",
+      "text": "Khale-khale, ho ne ho se phoofolo e nang le maoto. Kaofela li ne li hosha fats'e ka mpa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=1",
+      "sourceDigest": "sha256:f64e47e64339636885024e672890937b0a86dffd22f0604b7862d68629aedd2b"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13905.png",
+      "text": "Ke batho feela ba neng ba e-na le maoto, hobane Khalimane a ba file ona.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=2",
+      "sourceDigest": "sha256:6f7b610cb4dce8c8d3155002147ee122e5f25f0f2a443c9a6a9d82488e52598e"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13906.png",
+      "text": "Ka letsatsi le leng, Khalimane o ile a nka qeto ea ho fa phoofolo e 'ngoe le e 'ngoe maoto. O ne a batla hore li tsamaee. O ile a li bolella taba ena.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=3",
+      "sourceDigest": "sha256:0f3b1fc9d9a9af5ac1a3cd206b0c1ac54f885282095faada2a473355fe058d2c"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13907.png",
+      "text": "Liphoofolo tsa re, \"Ho tla ba monate haholo ho ba le maoto.\" Tsa bina, tsa tants'a.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=4",
+      "sourceDigest": "sha256:ea1dc36e257913ecafebc45e472af68858a5fd80dc0d967acf80684bec5b2bf4"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13908.png",
+      "text": "Liphoofolo li ile tsa bolela hore ho thata ho hosha fats'e ka mpa. Li ne li ile utloa bohloko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=5",
+      "sourceDigest": "sha256:4b5d555162b079ac42d5d91d86b1d0830ae15c25c3eb2cb3de8de18a20534299"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13909.png",
+      "text": "Ha letsatsi le fihla, liphoofolo tse ngata li ile tsa hoshela ha Khalimane. Lithuhlo, litau, litlou, meutloanyane, likoena le linonyana li entse mola.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=6",
+      "sourceDigest": "sha256:e8231e5979c88412220b2edd1f93fce090d053e6c49118cd9ab0a85c4603c2a2"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13910.png",
+      "text": "Phoofolo e 'ngoe le e 'ngoe e ile ea fuoa maoto a mane. Linonyana li ile tsa fuoa maoto a mabeli nonyana ka 'ngoe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=7",
+      "sourceDigest": "sha256:359448c70833dae7144c953c0b34e0398ef6d5a3ca13a423f14fd7cf7c96e1e5"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13911.png",
+      "text": "Liphoofolo li ne li bonahala li sa tloaela ho ba le maoto. Tse ling tsa tants'a ke thabo. Tse ling tsa oela fats'e.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=8",
+      "sourceDigest": "sha256:cc5dd536a6666b076ca5d6ec881c62c945f339b8492573d81e046a62dede1e29"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13912.png",
+      "text": "Li ile tsa ea ho bontša batho hore li se li e na le maoto. Liphoofolo tsa re, \"Ha re sa tla hlola re hosha fats'e hape.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=9",
+      "sourceDigest": "sha256:9fefa47c808f3ca40ff53c220228467b1167f97b89c72297b8f23528c6725235"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13913.png",
+      "text": "Ea ho qetela moleng e ne e le Lefokololi. Khalimane a botsa, \"Na ho na le phoofolo e 'ngoe hape kamora hao?\" Lefokololi la araba, \"Che, ke 'na oa ho qetela.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=10",
+      "sourceDigest": "sha256:a52d03418b14a215b0c893eaba997257ec2382528196e59f8045c694ad96f6b3"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13914.png",
+      "text": "Khalimane a nahana hore na ebang ho sena phoofolo e 'ngoe o tla etsang ka maoto a setseng. Khalimane a fa Lefokololi maoto a setseng kaofela.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=11",
+      "sourceDigest": "sha256:88a3c7208f938e5b8e9f4b04f5f0e46f0093bf31ac3d4499d812b94f6c33f953"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13915.png",
+      "text": "Lefokololi o ne a thabile haholo. A re, \"Ke tla tsamaea kapele ho feta liphoofolo tse ling.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=12",
+      "sourceDigest": "sha256:7e0952cf384ea6a7a0c134eda1be50b27e358a04c1e4695552f0cefc64a1ec16"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13916.png",
+      "text": "Kamora hore Lefokololi a tsamaee, Noha a fihla ha Khalimane. A re ho Khalimane, \"Ke kopa u mphe maoto.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=13",
+      "sourceDigest": "sha256:fe74273edae0802f9d1cbd61849c1ad7c83a76eb61ef967ec5cbbe5cc17dd7c8"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13917.png",
+      "text": "Khalimane a re, \"Ke fane ka maoto kaofela. U ne u le kae?\" \"Ke setsoe,\" ha araba Noha.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=14",
+      "sourceDigest": "sha256:6a2be0523b92d760ec7bd0c5480061eebb3e67c06765c17e2d3a262799eb14db"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13918.png",
+      "text": "Khalimane a sheba hore na ho na le maoto a setseng. Eaba ha a a fumane.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=15",
+      "sourceDigest": "sha256:74060108e022f693babdaf64d7af88d6a5513e94bd917a05a6774d012092bd6a"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13919.png",
+      "text": "Khalimane a re ho Noha, \"Ke masoabi. Ha ho na maoto a setseng.\" Noha a hosha ho ea hae a sena maoto. Ho tloha tsatsing leo, Noha ha a sa robala haholo. O emetse ho ba oa pele moleng oa ho fumana maoto.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36351#page=16",
+      "sourceDigest": "sha256:2393e77158576347af85c447e03784739365416e986a08a97a5c00bba778fbed"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 369
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:2bf931f9ef6bfd492b32d1bb3ffdcc6dfe9d6d27801f1af47093984900a69e2f"
+  }
+}

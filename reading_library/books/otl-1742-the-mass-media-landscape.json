@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1742-the-mass-media-landscape",
+  "title": "The Mass Media Landscape",
+  "description": "The Mass Media Landscape is a compilation of lessons to help audiences understand the evolution of U.S. mass media and disruptive media technologies. It includes overviews of media law, media ethics and media literacy. Chapters contain interactive exercises, review quizzes, writing assignments, and multimedia content. Following are four points of emphasis: Media literacy extends beyond the ability to identify misinformation and disinformation or follow reliable news sources. A crucial part of media literacy is understanding mass media history. Media literacy skills help both consumers and professionals create and publish reliable content, including on social media, in an ethical manner and with an understanding of long-term effects and potential consequences. All students, not just those who seek careers in the industry, benefit from learning about media history, media law, media ethics, and media literacy.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Cultural & Ethnic Studies"
+  ],
+  "authors": [
+    "Dave Bostwick - Author / Alyssa Riley - Author / Dominique M. Valle - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Arkansas",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-mass-media-landscape"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Mass Media Landscape is a compilation of lessons to help audiences understand the evolution of U.S. mass media and disruptive media technologies. It includes overviews of media law, media ethics and media literacy. Chapters contain interactive exercises, review quizzes, writing assignments, and multimedia content. Following are four points of emphasis: Media literacy extends beyond the ability to identify misinformation and disinformation or follow reliable news sources. A crucial part of media literacy is understanding mass media history. Media literacy skills help both consumers and professionals create and publish reliable content, including on social media, in an ethical manner and with an understanding of long-term effects and potential consequences. All students, not just those who seek careers in the industry, benefit from learning about media history, media law, media ethics, and media literacy."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 156
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1742",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

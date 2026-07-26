@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1237-the-fundamentals-of-healthcare-administration-navigating-challenges-and-",
+  "title": "The Fundamentals of Healthcare Administration: Navigating Challenges and Coordinating Care",
+  "description": "This book is written for those interested in acquiring a thorough knowledge base relative to the intricacies of the organizational theories, customs, and insights significant to the management of health service organizations. It examines the foundational aspects of leadership and management as they relate to establishing and maintaining the principles and practices within healthcare organizations. The book opens with a discussion on the differences between health, healthcare, and health care while providing an overview of healthcare management and organizational trends. It culminates in discussions of leadership, management, motivation, organizational behavior, and management thinking. Additionally, it discusses topics of information technology, teamwork, health disparities, organizational culture, performance, and change.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Management",
+    "Medicine - Public Health"
+  ],
+  "authors": [
+    "Whitney N. Hamilton - Author / Dorothy J. Howell - Author / Melissa Jordan - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of North Georgia Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-fundamentals-of-healthcare-administration-navigating-challenges-and-coordinating-care"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is written for those interested in acquiring a thorough knowledge base relative to the intricacies of the organizational theories, customs, and insights significant to the management of health service organizations. It examines the foundational aspects of leadership and management as they relate to establishing and maintaining the principles and practices within healthcare organizations. The book opens with a discussion on the differences between health, healthcare, and health care while providing an overview of healthcare management and organizational trends. It culminates in discussions of leadership, management, motivation, organizational behavior, and management thinking. Additionally, it discusses topics of information technology, teamwork, health disparities, organizational culture, performance, and change."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 131
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "1237",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

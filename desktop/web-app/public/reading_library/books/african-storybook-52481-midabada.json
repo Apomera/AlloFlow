@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52481-midabada",
+  "title": "Midabada",
+  "description": "Waxaan isweydiinaa sababta ay waxyaabuhu midabyo kala duwan u leeyihiin.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Madhav Chavan"
+  ],
+  "illustrators": [
+    "Rijuta Ghate"
+  ],
+  "translators": [
+    "Zahra Nooh"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Madhav Chavan",
+      "role": "Author"
+    },
+    {
+      "name": "Zahra Nooh",
+      "role": "Translation"
+    },
+    {
+      "name": "Rijuta Ghate",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Madhav Chavan (Author); Zahra Nooh (Translation); Rijuta Ghate (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52481",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-065a0f47526878eb",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/1926.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1242.png",
+      "text": "Cirka muxu buluug u yahay?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481#page=1",
+      "sourceDigest": "sha256:edb1c0d485288ca83967492ba2c9f1220bd9d43b693e5e24540ea89168d5b53c"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1243.png",
+      "text": "Mar walba buluug ma aha. Miyuu yahay?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481#page=2",
+      "sourceDigest": "sha256:7b5d91f9339143a96b092cac86c74b606da084952dbd49a3db6e0b3f4753e8a3"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1917.png",
+      "text": "Caleemaha maxay cagaar u yihiin?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481#page=3",
+      "sourceDigest": "sha256:29c706c62ec85fe58cbaba4d1ff8f120dead4f31bf818964483a817b13c264d4"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1054.png",
+      "text": "Ma aha marwalba cagaar. Miyey yihiin?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481#page=4",
+      "sourceDigest": "sha256:70b66e76d612e6fca83059bba69a116c24f76f3b00f09b7bfb767fbdaa4304a6"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1918.png",
+      "text": "Moosku muxu u yahay jaale?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481#page=5",
+      "sourceDigest": "sha256:1c1c6353348a1fe97b7460f0fd35f6663a22d826f6b37c778f5842ca123241a3"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1919.png",
+      "text": "Mooska bisil waa jaalle. Midka cayriinka ahna waa cagaar.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481#page=6",
+      "sourceDigest": "sha256:990ad7b652e7603ba81642df56b560a46d5d2be30ca732aecd36ea110c3784ca"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1920.png",
+      "text": "Daladuhu maxay u yihin madow?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481#page=7",
+      "sourceDigest": "sha256:790f709d58c5993ed7fdcc6a1e340b0da740bcbdf52270fc8280376847943fe2"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1922.png",
+      "text": "Daladuha oo dhan ma aha madow.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481#page=8",
+      "sourceDigest": "sha256:f35010889f50db994eee543abdf705ddc9f650d7dee6e371d23bb07d9c384501"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1923.png",
+      "text": "Muxu dhiigu u yahay gaduud?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481#page=9",
+      "sourceDigest": "sha256:67561a89111e0b68966247e793e55d1cefde3b56151d15da769ce0daeb338a8d"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1924.png",
+      "text": "Waxa kujira bir dhiiga. Taasi waxay ka dhigaysaa gaduud.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481#page=10",
+      "sourceDigest": "sha256:9864729e1c423f507b7e17d50934fa6c3628c9770b158aaf0f223ec341fa0175"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1925.png",
+      "text": "Cusbadu maxay u cadahay?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481#page=11",
+      "sourceDigest": "sha256:b1976a5b2fa1f895a4144362fb4f8eef612f25ab19d1d2a8939a4b2f3ea365fb"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1928.png",
+      "text": "Ma aqaan!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52481#page=12",
+      "sourceDigest": "sha256:6abb2731fffeaec939a30f66dacf0a4e12a153aa89ed730929b20c2acdc518cf"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 68
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:cbf24abb025fe958b80445ee7928bb6ac0cbfbcc5a125bd9ad84f7204649fc86"
+  }
+}

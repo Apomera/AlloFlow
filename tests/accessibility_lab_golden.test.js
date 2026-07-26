@@ -18,6 +18,7 @@ beforeAll(() => {
   // The module early-returns unless window.ReactDOM.createPortal exists.
   window.ReactDOM = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom'));
   window.AlloIcons = new Proxy({}, { get: () => () => null });
+  loadAlloModule('accessibility_evidence_module.js');
   loadAlloModule('accessibility_lab_module.js');
   A = window.AlloModules.AccessibilityLabInternals;
   if (!A || !A.composeAnnouncement) throw new Error('AccessibilityLabInternals seam not present');
@@ -200,6 +201,11 @@ describe('keyboard scan and semantic queue coverage', () => {
 });
 
 describe('artifact accessibility scorecards', () => {
+  const completedChecks = {
+    keyboard: 'pass', focus: 'pass', reflow: 'pass', text_spacing: 'pass',
+    errors: 'pass', motion: 'pass', media: 'not_applicable', assistive_tech: 'pass',
+  };
+
   it('normalizes legacy data and reports pass, findings, untested, and N/A separately', () => {
     const item = { id: 'artifact-1', type: 'quiz', title: 'Knowledge check' };
     const card = A.normalizeReviewScorecard({
@@ -208,13 +214,75 @@ describe('artifact accessibility scorecards', () => {
     }, item);
     const summary = A.summarizeReviewScorecard(card);
     expect(card.artifactId).toBe('artifact-1');
+    expect(card.currentBinding).toMatchObject({ algorithm: 'SHA-256', scope: 'interactive-artifact' });
+    expect(card.currentFingerprint).toMatch(/^sha256:[0-9a-f]{64}$/);
     expect(card.checks.reflow).toBe('untested');
+    expect(card.findings).toEqual(expect.arrayContaining([
+      expect.objectContaining({ source: 'manual', ruleId: 'manual:focus', status: 'open', wcag: '2.4.3, 2.4.7, 2.4.11' }),
+    ]));
     expect(summary).toMatchObject({ pass: 1, fail: 1, not_applicable: 1, untested: 5, total: 8, complete: false });
   });
 
+  it('fingerprints semantic content deterministically and ignores transient timestamps', () => {
+    const first = {
+      id: 'artifact-fingerprint', type: 'quiz', title: 'Equivalent quiz', timestamp: '2026-01-01T00:00:00.000Z',
+      data: { prompt: 'Choose one', answers: { b: false, a: true } },
+    };
+    const reordered = {
+      id: 'artifact-fingerprint', type: 'quiz', title: 'Equivalent quiz', timestamp: '2026-07-25T12:30:00.000Z',
+      data: { answers: { a: true, b: false }, prompt: 'Choose one' },
+    };
+    const changed = { ...reordered, data: { answers: { a: false, b: true }, prompt: 'Choose one' } };
+    expect(A.artifactFingerprint(first)).toBe(A.artifactFingerprint(reordered));
+    expect(A.artifactFingerprint(changed)).not.toBe(A.artifactFingerprint(first));
+  });
+
+  it('invalidates an approval after content changes and preserves it in review history', () => {
+    const firstRevision = { id: 'artifact-revision', type: 'quiz', title: 'Revision test', data: { prompt: 'Original' } };
+    const secondRevision = { ...firstRevision, data: { prompt: 'Updated' } };
+    const initial = A.normalizeReviewScorecard({ checks: completedChecks, notes: 'Reviewed with NVDA.' }, firstRevision);
+    const completed = A.completeReviewScorecard(initial, '2026-07-24T10:00:00.000Z');
+    expect(completed.reviewedFingerprint).toBe(A.artifactFingerprint(firstRevision));
+    expect(A.summarizeReviewScorecard(completed).complete).toBe(true);
+
+    const stale = A.normalizeReviewScorecard(completed, secondRevision);
+    expect(stale).toMatchObject({
+      isStale: true, notes: '', reviewedFingerprint: completed.reviewedFingerprint,
+      currentFingerprint: A.artifactFingerprint(secondRevision),
+    });
+    expect(Object.values(stale.checks).every(value => value === 'untested')).toBe(true);
+    expect(stale.reviewHistory).toHaveLength(1);
+    expect(stale.reviewHistory[0]).toMatchObject({
+      reviewedFingerprint: A.artifactFingerprint(firstRevision),
+      lastReviewedAt: '2026-07-24T10:00:00.000Z', notes: 'Reviewed with NVDA.',
+    });
+
+    const rereviewed = A.completeReviewScorecard({ ...stale, checks: completedChecks, notes: 'Retested updated content.' }, '2026-07-25T10:00:00.000Z');
+    expect(rereviewed.isStale).toBe(false);
+    expect(rereviewed.reviewedFingerprint).toBe(A.artifactFingerprint(secondRevision));
+    expect(rereviewed.reviewHistory).toHaveLength(1);
+  });
+
+  it('treats completed legacy records without fingerprints as stale evidence', () => {
+    const item = { id: 'artifact-legacy', type: 'outline', title: 'Legacy outline', data: 'Current content' };
+    const migrated = A.normalizeReviewScorecard({
+      checks: completedChecks, notes: 'Legacy approval', lastReviewedAt: '2025-12-01T08:00:00.000Z',
+      automated: { engine: 'axe-core', violationRules: 0 },
+    }, item);
+    expect(migrated.isStale).toBe(true);
+    expect(A.summarizeReviewScorecard(migrated).complete).toBe(false);
+    expect(migrated.reviewHistory).toHaveLength(1);
+    expect(migrated.reviewHistory[0].notes).toBe('Legacy approval');
+    expect(migrated.automated).toBeNull();
+    expect(Object.values(migrated.checks).every(value => value === 'untested')).toBe(true);
+  });
+
   it('attaches automated axe evidence to the active artifact scorecard', () => {
+    const fingerprint = A.artifactFingerprint({ id: 'artifact-audit', type: 'quiz', title: 'Audited quiz' });
     const saved = A.persistAutomatedAuditForReview({
-      itemId: 'artifact-audit', artifactType: 'quiz', artifactTitle: 'Audited quiz', startedAt: '2026-01-01T00:00:00.000Z',
+      itemId: 'artifact-audit', artifactType: 'quiz', artifactTitle: 'Audited quiz',
+      artifactFingerprint: fingerprint, rendererRevision: 'test-renderer',
+      startedAt: '2026-01-01T00:00:00.000Z',
     }, {
       violations: [{ id: 'button-name', nodes: [{}, {}] }],
       passes: [{ id: 'document-title' }, { id: 'html-has-lang' }],
@@ -224,6 +292,14 @@ describe('artifact accessibility scorecards', () => {
       engine: 'axe-core', engineVersion: '4.12.1', standard: 'WCAG 2.2 A/AA',
       violationRules: 1, affectedElements: 2, passedRules: 2, needsReview: 1,
       ruleIds: ['button-name'],
+      artifactFingerprint: fingerprint,
+      rendererRevision: 'test-renderer',
+    });
+    expect(saved.findings).toEqual(expect.arrayContaining([
+      expect.objectContaining({ source: 'axe', ruleId: 'axe:button-name', status: 'open', count: 2 }),
+    ]));
+    expect(saved.verification).toMatchObject({
+      profile: 'accessibility-lab', verificationState: 'partial', outcomeState: 'fail',
     });
     expect(A.loadReviewScorecards()['artifact-audit'].automated.affectedElements).toBe(2);
   });
@@ -238,12 +314,18 @@ describe('authentic workspace host contract', () => {
     expect(handlerEnd).toBeGreaterThan(handlerStart);
     const handler = hostSource.slice(handlerStart, handlerEnd);
     expect((handler.match(/!options\.suppressLiveFollow/g) || []).length).toBe(3);
-    expect(hostSource).toContain('onOpenAuthenticView: (item) => {');
+    expect(hostSource).toContain('onOpenAuthenticView: (item, reviewContext = {}) => {');
     expect(hostSource).toContain('handleRestoreView(item, { suppressLiveFollow: true })');
     expect(hostSource).toContain("const ACCESSIBILITY_REVIEW_SESSION_KEY = 'alloflow_accessibility_review_session_v1'");
+    expect(hostSource).toContain('artifactFingerprint: reviewFingerprint');
+    expect(hostSource).toContain('artifactBinding: reviewContext.artifactBinding || null');
+    expect(hostSource).toContain("evidenceProfile: reviewContext.evidenceProfile || 'accessibility-lab'");
+    expect(hostSource).toContain("loadModule('AccessibilityEvidence'");
+    expect(hostSource).toContain('rendererRevision: reviewContext.rendererRevision || null');
     expect(hostSource).toContain('data-a11y-review-return="true"');
     expect(hostSource).toContain('reviewSession: accessibilityReviewSession');
-    expect(hostSource).toContain('onEndReviewSession: () => setAccessibilityReviewSession(null)');  });
+    expect(hostSource).toContain('onEndReviewSession: () => setAccessibilityReviewSession(null)');
+  });
 });
 
 describe('rendered Accessibility Lab modal', () => {
@@ -276,11 +358,12 @@ describe('rendered Accessibility Lab modal', () => {
     const root = ReactDOMClient.createRoot(host);
     const unsupported = { id: 'preview-2', type: 'interactive-unknown', title: 'Unsupported interaction', data: { privateShape: 'RAW_SENTINEL' } };
     let openedItem = null;
+    let openedContext = null;
     await ReactLib.act(async () => {
       root.render(ReactLib.createElement(window.AlloModules.AccessibilityLab, {
         isOpen: true,
         onClose: () => {},
-        onOpenAuthenticView: item => { openedItem = item; },
+        onOpenAuthenticView: (item, context) => { openedItem = item; openedContext = context; },
         history: [
           { id: 'preview-1', type: 'simplified', title: 'Supported passage', data: 'Readable content' },
           unsupported,
@@ -303,6 +386,10 @@ describe('rendered Accessibility Lab modal', () => {
     expect(openButton).toBeTruthy();
     await ReactLib.act(async () => { openButton.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     expect(openedItem).toBe(unsupported);
+    expect(openedContext).toMatchObject({ artifactFingerprint: A.artifactFingerprint(unsupported) });
+    expect(openedContext.artifactBinding).toMatchObject({ algorithm: 'SHA-256', scope: 'interactive-artifact' });
+    expect(openedContext.evidenceProfile).toBe('accessibility-lab');
+    expect(openedContext.rendererRevision).toBeTruthy();
     await ReactLib.act(async () => { root.unmount(); });
   });
   it('restores an active review, persists every check, and completes the scorecard', async () => {
@@ -316,7 +403,9 @@ describe('rendered Accessibility Lab modal', () => {
         isOpen: true,
         onClose: () => {},
         onEndReviewSession: () => { ended = true; },
-        reviewSession: { itemId: item.id, artifactTitle: item.title },
+        reviewSession: {
+          itemId: item.id, artifactTitle: item.title, artifactFingerprint: A.artifactFingerprint(item),
+        },
         history: [item],
         t: key => key,
       }));
@@ -340,6 +429,9 @@ describe('rendered Accessibility Lab modal', () => {
     expect(stored[item.id].checks.keyboard).toBe('pass');
     expect(stored[item.id].checks.media).toBe('not_applicable');
     expect(stored[item.id].lastReviewedAt).toBeTruthy();
+    expect(stored[item.id].reviewedFingerprint).toBe(A.artifactFingerprint(item));
+    expect(stored[item.id].reviewedBinding).toMatchObject({ algorithm: 'SHA-256' });
+    expect(stored[item.id].verification).toMatchObject({ profile: 'accessibility-lab', verificationState: 'partial' });
     expect(document.body.textContent).toContain('7 passed');
     expect(document.body.textContent).toContain('1 N/A');
 

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-788-human-anatomy-lab-manual",
+  "title": "Human Anatomy Lab Manual",
+  "description": "This is a lab manual for a college-level human anatomy course. Mastery of anatomy requires a fair amount of memorization and recall skills. The activities in this manual encourage students to engage with new vocabulary in many ways, including grouping key terms, matching terms to structures, recalling definitions, and written exercises. Most of the activities in this manual utilize anatomical models, and several dissections of animal tissues and histological examinations are also included. Each unit includes both pre- and post-lab questions and six lab exercises designed for a classroom where students move from station to station. The vocabulary terms used in each unit are listed at the end of the manual and serve as a checklist for practicals.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology"
+  ],
+  "authors": [
+    "Malgosia Wilk-Blaszczak - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Mavs Open Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/human-anatomy-lab-manual"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This is a lab manual for a college-level human anatomy course. Mastery of anatomy requires a fair amount of memorization and recall skills. The activities in this manual encourage students to engage with new vocabulary in many ways, including grouping key terms, matching terms to structures, recalling definitions, and written exercises. Most of the activities in this manual utilize anatomical models, and several dissections of animal tissues and histological examinations are also included. Each unit includes both pre- and post-lab questions and six lab exercises designed for a classroom where students move from station to station. The vocabulary terms used in each unit are listed at the end of the manual and serve as a checklist for practicals."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 141
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "788",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

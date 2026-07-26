@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1964-chemistry-and-the-environment-a-chemistry-perspective-for-discussion-of-",
+  "title": "Chemistry and the Environment: A Chemistry Perspective for discussion of Environmental Issues - Second Edition",
+  "description": "Chemistry and the Environment is designed to accompany a one-semester course in chemistry-based discussions of important environmental issues such as air pollution, the ozone layer, climate change and water quality. Chemical principles are introduced, followed by environmental ‘focus’ sections to base discussions on the scientific principles and societal intricacies of the individual topics. Instructors can also use the focus sections as a resource for presentation slides. Chemistry 2e is designed to meet the scope and sequence requirements of the two-semester general chemistry course. The textbook provides an important opportunity for students to learn the core concepts of chemistry and understand how those concepts apply to their lives and the world around them.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Chemistry"
+  ],
+  "authors": [
+    "Devin R Latimer - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Winnipeg",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/chemistry-and-the-environment-a-chemistry-perspective-for-discussion-of-environmental-issues"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Chemistry and the Environment is designed to accompany a one-semester course in chemistry-based discussions of important environmental issues such as air pollution, the ozone layer, climate change and water quality. Chemical principles are introduced, followed by environmental ‘focus’ sections to base discussions on the scientific principles and societal intricacies of the individual topics. Instructors can also use the focus sections as a resource for presentation slides. Chemistry 2e is designed to meet the scope and sequence requirements of the two-semester general chemistry course. The textbook provides an important opportunity for students to learn the core concepts of chemistry and understand how those concepts apply to their lives and the world around them."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 135
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1964",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

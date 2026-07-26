@@ -133,14 +133,31 @@ describe('Research Hub modal accessibility', () => {
     expect(educatorSource).toContain('Legacy metadata:');
   });
 
-  it('renders an accessible evidence map with portable standards-based exports', () => {
+  it('renders an accessible evidence repair workbench with portable standards-based exports', () => {
     expect(source).toContain('data-research-evidence-graph="true"');
     expect(source).toContain('aria-label="Claims and their evidence relationships"');
     expect(source).toContain('data-evidence-relationship={row.edge.type}');
+    expect(source).toContain('data-evidence-repair-form="true"');
+    expect(source).toContain('Connect evidence');
+    expect(source).toContain('Revise link');
+    expect(source).toContain('Remove link');
+    expect(source).toContain("minHeight: '44px'");
+    expect(source).toContain('No rigor status is assigned until a claim exists.');
     expect(source).toContain('W3C annotations');
     expect(source).toContain('CSL citations');
     expect(source).toContain('RO-Crate 1.3 metadata');
     expect(source).toContain('This is a reasoning check, not an automatic grade.');
+  });
+
+  it('previews portfolio imports and offers recovery-safe merge or replace actions', () => {
+    expect(source).toContain('data-portfolio-import-recovery="true"');
+    expect(source).toContain('data-import-preview="true"');
+    expect(source).toContain('Choose an AlloFlow portfolio JSON file');
+    expect(source).toContain('Merge portfolios');
+    expect(source).toContain('Replace after backup');
+    expect(source).toContain('Restore recovery snapshot');
+    expect(source).toContain("writeRecoverySnapshot(journal, 'before_import_' + mode)");
+    expect(source).toContain('hydrateResearchMedia(latestJournalRef.current)');
   });
   it('connects AlphaFold through a sequence-free learner-approved capture', () => {
     expect(alphaFoldSource).toContain('id="sendResearchHubBtn"');

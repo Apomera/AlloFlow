@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47417-ibibazo-vya-kariza",
+  "title": "Ibibazo vya Kariza",
+  "description": "Kariza yaratewe intege n'abavyeyi biwe. Kubaza ibibazo kwa Kariza niko kwatumye amenya gukora 'kandagira ukarabe' hamwe n'akamaro ko gukaraba imbere yo gufungura.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Jean de Dieu Bavugempore"
+  ],
+  "illustrators": [
+    "Rob Owen"
+  ],
+  "translators": [
+    "Fanuel Ndayishimiye"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Jean de Dieu Bavugempore",
+      "role": "Author"
+    },
+    {
+      "name": "Fanuel Ndayishimiye",
+      "role": "Translation"
+    },
+    {
+      "name": "Rob Owen",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Jean de Dieu Bavugempore (Author); Fanuel Ndayishimiye (Translation); Rob Owen (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47417",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-fd8856cb5fc8a34a",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/25965.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25964.png",
+      "text": "Kariza yakunda kubaza ibibazo. Ivyo yabishizwemwo n'abavyeyi biwe. Bakunda kumubwira, \"Utaza urabaza ukiri muto, uzosaza uri intamenya.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417#page=1",
+      "sourceDigest": "sha256:a644796ece836b7ead381bc1b182e8984bf647b89624ce4095c8f0ae11824eb4"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25965.png",
+      "text": "Umusi umwe Kariza abaza umwigisha wiwe ati, \"Kubera iki abavyeyi bama batubwira ngo dukarabe imbere yo gufungura, n'igihe tuba tubona ko intoke zacu zisa neza?\" Abo bigana barakunze ico kibazo ciwe. Ntibakunda ko bababwira gukaraba!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417#page=2",
+      "sourceDigest": "sha256:cdf47421fea3914b7f41654d06651b718d4f3743fbe38297b3a2431172334782"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25966.png",
+      "text": "Umwigisha aramubwira ati, \"Ubajije ikibazo ciza! Naho tuba tubona ko mu ntoke haba ari heza, haba hariko imigera y'ingwara itaboneka.\" Arabasigurira, \"Imigera itera ingwara. Imigera y'ingwara ntushobora kuyibona n'amaso yawe, dukenera gukoresha ubundi buhinga kugira dushobore kubona iyo migera.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417#page=3",
+      "sourceDigest": "sha256:6185c91eb6d8ab31b5e8b79949bd1e5ffcb7642d1f37ee01cb783b3faec9b508"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25967.png",
+      "text": "Umwigisha aca akura rugagamisha mu kabati. \"Rugagamisha ni igikoresho dukoresha mu kurabisha amaso ibintu bitobito cane.\" Aca ashira intoke za Kariza bukebuke azishira kuri rugagamisha.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417#page=4",
+      "sourceDigest": "sha256:7d4b4951d25fa187720f8c819c74cbe00aea324605f12b5830e36de683db15e1"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25968.png",
+      "text": "Umwigisha ashira uruhande kuri rugagamisha baca babona ibintu mu kiyo. Naho mu biganza kwa Kariza haboneka ko ari heza, habonetse imigera y'ingwara mu ntoke.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417#page=5",
+      "sourceDigest": "sha256:5b9ab3b0e86f771371c39a325b3539bc4fb4b3656d99081d4ba097368def8a9a"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25969.png",
+      "text": "\"Hari imigera y'ingwara ahantu dutuye hose, mu bintu vyose dukorako ngaha kw'ishure, mu kibuga canke ku kibuga no muhira.\" Umwigisha arababwira ati, \"Iyo migera niyo ituma tugwara cane.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417#page=6",
+      "sourceDigest": "sha256:7b7e517360d26e8761d776fb480644465a3cd04ea174c49c55d22845d3ad11c8"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25970.png",
+      "text": "Arabandanya ababwira, \"Kugira twice iyo migera tubwirizwa gukaraba n'amazi meza n'isabuni, cane cane tugira dufungure. Kandi, n'igihe bishitse tukagwara dutegerezwa gukaraba kugira ntidukwiragize imigera.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417#page=7",
+      "sourceDigest": "sha256:13c40b33a362c282c3bf9188f01dbe4d5bae4a682c936c3b5a55dfa9728d8f85"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25971.png",
+      "text": "Kariza ashitse imuhira asanga se wiwe arakora igikoresho. Aca aramubaza, \"Uriko ukora iki?\" Aramwishura ati, \"Turiko turakora honyorukarabe, igikoreshwa mu gukaraba mu ntoke.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417#page=8",
+      "sourceDigest": "sha256:5d58cd2570e14363ae9125bd38bdb9721ceec242795ef3efa10a387a3b556e12"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25972.png",
+      "text": "Kariza yarakangutse cane aca amubwira, \"Eee! Umwigisha yatubwiye ivy'iki gikoresho. Mugabo benshi muri twebwe basanze batakizi. None gikora gute?\" Se wiwe aca aratwenga aca aramubwira ati, \"Egera nkwereke mukobwa wanje.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417#page=9",
+      "sourceDigest": "sha256:fc25a533acf88098dfa58effc899f591470773b33ce4b593dab4358c31a3a72d"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25973.png",
+      "text": "\"Ubwa mbere, honyora ngaha kumpera z'igiti.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417#page=10",
+      "sourceDigest": "sha256:b4f5f13c60c5e721451e1c173bdf405803e1f6ba3660010c04b202d1ff804a9d"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25974.png",
+      "text": "\"Hanyuma, ikirimwo amazi kica cihengeka kigasuka amazi mu biganza. Wibuke ko ubwirizwa gukoresha isabuni mu gukaraba.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417#page=11",
+      "sourceDigest": "sha256:936d81fbfb27d0dfcc120beff77b4960c4cc3b5c3f17eaec1d4d15e6518cfe64"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/25975.png",
+      "text": "Kariza yararyohewe cane aca abwira se ati, \"Ibi nari kubimenya gute iyo ntaja ndabaza? Nivyo, ukubaza bitera ukumenya.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47417#page=12",
+      "sourceDigest": "sha256:a578f8a898581de05e309549c4d592216746c4d253d6db6d432720caf8295058"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 285
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:d2da3003337cd7edec0b0f8cbc6c67ebbd8a166516fffc80eb721525c9471dee"
+  }
+}

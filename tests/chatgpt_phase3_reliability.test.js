@@ -85,8 +85,8 @@ describe('#3 — aborted waiters never start', () => {
     expect(g.api.state().inFlight).toBe(0);
   });
   it('wiring: the signal is captured at ENQUEUE, aborts short-circuit the retry ladder, and the slot rides the underlying call', () => {
-    expect(dp).toContain("var _gateSignal = (typeof window !== 'undefined' && window.__alloPdfAbortSignal) ? window.__alloPdfAbortSignal : null;");
-    expect(dp).toContain('if ((err && err.isAbort) || (_gateSignal && _gateSignal.aborted)) throw err;');
+    expect(dp).toContain("var _gateSignal = explicitSignal || ((typeof window !== 'undefined' && window.__alloPdfAbortSignal) ? window.__alloPdfAbortSignal : null);");
+    expect(dp).toContain("if ((err && (err.isAbort || err.name === 'AbortError')) || (_gateSignal && _gateSignal.aborted)) {");
     expect(dp).toContain('return { result: _raced, slotUntil: _slotUntil };');
     expect(dp).toContain('(_geminiWaiters.shift()).resolve();');
     expect(dp).toContain('_pruneAbortedWaiters();');
@@ -148,15 +148,22 @@ describe('#15 — run identity + honest outcome + honest counters', () => {
     expect(dp).not.toMatch(/outcome: 'success',\n/); // the hard-coded literal is gone
   });
   it('the counters finally measure what their names say', () => {
-    // terminal give-ups no longer masquerade as retries…
-    expect((dp.match(/_pipelineStats\.terminalFailures = \(_pipelineStats\.terminalFailures \|\| 0\) \+ 1;/g) || []).length).toBe(2);
-    // …and real retry attempts are counted where they happen (throttle ladder + generic single retry)
-    expect((dp.match(/_pipelineStats\.retries\+\+; _pipelineStats\.transportRetries = \(_pipelineStats\.transportRetries \|\| 0\) \+ 1;/g) || []).length).toBe(2);
-    expect(dp).toContain('if (n > 0) _pipelineStats.recoveredRetries = (_pipelineStats.recoveredRetries || 0) + 1;');
+    // Counters follow the owning run, so a late call cannot contaminate a newer run's totals.
+    expect(dp).toContain('var _callStats = (owner && owner.stats) || _pipelineStats;');
+    // Empty responses and thrown terminal failures are recorded for both text and Vision calls.
+    expect((dp.match(/_callStats\.terminalFailures = \(_callStats\.terminalFailures \|\| 0\) \+ 1;/g) || []).length).toBe(4);
+    // Abort is cancellation rather than a terminal transport failure.
+    expect((dp.match(/if \(!_abortedCall\) _callStats\.terminalFailures = \(_callStats\.terminalFailures \|\| 0\) \+ 1;/g) || []).length).toBe(2);
+    // Real retry attempts are counted where they happen (throttle ladder + generic single retry).
+    expect((dp.match(/_callStats\.retries\+\+; _callStats\.transportRetries = \(_callStats\.transportRetries \|\| 0\) \+ 1;/g) || []).length).toBe(2);
+    expect(dp).toContain('if (n > 0) _callStats.recoveredRetries = (_callStats.recoveredRetries || 0) + 1;');
+    expect(dp).not.toContain('_pipelineStats.retries++');
     expect(dp).toContain('authThrottles: _pipelineStats.authThrottles || 0,'); // surfaced at last
   });
   it('history rows dedupe on RUN IDENTITY when present (filename+baseline collapsed distinct runs)', () => {
-    expect(anti).toContain('runId: cur.runId || null,');
+    expect(anti).toContain('const _historyRunId = cur.runId || (cur.pipelineStats && cur.pipelineStats.runId) || null;');
+    expect(anti).toContain("const key = _historyRunId ? ('run:' + _historyRunId + ':' + _historyStateKey) : _historyStateKey;");
+    expect(anti).toContain('runId: _historyRunId,');
     expect(anti).toContain('const _sameRun = last && ((row.runId && last.runId) ? last.runId === row.runId');
     expect(anti).toContain('recoveredRetries: (_ps && _ps.recoveredRetries != null) ? _ps.recoveredRetries : null,');
   });
@@ -164,10 +171,16 @@ describe('#15 — run identity + honest outcome + honest counters', () => {
 
 // ── #12: intake preflight, extracted from the view with a toast collector ──
 const _ps2 = view.indexOf('const _BATCH_MAX_FILES = 60;');
-const _pe2 = view.indexOf('// One file → one queue entry', _ps2);
+const _maxFilesEnd = view.indexOf('\n', _ps2) + 1;
+const _budgetStart = view.indexOf('const _BATCH_MAX_FILE_BYTES', _maxFilesEnd);
+const _pe2 = view.indexOf('// One file', _budgetStart);
+const _preflightSource = view.slice(_ps2, _maxFilesEnd) + view.slice(_budgetStart, _pe2);
 function makePreflight() {
   const toasts = [];
-  const fn = new Function('addToast', view.slice(_ps2, _pe2) + '\nreturn _alloBatchPreflight;')((m) => toasts.push(String(m)));
+  const fn = new Function('addToast', 'navigator', _preflightSource + '\nreturn _alloBatchPreflight;')(
+    (m) => toasts.push(String(m)),
+    {},
+  );
   return { fn, toasts };
 }
 const _mb = (n) => n * 1024 * 1024;
@@ -194,7 +207,7 @@ describe('#12 — batch intake budgets run BEFORE any read', () => {
     expect(toasts.join(' ')).toMatch(/memory budget/);
   });
   it('wiring: reads are SEQUENTIAL and the cache eviction is byte-budgeted', () => {
-    expect(view).toContain('accepted.reduce((chain, f) => chain.then(() => _alloEnqueueBatchFile(f)), Promise.resolve());');
+    expect(view).toMatch(/for \(const file of accepted\) \{[\s\S]{0,300}?await _alloReadBatchFileOwned\(file, session\);/);
     expect(dp).toContain('const _PDF_CACHE_MAX_BYTES = 150 * 1024 * 1024;');
     expect(dp).toContain('while (i < survivors.length && (survivors.length - i > _PDF_CACHE_MAX_ENTRIES || _totalBytes > _PDF_CACHE_MAX_BYTES))');
   });
@@ -235,10 +248,10 @@ describe('#16 — audit-frame neutralization + pinned engines + fail-closed sani
     expect(dp).toContain('const _safeHtml = _neutralizeForAuditFrame(htmlContent);');
     expect(dp).toContain('doc.write(_neutralizeForAuditFrame(htmlContent)); doc.close();');
   });
-  it('the Equal Access engine is PINNED (a floating @3 changed the rule set under the score)', () => {
+  it('the Equal Access engine and its cache namespace are PINNED', () => {
     expect(dp).toContain('https://cdn.jsdelivr.net/npm/accessibility-checker-engine@3.1.83/ace.js');
     expect(dp).not.toContain('accessibility-checker-engine@3/ace.js');
-    expect(dp).toContain("const _PIPELINE_PROMPT_VERSION = '20260711-1';"); // scores can shift → cache identity moved
+    expect(dp).toContain("const _PIPELINE_PROMPT_VERSION = '20260723-1';"); // scores can shift → cache identity moved
   });
   it('BEHAVIORAL: without DOMPurify, execution-shaped rawhtml is WITHHELD, benign rawhtml still sanitizes', () => {
     expect(_sanitize('<script>alert(1)</script><p>hi</p>')).toContain('data-allo-rawhtml-withheld');
@@ -252,10 +265,17 @@ describe('#16 — audit-frame neutralization + pinned engines + fail-closed sani
 });
 
 // ── #17: the archive guard, driven with fake central directories ──
-const _os = dp.indexOf('const _ooxmlDeclaredSize = (f) =>');
+const _os = dp.indexOf('const _OOXML_MAX_ENTRIES =');
 const _oe = dp.indexOf('const _officeMediaFromPart', _os);
 const { _ooxmlGuardArchive } = new Function(dp.slice(_os, _oe) + '\nreturn { _ooxmlGuardArchive };')();
 const fakeZip = (entries) => ({ forEach: (cb) => entries.forEach((e, i) => cb('part' + i, { _data: { uncompressedSize: e } })) });
+const expectArchiveLimit = (fn, message) => {
+  let error = null;
+  try { fn(); } catch (e) { error = e; }
+  expect(error).toBeTruthy();
+  expect(error && error.isArchiveLimit).toBe(true);
+  expect(String(error && error.message)).toMatch(message);
+};
 
 describe('#17 — OOXML decompression budgets on DECLARED sizes', () => {
   it('BEHAVIORAL: a normal document passes', () => {
@@ -263,11 +283,10 @@ describe('#17 — OOXML decompression budgets on DECLARED sizes', () => {
   });
   it('BEHAVIORAL: entry-count, single-entry, total, and ratio bombs all throw TYPED errors', () => {
     const many = fakeZip(Array.from({ length: 9000 }, () => 10));
-    expect(() => _ooxmlGuardArchive(many, _mb(1), 'Word')).toThrow(/decompression safety limits/);
-    try { _ooxmlGuardArchive(many, _mb(1), 'Word'); } catch (e) { expect(e.isArchiveLimit).toBe(true); }
-    expect(() => _ooxmlGuardArchive(fakeZip([_mb(400)]), _mb(2), 'Word')).toThrow(/single internal entry/);
-    expect(() => _ooxmlGuardArchive(fakeZip(Array.from({ length: 8 }, () => _mb(150))), _mb(100), 'PowerPoint')).toThrow(/in total/);
-    expect(() => _ooxmlGuardArchive(fakeZip([_mb(250)]), _mb(1), 'Word')).toThrow(/zip-bomb shaped/);
+    expectArchiveLimit(() => _ooxmlGuardArchive(many, _mb(1), 'Word'), /internal files/);
+    expectArchiveLimit(() => _ooxmlGuardArchive(fakeZip([_mb(400)]), _mb(2), 'Word'), /single internal file/);
+    expectArchiveLimit(() => _ooxmlGuardArchive(fakeZip(Array.from({ length: 5 }, () => _mb(60))), _mb(100), 'PowerPoint'), /in total/);
+    expectArchiveLimit(() => _ooxmlGuardArchive(fakeZip([_mb(50)]), _mb(0.25), 'Word'), /zip-bomb shaped/);
   });
   it('wiring: both extractors guard BEFORE inflating; media checks declared size before decoding', () => {
     expect(dp).toContain("_ooxmlGuardArchive(await window.JSZip.loadAsync(_gBytes), _gBytes.length, 'Word');");

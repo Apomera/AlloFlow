@@ -686,6 +686,18 @@ describe('resource shelf + portfolio continuity helpers', () => {
     expect(objects.some(o => o.type === 'text' && /Clouds form/.test(o.runs[0].text))).toBe(true);
     expect(objects.every(o => o.provenance && o.provenance.origin === 'resource-history')).toBe(true);
   });
+  it('offers insert-as choices based on resource content', () => {
+    const modes = ST.stResourceInsertModes({ kind: 'image', text: 'Diagram caption', imageSrc: 'data:image/png;base64,abc' });
+    expect(modes.map(m => m.id)).toEqual(expect.arrayContaining(['smart-card', 'worksheet-question', 'captioned-image', 'anchor-section', 'source-note']));
+    expect(ST.stResourceInsertModes({ kind: 'image', imageSrc: 'https://example.com/nope.png' }).map(m => m.id)).not.toContain('captioned-image');
+  });
+  it('can force a resource into question and source-note layouts', () => {
+    const question = ST.stObjectsFromResourceCue({ id: 'r1', kind: 'glossary', label: 'Erosion', text: 'How does erosion change land?', sourceTitle: 'Earth pack' }, { insertAs: 'worksheet-question' });
+    expect(question.some(o => o.type === 'text' && /Answer space/.test(o.runs[0].text))).toBe(true);
+    const note = ST.stObjectsFromResourceCue({ id: 'r2', kind: 'image', label: 'River image', text: 'Used in lesson intro.', sourceTitle: 'Earth pack' }, { insertAs: 'source-note' });
+    expect(note.some(o => o.type === 'text' && /Source note/.test(o.runs[0].text))).toBe(true);
+    expect(note.some(o => o.type === 'text' && /From: Earth pack/.test(o.runs[0].text))).toBe(true);
+  });
   it('builds a compact AlloStudio portfolio artifact without embedding image bytes', () => {
     const d = ST.stTemplates().find(t => t.key === 'worksheet').make(T0);
     ST.stAppend(d, { type: 'object.add', object: { type: 'image', src: 'data:image/png;base64,ORIGINAL', alt: 'Diagram', decorative: false, frame: { x: 0, y: 0, w: 100, h: 80 }, z: 5 } }, 'import', T0);
@@ -755,6 +767,17 @@ describe('Studio visual ergonomics helpers', () => {
     const moved = ST.stMoveFramesAsGroup(objects, ['a', 'b'], 20, 10, canvas);
     expect(moved.find(p => p.id === 'a').frame).toEqual({ x: 20, y: 10, w: 50, h: 20, rotation: 0 });
     expect(moved.find(p => p.id === 'b').frame).toEqual({ x: 170, y: 90, w: 50, h: 30, rotation: 0 });
+  });
+  it('skips locked objects when group layout actions would change frames', () => {
+    const objects = [
+      { id: 'a', locked: true, frame: { x: 0, y: 0, w: 50, h: 20 } },
+      { id: 'b', frame: { x: 100, y: 30, w: 50, h: 20 } },
+      { id: 'c', frame: { x: 200, y: 60, w: 50, h: 20 } }
+    ];
+    expect(ST.stIsLockedObject(objects[0])).toBe(true);
+    expect(ST.stMoveFramesAsGroup(objects, ['a', 'b'], 10, 0).map(p => p.id)).toEqual(['b']);
+    expect(ST.stAlignFramesAsGroup(objects, ['a', 'b'], 'left').map(p => p.id)).toEqual(['b']);
+    expect(ST.stDistributeFramesAsGroup(objects, ['a', 'b', 'c'], 'x').map(p => p.id)).toEqual([]);
   });
   it('sorts object navigator layers by visual stack while preserving reading positions', () => {
     const objects = [

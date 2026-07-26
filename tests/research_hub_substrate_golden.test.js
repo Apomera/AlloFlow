@@ -712,3 +712,56 @@ describe('Research Hub substrate — enforceQuestionFormat', () => {
     expect(out.outer.other_field).toBe('kept verbatim');
   });
 });
+
+describe('Research Hub portfolio import and media persistence', () => {
+  it('previews and round-trips a validated interoperability bundle', () => {
+    const journal = internals().emptyJournal();
+    journal.questionTitle = 'How should this evidence be interpreted?';
+    journal.claims = [{ id: 'c1', text: 'A bounded claim.' }];
+    journal.evidenceCards = [{ id: 'e1', text: 'A bounded observation.' }];
+    journal.claimEvidenceLinks = [{ id: 'l1', claimId: 'c1', evidenceIds: ['e1'], warrant: 'The observation bears directly on the claim.' }];
+    const bundle = internals().buildInteroperabilityBundle(journal, { exportedAt: '2026-07-25T12:00:00Z' });
+    expect(internals().validateInteroperabilityBundle(bundle).ok).toBe(true);
+    const preview = internals().parsePortfolioImport(JSON.stringify(bundle));
+    expect(preview.ok).toBe(true);
+    expect(preview.summary).toMatchObject({ claims: 1, evidence: 1 });
+    expect(preview.journal.questionTitle).toBe(journal.questionTitle);
+  });
+
+  it('merges unique records, replaces on request, and rejects future schemas', () => {
+    const current = internals().emptyJournal();
+    current.questionTitle = 'Current question?';
+    current.sources = [{ id: 's1', citation: 'Existing' }];
+    const incoming = internals().emptyJournal();
+    incoming.questionTitle = 'Imported question?';
+    incoming.sources = [{ id: 's1', citation: 'Duplicate' }, { id: 's2', citation: 'New' }];
+    const merged = internals().mergeImportedJournal(current, incoming, 'merge');
+    expect(merged.ok).toBe(true);
+    expect(merged.journal.questionTitle).toBe('Current question?');
+    expect(merged.journal.sources.map((source) => source.id)).toEqual(['s1', 's2']);
+    const replaced = internals().mergeImportedJournal(current, incoming, 'replace');
+    expect(replaced.journal.questionTitle).toBe('Imported question?');
+    expect(internals().parsePortfolioImport({ ...incoming, v: 99 }).ok).toBe(false);
+  });
+
+  it('creates a readable pre-change recovery snapshot', () => {
+    const journal = internals().emptyJournal();
+    journal.questionTitle = 'Recover this inquiry?';
+    expect(internals().writeRecoverySnapshot(journal, 'test')).toBe(true);
+    const restored = internals().readRecoverySnapshot();
+    expect(restored.ok).toBe(true);
+    expect(restored.journal.questionTitle).toBe('Recover this inquiry?');
+  });
+
+  it('extracts large media into stable references while preserving text', () => {
+    const journal = internals().emptyJournal();
+    journal.evidenceCards = [{ id: 'e1', text: 'Keep this text', audioBase64: `data:audio/webm;base64,${'A'.repeat(internals().MEDIA_INLINE_THRESHOLD_BYTES)}` }];
+    const first = internals().extractLargeResearchMedia(journal);
+    const second = internals().extractLargeResearchMedia(journal);
+    expect(first.entries).toHaveLength(1);
+    expect(first.entries[0].id).toBe(second.entries[0].id);
+    expect(first.journal.evidenceCards[0].text).toBe('Keep this text');
+    expect(first.journal.evidenceCards[0].audioBase64).toBeNull();
+    expect(first.journal.evidenceCards[0].audioBase64Ref).toMatch(/^media:/);
+  });
+});

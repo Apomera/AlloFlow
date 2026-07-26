@@ -1,0 +1,90 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-45768-khaya-wants-to-row",
+  "title": "Khaya Wants to Row",
+  "description": "When Khaya sees rowers on TV, he starts dreaming of being a rower one day. Mkhulu plans a special surprise – what will it be?",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Family, friends, and home",
+    "Let's learn!",
+    "Let's play!"
+  ],
+  "authors": [
+    "Zandile Mnisi LaMvuleni"
+  ],
+  "illustrators": [
+    "Maria Lebedeva"
+  ],
+  "contributors": [
+    {
+      "name": "Maria Lebedeva",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Zandile Mnisi LaMvuleni",
+      "role": "Writer"
+    },
+    {
+      "name": "Tania Kliphuis",
+      "role": "Editor"
+    },
+    {
+      "name": "Wilna Combrinck",
+      "role": "Designer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/khaya-wants-to-row/",
+    "attributionUrl": "https://bookdash.org/books/khaya-wants-to-row/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=khaya-wants-to-row"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2025/10/khaya-wants-to-row_en_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2025/10/khaya-wants-to-row_en_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "When Khaya sees rowers on TV, he starts dreaming of being a rower one day. Mkhulu plans a special surprise – what will it be?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Maria Lebedeva (Illustrator); Zandile Mnisi LaMvuleni (Writer); Tania Kliphuis (Editor); Wilna Combrinck (Designer)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=khaya-wants-to-row"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 92
+  }
+}

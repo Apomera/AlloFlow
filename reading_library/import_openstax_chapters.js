@@ -23,8 +23,8 @@ const USER_AGENT = 'AlloFlow OpenStax accessibility mirror (noncommercial educat
 
 function loadJsdom() {
   const candidates = [
-    path.join(ROOT, '..', 'node_modules'),
-    path.join(ROOT, '..', 'desktop/web-app', 'node_modules')
+    path.join(ROOT, '..', 'desktop/web-app', 'node_modules'),
+    path.join(ROOT, '..', 'node_modules')
   ];
   return require(require.resolve('jsdom', { paths: candidates })).JSDOM;
 }
@@ -79,6 +79,7 @@ function assertOfficialUrl(value) {
 function fetchHtml(url) {
   return execFileSync('curl', [
     '-sSL', '--fail', '--max-time', '45',
+    '--retry', '5', '--retry-delay', '1', '--retry-all-errors',
     '-A', USER_AGENT,
     '-H', 'Accept: text/html,application/xhtml+xml',
     assertOfficialUrl(url)
@@ -152,7 +153,8 @@ function extractReadableText(doc) {
 }
 
 function parseSection(html, sectionUrl, expectedBookTitle, JSDOM) {
-  const doc = new JSDOM(html, { url: sectionUrl }).window.document;
+  const dom = new JSDOM(html, { url: sectionUrl });
+  const doc = dom.window.document;
   const actualBookTitle = pageBookTitle(doc);
   if (actualBookTitle !== expectedBookTitle) {
     throw new Error('Book title mismatch for ' + sectionUrl + ': expected "' + expectedBookTitle + '", received "' + actualBookTitle + '"');
@@ -164,11 +166,13 @@ function parseSection(html, sectionUrl, expectedBookTitle, JSDOM) {
     throw new Error('Expected OpenStax generative-AI permission notice was not found on ' + sectionUrl);
   }
   const headingNode = doc.querySelector('main [data-type="document-title"], main h1, main h2');
-  return {
+  const parsed = {
     heading: cleanText(headingNode && headingNode.textContent) || expectedBookTitle,
     authors: pageAuthors(doc),
     text: extractReadableText(doc)
   };
+  dom.window.close();
+  return parsed;
 }
 
 function words(value) {
@@ -268,16 +272,26 @@ function main() {
   const catalog = readJson(OPEN_CATALOG_PATH);
   catalog.items = catalog.items || [];
   const registered = new Set(catalog.items.map((item) => item.slug));
-  const books = [];
-  for (const entry of selectManifestBooks(manifest, args)) books.push(makeBook(entry, manifest, JSDOM));
-  for (const book of books) {
-    const file = 'books/' + book.slug + '.json';
-    writeJson(path.join(ROOT, file), book);
+  const skipExisting = args.includes('--skip-existing');
+  for (const entry of selectManifestBooks(manifest, args)) {
+    const file = 'books/' + entry.slug + '.json';
+    const bookPath = path.join(ROOT, file);
+    let book;
+    if (skipExisting && fs.existsSync(bookPath)) {
+      book = readJson(bookPath);
+      if (book.slug !== entry.slug || book.sourceId !== 'openstax' || book.license !== manifest.license) {
+        throw new Error('Existing OpenStax mirror failed resume validation: ' + file);
+      }
+      console.log('Reused ' + book.slug + ' (' + book.stats.pages + ' sections, ' + book.stats.words + ' words).');
+    } else {
+      book = makeBook(entry, manifest, JSDOM);
+      writeJson(bookPath, book);
+      console.log('Wrote ' + book.slug + ' (' + book.stats.pages + ' sections, ' + book.stats.words + ' words).');
+    }
     if (!registered.has(book.slug)) {
       catalog.items.push({ slug: book.slug, file });
       registered.add(book.slug);
     }
-    console.log('Wrote ' + book.slug + ' (' + book.stats.pages + ' sections, ' + book.stats.words + ' words).');
   }
   const outputPath = catalogOutputPath(args);
   writeCatalog(outputPath, catalog);

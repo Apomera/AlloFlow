@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-534-dc-circuits",
+  "title": "DC Circuits",
+  "description": "This book covers Direct Current (DC) circuit theory and is broken up into three modules. Module 1 covers the basics for circuits that include DC sources (voltage or current) and resistors. Even though Module 1 is not very difficult, it forms the foundation for more complicated topics in modules 2 and 3 so it is important to have a firm grasp of all Module 1 topics before moving on. Module 2 covers more difficult problem solving techniques for circuits that include only DC sources and resistors. Module 3 introduces capacitors and inductors. These non-linear reactive components are analyzed in the transient and steady state regions in circuits with DC sources in Module 3. Also annexed is a two-page cheat sheet that ENGR 2431 students at University of Oklahoma can use for exams.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology - Electrical Engineering"
+  ],
+  "authors": [
+    "Chad Davis - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Oklahoma Libraries",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/dc-circuits"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book covers Direct Current (DC) circuit theory and is broken up into three modules. Module 1 covers the basics for circuits that include DC sources (voltage or current) and resistors. Even though Module 1 is not very difficult, it forms the foundation for more complicated topics in modules 2 and 3 so it is important to have a firm grasp of all Module 1 topics before moving on. Module 2 covers more difficult problem solving techniques for circuits that include only DC sources and resistors. Module 3 introduces capacitors and inductors. These non-linear reactive components are analyzed in the transient and steady state regions in circuits with DC sources in Module 3. Also annexed is a two-page cheat sheet that ENGR 2431 students at University of Oklahoma can use for exams."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 155
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "534",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

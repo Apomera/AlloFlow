@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-american-government-3e-catalog",
+  "title": "OpenStax American Government 3e",
+  "description": "A source card for the OpenStax American Government 3e textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Civics",
+    "Government",
+    "Textbooks",
+    "Political science"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "CC BY-NC-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/american-government-3e",
+    "attributionUrl": "https://openstax.org/details/books/american-government-3e"
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/b/bb/North-lawn-1987.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax American Government 3e explains constitutional foundations, federalism, civil rights, public opinion, campaigns, Congress, the presidency, courts, and policy."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source to pair primary-source reading with background chapters that explain institutions, vocabulary, and civic processes."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters or figures."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 56
+  },
+  "usagePolicy": {
+    "access": "link-out",
+    "mirror": true,
+    "adapt": true,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": true,
+    "auditedAt": "2026-07-23",
+    "auditSource": "https://help.openstax.org/s/article/Licensing-information-of-OpenStax-textbooks",
+    "aiPermissionRequired": true,
+    "reason": "This book may not be used in the training of large language models or otherwise be ingested into large language models or generative AI offerings without OpenStax's permission.",
+    "aiRestrictionSource": "https://openstax.org/details/books/american-government-3e"
+  },
+  "licenseAudit": {
+    "auditedAt": "2026-07-23",
+    "source": "https://help.openstax.org/s/article/Licensing-information-of-OpenStax-textbooks",
+    "note": "OpenStax attribution, noncommercial, and share-alike requirements apply to adaptations. Generative-AI ingestion requires OpenStax permission."
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-415-calculus-early-transcendentals-2021-a",
+  "title": "Calculus: Early Transcendentals - 2021-A",
+  "description": "Calculus: Early Transcendentals, originally by D. Guichard, has been redesigned by the Lyryx editorial team. Substantial portions of the content, examples, and diagrams have been redeveloped, with additional contributions provided by experienced and practicing instructors. This approachable text provides a comprehensive understanding of the necessary techniques and concepts of the typical Calculus course sequence, and is suitable for the standard Calculus I, II and III courses. To practice and develop an understanding of topics, this text offers a range of problems, from routine to challenging, with selected solutions. As this is an open text, instructors and students are encouraged to interact with the textbook through annotating, revising, and reusing to your advantage. Suggestions for contributions to this growing textbook are welcome. Lyryx develops and supports open texts, with editorial services to adapt the text for each particular course. In addition, Lyryx provides content-specific formative online assessment, a wide variety of supplements, and in-house support available 7 days/week for both students and instructors.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Calculus",
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "David Guichard - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Lyryx",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/calculus-early-transcendentals"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Calculus: Early Transcendentals, originally by D. Guichard, has been redesigned by the Lyryx editorial team. Substantial portions of the content, examples, and diagrams have been redeveloped, with additional contributions provided by experienced and practicing instructors. This approachable text provides a comprehensive understanding of the necessary techniques and concepts of the typical Calculus course sequence, and is suitable for the standard Calculus I, II and III courses. To practice and develop an understanding of topics, this text offers a range of problems, from routine to challenging, with selected solutions. As this is an open text, instructors and students are encouraged to interact with the textbook through annotating, revising, and reusing to your advantage. Suggestions for contributions to this growing textbook are welcome. Lyryx develops and supports open texts, with editorial services to adapt the text for each particular course. In addition, Lyryx provides content-specific formative online assessment, a wide variety of supplements, and in-house support available 7 days/week for both students and instructors."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 185
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "415",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

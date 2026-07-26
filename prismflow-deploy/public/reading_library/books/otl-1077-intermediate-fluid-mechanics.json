@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1077-intermediate-fluid-mechanics",
+  "title": "Intermediate Fluid Mechanics",
+  "description": "This book is meant to be a second course in fluid mechanics that stresses applications dealing with external potential flows and intermediate viscous flows. Students are expected to have some background in some of the fundamental concepts of the definition of a fluid, hydrostatics, use of control volume conservation principles, initial exposure to the Navier-Stokes equations, and some elements of flow kinematics, such as streamlines and vorticity. It is not meant to be an in-depth study of potential flow or viscous flow, but is meant to expose students to additional analysis techniques for both of these categories of flows. We will see applications to aerodynamics, with analysis methods able to determine forces on arbitrary bodies. We will also examine some of the exact solutions of the Navier-Stokes equations based on classical fluid mechanics. Finally we will explore the complexities of turbulent flows and how for boundary layer flows one can predict drag forces. This compilation is drafted from notes used in the course Intermediate Fluid Mechanics, offered to seniors and first year graduate students who have a background in mechanical engineering or a closely related area.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology - Mechanical Engineering"
+  ],
+  "authors": [
+    "James Liburdy - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oregon State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/intermediate-fluid-mechanics"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is meant to be a second course in fluid mechanics that stresses applications dealing with external potential flows and intermediate viscous flows. Students are expected to have some background in some of the fundamental concepts of the definition of a fluid, hydrostatics, use of control volume conservation principles, initial exposure to the Navier-Stokes equations, and some elements of flow kinematics, such as streamlines and vorticity. It is not meant to be an in-depth study of potential flow or viscous flow, but is meant to expose students to additional analysis techniques for both of these categories of flows. We will see applications to aerodynamics, with analysis methods able to determine forces on arbitrary bodies. We will also examine some of the exact solutions of the Navier-Stokes equations based on classical fluid mechanics. Finally we will explore the complexities of turbulent flows and how for boundary layer flows one can predict drag forces. This compilation is drafted from notes used in the course Intermediate Fluid Mechanics, offered to seniors and first year graduate students who have a background in mechanical engineering or a closely related area."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 209
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1077",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

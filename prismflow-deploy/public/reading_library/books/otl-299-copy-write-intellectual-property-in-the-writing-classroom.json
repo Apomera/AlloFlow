@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-299-copy-write-intellectual-property-in-the-writing-classroom",
+  "title": "Copy(write): Intellectual Property in the Writing Classroom",
+  "description": "The editors of Copy(write): Intellectual Property in the Writing Classroom bring together stories, theories, and research that can further inform the ways in which we situate and address intellectual property issues in our writing classrooms. The essays in the collection identify and describe a wide range of pedagogical strategies, consider theories, present research, explore approaches, and offer both cautionary tales and local and contextual successes that can further inform the ways in which we situate and address intellectual property issues in our teaching.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education",
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Martine Courant Rife - Editor / Shaun Slattery - Editor / Dànielle Nicole DeVoss - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "WAC Clearinghouse",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-NoDerivs",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/copy-write-intellectual-property-in-the-writing-classroom"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-NoDerivs"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The editors of Copy(write): Intellectual Property in the Writing Classroom bring together stories, theories, and research that can further inform the ways in which we situate and address intellectual property issues in our writing classrooms. The essays in the collection identify and describe a wide range of pedagogical strategies, consider theories, present research, explore approaches, and offer both cautionary tales and local and contextual successes that can further inform the ways in which we situate and address intellectual property issues in our teaching."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-NoDerivs. Copyright year: 2011."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 106
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-NoDerivs",
+  "externalRecordId": "299",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

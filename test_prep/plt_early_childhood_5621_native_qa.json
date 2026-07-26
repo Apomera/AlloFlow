@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T17:25:05.159Z",
+  "generatedAt": "2026-07-25T21:23:19.931Z",
   "packId": "praxis-plt-early-childhood-5621",
   "standard": {
     "label": "AlloFlow PLT Early Childhood 5621 source, structure, feedback, case-practice, linkage, and grade-band QA v2",
@@ -50,7 +50,13 @@
       "foreignBandOccurrences": 0,
       "outOfBandOccurrences": 0,
       "negativeGates": "pass"
-    }
+    },
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
+    "distinctIndependentContentKernels": 100,
+    "parallelIndependentVariants": 100,
+    "assistantAuthoredIndependentBanks": 0,
+    "independentDiagnosticBanks": 2
   },
   "expansion": {
     "independentQuestionTarget": 500,
@@ -58,8 +64,12 @@
     "batchSize": 100,
     "learningActivityBanks": 5,
     "sourceItems": 200,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
     "distinctSourceContentKernels": 100,
     "parallelSourceVariants": 100,
+    "distinctIndependentContentKernels": 100,
+    "parallelIndependentVariants": 100,
     "guidedReasoningItems": 300,
     "newIndependentItemsNeeded": 400,
     "structurallyReviewedItems": 500,
@@ -70,7 +80,7 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
+    "method": "Manifest-backed independent additions passed exact artifact review, blueprint, key, distractor, feedback, source, learning-link, originality, balance, and structural validation. Remaining transformations are guided practice only.",
     "findings": []
   },
   "contentBinding": {

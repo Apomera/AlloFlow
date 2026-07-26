@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1580-introduction-to-literature-fairy-tales-folk-tales-and-how-they-shape-us",
+  "title": "Introduction to Literature: Fairy Tales, Folk Tales, and How They Shape Us",
+  "description": "Introduction to Literature: Fairy Tales, Folk Tales, and How They Shape Us introduces college freshmen to the study of literature through a focus on texts that, generally, they already know, or think they know, and how those texts aim to shape audiences to be compliant cultural objects. The book is organized around several prominent story groups, including various genres and forms, meant to promote discussion and discovery leading to students’ understanding that these texts function as cultural sculptors of readers’ principles and behaviors. Students develop the skill of analyzing texts and creating sound arguments about them through class discussions and a series of writing assignments. Ideally, they leave the course understanding how to create a sound argument and, more pointedly, that there is no such thing as “just a story.”",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Judy Young - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of West Florida Pressbooks",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-literature-fairy-tales-folk-tales-and-how-they-shape-us"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Introduction to Literature: Fairy Tales, Folk Tales, and How They Shape Us introduces college freshmen to the study of literature through a focus on texts that, generally, they already know, or think they know, and how those texts aim to shape audiences to be compliant cultural objects. The book is organized around several prominent story groups, including various genres and forms, meant to promote discussion and discovery leading to students’ understanding that these texts function as cultural sculptors of readers’ principles and behaviors. Students develop the skill of analyzing texts and creating sound arguments about them through class discussions and a series of writing assignments. Ideally, they leave the course understanding how to create a sound argument and, more pointedly, that there is no such thing as “just a story.”"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 153
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1580",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

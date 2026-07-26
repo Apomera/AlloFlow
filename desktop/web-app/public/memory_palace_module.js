@@ -491,39 +491,101 @@
     ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); ctx.fill();
   }
+  function _appTypography(fontPx) {
+    var scale = 1, family = 'system-ui, -apple-system, sans-serif', spacing = '0px', contrast = false;
+    try {
+      var rootStyle = window.getComputedStyle(document.documentElement);
+      var appRoot = document.querySelector('.allo-docsuite') || document.body || document.documentElement;
+      var appStyle = window.getComputedStyle(appRoot);
+      var base = parseFloat(rootStyle.fontSize);
+      if (isNum(base) && base > 0) scale = Math.max(0.75, Math.min(1.5, base / 16));
+      if (appStyle.fontFamily) family = appStyle.fontFamily;
+      if (appStyle.letterSpacing && appStyle.letterSpacing !== 'normal') spacing = appStyle.letterSpacing;
+      contrast = !!(appRoot.classList && appRoot.classList.contains('theme-contrast'));
+    } catch (e) {}
+    return {
+      font: Math.max(16, Math.round((fontPx || 26) * scale)),
+      family: family,
+      spacing: spacing,
+      contrast: contrast,
+      key: scale.toFixed(3) + '|' + family + '|' + spacing + '|' + (contrast ? '1' : '0')
+    };
+  }
+
+  function _labelLines(ctx, text, maxWidth) {
+    var full = String(text || '').trim();
+    if (!full) return [''];
+    var words = full.split(/\s+/), lines = [''];
+    words.forEach(function (word) {
+      var at = lines.length - 1;
+      var next = lines[at] ? lines[at] + ' ' + word : word;
+      if (lines[at] && ctx.measureText(next).width > maxWidth && lines.length < 2) lines.push(word);
+      else lines[at] = next;
+    });
+    var joined = lines.join(' ');
+    if (joined.length < full.length || ctx.measureText(lines[1] || '').width > maxWidth) {
+      var tail = lines[1] || lines[0];
+      while (tail.length > 1 && ctx.measureText(tail + '\u2026').width > maxWidth) tail = tail.slice(0, -1);
+      if (lines.length > 1) lines[1] = tail.replace(/\s+$/, '') + '\u2026';
+      else lines[0] = tail.replace(/\s+$/, '') + '\u2026';
+    }
+    return lines.slice(0, 2);
+  }
+
   function makeLabelSprite(THREE, text, hex, fontPx) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
-    var font = fontPx || 26, padX = 14, padY = 9;
-    ctx.font = '600 ' + font + 'px sans-serif';
-    var full = String(text || '');
-    var shown = full.length > 60 ? full.slice(0, 57) + '…' : full;
-    var tw = Math.ceil(ctx.measureText(shown).width);
-    canvas.width = Math.max(2, tw + padX * 2); canvas.height = font + padY * 2;
-    ctx.font = '600 ' + font + 'px sans-serif';
-    var rad = canvas.height / 2;
-    ctx.fillStyle = 'rgba(8,12,26,0.86)'; _roundRect(ctx, 0, 0, canvas.width, canvas.height, rad);
-    ctx.strokeStyle = hex || 'rgba(148,163,184,0.6)'; ctx.lineWidth = 2.5;
+    var type = _appTypography(fontPx);
+    var font = type.font, padX = Math.round(font * 0.72), padY = Math.round(font * 0.45);
+    var lineH = Math.round(font * 1.2), maxTextW = Math.round(420 * (font / 24));
+    ctx.font = '800 ' + font + 'px ' + type.family;
+    if ('letterSpacing' in ctx) ctx.letterSpacing = type.spacing;
+    var lines = _labelLines(ctx, text, maxTextW);
+    var tw = 2;
+    lines.forEach(function (line) { tw = Math.max(tw, Math.ceil(ctx.measureText(line).width)); });
+    var logicalW = tw + padX * 2, logicalH = lines.length * lineH + padY * 2;
+    var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    canvas.width = Math.ceil(logicalW * dpr); canvas.height = Math.ceil(logicalH * dpr);
+    ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
+    ctx.font = '800 ' + font + 'px ' + type.family;
+    if ('letterSpacing' in ctx) ctx.letterSpacing = type.spacing;
+    var rad = Math.min(18, logicalH / 2);
+    ctx.fillStyle = type.contrast ? '#000000' : 'rgba(2,6,23,0.97)';
+    _roundRect(ctx, 1, 1, logicalW - 2, logicalH - 2, rad);
+    ctx.strokeStyle = type.contrast ? '#ffffff' : (hex || '#cbd5e1');
+    ctx.lineWidth = type.contrast ? 5 : 3.5;
     ctx.beginPath();
-    if (ctx.roundRect) { ctx.roundRect(1.25, 1.25, canvas.width - 2.5, canvas.height - 2.5, rad - 1); } else { ctx.arc(canvas.width / 2, canvas.height / 2, rad - 2, 0, Math.PI * 2); }
+    if (ctx.roundRect) ctx.roundRect(2.5, 2.5, logicalW - 5, logicalH - 5, Math.max(2, rad - 2));
+    else ctx.rect(2.5, 2.5, logicalW - 5, logicalH - 5);
     ctx.stroke();
-    ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'middle'; ctx.fillText(shown, padX, canvas.height / 2 + 1);
+    ctx.fillStyle = type.contrast ? '#fff200' : '#ffffff';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.95)'; ctx.shadowBlur = 4;
+    lines.forEach(function (line, i) { ctx.fillText(line, logicalW / 2, padY + lineH * (i + 0.5)); });
     var tex = new THREE.CanvasTexture(canvas);
     if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
-    var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
-    var k = 0.5; sp.scale.set(canvas.width * k, canvas.height * k, 1);
+    var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false }));
+    var k = 0.5; sp.scale.set(logicalW * k, logicalH * k, 1);
+    sp.userData.typographyKey = type.key;
+    sp.userData.baseScale = { x: logicalW * k, y: logicalH * k };
+    sp.renderOrder = 12;
     return sp;
   }
 
   // Placeholder card texture for an unfurnished locus: tinted panel + big number.
-  function makeCardTexture(THREE, number, hex) {
+  function makeCardTexture(THREE, number, hex, busy) {
     var c = document.createElement('canvas'); c.width = 256; c.height = 192;
     var g = c.getContext('2d');
     g.fillStyle = '#101a33'; g.fillRect(0, 0, 256, 192);
     g.strokeStyle = hex; g.lineWidth = 6; g.strokeRect(6, 6, 244, 180);
     g.fillStyle = hex; g.globalAlpha = 0.18; g.fillRect(6, 6, 244, 180); g.globalAlpha = 1;
-    g.fillStyle = '#e2e8f0'; g.font = '800 92px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(String(number), 128, 96);
+    g.fillStyle = '#e2e8f0'; g.font = '800 ' + (busy ? 66 : 82) + 'px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(busy ? '…' : String(number), 128, busy ? 88 : 90);
+    // Universal empty-state affordance: a restrained + becomes a progress glyph
+    // while a single-locus generation is running (no language-dependent texture).
+    g.beginPath(); g.arc(218, 30, 17, 0, Math.PI * 2);
+    g.fillStyle = busy ? '#ffffff' : hex; g.fill();
+    g.fillStyle = '#101a33'; g.font = '900 24px sans-serif'; g.fillText(busy ? '↻' : '+', 218, 30);
     var tex = new THREE.CanvasTexture(c);
     if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
     return tex;
@@ -860,15 +922,70 @@
           var _op = 0.32 + Math.max(0, Math.min(1, _st)) * 0.68;
           borderMat.transparent = true; borderMat.opacity = _op;
           mat.transparent = true; mat.opacity = _op;
-          if (lab.material) { lab.material.opacity = _op; }
         }
       }
       group.add(g2);
       frameMeshes.push(canvasMesh);
-      frameRefs[l.id] = { group: g2, label: lab, borderMat: borderMat, baseColor: color, locus: l, mat: mat, canvasMesh: canvasMesh, idx: li };
+      frameRefs[l.id] = { group: g2, label: lab, captionText: recall ? '?' : l.label, borderMat: borderMat, baseColor: color, locus: l, mat: mat, canvasMesh: canvasMesh, idx: li, hasImage: !!img, busy: false, empty: !img && !((opts && opts.objects) || {})[l.id] };
+      if (frameRefs[l.id].empty) borderMat.emissiveIntensity = 0.12;
       // Existing relief pair (reload path): upgrade the flat frame in place.
       if (img && depths[l.id]) applyRelief(frameRefs[l.id], li, color, img, depths[l.id]);
     });
+
+    // Rebuild frame captions when the app's reading typography changes. Canvas
+    // textures do not inherit CSS, so without this observer a user could enlarge
+    // every app label while the in-world captions stayed small.
+    function _replaceFrameLabel(ref, text) {
+      if (!ref) return;
+      try {
+        var old = ref.label;
+
+        if (old) ref.group.remove(old);
+        if (old && old.material) {
+          try { if (old.material.map) old.material.map.dispose(); old.material.dispose(); } catch (eD) {}
+        }
+        ref.label = makeLabelSprite(THREE, text, ref.baseColor, 24);
+        ref.label.position.set(0, -(FRAME_H / 2 + 38), 11);
+        if (ref.label.material) ref.label.material.opacity = 1;
+        ref.captionText = text;
+        ref.group.add(ref.label);
+      } catch (e) {}
+    }
+    var _captionTypeKey = _appTypography(24).key, _captionRefreshTimer = 0;
+    function _refreshFrameLabels() {
+      _captionRefreshTimer = 0;
+      var key = _appTypography(24).key;
+      if (key === _captionTypeKey || state.disposed) return;
+      _captionTypeKey = key;
+      Object.keys(frameRefs).forEach(function (id) {
+        var ref = frameRefs[id];
+        _replaceFrameLabel(ref, ref.captionText);
+      });
+    }
+    function _queueCaptionRefresh() {
+      if (_captionRefreshTimer || state.disposed) return;
+      _captionRefreshTimer = window.setTimeout(_refreshFrameLabels, 90);
+    }
+    try {
+      if (window.MutationObserver) {
+        var _fontObserver = new window.MutationObserver(_queueCaptionRefresh);
+        _fontObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
+        if (document.head) _fontObserver.observe(document.head, { childList: true, characterData: true, subtree: true });
+        var _appRoot = document.querySelector('.allo-docsuite');
+        if (_appRoot) _fontObserver.observe(_appRoot, { attributes: true, attributeFilter: ['class', 'style'] });
+        state.cleanup.push(function () {
+          try { _fontObserver.disconnect(); } catch (e) {}
+          if (_captionRefreshTimer) { try { window.clearTimeout(_captionRefreshTimer); } catch (e2) {} _captionRefreshTimer = 0; }
+        });
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(function () {
+            if (state.disposed) return;
+            _captionTypeKey = '';
+            _queueCaptionRefresh();
+          }).catch(function () {});
+        }
+      }
+    } catch (e) {}
 
     // Sculpted 3D objects at loci (Prim3D recipes from the 🗿 Sculpt flow, or a
     // haven decoration's recipe3d) — a pedestal + primitive-assembly figure beside
@@ -952,7 +1069,7 @@
         var oldMap = ref.mat.map;
         var tx = texLoader.load(img, function () { try { ref.mat.needsUpdate = true; } catch (e) {} }, undefined, function () {});
         if (THREE.sRGBEncoding) tx.encoding = THREE.sRGBEncoding;
-        ref.mat.map = tx; ref.mat.needsUpdate = true;
+        ref.mat.map = tx; ref.mat.needsUpdate = true; ref.hasImage = true; ref.busy = false; ref.empty = false;
         // A flat image replacing a relief must also drop the old depth map, or the
         // new picture renders warped over the previous subject's displacement bumps.
         if (ref.mat.displacementMap) {
@@ -974,6 +1091,8 @@
           if (ref.mat.displacementMap) { try { ref.mat.displacementMap.dispose(); } catch (eD) {} ref.mat.displacementMap = null; }
           ref.mat.needsUpdate = true;
           if (old && old.dispose && old !== ref.mat.map) { try { old.dispose(); } catch (eO) {} }
+          ref.hasImage = false; ref.busy = false; ref.empty = true;
+          if (ref.borderMat) ref.borderMat.emissiveIntensity = 0.12;
         } catch (e) {}
       }
       var sr = _sculptRefs[id];
@@ -986,11 +1105,32 @@
     state.setLocusRelief = function (id, img, depth) {
       var ref = frameRefs[id];
       if (!ref || !img) return;
+      ref.hasImage = true; ref.busy = false; ref.empty = false;
       if (!depth || !applyRelief(ref, ref.idx || 0, ref.baseColor, img, depth)) state.setLocusImage(id, img);
     };
     state.setLocusObject = function (id, recipe) {
       var l = locusById(palace, id);
-      if (l) placeSculpture(l, recipe);
+      if (l && recipe) {
+        if (frameRefs[id]) { frameRefs[id].busy = false; frameRefs[id].empty = false; }
+        placeSculpture(l, recipe);
+      }
+    };
+    state.setLocusBusy = function (id, busy) {
+      var ref = frameRefs[id];
+      if (!ref || !ref.mat) return;
+      ref.busy = !!busy;
+      try {
+        if (!ref.hasImage) {
+          var oldMap = ref.mat.map;
+          ref.mat.map = makeCardTexture(THREE, ref.idx || 0, ref.baseColor, ref.busy);
+          ref.mat.needsUpdate = true;
+          if (oldMap && oldMap.dispose && oldMap !== ref.mat.map) oldMap.dispose();
+        }
+        if (ref.borderMat) {
+          ref.borderMat.color.set(ref.busy ? '#818cf8' : ref.baseColor).multiplyScalar(ref.busy ? 1 : 0.8);
+          ref.borderMat.emissiveIntensity = ref.busy ? 0.72 : (ref.empty ? 0.12 : 0);
+        }
+      } catch (e) {}
     };
     // Replace a locus's sculpture in place (refinement): dispose the old figure +
     // pedestal, then place the new recipe.
@@ -1003,6 +1143,7 @@
       // the old object must land as a no-op, not resurrect what it replaced.
       delete _sculptedIds[id];
       _sculptSeq[id] = (_sculptSeq[id] || 0) + 1;
+      if (recipe && frameRefs[id]) frameRefs[id].empty = false;
       placeSculpture(l, recipe);
     };
 
@@ -1104,13 +1245,7 @@
       var ref = frameRefs[id];
       if (!ref) return;
       try {
-        ref.group.remove(ref.label);
-        // Free the old '?' sprite's texture+material — otherwise every reveal during
-        // a recall game leaks a CanvasTexture before destroy() ever runs.
-        try { if (ref.label.material) { if (ref.label.material.map) ref.label.material.map.dispose(); ref.label.material.dispose(); } } catch (e2) {}
-        ref.label = makeLabelSprite(THREE, ref.locus.label, ref.baseColor, 24);
-        ref.label.position.set(0, -(FRAME_H / 2 + 34), 10);
-        ref.group.add(ref.label);
+        _replaceFrameLabel(ref, ref.locus.label);
       } catch (e) {}
     };
     state.setLocusStatus = function (id, status) {
@@ -1171,19 +1306,82 @@
         try { opts.onLocusChange(locusById(palace, palace.route[idx]), idx, palace.route.length); } catch (e) {}
       }
     }
+    // Approaching an unfurnished camera stop surfaces its customization choices in
+    // the host UI. Hysteresis prevents the card from flickering at the threshold,
+    // and the callback never steals focus or runs during recall / immersive XR.
+    var _nearEmptyId = null;
+    function _emptyDistanceSq(ref) {
+      if (!ref || !ref.locus || !ref.locus.camPos) return Infinity;
+      var dx = camPos.x - ref.locus.camPos.x, dz = camPos.z - ref.locus.camPos.z;
+      return dx * dx + dz * dz;
+    }
+    function _notifyEmptyApproach() {
+      if (recall || state.xrActive || typeof opts.onEmptyLocusApproach !== 'function') return;
+      var keep = _nearEmptyId && frameRefs[_nearEmptyId];
+      if (keep && keep.empty && _emptyDistanceSq(keep) <= 290 * 290) return;
+      if (_nearEmptyId) {
+        var leaving = frameRefs[_nearEmptyId];
+        var leaveReason = leaving && !leaving.empty ? 'filled' : 'departed';
+        try { opts.onEmptyLocusApproach(leaving && leaving.locus, false, leaving ? palace.route.indexOf(leaving.locus.id) : -1, palace.route.length, leaveReason); } catch (e) {}
+        _nearEmptyId = null;
+      }
+      var best = null, bestD = 210 * 210;
+      Object.keys(frameRefs).forEach(function (id) {
+        var ref = frameRefs[id];
+        if (!ref.empty) return;
+        var d = _emptyDistanceSq(ref);
+        if (d <= bestD) { best = ref; bestD = d; }
+      });
+      if (best) {
+        _nearEmptyId = best.locus.id;
+        try { opts.onEmptyLocusApproach(best.locus, true, palace.route.indexOf(best.locus.id), palace.route.length); } catch (e2) {}
+      }
+    }
+    state.cleanup.push(function () {
+      if (_nearEmptyId && typeof opts.onEmptyLocusApproach === 'function') {
+        try { opts.onEmptyLocusApproach(frameRefs[_nearEmptyId] && frameRefs[_nearEmptyId].locus, false); } catch (e) {}
+      }
+      _nearEmptyId = null;
+    });
+
+    // Caption scale compensates gently for walking distance, while overview mode
+    // deliberately shrinks labels so a wide palace remains calm and scannable.
+    function _scaleFrameLabels() {
+      Object.keys(frameRefs).forEach(function (id) {
+        var ref = frameRefs[id], label = ref && ref.label;
+        if (!label || !label.userData || !label.userData.baseScale) return;
+        var dx = camera.position.x - ref.group.position.x;
+        var dy = camera.position.y - ref.group.position.y;
+        var dz = camera.position.z - ref.group.position.z;
+        var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        var factor = overview ? 0.82 : Math.max(1, Math.min(1.65, Math.pow(Math.max(1, dist / 360), 0.28)));
+        var tx = label.userData.baseScale.x * factor, ty = label.userData.baseScale.y * factor;
+        if (reduce) label.scale.set(tx, ty, 1);
+        else {
+          label.scale.x += (tx - label.scale.x) * 0.12;
+          label.scale.y += (ty - label.scale.y) * 0.12;
+        }
+      });
+    }
+
     // Current-locus glow: the active frame's border emissive pulses gently so the
     // student always sees WHICH locus the walk is on (reduced motion ⇒ steady glow).
     var _hlRef = null;
     function _setHighlight(id) {
-      if (_hlRef && _hlRef.borderMat) { try { _hlRef.borderMat.emissiveIntensity = 0; } catch (e) {} }
+      if (_hlRef && _hlRef.borderMat) {
+        try { _hlRef.borderMat.emissiveIntensity = _hlRef.busy ? 0.72 : (_hlRef.empty ? 0.12 : 0); } catch (e) {}
+      }
       _hlRef = frameRefs[id] || null;
-      if (_hlRef && _hlRef.borderMat && reduce) { try { _hlRef.borderMat.emissiveIntensity = 0.45; } catch (e) {} }
+      if (_hlRef && _hlRef.borderMat && reduce) {
+        try { _hlRef.borderMat.emissiveIntensity = _hlRef.busy ? 0.72 : 0.45; } catch (e) {}
+      }
     }
     function _pulseHl() {
       if (reduce || !_hlRef || !_hlRef.borderMat) return;
       try {
         var now = (window.performance && window.performance.now) ? window.performance.now() : 0;
-        _hlRef.borderMat.emissiveIntensity = 0.24 + 0.2 * (0.5 + 0.5 * Math.sin(now * 0.004));
+        var wave = 0.5 + 0.5 * Math.sin(now * 0.004);
+        _hlRef.borderMat.emissiveIntensity = _hlRef.busy ? (0.62 + 0.18 * wave) : (0.24 + 0.2 * wave);
       } catch (e) {}
     }
     function goTo(idx, skipAnnounce) {
@@ -1685,6 +1883,8 @@
         }
         camera.lookAt(lookBase);
       }
+      _scaleFrameLabels();
+      _notifyEmptyApproach();
       _pulseHl();
       _animateFlourish();
       renderer.render(root, camera);
@@ -1802,6 +2002,7 @@
     function setLocusImage(id, img) { try { if (state.setLocusImage) state.setLocusImage(id, img); } catch (e) {} }
     function setLocusRelief(id, img, depth) { try { if (state.setLocusRelief) state.setLocusRelief(id, img, depth); else if (state.setLocusImage) state.setLocusImage(id, img); } catch (e) {} }
     function setLocusObject(id, recipe) { try { if (state.setLocusObject) state.setLocusObject(id, recipe); } catch (e) {} }
+    function setLocusBusy(id, busy) { try { if (state.setLocusBusy) state.setLocusBusy(id, busy); } catch (e) {} }
     function replaceLocusObject(id, recipe) { try { if (state.replaceLocusObject) state.replaceLocusObject(id, recipe); } catch (e) {} }
     function clearLocus(id) { try { if (state.clearLocus) state.clearLocus(id); } catch (e) {} }
     function setDecor(d) { try { if (state.setDecor) state.setDecor(d); } catch (e) {} }
@@ -1816,7 +2017,7 @@
 
     if (!isWebGLAvailable()) {
       showFallback(_tr(t, 'memory_palace.no_webgl', 'This browser cannot show the 3D palace. Showing the walking route instead.'));
-      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, fellBack: true };
+      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, setLocusBusy: setLocusBusy, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, fellBack: true };
     }
 
     var holder = document.createElement('div');
@@ -1838,7 +2039,7 @@
       showFallback(_tr(t, 'memory_palace.load_error', 'The 3D library could not load. Showing the walking route instead.'));
     });
 
-    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, fellBack: false };
+    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, setLocusBusy: setLocusBusy, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, fellBack: false };
   }
 
   window.AlloModules = window.AlloModules || {};

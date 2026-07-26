@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-123-electronic-commerce-the-strategic-perspective",
+  "title": "Electronic Commerce: The Strategic Perspective",
+  "description": "This book is written both for practitioners and business students. Managers wishing to understand how electronic commerce is revolutionizing business will find that our comprehensive coverage of essential business issues (e.g., pricing and distribution) answers many of their questions. Advanced business students (junior, seniors, and graduate students) will find that the blend of academic structure and practical examples provides an engaging formula for learning. The book's title reflects some key themes that we develop. First, we are primarily concerned with electronic commerce, which we define as using technology (e.g., the Internet) to communicate or transact with stakeholders (e.g., customers). Second, we discuss how organizations must change in order to take advantage of electronic commerce opportunities. In this sense, our book offers the strategic perspective (i.e., the best way to operate a successful business in the 21st century). Third, with the growing importance of the Internet and related technologies, organizations must take electronic commerce into account when they are creating strategic plans. Thus, electronic commerce is a strategic perspective that all firms must adopt, both in the present and in the future. In other words, an organization that does not explicitly consider electronic commerce as a strategic imperative is probably making a crucial error. Here, we focus primarily on the opportunities and tactics that can lead to success in the electronic marketplace.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business",
+    "Business - Management"
+  ],
+  "authors": [
+    "Richard T. Watson - Author / Pierre Berthon - Author / Leyland F. Pitt - Author / George M. Zinkhan - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "BCcampus",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/electronic-commerce-the-strategic-perspective"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This book is written both for practitioners and business students. Managers wishing to understand how electronic commerce is revolutionizing business will find that our comprehensive coverage of essential business issues (e.g., pricing and distribution) answers many of their questions. Advanced business students (junior, seniors, and graduate students) will find that the blend of academic structure and practical examples provides an engaging formula for learning. The book's title reflects some key themes that we develop. First, we are primarily concerned with electronic commerce, which we define as using technology (e.g., the Internet) to communicate or transact with stakeholders (e.g., customers). Second, we discuss how organizations must change in order to take advantage of electronic commerce opportunities. In this sense, our book offers the strategic perspective (i.e., the best way to operate a successful business in the 21st century). Third, with the growing importance of the Internet and related technologies, organizations must take electronic commerce into account when they are creating strategic plans. Thus, electronic commerce is a strategic perspective that all firms must adopt, both in the present and in the future. In other words, an organization that does not explicitly consider electronic commerce as a strategic imperative is probably making a crucial error. Here, we focus primarily on the opportunities and tactics that can lead to success in the electronic marketplace."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2014."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 244
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "123",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

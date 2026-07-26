@@ -1180,7 +1180,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "b84e05fcec77dcc4ab8ac0d6cdc758c02f0e930c997cbc15d329bb05d60fc89d",
-      "learningLibrarySha256": "1911f012381eede6de8dfb61244ce66e9fb44d3d0243244e55a7980000a4f8d7"
+      "learningLibrarySha256": "00957d259aeceea1258f503904301f30671ca9651d9e7dd9f4a794be5b6e1afb"
     },
     {
       "stem": "early_childhood_5025",
@@ -1188,7 +1188,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "ddfb76965550215cb268cfbeac296eab4f7af29a138d249f730bfbff0cc6943c",
-      "learningLibrarySha256": "970d383e9d78d76a6a7fb4f176eed65db0adf05dbcba4e867ac0e8a41712eb0e"
+      "learningLibrarySha256": "42b5e5611ab9cab622de555d051228ab79c978cb101649584295de69d6c42201"
     },
     {
       "stem": "educational_leadership_5412",
@@ -1196,7 +1196,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "6f247aa0dd616926115d9e2db1d92895cb4cec963df621c04858ca3f5aee7d23",
-      "learningLibrarySha256": "82e6016640ba1fd9beea5bf3c7563a255ba76d7d5e30ae93ff8316c89a9cfeb0"
+      "learningLibrarySha256": "d84cdd3bcba7858e8aaf003ce9d56e393e2fe37c3997d0cd7dcb36e4e5579063"
     },
     {
       "stem": "esol_5362",
@@ -1204,7 +1204,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "cb9ec0f82816eca7b266d593b7ff20d89b6d0f461a050e83f552ecc8f2ce113c",
-      "learningLibrarySha256": "21b4296b7bb8d654bd81b25002fbc757364f06595786e5b87e0686232b2e3c83"
+      "learningLibrarySha256": "4c27865e1c7ff93205e36067f2f6acb47a8aaa97f4a5bef9ba8bbbce11dd2a66"
     },
     {
       "stem": "plt_5_9_5623",
@@ -1212,7 +1212,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "3e0010b976873dab441b2d2d8acaad956268428011af639fe1d14529a3b257d8",
-      "learningLibrarySha256": "5b49740f6280a7bc910eb63b02c019e3d5fcbda0dccf4c517dbf753fdb6cbda9"
+      "learningLibrarySha256": "0517a6a7cb737863a53087229fb61e65c855d12852fc1565b6ab1481129ec00f"
     },
     {
       "stem": "plt_7_12_5624",
@@ -1220,7 +1220,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "37b17dfc2228804f22f6b51f52cd828176c62e5a1b731d9dc0c39b4a25e4263a",
-      "learningLibrarySha256": "2b19cfafd5bee565560c02211ab8631304da91a3cf202a4f6ef4a4cb4ba461ac"
+      "learningLibrarySha256": "51e3325e627481e892cf129a49bca04a8607195e368c00cca2bac94396c52aa9"
     },
     {
       "stem": "plt_early_childhood_5621",
@@ -1228,7 +1228,7 @@
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
       "sourceItemsSha256": "53c0e3a5e007823afd72e617f54bfde0b147834a4a7a63309196cabb05e3bf44",
-      "learningLibrarySha256": "3b477c9662e876b342e6dbdd8d65c3989fa0cc46f52aaa993ba1c49d6dedb215"
+      "learningLibrarySha256": "0d2b6fdf1967867e1b420c0dbfae3f5a6e60e3e69594f7c979f399a05a76ce35"
     }
   ]
 }

@@ -51,7 +51,15 @@ window.__pictionaryExports = {
   normalizePictionaryActivityMode,
   groupSketchStrokesByUid,
   sanitizeSketchRevealStrokes,
+  sanitizeSketchShowcaseStrokes,
   buildSketchSubmissionSummary,
+  normalizeSketchCriterion,
+  normalizeSketchFeedback,
+  buildSketchVoteRound,
+  sanitizeSketchVoteRound,
+  normalizeSketchVote,
+  upsertSketchVote,
+  buildSketchVoteResults,
   PICTIONARY_ACTIVITY_MODE,
   SKETCH_RESPONSE_ACTIVITY_MODE,
 };
@@ -83,7 +91,7 @@ const outputCode = `/**
  * AlloFlow Concept Pictionary Module
  *
  * Multi-drawer Pictionary game plus private Sketch Response mode. Strokes,
- * guesses, submissions, and moderated anonymous reveals flow peer-to-peer over
+ * guesses, submissions, teacher feedback, revisions, and anonymous sketch votes flow peer-to-peer over
  * WebRTC; only signaling docs + Tier-1 role markers touch the backend.
  * FERPA-by-design.
  *
@@ -149,7 +157,15 @@ ${compiled}
     normalizePictionaryActivityMode: normalizePictionaryActivityMode,
     groupSketchStrokesByUid: groupSketchStrokesByUid,
     sanitizeSketchRevealStrokes: sanitizeSketchRevealStrokes,
+    sanitizeSketchShowcaseStrokes: sanitizeSketchShowcaseStrokes,
     buildSketchSubmissionSummary: buildSketchSubmissionSummary,
+    normalizeSketchCriterion: normalizeSketchCriterion,
+    normalizeSketchFeedback: normalizeSketchFeedback,
+    buildSketchVoteRound: buildSketchVoteRound,
+    sanitizeSketchVoteRound: sanitizeSketchVoteRound,
+    normalizeSketchVote: normalizeSketchVote,
+    upsertSketchVote: upsertSketchVote,
+    buildSketchVoteResults: buildSketchVoteResults,
     PICTIONARY_ACTIVITY_MODE: PICTIONARY_ACTIVITY_MODE,
     SKETCH_RESPONSE_ACTIVITY_MODE: SKETCH_RESPONSE_ACTIVITY_MODE,
   };

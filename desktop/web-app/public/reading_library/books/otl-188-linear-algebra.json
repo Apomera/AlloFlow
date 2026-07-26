@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-188-linear-algebra",
+  "title": "Linear Algebra",
+  "description": "We believe the entire book can be taught in twenty five 50-minute lectures to a sophomore audience that has been exposed to a one year calculus course. Vector calculus is useful, but not necessary preparation for this book, which attempts to be self-contained. Key concepts are presented multiple times, throughout the book, often first in a more intuitive setting, and then again in a definition, theorem, proof style later on. We do not aim for students to become agile mathematical proof writers, but we do expect them to be able to show and explain why key results hold. We also often use the review exercises to let students discover key results for themselves; before they are presented again in detail later in the book. The book has been written such that instructors can reorder the chapters (using the La- TeX source) in any (reasonable) order and still have a consistent text. We hammer the notions of abstract vectors and linear transformations hard and early, while at the same time giving students the basic matrix skills necessary to perform computations. Gaussian elimination is followed directly by an “exploration chapter” on the simplex algorithm to open students minds to problems beyond standard linear systems ones. Vectors in Rn and general vector spaces are presented back to back so that students are not stranded with the idea that vectors are just ordered lists of numbers. To this end, we also labor the notion of all functions from a set to the real numbers. In the same vein linear transformations and matrices are presented hand in hand. Once students see that a linear map is specified by its action on a limited set of inputs, they can already understand what a basis is. All the while students are studying linear systems and their solution sets, so after matrices determinants are introduced. This material can proceed rapidly since elementary matrices were already introduced with Gaussian elimination. Only then is a careful discussion of spans, linear independence and dimension given to ready students for a thorough treatment of eigenvectors and diagonalization. The dimension formula therefore appears quite late, since we prefer not to elevate rote computations of column and row spaces to a pedestal. The book ends with applications–least squares and singular values. These are a fun way to end any lecture course. It would also be quite easy to spend any extra time on systems of differential equations and simple Fourier transform problems.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Algebra",
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "David Cherney - Author / Tom Denton - Author / Andrew K. Waldon - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of California, Davis",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/linear-algebra-2016"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "We believe the entire book can be taught in twenty five 50-minute lectures to a sophomore audience that has been exposed to a one year calculus course. Vector calculus is useful, but not necessary preparation for this book, which attempts to be self-contained. Key concepts are presented multiple times, throughout the book, often first in a more intuitive setting, and then again in a definition, theorem, proof style later on. We do not aim for students to become agile mathematical proof writers, but we do expect them to be able to show and explain why key results hold. We also often use the review exercises to let students discover key results for themselves; before they are presented again in detail later in the book. The book has been written such that instructors can reorder the chapters (using the La- TeX source) in any (reasonable) order and still have a consistent text. We hammer the notions of abstract vectors and linear transformations hard and early, while at the same time giving students the basic matrix skills necessary to perform computations. Gaussian elimination is followed directly by an “exploration chapter” on the simplex algorithm to open students minds to problems beyond standard linear systems ones. Vectors in Rn and general vector spaces are presented back to back so that students are not stranded with the idea that vectors are just ordered lists of numbers. To this end, we also labor the notion of all functions from a set to the real numbers. In the same vein linear transformations and matrices are presented hand in hand. Once students see that a linear map is specified by its action on a limited set of inputs, they can already understand what a basis is. All the while students are studying linear systems and their solution sets, so after matrices determinants are introduced. This material can proceed rapidly since elementary matrices were already introduced with Gaussian elimination. Only then is a careful discussion of spans, linear independence and dimension given to ready students for a thorough treatment of eigenvectors and diagonalization. The dimension formula therefore appears quite late, since we prefer not to elevate rote computations of column and row spaces to a pedestal. The book ends with applications–least squares and singular values. These are a fun way to end any lecture course. It would also be quite easy to spend any extra time on systems of differential equations and simple Fourier transform problems."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 431
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "188",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

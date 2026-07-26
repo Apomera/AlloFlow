@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-19-international-trade-theory-and-policy",
+  "title": "International Trade: Theory and Policy",
+  "description": "International Trade: Theory and Policy is built on Steve Suranovic's belief that to understand the international economy, students need to learn how economic models are applied to real world problems. It is true what they say, that ”economists do it with models.“ That's because economic models provide insights about the world that are simply not obtainable solely by discussion of the issues. International Trade: Theory and Policy presents a variety of international trade models including the Ricardian model, the Heckscher-Ohlin model, and the monopolistic competition model. It includes trade policy analysis in both perfectly competitive and imperfectly competitive markets. The text also addresses current issues such as free trade area formation and administered protection policies. The models are developed, not by employing advanced mathematics, but rather by walking students through a detailed description of how a model's assumptions influence its conclusions. But more importantly, each model and theory is connected to real world policy issues. The main purpose of the text is to provide a thorough grounding in the arguments concerning the age-old debate about free trade versus protectionism. This text has the following unique features: The text begins with an historical overview of trade policy issues to provide context for the theory. The text concludes with a detailed economic argument supporting free trade.The welfare analysis in the Ricardian, Heckscher-Ohlin and specific factors models emphasize the redistributive effects of free trade by calculating changes in real incomes.The trade policy chapter provides a comprehensive look at many more trade policies than are found in a printed textbook. A chapter about domestic policies contains an evaluation of domestic taxes and subsidies that are often ignored in traditional trade textbooks but are increasingly important as large countries complain more about each other's domestic agriculture policies and labor and environmental policies. The text uses the theory of the second-best to explain why protection can improve national welfare. This well-known theoretical result is rarely presented as methodically and consistently as it is in this text. International Trade: Theory and Policy by Steve Suranovic is intended for a one-semester course in International Trade. After April 2010, you can check out the entire book online or request a desk copy.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Economics"
+  ],
+  "authors": [
+    "Steve Suranovic - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Saylor Foundation",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/international-trade-theory-and-policy"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "International Trade: Theory and Policy is built on Steve Suranovic's belief that to understand the international economy, students need to learn how economic models are applied to real world problems. It is true what they say, that ”economists do it with models.“ That's because economic models provide insights about the world that are simply not obtainable solely by discussion of the issues. International Trade: Theory and Policy presents a variety of international trade models including the Ricardian model, the Heckscher-Ohlin model, and the monopolistic competition model. It includes trade policy analysis in both perfectly competitive and imperfectly competitive markets. The text also addresses current issues such as free trade area formation and administered protection policies. The models are developed, not by employing advanced mathematics, but rather by walking students through a detailed description of how a model's assumptions influence its conclusions. But more importantly, each model and theory is connected to real world policy issues. The main purpose of the text is to provide a thorough grounding in the arguments concerning the age-old debate about free trade versus protectionism. This text has the following unique features: The text begins with an historical overview of trade policy issues to provide context for the theory. The text concludes with a detailed economic argument supporting free trade.The welfare analysis in the Ricardian, Heckscher-Ohlin and specific factors models emphasize the redistributive effects of free trade by calculating changes in real incomes.The trade policy chapter provides a comprehensive look at many more trade policies than are found in a printed textbook. A chapter about domestic policies contains an evaluation of domestic taxes and subsidies that are often ignored in traditional trade textbooks but are increasingly important as large countries complain more about each other's domestic agriculture policies and labor and environmental policies. The text uses the theory of the second-best to explain why protection can improve national welfare. This well-known theoretical result is rarely presented as methodically and consistently as it is in this text. International Trade: Theory and Policy by Steve Suranovic is intended for a one-semester course in International Trade. After April 2010, you can check out the entire book online or request a desk copy."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2010."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 386
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "19",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-429-canadian-history-pre-confederation",
+  "title": "Canadian History: Pre-Confederation",
+  "description": "Canadian History: Pre-Confederation is a survey text that introduces undergraduate students to important themes in North American history to 1867. It provides room for Aboriginal and European agendas and narratives, explores the connections between the territory that coalesces into the shape of modern Canada and the larger continent and world in which it operates, and engages with emergent issues in the field. The material is pursued in a largely chronological manner to the early 19th century, at which point social, economic, and political change are dissected. Canadian History: Pre-Confederation provides, as well, a reconnaissance of historical methodology and debates in the field, exercises for students, Key Terms and a Glossary, and section-by-section Key Points. Although this text can be modified, expanded, reduced, and reorganized to suit the needs of the instructor, it is organized so as to support learning, to broaden (and sometimes provoke) debate, and to engage students in thinking like historians. Written and reviewed by subject experts drawn from colleges and universities, this is the first open textbook on the topic of Canadian history.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - History"
+  ],
+  "authors": [
+    "John Douglas Belshaw - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "BCcampus",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/canadian-history-pre-confederation"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Canadian History: Pre-Confederation is a survey text that introduces undergraduate students to important themes in North American history to 1867. It provides room for Aboriginal and European agendas and narratives, explores the connections between the territory that coalesces into the shape of modern Canada and the larger continent and world in which it operates, and engages with emergent issues in the field. The material is pursued in a largely chronological manner to the early 19th century, at which point social, economic, and political change are dissected. Canadian History: Pre-Confederation provides, as well, a reconnaissance of historical methodology and debates in the field, exercises for students, Key Terms and a Glossary, and section-by-section Key Points. Although this text can be modified, expanded, reduced, and reorganized to suit the needs of the instructor, it is organized so as to support learning, to broaden (and sometimes provoke) debate, and to engage students in thinking like historians. Written and reviewed by subject experts drawn from colleges and universities, this is the first open textbook on the topic of Canadian history."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 199
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "429",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

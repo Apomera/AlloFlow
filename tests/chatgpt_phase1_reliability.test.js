@@ -44,9 +44,14 @@ describe('finding 1 — audit cache finalization', () => {
     const start = dp.indexOf('const _readAuditCache = async (key) => {');
     const end = dp.indexOf('};', dp.indexOf('return cached.audit;', start)) + 2;
     const store = new Map();
-    const mk = new Function('storageDB', 'window', '_AUDIT_CACHE_TTL_MS',
+    const mk = new Function('storageDB', 'window', '_AUDIT_CACHE_TTL_MS', '_remediationRetentionMs',
       dp.slice(start, end) + '\nreturn _readAuditCache;');
-    const read = mk({ get: async (k) => store.get(k) }, { idbKeyval: {} }, 7 * 24 * 3600 * 1000);
+    const read = mk(
+      { get: async (k) => store.get(k) },
+      { idbKeyval: {} },
+      7 * 24 * 3600 * 1000,
+      (requestedMs) => requestedMs,
+    );
     store.set('k-legacy', { audit: { score: 92, summary: 'AI-only snapshot' }, savedAt: Date.now() });
     store.set('k-final', { audit: { score: 70, _auditFinalized: true, _baselineAxeAudit: { score: 70 } }, savedAt: Date.now() });
     expect(await read('k-legacy')).toBeNull();       // pre-fix bad snapshot: rejected
@@ -58,10 +63,20 @@ describe('finding 1 — audit cache finalization', () => {
 
 describe('finding 4 — ONE absolute per-file wall', () => {
   it('the deadline is minted once at _processOne entry; both phases get only what remains', () => {
-    expect(dp).toContain('const _deadlineAt = Date.now() + _PER_FILE_MS;');
-    expect(dp).toContain("_remainingMs(), 'batch audit: ' + item.fileName);");
-    expect(dp).toContain("}), _remainingMs(), 'batch fix: ' + item.fileName);");
-    expect(dp).toContain('perFileDeadlineTs: _deadlineAt,');
+    const processOneAt = dp.indexOf('const _processOne = async (item, i, isRetry) => {');
+    const deadlineAt = dp.indexOf('const _deadlineAt = Date.now() + _PER_FILE_MS;', processOneAt);
+    const auditWallAt = dp.indexOf("_remainingMs(), 'batch audit: ' + item.fileName);", deadlineAt);
+    const fixPromiseAt = dp.indexOf('const _fixPromise = fixAndVerifyPdf({', auditWallAt);
+    const sharedDeadlineAt = dp.indexOf('perFileDeadlineTs: _deadlineAt,', fixPromiseAt);
+    const fixWallAt = dp.indexOf("result = await _withTimeout(_fixPromise, _remainingMs(), 'batch fix: ' + item.fileName);", sharedDeadlineAt);
+    const cancellationDrainAt = dp.indexOf("'batch remediation cancellation drain'", fixWallAt);
+    expect(processOneAt).toBeGreaterThan(-1);
+    expect(deadlineAt).toBeGreaterThan(processOneAt);
+    expect(auditWallAt).toBeGreaterThan(deadlineAt);
+    expect(fixPromiseAt).toBeGreaterThan(auditWallAt);
+    expect(sharedDeadlineAt).toBeGreaterThan(fixPromiseAt);
+    expect(fixWallAt).toBeGreaterThan(sharedDeadlineAt);
+    expect(cancellationDrainAt).toBeGreaterThan(fixWallAt);
     // no second full-budget mint remains:
     expect(dp).not.toContain('perFileDeadlineTs: Date.now() + _PER_FILE_MS');
   });

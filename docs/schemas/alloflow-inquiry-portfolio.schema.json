@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alloflow.org/schemas/inquiry-portfolio-v6.json",
+  "title": "AlloFlow Inquiry Portfolio",
+  "type": "object",
+  "required": ["v", "createdAt", "updatedAt", "questionTitle", "sources", "evidenceCards", "claims", "claimEvidenceLinks", "capturedArtifacts"],
+  "properties": {
+    "v": { "type": "integer", "minimum": 1, "maximum": 6 },
+    "createdAt": { "type": "number" }, "updatedAt": { "type": "number" }, "questionTitle": { "type": "string" },
+    "sources": { "type": "array" }, "evidenceCards": { "type": "array" }, "claims": { "type": "array" },
+    "claimEvidenceLinks": { "type": "array" }, "capturedArtifacts": { "type": "array" }
+  }
+}

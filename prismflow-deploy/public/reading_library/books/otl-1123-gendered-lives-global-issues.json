@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1123-gendered-lives-global-issues",
+  "title": "Gendered Lives: Global Issues",
+  "description": "A gender studies textbook that takes an anthropological approach. Gendered Lives takes a regional approach to examine gender issues from an anthropological perspective with a focus on globalization and intersectionality. Chapters present contributors’ ethnographic research, contextualizing their findings within four geographic regions: Latin America, the Caribbean, South Asia, and the Global North. Each regional section begins with an overview of the broader historical, social, and gendered contexts, which situate the regions within larger global linkages. These introductions also feature short project/people profiles that highlight the work of community leaders or non-governmental organizations active in gender-related issues. Each research-based chapter begins with a chapter overview and learning objectives and closes with discussion questions and resources for further exploration. This modular, regional approach allows instructors to select the regions and cases they want to use in their courses. While they can be used separately, the chapters are connected through the book’s central themes of globalization and intersectionality.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Cultural & Ethnic Studies",
+    "Social Sciences - Gender & Sexuality Studies"
+  ],
+  "authors": [
+    "Nadine T. Fernandez - Author / Katie Nelson - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Milne Open Textbooks",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/gendered-lives-global-issues"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A gender studies textbook that takes an anthropological approach. Gendered Lives takes a regional approach to examine gender issues from an anthropological perspective with a focus on globalization and intersectionality. Chapters present contributors’ ethnographic research, contextualizing their findings within four geographic regions: Latin America, the Caribbean, South Asia, and the Global North. Each regional section begins with an overview of the broader historical, social, and gendered contexts, which situate the regions within larger global linkages. These introductions also feature short project/people profiles that highlight the work of community leaders or non-governmental organizations active in gender-related issues. Each research-based chapter begins with a chapter overview and learning objectives and closes with discussion questions and resources for further exploration. This modular, regional approach allows instructors to select the regions and cases they want to use in their courses. While they can be used separately, the chapters are connected through the book’s central themes of globalization and intersectionality."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 178
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1123",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

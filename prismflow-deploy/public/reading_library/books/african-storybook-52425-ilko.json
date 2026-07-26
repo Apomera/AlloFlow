@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52425-ilko",
+  "title": "Ilko",
+  "description": "Xayawaano kala duwan ayaa leh noocyo kala duwan oo ilko ah .(qaarkoodna Ilko maleh). Maxaa ku dhaca Ilkaheena marka aynu koreyno? .",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Clare Verbeek, Thembani Dladla, Zanele Buthelezi"
+  ],
+  "illustrators": [
+    ", Kathy Arbuckle"
+  ],
+  "translators": [
+    "Ubah Ali"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi",
+      "role": "Author"
+    },
+    {
+      "name": "Ubah Ali",
+      "role": "Translation"
+    },
+    {
+      "name": ", Kathy Arbuckle",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY-NC 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/3.0/",
+  "attribution": "Clare Verbeek, Thembani Dladla, Zanele Buthelezi (Author); Ubah Ali (Translation); , Kathy Arbuckle (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52425",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52425",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://cae.ukzn.ac.za/resources/seedbooks.aspx",
+    "editionId": "52425",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution. This edition is restricted to noncommercial use."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY-NC 3.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-f8160dce238c5ac3",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/1701.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1701.png",
+      "text": "Yaxaasku wuxuu lee yahay ilko waaweyn.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52425#page=1",
+      "sourceDigest": "sha256:32d33de91fb6263a0aa6bd4c11a78829660267cfe0ed0f2fa16fb60b7cf99b22"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1702.png",
+      "text": "Libaaxuna wuxuu lee yahay ilko waaweyn sidoo kale.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52425#page=2",
+      "sourceDigest": "sha256:615c91f85eb11931bdbdb317f6c7f4861e8a9d84fe39152e148396ed18f86a09"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1703.png",
+      "text": "Lo'du waxay lee dahay ilko adag/xoog badan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52425#page=3",
+      "sourceDigest": "sha256:87d1663259522086e918d23baf712338c731b3d665c18c8d0e22f89703bf1318"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1704.png",
+      "text": "Shinbiruhu ilko maleh.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52425#page=4",
+      "sourceDigest": "sha256:4394a0428d57790516fb678a55bd6ccb7719324c5fda73c4132149b91b73a575"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1705.png",
+      "text": "Jiirku wuxuu lee yahay ilko waaweyn oo hore.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52425#page=5",
+      "sourceDigest": "sha256:88c9f6218a68b9a7a6453a1363436ac1ba7a15854ba31453e00a59de65f6ef98"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1706.png",
+      "text": "Libaax badeedku wuxuu lee yahay ilko af badan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52425#page=6",
+      "sourceDigest": "sha256:a9eef6b789165685457467a236deb048fc2dd5aadc5cf45018469e3481bc14bc"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1707.png",
+      "text": "Waxaan lahaan jiray ilko badan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52425#page=7",
+      "sourceDigest": "sha256:397e517ab66104b7209d6fb928f4db96640fb101de0e5f28ce46ba946fa1e9bc"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1708.png",
+      "text": "Laakiin hadda ma lihi kuwo badan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52425#page=8",
+      "sourceDigest": "sha256:48e96b6a9994124c131ccbff7dbe6320c35cf91a39e2823327168692de834fa2"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 51
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:c235b5b6fdc26b937e7f43746449eaf7d12593cd8618d666886cd9f0def24c74"
+  }
+}

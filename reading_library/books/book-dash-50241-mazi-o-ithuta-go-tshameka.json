@@ -1,0 +1,90 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-50241-mazi-o-ithuta-go-tshameka",
+  "title": "Mazi o Ithuta go Tshameka!",
+  "description": "Mazi o batla go tshameka dojebolo le mogolowe le kgaitsadie, mme sa ntlha, o tshwanetse go ithuta melao!",
+  "language": "Setswana",
+  "langCode": "tsn",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Emotions and life skills",
+    "Family, friends, and home",
+    "Let's play!"
+  ],
+  "authors": [
+    "Tumisang Shongwe"
+  ],
+  "illustrators": [
+    "Liam Longland"
+  ],
+  "contributors": [
+    {
+      "name": "Jamie Calf",
+      "role": "Designer"
+    },
+    {
+      "name": "Tumisang Shongwe",
+      "role": "Writer"
+    },
+    {
+      "name": "Liam Longland",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Alison Ziki",
+      "role": "Editor"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/mazi-o-ithuta-go-tshameka/",
+    "attributionUrl": "https://bookdash.org/books/mazi-o-ithuta-go-tshameka/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=mazi-learns-to-play"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2026/05/mazi-learns-to-play_tn_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2026/05/mazi-learns-to-play_tn_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Mazi o batla go tshameka dojebolo le mogolowe le kgaitsadie, mme sa ntlha, o tshwanetse go ithuta melao!"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Jamie Calf (Designer); Tumisang Shongwe (Writer); Liam Longland (Illustrator); Alison Ziki (Editor)\n\nLanguage: Setswana. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=mazi-learns-to-play"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 84
+  }
+}

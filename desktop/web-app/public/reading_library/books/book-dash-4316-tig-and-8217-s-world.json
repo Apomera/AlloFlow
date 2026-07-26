@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-4316-tig-and-8217-s-world",
+  "title": "Tig’s World",
+  "description": "If the world is round, why don’t the people on the bottom fall off? Tig’s mom has one answer, and her dad has another. Who’s telling the truth?",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Let's learn!",
+    "Let's play!"
+  ],
+  "authors": [
+    "Sam Wilson"
+  ],
+  "illustrators": [
+    "Dorian Dutrieux"
+  ],
+  "contributors": [
+    {
+      "name": "Kitso Sedumedi",
+      "role": "Designer"
+    },
+    {
+      "name": "Dorian Dutrieux",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Sam Wilson",
+      "role": "Writer"
+    },
+    {
+      "name": "Carla Lever",
+      "role": "Editor"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/tigs-world/",
+    "attributionUrl": "https://bookdash.org/books/tigs-world/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=tigs-world"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2018/01/tigs-world_20180115_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2018/01/tigs-world_20180115_cover.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "If the world is round, why don’t the people on the bottom fall off? Tig’s mom has one answer, and her dad has another. Who’s telling the truth?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Kitso Sedumedi (Designer); Dorian Dutrieux (Illustrator); Sam Wilson (Writer); Carla Lever (Editor)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=tigs-world"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 94
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1457-social-data-analysis",
+  "title": "Social Data Analysis",
+  "description": "Social data analysis enables you, as a researcher, to organize the facts you collect during your research. Your data may have come from a questionnaire survey, a set of interviews, or observations. They may be data that have been made available to you from some organization, national or international agency or other researchers. Whatever their source, social data can be daunting to put together in a way that makes sense to you and others. This book is meant to help you in your initial attempts to analyze data. In doing so it will introduce you to ways that others have found useful in their attempts to organize data. You might think of it as like a recipe book, a resource that you can refer to as you prepare data for your own consumption and that of others. And, like a recipe book that teaches you to prepare simple dishes, you may find this one pretty exciting. Analyzing data in a revealing way is at least as rewarding, we’ve found, as it is to cook up a yummy cashew carrot paté or a steaming corn chowder. We’d like to share our pleasure with you.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Sociology"
+  ],
+  "authors": [
+    "Mikaila Mariel Lemonik Arthur - Author / Roger Clark - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Rhode Island College Digital Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/social-data-analysis"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Social data analysis enables you, as a researcher, to organize the facts you collect during your research. Your data may have come from a questionnaire survey, a set of interviews, or observations. They may be data that have been made available to you from some organization, national or international agency or other researchers. Whatever their source, social data can be daunting to put together in a way that makes sense to you and others. This book is meant to help you in your initial attempts to analyze data. In doing so it will introduce you to ways that others have found useful in their attempts to organize data. You might think of it as like a recipe book, a resource that you can refer to as you prepare data for your own consumption and that of others. And, like a recipe book that teaches you to prepare simple dishes, you may find this one pretty exciting. Analyzing data in a revealing way is at least as rewarding, we’ve found, as it is to cook up a yummy cashew carrot paté or a steaming corn chowder. We’d like to share our pleasure with you."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 216
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1457",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-609-sons-lettres-a-pronunciation-method-for-intermediate-level-french",
+  "title": "Sons & Lettres: A pronunciation method for intermediate-level French",
+  "description": "Sons et lettres provides a set of classroom materials to train students to hear and produce the sounds of French and to recognize the regular spellings used to represent those sounds in print. The materials are inspired by a desire to help students feel more confident about their French pronunciation and more at home saying the many French words, familiar and unfamiliar, which they encounter in their studies, in French media and in their travels. In our experience, students are not given sufficient preparation to successfully decipher and pronounce French words. These materials are intended to fill that gap and to clear away the confusion that English speakers often feel when they see French words with seemingly mysterious combinations of letters.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages"
+  ],
+  "authors": [
+    "Stephen Walton - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Portland State University Library",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/sons-lettres-a-pronunciation-method-for-intermediate-level-french"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Sons et lettres provides a set of classroom materials to train students to hear and produce the sounds of French and to recognize the regular spellings used to represent those sounds in print. The materials are inspired by a desire to help students feel more confident about their French pronunciation and more at home saying the many French words, familiar and unfamiliar, which they encounter in their studies, in French media and in their travels. In our experience, students are not given sufficient preparation to successfully decipher and pronounce French words. These materials are intended to fill that gap and to clear away the confusion that English speakers often feel when they see French words with seemingly mysterious combinations of letters."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 144
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "609",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

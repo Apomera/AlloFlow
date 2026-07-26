@@ -22,7 +22,8 @@ describe('remediation view async document ownership', () => {
 
   it('rejects stale or unstamped remediation trace events', () => {
     expect(view).toContain('Number.isInteger(e.detail.documentEpoch) && e.detail.documentEpoch === pdfDocumentEpoch');
-    expect(view).toContain('if (!_eventIsForCurrentDocument(e)) return;');
+    expect(view).toContain('if (!_eventIsForCurrentDocument(e) || e.detail.version !== 1) return;');
+    expect(view).toContain('if (!_eventIsForCurrentDocument(e) || !detail.runId || !runSequence) return null;');
     expect(view).toContain('}, [pdfDocumentEpoch]);');
   });
 
@@ -65,7 +66,14 @@ describe('remediation view async document ownership', () => {
 
     expect(view).toContain('win.__alloflowCompareDocumentEpoch = _compareDocumentEpoch;\n                            win.__alloflowCompareOwnerNonce = _compareOwnerNonce;');
     expect(view).toContain('_clearComparePopupCallbacks(_comparePopupOwnerRef.current);\n                            try { if (win && !win.closed) win.close();');
-    expect(view).toContain('}\n                          if (!win) return;\n                          const beforeScore');
+    const comparePopupStart = view.indexOf("win = window.open('', '_blank');");
+    const comparePopupGuard = view.indexOf('if (!win) return;', comparePopupStart);
+    const compareSanitizer = view.indexOf('_viewSanitizeMarkupForExport(', comparePopupGuard);
+    const compareBeforeScore = view.indexOf('const beforeScore', comparePopupGuard);
+    expect(comparePopupStart).toBeGreaterThan(-1);
+    expect(comparePopupGuard).toBeGreaterThan(comparePopupStart);
+    expect(compareSanitizer).toBeGreaterThan(comparePopupGuard);
+    expect(compareBeforeScore).toBeGreaterThan(compareSanitizer);
     const scopeProbe = new Function(`
       let win = null;
       let documentEpoch = null, ownerNonce = null;
@@ -91,7 +99,7 @@ describe('owned batch intake and readiness', () => {
 
   it('shares limits with desktop folder intake and gates starts/retries on readiness', () => {
     expect(view).toContain('const accepted = _alloBatchPreflight(descriptors, []);');
-    expect(view).toContain('actualBytes + actualSize > _BATCH_MAX_TOTAL_BYTES');
+    expect(view).toContain('actualSize > _BATCH_EFFECTIVE_MAX_FILE_BYTES || actualBytes + actualSize > _BATCH_EFFECTIVE_MAX_TOTAL_BYTES');
     expect(view).toContain("if (!_requireRemediationReady() || typeof runPdfBatchRemediation !== 'function')");
     expect(view).toContain('disabled={batchIngesting || remediationReady === false}');
     expect(view).toContain('await Promise.resolve(runPdfBatchRemediation({ resumeQueue');

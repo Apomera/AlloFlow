@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1705-integrando-ia-en-los-nuevos-paradigmas-de-las-ciencias-economicas-y-gest",
+  "title": "Integrando IA en los Nuevos Paradigmas de las Ciencias Económicas y Gestión Empresarial",
+  "description": "El libro aborda la integración de la inteligencia artificial (IA) en diferentes áreas de las ciencias económicas y la gestión empresarial, explorando sus impactos y beneficios. En la introducción, se destaca cómo la transformación digital redefine las estrategias organizacionales y fomenta la innovación continua, mejorando la capacidad de respuesta a las demandas del mercado. Metodológicamente, se utilizan estudios de caso y análisis de datos para ilustrar la aplicación de la IA. Los resultados muestran que, en la contabilidad, la IA automatiza tareas repetitivas, reduce errores y mejora la precisión, permitiendo a los profesionales centrarse en actividades estratégicas. En el ámbito financiero, los algoritmos de trading inteligente aumentan la velocidad y precisión de las transacciones, mejorando la competitividad y la liquidez del mercado. La gestión de riesgos se beneficia de modelos predictivos que anticipan posibles amenazas, mientras que el cumplimiento normativo se fortalece mediante el monitoreo automatizado. En términos de desarrollo sostenible, la IA optimiza la distribución de recursos y mejora la eficiencia energética, contribuyendo a políticas más verdes y equitativas. La conclusión resalta la necesidad de un enfoque ético y transparente en la implementación de IA, para asegurar decisiones justas y responsables.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Economics"
+  ],
+  "authors": [
+    "José Rafael Díaz-Avelino - Author / César Iván Casanova-Villalba - Author / César Estuardo Carrillo-Barragán - Author / María Gabriela Cueva-Jiménez - Author / Maybelline Jaqueline Herrera-Sánchez - Author / Cinthya Katherine Zambrano-Muñoz - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/integrando-ia-en-los-nuevos-paradigmas-de-las-ciencias-economicas-y-gestion-empresarial"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "El libro aborda la integración de la inteligencia artificial (IA) en diferentes áreas de las ciencias económicas y la gestión empresarial, explorando sus impactos y beneficios. En la introducción, se destaca cómo la transformación digital redefine las estrategias organizacionales y fomenta la innovación continua, mejorando la capacidad de respuesta a las demandas del mercado. Metodológicamente, se utilizan estudios de caso y análisis de datos para ilustrar la aplicación de la IA. Los resultados muestran que, en la contabilidad, la IA automatiza tareas repetitivas, reduce errores y mejora la precisión, permitiendo a los profesionales centrarse en actividades estratégicas. En el ámbito financiero, los algoritmos de trading inteligente aumentan la velocidad y precisión de las transacciones, mejorando la competitividad y la liquidez del mercado. La gestión de riesgos se beneficia de modelos predictivos que anticipan posibles amenazas, mientras que el cumplimiento normativo se fortalece mediante el monitoreo automatizado. En términos de desarrollo sostenible, la IA optimiza la distribución de recursos y mejora la eficiencia energética, contribuyendo a políticas más verdes y equitativas. La conclusión resalta la necesidad de un enfoque ético y transparente en la implementación de IA, para asegurar decisiones justas y responsables."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 215
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1705",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

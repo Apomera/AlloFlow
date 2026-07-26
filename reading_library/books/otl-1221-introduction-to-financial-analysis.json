@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1221-introduction-to-financial-analysis",
+  "title": "Introduction to Financial Analysis",
+  "description": "This Open Textbook is a dynamic guide incorporating the essential skills needed to build a foundation in Financial Analysis. Students and readers will learn how to insightfully read a Financial Statement, utilize key financial ratios in order to derive forward-looking investment-related inferences from the accounting data, engage in elementary forecasting and modeling, master the theory of the Time Value of Money, and learn to price stocks and bonds in an environment in which interest rates constantly change. Ample problems and solutions, and review questions are provided to the student so that s/he can gauge his/her progress. This text will be continually updated in order to provide novel information and enhance students’ experiences.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Finance"
+  ],
+  "authors": [
+    "Kenneth S. Bigel - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Touro",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-financial-analysis"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This Open Textbook is a dynamic guide incorporating the essential skills needed to build a foundation in Financial Analysis. Students and readers will learn how to insightfully read a Financial Statement, utilize key financial ratios in order to derive forward-looking investment-related inferences from the accounting data, engage in elementary forecasting and modeling, master the theory of the Time Value of Money, and learn to price stocks and bonds in an environment in which interest rates constantly change. Ample problems and solutions, and review questions are provided to the student so that s/he can gauge his/her progress. This text will be continually updated in order to provide novel information and enhance students’ experiences."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2022."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 135
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1221",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

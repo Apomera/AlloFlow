@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47408-umuturagaro-n-umuravyo",
+  "title": "Umuturagaro n'Umuravyo",
+  "description": "Umuturagaro n'umwana wawo, umuravyo, vyaba kw'isi n'abantu. Kubw'inzigo n'ubukozi bw'ikibi bw'umwana wawo, umwami abarungika kuba mw'ijuru kure y'abantu.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Ogot Owino"
+  ],
+  "illustrators": [
+    "Jesse Breytenbach"
+  ],
+  "translators": [
+    "Selemani Sindakira"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Ogot Owino",
+      "role": "Author"
+    },
+    {
+      "name": "Selemani Sindakira",
+      "role": "Translation"
+    },
+    {
+      "name": "Jesse Breytenbach",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Ogot Owino (Author); Selemani Sindakira (Translation); Jesse Breytenbach (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47408",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-d5f4b0b27d651999",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/19056.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19042.png",
+      "text": "Aho kera narindi, Umuturagaro n'Umuravyo vyaba kw'isi hamwe n'abantu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408#page=1",
+      "sourceDigest": "sha256:7f8bc16a8b0b1ebfecbee41a57ef428d83afd0b79cd3b3ed399aa65bfede1156"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19044.png",
+      "text": "Umuturagaro yari nyina w'Umuravyo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408#page=2",
+      "sourceDigest": "sha256:97b7cb97f1449026e8bd533834776eafd5abac533cac4764d6447b8237f64763"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19046.png",
+      "text": "Umuravyo urakara kandi ugakunda kugira amahane.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408#page=3",
+      "sourceDigest": "sha256:4e0b5aecde5c68d8478b972602ba3de146a4181c6a48b3ecca98a6d5d04206ee"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19047.png",
+      "text": "Igihe cose umuravyo ushavuye, ucuja mubantu ugaturira amazu ugata ibiti hasi. Ukarenza urwamwo rwinshi, \"Pia-la-la-la, pia-la-la-la!\" Ukonona imirima, rimwe na rimwe ukica n'abantu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408#page=4",
+      "sourceDigest": "sha256:37f3a120bdd7fb8e269b0c95b8f5a616e0209fadfc2c1d387a1a3288586b497a"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19048.png",
+      "text": "Igihe cose, Umuravyo ukoze ivyo, nyina acawuhamagara n'ijwi rinini, \"Bum-rambo-la-la-la, la-bum!\" Akagerageza kumuhagarika ntabandanye yonona ibintu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408#page=5",
+      "sourceDigest": "sha256:f2d882d943460ba0527bd2d8933cde0a78144c5a1a317adef1cecbc1cf92e25c"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19050.png",
+      "text": "Mugabo Umuravyo ntiwumvira ivyo nyina avuga. Warushoboye kugirira nabi uwari wewese mugihe ushavuye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408#page=6",
+      "sourceDigest": "sha256:76a4504425c7d1970a2bcc6f7e0837490a9f7972db65665cbab66dcd658c4b2e"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19051.png",
+      "text": "Munyuma, abantu baridoga ku Mwami.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408#page=7",
+      "sourceDigest": "sha256:e3a8931efbad68bf0d41dee9d0e53d30b961e1bbb44ab665eb3158b43426f328"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19052.png",
+      "text": "Hama Umwami arategeka Umuturagaro n'Umuravyo kuva mu kibano. Abarungika kuba kure y'imihana y'abantu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408#page=8",
+      "sourceDigest": "sha256:087c84b08efb5098247bfb6a6cb818d61f8b002e47e6df94268c68a0b5f5d6eb"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19053.png",
+      "text": "Ivyo ntaco vyamaze. Umuravyo ushavuye waraturira amashamba, \"Pia-la-la-la, pia-la-la-la!\" Umuriro warasanzara gushika mu mirima ukanayiturira.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408#page=9",
+      "sourceDigest": "sha256:b28d1bf5f05e0b2972738192b28747f14188078d2e4899d35cb259f3abc96b5c"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19054.png",
+      "text": "Abantu babandanije baja kwidoga ku Mwami.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408#page=10",
+      "sourceDigest": "sha256:e5b6d115f4443b298a98d4686aad7bf3cfd2bc3dea1b3a311aa2067b1a8a5793"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19055.png",
+      "text": "Ico gihe, Umwami abwira Umuturagaro n'Umuravyo ko bitazosubira kuba kw'isi. Aca abitwara kuba mu bicu aho bitazokwonona ibintu vyinshi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408#page=11",
+      "sourceDigest": "sha256:c97f2182bb78143cd831caf702f801bd3ad8316ef783860d57f77d20c6247052"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/19056.png",
+      "text": "Kuva ico gihe, Umuravyo ushavuye ubandanya uturira kandi wonona, \"Pia-la-la-la, pia-la-la-la!\" Kandi tubandanya twumva nyina, Umuturagaro, uryagumba, \"Bum-rambo-la-la-la, la-bum!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47408#page=12",
+      "sourceDigest": "sha256:0f3f98ca9fd9173a6c5bd42d730fef87dc85cced88eca28c5481e868a4cda09c"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 148
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:7e1141bd9018d2d439c5d695d8fa3b67f34d5f6f4d24870981c6d606cf773f3f"
+  }
+}

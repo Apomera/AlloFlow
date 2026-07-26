@@ -1,0 +1,198 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-13307-bolo-eaka-e-khubelu",
+  "title": "Bolo eaka e khubelu",
+  "description": "Bolo e kholo e khubelu e ea leetong.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Marion Drew"
+  ],
+  "illustrators": [
+    "Marion Drew"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Marion Drew",
+      "role": "Author"
+    },
+    {
+      "name": "Marion Drew",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Marion Drew (Author); Marion Drew (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://paleng.weebly.com/.",
+    "editionId": "13307",
+    "bookType": "1",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-86bfc9dfade72dbf",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/10779.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10777.png",
+      "text": "Bolo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=1",
+      "sourceDigest": "sha256:94525a9aff249b461eda788e14d7c5a216e2944bea88b3b51a47f1421572edca"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10778.png",
+      "text": "Bolo eaka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=2",
+      "sourceDigest": "sha256:aa8a77a13c2ca782916288a53ca76776989c074e8d208e4e3ad4607e4c7b3c64"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10779.png",
+      "text": "Bolo eaka e khubelu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=3",
+      "sourceDigest": "sha256:fe3983f941652ae889dfab33fff97bc12daae93c3f174534206ca3e18560b75e"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10780.png",
+      "text": "Bolo eaka e khubelu, e kholo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=4",
+      "sourceDigest": "sha256:4d6958fe35fa8213148fcb0f86db8284ed03131f760537e2da73488e6023677e"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10781.png",
+      "text": "Kea raha.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=5",
+      "sourceDigest": "sha256:a367a70f28659b321763b2d1d7c24f2aef52e9d8507104fac1b0f12ce89fd409"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10782.png",
+      "text": "Ke raha bolo eaka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=6",
+      "sourceDigest": "sha256:f77e675b2f483428e40d0b10906772d5aa70d2a202f322c3c7786e81095e6535"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10783.png",
+      "text": "Ke raha bolo eaka e khubelu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=7",
+      "sourceDigest": "sha256:8130d8a91628d96c9d2681d62274242d64656d2ae1526d90ee56de0b2cdf6927"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10784.png",
+      "text": "Ke raha bolo eaka e khubelu haholo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=8",
+      "sourceDigest": "sha256:3c7a0f173d044c6ab2c651d22a02865bf6a58e12d3c4eca19e89f7fdb0ceccfb"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10785.png",
+      "text": "E kae?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=9",
+      "sourceDigest": "sha256:42cf6b6beeb7d0cf42e0aa81b6962c5bebbe4c0acded399cb460afdf82a09cd9"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10786.png",
+      "text": "Bolo eaka e kae?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=10",
+      "sourceDigest": "sha256:139d7ff842a0ee5bdbf46c00d7fafc9235dc038b8c4ccd34de8d7b402ede9283"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10787.png",
+      "text": "Honajoale bolo eaka e kae?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=11",
+      "sourceDigest": "sha256:9e7f62dbc3b17d4864e0ee395c789d4342f612001b0b5687e7fc91ed8c78240e"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10788.png",
+      "text": "Honajoale, bolo eaka e khubelu e kae?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=12",
+      "sourceDigest": "sha256:ba441e0c5640c3bb86f3d429d1eb81083f40b6537f51340a1803088ca1f8c6e1"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10789.png",
+      "text": "E holimo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=13",
+      "sourceDigest": "sha256:fd18817f0b78b596d3f1e6bbc77c4cd7153dfb456c5fa56543a60f409aab4fc8"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10790.png",
+      "text": "E holimo-limo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=14",
+      "sourceDigest": "sha256:a64271bb85e1d9cef78ac93043a540ec3602e23fa4472eecbc9ec6a31b67c735"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10792.png",
+      "text": "E holimo-limo sebakeng.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=15",
+      "sourceDigest": "sha256:16fab3d22ba6314a1eb38f6c9dfd65a88b739faf7bff65f1d9d2300c49d62867"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10793.png",
+      "text": "E holimo-limo sebakeng ka holim'a khoeli. Haeeo!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=13307#page=16",
+      "sourceDigest": "sha256:276ec2451ba505a86aa0a3f7c76a25161109dd1a6a33065c176c1024d271d701"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 64
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:84ca5c5f1d1bb1e7791c0913c1db6590e2e30079e05df87cf1a3272b9e7f50ac"
+  }
+}

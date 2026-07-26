@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47407-maboko",
+  "title": "Maboko",
+  "description": "Maboko n'umuntu w'igitangaza. Ibaze umuntu afise iterefone zitanu, zukuyagako nabantu batandukanye?",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Ursula Nafula"
+  ],
+  "illustrators": [
+    "Marion Drew"
+  ],
+  "translators": [
+    "Selemani Sindakira"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Ursula Nafula",
+      "role": "Author"
+    },
+    {
+      "name": "Selemani Sindakira",
+      "role": "Translation"
+    },
+    {
+      "name": "Marion Drew",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Ursula Nafula (Author); Selemani Sindakira (Translation); Marion Drew (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47407",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-8647bd6a658944be",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/10053.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10048.png",
+      "text": "Yitwa Maboko. Uzi igituma!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407#page=1",
+      "sourceDigest": "sha256:aeb80701c08c11bf17ae6f4203b5d6ba8b2e4a3c9e937e9f1b3aba5965933904"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10049.png",
+      "text": "Afise iterefone zitanu. Burimusi, aratondeka iterefone ziwe ku meza.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407#page=2",
+      "sourceDigest": "sha256:ee2322ddc4c6c3e3a0fd59cae71df5efca41a00605316a124f764cda523ff405"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10050.png",
+      "text": "Iy'umuhondo ni iyo guhamagarana n'umuryango.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407#page=3",
+      "sourceDigest": "sha256:1e134c3ad8494a7971e6f69223cf11be553ffbf008e75a6dbac5f3df580b71eb"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10051.png",
+      "text": "I yera ni iyo guhamagarana nabo bakorana kukazi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407#page=4",
+      "sourceDigest": "sha256:158b2b50954fb48b26b5d9656b217b73a5339c66520a70437bac0686abeaad7f"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10052.png",
+      "text": "Akoresha iyitukura kubantu bamufitiye ikintu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407#page=5",
+      "sourceDigest": "sha256:b1248539fb28d657dac22aab8c14660113dc2daa38da7fd6a7a3175dfb819db5"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10053.png",
+      "text": "Akoresha iyifise ibara ry'iroza mu guhamagara abagenzi biwe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407#page=6",
+      "sourceDigest": "sha256:b7b9f4845657796a4790029c2641751505ff0cc094813d1bafe604655ff88919"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10054.png",
+      "text": "Iy'ubururu buvanze ayikoresha mukuyaga n'abamukeneye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407#page=7",
+      "sourceDigest": "sha256:c625b45ecd8a66c1177fa6467d498d3e3502e117f943cea75636cb1c8e8ef537"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10055.png",
+      "text": "Maboko arakunda abantu ko baryoherwa. Ntakunda kurwana.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407#page=8",
+      "sourceDigest": "sha256:3c3cd9eeae4595a17547c455ee650b8248ac32b11728141a4d084fe72590b062"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10056.png",
+      "text": "Arareka abana bakaraba imboneshakure kumangazine yiwe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407#page=9",
+      "sourceDigest": "sha256:971ac2930d3f0e0b14e4e12f1fa6e08cc1574749c90d49018eb96c7fd8562624"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10057.png",
+      "text": "Ahora asuhuza abagwayi n'abari muzabukuru mu ngo zabo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407#page=10",
+      "sourceDigest": "sha256:f98b2ca496f12f9cf8720def53cc937ea174b09e41bed099850608a978905632"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10058.png",
+      "text": "Arenganye, abantu baguma bahamagara, \"Maboko! Maboko!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407#page=11",
+      "sourceDigest": "sha256:47f8a7d7e884d76b5f4d821cca247dc5c050493b5cd04ce3460436ef106205e9"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10059.png",
+      "text": "Hama agaca yiyumva aryohewe akavuga, \"Ndi Maboko. Nimurabe amaterefone yanje!\" Uyu ni Maboko n'iterefone ziwe zitanu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47407#page=12",
+      "sourceDigest": "sha256:80fdd4cae9b716c35454e2810f7f4c718d4eb5a2d0bd7d569148848810bd8f4f"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 87
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:9eec3bafb323af38e4c38ca5dcc06d13d59669506659d31680e6631f5da5367a"
+  }
+}

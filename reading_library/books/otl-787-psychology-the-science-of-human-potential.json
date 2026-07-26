@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-787-psychology-the-science-of-human-potential",
+  "title": "Psychology: The Science of Human Potential",
+  "description": "The first chapter provides an overview of the textbook and reviews the history of psychology and its methodology. Psychology is described as a science studying how hereditary (nature) and experiential (nurture) variables interact to influence the thoughts, feelings, and behavior of individuals. The remainder of the text will be organized in sections entitled “Mostly Nature” (Biological Psychology; Sensation & Perception; Motivation & Emotion), “Mostly Nurture” (Direct Learning; Indirect Learning (i.e., observational learning and language); Cognition), and “Nature/Nurture” (Human Development; Personality; Social Psychology; Maladaptive Behavior; Professional Psychology and Human Potential).",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Psychology"
+  ],
+  "authors": [
+    "Jeffrey Levy - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "BCcampus",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/psychology-the-science-of-human-potential"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The first chapter provides an overview of the textbook and reviews the history of psychology and its methodology. Psychology is described as a science studying how hereditary (nature) and experiential (nurture) variables interact to influence the thoughts, feelings, and behavior of individuals. The remainder of the text will be organized in sections entitled “Mostly Nature” (Biological Psychology; Sensation & Perception; Motivation & Emotion), “Mostly Nurture” (Direct Learning; Indirect Learning (i.e., observational learning and language); Cognition), and “Nature/Nurture” (Human Development; Personality; Social Psychology; Maladaptive Behavior; Professional Psychology and Human Potential)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 112
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "787",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

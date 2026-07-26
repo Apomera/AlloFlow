@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-651-the-data-journalism-handbook",
+  "title": "The Data Journalism Handbook",
+  "description": "When you combine the sheer scale and range of digital information now available with a journalist’s \"nose for news\" and her ability to tell a compelling story, a new world of possibility opens up. With The Data Journalism Handbook, you’ll explore the potential, limits, and applied uses of this new and fascinating field. This valuable handbook has attracted scores of contributors since the European Journalism Centre and the Open Knowledge Foundation launched the project at MozFest 2011. Through a collection of tips and techniques from leading journalists, professors, software developers, and data analysts, you’ll learn how data can be either the source of data journalism or a tool with which the story is told—or both.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Journalism, Media Studies & Communications"
+  ],
+  "authors": [
+    "Liliana Bounegru - Editor / Lucy Chambers - Editor / Jonathan Gray - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "European Journalism Centre",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-data-journalism-handbook"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "When you combine the sheer scale and range of digital information now available with a journalist’s \"nose for news\" and her ability to tell a compelling story, a new world of possibility opens up. With The Data Journalism Handbook, you’ll explore the potential, limits, and applied uses of this new and fascinating field. This valuable handbook has attracted scores of contributors since the European Journalism Centre and the Open Knowledge Foundation launched the project at MozFest 2011. Through a collection of tips and techniques from leading journalists, professors, software developers, and data analysts, you’ll learn how data can be either the source of data journalism or a tool with which the story is told—or both."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2012."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 138
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "651",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

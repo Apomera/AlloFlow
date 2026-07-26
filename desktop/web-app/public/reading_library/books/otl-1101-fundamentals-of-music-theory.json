@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1101-fundamentals-of-music-theory",
+  "title": "Fundamentals of Music Theory",
+  "description": "This open e-book is the result of a project funded by a University of Edinburgh Student Experience Grant, Open e-Textbooks for access to music education. The project was a collaboration between Open Educational Resources Service, and staff and student interns from the Reid School of Music. As a proof-of-concept endeavour, the project aimed to explore how effectively we could convert existing course content into convenient and reusable open formats suitable for use by staff and students both within and beyond the University. The resulting e-book presents open licensed educational materials that deal with the building blocks of musical stave (sometimes known as staff) notation, a language designed to communicate about musical ideas which is in use around the world. The resources in this e-book include video lectures and their transcripts, as well as supporting text explanations, examples and illustrations. The materials introduce topics such as the organisation of discrete pitches into scales and intervals, and temporal organisation of musical sounds as duration, in rhythm and metre. These rudiments are presented through an introduction to the elements of five-line stave notation, and through critical discussion of the advantages and limitations served by notational systems in the representation and analysis of musical sounds. This serves as the basis of further explanations, to illustrate musical concepts including key, time signature, harmonisation, cadence and modulation. We anticipate that subsequent versions of this e-book will update and develop the contents and presentation of the materials, following the success of this student-led collaboration.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Arts"
+  ],
+  "authors": [
+    "Nikki Moran - Author / Michael Edwards - Author / Richard Worth - Author / Zack Moir - Author / John Kitchen - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Edinburgh",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/fundamentals-of-music-theory"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This open e-book is the result of a project funded by a University of Edinburgh Student Experience Grant, Open e-Textbooks for access to music education. The project was a collaboration between Open Educational Resources Service, and staff and student interns from the Reid School of Music. As a proof-of-concept endeavour, the project aimed to explore how effectively we could convert existing course content into convenient and reusable open formats suitable for use by staff and students both within and beyond the University. The resulting e-book presents open licensed educational materials that deal with the building blocks of musical stave (sometimes known as staff) notation, a language designed to communicate about musical ideas which is in use around the world. The resources in this e-book include video lectures and their transcripts, as well as supporting text explanations, examples and illustrations. The materials introduce topics such as the organisation of discrete pitches into scales and intervals, and temporal organisation of musical sounds as duration, in rhythm and metre. These rudiments are presented through an introduction to the elements of five-line stave notation, and through critical discussion of the advantages and limitations served by notational systems in the representation and analysis of musical sounds. This serves as the basis of further explanations, to illustrate musical concepts including key, time signature, harmonisation, cadence and modulation. We anticipate that subsequent versions of this e-book will update and develop the contents and presentation of the materials, following the success of this student-led collaboration."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 270
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1101",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52478-sidee-diindiinka-sankiisu-ku-qaloocday",
+  "title": "Sidee diindiinka sankiisu ku qaloocday",
+  "description": "Ha ku degdegin inaad dagaal gasho! Buug sheekooyin ah oo midabbo leh. (Sidoo kale waxaa jira daabacaadda sedexaad buugu).",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Taiwo Ẹhinẹni"
+  ],
+  "illustrators": [
+    "Marleen Visser"
+  ],
+  "translators": [
+    "Osman Egal"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Taiwo Ẹhinẹni",
+      "role": "Author"
+    },
+    {
+      "name": "Osman Egal",
+      "role": "Translation"
+    },
+    {
+      "name": "Marleen Visser",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Taiwo Ẹhinẹni (Author); Osman Egal (Translation); Marleen Visser (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52478",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52478",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52478",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-59712823ea8647c0",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/13136.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13129.png",
+      "text": "Diindiin iyo Dabangaale waxay ubaahan yihiin lacag.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52478#page=1",
+      "sourceDigest": "sha256:efd083abab9c4205efc9308abdd4108ceedd78c79a7ac56c08dad3ac646e7b8d"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13130.png",
+      "text": "Waxay sameeyeen saxamo si ay suuqa ugu gadaan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52478#page=2",
+      "sourceDigest": "sha256:95388dd5d5945b2c3c6275a33e57b83858595608f356b47d0d9bc3a945cf5019"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13131.png",
+      "text": "Diindiinkii baa arkay dagaal ka dhacaya suuqa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52478#page=3",
+      "sourceDigest": "sha256:d6bc2d4eb0c681d4229d545ef2cb216a8982657d89969d675b7e9482283982de"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13132.png",
+      "text": "Dabangaalihii iyo faranfarkii ayaa diriray.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52478#page=4",
+      "sourceDigest": "sha256:b0bc92905313d87f23b1d137de3c396386e712c061c69022ac1de213066f5511"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13133.png",
+      "text": "\"Iidhaaf saaxiibkay!\" ayuu ku dhawaaqay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52478#page=5",
+      "sourceDigest": "sha256:80051ab299d38cb1f48539e54286b6e2ac26b89f95b258e55ea574b77df54572"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13134.png",
+      "text": "Faranfarkii ayaa ka qaniinay diindiinka sanka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52478#page=6",
+      "sourceDigest": "sha256:6a31eeb1a8455545772f8bad1bef0fcabb5bb07d8416ac7eea95eebb0312163c"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13135.png",
+      "text": "Sankiisii jabnaa ayaa xanuunay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52478#page=7",
+      "sourceDigest": "sha256:be81b1c545c95d626929eb17b5640b4759f1289cec0d43c35d12a841d89c4d19"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13136.png",
+      "text": "Diindiinka sankiisa wuu qalloocday sababtoo ah wuxuu ku degdegay dagaalka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52478#page=8",
+      "sourceDigest": "sha256:0cb5936d33998034027d51b947347794f0d9c6eca2e1699f82d7e52182e263cc"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 52
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:5098338fb329adf559c9b9e036045689cb9a10f6dbe4ce5b2d37c49ee8540df8"
+  }
+}

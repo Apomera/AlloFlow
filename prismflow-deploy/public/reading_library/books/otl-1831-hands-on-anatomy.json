@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1831-hands-on-anatomy",
+  "title": "Hands-on Anatomy",
+  "description": "Although palpation is a foundational skill for many healthcare disciplines, few resources provide comprehensive anatomical information and relate it to real-world clinical situations. With its detailed descriptions of musculoskeletal anatomy, instructions for palpating anatomical structures, depictions of basic injuries, and correlations with clinical practice, Hands-on Anatomy successfully bridges this gap. Hands-on Anatomy targets undergraduate or graduate students who have completed an introductory anatomy course and are beginning to apply their anatomical knowledge to the human body, as well as healthcare professionals engaged in patient assessment and treatment. Organized by region of the body, chapters discuss skeletal landmarks, muscles, ligaments, and neurovascular structures, with a focus on how to palpate these structures. Additionally, guides on assessing the range of motion of joints are provided, along with descriptions of common clinical scenarios relating to each body area. The text is supplemented with images of skeletal landmarks and muscular anatomy, photos of surface landmarks and range of motion actives, and end-of-chapter review questions to ensure understanding and retention of what was described.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine - Anatomy"
+  ],
+  "authors": [
+    "Jacqueline Phillips - Author / Michael O’Hara - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "North Broad Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/hands-on-anatomy"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Although palpation is a foundational skill for many healthcare disciplines, few resources provide comprehensive anatomical information and relate it to real-world clinical situations. With its detailed descriptions of musculoskeletal anatomy, instructions for palpating anatomical structures, depictions of basic injuries, and correlations with clinical practice, Hands-on Anatomy successfully bridges this gap. Hands-on Anatomy targets undergraduate or graduate students who have completed an introductory anatomy course and are beginning to apply their anatomical knowledge to the human body, as well as healthcare professionals engaged in patient assessment and treatment. Organized by region of the body, chapters discuss skeletal landmarks, muscles, ligaments, and neurovascular structures, with a focus on how to palpate these structures. Additionally, guides on assessing the range of motion of joints are provided, along with descriptions of common clinical scenarios relating to each body area. The text is supplemented with images of skeletal landmarks and muscular anatomy, photos of surface landmarks and range of motion actives, and end-of-chapter review questions to ensure understanding and retention of what was described."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 192
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1831",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

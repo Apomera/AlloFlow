@@ -862,8 +862,10 @@ var GEOGRAPHY_PROFILES = {
       ? Math.abs(evidenceLatitude - liveLatitude) <= 0.0002 && Math.abs(evidenceLongitude - liveLongitude) <= 0.0002
       : cleanLocationPart(evidence.location).toLowerCase() === cleanLocationPart(live.label).toLowerCase();
     if (!sameLocation) return { current: false, code: 'location', label: 'Stale location evidence', detail: 'This terrain profile belongs to ' + (evidence.location || 'a different location') + ', not the active live site.' };
-    var sameObservation = !evidence.observedAt || !live.observedAt || String(evidence.observedAt) === String(live.observedAt);
-    if (!sameObservation) return { current: false, code: 'observation', label: 'Older observation evidence', detail: 'The terrain profile was paired with an earlier weather observation and should be refreshed before forecasting.' };
+    var evidenceValidAt = evidence.validAt || evidence.observedAt;
+    var liveValidAt = live.validAt || live.observedAt;
+    var sameObservation = !evidenceValidAt || !liveValidAt || String(evidenceValidAt) === String(liveValidAt);
+    if (!sameObservation) return { current: false, code: 'observation', label: 'Different weather hour', detail: 'The terrain profile was paired with ' + evidenceValidAt + ', not the selected weather hour ' + liveValidAt + '. Refresh it before forecasting.' };
     return { current: true, code: 'current', label: 'Current location and observation', detail: 'Terrain, wind direction, location, and observation provenance match the active live site.' };
   }
 
@@ -1101,6 +1103,234 @@ var GEOGRAPHY_PROFILES = {
     };
   }
 
+  function normalizeHourlyWeatherTimeline(payload, liveWeather) {
+    var hourly = payload && payload.hourly;
+    var times = hourly && Array.isArray(hourly.time) ? hourly.time : [];
+    if (!times.length || !liveWeather) return [];
+    function valueAt(name, index, fallback) {
+      var values = hourly[name];
+      var value = Array.isArray(values) ? values[index] : null;
+      return value != null && isFinite(Number(value)) ? Number(value) : fallback;
+    }
+    var observedHour = String(liveWeather.observedAt || '').slice(0, 13);
+    var currentIndex = times.map(function (time) { return String(time).slice(0, 13); }).indexOf(observedHour);
+    if (currentIndex < 0) {
+      currentIndex = times.findIndex(function (time) { return String(time) >= String(liveWeather.observedAt || ''); });
+      if (currentIndex < 0) currentIndex = 0;
+    }
+    return times.map(function (time, index) {
+      var weatherCode = valueAt('weather_code', index, liveWeather.weatherCode);
+      return {
+        time: String(time),
+        role: index < currentIndex ? 'earlier' : index === currentIndex ? 'current' : 'forecast',
+        offsetHours: index - currentIndex,
+        temperature: valueAt('temperature_2m', index, liveWeather.temperature),
+        humidity: valueAt('relative_humidity_2m', index, liveWeather.humidity),
+        precipitation: valueAt('precipitation', index, liveWeather.precipitation),
+        weatherCode: weatherCode,
+        condition: weatherCodeLabel(weatherCode),
+        cloudCover: valueAt('cloud_cover', index, liveWeather.cloudCover),
+        pressure: valueAt('surface_pressure', index, liveWeather.pressure),
+        windSpeed: valueAt('wind_speed_10m', index, liveWeather.windSpeed),
+        windDir: valueAt('wind_direction_10m', index, liveWeather.windDir),
+        visibility: valueAt('visibility', index, liveWeather.visibility)
+      };
+    });
+  }
+
+  function weatherTimelineCurrentIndex(timeline) {
+    var items = Array.isArray(timeline) ? timeline : [];
+    var currentIndex = items.findIndex(function (point) { return point && point.role === 'current'; });
+    return currentIndex < 0 ? 0 : currentIndex;
+  }
+
+  function activeLiveWeather(data) {
+    var d = data || {};
+    var base = d.liveWeather || null;
+    var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
+    if (!base || !timeline.length) return base;
+    var fallbackIndex = weatherTimelineCurrentIndex(timeline);
+    var index = d.liveWeatherTimelineIndex != null ? Math.round(Number(d.liveWeatherTimelineIndex)) : fallbackIndex;
+    index = clamp(isFinite(index) ? index : fallbackIndex, 0, timeline.length - 1);
+    var point = timeline[index] || timeline[fallbackIndex];
+    return Object.assign({}, base, point, {
+      observedAt: base.observedAt,
+      validAt: point.time,
+      timelineRole: point.role,
+      timelineOffsetHours: point.offsetHours,
+      timelineIndex: index
+    });
+  }
+
+  function weatherTimelineLabel(point, timezone) {
+    if (!point) return 'No hourly weather selected';
+    var raw = String(point.time || point.validAt || point.observedAt || '');
+    var role = point.role || point.timelineRole || 'current';
+    var offsetHours = point.offsetHours != null ? point.offsetHours : point.timelineOffsetHours;
+    var localTime = raw.indexOf('T') >= 0 ? raw.replace('T', ' ') : raw;
+    var zone = timezone ? ' ' + timezone : '';
+    if (role === 'current') return 'Current observation | ' + localTime + zone;
+    if (role === 'earlier') return Math.abs(Number(offsetHours) || 0) + ' h before current | ' + localTime + zone;
+    return '+' + Math.max(1, Number(offsetHours) || 1) + ' h forecast | ' + localTime + zone;
+  }
+
+
+  var REGIONAL_WEATHER_LAYER_DEFINITIONS = {
+    temperature: { id: 'temperature', label: 'Temperature', property: 'temperature', unit: '\u00B0C', decimals: 1, palette: ['#1d4ed8', '#38bdf8', '#fde047', '#ef4444'] },
+    precipitation: { id: 'precipitation', label: 'Precipitation', property: 'precipitation', unit: ' mm', decimals: 1, palette: ['#e0f2fe', '#38bdf8', '#2563eb', '#7e22ce'] },
+    cloudCover: { id: 'cloudCover', label: 'Cloud cover', property: 'cloudCover', unit: '%', decimals: 0, palette: ['#e2e8f0', '#94a3b8', '#475569', '#0f172a'] },
+    pressure: { id: 'pressure', label: 'Surface pressure', property: 'pressure', unit: ' hPa', decimals: 0, palette: ['#7e22ce', '#2563eb', '#14b8a6', '#facc15'] },
+    wind: { id: 'wind', label: 'Wind field', property: 'windSpeed', unit: ' km/h', decimals: 0, palette: ['#dbeafe', '#38bdf8', '#0284c7', '#164e63'] }
+  };
+
+  function regionalWeatherLayerDefinition(layerId) {
+    var layer = REGIONAL_WEATHER_LAYER_DEFINITIONS[layerId] || REGIONAL_WEATHER_LAYER_DEFINITIONS.temperature;
+    return Object.assign({}, layer, { palette: layer.palette.slice() });
+  }
+
+  function regionalWeatherGridCoordinates(latitude, longitude, radiusKm, gridSize) {
+    var lat = Number(latitude);
+    var lon = Number(longitude);
+    if (!isFinite(lat) || !isFinite(lon)) return [];
+    var radius = clamp(Number(radiusKm) || 25, 10, 75);
+    var size = clamp(Math.round(Number(gridSize) || 5), 3, 7);
+    if (size % 2 === 0) size += 1;
+    var latRadius = radius / 111.32;
+    var lonRadius = radius / (111.32 * Math.max(0.2, Math.cos(lat * Math.PI / 180)));
+    var latStep = latRadius * 2 / (size - 1);
+    var lonStep = lonRadius * 2 / (size - 1);
+    var coordinates = [];
+    for (var row = 0; row < size; row += 1) {
+      for (var column = 0; column < size; column += 1) {
+        var sampleLat = lat - latRadius + row * latStep;
+        var sampleLon = lon - lonRadius + column * lonStep;
+        coordinates.push({
+          latitude: round(sampleLat, 5), longitude: round(sampleLon, 5), row: row, column: column,
+          gridSize: size, radiusKm: radius,
+          bounds: [round(sampleLon - lonStep / 2, 5), round(sampleLat - latStep / 2, 5), round(sampleLon + lonStep / 2, 5), round(sampleLat + latStep / 2, 5)]
+        });
+      }
+    }
+    return coordinates;
+  }
+
+  function normalizeRegionalWeatherField(payload, coordinates, validAt) {
+    var responses = Array.isArray(payload) ? payload : payload ? [payload] : [];
+    var requested = Array.isArray(coordinates) ? coordinates : [];
+    var samples = [];
+    function hourlyValue(hourly, key, index) {
+      var values = hourly && Array.isArray(hourly[key]) ? hourly[key] : [];
+      var value = values[index];
+      return value != null && isFinite(Number(value)) ? Number(value) : null;
+    }
+    requested.forEach(function (coordinate, index) {
+      var response = responses[index];
+      var hourly = response && response.hourly;
+      var times = hourly && Array.isArray(hourly.time) ? hourly.time : [];
+      var timeIndex = times.indexOf(validAt);
+      if (timeIndex < 0) timeIndex = times.findIndex(function (time) { return String(time).slice(0, 13) === String(validAt || '').slice(0, 13); });
+      if (timeIndex < 0) return;
+      var temperature = hourlyValue(hourly, 'temperature_2m', timeIndex);
+      var precipitation = hourlyValue(hourly, 'precipitation', timeIndex);
+      var cloudCover = hourlyValue(hourly, 'cloud_cover', timeIndex);
+      var pressure = hourlyValue(hourly, 'surface_pressure', timeIndex);
+      var windSpeed = hourlyValue(hourly, 'wind_speed_10m', timeIndex);
+      var windDir = hourlyValue(hourly, 'wind_direction_10m', timeIndex);
+      if ([temperature, precipitation, cloudCover, pressure, windSpeed, windDir].every(function (value) { return value == null; })) return;
+      samples.push({
+        latitude: coordinate.latitude, longitude: coordinate.longitude, row: coordinate.row, column: coordinate.column,
+        bounds: coordinate.bounds.slice(), temperature: temperature, precipitation: precipitation, cloudCover: cloudCover,
+        pressure: pressure, windSpeed: windSpeed, windDir: windDir
+      });
+    });
+    var stats = {};
+    Object.keys(REGIONAL_WEATHER_LAYER_DEFINITIONS).forEach(function (id) {
+      var property = REGIONAL_WEATHER_LAYER_DEFINITIONS[id].property;
+      var values = samples.map(function (sample) { return sample[property]; }).filter(function (value) { return value != null && isFinite(Number(value)); });
+      if (values.length) stats[id] = { min: Math.min.apply(null, values), max: Math.max.apply(null, values), mean: round(values.reduce(function (sum, value) { return sum + value; }, 0) / values.length, 1) };
+    });
+    return {
+      validAt: String(validAt || ''), samples: samples, stats: stats,
+      sampleCount: samples.length, gridSize: requested[0] ? requested[0].gridSize : 0,
+      radiusKm: requested[0] ? requested[0].radiusKm : 0
+    };
+  }
+
+  function regionalWeatherFieldGeoJSON(field, layerId) {
+    var source = field || {};
+    var definition = regionalWeatherLayerDefinition(layerId);
+    var stats = source.stats && source.stats[definition.id] ? source.stats[definition.id] : { min: 0, max: 1, mean: 0 };
+    var range = stats.max - stats.min;
+    function propertiesFor(sample) {
+      var rawValue = sample[definition.property];
+      var value = rawValue != null && isFinite(Number(rawValue)) ? Number(rawValue) : 0;
+      var decimals = definition.decimals;
+      return {
+        value: value, value01: range > 0 ? clamp((value - stats.min) / range, 0, 1) : 0.5,
+        display: value.toFixed(decimals) + definition.unit,
+        temperature: sample.temperature, precipitation: sample.precipitation, cloudCover: sample.cloudCover,
+        pressure: sample.pressure, windSpeed: sample.windSpeed, windDir: sample.windDir,
+        windRotation: ((Number(sample.windDir) || 0) + 180) % 360
+      };
+    }
+    var polygons = [];
+    var points = [];
+    (source.samples || []).forEach(function (sample, index) {
+      if (!sample.bounds || sample.bounds.length !== 4) return;
+      var west = sample.bounds[0], south = sample.bounds[1], east = sample.bounds[2], north = sample.bounds[3];
+      var properties = propertiesFor(sample);
+      polygons.push({ type: 'Feature', id: index, properties: properties, geometry: { type: 'Polygon', coordinates: [[[west, south], [east, south], [east, north], [west, north], [west, south]]] } });
+      points.push({ type: 'Feature', id: index, properties: properties, geometry: { type: 'Point', coordinates: [sample.longitude, sample.latitude] } });
+    });
+    return {
+      polygons: { type: 'FeatureCollection', features: polygons },
+      points: { type: 'FeatureCollection', features: points },
+      legend: { id: definition.id, label: definition.label, unit: definition.unit, min: stats.min, max: stats.max, mean: stats.mean, palette: definition.palette.slice() }
+    };
+  }
+
+  function regionalWeatherFieldStatus(field, activeWeather) {
+    if (!field || !Array.isArray(field.samples) || !field.samples.length) return { current: false, code: 'missing', label: 'Regional field not loaded', detail: 'Load the regional model field for the selected weather hour.' };
+    if (!activeWeather) return { current: false, code: 'weather', label: 'No selected weather hour', detail: 'Select live weather before displaying a regional field.' };
+    var sameLocation = Math.abs(Number(field.latitude) - Number(activeWeather.latitude)) < 0.02 && Math.abs(Number(field.longitude) - Number(activeWeather.longitude)) < 0.02;
+    if (!sameLocation) return { current: false, code: 'location', label: 'Different location', detail: 'Refresh the regional field for the selected location.' };
+    var activeTime = String(activeWeather.validAt || activeWeather.observedAt || '');
+    if (String(field.validAt || '') !== activeTime) return { current: false, code: 'time', label: 'Different weather hour', detail: 'Refresh the regional field for ' + activeTime + '.' };
+    return { current: true, code: 'ready', label: 'Field synchronized', detail: field.sampleCount + ' model grid points match the selected weather hour.' };
+  }
+
+  function forecastCheckpointStatus(checkpoint, timeline, liveWeather) {
+    if (!checkpoint) return { code: 'missing', ready: false, label: 'No forecast checkpoint' };
+    if (!liveWeather || Math.abs(Number(checkpoint.latitude) - Number(liveWeather.latitude)) >= 0.02 || Math.abs(Number(checkpoint.longitude) - Number(liveWeather.longitude)) >= 0.02) {
+      return { code: 'location', ready: false, label: 'Load the checkpoint location', detail: 'Observation comparison requires the same location.' };
+    }
+    var points = Array.isArray(timeline) ? timeline : [];
+    var observed = points.filter(function (point) { return point && String(point.time || point.validAt || '') === String(checkpoint.validAt || ''); })[0];
+    if (!observed) return { code: 'unavailable', ready: false, label: 'Observation not in the loaded window', detail: 'Refresh live weather near the forecast valid time to compare it.' };
+    if ((observed.role || observed.timelineRole) === 'forecast') return { code: 'pending', ready: false, label: 'Awaiting observation', detail: 'This hour is still forecast.' };
+    var predicted = checkpoint.predicted || {};
+    function metric(key, unit, decimals) {
+      var forecastValue = Number(predicted[key]);
+      var observedValue = Number(observed[key]);
+      if (!isFinite(forecastValue) || !isFinite(observedValue)) return null;
+      var error = round(forecastValue - observedValue, decimals);
+      return { forecast: forecastValue, observed: observedValue, error: error, absoluteError: Math.abs(error), unit: unit };
+    }
+    var windDirectionError = null;
+    if (isFinite(Number(predicted.windDir)) && isFinite(Number(observed.windDir))) {
+      var rawDirectionError = ((Number(predicted.windDir) - Number(observed.windDir) + 540) % 360) - 180;
+      windDirectionError = { forecast: Number(predicted.windDir), observed: Number(observed.windDir), error: Math.round(rawDirectionError), absoluteError: Math.abs(Math.round(rawDirectionError)), unit: '\u00B0' };
+    }
+    return {
+      code: 'verified', ready: true, label: 'Observation available', observed: observed,
+      conditionMatch: Number(predicted.weatherCode) === Number(observed.weatherCode),
+      metrics: {
+        temperature: metric('temperature', '\u00B0C', 1), precipitation: metric('precipitation', ' mm', 1),
+        pressure: metric('pressure', ' hPa', 1), windSpeed: metric('windSpeed', ' km/h', 1), windDirection: windDirectionError
+      }
+    };
+  }
+
   window.WeatherSystemsKernel = {
     scenarios: SCENARIOS,
     dewPointC: dewPointC,
@@ -1144,6 +1374,16 @@ var GEOGRAPHY_PROFILES = {
     chooseLocationResult: chooseLocationResult,
     weatherCodeLabel: weatherCodeLabel,
     normalizeLiveWeatherResponse: normalizeLiveWeatherResponse,
+    normalizeHourlyWeatherTimeline: normalizeHourlyWeatherTimeline,
+    weatherTimelineCurrentIndex: weatherTimelineCurrentIndex,
+    activeLiveWeather: activeLiveWeather,
+    weatherTimelineLabel: weatherTimelineLabel,
+    regionalWeatherLayerDefinition: regionalWeatherLayerDefinition,
+    regionalWeatherGridCoordinates: regionalWeatherGridCoordinates,
+    normalizeRegionalWeatherField: normalizeRegionalWeatherField,
+    regionalWeatherFieldGeoJSON: regionalWeatherFieldGeoJSON,
+    regionalWeatherFieldStatus: regionalWeatherFieldStatus,
+    forecastCheckpointStatus: forecastCheckpointStatus,
     resolvedState: resolvedState
   };
 
@@ -1534,16 +1774,18 @@ var GEOGRAPHY_PROFILES = {
       function fetchLiveWeather(latitude, longitude, label, place) {
         update({ liveWeatherLoading: true, liveWeatherError: '', liveWeatherStatus: 'Connecting to live observations...' });
         var fields = 'temperature_2m,relative_humidity_2m,precipitation,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,visibility';
-        var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(latitude) + '&longitude=' + encodeURIComponent(longitude) + '&current=' + fields + '&timezone=auto';
+        var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(latitude) + '&longitude=' + encodeURIComponent(longitude) + '&current=' + fields + '&hourly=' + fields + '&past_hours=6&forecast_hours=25&timezone=auto';
         return window.fetch(url).then(function (response) {
           if (!response.ok) throw new Error('Live weather service returned ' + response.status + '.');
           return response.json();
         }).then(function (payload) {
           var live = normalizeLiveWeatherResponse(payload, label, latitude, longitude);
           var geography = geographicMetadata(latitude, longitude, label, place);
+          var timeline = normalizeHourlyWeatherTimeline(payload, live);
+          var timelineIndex = weatherTimelineCurrentIndex(timeline);
           var terrainStatus = geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, live);
           var hadTerrainEvidence = !!d.geographicTerrainEvidence || (d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1;
-          var livePatch = { liveWeather: live, liveGeography: geography, liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: 'Live observation loaded for ' + live.label + '.', immersiveDataSource: 'live', terrainEvidenceInvalidatedMessage: '', geographicTerrainProbe: null };
+          var livePatch = { liveWeather: live, liveWeatherTimeline: timeline, liveWeatherTimelineIndex: timelineIndex, liveWeatherTimelinePlaying: false, liveGeography: geography, liveWeatherLoading: false, liveWeatherError: '', liveWeatherStatus: 'Current conditions and ' + timeline.length + ' hourly timeline points loaded for ' + live.label + '.', immersiveDataSource: 'live', terrainEvidenceInvalidatedMessage: '', geographicTerrainProbe: null };
           if (hadTerrainEvidence && !terrainStatus.current) {
             livePatch.evidence = (d.evidence || []).filter(function (id) { return id !== TERRAIN_EVIDENCE.id; });
             livePatch.geographicTerrainEvidence = null;
@@ -1822,7 +2064,8 @@ var GEOGRAPHY_PROFILES = {
 
       function useGeographicTerrainEvidence() {
         var analysis = analyzeGeographicTerrainProfile(d.geographicTerrainProfile);
-        if (!analysis || !d.liveWeather) {
+        var evidenceWeather = activeLiveWeather(d);
+        if (!analysis || !evidenceWeather) {
           if (addToast) addToast('Wait for the terrain profile to finish sampling.', 'info');
           if (announce) announce('Terrain evidence is still being prepared.');
           return;
@@ -1830,7 +2073,7 @@ var GEOGRAPHY_PROFILES = {
         var evidence = (d.evidence || []).slice();
         var selected = evidence.indexOf(TERRAIN_EVIDENCE.id) !== -1;
         var investigationNote = String(d.geographicInvestigationNote || '').trim().slice(0, 2000);
-        if (selected && d.geographicTerrainEvidence && geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, d.liveWeather).current) {
+        if (selected && d.geographicTerrainEvidence && geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, evidenceWeather).current) {
           var existingNote = String(d.geographicTerrainEvidence.investigationNote || investigationNote).trim();
           var forecastPatch = { tab: 'forecast' };
           if (existingNote && !String(d.reasoning || '').trim()) forecastPatch.reasoning = existingNote;
@@ -1848,11 +2091,14 @@ var GEOGRAPHY_PROFILES = {
             id: TERRAIN_EVIDENCE.id,
             label: TERRAIN_EVIDENCE.label,
             location: geographic.label,
-            latitude: d.liveWeather.latitude,
-            longitude: d.liveWeather.longitude,
-            observedAt: d.liveWeather.observedAt || '',
-            upwindDirection: cardinal(d.liveWeather.windDir),
-            downwindDirection: cardinal((Number(d.liveWeather.windDir) + 180) % 360),
+            latitude: evidenceWeather.latitude,
+            longitude: evidenceWeather.longitude,
+            observedAt: evidenceWeather.observedAt || '',
+            validAt: evidenceWeather.validAt || evidenceWeather.observedAt || '',
+            weatherTimeRole: evidenceWeather.timelineRole || 'current',
+            weatherTimeLabel: weatherTimelineLabel(evidenceWeather, evidenceWeather.timezone),
+            upwindDirection: cardinal(evidenceWeather.windDir),
+            downwindDirection: cardinal((Number(evidenceWeather.windDir) + 180) % 360),
             relief: analysis.relief,
             riseToSite: analysis.riseToSite,
             changeAfterSite: analysis.changeAfterSite,
@@ -1888,6 +2134,142 @@ var GEOGRAPHY_PROFILES = {
         });
         update({ geographicBuildings: nextVisible, geographicBuildingsAvailable: true, geographicAnalysisLens: 'custom', geographicInvestigationPaused: true });
         if (announce) announce('Real 3D buildings ' + (nextVisible ? 'shown.' : 'hidden.') + ' Analysis view is now custom and the guided investigation is paused.');
+      }
+
+      function stepLiveWeatherTimeline(delta) {
+        var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
+        if (!timeline.length) return;
+        var currentIndex = d.liveWeatherTimelineIndex != null ? Math.round(Number(d.liveWeatherTimelineIndex)) : weatherTimelineCurrentIndex(timeline);
+        var nextIndex = clamp(currentIndex + Number(delta || 0), 0, timeline.length - 1);
+        update({ liveWeatherTimelineIndex: nextIndex, liveWeatherTimelinePlaying: false, geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Resampling terrain for the selected weather hour...' });
+        if (announce) announce(weatherTimelineLabel(timeline[nextIndex], d.liveWeather && d.liveWeather.timezone));
+      }
+
+      function returnLiveWeatherTimelineToCurrent() {
+        var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
+        if (!timeline.length) return;
+        var currentIndex = weatherTimelineCurrentIndex(timeline);
+        update({ liveWeatherTimelineIndex: currentIndex, liveWeatherTimelinePlaying: false, geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Resampling terrain for the current weather hour...' });
+        if (announce) announce('Weather timeline returned to the current observation.');
+      }
+
+      function toggleLiveWeatherTimelinePlayback() {
+        var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
+        if (timeline.length < 2) return;
+        var reduceMotion = false;
+        try { reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduceMotion = false; }
+        if (reduceMotion && !d.liveWeatherTimelinePlaying) {
+          if (addToast) addToast('Automatic playback is paused by your reduced-motion preference. Use the step buttons or timeline slider.', 'info');
+          if (announce) announce('Automatic playback is unavailable with reduced motion. Use step controls.');
+          return;
+        }
+        var index = d.liveWeatherTimelineIndex != null ? Math.round(Number(d.liveWeatherTimelineIndex)) : weatherTimelineCurrentIndex(timeline);
+        var patch = { liveWeatherTimelinePlaying: !d.liveWeatherTimelinePlaying };
+        if (!d.liveWeatherTimelinePlaying && index >= timeline.length - 1) patch.liveWeatherTimelineIndex = weatherTimelineCurrentIndex(timeline);
+        update(patch);
+        if (announce) announce(d.liveWeatherTimelinePlaying ? 'Weather timeline paused.' : 'Weather timeline playback started.');
+      }
+
+
+      function saveLiveForecastCheckpoint() {
+        var weather = activeLiveWeather(d);
+        if (!weather || weather.timelineRole !== 'forecast') {
+          if (addToast) addToast('Select a future forecast hour before saving a checkpoint.', 'info');
+          if (announce) announce('A future forecast hour is required to save a verification checkpoint.');
+          return;
+        }
+        var checkpoint = {
+          id: [weather.latitude, weather.longitude, weather.validAt].join('|'),
+          location: weather.label, latitude: weather.latitude, longitude: weather.longitude,
+          issuedAt: weather.observedAt || '', validAt: weather.validAt || '', timezone: weather.timezone || '',
+          offsetHours: weather.timelineOffsetHours || 0, confidence: d.forecastConfidence ? Number(d.forecastConfidence) : null,
+          predicted: {
+            temperature: weather.temperature, precipitation: weather.precipitation, pressure: weather.pressure,
+            windSpeed: weather.windSpeed, windDir: weather.windDir, weatherCode: weather.weatherCode,
+            condition: weather.condition, cloudCover: weather.cloudCover
+          }
+        };
+        var checkpoints = (d.liveForecastCheckpoints || []).filter(function (item) { return item.id !== checkpoint.id; });
+        checkpoints.push(checkpoint);
+        if (checkpoints.length > 8) checkpoints = checkpoints.slice(checkpoints.length - 8);
+        update({ liveForecastCheckpoints: checkpoints });
+        if (addToast) addToast('Forecast checkpoint saved for ' + weather.validAt + '.', 'success');
+        if (announce) announce('Forecast checkpoint saved for ' + weatherTimelineLabel(weather, weather.timezone) + '. Refresh live weather near that hour to compare forecast and observation.');
+      }
+
+      function removeLiveForecastCheckpoint(checkpointId) {
+        update({ liveForecastCheckpoints: (d.liveForecastCheckpoints || []).filter(function (item) { return item.id !== checkpointId; }) });
+        if (announce) announce('Forecast checkpoint removed.');
+      }
+
+      function openLiveForecastCheckpoint(checkpoint) {
+        var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
+        var index = timeline.findIndex(function (point) { return String(point.time || point.validAt || '') === String(checkpoint && checkpoint.validAt || ''); });
+        var patch = { tab: 'immersive', immersiveDataSource: 'live', immersiveSceneMode: 'geographic', liveWeatherTimelinePlaying: false };
+        if (index >= 0) patch.liveWeatherTimelineIndex = index;
+        update(patch);
+        if (announce) announce(index >= 0 ? 'Opened the checkpoint weather hour in geographic 3D.' : 'Opened geographic 3D. Refresh live weather to bring the checkpoint hour into the timeline.');
+      }
+
+      function setRegionalWeatherLayer(layerId) {
+        var definition = regionalWeatherLayerDefinition(layerId);
+        var runtime = geographicRuntimeRef.current;
+        var active = activeLiveWeather(d);
+        var opacity = clamp(d.geographicWeatherLayerOpacity != null ? Number(d.geographicWeatherLayerOpacity) : 0.58, 0.2, 0.85);
+        if (runtime && runtime.refreshRegionalWeatherField) runtime.refreshRegionalWeatherField(d.geographicWeatherField, definition.id, opacity, active);
+        update({ geographicWeatherLayer: definition.id });
+        if (announce) announce(definition.label + ' regional layer selected.');
+      }
+
+      function setRegionalWeatherLayerOpacity(value) {
+        var opacity = clamp(Number(value), 0.2, 0.85);
+        var runtime = geographicRuntimeRef.current;
+        var layerId = d.geographicWeatherLayer || 'temperature';
+        if (runtime && runtime.refreshRegionalWeatherField) runtime.refreshRegionalWeatherField(d.geographicWeatherField, layerId, opacity, activeLiveWeather(d));
+        update({ geographicWeatherLayerOpacity: opacity });
+      }
+
+      function loadRegionalWeatherField() {
+        var active = activeLiveWeather(d);
+        if (!active || !active.validAt) {
+          if (addToast) addToast('Load live weather and select an hourly time before loading a regional field.', 'info');
+          if (announce) announce('Regional weather fields require a selected live weather hour.');
+          return;
+        }
+        var radius = clamp(Math.max(25, Number(d.geographicStudyRadius) || 10), 10, 75);
+        var coordinates = regionalWeatherGridCoordinates(active.latitude, active.longitude, radius, 5);
+        var latitudeList = coordinates.map(function (point) { return point.latitude; }).join(',');
+        var longitudeList = coordinates.map(function (point) { return point.longitude; }).join(',');
+        var fields = 'temperature_2m,precipitation,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m';
+        var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(latitudeList) + '&longitude=' + encodeURIComponent(longitudeList) + '&hourly=' + fields + '&past_hours=6&forecast_hours=25&timezone=auto';
+        update({ geographicWeatherFieldLoading: true, geographicWeatherFieldError: '', geographicWeatherFieldStatus: 'Loading a 25-point regional model field for ' + active.validAt + '...' });
+        return window.fetch(url).then(function (response) {
+          if (!response.ok) throw new Error('Regional weather service returned ' + response.status + '.');
+          return response.json();
+        }).then(function (payload) {
+          var field = normalizeRegionalWeatherField(payload, coordinates, active.validAt);
+          if (field.sampleCount < 9) throw new Error('The regional model returned too few grid points for a reliable classroom field.');
+          field.latitude = active.latitude;
+          field.longitude = active.longitude;
+          field.location = active.label;
+          field.timezone = active.timezone || '';
+          field.loadedAt = new Date().toISOString();
+          field.source = 'Open-Meteo multi-location model grid';
+          var layerId = d.geographicWeatherLayer || 'temperature';
+          var opacity = clamp(d.geographicWeatherLayerOpacity != null ? Number(d.geographicWeatherLayerOpacity) : 0.58, 0.2, 0.85);
+          var runtime = geographicRuntimeRef.current;
+          if (runtime && runtime.refreshRegionalWeatherField) runtime.refreshRegionalWeatherField(field, layerId, opacity, active);
+          update({ geographicWeatherField: field, geographicWeatherFieldLoading: false, geographicWeatherFieldError: '', geographicWeatherFieldStatus: field.sampleCount + ' regional model grid points loaded for ' + active.validAt + '.' });
+          if (addToast) addToast('Regional ' + regionalWeatherLayerDefinition(layerId).label.toLowerCase() + ' field loaded.', 'success');
+          if (announce) announce(field.sampleCount + ' regional weather model points loaded for ' + weatherTimelineLabel(active, active.timezone) + '.');
+          return field;
+        }).catch(function (error) {
+          var message = error && error.message ? error.message : 'The regional weather field could not be loaded.';
+          update({ geographicWeatherFieldLoading: false, geographicWeatherFieldError: message, geographicWeatherFieldStatus: '' });
+          if (addToast) addToast(message, 'error');
+          if (announce) announce('Regional weather field error. ' + message);
+          return null;
+        });
       }
 
       function sampleGeographicMapCenter() {
@@ -2048,7 +2430,7 @@ function openImmersiveTourStep(stepId) {
       }
 
       function issueForecast() {
-        var terrainEvidenceStatus = geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, d.liveWeather);
+        var terrainEvidenceStatus = geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, activeLiveWeather(d));
         if ((d.evidence || []).indexOf(TERRAIN_EVIDENCE.id) !== -1 && !terrainEvidenceStatus.current) {
           if (addToast) addToast('Refresh or remove stale terrain evidence before verifying the forecast.', 'warning');
           if (announce) announce('Forecast verification paused because the selected terrain evidence does not match the active live observation.');
@@ -2122,11 +2504,29 @@ function openImmersiveTourStep(stepId) {
       }, [state.scenario, state.temp, state.humidity, state.pressure, state.windSpeed, state.windDir, state.frontSpeed, state.instability, state.terrain, state.simHour, state.radar, state.fronts, state.windLayer, state.motion, selectedStation, dark]);
 
       React.useEffect(function () {
+        if (!d.liveWeatherTimelinePlaying) return undefined;
+        var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
+        if (timeline.length < 2) {
+          update({ liveWeatherTimelinePlaying: false });
+          return undefined;
+        }
+        var index = d.liveWeatherTimelineIndex != null ? Math.round(Number(d.liveWeatherTimelineIndex)) : weatherTimelineCurrentIndex(timeline);
+        if (index >= timeline.length - 1) {
+          update({ liveWeatherTimelinePlaying: false });
+          return undefined;
+        }
+        var timer = window.setTimeout(function () {
+          update({ liveWeatherTimelineIndex: index + 1, geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Resampling terrain for the selected forecast hour...' });
+        }, 1400);
+        return function () { window.clearTimeout(timer); };
+      }, [d.liveWeatherTimelinePlaying, d.liveWeatherTimelineIndex, d.liveWeatherTimeline && d.liveWeatherTimeline.length]);
+
+      React.useEffect(function () {
         if ((d.tab || 'map') !== 'immersive' || geographicViewState(d).mode === 'geographic') return undefined;
         var canvas = immersiveCanvasRef.current;
         var THREE = window.THREE;
         if (!canvas || !THREE || !dataRoot._threeLoaded) return undefined;
-        var live = d.immersiveDataSource === 'live' ? d.liveWeather : null;
+        var live = d.immersiveDataSource === 'live' ? activeLiveWeather(d) : null;
         var model = projectConditions(state, state.simHour);
         var temperature = live ? live.temperature : model.temperature;
         var humidity = live ? live.humidity : model.humidity;
@@ -2448,7 +2848,7 @@ var geographyGroup = new THREE.Group();
           renderer.dispose();
           immersiveRuntimeRef.current = null;
         };
-      }, [d.tab, d.immersiveSceneMode, dataRoot._threeLoaded, d.immersiveDataSource, d.immersiveQuality, d.liveWeather && d.liveWeather.observedAt, state.scenario, state.simHour, state.temp, state.humidity, state.pressure, state.windSpeed, state.windDir, state.terrain, d.immersiveGeography, selectedStation]);
+      }, [d.tab, d.immersiveSceneMode, dataRoot._threeLoaded, d.immersiveDataSource, d.immersiveQuality, d.liveWeather && d.liveWeather.observedAt, d.liveWeatherTimelineIndex, state.scenario, state.simHour, state.temp, state.humidity, state.pressure, state.windSpeed, state.windDir, state.terrain, d.immersiveGeography, selectedStation]);
 
       React.useEffect(function () {
         var geographic = geographicViewState(d);
@@ -2673,7 +3073,70 @@ var geographyGroup = new THREE.Group();
                   'text-halo-width': 1.5
                 }
               });
+              var emptyWeatherField = { type: 'FeatureCollection', features: [] };
+              map.addSource('weather-regional-field-cells', { type: 'geojson', data: emptyWeatherField });
+              map.addSource('weather-regional-field-points', { type: 'geojson', data: emptyWeatherField });
+              map.addLayer({
+                id: 'weather-regional-field-fill', type: 'fill', source: 'weather-regional-field-cells',
+                layout: { visibility: 'none' },
+                paint: { 'fill-color': '#38bdf8', 'fill-opacity': 0.58, 'fill-antialias': true }
+              }, firstLabel ? firstLabel.id : undefined);
+              map.addLayer({
+                id: 'weather-regional-field-outline', type: 'line', source: 'weather-regional-field-cells',
+                layout: { visibility: 'none' },
+                paint: { 'line-color': '#e2e8f0', 'line-opacity': 0.34, 'line-width': 0.8 }
+              }, firstLabel ? firstLabel.id : undefined);
+              map.addLayer({
+                id: 'weather-regional-field-label', type: 'symbol', source: 'weather-regional-field-points',
+                layout: { visibility: 'none', 'text-field': ['get', 'display'], 'text-size': 11, 'text-allow-overlap': false, 'text-ignore-placement': false },
+                paint: { 'text-color': '#f8fafc', 'text-halo-color': '#0f172a', 'text-halo-width': 1.5 }
+              });
+              map.addLayer({
+                id: 'weather-regional-wind-arrow', type: 'symbol', source: 'weather-regional-field-points',
+                layout: { visibility: 'none', 'text-field': '\u25B2', 'text-size': 17, 'text-rotate': ['get', 'windRotation'], 'text-rotation-alignment': 'map', 'text-allow-overlap': true, 'text-ignore-placement': true },
+                paint: { 'text-color': '#7dd3fc', 'text-halo-color': '#0c4a6e', 'text-halo-width': 1.5 }
+              });
+              map.addLayer({
+                id: 'weather-regional-wind-label', type: 'symbol', source: 'weather-regional-field-points',
+                layout: { visibility: 'none', 'text-field': ['concat', ['to-string', ['round', ['get', 'windSpeed']]], ' km/h'], 'text-size': 10, 'text-offset': [0, 1.5], 'text-anchor': 'top', 'text-allow-overlap': false },
+                paint: { 'text-color': '#e0f2fe', 'text-halo-color': '#082f49', 'text-halo-width': 1.5 }
+              });
+              function refreshRegionalWeatherField(field, layerId, opacity, activeWeather) {
+                var status = regionalWeatherFieldStatus(field, activeWeather);
+                var definition = regionalWeatherLayerDefinition(layerId);
+                var geo = status.current ? regionalWeatherFieldGeoJSON(field, definition.id) : { polygons: emptyWeatherField, points: emptyWeatherField, legend: null };
+                var cellSource = map.getSource('weather-regional-field-cells');
+                var pointSource = map.getSource('weather-regional-field-points');
+                if (cellSource && cellSource.setData) cellSource.setData(geo.polygons);
+                if (pointSource && pointSource.setData) pointSource.setData(geo.points);
+                var palette = definition.palette;
+                if (map.getLayer('weather-regional-field-fill')) {
+                  map.setPaintProperty('weather-regional-field-fill', 'fill-color', ['interpolate', ['linear'], ['get', 'value01'], 0, palette[0], 0.34, palette[1], 0.68, palette[2], 1, palette[3]]);
+                  map.setPaintProperty('weather-regional-field-fill', 'fill-opacity', clamp(Number(opacity) || 0.58, 0.2, 0.85));
+                }
+                var scalarVisible = status.current && definition.id !== 'wind' ? 'visible' : 'none';
+                var windVisible = status.current && definition.id === 'wind' ? 'visible' : 'none';
+                ['weather-regional-field-fill', 'weather-regional-field-outline', 'weather-regional-field-label'].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', scalarVisible); });
+                ['weather-regional-wind-arrow', 'weather-regional-wind-label'].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', windVisible); });
+                geographicRuntimeRef.current.regionalWeatherLegend = geo.legend;
+              }
+              if (geographicRuntimeRef.current) geographicRuntimeRef.current.refreshRegionalWeatherField = refreshRegionalWeatherField;
+              refreshRegionalWeatherField(d.geographicWeatherField, d.geographicWeatherLayer || 'temperature', d.geographicWeatherLayerOpacity != null ? Number(d.geographicWeatherLayerOpacity) : 0.58, activeLiveWeather(d));
               var terrainProfileSampled = false;
+              var terrainProfileWeather = d.liveWeather;
+              function refreshGeographicWeather(weather) {
+                if (!weather) return;
+                terrainProfileWeather = weather;
+                var nextOverlays = geographicOverlayData(weather, studyRadius);
+                var windSource = map.getSource('weather-wind-vector');
+                if (windSource && windSource.setData) windSource.setData(nextOverlays.wind);
+                terrainTransect = geographicWindTransect(weather, 30, 25);
+                var transectSource = map.getSource('weather-terrain-transect');
+                if (transectSource && transectSource.setData) transectSource.setData(terrainTransect);
+                terrainProfileSampled = false;
+                update({ geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Sampling natural terrain for ' + weatherTimelineLabel(weather, weather.timezone) + '...' });
+              }
+              if (geographicRuntimeRef.current) geographicRuntimeRef.current.refreshWeatherOverlays = refreshGeographicWeather;
               map.on('idle', function () {
                 if (cancelled || terrainProfileSampled || !terrainAvailable || !map.queryTerrainElevation) return;
                 var terrainSettings = map.getTerrain ? map.getTerrain() : null;
@@ -2690,7 +3153,7 @@ var geographyGroup = new THREE.Group();
                 });
                 if (profile.length < Math.ceil(coordinates.length * 0.6)) return;
                 terrainProfileSampled = true;
-                update({ geographicTerrainProfile: profile, geographicTerrainProfileStatus: 'Natural elevation sampled from the rendered terrain along a 30 km wind-aligned transect.' });
+                update({ geographicTerrainProfile: profile, geographicTerrainProfileWeather: { validAt: terrainProfileWeather.validAt || terrainProfileWeather.observedAt || '', role: terrainProfileWeather.timelineRole || 'current', offsetHours: terrainProfileWeather.timelineOffsetHours || 0, windDir: terrainProfileWeather.windDir }, geographicTerrainProfileStatus: 'Natural elevation sampled from the rendered terrain along a 30 km wind-aligned transect for ' + weatherTimelineLabel(terrainProfileWeather, terrainProfileWeather.timezone) + '.' });
               });
               if (maplibregl.Popup) {
                 map.on('mouseenter', 'weather-selected-site', function () { map.getCanvas().style.cursor = 'pointer'; });
@@ -2730,7 +3193,7 @@ var geographyGroup = new THREE.Group();
                 });
                 var selectionMethod = methodLabel || 'Pointer map selection';
                 update({ geographicTerrainProbe: comparison, geographicTerrainProbeMethod: selectionMethod });
-                var windAnalysis = geographicTerrainWindAnalysis(comparison, d.liveWeather && d.liveWeather.windDir);
+                var windAnalysis = geographicTerrainWindAnalysis(comparison, terrainProfileWeather && terrainProfileWeather.windDir);
                 if (announce) announce('Terrain point sampled ' + comparison.distanceKm + ' kilometers ' + comparison.direction + ' of the observation site at ' + comparison.elevation + ' meters elevation using ' + selectionMethod.toLowerCase() + '.' + (windAnalysis ? ' This is a ' + windAnalysis.position.toLowerCase() + ' sample with an average grade of ' + windAnalysis.gradePercent + ' percent.' : ''));
                 return true;
               }
@@ -2776,6 +3239,24 @@ var geographyGroup = new THREE.Group();
           geographicRuntimeRef.current = null;
         };
       }, [d.tab, d.immersiveSceneMode, d.geographicMapAttempt, d.liveWeather && d.liveWeather.observedAt, d.liveWeather && d.liveWeather.latitude, d.liveWeather && d.liveWeather.longitude]);
+
+      React.useEffect(function () {
+        var runtime = geographicRuntimeRef.current;
+        if (!d.geographicMapReady || !runtime || !runtime.refreshWeatherOverlays) return;
+        var weather = activeLiveWeather(d);
+        if (weather) runtime.refreshWeatherOverlays(weather);
+      }, [d.geographicMapReady, d.liveWeatherTimelineIndex]);
+
+      React.useEffect(function () {
+        var runtime = geographicRuntimeRef.current;
+        if (!d.geographicMapReady || !runtime || !runtime.refreshRegionalWeatherField) return;
+        runtime.refreshRegionalWeatherField(
+          d.geographicWeatherField,
+          d.geographicWeatherLayer || 'temperature',
+          d.geographicWeatherLayerOpacity != null ? Number(d.geographicWeatherLayerOpacity) : 0.58,
+          activeLiveWeather(d)
+        );
+      }, [d.geographicMapReady, d.geographicWeatherField, d.geographicWeatherLayer, d.geographicWeatherLayerOpacity, d.liveWeatherTimelineIndex]);
 
       React.useEffect(function () {
         if (!d.playing) return undefined;
@@ -3930,7 +4411,7 @@ var geographyGroup = new THREE.Group();
 
       function forecastMission() {
         var truth = forecastResult && forecastResult.truth;
-        var terrainEvidenceStatus = geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, d.liveWeather);
+        var terrainEvidenceStatus = geographicTerrainEvidenceStatus(d.geographicTerrainEvidence, activeLiveWeather(d));
         var usableEvidenceIds = (d.evidence || []).filter(function (id) { return id !== TERRAIN_EVIDENCE.id || terrainEvidenceStatus.current; });
         var selectedEvidenceCount = usableEvidenceIds.length;
         var reasoningTarget = band === 'K-2' ? 10 : 20;
@@ -3999,7 +4480,7 @@ var geographyGroup = new THREE.Group();
         function geographicTerrainEvidencePanel() {
           var terrainEvidence = d.geographicTerrainEvidence;
           if (!terrainEvidence) return null;
-          var provenanceStatus = geographicTerrainEvidenceStatus(terrainEvidence, d.liveWeather);
+          var provenanceStatus = geographicTerrainEvidenceStatus(terrainEvidence, activeLiveWeather(d));
           return h('section', {
             className: 'rounded-xl border p-4 ' + (dark ? 'border-violet-400/30 bg-violet-950/25' : 'border-violet-200 bg-violet-50'),
             'data-weather-terrain-evidence-trail': true,
@@ -4009,7 +4490,7 @@ var geographyGroup = new THREE.Group();
               h('div', null,
                 h('p', { className: 'text-xs font-black uppercase tracking-widest ' + violetAccentClass }, '3D-to-forecast evidence trail'),
                 h('h3', { id: 'weather-terrain-evidence-title', className: 'mt-1 text-base font-black' }, terrainEvidence.label),
-                h('p', { className: 'mt-1 text-xs ' + mutedClass }, terrainEvidence.location + (terrainEvidence.observedAt ? ' | Observed ' + terrainEvidence.observedAt : ''))
+                h('p', { className: 'mt-1 text-xs ' + mutedClass }, terrainEvidence.location + (terrainEvidence.weatherTimeLabel ? ' | ' + terrainEvidence.weatherTimeLabel : terrainEvidence.validAt ? ' | Valid ' + terrainEvidence.validAt : terrainEvidence.observedAt ? ' | Observed ' + terrainEvidence.observedAt : ''))
               ),
               h('div', { className: 'text-right' },
                 h('span', { className: 'inline-block rounded-full px-3 py-1.5 text-xs font-black ' + (provenanceStatus.current ? (dark ? 'bg-emerald-300/15 text-emerald-200' : 'bg-emerald-100 text-emerald-900') : (dark ? 'bg-amber-300/15 text-amber-200' : 'bg-amber-100 text-amber-900')) }, provenanceStatus.label),
@@ -4201,6 +4682,79 @@ var geographyGroup = new THREE.Group();
             h('p', { className: 'mt-3 text-xs leading-relaxed ' + mutedClass }, 'These 9 outcomes demonstrate sensitivity to starting conditions. Their agreement is not an operational weather probability.')
           );
         }
+        function forecastVerificationStudio() {
+          var checkpoints = Array.isArray(d.liveForecastCheckpoints) ? d.liveForecastCheckpoints : [];
+          var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
+          var statuses = checkpoints.map(function (checkpoint) { return { checkpoint: checkpoint, result: forecastCheckpointStatus(checkpoint, timeline, d.liveWeather) }; });
+          var verifiedCount = statuses.filter(function (item) { return item.result.ready; }).length;
+          var pendingCount = statuses.filter(function (item) { return item.result.code === 'pending'; }).length;
+          function signedMetric(metric) {
+            if (!metric) return 'Not available';
+            return (metric.error > 0 ? '+' : '') + metric.error + metric.unit;
+          }
+          var metricDefinitions = [
+            { id: 'temperature', label: 'Temperature error' },
+            { id: 'precipitation', label: 'Precipitation error' },
+            { id: 'pressure', label: 'Pressure error' },
+            { id: 'windSpeed', label: 'Wind-speed error' },
+            { id: 'windDirection', label: 'Wind-direction error' }
+          ];
+          return h('section', { className: panelClass + ' overflow-hidden', 'data-weather-forecast-verification-studio': true, 'aria-labelledby': 'weather-live-verification-title' },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b p-4 ' + (dark ? 'border-slate-700 bg-gradient-to-r from-slate-900 via-fuchsia-950/30 to-sky-950/25' : 'border-fuchsia-200 bg-gradient-to-r from-fuchsia-50 via-white to-sky-50') },
+              h('div', { className: 'max-w-2xl' },
+                h('p', { className: 'text-xs font-black uppercase tracking-widest ' + fuchsiaAccentClass }, 'Authentic predict - observe - revise'),
+                h('h3', { id: 'weather-live-verification-title', className: 'mt-1 text-base font-black' }, 'Forecast Verification Studio'),
+                h('p', { className: 'mt-1 text-xs ' + mutedClass }, 'Save a future hour in geographic 3D, then refresh live weather near its valid time to calculate forecast error against the matching observation.')
+              ),
+              h('div', { className: 'flex gap-2 text-center' },
+                h('div', { className: 'rounded-lg px-3 py-2 ' + (dark ? 'bg-emerald-950/40' : 'bg-emerald-50') }, h('p', { className: 'text-lg font-black ' + emeraldAccentClass }, verifiedCount), h('p', { className: 'text-[10px] font-bold ' + mutedClass }, 'observed')),
+                h('div', { className: 'rounded-lg px-3 py-2 ' + (dark ? 'bg-violet-950/40' : 'bg-violet-50') }, h('p', { className: 'text-lg font-black ' + violetAccentClass }, pendingCount), h('p', { className: 'text-[10px] font-bold ' + mutedClass }, 'pending'))
+              )
+            ),
+            h('div', { className: 'p-4' },
+              !checkpoints.length && h('div', { className: 'rounded-xl border border-dashed p-4 text-center ' + (dark ? 'border-slate-600 bg-slate-950/35' : 'border-slate-300 bg-slate-50') },
+                h('p', { className: 'text-sm font-black' }, 'No live forecast checkpoints yet'),
+                h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, 'Open the hourly 3D timeline, choose a future hour, and save its temperature, precipitation, pressure, wind, and condition as a testable forecast.'),
+                h('button', { type: 'button', onClick: function () { update({ tab: 'immersive', immersiveDataSource: 'live' }); }, className: 'mt-3 min-h-11 rounded-lg bg-fuchsia-700 px-4 py-2 text-xs font-black text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none' }, 'Open 3D forecast timeline')
+              ),
+              statuses.length > 0 && h('ol', { className: 'space-y-3', 'aria-label': 'Saved live forecast checkpoints' }, statuses.slice().reverse().map(function (item) {
+                var checkpoint = item.checkpoint;
+                var result = item.result;
+                var predicted = checkpoint.predicted || {};
+                return h('li', { key: checkpoint.id, className: 'rounded-xl border p-3 ' + (result.ready ? (dark ? 'border-emerald-700 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50/60') : result.code === 'pending' ? (dark ? 'border-violet-700 bg-violet-950/20' : 'border-violet-200 bg-violet-50/60') : (dark ? 'border-amber-700 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60')) },
+                  h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                    h('div', { className: 'min-w-0' },
+                      h('p', { className: 'text-xs font-black' }, checkpoint.location || 'Saved location'),
+                      h('p', { className: 'mt-0.5 text-[11px] ' + mutedClass }, 'Forecast issued ' + (checkpoint.issuedAt || 'time unavailable') + ' | Valid ' + checkpoint.validAt + (checkpoint.timezone ? ' ' + checkpoint.timezone : '')),
+                      h('p', { className: 'mt-1 text-xs font-bold' }, (predicted.condition || 'Conditions unavailable') + ' | ' + predicted.temperature + '\u00B0C | ' + cardinal(predicted.windDir) + ' ' + predicted.windSpeed + ' km/h')
+                    ),
+                    h('span', { className: 'rounded-full px-2.5 py-1 text-[11px] font-black ' + (result.ready ? 'bg-emerald-700 text-white' : result.code === 'pending' ? 'bg-violet-700 text-white' : 'bg-amber-400 text-amber-950'), 'data-weather-checkpoint-status': result.code }, result.label)
+                  ),
+                  result.ready && h('div', { className: 'mt-3', 'data-weather-forecast-error': true },
+                    h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + emeraldAccentClass }, 'Forecast error = forecast minus observation'),
+                    h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5' }, metricDefinitions.map(function (definition) {
+                      var metric = result.metrics[definition.id];
+                      return h('div', { key: definition.id, className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/55' : 'bg-white') },
+                        h('p', { className: 'text-[10px] leading-tight ' + mutedClass }, definition.label),
+                        h('p', { className: 'mt-1 text-xs font-black' }, signedMetric(metric)),
+                        metric && h('p', { className: 'mt-0.5 text-[10px] ' + mutedClass }, 'Forecast ' + metric.forecast + metric.unit + ' | observed ' + metric.observed + metric.unit)
+                      );
+                    })),
+                    h('p', { className: 'mt-2 text-xs font-bold ' + (result.conditionMatch ? emeraldAccentClass : 'text-amber-500') }, result.conditionMatch ? 'Condition category matched the observation.' : 'Condition category differed from the observation.'),
+                    h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + mutedClass }, 'Use the signed errors to identify bias: a positive temperature error means the forecast was too warm; a negative pressure error means it predicted pressure that was too low.')
+                  ),
+                  !result.ready && h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, result.detail),
+                  h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                    h('button', { type: 'button', onClick: function () { openLiveForecastCheckpoint(checkpoint); }, className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-black ' + (dark ? 'border-slate-600 bg-slate-950/50' : 'border-slate-300 bg-white') }, 'Open checkpoint hour'),
+                    h('button', { type: 'button', onClick: function () { removeLiveForecastCheckpoint(checkpoint.id); }, className: 'min-h-11 rounded-lg border border-rose-300/50 px-3 py-2 text-xs font-black ' + (dark ? 'bg-rose-950/20 text-rose-100' : 'bg-rose-50 text-rose-800') }, 'Remove')
+                  )
+                );
+              })),
+              h('p', { className: 'mt-3 text-[11px] leading-relaxed ' + mutedClass }, 'Open-Meteo current and hourly values are model-derived weather data. This comparison supports learning about forecast error and revision; it is not an official verification product or safety forecast.')
+            )
+          );
+        }
+
         function forecastJournalPanel() {
           var history = d.forecastHistory || [];
           var latest = history.length ? history[history.length - 1] : null;
@@ -4627,6 +5181,7 @@ var geographyGroup = new THREE.Group();
             geographicTerrainEvidencePanel(),
             ensemblePanel(),
             readinessCard(),
+            forecastVerificationStudio(),
             forecastJournalPanel(),
             forecastBroadcastPanel(),
             reasoningPulsePanel(),
@@ -4884,10 +5439,19 @@ var geographyGroup = new THREE.Group();
       }
 
       function immersiveWeatherLab() {
-        var live = d.liveWeather || null;
+        var baseLive = d.liveWeather || null;
+        var liveTimeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
+        var liveTimelineIndex = liveTimeline.length ? clamp(d.liveWeatherTimelineIndex != null ? Math.round(Number(d.liveWeatherTimelineIndex)) : weatherTimelineCurrentIndex(liveTimeline), 0, liveTimeline.length - 1) : 0;
+        var liveTimelinePoint = liveTimeline[liveTimelineIndex] || null;
+        var live = activeLiveWeather(d);
         var useLive = d.immersiveDataSource === 'live' && !!live;
-        var observationFreshness = live ? liveObservationFreshness(live) : null;
-        var observationFreshnessClass = observationFreshness && observationFreshness.current ? 'border-emerald-300/40 bg-emerald-300/15 text-emerald-100' : observationFreshness && !observationFreshness.stale ? 'border-amber-300/40 bg-amber-300/15 text-amber-100' : 'border-rose-300/40 bg-rose-300/15 text-rose-100';
+        var observationFreshness = baseLive ? liveObservationFreshness(baseLive) : null;
+        var timelineSelectionLabel = liveTimelinePoint ? weatherTimelineLabel(liveTimelinePoint, baseLive && baseLive.timezone) : observationFreshness ? observationFreshness.label : 'Saved weather';
+        var timelineValidTimeDetail = liveTimelinePoint ? timelineSelectionLabel : baseLive && baseLive.observedAt ? 'Observed ' + baseLive.observedAt + (baseLive.timezone ? ' ' + baseLive.timezone : '') : timelineSelectionLabel;
+        var timelineInstrumentLabel = liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'Forecast valid' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'Earlier hour' : 'Observed';
+        var timelineInstrumentTime = useLive ? (live.validAt || live.observedAt || 'Latest') : 'T+' + state.simHour + ' h';
+        var timelineBadge = liveTimelinePoint ? (liveTimelinePoint.role === 'current' ? observationFreshness.badge : liveTimelinePoint.role === 'earlier' ? '-' + Math.abs(liveTimelinePoint.offsetHours) + 'H' : '+' + liveTimelinePoint.offsetHours + 'H') : observationFreshness ? observationFreshness.badge : 'SAVED';
+        var observationFreshnessClass = liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'border-violet-300/40 bg-violet-300/15 text-violet-100' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'border-slate-300/30 bg-slate-300/10 text-slate-100' : observationFreshness && observationFreshness.current ? 'border-emerald-300/40 bg-emerald-300/15 text-emerald-100' : observationFreshness && !observationFreshness.stale ? 'border-amber-300/40 bg-amber-300/15 text-amber-100' : 'border-rose-300/40 bg-rose-300/15 text-rose-100';
         var model = projectConditions(state, state.simHour);
         var windDir = useLive ? live.windDir : model.windDir;
         var windSpeed = useLive ? live.windSpeed : model.windSpeed;
@@ -4923,6 +5487,11 @@ var geographyGroup = new THREE.Group();
         var geographicStudyAreaVisible = d.geographicStudyAreaVisible !== false;
         var geographicWindVisible = d.geographicWindVisible !== false;
         var geographicTransectVisible = d.geographicTransectVisible !== false;
+        var regionalWeatherLayerId = d.geographicWeatherLayer || 'temperature';
+        var regionalWeatherLayer = regionalWeatherLayerDefinition(regionalWeatherLayerId);
+        var regionalFieldStatus = regionalWeatherFieldStatus(d.geographicWeatherField, live);
+        var regionalFieldLegend = regionalFieldStatus.current ? regionalWeatherFieldGeoJSON(d.geographicWeatherField, regionalWeatherLayerId).legend : null;
+        var regionalFieldOpacity = clamp(d.geographicWeatherLayerOpacity != null ? Number(d.geographicWeatherLayerOpacity) : 0.58, 0.2, 0.85);
         var geographicBuildingsAvailable = d.geographicBuildingsAvailable;
         var geographicBuildings = d.geographicBuildings === true && geographicBuildingsAvailable !== false;
         var geographicTerrainAvailable = d.geographicTerrainAvailable;
@@ -4983,7 +5552,7 @@ var geographyGroup = new THREE.Group();
         var tourStep = immersiveTourStep(d.immersiveTourStep);
         var defaultGeographicFieldStep = geographicAnalysisLensId === 'context' ? 'orient' : geographicAnalysisLensId === 'site' ? 'site' : 'terrain';
         var geographicFieldStep = geographicInvestigationStep(d.geographicInvestigationStep || defaultGeographicFieldStep);
-        var tourSource = useLive ? 'live observation' : 'teaching model';
+        var tourSource = useLive ? (liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'selected forecast hour' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'selected earlier hour' : 'live observation') : 'teaching model';
         return h('div', { className: 'mx-auto max-w-[1680px] space-y-4 p-3 sm:p-4', 'data-weather-immersive-lab': true },
           h('section', { className: 'overflow-hidden rounded-3xl border border-cyan-300/20 bg-gradient-to-br from-slate-950 via-indigo-950/90 to-cyan-950 text-white shadow-2xl' },
             h('div', { className: 'flex flex-wrap items-start justify-between gap-4 border-b border-white/10 p-4 sm:p-5' },
@@ -5032,6 +5601,15 @@ var geographyGroup = new THREE.Group();
                     h('div', { className: 'flex items-center gap-2 ' + (geographicTransectVisible ? '' : 'opacity-45') }, h('span', { className: 'w-4 border-t-2 border-dashed border-violet-300', 'aria-hidden': true }), h('span', null, 'Transect ' + (geographicTransectVisible ? 'on' : 'off'))),
                     geographicTerrainProbe && h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'h-2.5 w-2.5 rounded-full border-2 border-white bg-rose-400', 'aria-hidden': true }), h('span', null, 'Terrain sample'))
                   ),
+                  regionalFieldLegend && h('div', { className: 'mt-2 border-t border-white/10 pt-2', 'data-weather-regional-map-legend': true, role: 'group', 'aria-label': regionalFieldLegend.label + ' legend for ' + d.geographicWeatherField.validAt },
+                    h('div', { className: 'flex items-center justify-between gap-3 text-[10px] font-black text-slate-100' }, h('span', null, regionalFieldLegend.label), h('span', null, d.geographicWeatherField.sampleCount + ' points')),
+                    h('div', { className: 'mt-1 h-2 rounded-sm', style: { background: 'linear-gradient(90deg,' + regionalFieldLegend.palette.join(',') + ')' }, 'aria-hidden': true }),
+                    h('div', { className: 'mt-0.5 flex justify-between text-[10px] font-bold text-slate-300' },
+                      h('span', null, Number(regionalFieldLegend.min).toFixed(regionalWeatherLayer.decimals) + regionalFieldLegend.unit),
+                      h('span', null, Number(regionalFieldLegend.max).toFixed(regionalWeatherLayer.decimals) + regionalFieldLegend.unit)
+                    ),
+                    h('p', { className: 'mt-1 text-[10px] text-slate-400' }, 'Valid ' + d.geographicWeatherField.validAt + (d.geographicWeatherField.timezone ? ' ' + d.geographicWeatherField.timezone : ''))
+                  ),
                   h('div', { className: 'mt-2 flex items-center gap-2 border-t border-white/10 pt-1.5', 'data-weather-geographic-orientation': true, role: 'img', 'aria-label': geographicOrientation.label },
                     h('span', { className: 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/20 text-[11px] font-black text-slate-100', style: { transform: 'rotate(' + geographicOrientation.northRotation + 'deg)' }, 'aria-hidden': true }, '\u2191'),
                     h('span', { className: 'text-[10px] font-bold text-slate-300' }, 'N | ' + geographicOrientation.label)
@@ -5064,10 +5642,10 @@ var geographyGroup = new THREE.Group();
                     'data-weather-scene-hud': true,
                     'data-weather-scene-instruments': true,
                     role: 'group',
-                    'aria-label': (useLive ? 'Live observation' : 'Teaching model hour ' + state.simHour) + '. Temperature ' + (useLive ? live.temperature : model.temperature) + ' degrees Celsius. Pressure ' + (useLive ? live.pressure : model.pressure) + ' hectopascals. Wind ' + cardinal(windDir) + ' ' + windSpeed + ' kilometers per hour.'
+                    'aria-label': (useLive ? timelineSelectionLabel : 'Teaching model hour ' + state.simHour) + '. Temperature ' + (useLive ? live.temperature : model.temperature) + ' degrees Celsius. Pressure ' + (useLive ? live.pressure : model.pressure) + ' hectopascals. Wind ' + cardinal(windDir) + ' ' + windSpeed + ' kilometers per hour.'
                   },
                     [
-                      [useLive ? 'Observed' : 'Model hour', useLive ? (live.observedAt || 'Latest') : 'T+' + state.simHour + ' h'],
+                      [useLive ? timelineInstrumentLabel : 'Model hour', timelineInstrumentTime],
                       ['Temperature', (useLive ? live.temperature : model.temperature) + '\u00B0C'],
                       ['Pressure', (useLive ? live.pressure : model.pressure) + ' hPa'],
                       ['Wind', cardinal(windDir) + ' ' + windSpeed + ' km/h']
@@ -5089,7 +5667,7 @@ var geographyGroup = new THREE.Group();
                   h('button', { type: 'button', onClick: function () { update({ geographicMapError: '', geographicMapAttempt: (d.geographicMapAttempt || 0) + 1 }); }, className: 'min-h-11 rounded-lg bg-emerald-300 px-4 py-2 text-sm font-black text-emerald-950' }, 'Retry loading'),
                   h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '' }); }, className: 'min-h-11 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-black text-cyan-950' }, 'Use conceptual 3D instead')))),
                 !geographicMode && h('div', { className: 'pointer-events-none absolute bottom-3 left-3 right-3 z-10 flex flex-wrap items-end justify-between gap-2' },
-                  h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 backdrop-blur-sm' }, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, useLive ? observationFreshness.label + ' scene' : 'Teaching model scene'), h('p', { className: 'text-xs font-black' }, sceneLabel)),
+                  h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 backdrop-blur-sm' }, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, useLive ? timelineSelectionLabel + ' scene' : 'Teaching model scene'), h('p', { className: 'text-xs font-black' }, sceneLabel)),
                   h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 text-right text-[11px] text-slate-300 backdrop-blur-sm' }, 'Drag to orbit | Scroll or pinch to zoom'),
 h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4 py-3 text-left shadow-2xl backdrop-blur-md', 'data-weather-tour-overlay': true },
                     h('p', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-cyan-300' }, '3D investigation step ' + (tourStep.index + 1) + ' of ' + tourStep.total),
@@ -5100,18 +5678,18 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                 geographicMode && h('div', { className: 'pointer-events-none absolute bottom-8 left-3 right-3 z-10 rounded-2xl border border-white/15 bg-slate-950/88 px-4 py-3 shadow-2xl backdrop-blur-md sm:right-auto sm:max-w-[560px]', 'data-weather-geographic-hud': true, role: 'group', 'aria-label': geographicObservationSummary(live) },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                     h('div', { className: 'min-w-0' },
-                      h('p', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-emerald-300' }, 'Observation command display'),
+                      h('p', { className: 'text-[11px] font-black uppercase tracking-[0.18em] text-emerald-300' }, 'Weather command display'),
                       h('p', { className: 'mt-0.5 truncate text-sm font-black text-white' }, geographic.label),
                       h('p', { className: 'mt-0.5 text-[11px] text-slate-400' }, geographic.latitude.toFixed(4) + ', ' + geographic.longitude.toFixed(4) + (geographic.elevation != null ? ' | Site ' + geographic.elevation + ' m' : ''))
                     ),
                     h('div', { className: 'flex flex-wrap justify-end gap-1.5' },
-                      h('span', { className: 'rounded-full border px-2.5 py-1 text-[11px] font-black ' + observationFreshnessClass, 'data-weather-observation-freshness': observationFreshness.code, 'aria-label': observationFreshness.label + '. ' + observationFreshness.detail }, observationFreshness.badge),
+                      h('span', { className: 'rounded-full border px-2.5 py-1 text-[11px] font-black ' + observationFreshnessClass, 'data-weather-observation-freshness': liveTimelinePoint ? liveTimelinePoint.role : observationFreshness.code, 'aria-label': timelineSelectionLabel }, timelineBadge),
                       h('span', { className: 'rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[11px] font-black text-slate-100' }, live.condition)
                     )
                   ),
                   h('div', { className: 'mt-3 flex items-center gap-3' },
                     geographicOverlays && h('svg', { viewBox: '0 0 96 96', className: 'h-20 w-20 shrink-0 overflow-visible', role: 'img', 'aria-labelledby': 'weather-wind-compass-title weather-wind-compass-desc', 'data-weather-wind-compass': true },
-                      h('title', { id: 'weather-wind-compass-title' }, 'Observed wind compass'),
+                      h('title', { id: 'weather-wind-compass-title' }, 'Selected-hour wind compass'),
                       h('desc', { id: 'weather-wind-compass-desc' }, 'Wind arrives from ' + cardinal(live.windDir) + ' and flows toward ' + cardinal(geographicOverlays.downwindBearing) + ' at ' + live.windSpeed + ' kilometers per hour.'),
                       h('circle', { cx: 48, cy: 48, r: 37, fill: '#020617', fillOpacity: 0.72, stroke: '#64748b', strokeWidth: 1 }),
                       h('circle', { cx: 48, cy: 48, r: 28, fill: 'none', stroke: '#334155', strokeWidth: 1, strokeDasharray: '2 3' }),
@@ -5127,7 +5705,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                       ),
                       h('circle', { cx: 48, cy: 48, r: 5, fill: '#0ea5e9', stroke: '#e0f2fe', strokeWidth: 2 })
                     ),
-                    h('div', { className: 'grid min-w-0 flex-1 grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4', 'data-weather-observation-instruments': true, role: 'group', 'aria-label': 'Live observation instruments' },
+                    h('div', { className: 'grid min-w-0 flex-1 grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4', 'data-weather-observation-instruments': true, role: 'group', 'aria-label': 'Selected-hour weather instruments' },
                       [
                         ['Temperature', live.temperature + '\u00B0C'],
                         ['Relative humidity', live.humidity + '%'],
@@ -5144,10 +5722,10 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                   geographicOverlays && h('div', { className: 'mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-white/10 pt-2 text-[11px]' },
                     h('span', { className: 'font-black text-sky-200' }, 'FROM ' + cardinal(live.windDir) + ' ' + live.windSpeed + ' km/h'),
                     h('span', { className: 'font-black text-cyan-100' }, 'TO ' + cardinal(geographicOverlays.downwindBearing)),
-                    h('span', { className: 'text-slate-400' }, 'Observed ' + (live.observedAt || 'latest') + (live.timezone ? ' ' + live.timezone : '')),
-                    h('span', { className: observationFreshness.current ? 'text-emerald-200' : observationFreshness.stale ? 'text-rose-200' : 'text-amber-200' }, observationFreshness.detail)
+                    h('span', { className: 'text-slate-400' }, (live.timelineRole === 'forecast' ? 'Forecast valid ' : live.timelineRole === 'earlier' ? 'Earlier hour ' : 'Observed ') + (live.validAt || live.observedAt || 'latest') + (live.timezone ? ' ' + live.timezone : '')),
+                    h('span', { className: observationFreshness.current ? 'text-emerald-200' : observationFreshness.stale ? 'text-rose-200' : 'text-amber-200' }, (liveTimelinePoint && liveTimelinePoint.role !== 'current' ? timelineSelectionLabel : observationFreshness.detail))
                   ),
-                  geographicOverlays && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-400' }, geographicOverlays.windDistanceKm + ' km teaching vector scaled from observed speed; not a forecast footprint.'),
+                  geographicOverlays && h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-400' }, geographicOverlays.windDistanceKm + ' km teaching vector scaled from the selected-hour wind speed; not a forecast footprint.'),
                   geographicTerrainProbe && h('p', { className: 'mt-2 border-l-2 border-rose-300/60 pl-2 text-[11px] font-bold text-rose-200', 'data-weather-terrain-probe-hud': true }, 'Terrain sample ' + Number(geographicTerrainProbe.elevation).toFixed(0) + ' m | ' + Number(geographicTerrainProbe.distanceKm).toFixed(2) + ' km ' + geographicTerrainProbe.direction + ' of site' + (geographicTerrainWind ? ' | ' + geographicTerrainWind.position : ''))
                 )
               ),
@@ -5161,10 +5739,48 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                   h('p', { id: 'weather-geographic-mode-help', className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, geographic.available ? 'Opt-in live map centered on ' + geographic.label + '. Switching modes contacts the approved map and terrain providers.' : 'Load a live location below to enable the open geographic map. Nothing loads automatically.')
                 ),
                 h('section', { className: 'rounded-xl border border-white/10 bg-white/5 p-4', 'data-weather-immersive-source': true },
-                  h('div', { className: 'flex items-start justify-between gap-2' }, h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, geographicMode ? 'Mapped observation' : 'Scene data'), h('h4', { className: 'text-sm font-black' }, geographicMode ? geographic.label : (useLive ? observationFreshness.label : 'Teaching model'))), h('span', { className: 'rounded-full border px-2 py-1 text-[11px] font-black ' + (useLive ? observationFreshnessClass : 'border-white/10 bg-white/10 text-slate-200'), 'data-weather-source-freshness': useLive ? observationFreshness.code : 'model' }, geographicMode ? 'MAP \u2022 ' + observationFreshness.badge : (useLive ? observationFreshness.badge : 'MODEL'))),
+                  h('div', { className: 'flex items-start justify-between gap-2' }, h('div', null, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, geographicMode ? 'Mapped observation' : 'Scene data'), h('h4', { className: 'text-sm font-black' }, geographicMode ? geographic.label : (useLive ? timelineSelectionLabel : 'Teaching model'))), h('span', { className: 'rounded-full border px-2 py-1 text-[11px] font-black ' + (useLive ? observationFreshnessClass : 'border-white/10 bg-white/10 text-slate-200'), 'data-weather-source-freshness': useLive ? (liveTimelinePoint ? liveTimelinePoint.role : observationFreshness.code) : 'model' }, geographicMode ? 'MAP \u2022 ' + timelineBadge : (useLive ? timelineBadge : 'MODEL'))),
                   !geographicMode && h('div', { className: 'mt-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive weather data source' },
                     h('button', { type: 'button', onClick: function () { update({ immersiveDataSource: 'model' }); }, 'aria-pressed': !useLive, className: 'min-h-11 rounded-lg border px-3 py-2 text-[11px] font-black ' + (!useLive ? 'border-cyan-300 bg-cyan-300 text-cyan-950' : 'border-white/10 bg-white/5') }, 'Teaching model'),
                     h('button', { type: 'button', disabled: !live, onClick: function () { update({ immersiveDataSource: 'live' }); }, 'aria-pressed': useLive, className: 'min-h-11 rounded-lg border px-3 py-2 text-[11px] font-black disabled:opacity-40 ' + (useLive ? 'border-emerald-300 bg-emerald-300 text-emerald-950' : 'border-white/10 bg-white/5') }, live ? (observationFreshness.current ? 'Use live weather' : 'Use saved observation') : 'Load live weather')
+                  ),
+                  useLive && liveTimeline.length > 1 && h('div', { className: 'mt-3 border-t border-white/10 pt-3', 'data-weather-hourly-timeline': true, role: 'region', 'aria-labelledby': 'weather-hourly-timeline-title' },
+                    h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                      h('div', null,
+                        h('p', { id: 'weather-hourly-timeline-title', className: 'text-[11px] font-black uppercase tracking-wide text-violet-200' }, 'Hourly weather timeline'),
+                        h('p', { className: 'mt-0.5 text-[11px] leading-relaxed text-slate-300', 'data-weather-hourly-selection': true, role: 'status', 'aria-live': 'polite' }, timelineSelectionLabel)
+                      ),
+                      h('span', { className: 'rounded-full border px-2 py-1 text-[11px] font-black ' + observationFreshnessClass }, liveTimelinePoint && liveTimelinePoint.role === 'current' ? 'NOW' : timelineBadge)
+                    ),
+                    h('label', { htmlFor: 'weather-hourly-timeline-range', className: 'mt-3 block text-[11px] font-bold text-slate-200' }, 'Selected weather hour',
+                      h('input', {
+                        id: 'weather-hourly-timeline-range',
+                        type: 'range',
+                        min: 0,
+                        max: liveTimeline.length - 1,
+                        step: 1,
+                        value: liveTimelineIndex,
+                        onChange: function (event) {
+                          var nextIndex = clamp(Number(event.target.value), 0, liveTimeline.length - 1);
+                          update({ liveWeatherTimelineIndex: nextIndex, liveWeatherTimelinePlaying: false, geographicTerrainProfile: [], geographicTerrainProfileStatus: 'Resampling terrain for the selected weather hour...' });
+                        },
+                        'aria-valuetext': timelineSelectionLabel,
+                        className: 'mt-2 min-h-11 w-full accent-violet-300'
+                      })
+                    ),
+                    h('div', { className: 'flex justify-between text-[11px] font-bold text-slate-400', 'aria-hidden': true },
+                      h('span', null, Math.abs(liveTimeline[0].offsetHours) + ' h earlier'),
+                      h('span', null, 'Current'),
+                      h('span', null, '+' + liveTimeline[liveTimeline.length - 1].offsetHours + ' h')
+                    ),
+                    h('div', { className: 'mt-2 grid grid-cols-4 gap-2', role: 'group', 'aria-label': 'Hourly weather playback controls' },
+                      h('button', { type: 'button', disabled: liveTimelineIndex <= 0, onClick: function () { stepLiveWeatherTimeline(-1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[11px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': 'Previous weather hour' }, '\u22121 h'),
+                      h('button', { type: 'button', onClick: toggleLiveWeatherTimelinePlayback, 'aria-pressed': !!d.liveWeatherTimelinePlaying, className: 'min-h-11 rounded-lg border border-violet-300/40 bg-violet-300/15 px-2 py-2 text-[11px] font-black text-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200' }, d.liveWeatherTimelinePlaying ? 'Pause' : 'Play'),
+                      h('button', { type: 'button', disabled: liveTimelineIndex >= liveTimeline.length - 1, onClick: function () { stepLiveWeatherTimeline(1); }, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[11px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': 'Next weather hour' }, '+1 h'),
+                      h('button', { type: 'button', disabled: !liveTimelinePoint || liveTimelinePoint.role === 'current', onClick: returnLiveWeatherTimelineToCurrent, className: 'min-h-11 rounded-lg border border-emerald-300/40 bg-emerald-300/10 px-2 py-2 text-[11px] font-black text-emerald-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 disabled:cursor-not-allowed disabled:opacity-40' }, 'Now')
+                    ),
+                    h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-400' }, (liveTimelinePoint && liveTimelinePoint.role === 'forecast' ? 'Forecast model hour' : liveTimelinePoint && liveTimelinePoint.role === 'earlier' ? 'Earlier model hour' : 'Current conditions') + ' | ' + live.condition + ' | ' + live.temperature + '\u00B0C | ' + cardinal(live.windDir) + ' ' + live.windSpeed + ' km/h | ' + live.precipitation + ' mm precipitation'),
+                    liveTimelinePoint && liveTimelinePoint.role === 'forecast' && h('button', { type: 'button', onClick: saveLiveForecastCheckpoint, className: 'mt-2 min-h-11 w-full rounded-lg border border-fuchsia-300/50 bg-fuchsia-300/15 px-3 py-2 text-xs font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200', 'data-weather-save-forecast-checkpoint': true }, 'Save forecast checkpoint for verification')
                   ),
 !geographicMode && h('label', { htmlFor: 'weather-immersive-geography', className: 'mt-3 block text-[11px] font-black text-cyan-200' }, 'Conceptual terrain base',
                     h('select', {
@@ -5273,6 +5889,30 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                       );
                     })
                   ),
+                  geographicMode && h('div', { className: 'mt-4 border-t border-white/10 pt-4', 'data-weather-regional-layer-stack': true, role: 'region', 'aria-labelledby': 'weather-regional-layer-title' },
+                    h('div', { className: 'flex items-start justify-between gap-3' },
+                      h('div', null,
+                        h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-sky-300' }, 'Professional layer stack'),
+                        h('h5', { id: 'weather-regional-layer-title', className: 'mt-0.5 text-xs font-black text-white' }, 'Regional model field')
+                      ),
+                      h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (regionalFieldStatus.current ? 'border-emerald-300/40 bg-emerald-300/15 text-emerald-100' : regionalFieldStatus.code === 'missing' ? 'border-white/15 bg-white/5 text-slate-300' : 'border-amber-300/40 bg-amber-300/15 text-amber-100'), 'data-weather-regional-field-sync': regionalFieldStatus.code }, regionalFieldStatus.label)
+                    ),
+                    h('label', { htmlFor: 'weather-regional-layer-select', className: 'mt-3 block text-[11px] font-black text-sky-100' }, 'Active weather layer',
+                      h('select', { id: 'weather-regional-layer-select', value: regionalWeatherLayerId, disabled: !d.geographicMapReady, onChange: function (event) { setRegionalWeatherLayer(event.target.value); }, className: 'mt-1 min-h-11 w-full rounded-lg border border-white/15 bg-slate-950/80 px-3 py-2 text-xs font-bold text-white focus:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-300/40 disabled:opacity-50' },
+                        Object.keys(REGIONAL_WEATHER_LAYER_DEFINITIONS).map(function (id) { var definition = REGIONAL_WEATHER_LAYER_DEFINITIONS[id]; return h('option', { key: id, value: id }, definition.label); })
+                      )
+                    ),
+                    h('button', { type: 'button', disabled: !d.geographicMapReady || !live || d.geographicWeatherFieldLoading, onClick: loadRegionalWeatherField, className: 'mt-2 min-h-11 w-full rounded-lg bg-sky-300 px-3 py-2 text-xs font-black text-sky-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-50' }, d.geographicWeatherFieldLoading ? 'Loading 25-point field...' : regionalFieldStatus.current ? 'Refresh selected-hour field' : 'Load selected-hour field'),
+                    h('label', { htmlFor: 'weather-regional-layer-opacity', className: 'mt-3 block text-[11px] font-black text-sky-100' }, 'Layer opacity ' + Math.round(regionalFieldOpacity * 100) + '%',
+                      h('input', { id: 'weather-regional-layer-opacity', type: 'range', min: 0.2, max: 0.85, step: 0.05, value: regionalFieldOpacity, disabled: !regionalFieldStatus.current, onChange: function (event) { setRegionalWeatherLayerOpacity(event.target.value); }, className: 'mt-1 min-h-11 w-full accent-sky-300 disabled:opacity-50' })
+                    ),
+                    regionalFieldLegend && h('div', { className: 'mt-2', 'data-weather-regional-control-legend': true },
+                      h('div', { className: 'h-2 rounded-sm', style: { background: 'linear-gradient(90deg,' + regionalFieldLegend.palette.join(',') + ')' }, 'aria-hidden': true }),
+                      h('div', { className: 'mt-1 flex justify-between text-[10px] font-bold text-slate-300' }, h('span', null, Number(regionalFieldLegend.min).toFixed(regionalWeatherLayer.decimals) + regionalFieldLegend.unit), h('span', null, Number(regionalFieldLegend.max).toFixed(regionalWeatherLayer.decimals) + regionalFieldLegend.unit))
+                    ),
+                    h('p', { className: 'mt-2 text-[11px] leading-relaxed ' + (d.geographicWeatherFieldError ? 'text-rose-200' : regionalFieldStatus.current ? 'text-emerald-100' : 'text-amber-100'), role: d.geographicWeatherFieldError ? 'alert' : 'status', 'aria-live': 'polite', 'data-weather-regional-field-status': true }, d.geographicWeatherFieldError || d.geographicWeatherFieldStatus || regionalFieldStatus.detail),
+                    h('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-400' }, 'Open-Meteo model values sampled at 25 nearby coordinates. Cells visualize model-grid samples, not live radar or official warning boundaries. Refresh after changing time or location.')
+                  ),
                   geographicMode && h('button', {
                     type: 'button', disabled: !d.geographicMapReady || geographicBuildingsAvailable === false, onClick: function () { setGeographicBuildings(!geographicBuildings); },
                     'aria-pressed': geographicBuildings, 'aria-describedby': 'weather-geographic-buildings-help',
@@ -5280,7 +5920,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                   }, h('span', null, 'Real 3D buildings'), h('span', { 'aria-hidden': true }, !d.geographicMapReady ? 'Loading' : geographicBuildingsAvailable === false ? 'Unavailable' : geographicBuildings ? 'On' : 'Off')),
                   geographicMode && h('p', { id: 'weather-geographic-buildings-help', className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, !d.geographicMapReady ? 'Map controls unlock after geographic terrain and evidence layers finish loading.' : geographicBuildingsAvailable === false ? 'The current open map style does not provide a compatible 3D building layer. Terrain and other evidence layers remain available.' : geographicBuildingsAvailable == null ? 'Checking the open map style for compatible OpenStreetMap building footprints.' : 'Compatible OpenStreetMap building footprints appear in the street-scale Site view.'),
                   !geographicMode && h('div', { className: 'mt-3 grid grid-cols-2 gap-2' }, values.map(function (metric) { return h('div', { key: metric[0], className: 'rounded-lg bg-black/20 p-2' }, h('p', { className: 'text-[11px] text-slate-300' }, metric[0]), h('p', { className: 'mt-0.5 text-xs font-black' }, metric[1])); })),
-                  h('p', { className: 'mt-3 border-t border-white/10 pt-3 text-[11px] leading-relaxed text-slate-300' }, sceneCondition + (useLive && live.observedAt ? ' | Observed ' + live.observedAt + (live.timezone ? ' ' + live.timezone : '') + '.' : '.'))
+                  h('p', { className: 'mt-3 border-t border-white/10 pt-3 text-[11px] leading-relaxed text-slate-300' }, sceneCondition + (useLive ? ' | ' + timelineValidTimeDetail + '.' : '.'))
                 ),
 !geographicMode && h('section', { className: 'rounded-xl border border-cyan-300/25 bg-cyan-950/20 p-4', 'data-weather-immersive-tour': true },
                   h('div', { className: 'flex items-start justify-between gap-3' },
@@ -5443,7 +6083,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                     h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-300' }, 'Continue with published map labels, the true-scale study area, and the observed wind vector. Terrain sampling and terrain forecast evidence require a successful terrain-tile load.')
                   ),
                   h('p', { className: 'mt-2 text-[11px] text-slate-300', role: 'status', 'aria-live': 'polite', 'data-weather-geographic-status': true }, d.geographicMapStatus || 'Geographic layers are preparing.'),
-                  h('p', { className: 'mt-3 text-[11px] leading-relaxed text-slate-300', 'data-weather-map-attribution': true }, 'Map: ', h('a', { href: 'https://openfreemap.org/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'OpenFreeMap'), ' with ', h('a', { href: 'https://www.openstreetmap.org/copyright', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'OpenStreetMap data'), '. 3D terrain: ', h('a', { href: 'https://tiles.mapterhorn.com/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'Mapterhorn'), '. Renderer: ', h('a', { href: 'https://maplibre.org/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'MapLibre'), '.')
+                  h('p', { className: 'mt-3 text-[11px] leading-relaxed text-slate-300', 'data-weather-map-attribution': true }, 'Map: ', h('a', { href: 'https://openfreemap.org/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'OpenFreeMap'), ' with ', h('a', { href: 'https://www.openstreetmap.org/copyright', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'OpenStreetMap data'), '. 3D terrain: ', h('a', { href: 'https://tiles.mapterhorn.com/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'Mapterhorn'), '. Renderer: ', h('a', { href: 'https://maplibre.org/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-emerald-300 underline' }, 'MapLibre'), '.', d.geographicWeatherField && h('span', null, ' Weather field: ', h('a', { href: 'https://open-meteo.com/', target: '_blank', rel: 'noreferrer', className: 'font-bold text-sky-300 underline' }, 'Open-Meteo'), ' multi-location model values.'))
                 ),
 
                 h('section', { className: 'rounded-xl border border-emerald-400/20 bg-emerald-950/20 p-4', 'data-weather-live-control': true },

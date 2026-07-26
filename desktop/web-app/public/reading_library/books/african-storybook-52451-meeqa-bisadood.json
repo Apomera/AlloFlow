@@ -1,0 +1,183 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52451-meeqa-bisadood",
+  "title": "Meeqa bisadood",
+  "description": "Selemeng wuxuu leeyahay bisado badan. Immisa bisado ayuu Selemeng leeyahay?",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Khothatso Ranoosi, Marion Drew"
+  ],
+  "illustrators": [
+    "Marleen Visser, Wiehan de Jager"
+  ],
+  "translators": [
+    "Abdullahi Mohamed"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Author"
+    },
+    {
+      "name": "Abdullahi Mohamed",
+      "role": "Translation"
+    },
+    {
+      "name": "Marleen Visser, Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Khothatso Ranoosi, Marion Drew (Author); Abdullahi Mohamed (Translation); Marleen Visser, Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://paleng.weebly.com/.",
+    "editionId": "52451",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-e500cb18c2dc2f1a",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/12005.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12005.png",
+      "text": "Selemeng waxay jeceshahay bisadaha. Gurigeeda waxaa Jooga bisado badan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451#page=1",
+      "sourceDigest": "sha256:b898106140c4ae41c58ad536fcf63699bdf25c3917c304d50159cd0ad8480c2a"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12006.png",
+      "text": "Selemeng waxay leedahay hal bisad madow. Bisaddan waxay cunaysaa hilib badan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451#page=2",
+      "sourceDigest": "sha256:a0931c1f5c01131f2d7ee528a2b854f835d9122eff0c569f5d92fd6f9fa16cf7"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12007.png",
+      "text": "Selemeng waxay leedahay hal bisad buuran. Bisaddan waxay cunaysaa wax kasta.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451#page=3",
+      "sourceDigest": "sha256:f6fa94a7c4f820b81d14659df95d2ea59c6442f4d74f51e2353fdefab3b7ab9d"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12008.png",
+      "text": "Bisadda saddexaad ayaa geed fuusha. Bisaddan waxay ku dhegtaa geedka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451#page=4",
+      "sourceDigest": "sha256:d94756831e934711fbc0d829dd4b9d9a1a41de42c8d0b0838c5bf60c8c5d2526"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12028.png",
+      "text": "Selemeng waxay fuushaa geedka. Waxay ku dhegtaa bisadda saddexaad. Hooyada Selemeng waa inay ka caawisaa inay hoos u soo degaan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451#page=5",
+      "sourceDigest": "sha256:587f317d7b45c2b033cca5b2cd39b2fd6479f202241d18a37afe201d9d2969b8"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12009.png",
+      "text": "Selemeng waxay leedahay laba bisad oo caajis ah. Waxay bannaanka ku jiifsadaan qorraxda maalintii oo dhan.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451#page=6",
+      "sourceDigest": "sha256:3b77a8ea115861769cf13a15cc355df986c9a5fc96b94ab89acc4eec7a38edf8"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12019.png",
+      "text": "Selemeng waxay leedahay saddex bisad oo mashquul ah. Waxay jiiraan jiirarka jikada habeenkii.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451#page=7",
+      "sourceDigest": "sha256:480dd01b66e268ea788b80583f011c82b010f930eb72783e2b1aecabeb29d73a"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12020.png",
+      "text": "Selemeng waxay leedahay eey hal ah. Magaciisu waa Lirafi. Lirafi saaxiibo ma laha. Wuu murugaysan yahay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451#page=8",
+      "sourceDigest": "sha256:7e5eab2ab4d0b59df1755e010bbc9aa920998e061f27e54ab7a03c9a0ff1ead8"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12021.png",
+      "text": "Bisadaha Selemeng ma jecla Lirafi. Waxay ka eryaan guriga. Lirafi wuu cararaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451#page=9",
+      "sourceDigest": "sha256:547f08ae71ebe5d9a8c17252fa079b48faeb5ee1fd8a9dc11144198fc2071033"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12022.png",
+      "text": "Selemeng waxay soo heshay Lirafi waxayna kusoo celisay guriga. Bisaduhuna ma faraxsana. Mar kale ma doonayaan inay arkaan Lirafi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451#page=10",
+      "sourceDigest": "sha256:9773265e78d9ca764087e0c752f53de2cabc53192524e6731bfe56f2c4525469"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12024.png",
+      "text": "Immisa bisado ayaa Selemeng leedahay? Waxay leedahay siddeed bisadood.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451#page=11",
+      "sourceDigest": "sha256:cc7a1538d4cf9744b22c17d3542f4ab0ca5cc0825dced6feded6145ffddb16d1"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/12023.png",
+      "text": "Immisa eey ayaa Selemeng leedahay? Waxay leedahay eey hal ah. Lirafi hadda mee?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451#page=12",
+      "sourceDigest": "sha256:4c77546b5a3727dc693691f699ce25de7007cf42fd7a312c672f397a1729c9ba"
+    },
+    {
+      "n": 13,
+      "img": null,
+      "text": "Immisa bisadood ayaad guriga ku haysataa? Immisa eey ayaad guriga ku haysataa?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52451#page=13",
+      "sourceDigest": "sha256:bbc2c33f11e3c2f56a5d20024003d9243914ff926ec005a2613de8050566ba46"
+    }
+  ],
+  "stats": {
+    "pages": 13,
+    "words": 171
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:9ee82bf26778a8e4cf1d06e540449c0a1f6c88b78ffefd3fa2e645d961a166be"
+  }
+}

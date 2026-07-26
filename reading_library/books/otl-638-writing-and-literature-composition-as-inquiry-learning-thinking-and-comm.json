@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-638-writing-and-literature-composition-as-inquiry-learning-thinking-and-comm",
+  "title": "Writing and Literature: Composition as Inquiry, Learning, Thinking, and Communication",
+  "description": "In the age of Buzzfeeds, hashtags, and Tweets, students are increasingly favoring conversational writing and regarding academic writing as less pertinent in their personal lives, education, and future careers. Writing and Literature: Composition as Inquiry, Learning, Thinking and Communication connects students with works and exercises and promotes student learning that is kairotic and constructive. Dr. Tanya Long Bennett, professor of English at the University of North Georgia, poses questions that encourage active rather than passive learning. Furthering ideas presented in Contribute a Verse: A Guide to First-Year Composition as a complimentary companion, Writing and Literature builds a new conversation covering various genres of literature and writing. Students learn the various writing styles appropriate for analyzing, addressing, and critiquing these genres including poetry, novels, dramas, and research writing. The text and its pairing of helpful visual aids throughout emphasizes the importance of critical reading and analysis in producing a successful composition. Writing and Literature is a refreshing textbook that links learning, literature, and life.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Tanya Long Bennet - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of North Georgia Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/writing-and-literature-composition-as-inquiry-learning-thinking-and-communication"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "In the age of Buzzfeeds, hashtags, and Tweets, students are increasingly favoring conversational writing and regarding academic writing as less pertinent in their personal lives, education, and future careers. Writing and Literature: Composition as Inquiry, Learning, Thinking and Communication connects students with works and exercises and promotes student learning that is kairotic and constructive. Dr. Tanya Long Bennett, professor of English at the University of North Georgia, poses questions that encourage active rather than passive learning. Furthering ideas presented in Contribute a Verse: A Guide to First-Year Composition as a complimentary companion, Writing and Literature builds a new conversation covering various genres of literature and writing. Students learn the various writing styles appropriate for analyzing, addressing, and critiquing these genres including poetry, novels, dramas, and research writing. The text and its pairing of helpful visual aids throughout emphasizes the importance of critical reading and analysis in producing a successful composition. Writing and Literature is a refreshing textbook that links learning, literature, and life."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 186
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "638",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

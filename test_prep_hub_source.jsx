@@ -598,14 +598,27 @@ function validateTestPrepPack(pack) {
 }
 
 function registerTestPrepPack(pack) {
-  // Slim-embed contract: the release build ships only the 200 source items per
-  // expanded pack (Cloudflare 25 MiB per-file cap) and the 300 guided-review
-  // activities are derived here, deterministically, from the same shared core
-  // the pipeline used to write test_prep/*_items.json (parity-gated at build).
-  if (pack && Array.isArray(pack.items) && pack.items.length === 200 && pack.guidedReviewBatchCount > 0 &&
+  // Split-payload contract: release modules retain every source-reviewed and
+  // independently authored item, while deterministic guided-review banks are
+  // reconstructed from the first two source banks. The release builder proves
+  // byte-for-byte parity with the complete deployed pack before omitting them.
+  if (pack && Array.isArray(pack.items) && pack.guidedReviewBatchCount > 0 &&
       typeof TEST_PREP_GUIDED_EXPANSION !== 'undefined' && TEST_PREP_GUIDED_EXPANSION &&
       typeof TEST_PREP_GUIDED_EXPANSION.deriveGuidedReviewItems === 'function') {
-    pack = { ...pack, items: pack.items.concat(TEST_PREP_GUIDED_EXPANSION.deriveGuidedReviewItems(pack.items)) };
+    const batchSize = Math.max(1, Number(pack.batchSize) || 100);
+    const totalBanks = Math.max(1, Number(pack.learningActivityBankCount) || Number(pack.diagnosticBatchCount) || 5);
+    const guidedItemCount = Math.max(0, Number(pack.guidedReviewBatchCount) || 0) * batchSize;
+    const expectedEmbeddedCount = totalBanks * batchSize - guidedItemCount;
+    if (guidedItemCount > 0 && pack.items.length === expectedEmbeddedCount) {
+      const sourceItemCount = Math.max(batchSize * 2, Number(pack.sourceQuestionItems) || 0);
+      const guidedItems = TEST_PREP_GUIDED_EXPANSION
+        .deriveGuidedReviewItems(pack.items.slice(0, sourceItemCount))
+        .slice(0, guidedItemCount);
+      if (guidedItems.length !== guidedItemCount) {
+        throw new Error('Invalid split test prep pack: guided-review reconstruction count mismatch.');
+      }
+      pack = { ...pack, items: pack.items.concat(guidedItems) };
+    }
   }
   const result = validateTestPrepPack(pack);
   if (!result.valid) throw new Error('Invalid test prep pack: ' + result.errors.join(' '));

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1587-health-sciences-collection-development-an-overview-of-fundamental-knowle",
+  "title": "Health Sciences Collection Development: An Overview of Fundamental Knowledge and Practices - 2nd Edition",
+  "description": "This work was created by members of the Medical Library Association’s Collection Development Caucus to provide librarians with key concepts about health sciences collection development. The chapters provide an overview of the responsibilities and tasks involved in the development and management of health sciences collections; it is recommended that readers refer to the references and further reading sections in each chapter for a more detailed look at each topic. The first edition was published in 2019 and was updated with a second edition in 2023. This updated edition has a new section on unique collection genres; addresses Diversity, Equity, Inclusion and Accessibility in collections; incorporates significant updates to and expansion of previous content; and includes a glossary. New additions to each chapter, as applicable, include key communities and online courses for professional development.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Library Science and Museum Studies",
+    "Medicine"
+  ],
+  "authors": [
+    "Medical Library Association Collection Development Caucus - Author / Karen H. Gau - Editor / Iris Kovar-Gough - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Virginia Commonwealth University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/health-sciences-collection-development-an-overview-of-fundamental-knowledge-and-practices"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This work was created by members of the Medical Library Association’s Collection Development Caucus to provide librarians with key concepts about health sciences collection development. The chapters provide an overview of the responsibilities and tasks involved in the development and management of health sciences collections; it is recommended that readers refer to the references and further reading sections in each chapter for a more detailed look at each topic. The first edition was published in 2019 and was updated with a second edition in 2023. This updated edition has a new section on unique collection genres; addresses Diversity, Equity, Inclusion and Accessibility in collections; incorporates significant updates to and expansion of previous content; and includes a glossary. New additions to each chapter, as applicable, include key communities and online courses for professional development."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 156
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1587",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

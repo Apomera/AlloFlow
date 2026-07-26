@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1699-becoming-a-climate-conscious-lawyer-climate-and-the-australian-legal-sys",
+  "title": "Becoming a Climate Conscious Lawyer: Climate and the Australian Legal System",
+  "description": "As the world grapples with the escalating challenges of climate change, the legal profession finds itself at a crossroads. Becoming a Climate Conscious Lawyer: Climate and the Australian Legal System provides an original, innovative, and accessible analysis of the impact of climate change on legal doctrines and principles. It offers an overview of cutting-edge developments and how the transition to a low-carbon society is reshaping a wide range of laws, from corporate to criminal law, and beyond. This valuable new resource supports legal professionals, law students, and legal educators to understand current legal challenges – providing the know-how to strategically navigate, and positively influence, the development of law to respond to a climate changed world. The book delivers a transformative approach to legal education: equipping law students to become climate-conscious professionals with the confidence and competency to deliver legal solutions to a diverse range of clients, and promote climate justice across diverse communities.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law"
+  ],
+  "authors": [
+    "Anna Huggins - Author / Ellen Hawkins - Author / Steven Tudor - Author / Nicole Rogers - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "La Trobe University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/becoming-a-climate-conscious-lawyer-climate-and-the-australian-legal-system"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "As the world grapples with the escalating challenges of climate change, the legal profession finds itself at a crossroads. Becoming a Climate Conscious Lawyer: Climate and the Australian Legal System provides an original, innovative, and accessible analysis of the impact of climate change on legal doctrines and principles. It offers an overview of cutting-edge developments and how the transition to a low-carbon society is reshaping a wide range of laws, from corporate to criminal law, and beyond. This valuable new resource supports legal professionals, law students, and legal educators to understand current legal challenges – providing the know-how to strategically navigate, and positively influence, the development of law to respond to a climate changed world. The book delivers a transformative approach to legal education: equipping law students to become climate-conscious professionals with the confidence and competency to deliver legal solutions to a diverse range of clients, and promote climate justice across diverse communities."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 176
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1699",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-593-tortoise-finds-his-home",
+  "title": "Tortoise finds his home",
+  "description": "Tortoise sets off in search of his house. Along the way, he meets new friends to help him. But the sky is darkening, and lightning flashes in the distance. Will Tortoise find his house in time?",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Family, friends, and home"
+  ],
+  "authors": [
+    "Maya Fowler"
+  ],
+  "illustrators": [
+    "Katrin Coetzer"
+  ],
+  "contributors": [
+    {
+      "name": "Katrin Coetzer",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Damian Gibbs",
+      "role": "Designer"
+    },
+    {
+      "name": "Maya Fowler",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/tortoise-finds-his-home/",
+    "attributionUrl": "https://bookdash.org/books/tortoise-finds-his-home/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=tortoise-finds-his-home"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2014/11/tortoise-finds-his-home_english_pdf-ebook_cover_20150920-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2014/11/tortoise-finds-his-home_english_pdf-ebook_cover_20150920-600x600.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Tortoise sets off in search of his house. Along the way, he meets new friends to help him. But the sky is darkening, and lightning flashes in the distance. Will Tortoise find his house in time?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Katrin Coetzer (Illustrator); Damian Gibbs (Designer); Maya Fowler (Writer)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=tortoise-finds-his-home"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 99
+  }
+}

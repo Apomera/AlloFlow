@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-21615-ndingumbala-wobusi",
+  "title": "Ndingumbala wobusi",
+  "description": "Ingaba ngutitshala wakho lo? Ingaba ngudadobawo wakho lo? UAmanda udikiwe yile mibuzo yaye unqwenela ukufana noMama noTata wakhe. Kodwa bayafana kunokuba eqonda!",
+  "language": "isiXhosa",
+  "langCode": "xho",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Family, friends, and home",
+    "Heritage, diversity, and inclusivity"
+  ],
+  "authors": [
+    "Maimouna Jallow"
+  ],
+  "illustrators": [
+    "Caroline Faysse"
+  ],
+  "contributors": [
+    {
+      "name": "Maimouna Jallow",
+      "role": "Writer"
+    },
+    {
+      "name": "Charné Casey",
+      "role": "Designer"
+    },
+    {
+      "name": "Caroline Faysse",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Alison Ziki",
+      "role": "Editor"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/ndingumbala-wobusi/",
+    "attributionUrl": "https://bookdash.org/books/ndingumbala-wobusi/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=im-the-colour-of-honey"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/02/im-the-colour-of-honey_xh_20200710_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/02/im-the-colour-of-honey_xh_20200710_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Ingaba ngutitshala wakho lo? Ingaba ngudadobawo wakho lo? UAmanda udikiwe yile mibuzo yaye unqwenela ukufana noMama noTata wakhe. Kodwa bayafana kunokuba eqonda!"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Maimouna Jallow (Writer); Charné Casey (Designer); Caroline Faysse (Illustrator); Alison Ziki (Editor)\n\nLanguage: isiXhosa. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=im-the-colour-of-honey"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 88
+  }
+}

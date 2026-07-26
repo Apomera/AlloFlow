@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47416-imfyisi-n-ikinyamasyo",
+  "title": "Imfyisi n'Ikinyamasyo",
+  "description": "Ukuntu ikinyamasyo caronse ikibiri kigumye, n'ingene imfyisi yarose ibibara ku mugongo wayo.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Alice Mulwa"
+  ],
+  "illustrators": [
+    "Salim Kasamba"
+  ],
+  "translators": [
+    "Fanuel Ndayishimiye"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Alice Mulwa",
+      "role": "Author"
+    },
+    {
+      "name": "Fanuel Ndayishimiye",
+      "role": "Translation"
+    },
+    {
+      "name": "Salim Kasamba",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Alice Mulwa (Author); Fanuel Ndayishimiye (Translation); Salim Kasamba (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47416",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-a7ada6b0f6644f73",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/13398.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13395.png",
+      "text": "Habaye, mu gisagara ca Kibira, Imfysi yakunda inda cane.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=1",
+      "sourceDigest": "sha256:a3bebc8ba39214cd62d84d9c4c569f521ebe763cfdb95c4d7fcf1a0065a86e2f"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13397.png",
+      "text": "Muri ako karere hakaba Ikinyamasyo gitinya cane. Imfyisi n'ico Kinyamasyo bikaba ibigenzi. Imfyisi imenya ko hakurya y'uruzi runini utera uja mu burengero hari inzuki kandi zakora ubuki buryoshe cane.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=2",
+      "sourceDigest": "sha256:9608a103ee54a8c8f74a97a98c837062f3c12caf27d9afe67bedd4e29f86340f"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13398.png",
+      "text": "Izo nzuki zatembera rimwe mu mwaka, kandi zamara indwi yose zitagarutse mu bitiba vyazo. Imfyisi n'ico Kinyamasyo biravugana, \"Dutegerezwa kuja kurya ubwo buki inzuki zitaragaruka.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=3",
+      "sourceDigest": "sha256:9b90ccf00e28cc985b0618a09706455537b03d032141084842262a480650efd7"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13400.png",
+      "text": "Ico Kinyamasyo kiratinya kugenda. Kiratinya no kwankira Imfyisi. Ivyo bikoko bija aho imizinga y'inzuki iri. Imfyisi yagenda iranyaruka ariko Ikinyamasyo cagenda bukebuke inyuma yayo kubera ubwoba.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=4",
+      "sourceDigest": "sha256:5afc979bdfcd1f00d91e9811414a9546023d3f482a34bafd639752830f0fd198"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13401.png",
+      "text": "Biraduga umusozi, bijabuka ubusoko, bigenda ibiyaya. Birajabuka n'uruzi runini rw'I burengero, bigenda urugendo rurerure.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=5",
+      "sourceDigest": "sha256:8433d194b853949998a929c4c39d5683fd1ddb567a924bb67cacd7015180ed75"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13403.png",
+      "text": "Birateba bibona imizinga ku biti biri ku musozi. Imfyisi ica iritaza yurira ku biti. Ariko Ikinyamasyo co nticabishobora kubera cari kirushe kandi gishonje.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=6",
+      "sourceDigest": "sha256:bf61c3f9c8ec097cc8c62abc019be6ef83dab0afdc526f0ce55281af6979883c"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13405.png",
+      "text": "Imfyisi imaze gushikira igitiba kinini ibona ko ata mwanya yataye. Ica ihamagara Ikinyamasyo, \"Nyaruka wurire igiti ukorore igitiba.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=7",
+      "sourceDigest": "sha256:94a776dece1e4ff31a73e7c02d72c09830d82002dad1618d39e609b3bc67a131"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13406.png",
+      "text": "Ikinyamasyo kiragerageza kurira igiti bukebuke. Caratinya ko cohava kinyerera kikagwa. Ivyo bishavuza Imfyisi, ica itangura kugituka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=8",
+      "sourceDigest": "sha256:29fa624215252cdd1f84fe796d432beefe020e10f3654409d4b49f7d87086b59"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13407.png",
+      "text": "Ikinyamasyo gikoze ku muzinga w'inzuki cumva urwamo rw'inzuki kuko zari zikirimwo. Kimaze kugira ubwoba kica kirakoroka. N'igitiba naco kica kirakoroka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=9",
+      "sourceDigest": "sha256:facaf594df77443a3a64be7f260e3c0dde22cf05dcf4459a45b8e765ededbef6"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13408.png",
+      "text": "Ico gitiba kigwa kuri ca Kinyamasyo. Ubuki buca buragisesekako nticaba kikiboneka! Imfyisi ica itangura gufyeta bwa buki. Inzuki zica zirashavura.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=10",
+      "sourceDigest": "sha256:041c76809cb3d8e81194225b0f1981ff574f752e59910f5dfc4cda91048285b1"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13409.png",
+      "text": "Inzuki zica zirarya ya Mfyisi umubiri wose. Ya Mfyisi ica yikora ku yo yameze iriruka, za nzuki nazo ziyirukako.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=11",
+      "sourceDigest": "sha256:1c652a6831fdb2a0fbbbfcd8da5856b789438edebe6171608ef0caa3ecd5ab11"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13410.png",
+      "text": "Imfyisi iriruka imanuka imisozi, ica mu ruzi igenda ibiyaya ica mu myonga. Inzuki ziyiremerako zigenda zirayirya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=12",
+      "sourceDigest": "sha256:65487307883301c9c9736e312b3224ca697f6748a5e5b9901693f5bb3d34be18"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13411.png",
+      "text": "Ca Kinyamasyo naco aho cari kikiri musi ya ca gitiba, cumva ko ata rwamo rw'inzuki rukihari. Igitiba n'ubuki bwari bwacumiyeko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=13",
+      "sourceDigest": "sha256:793f920a041f6cca1e3c1ee86d662fe0687e7d5dfe4d498a09ff7c967cc5d434"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13412.png",
+      "text": "Ico Kinyamasyo cibwira ko bitoba bikenewe ko coja kwinyegeza mw'ishamba. Ikibiribiri gishasha cavuye ku buki cari kigikingiriye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=14",
+      "sourceDigest": "sha256:4c8911f21a8596374820448b18ac70e158b769818435af4122bdfb0e234314b1"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/13414.png",
+      "text": "Ya Mfyisi nayo irateba iraruha kandi yari ifise ibivyimba vyinshi vyaho inzuki zayiriye, irateba ishika i muhira. Imaze kuvyuka, isanga aho inzuki zayiriye hasigaye hari ibibarabara ku mugongo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=15",
+      "sourceDigest": "sha256:53919bb51cfdb1ce1ef5d0f19d96289dc7e7de9cef2e5ef7b2b493bbcac5206d"
+    },
+    {
+      "n": 16,
+      "img": null,
+      "text": "Uko niko ikinyamasyo carose ikibiribiri kigumagumye, imfyisi nayo ironka ibibarabara ku mugongo wayo. Imfyisi irarahira ko itazosubira kwiba. Kuv'ico gihe imfyisi n'ikinyamasyo biracari abakeba.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47416#page=16",
+      "sourceDigest": "sha256:9f7f22b56ac4105ee768bf28de9e04c4adbd9804c8cf9e78b25e48bcb6f52264"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 324
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:17a19498d467b3990d960f2a9dc15b31cd378c58185cffb503b35bffbc67f120"
+  }
+}

@@ -1,0 +1,232 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47387-ukurondera-kumenya-k-umwana-w-inzovu",
+  "title": "Ukurondera kumenya k' umwana w' inzovu",
+  "description": "Kera inzovu zari zifise umutonzi mugufi. Ariko kukurondera kumenya vy'umwana w' inzovu, vyarahindutse zica zigira imitonzi miremire kandi ngirakamaro.",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Judith Baker, Lorato Trok"
+  ],
+  "illustrators": [
+    "Wiehan de Jager"
+  ],
+  "translators": [
+    "Melance Niyonizigiye"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Judith Baker, Lorato Trok",
+      "role": "Author"
+    },
+    {
+      "name": "Melance Niyonizigiye",
+      "role": "Translation"
+    },
+    {
+      "name": "Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Judith Baker, Lorato Trok (Author); Melance Niyonizigiye (Translation); Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47387",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-e0fe563388edcf3a",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/1110.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1111.png",
+      "text": "Umuntu wese arazi ko inzovu ifise umutonzi muremure.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=1",
+      "sourceDigest": "sha256:b994dc2987c868be176273b69fa8daa79317130bbe2cf4c22ea717b4f552510d"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1112.png",
+      "text": "Ariko kera, inzovu yarifise umutonzi mugufi kand ufyase kurya ikirato kimeze kuruhande rw'imbere.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=2",
+      "sourceDigest": "sha256:cac5c3398a27ce3e64d7e5bd753334910adfd90de4235777070e46b9f5b0b7d0"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1110.png",
+      "text": "Umunsi umwe, havutse umwana w'inzovu. Yama ashaka kumenya ikintu cose. Yarabaza ikibazo cerekeye igikoko cose.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=3",
+      "sourceDigest": "sha256:c6395bf306d9a0f7d71ddfe479e96b963599f107db623fd6b17bc4f046152721"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1113.png",
+      "text": "Yashaka kumenya ivyerekeye umusumbarengwe. Yarabajije ati, \"Kubera iki ufise izosi rirerire?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=4",
+      "sourceDigest": "sha256:7aeb969b0e2e6f80bac39cf4e737c26ccd9663a940d3ff3d9cd477c1381c7faa"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1114.png",
+      "text": "Yashaka kumenya ivyerekeye inkura. \"Kubera iki ufise ihembe risongoye?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=5",
+      "sourceDigest": "sha256:81d1f2d49f011ec47c9a5bc8241f74ed800eac7850b7135134ac6bb96a22dace"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1115.png",
+      "text": "Yashaka kumenya ivyerekeye imvubu. Yarabajije ati, \"Kubera iki ufise amaso atukuye?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=6",
+      "sourceDigest": "sha256:09fd615bba94911ae0174174c6d9769e41b7e687607219987faae834bf3ef576"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1116.png",
+      "text": "Yashaka kumenya cane ivyerekeye n' ingona. Yarabajije ati, \"Mbega ingona zirya iki?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=7",
+      "sourceDigest": "sha256:b66a35fa7dbdb2ab8b6f3976b9b5488198233d59ce8f76ff689471a9eb30453a"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1117.png",
+      "text": "Nyina imwishura iti, \"Ntuzosubire kubaza ikibazo nkico.\" Hanyuma umwana w'inzovu uragenda wijiriwe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=8",
+      "sourceDigest": "sha256:384994009adc78c2c5a496d71224d23aba4bb93f0b199647758a5b349a562282"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1118.png",
+      "text": "Buno nyene, igisiga kigurukira kumwana w'inzovu. Igisiga kirajiragira kiti, \"Nkurikira tumanuke kuruzi. Uca umenya ico ingona irya.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=9",
+      "sourceDigest": "sha256:37dd93a3250d27f36215fb6e27ba5d3223127c2eae40f71c07756a0d1241a984"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1119.png",
+      "text": "Nuko umwana w' inzovu ukwirikira ca gisiga gushika kuruzi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=10",
+      "sourceDigest": "sha256:3d5c8d56080234fd6ef427e25022406aeb056fd6402ae64160ea4e1a6ec42c03"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1120.png",
+      "text": "Wa mwana w'inzovu aca mu rufunzo ahagara ku nkobe y' uruzi. Wa mwana w'inzovu araba mu mazi. Mbega ingona irihe?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=11",
+      "sourceDigest": "sha256:44a21e7d76e5ff47760a4d08c92d350c16aed3a3025bdfb7fe8889c718c34fbe"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1121.png",
+      "text": "Yumva urubuye ruri hafi y'uruzi ruvuze ruti, \"Amahoro.\" Umwana w'inzu arasubiza ati, \"Yambu. Woshobora kumbarira ico ingona ifungura?\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=12",
+      "sourceDigest": "sha256:d208a53cde30c74d2461a7f41fe265bdfb26f16a1c191a6461a93d792070ed49"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1122.png",
+      "text": "\"Unamika umutwe ndakubwire. Unamika. Unamika kandi.'' Nuko irunama, kandi irunama.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=13",
+      "sourceDigest": "sha256:0d730214ffae1eae45769005fd854c5a618457d37353ee378a12e9b36a8fe6cd"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1123.png",
+      "text": "Bunonyene, \"Caki!\" Izuru ry'umwana w'inzovu ryari mumemyo y'ingona. \"Ingona irakurya uno munsi!\" Cagikona, kirigurukira.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=14",
+      "sourceDigest": "sha256:63618bf73a2f1b007f78f8a7e25e9ee90b40310d9659fd5474dd85e141621582"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1124.png",
+      "text": "Umwana w' inzovu wicara kumaguru yawo manini utangura gukwega. Ariko Ingona ntiyarekura ryazuru ry'umwana w'inzovu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=15",
+      "sourceDigest": "sha256:48b627e09235a6ee24b081f31443ce582035ceaa3fd74aaf354d0a6c96fe0ea6"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1125.png",
+      "text": "Izuru ry'umwana w'inzovu rirakweguka, rirakweguka, rikweguka. Hanyuma ngo pwa, agwa ugaramye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=16",
+      "sourceDigest": "sha256:c55cfede8b48c47c2df0e25eb1e4089cb4bdb416e32ccf70fbde7a651eb426d7"
+    },
+    {
+      "n": 17,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1126.png",
+      "text": "Ingona yibira muruzi irigira. Yarishavuye kubona ibuze igifungugwa yariziko izakurarira.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=17",
+      "sourceDigest": "sha256:8e983632a88359d2f05333fe05383a22648f233e0f1f16c972b57c2ad7c42ae5"
+    },
+    {
+      "n": 18,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1882.png",
+      "text": "Ya nzovu iraba izuru ryayo. Izuru ryari yrakwegutse cane. Ntiyabona aho rigera.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=18",
+      "sourceDigest": "sha256:fe9de2bc09d351151ce816f40895a461a7f16ca3af38c2bd6f53754802403a05"
+    },
+    {
+      "n": 19,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1127.png",
+      "text": "Izuru riba rirerire ntiyashobora kwamura ivyamwa mumashami y'ibiti.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=19",
+      "sourceDigest": "sha256:5c5e62672be93a565d6b1b535bd9ae7a712be45cf8362dc8c356e3a70aa9c3da"
+    },
+    {
+      "n": 20,
+      "img": "https://www.africanstorybook.org/illustrations/pages/1128.png",
+      "text": "Izuru ryaryo riba rirerire ntyashobora kudaha amazi yokwoga mumugongo. Kuva ico gihe, inzovu zigira imitonzi miremire.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47387#page=20",
+      "sourceDigest": "sha256:6ea4cce98e76320f155a5d6fc61eb51f86fc663e39c40f0b1491ed7a9053af34"
+    }
+  ],
+  "stats": {
+    "pages": 20,
+    "words": 251
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:451f23df8ff5ae24ae8aa740f747293065bd93c55bcf6916fa60fc64e346d179"
+  }
+}

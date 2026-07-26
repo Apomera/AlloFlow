@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1193-intermediate-college-writing-building-and-practicing-mindful-writing-ski",
+  "title": "Intermediate College Writing: Building and Practicing Mindful Writing Skills - 2026 Edition",
+  "description": "Welcome to Intermediate College Writing: Building and Practicing Mindful Writing Skills, an open textbook designed for use in university-level courses that focus on cultivating study skills alongside effective academic and workplace writing skills. It offers a no-cost alternative to commercial products, combining practical guidance with interactive exercises and thoughtfully designed writing opportunities. This textbook’s modular design and ample coverage of topics and genres means that it can be used flexibly over semester-long or stretch courses, allowing instructors and students to select the chapters that are most relevant for their needs. By blending new material with reviews of key topics, such as academic integrity, the chapters provide fresh perspectives on matters vital to the development of strong writing skills. The book adapts, builds upon, and expands material covered in our other two open textbooks, Mindful Technical Writing: An Introduction to the Fundamentals (Atkinson & Corbitt, 2021)1 and Advanced-Level Writing in the University Classroom and Beyond: Mindful Practices for Technical, Business, and Scientific Communication (Atkinson & Corbitt, 2024). If you would like to access a Word Document version of this text please email Author, Stacey Corbitt, scorbitt@mtech.edu.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Dawn Atkinson - Author / Stacey Corbitt - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Montana Technological University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/intermediate-college-writing-building-and-practicing-mindful-writing-skills"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Welcome to Intermediate College Writing: Building and Practicing Mindful Writing Skills, an open textbook designed for use in university-level courses that focus on cultivating study skills alongside effective academic and workplace writing skills. It offers a no-cost alternative to commercial products, combining practical guidance with interactive exercises and thoughtfully designed writing opportunities. This textbook’s modular design and ample coverage of topics and genres means that it can be used flexibly over semester-long or stretch courses, allowing instructors and students to select the chapters that are most relevant for their needs. By blending new material with reviews of key topics, such as academic integrity, the chapters provide fresh perspectives on matters vital to the development of strong writing skills. The book adapts, builds upon, and expands material covered in our other two open textbooks, Mindful Technical Writing: An Introduction to the Fundamentals (Atkinson & Corbitt, 2021)1 and Advanced-Level Writing in the University Classroom and Beyond: Mindful Practices for Technical, Business, and Scientific Communication (Atkinson & Corbitt, 2024). If you would like to access a Word Document version of this text please email Author, Stacey Corbitt, scorbitt@mtech.edu."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2026."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 208
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1193",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

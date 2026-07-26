@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-815-principles-of-microeconomics-2021-a",
+  "title": "Principles of Microeconomics - 2021-A",
+  "description": "Principles of Microeconomics is an adaptation of the textbook, Microeconomics: Markets, Methods, and Models by D. Curtis and I. Irvine, which provides concise yet complete coverage of introductory microeconomic theory, application and policy in a Canadian and global environment. This adaptation employs methods that use equations sparingly and do not utilize calculus. The key issues in most chapters are analyzed by introducing a numerical example or case study at the outset. Students are introduced immediately to the practice of taking a data set, examining it numerically, plotting it, and again analyzing the material in that form. The end-of-chapter problems involve numerical and graphical analysis, and a small number of problems in each chapter involve solving simple linear equations (intersecting straight lines). However, a sufficient number of questions is provided for the student to test understanding of the material without working through that subset of questions. This textbook is intended for a one-semester course, and can be used in a two-semester sequence with the companion textbook, Principles of Macroeconomics. The three introductory chapters are common to both textbooks.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Economics"
+  ],
+  "authors": [
+    "Doug Curtis - Author / Ian Irvine - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Lyryx",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/principles-of-microeconomics-2017"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Principles of Microeconomics is an adaptation of the textbook, Microeconomics: Markets, Methods, and Models by D. Curtis and I. Irvine, which provides concise yet complete coverage of introductory microeconomic theory, application and policy in a Canadian and global environment. This adaptation employs methods that use equations sparingly and do not utilize calculus. The key issues in most chapters are analyzed by introducing a numerical example or case study at the outset. Students are introduced immediately to the practice of taking a data set, examining it numerically, plotting it, and again analyzing the material in that form. The end-of-chapter problems involve numerical and graphical analysis, and a small number of problems in each chapter involve solving simple linear equations (intersecting straight lines). However, a sufficient number of questions is provided for the student to test understanding of the material without working through that subset of questions. This textbook is intended for a one-semester course, and can be used in a two-semester sequence with the companion textbook, Principles of Macroeconomics. The three introductory chapters are common to both textbooks."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 200
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "815",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

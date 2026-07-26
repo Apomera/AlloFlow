@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1542-radio-systems-engineering-revised-first-edition",
+  "title": "Radio Systems Engineering - Revised First Edition",
+  "description": "Using a systems framework, this textbook provides a clear and comprehensive introduction to the performance, analysis, and design of radio systems for students and practicing engineers. Presented within a consistent framework, the first part of the book describes the fundamentals of the subject: propagation, noise, antennas, and modulation. The analysis and design of radios including RF circuit design and signal processing is covered in the second half of the book. Key features Numerous examples within the text involve realistic analysis and design activities, and emphasize how practical experiences may differ from theory or taught procedures. RF circuit design and analysis is presented with minimal involvement of Smith charts, enabling students to more readily grasp the fundamentals. Both traditional and software-defined/direct sampling technology are described with pros and cons of each strategy explained. Are you reviewing or adopting this book for a course? Please help us understand your use by filling out this form: https://bit.ly/interest_radiosystemsengineering_revised1st Radio Systems Engineering (Revised First Edition) was previously published by Cambridge University Press (2016) ISBN 9781107068285. This version is © Steven W. Ellingson and has been lightly updated to correct known errata, minor issues with text and figures, and to present examples in color highlight boxes and some figures in color. It is made freely available and under a Creative Commons Attribution NonCommercial International License (CC BY NC 4.0) with permission from Cambridge University Press.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology - Electrical Engineering"
+  ],
+  "authors": [
+    "Steven W. Ellingson - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Virginia Tech Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/radio-systems-engineering"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Using a systems framework, this textbook provides a clear and comprehensive introduction to the performance, analysis, and design of radio systems for students and practicing engineers. Presented within a consistent framework, the first part of the book describes the fundamentals of the subject: propagation, noise, antennas, and modulation. The analysis and design of radios including RF circuit design and signal processing is covered in the second half of the book. Key features Numerous examples within the text involve realistic analysis and design activities, and emphasize how practical experiences may differ from theory or taught procedures. RF circuit design and analysis is presented with minimal involvement of Smith charts, enabling students to more readily grasp the fundamentals. Both traditional and software-defined/direct sampling technology are described with pros and cons of each strategy explained. Are you reviewing or adopting this book for a course? Please help us understand your use by filling out this form: https://bit.ly/interest_radiosystemsengineering_revised1st Radio Systems Engineering (Revised First Edition) was previously published by Cambridge University Press (2016) ISBN 9781107068285. This version is © Steven W. Ellingson and has been lightly updated to correct known errata, minor issues with text and figures, and to present examples in color highlight boxes and some figures in color. It is made freely available and under a Creative Commons Attribution NonCommercial International License (CC BY NC 4.0) with permission from Cambridge University Press."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 252
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1542",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1257-using-open-educational-resources-to-promote-social-justice",
+  "title": "Using Open Educational Resources to Promote Social Justice",
+  "description": "As so often is the case, the idea for this book came from a twisting path. Not long after we began collaborating and presenting together at conferences, we were invited to draft a chapter on critical race theory (CRT) in academic libraries. An invited chapter is, of course, very flattering, so we proceeded without much thought to who the publisher would be. Angela had been working on social justice issues for a while at that point, while CJ had a wealth of expertise on open educational resources (OER). We merged our two areas of expertise in drafting that chapter, discussing OER as an opportunity to not only save students money but incorporate CRT into the curriculum—both in content and in practice. We submitted the final draft and were dismayed when we received the publication agreement. The publisher was unwilling to allow us to retain the copyright, even after we shared the licensing agreement that the Association of College & Research Libraries (ACRL) Press uses as an example. In discussing how to proceed—should we submit this chapter somewhere else?—we realized that we were really excited about extending the discussion of OER beyond just ensuring that all students can afford to access their course materials. So we pitched the idea of an edited volume on this topic to a publisher that we know has publishing practices we support (chapter authors retain copyright and select the Creative Commons license they prefer for their work), and here we are! Our entrance to academic work on social justice was through a focus on CRT. We outline this background here but wish to emphasize that it explicitly addresses only one aspect of social justice. For us, the structural understanding of racism in the United States creates a foundation upon which to understand other structures of oppression as well as intersectionality.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Curriculum & Instruction"
+  ],
+  "authors": [
+    "Kevin Adams - Author / Murray Anderson - Author / Elissah Becknell - Author / CJ Ivory - Editor / Angela Pashia - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Association of College and Research Libraries",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/using-open-educational-resources-to-promote-social-justice"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "As so often is the case, the idea for this book came from a twisting path. Not long after we began collaborating and presenting together at conferences, we were invited to draft a chapter on critical race theory (CRT) in academic libraries. An invited chapter is, of course, very flattering, so we proceeded without much thought to who the publisher would be. Angela had been working on social justice issues for a while at that point, while CJ had a wealth of expertise on open educational resources (OER). We merged our two areas of expertise in drafting that chapter, discussing OER as an opportunity to not only save students money but incorporate CRT into the curriculum—both in content and in practice. We submitted the final draft and were dismayed when we received the publication agreement. The publisher was unwilling to allow us to retain the copyright, even after we shared the licensing agreement that the Association of College & Research Libraries (ACRL) Press uses as an example. In discussing how to proceed—should we submit this chapter somewhere else?—we realized that we were really excited about extending the discussion of OER beyond just ensuring that all students can afford to access their course materials. So we pitched the idea of an edited volume on this topic to a publisher that we know has publishing practices we support (chapter authors retain copyright and select the Creative Commons license they prefer for their work), and here we are! Our entrance to academic work on social justice was through a focus on CRT. We outline this background here but wish to emphasize that it explicitly addresses only one aspect of social justice. For us, the structural understanding of racism in the United States creates a foundation upon which to understand other structures of oppression as well as intersectionality."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2022."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 327
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1257",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

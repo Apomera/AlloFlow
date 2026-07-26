@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1284-critical-perspectives-on-technology-and-the-family",
+  "title": "Critical Perspectives on Technology and the Family",
+  "description": "From the perspective of a long time family practitioner, researcher, and educator, and technology innovator, this textbook offers the first comprehensive view of technology in the family for college students, professionals and the public. Each chapter offers content and a complete reference list, learning activities, ideas for critical blog posting and additional readings. The beginning chapters cover foundational information about our societal use of information and communications technology, family theories and ways of understanding families, and how families differ in their use and access to ICT. The main body of the book (chapters 4-10) covers elements of the family from couple relationships and dating apps, to children’s use and impacts on development from early childhood through young adulthood, use by parents and in the parent-child relationship, shared use by family members, and then topics important to family life: work-family balance and health and financial management and technology. The end of the book pivots to look closely at use by family professionals, the competencies needed to integrate technology into practice, and policy as a proactive and systemic avenue for change. End of book material include an additional reading list and recommended web content, social media and thought leaders. The authors lends her ideas on teaching for critical thinking with an overview at the beginning of the book, and classroom assessment ideas (actually short ways to engage learners in critical thinking activities).",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Journalism, Media Studies & Communications",
+    "Social Sciences - Sociology"
+  ],
+  "authors": [
+    "Susan K. Walker - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Minnesota Libraries Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/critical-perspectives-on-technology-and-the-family"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "From the perspective of a long time family practitioner, researcher, and educator, and technology innovator, this textbook offers the first comprehensive view of technology in the family for college students, professionals and the public. Each chapter offers content and a complete reference list, learning activities, ideas for critical blog posting and additional readings. The beginning chapters cover foundational information about our societal use of information and communications technology, family theories and ways of understanding families, and how families differ in their use and access to ICT. The main body of the book (chapters 4-10) covers elements of the family from couple relationships and dating apps, to children’s use and impacts on development from early childhood through young adulthood, use by parents and in the parent-child relationship, shared use by family members, and then topics important to family life: work-family balance and health and financial management and technology. The end of the book pivots to look closely at use by family professionals, the competencies needed to integrate technology into practice, and policy as a proactive and systemic avenue for change. End of book material include an additional reading list and recommended web content, social media and thought leaders. The authors lends her ideas on teaching for critical thinking with an overview at the beginning of the book, and classroom assessment ideas (actually short ways to engage learners in critical thinking activities)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2022."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 253
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1284",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

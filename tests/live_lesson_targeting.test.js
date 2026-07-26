@@ -169,7 +169,9 @@ describe('selection is separate from delivery', () => {
 
     expect(onOpenResource).not.toHaveBeenCalled();
     expect(onSendToGroup).toHaveBeenCalledWith('g1', props.history[1]);
-    const deliveryStatus = nodes.find(node => node.props && node.props.role === 'status');
+    const deliveryStatus = nodes.find(node =>
+      node.props && node.props.role === 'status' && nodeText(node).includes('last reported on this step')
+    );
     expect(nodeText(deliveryStatus)).toContain('1 of 1 last reported on this step');
   });
 });
@@ -180,6 +182,10 @@ describe('shell integration reuses canonical handlers', () => {
     expect(anti).toContain('roster: rosterEntries');
     expect(anti).toContain('onSendToGroup: (groupId, item) => handleSetGroupResource(groupId, item.id)');
     expect(anti).toContain('onSendToStudent: (uid, item) => handleSetStudentResource(uid, item.id)');
+    expect(anti).toContain('onSendToStudents: (uids, item) => handleSetStudentsResource(uids, item.id)');
+    expect(anti).toContain('const handleSetStudentsResource = async (uids, resourceId) =>');
+    expect(anti).toContain('.slice(0, 25)');
+    expect(anti).toContain('await updateDoc(sessionRef, updates)');
   });
 
   it('keeps navigation as selection-only and delivery in one explicit action', () => {

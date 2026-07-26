@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-20-introduction-to-physical-oceanography",
+  "title": "Introduction to Physical Oceanography",
+  "description": "This textbook covers physical-oceanographic processes, theories, data, and measurements, targeted at upper-division undergraduates and graduate students in oceanography, meteorology, and ocean engineering. In addition to the classical topics, the author includes discussions of heat fluxes, the role of the ocean in climate, the deep circulation, equatorial processes including El Nino, data bases used by oceanographers, the role of satellites and data from space, ship-based measurements, and the importance of vorticity in understanding oceanic flows. Students should have studied differential equations and introductory college physics, although math is de-emphasized.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Earth Sciences"
+  ],
+  "authors": [
+    "Robert H. Stewart - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Textbook Library",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-physical-oceanography"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This textbook covers physical-oceanographic processes, theories, data, and measurements, targeted at upper-division undergraduates and graduate students in oceanography, meteorology, and ocean engineering. In addition to the classical topics, the author includes discussions of heat fluxes, the role of the ocean in climate, the deep circulation, equatorial processes including El Nino, data bases used by oceanographers, the role of satellites and data from space, ship-based measurements, and the importance of vorticity in understanding oceanic flows. Students should have studied differential equations and introductory college physics, although math is de-emphasized."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2008."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 111
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "20",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -307,6 +307,128 @@
     }).join('\n');
   };
 
+  const PEER_SHOWCASE_MIN_CANDIDATES = 2;
+  const PEER_SHOWCASE_MAX_CANDIDATES = 8;
+  const PEER_SHOWCASE_RESPONSE_MAX_LENGTH = 1200;
+  const PEER_VOTE_CRITERION_MAX_LENGTH = 180;
+  const normalizePeerShowcaseText = (value) => normalizeBoundedText(value, PEER_SHOWCASE_RESPONSE_MAX_LENGTH);
+  const normalizePeerVoteCriterion = (value) => {
+    const normalized = normalizeBoundedText(value, PEER_VOTE_CRITERION_MAX_LENGTH);
+    return normalized || 'Which response best supports its thinking with clear evidence?';
+  };
+  const normalizePeerModerationStatus = (value) => (
+    value === 'approved' || value === 'hidden' ? value : 'pending'
+  );
+  const buildPeerShowcaseReviewRows = (responseList, moderationByUid) => {
+    const moderation = moderationByUid && typeof moderationByUid === 'object' ? moderationByUid : {};
+    return uniqueResponsesForSummary(responseList).map((entry) => ({
+      uid: String((entry && entry.uid) || '').slice(0, 128),
+      codename: String((entry && entry.codename) || 'Student').slice(0, 64),
+      response: normalizePeerShowcaseText(entry && entry.response),
+      status: normalizePeerModerationStatus(moderation[entry && entry.uid]),
+    })).filter((entry) => entry.uid && entry.response);
+  };
+  const buildPeerShowcaseRound = (input) => {
+    const source = input && typeof input === 'object' ? input : {};
+    const roundId = String(source.roundId || ('showcase-' + Date.now())).slice(0, 120);
+    const pollId = String(source.pollId || '').slice(0, 100);
+    const seenOwners = new Set();
+    const candidates = (Array.isArray(source.candidates) ? source.candidates : []).reduce((out, item) => {
+      if (out.length >= PEER_SHOWCASE_MAX_CANDIDATES) return out;
+      const ownerUid = String((item && item.ownerUid) || (item && item.uid) || '').slice(0, 128);
+      const response = normalizePeerShowcaseText(item && (item.response != null ? item.response : item.text));
+      if (!ownerUid || !response || seenOwners.has(ownerUid)) return out;
+      seenOwners.add(ownerUid);
+      out.push({
+        candidateId: 'candidate-' + (out.length + 1),
+        ownerUid: ownerUid,
+        response: response,
+      });
+      return out;
+    }, []);
+    if (!roundId || !pollId || candidates.length < PEER_SHOWCASE_MIN_CANDIDATES) return null;
+    return {
+      roundId: roundId,
+      pollId: pollId,
+      prompt: normalizeBoundedText(source.prompt, 600),
+      criterion: normalizePeerVoteCriterion(source.criterion),
+      candidates: candidates,
+      openedAt: Number(source.openedAt) || Date.now(),
+    };
+  };
+  const sanitizePeerShowcaseRound = (round, viewerUid) => {
+    if (!round || typeof round !== 'object' || !round.roundId || !round.pollId) return null;
+    const viewer = String(viewerUid || '');
+    const candidates = (Array.isArray(round.candidates) ? round.candidates : [])
+      .slice(0, PEER_SHOWCASE_MAX_CANDIDATES)
+      .map((item) => ({
+        candidateId: String((item && item.candidateId) || '').slice(0, 64),
+        response: normalizePeerShowcaseText(item && item.response),
+        own: !!(viewer && item && item.ownerUid === viewer),
+      }))
+      .filter((item) => item.candidateId && item.response);
+    if (candidates.length < PEER_SHOWCASE_MIN_CANDIDATES) return null;
+    return {
+      roundId: String(round.roundId).slice(0, 120),
+      pollId: String(round.pollId).slice(0, 100),
+      prompt: normalizeBoundedText(round.prompt, 600),
+      criterion: normalizePeerVoteCriterion(round.criterion),
+      candidates: candidates,
+      openedAt: Number(round.openedAt) || Date.now(),
+    };
+  };
+  const normalizePeerVote = (payload, round, voterUid) => {
+    if (!payload || !round || payload.roundId !== round.roundId) return null;
+    const candidateId = String(payload.candidateId || '').slice(0, 64);
+    const candidate = (Array.isArray(round.candidates) ? round.candidates : [])
+      .find((item) => item && item.candidateId === candidateId);
+    if (!candidate || candidate.ownerUid === String(voterUid || '')) return null;
+    return {
+      roundId: String(round.roundId).slice(0, 120),
+      candidateId: candidateId,
+      timestamp: Number(payload.timestamp) || Date.now(),
+    };
+  };
+  const upsertPeerVote = (votesByUid, voterUid, vote) => {
+    const uid = String(voterUid || '').slice(0, 128);
+    if (!uid || !vote || !vote.roundId || !vote.candidateId) {
+      return Object.assign({}, votesByUid && typeof votesByUid === 'object' ? votesByUid : {});
+    }
+    return Object.assign({}, votesByUid && typeof votesByUid === 'object' ? votesByUid : {}, {
+      [uid]: {
+        roundId: String(vote.roundId).slice(0, 120),
+        candidateId: String(vote.candidateId).slice(0, 64),
+        timestamp: Number(vote.timestamp) || Date.now(),
+      },
+    });
+  };
+  const buildPeerVoteResults = (round, votesByUid) => {
+    const safeRound = sanitizePeerShowcaseRound(round, '');
+    if (!safeRound) return null;
+    const validIds = new Set(safeRound.candidates.map((item) => item.candidateId));
+    const votes = Object.entries(votesByUid && typeof votesByUid === 'object' ? votesByUid : {})
+      .map(([voterUid, vote]) => normalizePeerVote(vote, round, voterUid))
+      .filter((vote) => vote && vote.roundId === safeRound.roundId && validIds.has(vote.candidateId));
+    const total = votes.length;
+    return {
+      roundId: safeRound.roundId,
+      pollId: safeRound.pollId,
+      prompt: safeRound.prompt,
+      criterion: safeRound.criterion,
+      votesCast: total,
+      candidates: safeRound.candidates.map((candidate) => {
+        const count = votes.filter((vote) => vote.candidateId === candidate.candidateId).length;
+        return {
+          candidateId: candidate.candidateId,
+          response: candidate.response,
+          count: count,
+          percent: total > 0 ? Math.round((count / total) * 100) : 0,
+        };
+      }),
+      closedAt: Date.now(),
+    };
+  };
+
   const shouldApplyPollClose = (activePoll, payload) => {
     if (!activePoll) return true;
     const closeId = payload && payload.pollId;
@@ -371,11 +493,14 @@
       this.onGuestConnected = config.onGuestConnected || (() => {});
       this.onResponse = config.onResponse || (() => {});
       this.onResponseStatus = config.onResponseStatus || (() => {});
+      this.onPeerVote = config.onPeerVote || (() => {});
       this.onGuestLeft = config.onGuestLeft || (() => {});
       this.peers = new Map();
       this.collectionUnsub = null;
       this.activePoll = null;
       this.activeAudienceUids = null;
+      this.activePeerShowcase = null;
+      this.peerShowcaseAudienceUids = null;
       this._stopped = false;
       // Roster gate: when set (Set of uids), offers from unknown uids are
       // ignored. Defense-in-depth against drive-by connections to a guessed
@@ -392,6 +517,10 @@
 
     _isUidInActiveAudience(uid) {
       return !this.activeAudienceUids || this.activeAudienceUids.has(uid);
+    }
+
+    _isUidInPeerShowcaseAudience(uid) {
+      return !this.peerShowcaseAudienceUids || this.peerShowcaseAudienceUids.has(uid);
     }
 
     async start() {
@@ -455,6 +584,18 @@
           } else {
             try { dc.send(JSON.stringify({ type: 'closePoll', payload: {} })); } catch (err) {}
           }
+          if (this.activePeerShowcase && this._isUidInPeerShowcaseAudience(uid)) {
+            try {
+              if (this.activePeerShowcase.phase === 'results' && this.activePeerShowcase.results) {
+                dc.send(JSON.stringify({ type: 'peerVoteResults', payload: this.activePeerShowcase.results }));
+              } else {
+                dc.send(JSON.stringify({
+                  type: 'peerShowcase',
+                  payload: sanitizePeerShowcaseRound(this.activePeerShowcase, uid),
+                }));
+              }
+            } catch (err) {}
+          }
         };
         dc.onmessage = (msg) => {
           try {
@@ -474,6 +615,11 @@
                   attempt: clampInt(parsed.payload.attempt, 1, 1, 2),
                   timestamp: Number(parsed.payload.timestamp) || Date.now(),
                 });
+              }
+            } else if (parsed && parsed.type === 'peerVote' && parsed.payload) {
+              if (this.activePeerShowcase && this.activePeerShowcase.phase === 'voting' && this._isUidInPeerShowcaseAudience(uid)) {
+                const vote = normalizePeerVote(parsed.payload, this.activePeerShowcase, uid);
+                if (vote) this.onPeerVote(uid, codename, vote);
               }
             }
           } catch (err) {}
@@ -510,6 +656,7 @@
 
     broadcastPoll(poll, audienceUids) {
       if (!poll || !poll.id) return;
+      if (this.activePeerShowcase) this.closePeerShowcase(this.activePeerShowcase.roundId);
       this.activePoll = poll;
       this.activeAudienceUids = Array.isArray(audienceUids) ? new Set(audienceUids) : null;
       const msg = JSON.stringify({ type: 'poll', payload: poll });
@@ -524,6 +671,7 @@
     closePoll(pollId) {
       const idToClose = pollId || (this.activePoll && this.activePoll.id);
       if (!idToClose) return;
+      if (this.activePeerShowcase) this.closePeerShowcase(this.activePeerShowcase.roundId);
       const msg = JSON.stringify({ type: 'closePoll', payload: { pollId: idToClose } });
       this.peers.forEach((peer) => {
         if (peer.dc && peer.dc.readyState === 'open') {
@@ -545,6 +693,59 @@
           try { peer.dc.send(msg); } catch (err) {}
         }
       });
+    }
+
+    openPeerShowcase(round, audienceUids) {
+      const normalized = buildPeerShowcaseRound(round);
+      if (!normalized || !this.activePoll || normalized.pollId !== this.activePoll.id) return null;
+      this.activePeerShowcase = Object.assign({}, normalized, { phase: 'voting', results: null });
+      const requestedAudience = Array.isArray(audienceUids)
+        ? audienceUids
+        : (this.activeAudienceUids ? Array.from(this.activeAudienceUids) : null);
+      const audience = requestedAudience
+        ? requestedAudience.filter((uid) => this._isUidInActiveAudience(uid))
+        : null;
+      this.peerShowcaseAudienceUids = audience ? new Set(audience) : null;
+      this.peers.forEach((peer, uid) => {
+        if (peer.dc && peer.dc.readyState === 'open' && this._isUidInPeerShowcaseAudience(uid)) {
+          const payload = sanitizePeerShowcaseRound(this.activePeerShowcase, uid);
+          if (payload) {
+            try { peer.dc.send(JSON.stringify({ type: 'peerShowcase', payload: payload })); } catch (err) {}
+          }
+        }
+      });
+      return normalized;
+    }
+
+    broadcastPeerVoteResults(roundId, votesByUid) {
+      if (!this.activePeerShowcase || this.activePeerShowcase.roundId !== roundId) return null;
+      const results = buildPeerVoteResults(this.activePeerShowcase, votesByUid);
+      if (!results) return null;
+      this.activePeerShowcase = Object.assign({}, this.activePeerShowcase, {
+        phase: 'results',
+        results: results,
+      });
+      this.peers.forEach((peer, uid) => {
+        if (peer.dc && peer.dc.readyState === 'open' && this._isUidInPeerShowcaseAudience(uid)) {
+          try { peer.dc.send(JSON.stringify({ type: 'peerVoteResults', payload: results })); } catch (err) {}
+        }
+      });
+      return results;
+    }
+
+    closePeerShowcase(roundId) {
+      if (!this.activePeerShowcase) return false;
+      const idToClose = roundId || this.activePeerShowcase.roundId;
+      if (idToClose !== this.activePeerShowcase.roundId) return false;
+      const message = JSON.stringify({ type: 'peerShowcaseClose', payload: { roundId: idToClose } });
+      this.peers.forEach((peer, uid) => {
+        if (peer.dc && peer.dc.readyState === 'open' && this._isUidInPeerShowcaseAudience(uid)) {
+          try { peer.dc.send(message); } catch (err) {}
+        }
+      });
+      this.activePeerShowcase = null;
+      this.peerShowcaseAudienceUids = null;
+      return true;
     }
 
     sendFeedback(uid, pollId, packet) {
@@ -596,6 +797,8 @@
       });
       this.activePoll = null;
       this.activeAudienceUids = null;
+      this.activePeerShowcase = null;
+      this.peerShowcaseAudienceUids = null;
       const teardown = () => {
         const uids = Array.from(this.peers.keys());
         uids.forEach((uid) => this._cleanupPeer(uid));
@@ -626,6 +829,9 @@
       this.onPoll = config.onPoll || (() => {});
       this.onPollClose = config.onPollClose || (() => {});
       this.onPollResults = config.onPollResults || (() => {});
+      this.onPeerShowcase = config.onPeerShowcase || (() => {});
+      this.onPeerVoteResults = config.onPeerVoteResults || (() => {});
+      this.onPeerShowcaseClose = config.onPeerShowcaseClose || (() => {});
       this.onFeedback = config.onFeedback || (() => {});
       this.onConnected = config.onConnected || (() => {});
       this.onDisconnected = config.onDisconnected || (() => {});
@@ -671,6 +877,19 @@
           if (parsed && parsed.type === 'poll') this.onPoll(parsed.payload);
           else if (parsed && parsed.type === 'closePoll') this.onPollClose(parsed.payload);
           else if (parsed && parsed.type === 'pollResults') this.onPollResults(parsed.payload);
+          else if (parsed && parsed.type === 'peerShowcase') {
+            const round = sanitizePeerShowcaseRound(parsed.payload, '');
+            if (round) {
+              round.candidates = (parsed.payload.candidates || []).slice(0, PEER_SHOWCASE_MAX_CANDIDATES).map((item) => ({
+                candidateId: String((item && item.candidateId) || '').slice(0, 64),
+                response: normalizePeerShowcaseText(item && item.response),
+                own: item && item.own === true,
+              })).filter((item) => item.candidateId && item.response);
+              this.onPeerShowcase(round);
+            }
+          }
+          else if (parsed && parsed.type === 'peerVoteResults') this.onPeerVoteResults(parsed.payload);
+          else if (parsed && parsed.type === 'peerShowcaseClose') this.onPeerShowcaseClose(parsed.payload || {});
           else if (parsed && parsed.type === 'feedback') {
             const packet = sanitizeFeedbackPacket(parsed.payload, parsed.payload && parsed.payload.pollId);
             if (packet) this.onFeedback(packet);
@@ -751,6 +970,20 @@
           pollId: pollId,
           status: safeStatus,
           attempt: clampInt(attempt, 1, 1, 2),
+          timestamp: Date.now(),
+        } }));
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    sendPeerVote(roundId, candidateId) {
+      if (!this.dc || this.dc.readyState !== 'open' || !roundId || !candidateId) return false;
+      try {
+        this.dc.send(JSON.stringify({ type: 'peerVote', payload: {
+          roundId: String(roundId).slice(0, 120),
+          candidateId: String(candidateId).slice(0, 64),
           timestamp: Date.now(),
         } }));
         return true;
@@ -987,6 +1220,12 @@
     const sessionGroups = props.sessionGroups && typeof props.sessionGroups === 'object' ? props.sessionGroups : {};
     const onSendToStudent = typeof props.onSendToStudent === 'function' ? props.onSendToStudent : null;
     const onSendToGroup = typeof props.onSendToGroup === 'function' ? props.onSendToGroup : null;
+    // Optional consumer bridge for contextual workflows such as Adventure
+    // Mode. Only anonymous response text and public round metadata leave this
+    // panel; teacher-private author uid/codename never do.
+    const onUsePeerShowcaseResponse = typeof props.onUsePeerShowcaseResponse === 'function'
+      ? props.onUsePeerShowcaseResponse
+      : null;
     const onActivitySnapshot = typeof props.onActivitySnapshot === 'function' ? props.onActivitySnapshot : null;
     const hostRef = R.useRef(null);
     const [guests, setGuests] = R.useState([]);
@@ -1010,6 +1249,12 @@
     // Word-cloud terms are held locally until the teacher explicitly approves
     // or hides them. Only approved anonymous aggregates are ever shared.
     const [wordCloudModerationByPoll, setWordCloudModerationByPoll] = R.useState({});
+    // Standard free-text responses stay teacher-private until explicitly
+    // approved for a bounded anonymous showcase.
+    const [freeTextModerationByPoll, setFreeTextModerationByPoll] = R.useState({});
+    const [peerShowcaseRound, setPeerShowcaseRound] = R.useState(null);
+    const [peerVotesByRound, setPeerVotesByRound] = R.useState({});
+    const [peerVoteCriterion, setPeerVoteCriterion] = R.useState('Which response best supports its thinking with clear evidence?');
     const [feedbackEnabled, setFeedbackEnabled] = R.useState(false);
     const [feedbackCriteria, setFeedbackCriteria] = R.useState('');
     const [feedbackAudienceMode, setFeedbackAudienceMode] = R.useState('class');
@@ -1046,6 +1291,9 @@
       if (typeof initialPoll.feedbackCriteria === 'string') setFeedbackCriteria(initialPoll.feedbackCriteria);
       if (initialPoll.feedbackAudienceMode) setFeedbackAudienceMode(initialPoll.feedbackAudienceMode);
       if (typeof initialPoll.feedbackAudienceId === 'string') setFeedbackAudienceId(initialPoll.feedbackAudienceId);
+      if (typeof initialPoll.peerVoteCriterion === 'string') {
+        setPeerVoteCriterion(normalizePeerVoteCriterion(initialPoll.peerVoteCriterion));
+      }
     }, [isOpen, initialPoll]);
 
     R.useEffect(function () {
@@ -1115,6 +1363,13 @@
           setResponseStatusByPoll(function (prev) {
             const next = Object.assign({}, prev);
             next[payload.pollId] = Object.assign({}, next[payload.pollId] || {}, { [uid]: payload.status });
+            return next;
+          });
+        },
+        onPeerVote: function (uid, codename, vote) {
+          setPeerVotesByRound(function (prev) {
+            const next = Object.assign({}, prev);
+            next[vote.roundId] = upsertPeerVote(next[vote.roundId], uid, vote);
             return next;
           });
         },
@@ -1226,6 +1481,9 @@
       setResponses(function (prev) { const n = Object.assign({}, prev); n[poll.id] = []; return n; });
       setRoutingByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
       setWordCloudModerationByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setFreeTextModerationByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setPeerShowcaseRound(null);
+      setPeerVotesByRound({});
       setResponseStatusByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
       setFeedbackByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
       setFeedbackBusyByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
@@ -1235,6 +1493,7 @@
       if (!hostRef.current || !activePoll) return;
       hostRef.current.closePoll(activePoll.id);
       setActivePoll(null);
+      setPeerShowcaseRound(null);
       setActiveParticipantUids([]);
     };
     const shareResults = function () {
@@ -1304,9 +1563,15 @@
         return status === 'submitted' || status === 'revised';
       }).length;
       let phase = lastSharedResultsAt ? 'revealed' : 'collecting';
-      if (!lastSharedResultsAt && feedbackConfig.enabled && (feedbackSent > 0 || (audienceUids.length > 0 && submitted === audienceUids.length))) {
+      if (peerShowcaseRound && (peerShowcaseRound.phase === 'results' || peerShowcaseRound.phase === 'dismissed')) {
+        phase = 'revealed';
+      } else if (peerShowcaseRound && peerShowcaseRound.phase === 'voting') {
+        phase = 'review';
+      } else if (!lastSharedResultsAt && feedbackConfig.enabled && (feedbackSent > 0 || (audienceUids.length > 0 && submitted === audienceUids.length))) {
         phase = 'review';
       } else if (!lastSharedResultsAt && activePoll.type === 'wordcloud' && responseEntries.length > 0) {
+        phase = 'review';
+      } else if (!lastSharedResultsAt && activePoll.type === 'freetext' && responseEntries.length > 0) {
         phase = 'review';
       }
       const kind = feedbackConfig.enabled
@@ -1329,16 +1594,22 @@
           connected: guests.filter(function (guest) { return audienceUids.indexOf(guest.uid) >= 0; }).length,
           approved: moderationCounts.approved || 0,
           hidden: moderationCounts.hidden || 0,
-          revealed: lastSharedResultsAt ? 1 : 0,
+          revealed: lastSharedResultsAt || (peerShowcaseRound && (peerShowcaseRound.phase === 'results' || peerShowcaseRound.phase === 'dismissed')) ? 1 : 0,
           feedbackSent: feedbackSent,
+          showcased: peerShowcaseRound && Array.isArray(peerShowcaseRound.candidates) ? peerShowcaseRound.candidates.length : 0,
+          votesCast: peerShowcaseRound && peerVotesByRound[peerShowcaseRound.roundId]
+            ? Object.keys(peerVotesByRound[peerShowcaseRound.roundId]).length
+            : 0,
         },
         startedAt: activePoll.startedAt || 0,
         updatedAt: Date.now(),
-        endedAt: lastSharedResultsAt || 0,
+        endedAt: (peerShowcaseRound && (peerShowcaseRound.phase === 'results' || peerShowcaseRound.phase === 'dismissed') && peerShowcaseRound.results && peerShowcaseRound.results.closedAt)
+          || lastSharedResultsAt
+          || 0,
       };
       lastActivitySnapshotRef.current = snapshot;
       onActivitySnapshot(snapshot);
-    }, [isOpen, activePoll, activeParticipantUids, guests, responses, responseStatusByPoll, feedbackByPoll, wordCloudModerationByPoll, lastSharedResultsAt, onActivitySnapshot]);
+    }, [isOpen, activePoll, activeParticipantUids, guests, responses, responseStatusByPoll, feedbackByPoll, wordCloudModerationByPoll, freeTextModerationByPoll, peerShowcaseRound, peerVotesByRound, lastSharedResultsAt, onActivitySnapshot]);
 
     if (!isOpen) return null;
     const activeResponses = (activePoll && responses[activePoll.id]) || [];
@@ -1402,6 +1673,64 @@
       });
       setLastSharedResultsAt(null);
     };
+    const activeFreeTextModeration = activePoll ? (freeTextModerationByPoll[activePoll.id] || {}) : {};
+    const peerShowcaseReviewRows = activePoll && activePoll.type === 'freetext' && !activeFeedbackConfig.enabled
+      ? buildPeerShowcaseReviewRows(uniqueActiveResponses, activeFreeTextModeration)
+      : [];
+    const approvedPeerShowcaseRows = peerShowcaseReviewRows.filter(function (row) { return row.status === 'approved'; });
+    const peerVotesForActiveRound = peerShowcaseRound
+      ? (peerVotesByRound[peerShowcaseRound.roundId] || {})
+      : {};
+    const setFreeTextResponseStatus = function (uid, status) {
+      if (!activePoll || activePoll.type !== 'freetext' || activeFeedbackConfig.enabled || !uid) return;
+      const normalizedStatus = normalizePeerModerationStatus(status);
+      if (normalizedStatus === 'approved') {
+        const currentStatus = normalizePeerModerationStatus(activeFreeTextModeration[uid]);
+        if (currentStatus !== 'approved' && approvedPeerShowcaseRows.length >= PEER_SHOWCASE_MAX_CANDIDATES) return;
+      }
+      setFreeTextModerationByPoll(function (prev) {
+        const next = Object.assign({}, prev);
+        next[activePoll.id] = Object.assign({}, next[activePoll.id] || {}, { [uid]: normalizedStatus });
+        return next;
+      });
+    };
+    const startPeerShowcase = function () {
+      if (!activePoll || !hostRef.current || peerShowcaseRound || approvedPeerShowcaseRows.length < PEER_SHOWCASE_MIN_CANDIDATES) return;
+      const round = buildPeerShowcaseRound({
+        roundId: 'showcase-' + Date.now(),
+        pollId: activePoll.id,
+        prompt: activePoll.prompt,
+        criterion: peerVoteCriterion,
+        candidates: approvedPeerShowcaseRows.map(function (row) {
+          return { ownerUid: row.uid, response: row.response };
+        }),
+      });
+      if (!round) return;
+      const opened = hostRef.current.openPeerShowcase(
+        round,
+        activeParticipantUids.length ? activeParticipantUids : guests.map(function (guest) { return guest.uid; })
+      );
+      if (!opened) return;
+      setPeerVotesByRound(function (prev) {
+        const next = Object.assign({}, prev);
+        next[round.roundId] = {};
+        return next;
+      });
+      setPeerShowcaseRound(Object.assign({}, round, { phase: 'voting', results: null }));
+    };
+    const finishPeerShowcase = function () {
+      if (!hostRef.current || !peerShowcaseRound || peerShowcaseRound.phase !== 'voting') return;
+      const results = hostRef.current.broadcastPeerVoteResults(peerShowcaseRound.roundId, peerVotesForActiveRound);
+      if (results) setPeerShowcaseRound(Object.assign({}, peerShowcaseRound, { phase: 'results', results: results }));
+    };
+    const cancelPeerShowcase = function () {
+      if (!hostRef.current || !peerShowcaseRound) return;
+      hostRef.current.closePeerShowcase(peerShowcaseRound.roundId);
+      setPeerShowcaseRound(peerShowcaseRound.phase === 'results'
+        ? Object.assign({}, peerShowcaseRound, { phase: 'dismissed' })
+        : null);
+    };
+
     const updateFeedbackRecordForPoll = function (pollId, uid, patch) {
       if (!pollId || !uid) return;
       setFeedbackByPoll(function (prev) {
@@ -1759,13 +2088,113 @@
                 );
               })()
             : null,
-          !activeFeedbackConfig.enabled && activePoll.type !== 'wordcloud' && uniqueActiveResponses.length > 0 ? ce('ul', { style: { listStyle: 'none', padding: 0, margin: '0.5rem 0 0 0', maxHeight: 240, overflow: 'auto' } },
+          !activeFeedbackConfig.enabled && activePoll.type === 'freetext' && uniqueActiveResponses.length > 0 ? ce('section', { 'aria-label': tr('Peer showcase moderation'), style: { marginTop: 10, padding: '0.65rem', background: 'rgba(255,255,255,0.88)', border: '1px solid #a5b4fc', borderRadius: 8 } },
+            ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' } },
+              ce('div', null,
+                ce('div', { style: { fontSize: '0.74rem', color: '#3730a3', fontWeight: 900, textTransform: 'uppercase' } }, tr('Peer showcase')),
+                ce('p', { style: { margin: '0.2rem 0 0', color: '#475569', fontSize: '0.73rem', lineHeight: 1.35 } }, tr('Responses stay private until you approve 2-8 exemplars. Students vote anonymously against your criterion.'))
+              ),
+              ce('span', { style: { color: '#4338ca', fontWeight: 900, fontSize: '0.72rem' } }, approvedPeerShowcaseRows.length + ' / ' + PEER_SHOWCASE_MAX_CANDIDATES + ' ' + tr('approved'))
+            ),
+            ce('label', { style: { display: 'block', marginTop: 7, color: '#312e81', fontSize: '0.7rem', fontWeight: 800 } },
+              tr('Voting criterion'),
+              ce('input', {
+                type: 'text',
+                value: peerVoteCriterion,
+                maxLength: PEER_VOTE_CRITERION_MAX_LENGTH,
+                disabled: !!peerShowcaseRound,
+                onChange: function (e) { setPeerVoteCriterion(e.target.value); },
+                'aria-label': tr('Peer voting criterion'),
+                style: { width: '100%', marginTop: 3, padding: '0.42rem 0.5rem', border: '1px solid #c7d2fe', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', fontSize: '0.76rem' }
+              })
+            ),
+            ce('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 260, overflowY: 'auto', marginTop: 7 } },
+              peerShowcaseReviewRows.map(function (row) {
+                return ce('div', { key: row.uid, role: 'listitem', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', gap: 7, alignItems: 'center', padding: '0.45rem 0.5rem', border: '1px solid #e2e8f0', borderRadius: 7, background: 'white' } },
+                  ce('div', { style: { minWidth: 0 } },
+                    ce('strong', { style: { display: 'block', color: '#1e3a8a', fontSize: '0.73rem' } }, row.codename),
+                    ce('div', { style: { marginTop: 2, color: '#1e293b', fontSize: '0.78rem', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, row.response)
+                  ),
+                  ce('select', {
+                    value: row.status,
+                    disabled: !!peerShowcaseRound,
+                    onChange: function (e) { setFreeTextResponseStatus(row.uid, e.target.value); },
+                    'aria-label': tr('Moderation for') + ' ' + row.codename,
+                    style: { padding: '0.3rem 0.4rem', borderRadius: 5, border: '1px solid #cbd5e1', background: row.status === 'approved' ? '#dcfce7' : row.status === 'hidden' ? '#f1f5f9' : '#fff7ed', fontSize: '0.72rem', fontWeight: 800 }
+                  },
+                    ce('option', { value: 'pending' }, tr('Hold')),
+                    ce('option', { value: 'approved' }, tr('Approve')),
+                    ce('option', { value: 'hidden' }, tr('Hide'))
+                  )
+                );
+              })
+            ),
+            !peerShowcaseRound ? ce('button', {
+              onClick: startPeerShowcase,
+              disabled: approvedPeerShowcaseRows.length < PEER_SHOWCASE_MIN_CANDIDATES,
+              style: { width: '100%', marginTop: 7, padding: '0.5rem', border: 'none', borderRadius: 6, background: approvedPeerShowcaseRows.length >= PEER_SHOWCASE_MIN_CANDIDATES ? '#4f46e5' : '#cbd5e1', color: 'white', fontWeight: 900, cursor: approvedPeerShowcaseRows.length >= PEER_SHOWCASE_MIN_CANDIDATES ? 'pointer' : 'default' }
+            }, tr('Open anonymous peer vote')) : null,
+            peerShowcaseRound && peerShowcaseRound.phase === 'voting' ? ce('div', { style: { marginTop: 8, padding: '0.55rem', borderRadius: 7, background: '#eef2ff' } },
+              ce('p', { role: 'status', style: { margin: 0, color: '#312e81', fontSize: '0.76rem', fontWeight: 800 } }, Object.keys(peerVotesForActiveRound).length + ' ' + tr('votes received. Candidate totals stay hidden until you close voting.')),
+              ce('div', { style: { display: 'flex', gap: 6, marginTop: 6 } },
+                ce('button', { onClick: finishPeerShowcase, style: { flex: 1, padding: '0.45rem', border: 'none', borderRadius: 6, background: '#4f46e5', color: 'white', fontWeight: 900, cursor: 'pointer' } }, tr('Close voting and reveal')),
+                ce('button', { onClick: cancelPeerShowcase, style: { padding: '0.45rem 0.7rem', border: '1px solid #a5b4fc', borderRadius: 6, background: 'white', color: '#4338ca', fontWeight: 800, cursor: 'pointer' } }, tr('Cancel'))
+              )
+            ) : null,
+            peerShowcaseRound && peerShowcaseRound.phase === 'results' && peerShowcaseRound.results ? ce('div', { style: { marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 } },
+              ce('strong', { style: { color: '#312e81', fontSize: '0.76rem' } }, peerShowcaseRound.results.votesCast + ' ' + tr('votes cast')),
+              peerShowcaseRound.results.candidates.map(function (candidate) {
+                const internal = peerShowcaseRound.candidates.find(function (item) { return item.candidateId === candidate.candidateId; }) || {};
+                const owner = guests.find(function (item) { return item.uid === internal.ownerUid; }) || roster[internal.ownerUid] || {};
+                const ownerGroupId = roster[internal.ownerUid] && roster[internal.ownerUid].groupId;
+                return ce('div', { key: candidate.candidateId, style: { padding: '0.5rem', border: '1px solid #c7d2fe', borderRadius: 7, background: 'white' } },
+                  ce('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: '#1e293b', fontSize: '0.78rem' } },
+                    ce('span', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, candidate.response),
+                    ce('strong', { style: { color: '#4338ca', whiteSpace: 'nowrap' } }, candidate.count + ' / ' + candidate.percent + '%')
+                  ),
+                  ce('div', { style: { marginTop: 4, color: '#64748b', fontSize: '0.66rem' } }, tr('Teacher view - author:') + ' ' + (owner.codename || owner.name || tr('Student'))),
+                  onUsePeerShowcaseResponse ? ce('button', {
+                    onClick: function () {
+                      onUsePeerShowcaseResponse(candidate.response, {
+                        pollId: peerShowcaseRound.pollId,
+                        roundId: peerShowcaseRound.roundId,
+                        candidateId: candidate.candidateId,
+                        votes: candidate.count,
+                        percent: candidate.percent,
+                      });
+                    },
+                    style: { marginTop: 4, padding: '0.25rem 0.4rem', border: '1px solid #34d399', borderRadius: 5, background: '#ecfdf5', color: '#065f46', fontSize: '0.64rem', fontWeight: 900, cursor: 'pointer' }
+                  }, tr('Use as Adventure action')) : null,
+                  followUpResourceId && onSendToStudent ? ce('button', {
+                    onClick: function () { onSendToStudent(internal.ownerUid, followUpResourceId); },
+                    style: { marginTop: 4, padding: '0.25rem 0.4rem', border: '1px solid #a5b4fc', borderRadius: 5, background: '#eef2ff', color: '#3730a3', fontSize: '0.64rem', fontWeight: 800, cursor: 'pointer' }
+                  }, tr('Send follow-up to author')) : null,
+                  followUpResourceId && ownerGroupId && onSendToGroup ? ce('button', {
+                    onClick: function () { onSendToGroup(ownerGroupId, followUpResourceId); },
+                    style: { marginTop: 4, marginLeft: 4, padding: '0.25rem 0.4rem', border: '1px solid #a5b4fc', borderRadius: 5, background: 'white', color: '#3730a3', fontSize: '0.64rem', fontWeight: 800, cursor: 'pointer' }
+                  }, tr('Send to author group')) : null
+                );
+              }),
+              resources.length > 0 ? ce('select', {
+                value: followUpResourceId,
+                onChange: function (e) { setFollowUpResourceId(e.target.value); },
+                'aria-label': tr('Peer showcase follow-up resource'),
+                style: { padding: '0.4rem', border: '1px solid #c7d2fe', borderRadius: 6, background: 'white', fontSize: '0.72rem' }
+              },
+                ce('option', { value: '' }, tr('Choose an optional follow-up resource')),
+                resources.map(function (resource) { return ce('option', { key: resource.id, value: resource.id }, resource.title || resource.label || resource.type || resource.id); })
+              ) : null,
+              ce('button', { onClick: cancelPeerShowcase, style: { padding: '0.4rem', border: '1px solid #a5b4fc', borderRadius: 6, background: 'white', color: '#4338ca', fontWeight: 800, cursor: 'pointer' } }, tr('Close showcase'))
+            ) : null,
+            ce('p', { style: { margin: '0.45rem 0 0', color: '#64748b', fontSize: '0.65rem', lineHeight: 1.35 } }, tr('Candidate text is shared only after teacher approval. Votes and author identities remain on the teacher device.'))
+          ) : null,
+          !activeFeedbackConfig.enabled && activePoll.type !== 'wordcloud' && activePoll.type !== 'freetext' && uniqueActiveResponses.length > 0 ? ce('ul', { style: { listStyle: 'none', padding: 0, margin: '0.5rem 0 0 0', maxHeight: 240, overflow: 'auto' } },
             uniqueActiveResponses.map(function (r, i) {
               const display = typeof r.response === 'object' ? JSON.stringify(r.response) : String(r.response);
               return ce('li', { key: i, style: { padding: '0.4rem 0.6rem', background: 'white', borderRadius: 4, marginBottom: 4, fontSize: '0.85rem', borderLeft: '3px solid #1e3a8a', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
                 ce('strong', { style: { color: '#1e3a8a' } }, r.codename),
                 ce('span', null, display),
-                r.routedToGroupId ? ce('span', { style: { marginLeft: 'auto', background: '#dcfce7', color: '#166534', padding: '0.1rem 0.5rem', borderRadius: 12, fontSize: '0.72rem', fontWeight: 700 } }, '→ ' + groupNameById(r.routedToGroupId)) : null
+                r.routedToGroupId ? ce('span', { style: { marginLeft: 'auto', background: '#dcfce7', color: '#166534', padding: '0.1rem 0.5rem', borderRadius: 12, fontSize: '0.72rem', fontWeight: 700 } }, '-> ' + groupNameById(r.routedToGroupId)) : null
               );
             })
           ) : null
@@ -1792,6 +2221,10 @@
     const [submitted, setSubmitted] = R.useState(false);
     const [responseValue, setResponseValue] = R.useState('');
     const [sharedResults, setSharedResults] = R.useState(null);
+    const [peerShowcase, setPeerShowcase] = R.useState(null);
+    const [peerVoteSelection, setPeerVoteSelection] = R.useState('');
+    const [peerVoteSubmitted, setPeerVoteSubmitted] = R.useState(false);
+    const [peerVoteResults, setPeerVoteResults] = R.useState(null);
     const [connectionState, setConnectionState] = R.useState('idle');
     const [submitNotice, setSubmitNotice] = R.useState(null);
     const [studentFeedback, setStudentFeedback] = R.useState(null);
@@ -1843,6 +2276,10 @@
           setActivePoll(p);
           setSharedResults(null);
           if (!samePoll) {
+            setPeerShowcase(null);
+            setPeerVoteSelection('');
+            setPeerVoteSubmitted(false);
+            setPeerVoteResults(null);
             setSubmitted(false);
             setResponseValue('');
             setSubmittedResponse('');
@@ -1863,13 +2300,40 @@
             studentPollIdRef.current = null;
             statusSentRef.current = '';
             setSubmitNotice(null);
+            setPeerShowcase(null);
+            setPeerVoteSelection('');
+            setPeerVoteSubmitted(false);
             return null;
           });
         },
         onPollResults: function (summary) {
           setSharedResults(summary); setActivePoll(null); setSubmitted(false); setResponseValue('');
           setSubmittedResponse(''); setStudentFeedback(null); setCurrentAttempt(1);
+          setPeerShowcase(null); setPeerVoteSelection(''); setPeerVoteSubmitted(false);
           studentPollIdRef.current = null; statusSentRef.current = ''; setSubmitNotice(null);
+        },
+        onPeerShowcase: function (round) {
+          setPeerShowcase(function (current) {
+            if (!current || current.roundId !== round.roundId) {
+              setPeerVoteSelection('');
+              setPeerVoteSubmitted(false);
+            }
+            return round;
+          });
+          setPeerVoteResults(null);
+          setSharedResults(null);
+        },
+        onPeerVoteResults: function (results) {
+          setPeerVoteResults(results);
+          setPeerShowcase(null);
+        },
+        onPeerShowcaseClose: function (payload) {
+          setPeerShowcase(function (current) {
+            if (current && payload && payload.roundId && current.roundId !== payload.roundId) return current;
+            return null;
+          });
+          setPeerVoteSelection('');
+          setPeerVoteSubmitted(false);
         },
         onFeedback: function (packet) {
           setActivePoll(function (current) {
@@ -1891,6 +2355,10 @@
           setSubmittedResponse('');
           setStudentFeedback(null);
           setCurrentAttempt(1);
+          setPeerShowcase(null);
+          setPeerVoteSelection('');
+          setPeerVoteSubmitted(false);
+          setPeerVoteResults(null);
           studentPollIdRef.current = null;
           statusSentRef.current = '';
           setSubmitNotice(null);
@@ -1959,7 +2427,75 @@
       );
     };
 
+    const renderPeerVoteResults = function (results) {
+      const candidates = Array.isArray(results && results.candidates) ? results.candidates : [];
+      return ce('div', {
+        role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Peer voting results'),
+        style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
+      },
+        ce('div', { style: { background: 'white', maxWidth: 620, width: '100%', maxHeight: '88vh', overflowY: 'auto', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
+          ce('div', { style: { color: '#4338ca', fontSize: '0.72rem', fontWeight: 900, textTransform: 'uppercase' } }, tr('Anonymous peer showcase')),
+          ce('h2', { style: { margin: '0.25rem 0', color: '#0f172a', fontSize: '1.08rem' } }, (results && results.criterion) || tr('Peer voting results')),
+          ce('p', { style: { margin: '0 0 0.75rem', color: '#64748b', fontSize: '0.78rem' } }, (Number(results && results.votesCast) || 0) + ' ' + tr('votes cast. Discuss the reasoning, not who wrote it.')),
+          ce('div', { style: { display: 'flex', flexDirection: 'column', gap: 7 } },
+            candidates.map(function (candidate) {
+              return ce('div', { key: candidate.candidateId, style: { padding: '0.65rem', border: '1px solid #c7d2fe', borderRadius: 8, background: '#f8fafc' } },
+                ce('div', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', color: '#1e293b', fontSize: '0.84rem' } }, candidate.response),
+                ce('div', { style: { marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 } },
+                  ce('span', { style: { flex: 1, height: 8, borderRadius: 999, background: '#e2e8f0', overflow: 'hidden' } },
+                    ce('span', { style: { display: 'block', width: (Number(candidate.percent) || 0) + '%', height: '100%', background: '#6366f1' } })
+                  ),
+                  ce('strong', { style: { color: '#4338ca', fontSize: '0.75rem', whiteSpace: 'nowrap' } }, (Number(candidate.count) || 0) + ' / ' + (Number(candidate.percent) || 0) + '%')
+                )
+              );
+            })
+          ),
+          ce('button', { onClick: function () { setPeerVoteResults(null); }, style: { marginTop: 10, width: '100%', padding: '0.55rem', border: 'none', borderRadius: 6, background: '#4338ca', color: 'white', fontWeight: 900, cursor: 'pointer' } }, tr('Close results'))
+        )
+      );
+    };
+    const renderPeerShowcase = function (round) {
+      const candidates = Array.isArray(round && round.candidates) ? round.candidates : [];
+      const canSendVote = !!(peerVoteSelection && guestRef.current && connectionState === 'connected');
+      const sendVote = function () {
+        if (!canSendVote) return;
+        if (guestRef.current.sendPeerVote(round.roundId, peerVoteSelection)) setPeerVoteSubmitted(true);
+      };
+      return ce('div', {
+        role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Anonymous peer showcase'),
+        style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
+      },
+        ce('div', { style: { background: 'white', maxWidth: 620, width: '100%', maxHeight: '88vh', overflowY: 'auto', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
+          ce('div', { style: { color: '#4338ca', fontSize: '0.72rem', fontWeight: 900, textTransform: 'uppercase' } }, tr('Anonymous peer showcase')),
+          ce('h2', { style: { margin: '0.25rem 0', color: '#0f172a', fontSize: '1.08rem' } }, round.criterion),
+          ce('p', { style: { margin: '0 0 0.75rem', color: '#64748b', fontSize: '0.78rem' } }, tr('Choose the response that best meets the criterion. You may update your vote until the teacher closes voting.')),
+          ce('div', { role: 'radiogroup', 'aria-label': tr('Peer showcase responses'), style: { display: 'flex', flexDirection: 'column', gap: 7 } },
+            candidates.map(function (candidate) {
+              const selected = peerVoteSelection === candidate.candidateId;
+              return ce('button', {
+                key: candidate.candidateId,
+                type: 'button',
+                role: 'radio',
+                'aria-checked': selected,
+                disabled: candidate.own,
+                onClick: function () { if (!candidate.own) { setPeerVoteSelection(candidate.candidateId); setPeerVoteSubmitted(false); } },
+                style: { textAlign: 'left', padding: '0.7rem', border: '2px solid ' + (selected ? '#4f46e5' : '#cbd5e1'), borderRadius: 8, background: candidate.own ? '#f8fafc' : selected ? '#eef2ff' : 'white', color: candidate.own ? '#64748b' : '#1e293b', cursor: candidate.own ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }
+              },
+                ce('span', { style: { display: 'block', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: '0.84rem' } }, candidate.response),
+                candidate.own ? ce('small', { style: { display: 'block', marginTop: 4, color: '#64748b', fontWeight: 800 } }, tr('Your response - choose a classmate idea.')) : null
+              );
+            })
+          ),
+          ce('button', { onClick: sendVote, disabled: !canSendVote, style: { marginTop: 10, width: '100%', padding: '0.55rem', border: 'none', borderRadius: 6, background: canSendVote ? '#4f46e5' : '#cbd5e1', color: 'white', fontWeight: 900, cursor: canSendVote ? 'pointer' : 'default' } }, peerVoteSubmitted ? tr('Update vote') : tr('Submit vote')),
+          peerVoteSubmitted ? ce('p', { role: 'status', style: { margin: '0.5rem 0 0', color: '#166534', fontSize: '0.75rem', fontWeight: 800 } }, tr('Vote recorded. Totals will appear when the teacher closes voting.')) : null,
+          connectionState !== 'connected' ? ce('p', { role: 'status', style: { margin: '0.5rem 0 0', color: '#b45309', fontSize: '0.72rem' } }, tr('Reconnect to cast or update your vote.')) : null
+        )
+      );
+    };
+
     if (!enabled) return null;
+    if (peerVoteResults) return renderPeerVoteResults(peerVoteResults);
+    if (peerShowcase) return renderPeerShowcase(peerShowcase);
     if (sharedResults) return renderResultsSummary(sharedResults);
     if (!activePoll) return null;
 
@@ -2089,6 +2625,18 @@
     upsertFeedbackResponse: upsertFeedbackResponse,
     resolveFeedbackAudienceUids: resolveFeedbackAudienceUids,
     buildFeedbackPrompt: buildFeedbackPrompt,
+    normalizePeerShowcaseText: normalizePeerShowcaseText,
+    normalizePeerVoteCriterion: normalizePeerVoteCriterion,
+    buildPeerShowcaseReviewRows: buildPeerShowcaseReviewRows,
+    buildPeerShowcaseRound: buildPeerShowcaseRound,
+    sanitizePeerShowcaseRound: sanitizePeerShowcaseRound,
+    normalizePeerVote: normalizePeerVote,
+    upsertPeerVote: upsertPeerVote,
+    buildPeerVoteResults: buildPeerVoteResults,
+    PEER_SHOWCASE_MIN_CANDIDATES: PEER_SHOWCASE_MIN_CANDIDATES,
+    PEER_SHOWCASE_MAX_CANDIDATES: PEER_SHOWCASE_MAX_CANDIDATES,
+    PEER_SHOWCASE_RESPONSE_MAX_LENGTH: PEER_SHOWCASE_RESPONSE_MAX_LENGTH,
+    PEER_VOTE_CRITERION_MAX_LENGTH: PEER_VOTE_CRITERION_MAX_LENGTH,
     FEEDBACK_RESPONSE_MAX_LENGTH: FEEDBACK_RESPONSE_MAX_LENGTH,
     FEEDBACK_CRITERIA_MAX_LENGTH: FEEDBACK_CRITERIA_MAX_LENGTH,
     FEEDBACK_TEXT_MAX_LENGTH: FEEDBACK_TEXT_MAX_LENGTH,
@@ -2101,8 +2649,8 @@
     HostPanel: HostPanel,
     GuestOverlay: GuestOverlay,
     _meta: {
-      version: '1.8.0',
-      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with rating, multiple choice, free text, teacher-reviewed feedback and revision, and teacher-moderated word clouds; custom rating scales; teacher-selected post-submit behavior; anonymous aggregate result sharing; teacher-authored auto-routing rules; reconnect-safe transport (hostClosed terminal event, re-offer handling, state sync on reconnect, guest auto-rejoin); initialPoll composer presets (Live Session Center Quick Check, Word Cloud, and Feedback Response); a roster gate on incoming offers (allowedUids); and a window.__alloRtcConfig TURN override hook.',
+      version: '1.9.0',
+      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with rating, multiple choice, free text, teacher-reviewed feedback and revision, teacher-moderated word clouds, and moderated anonymous peer showcase voting; custom rating scales; teacher-selected post-submit behavior; anonymous aggregate result sharing; teacher-authored auto-routing rules; reconnect-safe transport (hostClosed terminal event, re-offer handling, state sync on reconnect, guest auto-rejoin); initialPoll composer presets (Live Session Center Quick Check, Word Cloud, and Feedback Response); a roster gate on incoming offers (allowedUids); and a window.__alloRtcConfig TURN override hook.',
     },
   };
 

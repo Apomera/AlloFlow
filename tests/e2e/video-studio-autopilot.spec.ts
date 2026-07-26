@@ -315,17 +315,103 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await expect(studio.locator('#demoStatus')).toContainText('Deleted tutorial template: ' + deletedTemplateName);
   await expect(studio.locator('#demoTemplateSelect option')).toHaveCount(2);
   await expect.poll(() => studio.evaluate(() => JSON.parse(localStorage.getItem('vs_demo_templates_v1') || '[]').length)).toBe(1);
+  await expect.poll(() => studio.evaluate(() => !!localStorage.getItem('vs_demo_template_trash_v1'))).toBe(true);
   await expect(studio.locator('#demoTemplateUndoDeleteBtn')).toBeVisible();
   await expect(studio.locator('#demoTemplateUndoDeleteBtn')).toBeEnabled();
   await expect(studio.locator('#demoTemplateUndoDeleteBtn')).toBeFocused();
+  await studio.reload();
+  await studio.waitForLoadState('domcontentloaded');
+  await expect(studio.locator('#demoTemplateSelect option')).toHaveCount(2);
+  await expect(studio.locator('#demoTemplateUndoDeleteBtn')).toBeVisible();
+  await expect(studio.locator('#demoTemplateUndoDeleteBtn')).toBeEnabled();
+  await expect(studio.locator('#demoTemplateUndoDeleteBtn')).toHaveAttribute('title', /seven days/);
   await studio.locator('#demoTemplateUndoDeleteBtn').click();
   await expect(studio.locator('#demoStatus')).toContainText('Restored tutorial template: ' + deletedTemplateName);
   await expect(studio.locator('#demoTemplateSelect option')).toHaveCount(3);
   await expect.poll(() => studio.evaluate(() => JSON.parse(localStorage.getItem('vs_demo_templates_v1') || '[]').length)).toBe(2);
+  await expect.poll(() => studio.evaluate(() => localStorage.getItem('vs_demo_template_trash_v1'))).toBeNull();
   await expect(studio.locator('#demoTemplateUndoDeleteBtn')).toBeHidden();
   await expect(studio.locator('#demoTemplateSelect')).toBeFocused();
   await expect(studio.locator('#demoTemplateName')).toHaveValue(deletedTemplateName);
   await expect(studio.locator('#demoTemplateDeleteBtn')).toBeEnabled();
+
+  const selectedDownloadPromise = studio.waitForEvent('download');
+  await studio.locator('#demoTemplateExportBtn').click();
+  const selectedDownload = await selectedDownloadPromise;
+  expect(selectedDownload.suggestedFilename()).toMatch(/_tutorial_template\.json$/);
+  const selectedDownloadPath = await selectedDownload.path();
+  expect(selectedDownloadPath).not.toBeNull();
+  const selectedPack = JSON.parse(readFileSync(selectedDownloadPath!, 'utf8'));
+  expect(selectedPack).toMatchObject({ type: 'alloflow-demo-template-pack', version: 1 });
+  expect(selectedPack.templates).toHaveLength(1);
+  expect(selectedPack.templates[0]).toMatchObject({ name: deletedTemplateName, officialId: null });
+  expect(selectedPack.templates[0].steps).toHaveLength(2);
+  await expect(studio.locator('#demoTemplateTransferStatus')).toContainText('No video or audio files were included');
+
+  const planGoalBeforeImport = await demoGoal.inputValue();
+  await studio.locator('#demoTemplateImportInput').setInputFiles({
+    name: 'fractions-template-pack.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(selectedPack)),
+  });
+  await expect(studio.locator('#demoTemplateImportReview')).toBeVisible();
+  await expect(studio.locator('#demoTemplateImportReviewStatus')).toContainText('Nothing changes until you import');
+  await expect(studio.locator('#demoTemplateImportReviewList')).toContainText('Commands:');
+  await expect(studio.locator('#demoTemplateImportReviewList')).toContainText('Narration:');
+  await expect(studio.locator('#demoTemplateImportReviewList')).toContainText('Parameters:');
+  await expect(studio.locator('#demoTemplateImportReviewList')).toContainText(deletedTemplateName + ' 2');
+  await expect.poll(() => studio.evaluate(() => JSON.parse(localStorage.getItem('vs_demo_templates_v1') || '[]').length)).toBe(2);
+  await expect(demoGoal).toHaveValue(planGoalBeforeImport);
+  await studio.locator('#demoTemplateImportApplyBtn').click();
+  await expect(studio.locator('#demoTemplateTransferStatus')).toContainText('without overwriting existing templates');
+  await expect(studio.locator('#demoStatus')).toContainText('current plan is unchanged');
+  await expect.poll(() => studio.evaluate(() => JSON.parse(localStorage.getItem('vs_demo_templates_v1') || '[]').length)).toBe(3);
+  await expect(studio.locator('#demoTemplateImportReview')).toBeHidden();
+  await expect(studio.locator('#demoTemplateName')).toHaveValue(deletedTemplateName + ' 2');
+  await expect(demoGoal).toHaveValue(planGoalBeforeImport);
+
+  const libraryDownloadPromise = studio.waitForEvent('download');
+  await studio.locator('#demoTemplateExportAllBtn').click();
+  const libraryDownload = await libraryDownloadPromise;
+  expect(libraryDownload.suggestedFilename()).toBe('alloflow_tutorial_template_library.json');
+  const libraryDownloadPath = await libraryDownload.path();
+  expect(libraryDownloadPath).not.toBeNull();
+  const libraryPack = JSON.parse(readFileSync(libraryDownloadPath!, 'utf8'));
+  expect(libraryPack.templates).toHaveLength(3);
+
+  await studio.locator('#demoTemplateImportInput').setInputFiles({
+    name: 'unsupported-template-pack.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify({ type: 'alloflow-demo-template-pack', version: 99, templates: selectedPack.templates })),
+  });
+  await expect(studio.locator('#demoTemplateTransferStatus')).toContainText('version is not supported');
+  await expect(studio.locator('#demoTemplateTransferStatus')).toContainText('Nothing changed');
+  await expect.poll(() => studio.evaluate(() => JSON.parse(localStorage.getItem('vs_demo_templates_v1') || '[]').length)).toBe(3);
+
+  await studio.locator('#demoTemplateImportInput').setInputFiles({
+    name: 'quota-template-pack.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(selectedPack)),
+  });
+  await expect(studio.locator('#demoTemplateImportReview')).toBeVisible();
+  await studio.evaluate(() => {
+    const target = window as any;
+    target.__demoOriginalStorageSetItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (key: string, value: string) {
+      if (key === 'vs_demo_templates_v1') throw new DOMException('Fixture quota exceeded', 'QuotaExceededError');
+      return target.__demoOriginalStorageSetItem.call(this, key, value);
+    };
+  });
+  await studio.locator('#demoTemplateImportApplyBtn').click();
+  await expect(studio.locator('#demoTemplateTransferStatus')).toContainText('Nothing changed; the review is still available');
+  await expect(studio.locator('#demoTemplateImportReview')).toBeVisible();
+  await expect.poll(() => studio.evaluate(() => JSON.parse(localStorage.getItem('vs_demo_templates_v1') || '[]').length)).toBe(3);
+  await studio.evaluate(() => {
+    Storage.prototype.setItem = (window as any).__demoOriginalStorageSetItem;
+    delete (window as any).__demoOriginalStorageSetItem;
+  });
+  await studio.locator('#demoTemplateImportCancelBtn').click();
+  await expect(studio.locator('#demoTemplateTransferStatus')).toContainText('cancelled. Nothing changed');
   await expect(studio.locator('#demoClosingText')).toHaveValue('Try the workflow yourself');
 
   await studio.locator('#demoAudioMode').selectOption('captions');

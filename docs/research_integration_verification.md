@@ -14,7 +14,8 @@ This bounded lane verifies:
 
 - Evidence Graph derivation and privacy boundaries;
 - Research Hub substrate migrations and rigor audits;
-- accessible evidence-map semantics;
+- accessible evidence-workbench semantics and relationship authoring;
+- validated portfolio import, recovery snapshots, and media extraction;
 - Tool Integration SDK behavior;
 - AlphaFold and Text Inquiry capture contracts;
 - Text Inquiry browser flow;
@@ -26,10 +27,10 @@ This bounded lane verifies:
 CI should distribute the complete suite across stable shards:
 
 ```powershell
-npm test -- --shard=1/16
-npm test -- --shard=2/16
+npm run test:ci:shard -- --shard=1/8
+npm run test:ci:shard -- --shard=2/8
 # …
-npm test -- --shard=16/16
+npm run test:ci:shard -- --shard=8/8
 ```
 
 Each shard should report independently. A failed or timed-out shard can then be rerun with `--maxWorkers=1 --reporter=verbose` to identify a specific test file. Do not treat an interactive timeout of the unsharded 1,200+ file command as a passing or failing test result.

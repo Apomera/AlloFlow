@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-21111-untitled-ti",
+  "title": "ዘምለጡ እንስሳት",
+  "description": "ኣርባዕተ ኣረግቶት እንስሳት ካብ ኩፍኣት ዋናታቶም ሓራ ንምውፃእ ሓበሩ ፤ ሓደ ዋና ዘይብሉ ገዛ ረኪቦም ድማ ብሰላም ነበሩ።",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Cissy Kiwanuka Luyiga"
+  ],
+  "illustrators": [
+    "Magriet Brink"
+  ],
+  "translators": [
+    "Angesom Abadi"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Cissy Kiwanuka Luyiga",
+      "role": "Author"
+    },
+    {
+      "name": "Angesom Abadi",
+      "role": "Translation"
+    },
+    {
+      "name": "Magriet Brink",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Cissy Kiwanuka Luyiga (Author); Angesom Abadi (Translation); Magriet Brink (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "21111",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-b5da385ee1325f32",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/8524.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8517.png",
+      "text": "ሓንቲ ኣረጊት ሰበይቲ ደርሆታትን ሓደ ዃኩናይን ነይሮማ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111#page=1",
+      "sourceDigest": "sha256:56e01c088704a2804e5983a853f4d4ee22e9cfe466a20372742698efc0f09188"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8518.png",
+      "text": "ወዲ ወዳ ክጥይቓ ምስመፀ። ነቲ ኳኩናይ ክትሓርዶ ወሰነት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111#page=2",
+      "sourceDigest": "sha256:1911707bc4cb0c9537b26200361184d00810a27527aa29be5f6f29943167641e"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8519.png",
+      "text": "እቲ ኳኩናይ ጎይዩ ናብ ከተማ ኣምለጠ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111#page=3",
+      "sourceDigest": "sha256:31cde126dfa1f066915f9af02996dae08a505021e60b03fe9a96e9a1d5b03590"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8520.png",
+      "text": "እቲ ኳኩናይ ካሊእ ካብ ዋንኣ ዘምለጠት ድሙ ረኸበ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111#page=4",
+      "sourceDigest": "sha256:33d42f7deeadc0f7911beb9193ad9be27601ea802855b5beec350196741c9199"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8521.png",
+      "text": "እቲ ኳኩናይን ድሙን ካሊእ ዘምለጠ ከልቢ ረኸቡ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111#page=5",
+      "sourceDigest": "sha256:95f8811066e0cef6c4861e3f34262c5f30ab26ad9a249db7c58b4d9666b13d6e"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8522.png",
+      "text": "ብተወሳኺ ካሊእ ካብ ዋንኡ ዘምለጠ ፈረስ ተፀንበሮም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111#page=6",
+      "sourceDigest": "sha256:c5b1327cc4750226568a5fda8f6617127f95395253c31930b0d33e367fb8ba26"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8523.png",
+      "text": "እዞም እንስሳት ናብ ሓደ ገዛ ከዱ። ኣብ ውሽጢ እቲ ገዛ ለያቡ ርኣዩ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111#page=7",
+      "sourceDigest": "sha256:13b0875d98c70d0daa4ad9b419a3668392cdc6f942393e4209b4f7e8393ec796"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8524.png",
+      "text": "እዞም እንስሳት ዓው ኢሎም እንዳፈራርሑ ነቶም ለያቡ ኣባረርዎም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111#page=8",
+      "sourceDigest": "sha256:e1a8d9db61486adb9c77140bae342c90f5af8ec78c3abfd7b8efe7e9fc200f2f"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8525.png",
+      "text": "ኣብቲ ገዛ ዝረኸብዎ ምግቢ በልዑ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111#page=9",
+      "sourceDigest": "sha256:a1bfdc91efd8dd35080083b2b49dea0f0c7c14676afe870c759c21f0fd48d504"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8526.png",
+      "text": "እቶም ለያቡ ተመሊሶም መፁ።እቶም እንስሳት መጥቓዕቲ ኣውረድሎም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111#page=10",
+      "sourceDigest": "sha256:aeab8d54a87dba443685402b1d15c1bc9ee5b56c3d76dd011bcacc7d4bdf716a"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8527.png",
+      "text": "እቶም ለያቡ ንሓዋሩ ጎይዮም ኣምለጡ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111#page=11",
+      "sourceDigest": "sha256:e149f12eab0ea7d79619a7119ea1a805668a9546d1366dcd7140a72f47d06a78"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8528.png",
+      "text": "እቶም እንስሳት ኣብቲ ገዛ ብሓጎስ ነበሩ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21111#page=12",
+      "sourceDigest": "sha256:4abe13a40d1420794d49f3815a8bd40d8e63fe3af9d69514fb261f69c2e096a6"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 86
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:55ab42e86f728e7699090ee67dba13c385670f0c948b500bd64c2de3e62587cf"
+  }
+}

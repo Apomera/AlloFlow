@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-761-organizational-behavior",
+  "title": "Organizational Behavior",
+  "description": "This OpenStax resource aligns to introductory courses in Organizational Behavior. The text presents the theory, concepts, and applications with particular emphasis on the impact that individuals and groups can have on organizational performance and culture. An array of recurring features engages students in entrepreneurial thinking, managing change, using tools/technology, and responsible management; furthermore, the unique chapter on Social Media and Communication contextualizes the importance and implications of various platforms and communications methods.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business",
+    "Business - Human Resources"
+  ],
+  "authors": [
+    "Multiple Authors - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/organizational-behavior-2019"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This OpenStax resource aligns to introductory courses in Organizational Behavior. The text presents the theory, concepts, and applications with particular emphasis on the impact that individuals and groups can have on organizational performance and culture. An array of recurring features engages students in entrepreneurial thinking, managing change, using tools/technology, and responsible management; furthermore, the unique chapter on Social Media and Communication contextualizes the importance and implications of various platforms and communications methods."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 95
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "761",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

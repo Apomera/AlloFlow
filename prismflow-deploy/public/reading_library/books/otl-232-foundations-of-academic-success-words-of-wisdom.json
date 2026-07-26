@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-232-foundations-of-academic-success-words-of-wisdom",
+  "title": "Foundations of Academic Success: Words of Wisdom",
+  "description": "Foundations of Academic Success: Words of Wisdom (FAS: WoW) introduces you to the various aspects of student and academic life on campus and prepares you to thrive as a successful college student (since there is a difference between a college student and a successful college student). Each section of FAS: WoW is framed by self-authored, true-to-life short stories from actual State University of New York (SUNY) students, employees, and alumni. The advice they share includes a variety of techniques to help you cope with the demands of college. The lessons learned are meant to enlarge your awareness of self with respect to your academic and personal goals and assist you to gain the necessary skills to succeed in college. Foundations of Academic Success is an engaging, informational, and succinct read that connects the reader to personal essays about succeeding in college. The text allows the reader to see different perspectives of the shared experience of navigating higher education. As an adjunct lecturer teaching a course entitled “Learning to Learn,” I see the advice and life lessons discussed as both helpful and informative to many types of students. I believe that this book has a universal appeal for any classroom that is discussing the college life cycle, and would advocate using this text with students who seek out campus services, such as Career Services, Study Abroad, and Academic Advising. I also see this text applicable in the education of student leaders, peer mentors, and peer advocates at the undergraduate and graduate levels. This text goes beyond traditional Student Affairs and Student Development theories to connect the reader with real, honest, and understandable life lessons.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Student Success"
+  ],
+  "authors": [
+    "Thomas C. Priester - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open SUNY",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/foundations-of-academic-success-words-of-wisdom"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Foundations of Academic Success: Words of Wisdom (FAS: WoW) introduces you to the various aspects of student and academic life on campus and prepares you to thrive as a successful college student (since there is a difference between a college student and a successful college student). Each section of FAS: WoW is framed by self-authored, true-to-life short stories from actual State University of New York (SUNY) students, employees, and alumni. The advice they share includes a variety of techniques to help you cope with the demands of college. The lessons learned are meant to enlarge your awareness of self with respect to your academic and personal goals and assist you to gain the necessary skills to succeed in college. Foundations of Academic Success is an engaging, informational, and succinct read that connects the reader to personal essays about succeeding in college. The text allows the reader to see different perspectives of the shared experience of navigating higher education. As an adjunct lecturer teaching a course entitled “Learning to Learn,” I see the advice and life lessons discussed as both helpful and informative to many types of students. I believe that this book has a universal appeal for any classroom that is discussing the college life cycle, and would advocate using this text with students who seek out campus services, such as Career Services, Study Abroad, and Academic Advising. I also see this text applicable in the education of student leaders, peer mentors, and peer advocates at the undergraduate and graduate levels. This text goes beyond traditional Student Affairs and Student Development theories to connect the reader with real, honest, and understandable life lessons."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2015."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 296
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "232",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

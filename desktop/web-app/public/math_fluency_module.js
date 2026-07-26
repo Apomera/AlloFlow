@@ -50,8 +50,10 @@
     document.head.appendChild(mfA11yStyle);
   }
 
-  // ── Grade-Normed DCPM Benchmarks (Research-Based) ──
-  // Sources: AIMSweb, NWEA, Fuchs & Fuchs (2004)
+  // -- Instructional DCPM references --
+  // These targets are descriptive classroom references, not vendor norms or
+  // validated diagnostic cut scores. The UI deliberately calls them
+  // "instructional references" so practice is not presented as screening.
   // Format: { [grade]: { [operation]: { fall, winter, spring } } }
   var BENCHMARKS = {
     'K':  { add: { fall: 5,  winter: 10, spring: 15 }, sub: { fall: 3,  winter: 8,  spring: 12 } },
@@ -72,33 +74,54 @@
     return 'spring';
   }
 
+  function normalizeGrade(grade) {
+    var raw = String(grade == null ? '' : grade).trim();
+    var lower = raw.toLowerCase();
+    if (/^(k|kinder|kindergarten|grade\s*k|k\s*grade|0|0th\s*grade)$/.test(lower)) return 'K';
+    var match = lower.match(/(?:^|\D)(\d{1,2})(?:st|nd|rd|th)?(?:\s*grade)?(?:$|\D)/);
+    if (!match) return null;
+    var n = parseInt(match[1], 10);
+    return n >= 1 && n <= 12 ? String(n) : null;
+  }
+
   function getBenchmark(grade, operation) {
-    var raw = String(grade || '3').trim();
-    if (raw.toUpperCase() === 'K') { var g = 'K'; }
-    else { var g = raw.replace(/\D/g, '') || '3'; if (g === '0') g = 'K'; }
-    var gradeData = BENCHMARKS[g] || BENCHMARKS['3'];
-    var op = operation === 'mixed' ? 'add' : operation;
-    var opData = gradeData[op] || gradeData.add || { fall: 30, winter: 40, spring: 50 };
+    var g = normalizeGrade(grade);
+    var gradeData = g ? BENCHMARKS[g] : null;
     var season = getSeason();
+    var opData = gradeData && operation !== 'mixed' ? gradeData[operation] : null;
+    var target = opData ? opData[season] : null;
+    if (!opData || !Number.isFinite(target) || target <= 0) {
+      return {
+        target: null, season: season, grade: g || String(grade || 'Unknown'),
+        frustration: null, strategic: null, available: false,
+        referenceOnly: true,
+        reason: !g || !gradeData ? 'unsupported-grade' : (!opData ? 'unsupported-operation' : 'no-season-reference')
+      };
+    }
     return {
-      target: opData[season],
+      target: target,
       season: season,
       grade: g,
       frustration: Math.round(opData[season] * 0.5),
-      strategic: Math.round(opData[season] * 0.75)
+      strategic: Math.round(opData[season] * 0.75),
+      available: true,
+      referenceOnly: true
     };
   }
 
   function getBenchmarkLabel(dcpm, benchmark) {
-    if (dcpm >= benchmark.target) return { label: tt('math_fluency.at_above_benchmark', 'At/Above Benchmark'), color: '#16a34a', emoji: '🟢', tier: 'benchmark' };
-    if (dcpm >= benchmark.strategic) return { label: tt('math_fluency.strategic_approaching', 'Strategic (Approaching)'), color: '#d97706', emoji: '🟡', tier: 'strategic' };
-    return { label: tt('math_fluency.intensive_below', 'Intensive (Below)'), color: '#dc2626', emoji: '🔴', tier: 'intensive' };
+    if (!benchmark || !benchmark.available || !Number.isFinite(benchmark.target)) {
+      return { label: tt('math_fluency.descriptive_score', 'Descriptive score - no validated reference available'), color: '#475569', emoji: '📋', tier: 'descriptive' };
+    }
+    if (dcpm >= benchmark.target) return { label: tt('math_fluency.meets_instructional_reference', 'Meets Instructional Reference'), color: '#15803d', emoji: '🟢', tier: 'reference-met' };
+    if (dcpm >= benchmark.strategic) return { label: tt('math_fluency.approaching_instructional_reference', 'Approaching Instructional Reference'), color: '#b45309', emoji: '🟡', tier: 'reference-approaching' };
+    return { label: tt('math_fluency.below_instructional_reference', 'Below Instructional Reference'), color: '#b91c1c', emoji: '🔴', tier: 'reference-below' };
   }
 
-  // ── Error Analysis ──
+  // -- Error Analysis --
   function analyzeErrors(problems) {
-    var errors = problems.filter(function (p) { return p.studentAnswer !== null && p.studentAnswer !== tt('math_fluency.skip', 'SKIP') && !p.correct; });
-    var skips = problems.filter(function (p) { return p.studentAnswer === tt('math_fluency.skip', 'SKIP'); });
+    var errors = problems.filter(function (p) { return p.studentAnswer !== null && p.studentAnswer !== 'SKIP' && !p.correct; });
+    var skips = problems.filter(function (p) { return p.studentAnswer === 'SKIP'; });
     var opErrors = {};
     var factErrors = [];
 
@@ -173,11 +196,12 @@
   function generateProblems(operation, difficulty, count) {
     var problems = [];
     var used = {};
-    var maxOp = difficulty === 'single' ? 12 : (difficulty === 'double' ? 99 : 12);
-    var minOp = difficulty === 'double' ? 10 : 0;
-    for (var attempt = 0; attempt < 500 && problems.length < count; attempt++) {
+    for (var attempt = 0; attempt < 1200 && problems.length < count; attempt++) {
       var ops = operation === 'mixed' ? ['add', 'sub', 'mul', 'div'] : [operation];
       var op = ops[Math.floor(Math.random() * ops.length)];
+      var level = difficulty === 'mixed' ? (Math.random() < 0.5 ? 'single' : 'double') : difficulty;
+      var maxOp = level === 'double' ? 99 : 12;
+      var minOp = level === 'double' ? 10 : 0;
       var a, b, answer;
       if (op === 'add') {
         a = Math.floor(Math.random() * (maxOp - minOp + 1)) + minOp;
@@ -185,16 +209,20 @@
         answer = a + b;
       } else if (op === 'sub') {
         a = Math.floor(Math.random() * (maxOp - minOp + 1)) + minOp;
-        b = Math.floor(Math.random() * (a + 1));
+        b = Math.floor(Math.random() * (maxOp - minOp + 1)) + minOp;
+        if (b > a) { var swap = a; a = b; b = swap; }
         answer = a - b;
       } else if (op === 'mul') {
-        var mulMax = difficulty === 'double' ? 15 : 12;
-        a = Math.floor(Math.random() * (mulMax + 1));
+        var mulMin = level === 'double' ? 10 : 0;
+        var mulMax = level === 'double' ? 20 : 12;
+        a = Math.floor(Math.random() * (mulMax - mulMin + 1)) + mulMin;
         b = Math.floor(Math.random() * 13);
         answer = a * b;
       } else {
-        b = Math.floor(Math.random() * 12) + 1;
-        answer = Math.floor(Math.random() * 13);
+        var divMax = level === 'double' ? 15 : 12;
+        var quotientMax = level === 'double' ? 20 : 12;
+        b = Math.floor(Math.random() * divMax) + 1;
+        answer = Math.floor(Math.random() * (quotientMax + 1));
         a = b * answer;
       }
       var key = a + '_' + op + '_' + b;
@@ -209,11 +237,29 @@
 
   function countDigits(n) { return Math.max(1, String(Math.abs(n)).length); }
 
-  // ── Self-contained UI localization (same pattern as Lingua / LitLab / PoetTree) ──
-  // This tool is algorithmic (no AI prop), so it uses the app's global
-  // window.callGemini (the user's runtime key, never a build key) to translate its
-  // ~100 UI labels into the student's interface language, cached per-device. English
-  // text IS the key: wrap each display string in tt('math_fluency.x', '…'). Touches no lang/*.js.
+  function countCorrectDigits(expected, actual) {
+    if (!Number.isFinite(Number(expected)) || !Number.isFinite(Number(actual))) return 0;
+    var expectedDigits = String(Math.abs(Math.trunc(Number(expected))));
+    var actualDigits = String(Math.abs(Math.trunc(Number(actual))));
+    var len = Math.max(expectedDigits.length, actualDigits.length);
+    expectedDigits = expectedDigits.padStart(len, ' ');
+    actualDigits = actualDigits.padStart(len, ' ');
+    var correct = 0;
+    for (var i = 0; i < len; i++) {
+      if (expectedDigits[i] !== ' ' && expectedDigits[i] === actualDigits[i]) correct++;
+    }
+    return correct;
+  }
+
+  function parseStudentAnswer(raw) {
+    var text = String(raw == null ? '' : raw).trim();
+    if (!/^-?\d+$/.test(text)) return { valid: false, value: null };
+    var value = Number(text);
+    if (!Number.isSafeInteger(value)) return { valid: false, value: null };
+    return { valid: true, value: value };
+  }
+
+  // -- Self-contained UI localization --
   var MF_I18N_KEY = 'allo_mathfluency_ui_i18n_v1';
   var LANG_CTX = (typeof window !== 'undefined' && window.AlloLanguageContext) || (typeof window !== 'undefined' && window.React ? window.React.createContext(null) : null);
   var STR_REG = {};
@@ -295,191 +341,322 @@
     var _l = useState(true), soundEnabled = _l[0], setSoundEnabled = _l[1];
     var _m = useState(false), autoAdvance = _m[0], setAutoAdvance = _m[1];
     var _n = useState(null), lastFeedback = _n[0], setLastFeedback = _n[1];
+    var _o = useState('practice'), probeMode = _o[0], setProbeMode = _o[1];
+    var _p = useState('A'), probeForm = _p[0], setProbeForm = _p[1];
+    var _q = useState(''), inputError = _q[0], setInputError = _q[1];
+    var _r = useState(0), interruptionCount = _r[0], setInterruptionCount = _r[1];
 
     var inputRef = useRef(null);
+    var overlayRef = useRef(null);
     var timerRef = useRef(null);
     var timerValueRef = useRef(timer);
+    var problemsRef = useRef(problems);
+    var currentIndexRef = useRef(currentIndex);
+    var runConfigRef = useRef(null);
+    var finishedRef = useRef(false);
+    var autoAdvanceTimerRef = useRef(null);
+    var deadlineRef = useRef(0);
+    var runTimingRef = useRef({ startedAt: 0, pausedMs: 0 });
+    var visibilityPauseRef = useRef(null);
+    var interruptionStatsRef = useRef({ count: 0, seconds: 0 });
+    var warningPlayedRef = useRef(false);
     timerValueRef.current = timer;
+    problemsRef.current = problems;
+    currentIndexRef.current = currentIndex;
+
+    function nowMs() {
+      return typeof performance !== 'undefined' && typeof performance.now === 'function'
+        ? performance.now()
+        : Date.now();
+    }
+
+    function buildComparisonKey(config) {
+      return [config.grade || 'unknown', config.mode, config.form || '-', config.operation, config.difficulty, config.timeLimit].join('|');
+    }
 
     // Load history from storage
     useEffect(function () {
       if (!storageDB) return;
       storageDB.get('allo_fluency_history').then(function (saved) {
-        if (saved && Array.isArray(saved)) setHistory(saved);
+        if (saved && Array.isArray(saved)) setHistory(saved.slice(-100));
       }).catch(function () { });
     }, []);
 
     // Save history to storage
     useEffect(function () {
       if (!storageDB || history.length === 0) return;
-      storageDB.set('allo_fluency_history', history).catch(function () { });
+      storageDB.set('allo_fluency_history', history.slice(-100)).catch(function () { });
     }, [history]);
 
-    // ── Finish probe ──
-    var finishProbe = useCallback(function () {
+    var finishProbe = useCallback(function (reason) {
+      if (finishedRef.current) return;
+      finishedRef.current = true;
       if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+      if (autoAdvanceTimerRef.current) { clearTimeout(autoAdvanceTimerRef.current); autoAdvanceTimerRef.current = null; }
       setActive(false);
-      setProblems(function (prev) {
-        var attempted = prev.filter(function (p) { return p.studentAnswer !== null; });
-        var correct = attempted.filter(function (p) { return p.correct; });
-        var totalDigitsCorrect = correct.reduce(function (s, p) { return s + countDigits(p.answer); }, 0);
-        var elapsedSeconds = timeLimit - timerValueRef.current;
-        var elapsedMinutes = Math.max(0.1, elapsedSeconds / 60);
-        var dcpm = Math.round(totalDigitsCorrect / elapsedMinutes);
-        var accuracy = attempted.length > 0 ? Math.round((correct.length / attempted.length) * 100) : 0;
-        var benchmark = getBenchmark(gradeLevel, operation);
-        var benchmarkResult = getBenchmarkLabel(dcpm, benchmark);
-        var errorAnalysis = analyzeErrors(prev);
 
-        var result = {
-          date: new Date().toISOString(),
-          operation: operation,
-          difficulty: difficulty,
-          dcpm: dcpm,
-          accuracy: accuracy,
-          totalCorrect: correct.length,
-          totalAttempted: attempted.length,
-          totalDigitsCorrect: totalDigitsCorrect,
-          timeLimit: timeLimit,
-          elapsedSeconds: elapsedSeconds,
-          benchmark: benchmark,
-          benchmarkResult: benchmarkResult,
-          errorAnalysis: errorAnalysis
-        };
-        setResults(result);
-        setHistory(function (h) { return h.concat([result]); });
+      var snapshot = problemsRef.current.slice();
+      var attempted = snapshot.filter(function (p) { return p.studentAnswer !== null; });
+      var correct = attempted.filter(function (p) { return p.correct; });
+      var totalDigitsCorrect = attempted.reduce(function (sum, p) {
+        return sum + (p.studentAnswer === 'SKIP' ? 0 : countCorrectDigits(p.answer, p.studentAnswer));
+      }, 0);
+      var config = runConfigRef.current || {
+        mode: 'practice', form: null, grade: normalizeGrade(gradeLevel) || String(gradeLevel || 'Unknown'),
+        operation: operation, difficulty: difficulty, timeLimit: timeLimit, problemCount: snapshot.length
+      };
+      var finishTime = nowMs();
+      if (visibilityPauseRef.current !== null) {
+        var pendingPauseMs = Math.max(0, finishTime - visibilityPauseRef.current);
+        runTimingRef.current.pausedMs += pendingPauseMs;
+        interruptionStatsRef.current.seconds += pendingPauseMs / 1000;
+        visibilityPauseRef.current = null;
+      }
+      var elapsedSeconds = Math.max(0, Math.min(
+        config.timeLimit,
+        (finishTime - runTimingRef.current.startedAt - runTimingRef.current.pausedMs) / 1000
+      ));
+      var finishReason = reason || 'early';
+      var wasInterrupted = config.mode === 'benchmark' && interruptionStatsRef.current.count > 0;
+      var completionStatus = finishReason === 'early' ? 'incomplete' : (wasInterrupted ? 'interrupted' : 'complete');
+      var validForComparison = completionStatus === 'complete';
+      var elapsedMinutes = Math.max(1 / 60, elapsedSeconds / 60);
+      var calculatedDcpm = Math.round(totalDigitsCorrect / elapsedMinutes);
+      var dcpm = validForComparison ? calculatedDcpm : null;
+      var accuracy = attempted.length > 0 ? Math.round((correct.length / attempted.length) * 100) : 0;
+      var reference = getBenchmark(config.grade, config.operation);
+      var referenceResult = validForComparison
+        ? getBenchmarkLabel(dcpm, reference)
+        : {
+            label: completionStatus === 'interrupted' ? 'Interrupted run' : 'Incomplete run',
+            color: '#64748b',
+            emoji: completionStatus === 'interrupted' ? '\u26a0\ufe0f' : '\u23f9\ufe0f'
+          };
+      var errorAnalysis = analyzeErrors(snapshot);
+      var comparisonKey = buildComparisonKey(config);
 
-        // Notify parent for main history
-        onProbeComplete({
-          id: 'fluency-probe-' + Date.now(),
-          type: 'math-fluency-probe',
-          title: tt('math_fluency.math_fluency_probe', 'Math Fluency Probe \u2014 ') + operation + ' (' + difficulty + ')',
-          timestamp: Date.now(),
-          data: result
-        });
+      var result = {
+        date: new Date().toISOString(),
+        mode: config.mode,
+        form: config.form,
+        grade: config.grade,
+        operation: config.operation,
+        difficulty: config.difficulty,
+        dcpm: dcpm,
+        accuracy: accuracy,
+        totalCorrect: correct.length,
+        totalAttempted: attempted.length,
+        totalDigitsCorrect: totalDigitsCorrect,
+        timeLimit: config.timeLimit,
+        elapsedSeconds: elapsedSeconds,
+        problemCount: config.problemCount,
+        finishReason: finishReason,
+        completionStatus: completionStatus,
+        validForComparison: validForComparison,
+        interruptionCount: interruptionStatsRef.current.count,
+        interruptedSeconds: Math.round(interruptionStatsRef.current.seconds * 10) / 10,
+        comparisonKey: comparisonKey,
+        benchmark: reference,
+        benchmarkResult: referenceResult,
+        errorAnalysis: errorAnalysis
+      };
+      setResults(result);
+      setHistory(function (items) { return items.concat([result]).slice(-100); });
 
-        // Award XP based on performance
-        var xp = Math.round(dcpm / 10);
-        if (xp > 0) handleScoreUpdate(xp, tt('math_fluency.math_fluency', 'Math Fluency'), 'fluency-probe');
-
-        return prev;
+      onProbeComplete({
+        id: 'fluency-probe-' + Date.now(),
+        type: 'math-fluency-probe',
+        title: tt('math_fluency.math_fluency_probe', 'Math Fluency Probe - ') + config.operation + ' (' + config.difficulty + ')',
+        timestamp: Date.now(),
+        data: result
       });
+
+      var xp = validForComparison ? Math.round(dcpm / 10) : 0;
+      if (xp > 0) handleScoreUpdate(xp, tt('math_fluency.math_fluency', 'Math Fluency'), 'fluency-probe');
     }, [timeLimit, operation, difficulty, gradeLevel, onProbeComplete, handleScoreUpdate]);
 
-    // ── Start probe ──
     var startProbe = useCallback(function () {
-      var p;
-      var tl = timeLimit;
-      if (window.MATH_PROBE_BANKS) {
-        var bank = (window.MATH_PROBE_BANKS[gradeLevel || '1'] || {})[('A')];
-        if (bank && bank.problems) {
-          p = bank.problems.map(function (prob) { return Object.assign({}, prob, { studentAnswer: null, correct: null }); });
-          if (bank.timeLimit) tl = bank.timeLimit;
+      var normalizedGrade = normalizeGrade(gradeLevel);
+      var config;
+      var nextProblems;
+      if (probeMode === 'benchmark') {
+        var gradeBanks = normalizedGrade && window.MATH_PROBE_BANKS ? window.MATH_PROBE_BANKS[normalizedGrade] : null;
+        var bank = gradeBanks ? gradeBanks[probeForm] : null;
+        if (!bank || !Array.isArray(bank.problems) || bank.problems.length === 0) {
+          addToast(tt('math_fluency.fixed_form_unavailable', 'A fixed comparable form is unavailable for this grade. Choose Practice mode.'), 'warning');
+          return;
         }
+        nextProblems = bank.problems.map(function (prob) { return Object.assign({}, prob, { studentAnswer: null, correct: null }); });
+        config = {
+          mode: 'benchmark', form: probeForm, grade: normalizedGrade,
+          operation: bank.operation || 'mixed', difficulty: bank.difficulty || 'fixed-form',
+          timeLimit: Number(bank.timeLimit) || 120, problemCount: nextProblems.length
+        };
+      } else {
+        nextProblems = generateProblems(operation, difficulty, problemCount);
+        config = {
+          mode: 'practice', form: null, grade: normalizedGrade || String(gradeLevel || 'Unknown'),
+          operation: operation, difficulty: difficulty, timeLimit: timeLimit, problemCount: nextProblems.length
+        };
       }
-      if (!p) p = generateProblems(operation, difficulty, problemCount);
+      if (!nextProblems.length) {
+        addToast(tt('math_fluency.no_problems_generated', 'No problems could be generated for these settings.'), 'warning');
+        return;
+      }
 
-      setProblems(p);
+      finishedRef.current = false;
+      runConfigRef.current = config;
+      var startTime = nowMs();
+      deadlineRef.current = startTime + config.timeLimit * 1000;
+      runTimingRef.current = { startedAt: startTime, pausedMs: 0 };
+      visibilityPauseRef.current = null;
+      interruptionStatsRef.current = { count: 0, seconds: 0 };
+      warningPlayedRef.current = false;
+      setInterruptionCount(0);
+      problemsRef.current = nextProblems;
+      currentIndexRef.current = 0;
+      timerValueRef.current = config.timeLimit;
+      setProblems(nextProblems);
       setCurrentIndex(0);
       setResults(null);
       setStudentInput('');
-      setTimer(tl);
+      setInputError('');
+      setTimer(config.timeLimit);
       setLastFeedback(null);
       setActive(true);
 
       if (timerRef.current) clearInterval(timerRef.current);
       timerRef.current = setInterval(function () {
-        setTimer(function (prev) {
-          if (prev <= 1) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-            setTimeout(finishProbe, 0);
-            return 0;
-          }
-          // Warning sound at 10 seconds
-          if (prev === 11 && soundEnabled) playTimeWarning();
-          return prev - 1;
-        });
-      }, 1000);
+        if (visibilityPauseRef.current !== null) return;
+        var next = Math.max(0, Math.ceil((deadlineRef.current - nowMs()) / 1000));
+        timerValueRef.current = next;
+        setTimer(next);
+        if (next === 0) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+          setTimeout(function () { finishProbe('time'); }, 0);
+        } else if (next <= 10 && !warningPlayedRef.current && soundEnabled && config.mode !== 'benchmark') {
+          warningPlayedRef.current = true;
+          playTimeWarning();
+        }
+      }, 250);
 
       setTimeout(function () { if (inputRef.current) inputRef.current.focus(); }, 100);
-    }, [timeLimit, operation, difficulty, problemCount, gradeLevel, finishProbe, soundEnabled]);
+    }, [timeLimit, operation, difficulty, problemCount, gradeLevel, probeMode, probeForm, finishProbe, soundEnabled, addToast]);
 
-    // ── Submit answer ──
     var submitAnswer = useCallback(function (skip) {
       var isSkip = skip === true;
-      var currentAnswer = studentInput;
-
-      setProblems(function (prev) {
-        var updated = prev.slice();
-        var idx = currentIndex;
-        if (idx < updated.length) {
-          var studentVal = isSkip ? null : parseInt(currentAnswer);
-          var isCorrect = !isSkip && (studentVal === updated[idx].answer);
-          updated[idx] = Object.assign({}, updated[idx], {
-            studentAnswer: isSkip ? tt('math_fluency.skip', 'SKIP') : studentVal,
-            correct: isSkip ? false : isCorrect
-          });
-
-          // Sound effects
-          if (soundEnabled && !isSkip) {
-            if (isCorrect) playCorrect(); else playIncorrect();
-          }
-
-          // Visual feedback
-          setLastFeedback(isSkip ? 'skip' : (isCorrect ? 'correct' : 'wrong'));
-          setTimeout(function () { setLastFeedback(null); }, 400);
-        }
-        return updated;
-      });
-
-      setStudentInput('');
-      setCurrentIndex(function (prev) {
-        var next = prev + 1;
-        if (next >= problems.length) {
-          setTimeout(finishProbe, 50);
-        }
-        return next;
-      });
-      setTimeout(function () { if (inputRef.current) inputRef.current.focus(); }, 50);
-    }, [currentIndex, studentInput, problems.length, soundEnabled, finishProbe]);
-
-    // Auto-advance on correct
-    useEffect(function () {
-      if (!autoAdvance || !active || studentInput === '') return;
-      var currentProblem = problems[currentIndex];
-      if (!currentProblem) return;
-      var val = parseInt(studentInput);
-      if (!isNaN(val) && val === currentProblem.answer) {
-        setTimeout(function () { submitAnswer(false); }, 150);
+      var parsed = isSkip ? { valid: true, value: null } : parseStudentAnswer(studentInput);
+      if (!parsed.valid) {
+        var message = tt('math_fluency.enter_whole_number', 'Enter a whole-number answer, or choose Skip.');
+        setInputError(message);
+        _mfAnnounce(message);
+        if (inputRef.current) inputRef.current.focus();
+        return;
       }
-    }, [studentInput, autoAdvance, active, currentIndex]);
 
-    // Keyboard shortcuts
+      var idx = currentIndexRef.current;
+      var updated = problemsRef.current.slice();
+      if (idx >= updated.length) return;
+      var isCorrect = !isSkip && parsed.value === updated[idx].answer;
+      updated[idx] = Object.assign({}, updated[idx], {
+        studentAnswer: isSkip ? 'SKIP' : parsed.value,
+        correct: isSkip ? false : isCorrect
+      });
+      problemsRef.current = updated;
+      setProblems(updated);
+
+      var isFixedRun = runConfigRef.current && runConfigRef.current.mode === 'benchmark';
+      if (!isFixedRun && soundEnabled && !isSkip) {
+        if (isCorrect) playCorrect(); else playIncorrect();
+      }
+      if (!isFixedRun) {
+        setLastFeedback(isSkip ? 'skip' : (isCorrect ? 'correct' : 'wrong'));
+        setTimeout(function () { setLastFeedback(null); }, 400);
+      }
+      setStudentInput('');
+      setInputError('');
+
+      var next = idx + 1;
+      currentIndexRef.current = next;
+      setCurrentIndex(next);
+      if (next >= updated.length) setTimeout(function () { finishProbe('complete'); }, 50);
+      else setTimeout(function () { if (inputRef.current) inputRef.current.focus(); }, 50);
+    }, [studentInput, soundEnabled, finishProbe]);
+
+    // Auto-advance on a strictly valid correct answer. Cleanup prevents a
+    // stale timeout from submitting after the student edits the value.
+    useEffect(function () {
+      if (autoAdvanceTimerRef.current) { clearTimeout(autoAdvanceTimerRef.current); autoAdvanceTimerRef.current = null; }
+      if (!autoAdvance || !active || studentInput === '' || (runConfigRef.current && runConfigRef.current.mode === 'benchmark')) return;
+      var currentProblem = problems[currentIndex];
+      var parsed = parseStudentAnswer(studentInput);
+      if (currentProblem && parsed.valid && parsed.value === currentProblem.answer) {
+        autoAdvanceTimerRef.current = setTimeout(function () { submitAnswer(false); }, 150);
+      }
+      return function () {
+        if (autoAdvanceTimerRef.current) { clearTimeout(autoAdvanceTimerRef.current); autoAdvanceTimerRef.current = null; }
+      };
+    }, [studentInput, autoAdvance, active, currentIndex, submitAnswer]);
+
+    // Escape ends the probe. Tab and Shift+Tab retain their standard meaning
+    // and cycle through the controls within the modal probe surface.
     useEffect(function () {
       if (!active) return;
       function handleKey(e) {
         if (e.key === 'Escape') {
           e.preventDefault();
-          if (timerRef.current) clearInterval(timerRef.current);
-          finishProbe();
-        } else if (e.key === 'Tab') {
-          e.preventDefault();
-          submitAnswer(true);
+          finishProbe('early');
+          return;
         }
+        if (e.key !== 'Tab' || !overlayRef.current) return;
+        var focusable = Array.prototype.slice.call(overlayRef.current.querySelectorAll('input:not([disabled]), button:not([disabled]), select:not([disabled]), [tabindex="0"]'));
+        if (!focusable.length) return;
+        var first = focusable[0], last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
       }
       window.addEventListener('keydown', handleKey);
       return function () { window.removeEventListener('keydown', handleKey); };
-    }, [active, finishProbe, submitAnswer]);
+    }, [active, finishProbe]);
 
-    // Cleanup timer on unmount
+    // Pause elapsed time while the page is hidden. Fixed comparable forms are
+    // also marked as interrupted so their scores cannot enter trend data.
+    useEffect(function () {
+      if (!active || typeof document === 'undefined') return;
+      function handleVisibilityChange() {
+        var currentTime = nowMs();
+        if (document.hidden) {
+          if (visibilityPauseRef.current === null) {
+            visibilityPauseRef.current = currentTime;
+            if (runConfigRef.current && runConfigRef.current.mode === 'benchmark') {
+              interruptionStatsRef.current.count += 1;
+              setInterruptionCount(interruptionStatsRef.current.count);
+            }
+          }
+          return;
+        }
+        if (visibilityPauseRef.current !== null) {
+          var pausedMs = Math.max(0, currentTime - visibilityPauseRef.current);
+          deadlineRef.current += pausedMs;
+          runTimingRef.current.pausedMs += pausedMs;
+          interruptionStatsRef.current.seconds += pausedMs / 1000;
+          visibilityPauseRef.current = null;
+        }
+      }
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      handleVisibilityChange();
+      return function () { document.removeEventListener('visibilitychange', handleVisibilityChange); };
+    }, [active]);
+
     useEffect(function () {
       return function () {
         if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+        if (autoAdvanceTimerRef.current) { clearTimeout(autoAdvanceTimerRef.current); autoAdvanceTimerRef.current = null; }
       };
     }, []);
 
-    // ── Icons ──
+    // -- Icons --
     var Play = window.Play || function () { return h('span', null, '\u25b6'); };
     var RefreshCw = window.RefreshCw || function () { return h('span', null, '\u21bb'); };
     var X = window.X || function () { return h('span', null, '\u2715'); };
@@ -491,23 +668,30 @@
     // ── Active probe overlay ──
     if (active && problems.length > 0 && currentIndex < problems.length) {
       var prob = problems[currentIndex];
+      var isFixedRun = runConfigRef.current && runConfigRef.current.mode === 'benchmark';
       var correctCount = problems.filter(function (p) { return p.correct; }).length;
-      var timerPct = (timer / timeLimit) * 100;
+      var activeTimeLimit = (runConfigRef.current && runConfigRef.current.timeLimit) || timeLimit;
+      var timerPct = Math.max(0, Math.min(100, (timer / activeTimeLimit) * 100));
       var isLowTime = timer <= 10;
       // Live DCPM — digits-correct-per-minute, the gold-standard fluency
       // measure. We compute it from the same formula that finishProbe uses,
       // so the live number matches what the results will show. Shown to the
       // student during the probe as light real-time feedback.
-      var liveDigitsCorrect = problems.filter(function (p) { return p.correct; })
-        .reduce(function (s, p) { return s + countDigits(p.answer); }, 0);
-      var liveElapsed = timeLimit - timer;
+      var liveDigitsCorrect = problems.reduce(function (sum, p) {
+        return sum + (p.studentAnswer == null || p.studentAnswer === 'SKIP' ? 0 : countCorrectDigits(p.answer, p.studentAnswer));
+      }, 0);
+      var liveElapsed = activeTimeLimit - timer;
       var liveDcpm = liveElapsed > 0 ? Math.round(liveDigitsCorrect / Math.max(0.1, liveElapsed / 60)) : 0;
 
-      var feedbackBg = lastFeedback === 'correct' ? 'rgba(34,197,94,0.15)'
+      var feedbackBg = isFixedRun ? 'transparent' : (lastFeedback === 'correct' ? 'rgba(34,197,94,0.15)'
         : lastFeedback === 'wrong' ? 'rgba(239,68,68,0.1)'
-        : lastFeedback === 'skip' ? 'rgba(100,116,139,0.08)' : 'transparent';
+        : lastFeedback === 'skip' ? 'rgba(100,116,139,0.08)' : 'transparent');
 
       return h('div', {
+        ref: overlayRef,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': tt('math_fluency.active_probe', 'Active math fluency probe'),
         style: {
           position: 'fixed', inset: 0, zIndex: 9999,
           background: 'linear-gradient(135deg, #fffbeb 0%, #ffffff 50%, #fff7ed 100%)',
@@ -523,7 +707,7 @@
             // Live DCPM pill — updates every second as the timer ticks. Low
             // opacity until at least 10s have elapsed so the number isn't
             // noisy at the start of the probe when the sample is tiny.
-            h('span', {
+            !isFixedRun ? h('span', {
               style: {
                 fontSize: '13px', fontWeight: 800,
                 padding: '3px 10px', borderRadius: '999px',
@@ -533,13 +717,17 @@
                 opacity: liveElapsed >= 10 ? 1 : 0.45,
                 transition: 'opacity 0.4s'
               },
-              title: 'Digits-correct per minute — the fluency benchmark metric, updating live.'
-            }, '\uD83D\uDCC8 ' + liveDcpm + ' dcpm'),
+              title: tt('math_fluency.live_dcpm_help', 'Digits-correct per minute, updating live.')
+            }, '\uD83D\uDCC8 ' + liveDcpm + ' dcpm') : null,
             h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#475569' } },
-              '#' + (currentIndex + 1) + ' \u2022 \u2705 ' + correctCount)
+              isFixedRun
+                ? '#' + (currentIndex + 1) + ' / ' + problems.length
+                : '#' + (currentIndex + 1) + ' \u2022 \u2705 ' + correctCount)
           ),
           h('div', { style: { height: '12px', background: '#e2e8f0', borderRadius: '9999px', overflow: 'hidden' } },
-            h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', style: {
+            h('div', { role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100,
+              'aria-valuenow': Math.round(timerPct),
+              'aria-label': tt('math_fluency.time_remaining', 'Time remaining: ') + timer + tt('math_fluency.seconds', ' seconds'), style: {
               height: '100%', borderRadius: '9999px', transition: 'width 1s linear',
               background: isLowTime ? 'linear-gradient(to right, #ef4444, #dc2626)' : 'linear-gradient(to right, #f59e0b, #f97316)',
               width: timerPct + '%'
@@ -547,7 +735,8 @@
           )
         ),
         // Problem card
-        h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100',
+        h('div', { role: 'group',
+          'aria-label': tt('math_fluency.problem_of', 'Problem {current} of {total}', { current: currentIndex + 1, total: problems.length }),
           style: {
             background: '#fff', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.1)', border: '2px solid #fde68a',
             padding: '2rem 3rem', width: '100%', maxWidth: '28rem', textAlign: 'center'
@@ -555,17 +744,20 @@
         },
           h('div', { style: { fontSize: 'clamp(2.5rem, 8vw, 3.5rem)', fontWeight: 900, color: '#1e293b', letterSpacing: '-1px', marginBottom: '2rem', fontFamily: 'ui-monospace, monospace' } },
             prob.a + ' ' + prob.symbol + ' ' + prob.b + ' = ?'),
-          h('form', { onSubmit: function (e) { e.preventDefault(); submitAnswer(false); } },
+          h('form', { noValidate: true, onSubmit: function (e) { e.preventDefault(); submitAnswer(false); } },
             h('input', {
-              ref: inputRef, type: 'number', inputMode: 'numeric', value: studentInput,
-              onChange: function (e) { setStudentInput(e.target.value); },
+              ref: inputRef, type: 'number', inputMode: 'numeric', step: 1, value: studentInput,
+              onChange: function (e) { setStudentInput(e.target.value); if (inputError) setInputError(''); },
               autoFocus: true, 'aria-label': tt('math_fluency.your_answer', 'Your answer'),
+              'aria-invalid': inputError ? 'true' : 'false',
+              'aria-describedby': inputError ? 'mf-answer-error' : undefined,
               style: {
                 width: '140px', textAlign: 'center', fontSize: '2rem', fontWeight: 800,
                 borderBottom: '4px solid #f59e0b', background: 'transparent',
                 padding: '8px 0', margin: '0 auto', display: 'block', borderTop: 'none', borderLeft: 'none', borderRight: 'none'
               }
             }),
+            inputError ? h('div', { id: 'mf-answer-error', role: 'alert', style: { color: '#b91c1c', fontSize: '12px', fontWeight: 700, marginTop: '8px' } }, inputError) : null,
             h('div', { style: { display: 'flex', gap: '12px', marginTop: '1.5rem', justifyContent: 'center' } },
               h('button', {  type: 'submit',
                 style: {
@@ -574,7 +766,7 @@
                   border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(16,185,129,0.3)'
                 }
               }, tt('math_fluency.enter', 'Enter \u21b5')),
-              h('button', { "aria-label": "Skip",
+              h('button', { 'aria-label': tt('math_fluency.skip_problem', 'Skip problem'),
                 type: 'button', onClick: function () { submitAnswer(true); },
                 style: {
                   padding: '12px 24px', background: '#e2e8f0', color: '#64748b',
@@ -585,11 +777,13 @@
             )
           ),
           h('div', { style: { marginTop: '12px', fontSize: '11px', color: '#64748b' } },
-            tt('math_fluency.tab_skip_esc_end_early', 'Tab = Skip \u2022 Esc = End Early') + (autoAdvance ? ' \u2022 Auto-advance ON' : ''))
+            tt('math_fluency.tab_controls_esc_end_early', 'Tab = Next Control \u2022 Esc = End Early') + (!isFixedRun && autoAdvance ? ' \u2022 Auto-advance ON' : '')),
+          isFixedRun && interruptionCount > 0 ? h('div', { role: 'status', style: { marginTop: '10px', color: '#b45309', fontSize: '12px', fontWeight: 700 } },
+            tt('math_fluency.interrupted_run_notice', 'Interrupted - this run will be saved but excluded from comparable trends.')) : null
         ),
         // End early button
-        h('button', { "aria-label": "End probe early",
-          onClick: function () { if (timerRef.current) clearInterval(timerRef.current); finishProbe(); },
+        h('button', { 'aria-label': tt('math_fluency.end_probe_early', 'End probe early'),
+          onClick: function () { finishProbe('early'); },
           style: { marginTop: '1.5rem', fontSize: '14px', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }
         }, tt('math_fluency.end_probe_early', 'End probe early'))
       );
@@ -599,9 +793,13 @@
     if (results && !active) {
       var bm = results.benchmarkResult;
       var ea = results.errorAnalysis;
-      var maxDcpm = Math.max.apply(null, history.map(function (x) { return x.dcpm; }).concat([1]));
+      var comparisonHistory = history.filter(function (item) {
+        return item.comparisonKey && item.comparisonKey === results.comparisonKey
+          && item.validForComparison !== false && Number.isFinite(item.dcpm);
+      });
+      var maxDcpm = Math.max.apply(null, comparisonHistory.map(function (x) { return x.dcpm; }).concat([1]));
 
-      return h('div', { style: {
+      return h('div', { role: 'region', 'aria-label': tt('math_fluency.fluency_probe_results', 'Fluency Probe Results'), style: {
           background: 'linear-gradient(135deg, #fffbeb, #fff7ed)', borderRadius: '16px',
           border: '2px solid #fde68a', padding: '24px', marginBottom: '24px',
           animation: 'fadeIn 0.3s ease-out'
@@ -611,7 +809,7 @@
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
           h('h3', { style: { fontSize: '18px', fontWeight: 900, color: '#92400e', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 } },
             h('span', { 'aria-hidden': 'true' }, '\ud83d\udcca '), tt('math_fluency.fluency_probe_results', 'Fluency Probe Results')),
-          h('button', { onClick: function () { setResults(null); },
+          h('button', { onClick: function () { setResults(null); }, 'aria-label': tt('math_fluency.close_results', 'Close results'),
             style: { color: '#64748b', cursor: 'pointer', background: 'none', border: 'none', padding: '4px' }
           }, h(X, { size: 18 }))
         ),
@@ -628,16 +826,28 @@
           h('div', null,
             h('div', { style: { fontWeight: 800, color: bm.color, fontSize: '14px' } }, bm.label),
             h('div', { style: { fontSize: '12px', color: '#64748b' } },
-              'Grade ' + results.benchmark.grade + ' ' + results.benchmark.season + ' target: ' + results.benchmark.target + ' DCPM')
+              !results.validForComparison
+                ? (results.completionStatus === 'interrupted'
+                  ? tt('math_fluency.interrupted_result_detail', 'The page was left during this fixed form, so the run is not comparable.')
+                  : tt('math_fluency.incomplete_result_detail', 'The probe ended early, so the run is incomplete.'))
+                : (results.benchmark.available
+                  ? tt('math_fluency.instructional_reference_detail', 'Grade {grade} {season} instructional reference: {target} DCPM', { grade: results.benchmark.grade, season: results.benchmark.season, target: results.benchmark.target })
+                  : (results.mode === 'benchmark'
+                    ? tt('math_fluency.fixed_form_detail', 'Fixed Form {form} completed for Grade {grade}', { form: results.form || '-', grade: results.grade })
+                    : tt('math_fluency.practice_result_detail', 'Practice result for Grade {grade}', { grade: results.grade })))),
+            h('div', { style: { fontSize: '10px', color: '#64748b', marginTop: '3px' } },
+              results.validForComparison
+                ? tt('math_fluency.reference_disclaimer', 'Instructional reference only - not a diagnostic or standardized classification.')
+                : tt('math_fluency.excluded_result_detail', 'Saved for review, but excluded from trends, instructional references, and XP.'))
           )
         ),
 
         // Metrics grid
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' } },
           [
-            { val: results.dcpm, label: 'DCPM', sub: tt('math_fluency.digits_correct_min', 'Digits Correct/Min'), color: '#d97706' },
-            { val: results.accuracy + '%', label: 'Accuracy', sub: '', color: '#16a34a' },
-            { val: results.totalCorrect + '/' + results.totalAttempted, label: 'Correct', sub: '', color: '#2563eb' },
+            { val: results.dcpm == null ? '\u2014' : results.dcpm, label: 'DCPM', sub: tt('math_fluency.digits_correct_min', 'Digits Correct/Min'), color: '#d97706' },
+            { val: results.accuracy + '%', label: tt('math_fluency.accuracy', 'Accuracy'), sub: '', color: '#16a34a' },
+            { val: results.totalCorrect + '/' + results.totalAttempted, label: tt('math_fluency.correct', 'Correct'), sub: '', color: '#2563eb' },
             { val: results.totalDigitsCorrect, label: tt('math_fluency.total_digits', 'Total Digits'), sub: '', color: '#9333ea' }
           ].map(function (m, i) {
             return h('div', {
@@ -656,7 +866,7 @@
           style: { background: '#fff', borderRadius: '12px', padding: '12px 16px', border: '1px solid #fef3c7', marginBottom: '16px' }
         },
           h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px' } },
-            '\ud83d\udd0d Error Analysis'),
+            '\ud83d\udd0d ' + tt('math_fluency.error_analysis', 'Error Analysis')),
           ea.patterns.map(function (p, i) {
             return h('div', { key: i, style: { fontSize: '13px', color: '#475569', padding: '4px 0', borderBottom: i < ea.patterns.length - 1 ? '1px solid #f1f5f9' : 'none' } },
               '\u2022 ' + p);
@@ -666,19 +876,19 @@
         // DCPM Trend — bar chart per session with a trend delta and personal-best
         // marker so the student immediately sees "am I improving?" instead of
         // having to eyeball raw bars.
-        history.length >= 2 ? (function () {
-          var prevDcpm = history[history.length - 2].dcpm;
-          var curDcpm = history[history.length - 1].dcpm;
+        comparisonHistory.length >= 2 ? (function () {
+          var prevDcpm = comparisonHistory[comparisonHistory.length - 2].dcpm;
+          var curDcpm = comparisonHistory[comparisonHistory.length - 1].dcpm;
           var delta = curDcpm - prevDcpm;
-          var avgDcpm = Math.round(history.reduce(function (s, x) { return s + x.dcpm; }, 0) / history.length);
-          var personalBest = Math.max.apply(null, history.map(function (x) { return x.dcpm; }));
+          var avgDcpm = Math.round(comparisonHistory.reduce(function (sum, item) { return sum + item.dcpm; }, 0) / comparisonHistory.length);
+          var personalBest = Math.max.apply(null, comparisonHistory.map(function (item) { return item.dcpm; }));
           var avgPct = (avgDcpm / maxDcpm) * 100;
           return h('div', {
             style: { background: '#fff', borderRadius: '12px', padding: '12px', border: '1px solid #fef3c7', marginBottom: '16px' }
           },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '6px' } },
               h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#64748b' } },
-                '\ud83d\udcc8 DCPM Trend (' + history.length + ' sessions)'),
+                '\ud83d\udcc8 ' + tt('math_fluency.comparable_dcpm_trend', 'Comparable DCPM Trend') + ' (' + comparisonHistory.length + ' ' + tt('math_fluency.sessions', 'sessions') + ')'),
               // Trend delta — green/red arrow + number. Grey when flat.
               h('span', {
                 style: {
@@ -706,10 +916,10 @@
                 title: tt('math_fluency.average', 'Average: ') + avgDcpm + ' DCPM'
               }),
               h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: '4px', height: '64px', position: 'relative' } },
-                history.map(function (hItem, i) {
+                comparisonHistory.map(function (hItem, i) {
                   var pct = (hItem.dcpm / maxDcpm) * 100;
                   var isBest = hItem.dcpm === personalBest;
-                  var isLatest = i === history.length - 1;
+                  var isLatest = i === comparisonHistory.length - 1;
                   return h('div', { key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' } },
                     h('span', { style: { fontSize: '9px', fontWeight: 700, color: isBest ? '#d97706' : '#94a3b8' } }, isBest ? '\u2B50 ' + hItem.dcpm : hItem.dcpm),
                     h('div', { title: hItem.dcpm + ' DCPM' + (isBest ? ' (personal best)' : '') + (isLatest ? ' (this session)' : ''), style: {
@@ -733,7 +943,7 @@
 
         // Actions
         h('div', { style: { display: 'flex', gap: '8px', marginTop: '16px' } },
-          h('button', { "aria-label": "Clear History",
+          h('button', { 'aria-label': tt('math_fluency.run_again', 'Run again'),
             onClick: startProbe,
             style: {
               flex: 1, padding: '10px', background: 'linear-gradient(to right, #f59e0b, #f97316)',
@@ -741,8 +951,8 @@
               border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               boxShadow: '0 4px 12px rgba(245,158,11,0.3)'
             }
-          }, h(RefreshCw, { size: 14 }), ' Run Again'),
-          history.length > 0 ? h('button', { "aria-label": "Clear History",
+          }, h(RefreshCw, { size: 14 }), tt('math_fluency.run_again', ' Run Again')),
+          history.length > 0 ? h('button', { 'aria-label': tt('math_fluency.clear_history', 'Clear History'),
             onClick: function () { setHistory([]); if (storageDB) storageDB.set('allo_fluency_history', []); addToast(tt('math_fluency.probe_history_cleared', 'Probe history cleared'), 'info'); },
             style: {
               padding: '10px 16px', background: '#f1f5f9', color: '#64748b',
@@ -773,15 +983,22 @@
             'aria-label': soundEnabled ? tt('math_fluency.mute_sound_effects', 'Mute sound effects') : tt('math_fluency.enable_sound_effects', 'Enable sound effects'),
             style: { padding: '4px 8px', borderRadius: '8px', border: '1px solid #fde68a', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }
           }, soundEnabled ? h(Volume2, { size: 14 }) : h(VolumeX, { size: 14 })),
-          h('button', { 'aria-expanded': String(autoAdvance),
-            onClick: function () { setAutoAdvance(!autoAdvance); },
-            title: autoAdvance ? tt('math_fluency.disable_auto_advance', 'Disable auto-advance') : tt('math_fluency.enable_auto_advance_moves_to_next_on_cor', 'Enable auto-advance (moves to next on correct answer)'),
-            'aria-label': autoAdvance ? tt('math_fluency.disable_auto_advance', 'Disable auto-advance') : tt('math_fluency.enable_auto_advance', 'Enable auto-advance'),
+          h('button', { 'aria-expanded': String(autoAdvance && probeMode !== 'benchmark'),
+            disabled: probeMode === 'benchmark',
+            'aria-disabled': probeMode === 'benchmark' ? 'true' : 'false',
+            onClick: function () { if (probeMode !== 'benchmark') setAutoAdvance(!autoAdvance); },
+            title: probeMode === 'benchmark'
+              ? tt('math_fluency.auto_advance_unavailable_fixed', 'Auto-advance is unavailable for fixed comparable forms.')
+              : (autoAdvance ? tt('math_fluency.disable_auto_advance', 'Disable auto-advance') : tt('math_fluency.enable_auto_advance_moves_to_next_on_cor', 'Enable auto-advance (moves to next on correct answer)')),
+            'aria-label': probeMode === 'benchmark'
+              ? tt('math_fluency.auto_advance_unavailable_fixed', 'Auto-advance is unavailable for fixed comparable forms.')
+              : (autoAdvance ? tt('math_fluency.disable_auto_advance', 'Disable auto-advance') : tt('math_fluency.enable_auto_advance', 'Enable auto-advance')),
             style: {
-              padding: '4px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
-              border: '1px solid ' + (autoAdvance ? '#16a34a' : '#fde68a'),
-              background: autoAdvance ? '#dcfce7' : '#fff',
-              color: autoAdvance ? '#16a34a' : '#92400e'
+              padding: '4px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: probeMode === 'benchmark' ? 'not-allowed' : 'pointer',
+              border: '1px solid ' + (autoAdvance && probeMode !== 'benchmark' ? '#16a34a' : '#fde68a'),
+              background: autoAdvance && probeMode !== 'benchmark' ? '#dcfce7' : '#fff',
+              color: autoAdvance && probeMode !== 'benchmark' ? '#16a34a' : '#92400e',
+              opacity: probeMode === 'benchmark' ? 0.55 : 1
             }
           }, '\u26a1 Auto')
         )
@@ -789,11 +1006,32 @@
 
       // Config grid
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '12px' } },
+        h('div', null,
+          h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.probe_mode', 'Probe Mode')),
+          h('select', {
+            value: probeMode, onChange: function (e) { setProbeMode(e.target.value); },
+            'aria-label': tt('math_fluency.probe_mode', 'Probe Mode'),
+            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
+          },
+            h('option', { value: 'practice' }, tt('math_fluency.practice_mode', 'Practice - Custom Settings')),
+            h('option', { value: 'benchmark' }, tt('math_fluency.fixed_form_mode', 'Fixed Comparable Form'))
+          )
+        ),
+        h('div', null,
+          h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.form', 'Form')),
+          h('select', {
+            value: probeForm, onChange: function (e) { setProbeForm(e.target.value); }, disabled: probeMode !== 'benchmark',
+            'aria-label': tt('math_fluency.fixed_probe_form', 'Fixed probe form'),
+            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db', opacity: probeMode === 'benchmark' ? 1 : 0.55 }
+          },
+            h('option', { value: 'A' }, 'Form A'), h('option', { value: 'B' }, 'Form B'), h('option', { value: 'C' }, 'Form C')
+          )
+        ),
         // Operation
         h('div', null,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.operation', 'Operation')),
           h('select', {
-            value: operation, onChange: function (e) { setOperation(e.target.value); },
+            value: operation, onChange: function (e) { setOperation(e.target.value); }, disabled: probeMode === 'benchmark',
             'aria-label': tt('math_fluency.math_operation', 'Math operation'),
             style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
           },
@@ -808,20 +1046,20 @@
         h('div', null,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.difficulty', 'Difficulty')),
           h('select', {
-            value: difficulty, onChange: function (e) { setDifficulty(e.target.value); },
+            value: difficulty, onChange: function (e) { setDifficulty(e.target.value); }, disabled: probeMode === 'benchmark',
             'aria-label': tt('math_fluency.difficulty_level', 'Difficulty level'),
             style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
           },
-            h('option', { value: 'single' }, tt('math_fluency.single_digit_0_12', 'Single Digit (0\u201312)')),
-            h('option', { value: 'double' }, tt('math_fluency.double_digit_10_99', 'Double Digit (10\u201399)')),
-            h('option', { value: 'mixed' }, tt('math_fluency.mixed_2', 'Mixed'))
+            h('option', { value: 'single' }, tt('math_fluency.basic_facts', 'Basic Facts')),
+            h('option', { value: 'double' }, tt('math_fluency.extended_facts', 'Extended Facts')),
+            h('option', { value: 'mixed' }, tt('math_fluency.mixed_levels', 'Mixed Levels'))
           )
         ),
         // Timer
         h('div', null,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.timer', 'Timer')),
           h('select', {
-            value: timeLimit, onChange: function (e) { setTimeLimit(parseInt(e.target.value)); },
+            value: timeLimit, onChange: function (e) { setTimeLimit(parseInt(e.target.value)); }, disabled: probeMode === 'benchmark',
             'aria-label': tt('math_fluency.time_limit', 'Time limit'),
             style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
           },
@@ -834,7 +1072,7 @@
         h('div', null,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.of_problems', '# of Problems')),
           h('select', {
-            value: problemCount, onChange: function (e) { setProblemCount(parseInt(e.target.value)); },
+            value: problemCount, onChange: function (e) { setProblemCount(parseInt(e.target.value)); }, disabled: probeMode === 'benchmark',
             'aria-label': tt('math_fluency.number_of_problems', 'Number of problems'),
             style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
           },
@@ -848,21 +1086,27 @@
         )
       ),
 
-      // Grade benchmark preview
+      // Mode summary and instructional reference preview
       (function () {
-        var bm = getBenchmark(gradeLevel, operation);
-        return h('div', { style: { background: '#fff', borderRadius: '8px', padding: '8px 12px', marginBottom: '12px',
-            border: '1px solid #fef3c7', fontSize: '12px', color: '#64748b' }
-        },
-          h('span', { style: { fontWeight: 700 } }, '\ud83c\udfaf Grade ' + bm.grade + ' ' + bm.season + ' target: '),
-          h('span', { style: { fontWeight: 800, color: '#d97706' } }, bm.target + ' DCPM'),
-          h('span', { style: { marginLeft: '8px', fontSize: '11px' } },
-            '(\ud83d\udfe2\u2265' + bm.target + ' \ud83d\udfe1\u2265' + bm.strategic + ' \ud83d\udd34<' + bm.strategic + ')')
-        );
+        var normalized = normalizeGrade(gradeLevel);
+        var gradeBanks = normalized && window.MATH_PROBE_BANKS ? window.MATH_PROBE_BANKS[normalized] : null;
+        var bank = gradeBanks && gradeBanks[probeForm];
+        var reference = getBenchmark(gradeLevel, operation);
+        var text;
+        if (probeMode === 'benchmark') {
+          text = bank
+            ? tt('math_fluency.fixed_form_summary', 'Fixed Form {form}: {count} grade-aligned problems, {seconds} seconds. Settings are locked for comparability.', { form: probeForm, count: bank.problems.length, seconds: bank.timeLimit || 120 })
+            : tt('math_fluency.fixed_form_unavailable_summary', 'No fixed form is available for this grade. Choose Practice mode.');
+        } else if (reference.available) {
+          text = tt('math_fluency.instructional_reference_summary', 'Grade {grade} {season} instructional reference: {target} DCPM. Descriptive only - not diagnostic.', { grade: reference.grade, season: reference.season, target: reference.target });
+        } else {
+          text = tt('math_fluency.no_reference_summary', 'Practice score only. No instructional reference is available for this grade or operation.');
+        }
+        return h('div', { role: 'note', style: { background: '#fff', borderRadius: '8px', padding: '8px 12px', marginBottom: '12px', border: '1px solid #fef3c7', fontSize: '12px', color: '#64748b' } }, text);
       })(),
 
       // Start button
-      h('button', { "aria-label": "Start Probe",
+      h('button', { 'aria-label': probeMode === 'benchmark' ? tt('math_fluency.start_fixed_form', 'Start fixed form') : tt('math_fluency.start_practice', 'Start practice'),
         onClick: startProbe,
         style: {
           width: '100%', padding: '10px', background: 'linear-gradient(to right, #f59e0b, #f97316)',
@@ -870,9 +1114,11 @@
           border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
           boxShadow: '0 4px 15px rgba(245,158,11,0.3)'
         }
-      }, h(Play, { size: 16 }), tt('math_fluency.start_fluency_probe', ' Start Fluency Probe')),
+      }, h(Play, { size: 16 }), probeMode === 'benchmark' ? tt('math_fluency.start_fixed_form', ' Start Fixed Form') : tt('math_fluency.start_practice', ' Start Practice')),
       h('p', { style: { fontSize: '11px', color: 'rgba(146,64,14,0.6)', textAlign: 'center', marginTop: '8px', margin: '8px 0 0' } },
-        tt('math_fluency.timed_math_fact_drill_measures_digits_co', 'Timed math fact drill \u2014 measures Digits Correct Per Minute (DCPM)'))
+        probeMode === 'benchmark'
+          ? tt('math_fluency.fixed_forms_comparable', 'Fixed forms preserve timing and problem order for comparable repeated checks.')
+          : tt('math_fluency.practice_description', 'Customizable math-fact practice - reports Digits Correct Per Minute (DCPM).'))
     );
   }
 
@@ -3942,6 +4188,8 @@
   window.AlloModules.MathFluencyInternals = {
     getBenchmark: getBenchmark, getBenchmarkLabel: getBenchmarkLabel,
     analyzeErrors: analyzeErrors, getSeason: getSeason, BENCHMARKS: BENCHMARKS,
+    normalizeGrade: normalizeGrade, generateProblems: generateProblems,
+    parseStudentAnswer: parseStudentAnswer, countCorrectDigits: countCorrectDigits,
   };
   console.log('[CDN] MathFluency + FluencyMaze modules registered');
 })();

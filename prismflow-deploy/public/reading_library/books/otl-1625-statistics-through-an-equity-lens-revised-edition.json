@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1625-statistics-through-an-equity-lens-revised-edition",
+  "title": "Statistics Through an Equity Lens [Revised Edition]",
+  "description": "This Open Educational Resource (OER) carries a significant responsibility by presenting statistics through an equity lens. The metaphor of a lens is used intentionally–as the glasses one wears can have a profound effect on what one sees. The book encourages further inspection of the ways in which data is collected, interpreted, and analyzed on a variety of social justice issues, such as health disparities, hunger and food insecurity, homelessness, behavioral health (mental health and substance use), and incarceration of males of color. It also attempts to reveal how the misuse of data can reinforce inequities, for example, by stigmatizing people and labeling neighborhoods as high poverty, violent, and having poor educational opportunities. Whether an intended or unintended consequence, irresponsible data use can contribute to racist impressions of people and communities.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Statistics"
+  ],
+  "authors": [
+    "Yvonne E. Anthony - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "ROTEL",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/statistics-through-an-equity-lens"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This Open Educational Resource (OER) carries a significant responsibility by presenting statistics through an equity lens. The metaphor of a lens is used intentionally–as the glasses one wears can have a profound effect on what one sees. The book encourages further inspection of the ways in which data is collected, interpreted, and analyzed on a variety of social justice issues, such as health disparities, hunger and food insecurity, homelessness, behavioral health (mental health and substance use), and incarceration of males of color. It also attempts to reveal how the misuse of data can reinforce inequities, for example, by stigmatizing people and labeling neighborhoods as high poverty, violent, and having poor educational opportunities. Whether an intended or unintended consequence, irresponsible data use can contribute to racist impressions of people and communities."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 153
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1625",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

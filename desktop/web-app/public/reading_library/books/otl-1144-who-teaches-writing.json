@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1144-who-teaches-writing",
+  "title": "Who Teaches Writing",
+  "description": "Who Teaches Writing is an open teaching and learning resource being used in English Composition classes at Oklahoma State University. It was authored by contributors from Oklahoma State University and also includes invited chapters from faculty and staff at institutions both inside and outside of Oklahoma. Contributors include faculty from various departments, contingent faculty and staff, and graduate instructors. One purpose of the resource is to provide short, relatively jargon-free chapters geared toward undergraduate students taking First-Year Composition. Support for this project was provided in part by OpenOKState and Oklahoma State University Libraries.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages",
+    "Education - Higher Education"
+  ],
+  "authors": [
+    "Tyler Branson - Author / Ron Brooks - Author / Dana Cadman - Author / Heidi Cephus - Author / Sara Beth Childers - Author / Elizabeth Devore - Author / Anna Sicari - Author / Charlotte Hogg - Author / Ho'omana Nathan Horton - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oklahoma State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/who-teaches-writing"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Who Teaches Writing is an open teaching and learning resource being used in English Composition classes at Oklahoma State University. It was authored by contributors from Oklahoma State University and also includes invited chapters from faculty and staff at institutions both inside and outside of Oklahoma. Contributors include faculty from various departments, contingent faculty and staff, and graduate instructors. One purpose of the resource is to provide short, relatively jargon-free chapters geared toward undergraduate students taking First-Year Composition. Support for this project was provided in part by OpenOKState and Oklahoma State University Libraries."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 116
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1144",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

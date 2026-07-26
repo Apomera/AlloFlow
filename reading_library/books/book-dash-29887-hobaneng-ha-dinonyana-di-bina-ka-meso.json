@@ -1,0 +1,88 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-29887-hobaneng-ha-dinonyana-di-bina-ka-meso",
+  "title": "Hobaneng ha dinonyana di bina ka meso",
+  "description": "Komello e wetse Happy-Land, mme Mme Nonyana o a tsamaya ho ya batla seboko sa mehlolo se tlisang pula. Ebe ho na le ya ka binang ho mo kgutlisetsa hae?",
+  "language": "Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Nature and looking after our planet"
+  ],
+  "authors": [
+    "Zanele Dlamini"
+  ],
+  "illustrators": [
+    "Emmanuel Grebo"
+  ],
+  "contributors": [
+    {
+      "name": "Joseph Kiugu",
+      "role": "Designer"
+    },
+    {
+      "name": "Joey Kok",
+      "role": "Editor"
+    },
+    {
+      "name": "Emmanuel Grebo",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Zanele Dlamini",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/hobaneng-ha-dinonyana-di-bina-ka-meso/",
+    "attributionUrl": "https://bookdash.org/books/hobaneng-ha-dinonyana-di-bina-ka-meso/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=why-birds-sing-at-dawn"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2022/10/why-birds-sing-at-dawn_st_978-1-77632-510-8-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2022/10/why-birds-sing-at-dawn_st_978-1-77632-510-8-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Komello e wetse Happy-Land, mme Mme Nonyana o a tsamaya ho ya batla seboko sa mehlolo se tlisang pula. Ebe ho na le ya ka binang ho mo kgutlisetsa hae?"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Joseph Kiugu (Designer); Joey Kok (Editor); Emmanuel Grebo (Illustrator); Zanele Dlamini (Writer)\n\nLanguage: Sesotho. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=why-birds-sing-at-dawn"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 96
+  }
+}

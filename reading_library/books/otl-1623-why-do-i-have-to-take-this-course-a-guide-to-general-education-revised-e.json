@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1623-why-do-i-have-to-take-this-course-a-guide-to-general-education-revised-e",
+  "title": "Why Do I Have to Take This Course? A Guide to General Education [Revised Edition]",
+  "description": "Why Do I Have to Take This Course? A Guide to General Education developed out of many years of thinking about general education courses and curriculums. We, as university personnel, do not always succeed in explaining why we have certain requirements. Even though these courses make up a significant percentage of our college careers, there is not often time set aside to talk about general education and explore its purpose and goals. When we do not know the reason why we are doing something, it can sometimes lead to apathy and even resentment. Once we have an idea of the purpose, then we can start to appreciate and learn. It is worthwhile to spend some time thinking about these purposes, both “official” and personal ones, in order to maximize student learning. This textbook helps students systematically study how general education requirements are developed, their history, post-graduation value, etc. It emphasizes exploration of the significance of individual learning outcomes, especially through the lens of John Lewis’ philosophy of “good, necessary trouble.” For instructors adopting this book, it is designed to assign in its entirety or in parts as instructors can choose to emphasize relevant learning outcomes. It is also designed for use by advisors, especially with advisees who express concerns over taking certain requirements.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education",
+    "Student Success"
+  ],
+  "authors": [
+    "Kisha G. Tracy - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "ROTEL",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/why-do-i-have-to-take-this-course-a-guide-to-general-education"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Why Do I Have to Take This Course? A Guide to General Education developed out of many years of thinking about general education courses and curriculums. We, as university personnel, do not always succeed in explaining why we have certain requirements. Even though these courses make up a significant percentage of our college careers, there is not often time set aside to talk about general education and explore its purpose and goals. When we do not know the reason why we are doing something, it can sometimes lead to apathy and even resentment. Once we have an idea of the purpose, then we can start to appreciate and learn. It is worthwhile to spend some time thinking about these purposes, both “official” and personal ones, in order to maximize student learning. This textbook helps students systematically study how general education requirements are developed, their history, post-graduation value, etc. It emphasizes exploration of the significance of individual learning outcomes, especially through the lens of John Lewis’ philosophy of “good, necessary trouble.” For instructors adopting this book, it is designed to assign in its entirety or in parts as instructors can choose to emphasize relevant learning outcomes. It is also designed for use by advisors, especially with advisees who express concerns over taking certain requirements."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 236
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1623",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

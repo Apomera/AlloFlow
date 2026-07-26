@@ -106,6 +106,13 @@
       var setLabToolData = ctx.setToolData;
 
       var _win = React.useRef(null);
+
+      React.useEffect(function () {
+        var popup = _win.current;
+        if (!popup || popup.closed) return;
+        var activeTheme = ctx.theme === 'light' || ctx.theme === 'contrast' ? ctx.theme : 'dark';
+        try { popup.postMessage({ type: 'alloflow-theme-change', theme: activeTheme }, '*'); } catch (_) {}
+      }, [ctx.theme]);
       var _data = React.useRef(null);   // current TimelineJS object held for the popup
       var _srcState = React.useState('');
       var sourceText = _srcState[0], setSourceText = _srcState[1];

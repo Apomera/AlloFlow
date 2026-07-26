@@ -1130,7 +1130,8 @@ describe('RoadReady rules-of-road content', () => {
       expect(src).toContain('return worldPostedLimitMph(worldForLimit, ch, 25);');
       expect(src).toContain('var biomeLimit = worldPostedLimitMph(iw, chunk, 25);');
       expect(src).toContain('var slBiomeMph = worldPostedLimitMph(iw, chunk, 25);');
-      expect(src).toContain('var paintLimit = worldPostedLimitMph(iw, chunk, 25);');
+      expect(src).not.toContain('var paintLimit = worldPostedLimitMph(iw, chunk, 25);');
+      expect(src).toContain('Speed limits are communicated by roadside signs and the HUD.');
       expect(src).toContain("speedLimit: feMap === 'highway' ? 65 : feMap === 'roundabout' ? 25 : getBiomeSpeedLimitMph(feMap, 25)");
 
       expect(src).not.toContain('var biomeSpeedMap = { residential: 25, suburban: 35, commercial: 30, industrial: 35, rural: 50 };');
@@ -1887,7 +1888,8 @@ describe('RoadReady intersection-rule invariants', () => {
     const src = readRoadReady(relPath);
     expect(src).toContain('function playerControlApproach(world, signal, car, vehicleLength)');
     expect(src).toContain("approachGroup: 'cross'");
-    expect(src).toContain("trafficSignalIndication(s, approach.approachGroup) === 'red'");
+    expect(src).toContain('trafficSignalMovementIndication(');
+    expect(src).toContain("s, approach.approachGroup,");
     expect(src).toContain('var activeOneWayViolation = playerCrossCorridor ? !!crossRequiredDirection : activeOneWay.enabled');
     expect(src).toContain('function leftTurnGapState(traffic, self, signal, playerCar)');
     expect(src).toContain("t._turnIntent === 'left'");
@@ -1896,9 +1898,37 @@ describe('RoadReady intersection-rule invariants', () => {
     expect(src).toContain('pathSpeed * dt / Math.max(1, t._turnPath ? t._turnPath.length : 1)');
     expect(src).not.toContain('t.heading += dhT * (1 - Math.exp(-dt / 0.4))');
     expect(src).toContain('arrivalQ.push({ vehicleId: t.id, arrivedAt: timeRef.current })');
-    expect(src).toContain('t._rollDecisions[crossStopKey] === undefined');
+    expect(src).toContain('function intersectionMovementPath(approachGroup, travelSign, turnIntent)');
+    expect(src).toContain('function intersectionMovementsConflict(a, b)');
+    expect(src).toContain('function requestIntersectionReservation(book, intersectionKey, vehicleId,');
+    expect(src).toContain('intersectionReservationRef.current, stopKey, t.id');
+    expect(src).toContain('function intersectionLaneTurnPermissions(profileOrChunk, approachGroup,');
+    expect(src).toContain('function intersectionExitClear(world, signal, movement, traffic, ignoreId, clearance)');
+    expect(src).toContain('function opposingApproachClear(world, traffic, self, signal, playerCar)');
+    expect(src).toContain('function createCrossToMainTurnPath(world, signal, vehicle, turnIntent)');
+    expect(src).toContain('publishPlayerIntersectionReservation(');
+    expect(src).toContain("destinationRoad === 'main'");
+    expect(src).toContain('Cross-street traffic follows the same mandatory full-stop rule.');
+    expect(src).toContain('Stop signs are mandatory for every simulated driver.');
+    expect(src).not.toContain('t._rollDecisions[crossStopKey] === undefined');
+    expect(src).not.toContain('Math.random() < pers.rollsStops');
+    expect(src).toContain('var yellowStopNeed = yellowFront + 0.4 + (aiSpeed * aiSpeed) / (2 * 3.5)');
+    expect(src).toContain('targetSpeed = Math.min(speedLimitMph, Math.max(5, desiredCruiseMph)) * MPH_TO_MS');
+    expect(src).not.toContain('speedBias: 1.12');
     expect(src).not.toContain('arrivalQ.push({ carIdx: idx');
     expect(src).not.toContain('Math.random() < pers.rollsStops * 0.05');
+  });
+});
+
+describe('RoadReady road-local traffic invariants', () => {
+  it.each(ROADREADY_FILES)('%s keeps curved-road traffic decisions in authored lane coordinates', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('function trafficRoadCoordinates(world, vehicle)');
+    expect(src).toContain('function trafficRelativeRoadPosition(world, observer, target)');
+    expect(src).toContain('var roadRel = trafficRelativeRoadPosition(');
+    expect(src).toContain('var pendingRel = trafficRelativeRoadPosition(');
+    expect(src).not.toContain('var ah = (other2.y - t.y) * myDirSign');
+    expect(src).not.toContain('var ahp = (other3.y - t.y) * pendingDirSign');
   });
 });
 
@@ -1907,7 +1937,10 @@ describe('RoadReady cross-street elevation invariants', () => {
     const src = readRoadReady(relPath);
     expect(src).toContain('var corridor = crossStreetCorridorAt(world, x, y, 0)');
     expect(src).toContain('crossStreet: true');
-    expect(src).toContain('var crossRoadGeo = new T.PlaneGeometry(MAP_SIZE, crossWidth, 24, 2)');
+    expect(src).toContain('var CROSS_STREET_LENGTH = MAP_SIZE * 1.5');
+    expect(src).toContain('var crossRoadGeo = new T.PlaneGeometry(CROSS_STREET_LENGTH, crossWidth, 36, 2)');
+    expect(src).toContain('if (crossStreetCorridorAt(this, worldX, worldY, 0)) return 0');
+    expect(src).toContain('recycleBranchVehicleToMain(infiniteWorldRef.current, t, playerY,');
     expect(src).toContain('crossRoadPositions.setY(crvi, crossLocalSurfaceHeight(crvx, crvz) + 0.013)');
     expect(src).toContain('crossLocalSurfaceHeight(edgeLocalX, edgeLocalZ) + 0.018');
     expect(src).toContain('crossLocalSurfaceHeight(cdx, 0) + 0.019');
@@ -1922,13 +1955,20 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).toContain("s._phase = 'all_red_to_cross'");
     expect(src).toContain("s._phase = 'cross_yellow'");
     expect(src).toContain("s._phase = 'all_red_to_main'");
+    expect(src).toContain("s._phase = 'main_left_green'");
+    expect(src).toContain("return 'green_arrow'");
+    expect(src).toContain("return 'flashing_yellow'");
+    expect(src).toContain("var protectedLeft = trafficSignalMovementIndication(");
+    expect(src).toContain("if (!protectedLeft && !leftGap.clear)");
+    expect(src).toContain("state: 'green_arrow', movementIntent: 'left'");
     expect(src).toContain('var poleLocalX = roadHalfW + 0.7');
     expect(src).toContain('var poleLocalZ = -(crossWidth * 0.5 + 0.55)');
     expect(src).toContain('var mainHeadLaneCenters = chunk.oneWay');
     expect(src).toContain('var addPostMountedSignalHead = function(headSpec)');
     expect(src).toContain('var signalCrossDirections = chunk.crossStreetOneWayDirection');
     expect(src).toContain("approachGroup: 'cross'");
-    expect(src).toContain("trafficSignalIndication(signalAtCrosswalk, 'cross') === 'green'");
+    expect(src).toContain("pedestrianSignalState(signalAtCrosswalk, 'cross')");
+    expect(src).toContain("var psPedState = pedestrianSignalState(psSigEntry, 'cross')");
     expect(src).not.toContain('var poleLocalX = 4.5');
     expect(src).not.toContain("var psWalk = (psSigEntry.state === 'red')");
   });
@@ -1956,6 +1996,8 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).toContain('var activeControl = null');
     expect(src).toContain('var aiFrontOverhang = vehicleFootprint(t.type).length * 0.5 + 0.25');
     expect(src).toContain('var approach = playerControlApproach(world, s, car, playerLength)');
+    expect(src).toContain('function trafficSignalMovementIndication(signal, approachGroup, turnIntent)');
+    expect(src).toContain('var playerMovement = intersectionMovementPath(');
     expect(src).toContain('var pedCrosswalkY = worldY + crosswalkSide * RR_INTERSECTION_CROSSWALK_OFFSET');
     expect(src).not.toContain('var stopLineOff = cwOffset < 0 ? 1.3 : -1.3');
     expect(src).not.toContain('var sbZ = cwCtrZ - 1.5');
@@ -1986,6 +2028,10 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).toContain('var cwBank = roadBankAngleAt(iw.spline, crosswalkGridY, iw.profile || chunk)');
     expect(src).toContain('var dsHalf = roadHalfW * 0.92');
     expect(src).toContain('var rumbleOffset = roadLayout.edgeLineOffset + 0.18');
+    expect(src).toContain('var grassUnderlayDrop = Math.max(0.04,');
+    expect(src).toContain('roadShoulderDrainageDrop(grassRoadLayout.shoulderWidth, chunk) + 0.035');
+    expect(src).toContain('grRowH - grassUnderlayDrop');
+    expect(src).toContain('Fixed-coordinate speed signs are omitted');
     expect(src).toContain('var rBankLift = Math.sin(rBank) * rumbleOffset');
     expect(src).toContain('snPile.position.set(snX, snGroundY + snHeight / 2, snZ)');
     expect(src).toContain('splineHeightAtZ(mistZ) + 0.3');

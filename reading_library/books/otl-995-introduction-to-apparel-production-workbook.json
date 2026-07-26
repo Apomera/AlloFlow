@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-995-introduction-to-apparel-production-workbook",
+  "title": "Introduction to Apparel Production Workbook",
+  "description": "Welcome to Introduction to Apparel Production. Whether you are part of the college class or learning on your own, you will gain important concepts and techniques in beginning apparel production. This workbook is to accompany the activities through in person teaching or online learning. There will be graphics and videos to help guide you through each step of this workbook. There are 6 learning units and a sewing projects unit in this workbook. The sewing projects unit contains 4 projects: tote bag, skirt, shirt and pants. The pattern numbers may change due to the availability of patterns.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business",
+    "Business - Entrepreneurship"
+  ],
+  "authors": [
+    "Laurie M. Apple - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Arkansas",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-apparel-production-workbook"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Welcome to Introduction to Apparel Production. Whether you are part of the college class or learning on your own, you will gain important concepts and techniques in beginning apparel production. This workbook is to accompany the activities through in person teaching or online learning. There will be graphics and videos to help guide you through each step of this workbook. There are 6 learning units and a sewing projects unit in this workbook. The sewing projects unit contains 4 projects: tote bag, skirt, shirt and pants. The pattern numbers may change due to the availability of patterns."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 120
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "995",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -13,4 +13,5 @@ Generated: 2026-07-23T17:24:12.227Z
 
 > This is not ETS or NASP approval, independent school-psychologist validation, field testing, psychometric calibration, a scaled-score model, psychological evaluation, diagnosis, mental-health treatment, or legal advice.
 
-- Independent-batch audit: 200 original source questions plus 0 assistant-authored independent practice questions produce 100 distinct independent content kernels. 300 additional activities remain guided review only. 400 new independent questions remain to reach 500.
+
+- Independent-batch audit: 200 original source questions plus 100 assistant-authored independent practice questions produce 200 distinct independent content kernels. 200 additional activities remain guided review only. 300 new independent questions remain to reach 500.

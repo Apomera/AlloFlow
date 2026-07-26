@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-770-extended-readings-on-copyright-2022",
+  "title": "Extended Readings on Copyright - 2022",
+  "description": "Extended Readings on Copyright is subject to a non-commercial Create Commons license that allows you to add, subtract, and amend as you see fit, provided you extend those terms to any derivative work based on these materials and provided your provide appropriate attribution. I encourage you to share your edits and additions with me, but it is not obligatory.Extended Readings on Copyright can be used as a stand alone textbook on United States copyright law. The individual chapters are available on this website, and these can be used to supplement other materials. Individual chapters are likely to be more up to date than the consolidated build of the book.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law - Property Law"
+  ],
+  "authors": [
+    "Matthew Sag - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Matthew Sag",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/extended-readings-on-copyright"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Extended Readings on Copyright is subject to a non-commercial Create Commons license that allows you to add, subtract, and amend as you see fit, provided you extend those terms to any derivative work based on these materials and provided your provide appropriate attribution. I encourage you to share your edits and additions with me, but it is not obligatory.Extended Readings on Copyright can be used as a stand alone textbook on United States copyright law. The individual chapters are available on this website, and these can be used to supplement other materials. Individual chapters are likely to be more up to date than the consolidated build of the book."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 132
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "770",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

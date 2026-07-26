@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-798-a-student-s-guide-to-tropical-marine-biology",
+  "title": "A Student's Guide to Tropical Marine Biology",
+  "description": "A Student’s Guide to Tropical Marine Biology is written entirely by students enrolled in the Keene State College Tropical Marine Biology course taught by Dr. Karen Cangialosi.Our goal was to investigate three main aspects of tropical marine biology: understanding the system, identifying problems, and evaluating solutions. Each of the sections contains chapters that utilize openly licensed material and images, and are rich with hyperlinks to other sources. Some of the most pressing tropical marine ecosystem issues are broken up into five sections: Coral Reefs and Diversity, Common Fishes to the Coral Reef, Environmental Threats, Reef Conservation, and Major Marine Phyla. These sections are not mutually exclusive; repetition in some content between chapters is intentional as we expect that users may not read the whole book.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology"
+  ],
+  "authors": [
+    "Haley Zanga - Author / Audrey Boraski - Author / Alana Olendorf - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Kenyon College",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-student-s-guide-to-tropical-marine-biology"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A Student’s Guide to Tropical Marine Biology is written entirely by students enrolled in the Keene State College Tropical Marine Biology course taught by Dr. Karen Cangialosi.Our goal was to investigate three main aspects of tropical marine biology: understanding the system, identifying problems, and evaluating solutions. Each of the sections contains chapters that utilize openly licensed material and images, and are rich with hyperlinks to other sources. Some of the most pressing tropical marine ecosystem issues are broken up into five sections: Coral Reefs and Diversity, Common Fishes to the Coral Reef, Environmental Threats, Reef Conservation, and Major Marine Phyla. These sections are not mutually exclusive; repetition in some content between chapters is intentional as we expect that users may not read the whole book."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 148
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "798",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-132-human-relations",
+  "title": "Human Relations",
+  "description": "Human Relations by Laura Portolese-Dias addresses all of the critical topics to obtain career success as they relate to professional relationships. Knowing how to get along with others, resolve workplace conflict, manage relationships, communicate well, and make good decisions are all critical skills all students need to succeed in career and in life. Human Relations is not an organizational behavior; rather, it provides a good baseline of issues students will deal with in their careers on a day-to-day basis. It is also not a professional communications, business English, or professionalism textbook, as its focus is much broader — on general career success and how to effectively maneuver in the workplace. From communication challenges to focusing on one's own emotional intelligence, the examples throughout Human Relations will help students understand the importance of the human side in their career. This book's easy-to-understand language and tone is written to convey practical information in an engaging way. Every chapter opens with a realistic example which introduces a concept to be explained in detail later. Each chapter contains relevant examples, YouTube videos, figures, learning objectives, key takeaways, exercises, and a chapter-ending case that offer different ways to promote learning. Many of the end-of-section exercises offer self-assessment quizzes, so students may engage in self-understanding and development.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Human Resources"
+  ],
+  "authors": [
+    "Laura Portolese Dias - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "LibreTexts",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/human-relations"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Human Relations by Laura Portolese-Dias addresses all of the critical topics to obtain career success as they relate to professional relationships. Knowing how to get along with others, resolve workplace conflict, manage relationships, communicate well, and make good decisions are all critical skills all students need to succeed in career and in life. Human Relations is not an organizational behavior; rather, it provides a good baseline of issues students will deal with in their careers on a day-to-day basis. It is also not a professional communications, business English, or professionalism textbook, as its focus is much broader — on general career success and how to effectively maneuver in the workplace. From communication challenges to focusing on one's own emotional intelligence, the examples throughout Human Relations will help students understand the importance of the human side in their career. This book's easy-to-understand language and tone is written to convey practical information in an engaging way. Every chapter opens with a realistic example which introduces a concept to be explained in detail later. Each chapter contains relevant examples, YouTube videos, figures, learning objectives, key takeaways, exercises, and a chapter-ending case that offer different ways to promote learning. Many of the end-of-section exercises offer self-assessment quizzes, so students may engage in self-understanding and development."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2012."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 234
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "132",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-52161-manu-iyo-libaaxii",
+  "title": "Manu iyo Libaaxii",
+  "description": "Sida nin uga nabadgalay dhimasho run ah.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Mozambican folktale"
+  ],
+  "illustrators": [
+    "Hélder de Paz Alexandre"
+  ],
+  "translators": [
+    "Abdullahi Mohamed"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Mozambican folktale",
+      "role": "Author"
+    },
+    {
+      "name": "Abdullahi Mohamed",
+      "role": "Translation"
+    },
+    {
+      "name": "Hélder de Paz Alexandre",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Mozambican folktale (Author); Abdullahi Mohamed (Translation); Hélder de Paz Alexandre (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52161",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52161",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "52161",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-1d2d0717fc9615e1",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/8180.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8180.png",
+      "text": "Maalin, ayaa Manu lugaynaayey.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52161#page=1",
+      "sourceDigest": "sha256:2952b067451dc85d543990e85adbd0b98ad9a7a94b8fb566ed73020e89a63dbc"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8181.png",
+      "text": "Markaas, libaax ayaa ku nasanaayey cawska dhexdiisa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52161#page=2",
+      "sourceDigest": "sha256:61ac87ef2f7ccb1a1fbaa3048281dd8cd4b04d7cbe15a854ab43a64dc3829890"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8182.png",
+      "text": "Manu aad buu u cabsooday.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52161#page=3",
+      "sourceDigest": "sha256:02b38c6d80a6aff06eb620a6494e7f0533539bc3ddd9342b00a8bd8fa5462ee8"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8184.png",
+      "text": "Libaaxii baa soo kacay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52161#page=4",
+      "sourceDigest": "sha256:4d14fcfacd4bddc0c6a64dee3e6377d6aec98631bdb4e9c6bd25cc91693f0f04"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8188.png",
+      "text": "Manu wuxuu fuulay geed dheer.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52161#page=5",
+      "sourceDigest": "sha256:8e2b4bcc5861a8f48e87c4e466cb63f1105579859ffd350623cd366e3495b62d"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8189.png",
+      "text": "Libaaxii wuxuu Manu ku sugey geedka hoostiisa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52161#page=6",
+      "sourceDigest": "sha256:18e46215d88f42919b808818de4c35d12aaf239a13d4a28c597b406cf44a2419"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8190.png",
+      "text": "Manu wuu seexday.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52161#page=7",
+      "sourceDigest": "sha256:081bfb1629c62f6baceaa596da6bd4eeb94f5cd0851e2d0d916a6ac6b956c37f"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8191.png",
+      "text": "Wuxuuna ka soo dhacay geedkii.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52161#page=8",
+      "sourceDigest": "sha256:6528a8074692e32a8a29124ca2cdadc3c037cf75b2e5f45267269e5e0c42d387"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8192.png",
+      "text": "Libaaxii baa cararay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52161#page=9",
+      "sourceDigest": "sha256:fa3f2b473ca24246b0ba2bf7305c4fc0753388deeaa923114d6004d8d5a2192b"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8193.png",
+      "text": "Manu wuxuu bilaabay inuu u ordo dhinacii libaaxu u cararay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52161#page=10",
+      "sourceDigest": "sha256:6f27feb32b45abb2ff2857bff82ee8998e1659ffd1d68b715d87b16089969e0e"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8194.png",
+      "text": "Markuu isgartay, ayuu isbedeley oo dhinac kale u cararay.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=52161#page=11",
+      "sourceDigest": "sha256:c62176b1870008fe8cf41438010887b5877da91b6500f36265314abc55fa5a9b"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 62
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:8256d1b8e3bcf5c2bc34aea171a88085082f4eef5670bc2a12710d5bed53d9c5"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-332-u-s-federal-income-taxation-of-individuals-2023",
+  "title": "U.S. Federal Income Taxation of Individuals 2023",
+  "description": "This is the tenth edition of this textbook, updated through December 15, 2022 for use beginning January 2023. In addition to incorporating new law and all inflation adjustments, this edition builds on updates made for the ninth edition and incorporates new charts pertaining to economic and tax data, including December 2019 CBO charts showing that income inequality between 2015 and 2020 (with the Tax Cuts and Jobs Act enacted in 2017) worsened after taxes and transfers than before taxes and transfers are taken into account. This textbook is not intended to be an exhaustive treatise; rather, it is intended to be far more useful than that for beginning tax law students by equipping the novice not merely with unmoored detail but rather with a rich blueprint that illuminates the deeper structural framework on which that detail hangs (sometimes crookedly). Chapter 1 outlines the conceptual meaning of the term income for uniquely tax purposes and examines the Internal Revenue Code provisions that translate this construct into positive law. Chapter 2 explores various forms of consumption taxation because the modern Internal Revenue Code is best perceived as a hybrid income-consumption tax that also contains many provisions that are inconsistent with both forms of taxation. Chapter 3 then provides students with the story of how we got to where we are today, important context about the distribution of the tax burden, the budget, and economic trends, as well as material on ethical debates, economic theories, and politics as they affect taxation. Armed with this larger blueprint, students are in a much better position to evaluate the myriad pieces that follow throughout the remaining 18 chapters. For example, they are in a better position to appreciate how applying the income tax rules for debt to a debt-financed investment afforded more favorable consumption tax treatment creates tax shelter problems. Stated another way, they can better appreciate how the tax system can sometimes be used to generate (or combat) unfair and economically inefficient rent-seeking behavior. eBook versions (mobi and epub) will be available for free in early January 2023.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law"
+  ],
+  "authors": [
+    "Deborah A Geier - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "CALI's eLangdell® Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/u-s-federal-income-taxation-of-individuals-2017"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This is the tenth edition of this textbook, updated through December 15, 2022 for use beginning January 2023. In addition to incorporating new law and all inflation adjustments, this edition builds on updates made for the ninth edition and incorporates new charts pertaining to economic and tax data, including December 2019 CBO charts showing that income inequality between 2015 and 2020 (with the Tax Cuts and Jobs Act enacted in 2017) worsened after taxes and transfers than before taxes and transfers are taken into account. This textbook is not intended to be an exhaustive treatise; rather, it is intended to be far more useful than that for beginning tax law students by equipping the novice not merely with unmoored detail but rather with a rich blueprint that illuminates the deeper structural framework on which that detail hangs (sometimes crookedly). Chapter 1 outlines the conceptual meaning of the term income for uniquely tax purposes and examines the Internal Revenue Code provisions that translate this construct into positive law. Chapter 2 explores various forms of consumption taxation because the modern Internal Revenue Code is best perceived as a hybrid income-consumption tax that also contains many provisions that are inconsistent with both forms of taxation. Chapter 3 then provides students with the story of how we got to where we are today, important context about the distribution of the tax burden, the budget, and economic trends, as well as material on ethical debates, economic theories, and politics as they affect taxation. Armed with this larger blueprint, students are in a much better position to evaluate the myriad pieces that follow throughout the remaining 18 chapters. For example, they are in a better position to appreciate how applying the income tax rules for debt to a debt-financed investment afforded more favorable consumption tax treatment creates tax shelter problems. Stated another way, they can better appreciate how the tax system can sometimes be used to generate (or combat) unfair and economically inefficient rent-seeking behavior. eBook versions (mobi and epub) will be available for free in early January 2023."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2017."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 366
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "332",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

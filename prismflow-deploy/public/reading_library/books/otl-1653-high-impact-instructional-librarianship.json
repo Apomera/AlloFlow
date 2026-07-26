@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1653-high-impact-instructional-librarianship",
+  "title": "High Impact Instructional Librarianship",
+  "description": "The purpose of this new OER textbook titled High Impact Instructional Librarianship is to address what to teach and how to teach information literacy skills to library patrons of all ages and with many kinds of information needs. This OER is intended to facilitate and guide pre- and in-service librarians to know and use theory and models from many academic disciplines to inform practices, develop excellent instructional design skills, and express high confidence as instructional librarians no matter what position they hold in any library type.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Library Science and Museum Studies"
+  ],
+  "authors": [
+    "Mirah J. Dow - Author / Amanda Hovious - Author / Corey Ptacek - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "EdTech Books",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/high-impact-instructional-librarianship"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The purpose of this new OER textbook titled High Impact Instructional Librarianship is to address what to teach and how to teach information literacy skills to library patrons of all ages and with many kinds of information needs. This OER is intended to facilitate and guide pre- and in-service librarians to know and use theory and models from many academic disciplines to inform practices, develop excellent instructional design skills, and express high confidence as instructional librarians no matter what position they hold in any library type."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 109
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1653",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-549-introduction-to-modern-statistics-2e",
+  "title": "Introduction to Modern Statistics - 2e",
+  "description": "Introduction to Modern Statistics is a re-imagining of a previous title, Introduction to Statistics with Randomization and Simulation. The new book puts a heavy emphasis on exploratory data analysis (specifically exploring multivariate relationships using visualization, summarization, and descriptive models) and provides a thorough discussion of simulation-based inference using randomization and bootstrapping, followed by a presentation of the related Central Limit Theorem based approaches. The second edition of IMS has updated datasets, additional exercises, a new application for chapter 3, and updated text and code to reflect changes in best practices. You can access the full PDF by clicking the Read Free Sample button at the PDF link.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Applied",
+    "Mathematics"
+  ],
+  "authors": [
+    "Mine Çetinkaya-Rundel - Author / Jo Hardin - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenIntro",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-modern-statistics"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Introduction to Modern Statistics is a re-imagining of a previous title, Introduction to Statistics with Randomization and Simulation. The new book puts a heavy emphasis on exploratory data analysis (specifically exploring multivariate relationships using visualization, summarization, and descriptive models) and provides a thorough discussion of simulation-based inference using randomization and bootstrapping, followed by a presentation of the related Central Limit Theorem based approaches. The second edition of IMS has updated datasets, additional exercises, a new application for chapter 3, and updated text and code to reflect changes in best practices. You can access the full PDF by clicking the Read Free Sample button at the PDF link."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 130
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "549",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

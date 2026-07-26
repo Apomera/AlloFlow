@@ -1,0 +1,160 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-34939-letsatsi-khoeli-pula-le-moea",
+  "title": "Letsatsi, Khoeli, Pula le Moea",
+  "description": "Letsatsi, Khoeli, Pula le Moea hali lumellane ka hore na, ke efe, e bohlokoa e etsang mosebetsi o hantle.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Khothatso Ranoosi"
+  ],
+  "illustrators": [
+    "Children of Paleng"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Khothatso Ranoosi",
+      "role": "Author"
+    },
+    {
+      "name": "Khothatso Ranoosi",
+      "role": "Adaptation"
+    },
+    {
+      "name": "Children of Paleng",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Khothatso Ranoosi (Author); Khothatso Ranoosi (Adaptation); Children of Paleng (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=34939",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=34939",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://paleng.weebly.com",
+    "editionId": "34939",
+    "bookType": "2",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-44d528d85d678b4a",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/16102.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16100.png",
+      "text": "Khale khale, Letsatsi, Khoeli, Pula le Moea li ne li loantšana.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=34939#page=1",
+      "sourceDigest": "sha256:e6c1894070c15c2bd9268c6022a612c3b8d6d3649a854bb644b5ae9aa352a90d"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16101.png",
+      "text": "Khang ea bona e ne e le hore Letsatsi le ne le batla ho chaba letšeare lohle. Khoeli e ne e batla ho khanya letsatsi kaofela. Pula e ne e batla ho na tsatsi le leng le le leng, le Moea o no batla ho foka nako eohle. Li ne li sa batle ho fana ka sebaka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=34939#page=2",
+      "sourceDigest": "sha256:7993ccdf8b2be66826fdea56d3f25bd9eff05484cc1761cf937c723a03ecba7c"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16102.png",
+      "text": "Ba rera ho lula fatše, ba bue taba ena. Eaba kopanong ea bona, Letsatsi le botsa Khoeli, \"Ke eng eo u e etsang ho thusa lefatše?\" Khoeli ea araba ea re, \"Ke ea khantša bosiu hore liphoofolo li tsome.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=34939#page=3",
+      "sourceDigest": "sha256:5981b0cd2b964baa572ee6b38359e3ad8b128ac124dc3f9f91cc5390aba34589"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16104.png",
+      "text": "Khoeli ea botsa Pula, \"Ke eng eo u e etsang ho thusa lefatše?\" Pula ea araba, \"Ke fa lefatše metsi hore lifate le limela li hole hantle. Hape ke fa liphoofolo metsi hore li noe.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=34939#page=4",
+      "sourceDigest": "sha256:5703784d470bd02631192f1affd81954f8bccfdd550fca6e62c651f6187e8f12"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16105.png",
+      "text": "Pula ea botsa Moea, \"Ke'ng eo u e etsang ho thusa lefatše?\" Moea oa araba oa re, \"Ke fiela lefatše hore le hloeke. Ke hasa pula lefatše ka bophara ba lona.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=34939#page=5",
+      "sourceDigest": "sha256:fb3672d1817125484888773000f0c7091b8313ede85dd54e5f3f98d21c775341"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16106.png",
+      "text": "Moea le ona oa botsa Letsatsi, \"Ke'ng eo u e etsang ho thusa lefatše?\" Letsatsi la araba la re, \"Ke fa lefatše khanya le mofuthu, hore liphoofo le lihloliloeng li phele ha monate.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=34939#page=6",
+      "sourceDigest": "sha256:8efeddb2de84b08e12385e728f7dd57b21fe8df55c70668ea2eaf4c3fdb1fff1"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16107.png",
+      "text": "Letsatsi, Khoeli, Pula le Moea tsa mamelana ka hloko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=34939#page=7",
+      "sourceDigest": "sha256:79bbc9fa6495a6c749b7c49e3dc28efd1b8fd929c83d67966420c9f9c13d77b1"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16110.png",
+      "text": "Eaba Letsatsi lere, \"'Nete ke hore e mong le e mong o thusa lefatše ka mokhoa o ikhethileng. 'Ee\", hoa bua Khoeli, \"Ha ho na ea molemo ho feta e mong hara rona.\" \"Re ka sebetsa 'moho.\" Hoa hlahisa Pula. Eaba Moea o re, \"Ha re arolelaneng matsatsi.\" Ba lumellana kaofela.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=34939#page=8",
+      "sourceDigest": "sha256:a679590b2556059bd867af2986d82cd257bcea29145c6d4adeaf21f5b0ae9000"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/16108.png",
+      "text": "Ke ka hona ka nako e 'ngoeu ka bonang Khoeli Letsatsi le ntse le chabile. U utloang Moea o foka Pula ha e ena. Letsatsi, Khoeli, Pula le Moea, li sebetsa hantle ha holo 'moho. Li na le kutloisisano.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=34939#page=9",
+      "sourceDigest": "sha256:bc2cc91c6688deb23ed70436fba0ce4bdd9853453b5d89b9253fbfa2f6c08902"
+    },
+    {
+      "n": 10,
+      "img": null,
+      "text": "U rata letsatsi, khoeli, pula kapa moea? Taka eo u e ratang haholo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=2&dual=false&id=34939#page=10",
+      "sourceDigest": "sha256:95732f443e718b34f2b56c5ef1f0f3bdfd2d8667df165135f7689157f2de3af4"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 318
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:64fc391d58d4c3555d8cc209989f65ff4225026b6ee01c2b24d53870f1d3c0ca"
+  }
+}

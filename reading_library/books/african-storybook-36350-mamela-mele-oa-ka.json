@@ -1,0 +1,204 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-36350-mamela-mele-oa-ka",
+  "title": "Mamela 'mele oa ka",
+  "description": "Na o kile oa mamela seo 'mele oa hao o u joetsang sona?",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Noni"
+  ],
+  "illustrators": [
+    "Angie and Upesh"
+  ],
+  "translators": [
+    "Lineo Nkabane-Sekopo"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Noni",
+      "role": "Author"
+    },
+    {
+      "name": "Lineo Nkabane-Sekopo",
+      "role": "Translation"
+    },
+    {
+      "name": "Angie and Upesh",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Noni (Author); Lineo Nkabane-Sekopo (Translation); Angie and Upesh (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "36350",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-ca80343816584db5",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/2008.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2009.png",
+      "text": "Kajeno ha ke ee sekolong. Ke letsatsi la phomolo!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=1",
+      "sourceDigest": "sha256:d51bbaf42984874f30e45f8d19a28bde99aecebab1429d31cbdc1a832ebed04f"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2010.png",
+      "text": "Kajeno ha ke tlo shebella TV. Ha ho na motlakase.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=2",
+      "sourceDigest": "sha256:c222f9c8f1be85617c86345a8792f2d3e978abc551637e53b098d8c9d8e20ba3"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2011.png",
+      "text": "Ekaba ke tlo etsang? Kajeno ke tlo mamela 'mele oa ka!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=3",
+      "sourceDigest": "sha256:1f431a875df5ace8490c03ccbf1872a0abb0fa7aa8528120a360d79b40801dba"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2012.png",
+      "text": "Pele, ke tlameha ho khutsa tu. E le hore ke mamele 'mele oa ka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=4",
+      "sourceDigest": "sha256:817518e5959d28dccb4800d825d3fed4c97cf3092e731d2710223f7f0914618b"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2013.png",
+      "text": "E, joale ke khona ho ikutloa ha ke hema. Ke hemela ka hare le ka ntle, ka hare le ka ntle.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=5",
+      "sourceDigest": "sha256:9554da76867089381b0b6c889514900c40dd214fe6fa85cbbba400af4c8f66c5"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2014.png",
+      "text": "Ke khona ho hemela holimo. Hhhhhhhhhhh! Le tlase. Mmmmmmm.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=6",
+      "sourceDigest": "sha256:c88444ef21171f48f23665d77dc36e272aeed82c59f6144cde2ecdbbc20bd6bf"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2016.png",
+      "text": "Ke khona ho utloa ha pelo ea ka e otla! Thuthuthuuu, thu thuuuu, thuu thuuuuu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=7",
+      "sourceDigest": "sha256:938ecff258d2f5fd52adf1325c3e38457b26fc506808a0af9603a5205c4322d6"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2017.png",
+      "text": "Na nka etsa hore pelo ea ka e otle kapele kapa e otlele holimo haholo? E, ka ho qhomela holimo le tlase ka makhetlo a mashome a mabeli.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=8",
+      "sourceDigest": "sha256:676fb4e79eb3b08089b3eb0b36de624f9548e2b2203e712e399dce27657dd05f"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2018.png",
+      "text": "Utloa, joale pelo ea ka e otla kapele.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=9",
+      "sourceDigest": "sha256:769556ca1bc46917407348488173b87170d4612b65dcd1134b63d8e9f90e4489"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2019.png",
+      "text": "Ha nka beha menoana ea ka methapong ea letsoho, ke utloa ho otla ha pelo ea ka!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=10",
+      "sourceDigest": "sha256:3fa196a44fbe9755b7b10ce7b6caa08bf5589f12d11145eff41726e15301cec9"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2020.png",
+      "text": "Ke khona ho ikutloa ha ke ts'eha. Haha, haha, haaah, haaa!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=11",
+      "sourceDigest": "sha256:329ff656f7b89b4b8f1fcbf45efe7b8d316bef6596673427d4efcb3d8e369ec5"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2021.png",
+      "text": "Ke khona ho ikutloa ha ke lla. Hii hii hiii!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=12",
+      "sourceDigest": "sha256:22fd39667d599102501a87c1fd1bdb84c5fd9c7fe32ab995122fd57f9c3b6a61"
+    },
+    {
+      "n": 13,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2022.png",
+      "text": "Ke khona ho ikutloa ha ke opa liatla. Pha, pha, pha.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=13",
+      "sourceDigest": "sha256:8d313382154e9220f5206f447815533bec42cb1c7350641b9c4e926d14e310bd"
+    },
+    {
+      "n": 14,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2023.png",
+      "text": "Ke khona ho utloa ha mala a ka a korotla! Krrrr, krrrrr, krrrrr.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=14",
+      "sourceDigest": "sha256:ba6c22fd437118184b6f509edc14669c07e773701536bd50780458aa56547f75"
+    },
+    {
+      "n": 15,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2024.png",
+      "text": "Mpa ea ka e re, \"'Ngoathele!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=15",
+      "sourceDigest": "sha256:6e5b58e112be7a4be4a6eb8c96edba1069b43d7384a0fd8675dfe9c17732c177"
+    },
+    {
+      "n": 16,
+      "img": "https://www.africanstorybook.org/illustrations/pages/2025.png",
+      "text": "Nko ea ka e khona ho utloa monko oa likuku ka kichineng ea 'm'e. Joale ke batla ho utloa mehlahare ea ka e hlafuna likuku tseo!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36350#page=16",
+      "sourceDigest": "sha256:485c694483de5450aaa7c7bf6af3cb89d4a547d9843c99f19359c96fb4e0c806"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 219
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:24780a3dfaff9320f6e709442c4257132543842e726b4a490ae3e9a3a8f78eef"
+  }
+}

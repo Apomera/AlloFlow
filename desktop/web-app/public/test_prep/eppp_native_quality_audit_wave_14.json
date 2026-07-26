@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-14",
+  "reviewedAt": "2026-07-25",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next eight unreviewed items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "domainsCovered": 3,
+    "appliedOrAnalysisItems": 8,
+    "keyPositionsPreserved": 8,
+    "optionSpecificExplanations": 32,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 154,
+      "asymmetricExtremeDistractorCandidates": 317,
+      "advancedDirectRecallCandidates": 22,
+      "semanticConceptDuplicatePairs": 262,
+      "semanticConceptDuplicateClusters": 125,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 149,
+      "asymmetricExtremeDistractorCandidates": 309,
+      "advancedDirectRecallCandidates": 19,
+      "semanticConceptDuplicatePairs": 262,
+      "semanticConceptDuplicateClusters": 125,
+      "editorialAnchorsWithActiveWarnings": 5,
+      "editorialAnchorsWithNoCurrentWarning": 5,
+      "priorityDocketItems": 20
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v2-biological-045",
+      "domainId": "biological",
+      "difficulty": "advanced",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "biological-phantom-limb-multilevel-central-representation-inference",
+      "sourceCheck": "The review describes phantom pain as genuine and mechanistically heterogeneous, with evidence involving residual nerves, spinal pathways, cortical maps, body representation, and contextual factors. The keyed response therefore permits a central contribution while avoiding exclusivity or causal overstatement.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "advanced-direct-recall"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-035",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "cognitive-multiple-intelligences-versus-learning-styles",
+      "sourceCheck": "Gardner's peer-reviewed article establishes the several-competence framework, while his Harvard clarification states that multiple intelligences and learning styles are different concepts and rejects assigning people a style and matching all content to it. The item does not present the framework as settled psychometric fact.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-056",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "cognitive-sunk-cost-prospective-decision-rule",
+      "sourceCheck": "The foundational article defines the effect as increased commitment following prior investment. The scenario makes the earlier grant expenditure irrecoverable and supplies a prospective comparison, supporting a decision based on future differences rather than historical totals or emotion-management rules.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-intervention-001",
+      "domainId": "intervention",
+      "difficulty": "advanced",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-bct-substance-recovery-contract-relationship-integration",
+      "sourceCheck": "The treatment description explicitly combines a daily recovery contract and partner support for abstinence with positive activities and communication training. The keyed plan contains both intervention families and avoids recasting the partner as a punisher or separating the conjoint work.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "advanced-direct-recall"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-intervention-026",
+      "domainId": "intervention",
+      "difficulty": "advanced",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "intervention-implosion-differential-exposure-procedure",
+      "sourceCheck": "The primary article's title and treatment account explicitly combine learning theory with psychodynamic formulation. This supports identifying inferred conflict themes within intense imagery as the distinguishing feature, while the distractors map to systematic desensitization, flooding, and response prevention.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors",
+        "advanced-direct-recall"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-intervention-030",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "intervention-neurofeedback-closed-loop-mechanism-and-evidence-boundary",
+      "sourceCheck": "The review characterizes neurofeedback as closed-loop self-regulation of measured brain activity through real-time feedback and separates target engagement from therapeutic efficacy. The revised item tests that mechanism while rejecting stimulation, passive recording, and causal overreach.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-intervention-050",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "intervention-functional-analysis-escape-contingency-inference",
+      "sourceCheck": "The review describes test conditions in which demands precede behavior and escape follows it, contrasted with control conditions, to evaluate social-negative reinforcement. The scenario reproduces that logic and supports a function-matched communication alternative rather than an antecedent-only inference.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-intervention-068",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "intervention-narrative-externalizing-and-reauthoring-process",
+      "sourceCheck": "The article defines externalizing conversations as separating the person from internalized problem accounts and developing preferred stories in social context. The scenario combines this separation with unique outcomes and value-linked identity development, supporting the re-authoring interpretation.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage",
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1718-the-data-renaissance-analyzing-the-disciplinary-effects-of-big-data-arti",
+  "title": "The Data Renaissance: Analyzing the Disciplinary Effects of Big Data, Artificial Intelligence, and Beyond [Revised Edition]",
+  "description": "The Data Renaissance delves into the complexities of data's role in various industries and its broader impact on society. It highlights the challenges in investigating data practices, citing examples like TikTok, where algorithms and data handling are closely guarded secrets. The content, contributed by students under the guidance of an expert, covers a wide range of topics, including the ethical aspects of generative AI in education and the workplace, and case studies reflecting real-world experiences. This evolving text, intended to be updated with each class, serves as a dynamic resource for educators and students alike, offering insights and discussion guides for an in-depth understanding of the ever-changing landscape of data in our digital age.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Journalism, Media Studies & Communications",
+    "Social Sciences"
+  ],
+  "authors": [
+    "J.J. Sylvia IV - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "ROTEL",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-data-renaissance-analyzing-the-disciplinary-effects-of-big-data-artificial-intelligence-and-beyond"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Data Renaissance delves into the complexities of data's role in various industries and its broader impact on society. It highlights the challenges in investigating data practices, citing examples like TikTok, where algorithms and data handling are closely guarded secrets. The content, contributed by students under the guidance of an expert, covers a wide range of topics, including the ethical aspects of generative AI in education and the workplace, and case studies reflecting real-world experiences. This evolving text, intended to be updated with each class, serves as a dynamic resource for educators and students alike, offering insights and discussion guides for an in-depth understanding of the ever-changing landscape of data in our digital age."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 137
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1718",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

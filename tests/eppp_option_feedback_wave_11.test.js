@@ -51,12 +51,12 @@ const expectedAfter = {
   fullKeyEchoOptions: 1517,
 };
 const expectedCurrent = {
-  itemsWithWarnings: 1357,
-  incorrectOptionsWithWarnings: 3924,
-  insufficientDetailOptions: 1425,
-  genericTemplateOptions: 2420,
-  choiceRestatementOptions: 1722,
-  fullKeyEchoOptions: 1489,
+  itemsWithWarnings: 1309,
+  incorrectOptionsWithWarnings: 3789,
+  insufficientDetailOptions: 1357,
+  genericTemplateOptions: 2354,
+  choiceRestatementOptions: 1665,
+  fullKeyEchoOptions: 1436,
 };
 const genericFeedbackPattern = /\b(?:is not best because|does not meet the defining condition or distinction|the supported response is|makes an absolute or unconditional claim|does not represent the best available answer)\b/i;
 const normalize = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();

@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-17263-waxaan-jeclahay-in-aan-aqriyo",
+  "title": "Waxaan jeclahay in aan aqriyo",
+  "description": "Ye ke kanegelo kopana ka ya mosemane wa go rata go bala dikanegelo. O rata go bala kudu ka fao a rata go anegela ba le lapa la gabo ka kanegelo yeo a e badilego.",
+  "language": "Somali",
+  "langCode": "so",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Letta Machoga"
+  ],
+  "illustrators": [
+    ", Wiehan de Jager"
+  ],
+  "translators": [
+    "Abdirizack yussuf abdalla"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Letta Machoga",
+      "role": "Author"
+    },
+    {
+      "name": "Abdirizack yussuf abdalla",
+      "role": "Translation"
+    },
+    {
+      "name": ", Wiehan de Jager",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Letta Machoga (Author); Abdirizack yussuf abdalla (Translation); , Wiehan de Jager (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=17263",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=17263",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "17263",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-23b82b13c47a4bd3",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/7915.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7915.png",
+      "text": "Waxaan jeclahay in aan aqriyo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=17263#page=1",
+      "sourceDigest": "sha256:e2fb838c724e4efe486a85a5999d3edfc5728b4bde14463150a65e1a023814e2"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10545.png",
+      "text": "Yaan ku aqriyaa?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=17263#page=2",
+      "sourceDigest": "sha256:095b4fd0dbb2dd5c008ceacc5d29fba61e74a8e9f5e02404f3c11830311e74f8"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7917.png",
+      "text": "Walaasheey weey hurdeeysaa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=17263#page=3",
+      "sourceDigest": "sha256:7fb86cf6e6bf24b0c7392f23621f592dc99330839d01308b85f4977a58abb0e3"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/10546.png",
+      "text": "Yaan ku aqriyaa?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=17263#page=4",
+      "sourceDigest": "sha256:095b4fd0dbb2dd5c008ceacc5d29fba61e74a8e9f5e02404f3c11830311e74f8"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7919.png",
+      "text": "Hoyadey iyo ayeeryadey weey mashquulsanyihiin.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=17263#page=5",
+      "sourceDigest": "sha256:ca7b3852bc93e74224d9b763f3001a478898098f732148e44485d41d58a5c161"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7921.png",
+      "text": "Yaan ku aqriyaa?",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=17263#page=6",
+      "sourceDigest": "sha256:095b4fd0dbb2dd5c008ceacc5d29fba61e74a8e9f5e02404f3c11830311e74f8"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7920.png",
+      "text": "Abahey iyo awoowkey weey mashquulsanyihiin.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=17263#page=7",
+      "sourceDigest": "sha256:ae63d0185e4b43069a83cd6cd8cb3fb4dafb348f7874a838b45dc5a052998862"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/7922.png",
+      "text": "Yaan ku aqriyaa? Aniga ayaa is ku aqrinaayo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=17263#page=8",
+      "sourceDigest": "sha256:b130b208b64cc50936d2f2377f8efc65c3c5efa65750ea66cf5433f984566c79"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 35
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:9366b779532c17ff81e17e986289c248a94e9636466def186c4cdda3766e9406"
+  }
+}

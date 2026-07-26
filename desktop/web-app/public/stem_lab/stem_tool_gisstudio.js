@@ -145,6 +145,64 @@
     'Unmatched example,25,48'
   ].join('\n');
 
+  var GIS_MISSIONS = [
+    {
+      id: 'coast-connectivity',
+      title: 'Coast and Connectivity',
+      duration: '25-35 minutes',
+      question: 'How do the sample population-density and broadband-access patterns compare across coastal and inland Maine counties?',
+      workspace: 'compare',
+      evidencePrompt: 'Make one comparison claim. Cite at least one county from each map and name one limitation of the illustrative access index.',
+      teacherNote: 'Good for separating spatial correlation from causal explanation. Students should question the scale, county-centroid representation, and the illustrative access values.',
+      practices: ['C3 geographic reasoning', 'AP Human Geography spatial patterns', 'Evidence-based argument'],
+      steps: [
+        { id: 'setup', label: 'Prepare the synchronized density and access maps.' },
+        { id: 'pattern', label: 'Identify one similarity and one difference between the patterns.' },
+        { id: 'evidence', label: 'Record evidence from at least two named counties.' },
+        { id: 'limits', label: 'Explain why the maps cannot prove what caused the pattern.' }
+      ]
+    },
+    {
+      id: 'service-area',
+      title: 'Community Service Area',
+      duration: '20-30 minutes',
+      question: 'Which mapped county centroids fall within a hypothetical 75 km straight-line service radius?',
+      workspace: 'map',
+      evidencePrompt: 'State which mapped points are inside the buffer, then explain why a circular straight-line buffer is not the same as travel time or equitable access.',
+      teacherNote: 'This mission introduces buffers as a model with assumptions. The points are county reference locations, not people, schools, or service demand.',
+      practices: ['GIS proximity analysis', 'NGSS model limitations', 'Quantitative spatial reasoning'],
+      steps: [
+        { id: 'setup', label: 'Prepare a 75 km radius-buffer analysis.' },
+        { id: 'place', label: 'Place the center and inspect the selected point rows.' },
+        { id: 'evidence', label: 'Summarize the selected count and selected attribute values.' },
+        { id: 'limits', label: 'Contrast straight-line proximity with real transportation access.' }
+      ]
+    },
+    {
+      id: 'ecoregion-boundaries',
+      title: 'Ecological Region Boundaries',
+      duration: '30-40 minutes',
+      question: 'How do point patterns and results change when Maine is divided into broad practice regions?',
+      workspace: 'map',
+      evidencePrompt: 'Choose a practice polygon, report its approximate area or perimeter and the points inside it, then describe how a different boundary could change the result.',
+      teacherNote: 'The included polygons are intentionally simplified practice geometry. Follow with the official Maine ecoregions layer when internet access and instructional time allow.',
+      practices: ['C3 scale and region concepts', 'NGSS systems and models', 'Boundary and classification literacy'],
+      steps: [
+        { id: 'setup', label: 'Load the simplified practice-region GeoJSON.' },
+        { id: 'measure', label: 'Measure one polygon and select mapped points inside it.' },
+        { id: 'evidence', label: 'Use the feature table and point table as evidence.' },
+        { id: 'limits', label: 'Explain how boundaries and classification choices shape conclusions.' }
+      ]
+    }
+  ];
+
+  function missionCompletion(mission, progress) {
+    var steps = mission && Array.isArray(mission.steps) ? mission.steps : [];
+    var state = progress || {};
+    var complete = steps.filter(function (step) { return !!state[step.id]; }).length;
+    return { complete: complete, total: steps.length, percent: steps.length ? Math.round(complete / steps.length * 100) : 0 };
+  }
+
   var CLASS_COLORS = ['#155e75', '#0891b2', '#65a30d', '#d97706', '#ea580c', '#be123c', '#881337'];
 
   function parseTableCSV(text) {
@@ -179,6 +237,112 @@
     });
     return { headers: headers, rows: objects, numericKeys: numericKeys };
   }
+
+  var EXAMPLE_TIME_CSV = [
+    'name,latitude,longitude,year,value,unit,source',
+    'Cumberland,43.66,-70.26,2015,78,index points,Illustrative classroom series',
+    'Cumberland,43.66,-70.26,2020,86,index points,Illustrative classroom series',
+    'Cumberland,43.66,-70.26,2025,93,index points,Illustrative classroom series',
+    'Aroostook,46.68,-68.02,2015,55,index points,Illustrative classroom series',
+    'Aroostook,46.68,-68.02,2020,64,index points,Illustrative classroom series',
+    'Aroostook,46.68,-68.02,2025,72,index points,Illustrative classroom series',
+    'York,43.48,-70.72,2015,76,index points,Illustrative classroom series',
+    'York,43.48,-70.72,2020,84,index points,Illustrative classroom series',
+    'York,43.48,-70.72,2025,91,index points,Illustrative classroom series',
+    'Washington,44.72,-67.46,2015,52,index points,Illustrative classroom series',
+    'Washington,44.72,-67.46,2020,61,index points,Illustrative classroom series',
+    'Washington,44.72,-67.46,2025,70,index points,Illustrative classroom series',
+    'Kennebec,44.31,-69.78,2015,71,index points,Illustrative classroom series',
+    'Kennebec,44.31,-69.78,2020,79,index points,Illustrative classroom series',
+    'Kennebec,44.31,-69.78,2025,86,index points,Illustrative classroom series',
+    'Piscataquis,45.18,-69.23,2015,50,index points,Illustrative classroom series',
+    'Piscataquis,45.18,-69.23,2020,58,index points,Illustrative classroom series',
+    'Piscataquis,45.18,-69.23,2025,68,index points,Illustrative classroom series'
+  ].join('\n');
+
+  function parseTimeCSV(text) {
+    var table = parseTableCSV(text);
+    var headerLookup = {};
+    table.headers.forEach(function (header) { headerLookup[header.toLowerCase().replace(/\s+/g, '')] = header; });
+    function field(names, required) {
+      var match = names.map(function (name) { return headerLookup[name]; }).filter(Boolean)[0] || '';
+      if (!match && required) throw new Error('Time-series CSV headers must include name, latitude, longitude, year, and value.');
+      return match;
+    }
+    var nameKey = field(['name', 'label', 'place', 'location'], true);
+    var latKey = field(['latitude', 'lat'], true);
+    var lonKey = field(['longitude', 'lon', 'lng', 'long'], true);
+    var yearKey = field(['year', 'date', 'time'], true);
+    var valueKey = field(['value', 'amount', 'score', 'count'], true);
+    var unitKey = field(['unit', 'units'], false);
+    var sourceKey = field(['source', 'datasource'], false);
+    var methodKey = field(['method', 'methodology'], false);
+    var rows = table.rows.slice(0, 3000).map(function (row) {
+      return {
+        name: String(row[nameKey] || '').trim(),
+        lat: Number(row[latKey]), lon: Number(row[lonKey]), year: Number(row[yearKey]), value: Number(row[valueKey]),
+        unit: unitKey ? String(row[unitKey] || '').trim() : '',
+        source: sourceKey ? String(row[sourceKey] || '').trim() : '',
+        method: methodKey ? String(row[methodKey] || '').trim() : ''
+      };
+    }).filter(function (row) {
+      return row.name && Number.isFinite(row.lat) && row.lat >= -90 && row.lat <= 90 &&
+        Number.isFinite(row.lon) && row.lon >= -180 && row.lon <= 180 &&
+        Number.isFinite(row.year) && Number.isFinite(row.value);
+    });
+    if (!rows.length) throw new Error('No valid time-series rows were found.');
+    var keyCount = {}, duplicates = [];
+    rows.forEach(function (row) {
+      var key = row.name.toLowerCase() + '|' + row.year;
+      keyCount[key] = (keyCount[key] || 0) + 1;
+      if (keyCount[key] === 2) duplicates.push(row.name + ' (' + row.year + ')');
+    });
+    var years = rows.map(function (row) { return row.year; }).filter(function (year, index, all) { return all.indexOf(year) === index; })
+      .sort(function (a, b) { return a - b; });
+    if (years.length < 2) throw new Error('Add at least two distinct years to analyze change.');
+    return {
+      rows: rows, years: years, duplicates: duplicates,
+      units: rows.map(function (row) { return row.unit; }).filter(function (value, index, all) { return value && all.indexOf(value) === index; }),
+      sources: rows.map(function (row) { return row.source; }).filter(function (value, index, all) { return value && all.indexOf(value) === index; })
+    };
+  }
+
+  function timelineSnapshot(rows, year) {
+    return (rows || []).filter(function (row) { return Number(row.year) === Number(year); });
+  }
+
+  function calculateTemporalChange(rows, startYear, endYear) {
+    var start = {}, end = {}, order = [], warnings = [];
+    (rows || []).forEach(function (row) {
+      var key = String(row.name || '').trim().toLowerCase();
+      if (!key) return;
+      if (order.indexOf(key) < 0) order.push(key);
+      if (Number(row.year) === Number(startYear)) start[key] = row;
+      if (Number(row.year) === Number(endYear)) end[key] = row;
+    });
+    var changes = order.filter(function (key) { return start[key] || end[key]; }).map(function (key) {
+      var first = start[key], last = end[key], complete = !!first && !!last;
+      var change = complete ? last.value - first.value : null;
+      var percent = complete && first.value !== 0 ? change / Math.abs(first.value) * 100 : null;
+      var location = last || first;
+      return {
+        name: location.name, lat: location.lat, lon: location.lon,
+        startValue: first ? first.value : null, endValue: last ? last.value : null,
+        change: change, percent: percent,
+        trend: !complete ? 'Missing comparison' : change > 0 ? 'Increase' : change < 0 ? 'Decrease' : 'No change',
+        unit: (last && last.unit) || (first && first.unit) || ''
+      };
+    });
+    var missing = changes.filter(function (row) { return row.change === null; }).length;
+    if (missing) warnings.push(missing + ' location' + (missing === 1 ? ' is' : 's are') + ' missing from one comparison year.');
+    var units = (rows || []).filter(function (row) {
+      return Number(row.year) === Number(startYear) || Number(row.year) === Number(endYear);
+    }).map(function (row) { return row.unit; }).filter(function (value, index, all) { return value && all.indexOf(value) === index; });
+    if (units.length > 1) warnings.push('The comparison years contain different units: ' + units.join(', ') + '.');
+    return { rows: changes, warnings: warnings };
+  }
+
+  var EXAMPLE_TIME_DATA = parseTimeCSV(EXAMPLE_TIME_CSV);
 
   function normalizeJoinKey(value) {
     return String(value == null ? '' : value).trim().toLowerCase()
@@ -444,6 +608,83 @@
     });
   }
 
+  function buildEvidenceReport(model) {
+    model = model || {};
+    var left = model.left || { label: 'Left map', rows: [] };
+    var right = model.right || { label: 'Right map', rows: [] };
+    var selected = Array.isArray(model.selected) ? model.selected : [];
+    function number(value, digits) {
+      if (value === null || value === undefined || value === '') return '\u2014';
+      return Number.isFinite(Number(value)) ? Number(value).toFixed(digits == null ? 2 : digits) : '\u2014';
+    }
+    function seriesSummary(series) {
+      var values = (series.rows || []).map(function (row) { return Number(row.value); }).filter(Number.isFinite);
+      if (!values.length) return 'No numeric values';
+      var mean = values.reduce(function (sum, value) { return sum + value; }, 0) / values.length;
+      return values.length + ' records; range ' + Math.min.apply(Math, values) + ' to ' + Math.max.apply(Math, values) + '; mean ' + mean.toFixed(1);
+    }
+    function table(series, side) {
+      var rows = (series.rows || []).map(function (row) {
+        return '<tr><th scope="row">' + escapeHTML(row.name) + '</th><td>' + escapeHTML(row.geometry || 'Point') +
+          '</td><td>' + number(row.lat, 4) + '</td><td>' + number(row.lon, 4) + '</td><td>' +
+          escapeHTML(row.value == null ? 'No data' : row.value) + '</td></tr>';
+      }).join('');
+      return '<section><h2>' + escapeHTML(series.label || side + ' map') + '</h2><p><strong>Basemap:</strong> ' +
+        escapeHTML(series.basemap || 'Not specified') + '. <strong>Legend:</strong> low values use teal; high values use rose. ' +
+        escapeHTML(seriesSummary(series)) + '.</p><div class="table-wrap"><table><caption>' + escapeHTML(side) +
+        ' comparison data</caption><thead><tr><th scope="col">Location or feature</th><th scope="col">Geometry</th>' +
+        '<th scope="col">Latitude</th><th scope="col">Longitude</th><th scope="col">Value</th></tr></thead><tbody>' +
+        rows + '</tbody></table></div></section>';
+    }
+    var points = (left.rows || []).filter(function (row) {
+      return Number.isFinite(Number(row.lat)) && Number.isFinite(Number(row.lon));
+    });
+    var coordinatePlot = '';
+    if (points.length) {
+      var lats = points.map(function (row) { return Number(row.lat); });
+      var lons = points.map(function (row) { return Number(row.lon); });
+      var minLat = Math.min.apply(Math, lats), maxLat = Math.max.apply(Math, lats);
+      var minLon = Math.min.apply(Math, lons), maxLon = Math.max.apply(Math, lons);
+      var dots = points.map(function (row, index) {
+        var x = maxLon === minLon ? 50 : 5 + (Number(row.lon) - minLon) / (maxLon - minLon) * 90;
+        var y = maxLat === minLat ? 50 : 95 - (Number(row.lat) - minLat) / (maxLat - minLat) * 90;
+        return '<span class="plot-point" style="left:' + x.toFixed(2) + '%;top:' + y.toFixed(2) +
+          '%" aria-hidden="true">' + (index + 1) + '</span>';
+      }).join('');
+      coordinatePlot = '<section><h2>Coordinate plot</h2><p>This schematic preserves relative latitude and longitude but is not a basemap or projected navigation map.</p>' +
+        '<div class="plot" role="img" aria-label="' + escapeHTML(points.length + ' locations plotted by longitude and latitude. Exact coordinates are listed in the tables.') + '">' +
+        dots + '<span class="north" aria-hidden="true">N ↑</span></div><ol class="plot-key">' +
+        points.map(function (row, index) { return '<li>' + (index + 1) + '. ' + escapeHTML(row.name) + '</li>'; }).join('') +
+        '</ol></section>';
+    }
+    var selectedTable = selected.length ? '<section><h2>Spatial-analysis selection</h2><table><caption>Selected mapped points</caption>' +
+      '<thead><tr><th scope="col">Location</th><th scope="col">Latitude</th><th scope="col">Longitude</th><th scope="col">Value</th></tr></thead><tbody>' +
+      selected.map(function (row) {
+        return '<tr><th scope="row">' + escapeHTML(row.name) + '</th><td>' + number(row.lat, 4) + '</td><td>' +
+          number(row.lon, 4) + '</td><td>' + escapeHTML(row.value == null ? 'No data' : row.value) + '</td></tr>';
+      }).join('') + '</tbody></table></section>' : '';
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+      '<title>' + escapeHTML(model.title || 'GIS Studio Evidence Report') + '</title><style>' +
+      'body{font:16px/1.5 system-ui,sans-serif;color:#172033;background:#fff;margin:0}main{max-width:980px;margin:auto;padding:32px}' +
+      'header{border-bottom:5px solid #0f766e;padding-bottom:18px}h1{margin:.2rem 0}h2{color:#0f5f5a;margin-top:2rem}' +
+      '.meta,.note{color:#405366}.callout{background:#ecfeff;border-left:5px solid #0891b2;padding:14px;margin:18px 0}' +
+      'table{border-collapse:collapse;width:100%;font-size:.9rem}caption{text-align:left;font-weight:700;padding:.4rem 0}' +
+      'th,td{border:1px solid #9aa8b5;padding:7px;text-align:left}.table-wrap{overflow-x:auto}' +
+      '.plot{height:330px;position:relative;border:2px solid #334155;background:linear-gradient(#eef9f8 1px,transparent 1px),linear-gradient(90deg,#eef9f8 1px,transparent 1px);background-size:10% 10%}' +
+      '.plot-point{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:#be123c;color:white;text-align:center;line-height:28px;font-weight:800}' +
+      '.north{position:absolute;right:12px;top:8px;font-weight:800}.plot-key{columns:2}.actions{margin:20px 0}.actions button{padding:10px 14px}' +
+      '@media(max-width:650px){main{padding:18px}.plot-key{columns:1}}@media print{.actions{display:none}main{padding:0}.plot{break-inside:avoid}section{break-inside:avoid-page}}' +
+      '</style></head><body><main><header><p>GIS STUDIO</p><h1>' + escapeHTML(model.title || 'Geographic Evidence Report') +
+      '</h1><p class="meta">Generated ' + escapeHTML(model.generated || '') + '</p></header>' +
+      '<div class="actions"><button type="button" onclick="window.print()">Print or save as PDF</button></div>' +
+      '<section class="callout"><h2>Claim and observation</h2><p>' + escapeHTML(model.observation || 'Add an evidence-based observation in GIS Studio.') +
+      '</p><p><strong>Analysis note:</strong> ' + escapeHTML(model.analysis || 'Spatial patterns describe relationships; they do not establish cause and effect.') + '</p></section>' +
+      coordinatePlot + table(left, 'Left') + table(right, 'Right') + selectedTable +
+      '<section><h2>Sources and limitations</h2><p>' + escapeHTML(model.sources || 'Verify learning data with authoritative sources before making decisions.') +
+      '</p><p>Basemap appearance can influence interpretation. Classification, scale, missing values, coordinate quality, and boundary definitions can change the visible pattern.</p></section>' +
+      '</main></body></html>';
+  }
+
   function getLeaflet() {
     if (window.L && window.L.map) return Promise.resolve(window.L);
     if (window._geoLibsLoaded && typeof window._geoLibsLoaded.then === 'function') {
@@ -504,22 +745,27 @@
   window.StemLab.registerTool('gisStudio', {
     icon: '\uD83D\uDDFA\uFE0F',
     label: 'GIS Studio',
-    desc: 'Build thematic maps, measure paths and boundaries, run buffers and spatial selections, import data, and investigate geographic patterns accessibly.',
+    desc: 'Build, compare, and animate thematic maps; complete Maine GIS missions; analyze change; and export accessible evidence reports.',
     color: 'teal',
     category: 'geo',
-    aliases: ['GIS', 'mapping', 'spatial data', 'spatial analysis', 'buffer', 'choropleth', 'coordinates', 'map projections'],
+    aliases: ['GIS', 'mapping', 'spatial data', 'time series map', 'change over time', 'Maine inquiry', 'guided mission', 'spatial analysis', 'map comparison', 'evidence report', 'buffer', 'choropleth', 'coordinates', 'map projections'],
     testing: {
       parseCSV: parseCSV, parseGeoJSON: parseGeoJSON, parseTableCSV: parseTableCSV,
       joinTableToGeoJSON: joinTableToGeoJSON, calculateBreaks: calculateBreaks,
       haversineKm: haversineKm, pathLengthKm: pathLengthKm, polygonAreaSquareKm: polygonAreaSquareKm,
       pointInFeature: pointInFeature, selectPointsInFeature: selectPointsInFeature,
-      selectWithinRadius: selectWithinRadius, nearestRecord: nearestRecord, featureMeasurements: featureMeasurements
+      selectWithinRadius: selectWithinRadius, nearestRecord: nearestRecord, featureMeasurements: featureMeasurements,
+      buildEvidenceReport: buildEvidenceReport, missionCompletion: missionCompletion, missions: GIS_MISSIONS,
+      parseTimeCSV: parseTimeCSV, timelineSnapshot: timelineSnapshot, calculateTemporalChange: calculateTemporalChange
     },
     questHooks: [
       { id: 'import_data', label: 'Map your own coordinate data', icon: '\uD83D\uDCE5', check: function (d) { return !!d.gisImported; }, progress: function (d) { return d.gisImported ? 'Mapped' : 'Not yet'; } },
       { id: 'polygon_layer', label: 'Build a GeoJSON choropleth', icon: '\uD83C\uDFA8', check: function (d) { return !!d.gisGeoJSONImported; }, progress: function (d) { return d.gisGeoJSONImported ? 'Mapped' : 'Not yet'; } },
       { id: 'join_layer', label: 'Join a CSV to map boundaries', icon: '\uD83D\uDD17', check: function (d) { return !!d.gisJoinApplied; }, progress: function (d) { return d.gisJoinApplied ? 'Joined' : 'Not yet'; } },
       { id: 'spatial_analysis', label: 'Run a spatial analysis', icon: '\uD83D\uDCCF', check: function (d) { return !!d.gisSpatialAnalysis; }, progress: function (d) { return d.gisSpatialAnalysis ? 'Analyzed' : 'Not yet'; } },
+      { id: 'compare_export', label: 'Compare maps and export evidence', icon: '\uD83D\uDCCA', check: function (d) { return !!d.gisEvidenceExported; }, progress: function (d) { return d.gisEvidenceExported ? 'Exported' : d.gisCompared ? 'Compared' : 'Not yet'; } },
+      { id: 'maine_mission', label: 'Complete a Maine GIS mission', icon: '\uD83E\uDDED', check: function (d) { return !!d.gisMissionCompleted; }, progress: function (d) { return d.gisMissionCompleted ? 'Completed' : d.gisMissionStarted ? 'In progress' : 'Not yet'; } },
+      { id: 'time_change', label: 'Analyze change over time', icon: '\u23F3', check: function (d) { return !!d.gisTimelineAnalyzed; }, progress: function (d) { return d.gisTimelineExported ? 'Exported' : d.gisTimelineAnalyzed ? 'Analyzed' : 'Not yet'; } },
       { id: 'projection_lab', label: 'Compare map projections', icon: '\uD83C\uDF10', check: function (d) { return !!d.gisProjectionCompared; }, progress: function (d) { return d.gisProjectionCompared ? 'Compared' : 'Not yet'; } }
     ],
     render: function (ctx) {
@@ -568,8 +814,31 @@
         var s36 = React.useState(0), selectedFeatureIndex = s36[0], setSelectedFeatureIndex = s36[1];
         var s37 = React.useState([]), analysisSelection = s37[0], setAnalysisSelection = s37[1];
         var s38 = React.useState('none'), analysisSelectionSource = s38[0], setAnalysisSelectionSource = s38[1];
+        var s39 = React.useState(initial.gisCompareLeft || 'point:density'), compareLeft = s39[0], setCompareLeft = s39[1];
+        var s40 = React.useState(initial.gisCompareRight || 'point:access'), compareRight = s40[0], setCompareRight = s40[1];
+        var s41 = React.useState(initial.gisCompareLeftBasemap || 'street'), compareLeftBasemap = s41[0], setCompareLeftBasemap = s41[1];
+        var s42 = React.useState(initial.gisCompareRightBasemap || 'satellite'), compareRightBasemap = s42[0], setCompareRightBasemap = s42[1];
+        var s43 = React.useState('Loading synchronized comparison maps. The comparison tables are ready now.'), compareStatus = s43[0], setCompareStatus = s43[1];
+        var s44 = React.useState(''), comparisonObservation = s44[0], setComparisonObservation = s44[1];
+        var s45 = React.useState(initial.gisActiveMission || GIS_MISSIONS[0].id), activeMissionId = s45[0], setActiveMissionId = s45[1];
+        var s46 = React.useState(initial.gisMissionProgress || {}), missionProgress = s46[0], setMissionProgress = s46[1];
+        var s47 = React.useState(initial.gisMissionResponses || {}), missionResponses = s47[0], setMissionResponses = s47[1];
+        var s48 = React.useState(EXAMPLE_TIME_CSV), timeText = s48[0], setTimeText = s48[1];
+        var s49 = React.useState(EXAMPLE_TIME_DATA), timeDataset = s49[0], setTimeDataset = s49[1];
+        var s50 = React.useState(EXAMPLE_TIME_DATA.years[0]), timeBaseline = s50[0], setTimeBaseline = s50[1];
+        var s51 = React.useState(EXAMPLE_TIME_DATA.years[EXAMPLE_TIME_DATA.years.length - 1]), timeFocusYear = s51[0], setTimeFocusYear = s51[1];
+        var s52 = React.useState(false), timePlaying = s52[0], setTimePlaying = s52[1];
+        var s53 = React.useState(''), timeError = s53[0], setTimeError = s53[1];
+        var s54 = React.useState(''), timeObservation = s54[0], setTimeObservation = s54[1];
+        var s55 = React.useState('Loading before-and-after maps. The change table is ready now.'), timeStatus = s55[0], setTimeStatus = s55[1];
         var mapNode = React.useRef(null);
         var mapViewState = React.useRef(null);
+        var compareLeftNode = React.useRef(null);
+        var compareRightNode = React.useRef(null);
+        var compareViewState = React.useRef(null);
+        var timeLeftNode = React.useRef(null);
+        var timeRightNode = React.useRef(null);
+        var timeViewState = React.useRef(null);
 
         var imported = source === 'import';
         var records = imported ? importedRows : MAINE;
@@ -602,6 +871,34 @@
         var selectedRecords = selectedIndices.map(function (index) { return records[index]; }).filter(Boolean);
         var selectedValues = selectedRecords.map(function (record) { return valueOf(record, metric, imported); }).filter(Number.isFinite);
         var selectedMean = selectedValues.length ? selectedValues.reduce(function (sum, value) { return sum + value; }, 0) / selectedValues.length : NaN;
+        var comparisonChoices = imported
+          ? [{ value: 'point:value', label: 'Imported point value' }]
+          : [{ value: 'point:density', label: 'Population density' }, { value: 'point:access', label: 'Broadband access index' }];
+        geoKeys.forEach(function (key) { comparisonChoices.push({ value: 'geo:' + key, label: 'GeoJSON: ' + key }); });
+        function validChoice(choice, fallbackIndex) {
+          return comparisonChoices.some(function (option) { return option.value === choice; })
+            ? choice : comparisonChoices[Math.min(fallbackIndex, comparisonChoices.length - 1)].value;
+        }
+        var leftChoice = validChoice(compareLeft, 0);
+        var rightChoice = validChoice(compareRight, 1);
+        var leftSeries = comparisonSeries(leftChoice);
+        var rightSeries = comparisonSeries(rightChoice);
+        var activeMission = GIS_MISSIONS.filter(function (mission) { return mission.id === activeMissionId; })[0] || GIS_MISSIONS[0];
+        var activeMissionProgress = missionProgress[activeMission.id] || {};
+        var activeMissionCompletion = missionCompletion(activeMission, activeMissionProgress);
+        var timeYears = timeDataset.years || [];
+        var effectiveBaseline = timeYears.indexOf(Number(timeBaseline)) >= 0 ? Number(timeBaseline) : timeYears[0];
+        var effectiveFocusYear = timeYears.indexOf(Number(timeFocusYear)) >= 0 ? Number(timeFocusYear) : timeYears[timeYears.length - 1];
+        var baselineSnapshot = timelineSnapshot(timeDataset.rows, effectiveBaseline);
+        var focusSnapshot = timelineSnapshot(timeDataset.rows, effectiveFocusYear);
+        var temporalResult = calculateTemporalChange(timeDataset.rows, effectiveBaseline, effectiveFocusYear);
+        var temporalComplete = temporalResult.rows.filter(function (row) { return Number.isFinite(row.change); });
+        var temporalSorted = temporalComplete.slice().sort(function (a, b) { return b.change - a.change; });
+        var temporalSummary = temporalSorted.length
+          ? temporalSorted[0].name + ' has the largest increase (' + temporalSorted[0].change.toFixed(1) + '); ' +
+            temporalSorted[temporalSorted.length - 1].name + ' has the smallest change (' + temporalSorted[temporalSorted.length - 1].change.toFixed(1) +
+            '). These are descriptive changes and do not establish causes.'
+          : 'No complete location pairs are available for the selected years.';
 
         function formatDistance(km) {
           return analysisUnit === 'imperial' ? (km * 0.621371).toFixed(2) + ' mi' : km.toFixed(2) + ' km';
@@ -609,6 +906,43 @@
 
         function formatArea(squareKm) {
           return analysisUnit === 'imperial' ? (squareKm * 0.386102).toFixed(2) + ' mi\u00B2' : squareKm.toFixed(2) + ' km\u00B2';
+        }
+
+        function comparisonLabel(choice) {
+          var match = comparisonChoices.filter(function (option) { return option.value === choice; })[0];
+          return match ? match.label : choice;
+        }
+
+        function comparisonSeries(choice) {
+          var parts = String(choice || '').split(':'), kind = parts[0], key = parts.slice(1).join(':');
+          if (kind === 'geo') {
+            return {
+              kind: 'geo', key: key, label: 'GeoJSON: ' + key,
+              rows: geoFeatures.map(function (feature, index) {
+                var props = feature.properties || {};
+                return {
+                  name: geoNameKey && props[geoNameKey] != null ? String(props[geoNameKey]) : 'Feature ' + (index + 1),
+                  geometry: feature.geometry ? feature.geometry.type : 'Unknown',
+                  lat: null, lon: null, value: props[key]
+                };
+              })
+            };
+          }
+          return {
+            kind: 'point', key: key, label: imported ? 'Imported point value' : key === 'density' ? 'Population density' : 'Broadband access index',
+            rows: records.map(function (record) {
+              return { name: record.name, geometry: 'Point', lat: record.lat, lon: record.lon, value: key === 'value' ? record.value : record[key] };
+            })
+          };
+        }
+
+        function seriesStats(series) {
+          var numeric = series.rows.map(function (row) { return Number(row.value); }).filter(Number.isFinite);
+          if (!numeric.length) return { count: series.rows.length, min: null, max: null, mean: null };
+          return {
+            count: series.rows.length, min: Math.min.apply(Math, numeric), max: Math.max.apply(Math, numeric),
+            mean: numeric.reduce(function (sum, value) { return sum + value; }, 0) / numeric.length
+          };
         }
 
         function persist(key, value) {
@@ -762,9 +1096,170 @@
           };
         }, [tab, source, importedRows, metric, layers.points, layers.coast, layers.grid, layers.polygons, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, analysisUnit]);
 
+        React.useEffect(function () {
+          if (tab !== 'compare' || !compareLeftNode.current || !compareRightNode.current) return undefined;
+          var active = true, leftMap = null, rightMap = null;
+          getLeaflet().then(function (L) {
+            if (!active || !L || !compareLeftNode.current || !compareRightNode.current) {
+              if (active) setCompareStatus('Comparison basemaps are unavailable. Both accessible comparison tables remain ready.');
+              return;
+            }
+            compareLeftNode.current.innerHTML = '';
+            compareRightNode.current.innerHTML = '';
+            var center = imported && records.length ? [
+              records.reduce(function (sum, record) { return sum + record.lat; }, 0) / records.length,
+              records.reduce(function (sum, record) { return sum + record.lon; }, 0) / records.length
+            ] : [45.15, -69.05];
+            var stored = compareViewState.current;
+            var initialCenter = stored ? stored.center : center;
+            var initialZoom = stored ? stored.zoom : (imported ? 5 : 6);
+            leftMap = L.map(compareLeftNode.current, { keyboard: true, scrollWheelZoom: false }).setView(initialCenter, initialZoom);
+            rightMap = L.map(compareRightNode.current, { keyboard: true, scrollWheelZoom: false }).setView(initialCenter, initialZoom);
+            function addBasemap(map, name) {
+              var tileUrl = name === 'satellite'
+                ? 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+                : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+              L.tileLayer(tileUrl, {
+                maxZoom: 18,
+                attribution: name === 'satellite' ? 'Tiles © Esri and contributors' : '© OpenStreetMap contributors'
+              }).addTo(map);
+            }
+            function addSeries(map, choice) {
+              var series = comparisonSeries(choice);
+              var numeric = series.rows.map(function (row) { return Number(row.value); }).filter(Number.isFinite);
+              var low = numeric.length ? Math.min.apply(Math, numeric) : 0;
+              var high = numeric.length ? Math.max.apply(Math, numeric) : 1;
+              if (series.kind === 'point') {
+                series.rows.forEach(function (row, index) {
+                  var value = Number(row.value), p = high === low ? 0.5 : (value - low) / (high - low);
+                  var selected = !!selectedLookup[index];
+                  L.circleMarker([row.lat, row.lon], {
+                    radius: 7 + p * 10 + (selected ? 2 : 0), color: selected ? '#facc15' : '#fff',
+                    weight: selected ? 4 : 2, fillColor: color(value, low, high), fillOpacity: 0.9
+                  }).bindTooltip(escapeHTML(row.name) + ': ' + escapeHTML(row.value) + (selected ? ' (selected)' : '')).addTo(map);
+                });
+              } else if (geoData) {
+                var breaks = calculateBreaks(numeric, classification, classCount, customBreaks);
+                L.geoJSON(geoData, {
+                  style: function (feature) {
+                    return { color: '#fff', weight: 1.4, fillColor: classColor((feature.properties || {})[series.key], breaks), fillOpacity: 0.72 };
+                  },
+                  pointToLayer: function (feature, latlng) {
+                    return L.circleMarker(latlng, { radius: 9, color: '#fff', weight: 2, fillColor: classColor((feature.properties || {})[series.key], breaks), fillOpacity: 0.85 });
+                  },
+                  onEachFeature: function (feature, layer) {
+                    var props = feature.properties || {};
+                    var name = geoNameKey && props[geoNameKey] != null ? props[geoNameKey] : 'Feature';
+                    layer.bindTooltip(escapeHTML(name) + ': ' + escapeHTML(props[series.key] == null ? 'No data' : props[series.key]));
+                  }
+                }).addTo(map);
+              }
+            }
+            addBasemap(leftMap, compareLeftBasemap);
+            addBasemap(rightMap, compareRightBasemap);
+            addSeries(leftMap, leftChoice);
+            addSeries(rightMap, rightChoice);
+            var syncing = false;
+            function synchronize(sourceMap, targetMap) {
+              if (syncing) return;
+              syncing = true;
+              var currentCenter = sourceMap.getCenter(), zoom = sourceMap.getZoom();
+              compareViewState.current = { center: [currentCenter.lat, currentCenter.lng], zoom: zoom };
+              targetMap.setView(currentCenter, zoom, { animate: false });
+              syncing = false;
+            }
+            leftMap.on('moveend', function () { synchronize(leftMap, rightMap); });
+            rightMap.on('moveend', function () { synchronize(rightMap, leftMap); });
+            setCompareStatus('Comparison maps ready and synchronized. Pan or zoom either map to move both.');
+          });
+          return function () {
+            active = false;
+            if (leftMap) { try { leftMap.remove(); } catch (ignoreLeft) {} }
+            if (rightMap) { try { rightMap.remove(); } catch (ignoreRight) {} }
+          };
+        }, [tab, source, importedRows, geoData, geoNameKey, leftChoice, rightChoice, compareLeftBasemap, compareRightBasemap, classification, classCount, customBreaks, analysisSelection, analysisSelectionSource, bufferRadiusKm, analysisPoints]);
+
+        React.useEffect(function () {
+          if (!timePlaying || timeYears.length < 2) return undefined;
+          var timer = window.setInterval(function () {
+            setTimeFocusYear(function (current) {
+              var index = timeYears.indexOf(Number(current));
+              if (index < 0) return timeYears[0];
+              if (index >= timeYears.length - 1) {
+                setTimePlaying(false);
+                return current;
+              }
+              return timeYears[index + 1];
+            });
+          }, 1100);
+          return function () { window.clearInterval(timer); };
+        }, [timePlaying, timeYears.join('|')]);
+
+        React.useEffect(function () {
+          if (tab !== 'timeline' || !timeLeftNode.current || !timeRightNode.current) return undefined;
+          var active = true, leftMap = null, rightMap = null;
+          getLeaflet().then(function (L) {
+            if (!active || !L || !timeLeftNode.current || !timeRightNode.current) {
+              if (active) setTimeStatus('Timeline basemaps are unavailable. The synchronized change table remains ready.');
+              return;
+            }
+            timeLeftNode.current.innerHTML = '';
+            timeRightNode.current.innerHTML = '';
+            var all = baselineSnapshot.concat(focusSnapshot);
+            var center = all.length ? [
+              all.reduce(function (sum, row) { return sum + row.lat; }, 0) / all.length,
+              all.reduce(function (sum, row) { return sum + row.lon; }, 0) / all.length
+            ] : [45.15, -69.05];
+            var stored = timeViewState.current;
+            leftMap = L.map(timeLeftNode.current, { keyboard: true, scrollWheelZoom: false }).setView(stored ? stored.center : center, stored ? stored.zoom : 6);
+            rightMap = L.map(timeRightNode.current, { keyboard: true, scrollWheelZoom: false }).setView(stored ? stored.center : center, stored ? stored.zoom : 6);
+            function addBasemap(map) {
+              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap contributors' }).addTo(map);
+            }
+            var allValues = all.map(function (row) { return row.value; }).filter(Number.isFinite);
+            var low = allValues.length ? Math.min.apply(Math, allValues) : 0;
+            var high = allValues.length ? Math.max.apply(Math, allValues) : 1;
+            var changeLookup = {};
+            temporalResult.rows.forEach(function (row) { changeLookup[row.name.toLowerCase()] = row; });
+            function addSnapshot(map, snapshot, isFocus) {
+              snapshot.forEach(function (row) {
+                var p = high === low ? 0.5 : (row.value - low) / (high - low);
+                var changed = changeLookup[row.name.toLowerCase()];
+                var detail = isFocus && changed && Number.isFinite(changed.change) ? ' (change ' + (changed.change >= 0 ? '+' : '') + changed.change.toFixed(1) + ')' : '';
+                L.circleMarker([row.lat, row.lon], {
+                  radius: 8 + p * 12, color: '#fff', weight: 2,
+                  fillColor: color(row.value, low, high), fillOpacity: 0.9
+                }).bindTooltip(escapeHTML(row.name) + ': ' + escapeHTML(row.value + (row.unit ? ' ' + row.unit : '') + detail)).addTo(map);
+              });
+            }
+            addBasemap(leftMap); addBasemap(rightMap);
+            addSnapshot(leftMap, baselineSnapshot, false);
+            addSnapshot(rightMap, focusSnapshot, true);
+            var syncing = false;
+            function sync(sourceMap, targetMap) {
+              if (syncing) return;
+              syncing = true;
+              var currentCenter = sourceMap.getCenter(), zoom = sourceMap.getZoom();
+              timeViewState.current = { center: [currentCenter.lat, currentCenter.lng], zoom: zoom };
+              targetMap.setView(currentCenter, zoom, { animate: false });
+              syncing = false;
+            }
+            leftMap.on('moveend', function () { sync(leftMap, rightMap); });
+            rightMap.on('moveend', function () { sync(rightMap, leftMap); });
+            setTimeStatus('Before-and-after maps ready and synchronized. Baseline ' + effectiveBaseline + '; focus year ' + effectiveFocusYear + '.');
+          });
+          return function () {
+            active = false;
+            if (leftMap) { try { leftMap.remove(); } catch (ignoreLeft) {} }
+            if (rightMap) { try { rightMap.remove(); } catch (ignoreRight) {} }
+          };
+        }, [tab, effectiveBaseline, effectiveFocusYear, timeDataset]);
+
         function go(next) {
           setTab(next); persist('gisTab', next);
           if (next === 'projection') persist('gisProjectionCompared', true);
+          if (next === 'compare') persist('gisCompared', true);
+          if (next === 'timeline') persist('gisTimelineAnalyzed', true);
           announce(next + ' workspace');
         }
 
@@ -1231,6 +1726,424 @@
               h('strong', null, 'Data ethics: '), 'Do not map student home addresses or sensitive locations. Aggregate, blur, or suppress identifiable points.'));
         }
 
+        function loadTimeSeries() {
+          try {
+            var parsed = parseTimeCSV(timeText);
+            setTimeDataset(parsed);
+            setTimeBaseline(parsed.years[0]);
+            setTimeFocusYear(parsed.years[parsed.years.length - 1]);
+            setTimePlaying(false);
+            setTimeError(parsed.duplicates.length ? 'Duplicate location-year rows: ' + parsed.duplicates.join(', ') + '. The last duplicate is used for change calculations.' : '');
+            persist('gisTimelineAnalyzed', true);
+            announce(parsed.rows.length + ' time-series records across ' + parsed.years.length + ' years loaded.');
+          } catch (problem) {
+            setTimeError(problem.message);
+            announce('Time-series CSV error. ' + problem.message);
+          }
+        }
+
+        function readTimeFile(event) {
+          var file = event.target.files && event.target.files[0];
+          if (!file) return;
+          if (file.size > 2 * 1024 * 1024) { setTimeError('Choose a time-series CSV smaller than 2 MB.'); return; }
+          var reader = new FileReader();
+          reader.onload = function () { setTimeText(String(reader.result || '')); setTimeError(''); };
+          reader.onerror = function () { setTimeError('That time-series file could not be read.'); };
+          reader.readAsText(file);
+        }
+
+        function toggleTimelinePlayback() {
+          if (!timePlaying && effectiveFocusYear === timeYears[timeYears.length - 1]) setTimeFocusYear(timeYears[0]);
+          setTimePlaying(!timePlaying);
+          persist('gisTimelineAnalyzed', true);
+          announce(timePlaying ? 'Timeline paused.' : 'Timeline playback started.');
+        }
+
+        function sonifyTemporalChange() {
+          var Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx || !temporalComplete.length) { announce('No complete changes are available to sonify.'); return; }
+          var ac;
+          try { ac = new Ctx(); } catch (ignore) { return; }
+          var maxAbs = Math.max.apply(Math, temporalComplete.map(function (row) { return Math.abs(row.change); })) || 1;
+          temporalComplete.slice().sort(function (a, b) { return a.change - b.change; }).forEach(function (row, index) {
+            var oscillator = ac.createOscillator(), gain = ac.createGain(), start = ac.currentTime + index * 0.18;
+            oscillator.type = row.change < 0 ? 'sawtooth' : 'sine';
+            oscillator.frequency.value = 440 + row.change / maxAbs * 260;
+            gain.gain.setValueAtTime(0.045, start);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + 0.14);
+            oscillator.connect(gain); gain.connect(ac.destination);
+            oscillator.start(start); oscillator.stop(start + 0.15);
+          });
+          announce('Playing changes from the largest decrease to the largest increase.');
+        }
+
+        function timeEvidenceModel() {
+          return {
+            title: 'GIS Studio Change-Over-Time Evidence Report',
+            generated: new Date().toLocaleString(),
+            observation: timeObservation || 'Add a claim comparing the baseline and focus years.',
+            analysis: temporalSummary + (temporalResult.warnings.length ? ' Data warnings: ' + temporalResult.warnings.join(' ') : ''),
+            sources: (timeDataset.sources.length ? timeDataset.sources.join('; ') : 'Learner-imported time-series data') +
+              '. Compare collection methods, units, definitions, and missing records before interpreting change.',
+            left: {
+              label: 'Baseline year ' + effectiveBaseline, basemap: 'OpenStreetMap',
+              rows: baselineSnapshot.map(function (row) { return { name: row.name, geometry: 'Point', lat: row.lat, lon: row.lon, value: row.value }; })
+            },
+            right: {
+              label: 'Focus year ' + effectiveFocusYear, basemap: 'OpenStreetMap',
+              rows: focusSnapshot.map(function (row) { return { name: row.name, geometry: 'Point', lat: row.lat, lon: row.lon, value: row.value }; })
+            },
+            selected: []
+          };
+        }
+
+        function downloadTimeEvidence() {
+          var html = buildEvidenceReport(timeEvidenceModel());
+          var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = 'gis-change-' + effectiveBaseline + '-to-' + effectiveFocusYear + '.html';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+          persist('gisTimelineAnalyzed', true);
+          persist('gisTimelineExported', true);
+          announce('Accessible change-over-time evidence report downloaded.');
+        }
+
+        function saveMissionProgress(missionId, stepId, checked) {
+          var next = Object.assign({}, missionProgress);
+          next[missionId] = Object.assign({}, next[missionId] || {});
+          next[missionId][stepId] = checked;
+          setMissionProgress(next);
+          persist('gisMissionProgress', next);
+          persist('gisMissionStarted', true);
+          var mission = GIS_MISSIONS.filter(function (item) { return item.id === missionId; })[0];
+          if (missionCompletion(mission, next[missionId]).percent === 100) persist('gisMissionCompleted', true);
+        }
+
+        function saveMissionResponse(missionId, value) {
+          var next = Object.assign({}, missionResponses);
+          next[missionId] = value;
+          setMissionResponses(next);
+          persist('gisMissionResponses', next);
+          persist('gisMissionStarted', true);
+        }
+
+        function prepareMission(mission) {
+          setSource('sample');
+          setAnalysisPoints([]);
+          setAnalysisSelection([]);
+          setAnalysisSelectionSource('none');
+          if (mission.id === 'coast-connectivity') {
+            setCompareLeft('point:density');
+            setCompareRight('point:access');
+            setCompareLeftBasemap('street');
+            setCompareRightBasemap('satellite');
+            setTab('compare');
+            persist('gisTab', 'compare');
+            persist('gisCompared', true);
+          } else if (mission.id === 'service-area') {
+            setMetric('access');
+            setAnalysisMode('buffer');
+            setBufferRadiusKm(75);
+            setLayers(function (previous) { return Object.assign({}, previous, { points: true }); });
+            setTab('map');
+            persist('gisTab', 'map');
+            persist('gisMetric', 'access');
+          } else {
+            var parsed = parseGeoJSON(EXAMPLE_GEOJSON);
+            setGeoData(parsed.data);
+            setGeoKeys(parsed.numericKeys);
+            setGeoMetric(parsed.numericKeys.indexOf('index') >= 0 ? 'index' : parsed.numericKeys[0]);
+            setGeoNameKey(parsed.nameKey);
+            setSelectedFeatureIndex(0);
+            setLayers(function (previous) { return Object.assign({}, previous, { points: true, polygons: true }); });
+            setTab('map');
+            persist('gisTab', 'map');
+            persist('gisGeoJSONImported', true);
+          }
+          saveMissionProgress(mission.id, 'setup', true);
+          persist('gisActiveMission', mission.id);
+          announce(mission.title + ' prepared. ' + (mission.workspace === 'compare' ? 'Comparison workspace opened.' : 'Map workspace opened.'));
+        }
+
+        function missionEvidenceModel(mission) {
+          var base = makeEvidenceModel();
+          var completion = missionCompletion(mission, missionProgress[mission.id] || {});
+          base.title = mission.title + ' - GIS Inquiry Evidence';
+          base.observation = missionResponses[mission.id] || mission.evidencePrompt;
+          base.analysis = mission.question + ' Progress: ' + completion.complete + ' of ' + completion.total + ' investigation steps complete. ' + base.analysis;
+          base.sources += ' This mission uses classroom learning data; verify any real-world claim with current authoritative data.';
+          return base;
+        }
+
+        function downloadMissionEvidence(mission) {
+          var html = buildEvidenceReport(missionEvidenceModel(mission));
+          var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = 'gis-mission-' + mission.id + '.html';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+          persist('gisMissionCompleted', true);
+          persist('gisEvidenceExported', true);
+          announce(mission.title + ' evidence report downloaded.');
+        }
+
+        function makeEvidenceModel() {
+          return {
+            title: 'GIS Studio Geographic Evidence Report',
+            generated: new Date().toLocaleString(),
+            observation: comparisonObservation || 'Compare the mapped patterns, then add a claim supported by at least two pieces of evidence.',
+            analysis: summary + (selectedRecords.length ? ' Spatial analysis selected ' + selectedRecords.length + ' mapped points.' : ''),
+            sources: imported ? 'Point data were imported locally by the learner. Basemaps: OpenStreetMap and Esri World Imagery.' :
+              'Maine learning data include rounded population-density approximations and an illustrative broadband-access index. Basemaps: OpenStreetMap and Esri World Imagery.',
+            left: Object.assign({}, leftSeries, { label: comparisonLabel(leftChoice), basemap: compareLeftBasemap === 'satellite' ? 'Esri World Imagery' : 'OpenStreetMap' }),
+            right: Object.assign({}, rightSeries, { label: comparisonLabel(rightChoice), basemap: compareRightBasemap === 'satellite' ? 'Esri World Imagery' : 'OpenStreetMap' }),
+            selected: selectedRecords.map(function (record) {
+              return { name: record.name, lat: record.lat, lon: record.lon, value: valueOf(record, metric, imported) };
+            })
+          };
+        }
+
+        function downloadEvidenceReport() {
+          var html = buildEvidenceReport(makeEvidenceModel());
+          var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = 'gis-studio-evidence-report.html';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+          persist('gisEvidenceExported', true);
+          announce('Accessible GIS evidence report downloaded.');
+        }
+
+        function printEvidenceReport() {
+          var reportWindow = window.open('', '_blank');
+          if (!reportWindow) {
+            announce('The print window was blocked. Download the accessible report instead.');
+            return;
+          }
+          reportWindow.opener = null;
+          reportWindow.document.open();
+          reportWindow.document.write(buildEvidenceReport(makeEvidenceModel()));
+          reportWindow.document.close();
+          reportWindow.focus();
+          window.setTimeout(function () { reportWindow.print(); }, 250);
+          persist('gisEvidenceExported', true);
+          announce('Print-ready GIS evidence report opened.');
+        }
+
+        function comparisonTable(series, side) {
+          var stats = seriesStats(series);
+          return h('section', { 'aria-labelledby': 'gis-compare-' + side + '-table-heading', style: Object.assign({}, panel, { overflow: 'hidden' }) },
+            h('h2', { id: 'gis-compare-' + side + '-table-heading', style: { margin: '0 0 4px', color: '#f0fdfa', fontSize: 15 } }, side === 'left' ? 'Left-map table twin' : 'Right-map table twin'),
+            h('p', { style: { margin: '0 0 9px', color: '#a7c7d8', fontSize: 11 } },
+              series.label + ': ' + stats.count + ' records' + (stats.mean == null ? '.' : ', range ' + stats.min + ' to ' + stats.max + ', mean ' + stats.mean.toFixed(1) + '.')),
+            h('div', { style: { overflowX: 'auto', maxHeight: 320, overflowY: 'auto' } },
+              h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
+                h('caption', { style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' } }, side + ' map values for ' + series.label),
+                h('thead', null, h('tr', null, ['Location or feature', 'Geometry', 'Latitude', 'Longitude', 'Value'].map(function (heading) {
+                  return h('th', { key: heading, scope: 'col', style: { textAlign: 'left', padding: 7, color: '#67e8f9', borderBottom: '1px solid #3f6b82', position: 'sticky', top: 0, background: '#102536' } }, heading);
+                }))),
+                h('tbody', null, series.rows.map(function (row, index) {
+                  return h('tr', { key: index },
+                    h('th', { scope: 'row', style: { textAlign: 'left', padding: 7, color: '#fff', borderBottom: '1px solid #1e4154' } }, row.name),
+                    h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, row.geometry),
+                    h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, Number.isFinite(Number(row.lat)) ? Number(row.lat).toFixed(3) : '—'),
+                    h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, Number.isFinite(Number(row.lon)) ? Number(row.lon).toFixed(3) : '—'),
+                    h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154', fontWeight: 800 } }, row.value == null ? 'No data' : String(row.value)));
+                })))));
+        }
+
+        function comparisonView() {
+          var leftStats = seriesStats(leftSeries), rightStats = seriesStats(rightSeries);
+          function sideControls(side, choice, setChoice, base, setBase) {
+            return h('fieldset', { style: Object.assign({}, panel, { margin: 0 }) },
+              h('legend', { style: { color: '#67e8f9', fontWeight: 900, padding: '0 5px' } }, side + ' map'),
+              h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 9 } }, 'Data layer',
+                h('select', { value: choice, onChange: function (event) { setChoice(event.target.value); persist(side === 'Left' ? 'gisCompareLeft' : 'gisCompareRight', event.target.value); persist('gisCompared', true); }, style: control },
+                  comparisonChoices.map(function (option) { return h('option', { key: option.value, value: option.value }, option.label); }))),
+              h('label', { style: { display: 'grid', gap: 5, fontSize: 12 } }, 'Basemap',
+                h('select', { value: base, onChange: function (event) { setBase(event.target.value); persist(side === 'Left' ? 'gisCompareLeftBasemap' : 'gisCompareRightBasemap', event.target.value); persist('gisCompared', true); }, style: control },
+                  h('option', { value: 'street' }, 'Street map'),
+                  h('option', { value: 'satellite' }, 'Satellite imagery'))));
+          }
+          return h('div', { style: { display: 'grid', gap: 14 } },
+            h('section', { 'aria-labelledby': 'gis-compare-heading', style: panel },
+              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'SAME PLACE • DIFFERENT LENS'),
+              h('h2', { id: 'gis-compare-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 19 } }, 'Synchronized map comparison'),
+              h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.5 } }, 'Change either layer or basemap. Pan and zoom one map; the other follows so scale and extent stay comparable.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 10, marginTop: 12 } },
+                sideControls('Left', leftChoice, setCompareLeft, compareLeftBasemap, setCompareLeftBasemap),
+                sideControls('Right', rightChoice, setCompareRight, compareRightBasemap, setCompareRightBasemap))),
+            h('section', { 'aria-label': 'Synchronized comparison maps', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(330px,1fr))', gap: 12 } },
+              h('div', null,
+                h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, 'Left: ' + comparisonLabel(leftChoice)),
+                h('div', { ref: compareLeftNode, tabIndex: 0, role: 'application', 'aria-label': 'Left interactive comparison map showing ' + comparisonLabel(leftChoice), style: { height: 390, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#071827' } }),
+                h('p', { style: { color: '#a7c7d8', fontSize: 10 } }, 'Legend: low teal → high rose. ' + leftStats.count + ' records.')),
+              h('div', null,
+                h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, 'Right: ' + comparisonLabel(rightChoice)),
+                h('div', { ref: compareRightNode, tabIndex: 0, role: 'application', 'aria-label': 'Right interactive comparison map showing ' + comparisonLabel(rightChoice), style: { height: 390, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#071827' } }),
+                h('p', { style: { color: '#a7c7d8', fontSize: 10 } }, 'Legend: low teal → high rose. ' + rightStats.count + ' records.'))),
+            h('p', { role: 'status', style: { margin: 0, color: '#a7c7d8', fontSize: 11 } }, compareStatus),
+            h('section', { 'aria-labelledby': 'gis-evidence-heading', style: panel },
+              h('h2', { id: 'gis-evidence-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Evidence builder'),
+              h('label', { style: { display: 'grid', gap: 6, color: '#e6fffb', fontSize: 12, fontWeight: 700 } }, 'Observation or claim',
+                h('textarea', { value: comparisonObservation, onChange: function (event) { setComparisonObservation(event.target.value); }, rows: 3, placeholder: 'I observe... Evidence from the left map... Evidence from the right map... A limitation is...', style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 8, border: '1px solid #3f6b82', background: '#071827', color: '#fff' } })),
+              h('p', { style: { margin: '8px 0', color: '#fcd34d', fontSize: 10 } }, 'Describe what the maps show. Treat explanations as hypotheses unless other evidence supports causation.'),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', { type: 'button', onClick: downloadEvidenceReport, style: primary }, 'Download accessible report'),
+                h('button', { type: 'button', onClick: printEvidenceReport, style: Object.assign({}, primary, { background: '#155e75' }) }, 'Print or save as PDF'))),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(330px,1fr))', gap: 12 } },
+              comparisonTable(leftSeries, 'left'), comparisonTable(rightSeries, 'right')));
+        }
+
+        function timelineView() {
+          var baselineIndex = Math.max(0, timeYears.indexOf(effectiveBaseline));
+          var focusIndex = Math.max(0, timeYears.indexOf(effectiveFocusYear));
+          return h('div', { style: { display: 'grid', gap: 14 } },
+            h('section', { 'aria-labelledby': 'gis-timeline-heading', style: panel },
+              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'CHANGE OVER TIME'),
+              h('h2', { id: 'gis-timeline-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, 'Time-Series Change Lab'),
+              h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, 'Compare the same locations across years. Keep the baseline fixed, move or play the focus year, and distinguish measured change from explanations that require more evidence.'),
+              h('details', { style: { marginTop: 11, color: '#cfe8f3', fontSize: 11 } },
+                h('summary', { style: { cursor: 'pointer', fontWeight: 800, color: '#67e8f9' } }, 'Import a time-series CSV'),
+                h('p', null, 'Required headers: name, latitude, longitude, year, value. Optional: unit, source, method. Up to 3,000 valid rows stay in this browser session.'),
+                h('label', { style: { display: 'grid', gap: 5, margin: '9px 0', fontWeight: 700 } }, 'Choose CSV file',
+                  h('input', { type: 'file', accept: '.csv,text/csv', onChange: readTimeFile })),
+                h('label', { style: { display: 'grid', gap: 5, fontWeight: 700 } }, 'Or paste time-series CSV',
+                  h('textarea', { value: timeText, onChange: function (event) { setTimeText(event.target.value); setTimeError(''); }, rows: 8, spellCheck: false, style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 8, border: '1px solid #3f6b82', background: '#071827', color: '#fff', fontFamily: 'monospace' } })),
+                h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 9 } },
+                  h('button', { type: 'button', onClick: loadTimeSeries, style: primary }, 'Load time series'),
+                  h('button', { type: 'button', onClick: function () { setTimeText(EXAMPLE_TIME_CSV); setTimeError(''); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Restore example'))),
+              timeError && h('p', { role: 'alert', style: { margin: '10px 0 0', padding: 9, borderRadius: 8, background: '#7f1d1d', color: '#fecaca' } }, timeError)),
+            h('section', { 'aria-labelledby': 'gis-time-controls-heading', style: panel },
+              h('h2', { id: 'gis-time-controls-heading', style: { margin: '0 0 9px', color: '#f0fdfa', fontSize: 16 } }, 'Timeline controls'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 10 } },
+                h('label', { style: { display: 'grid', gap: 5, fontSize: 12 } }, 'Baseline year',
+                  h('select', { value: effectiveBaseline, onChange: function (event) { setTimeBaseline(Number(event.target.value)); setTimePlaying(false); persist('gisTimelineAnalyzed', true); }, style: control },
+                    timeYears.map(function (year) { return h('option', { key: year, value: year }, year); }))),
+                h('label', { style: { display: 'grid', gap: 5, fontSize: 12 } }, 'Focus year: ' + effectiveFocusYear,
+                  h('input', {
+                    type: 'range', min: 0, max: Math.max(0, timeYears.length - 1), step: 1, value: focusIndex,
+                    onChange: function (event) { setTimeFocusYear(timeYears[Number(event.target.value)]); setTimePlaying(false); persist('gisTimelineAnalyzed', true); },
+                    'aria-valuetext': String(effectiveFocusYear)
+                  }))),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 11 } },
+                h('button', { type: 'button', onClick: function () { setTimeFocusYear(timeYears[Math.max(0, focusIndex - 1)]); setTimePlaying(false); }, disabled: focusIndex <= 0, style: Object.assign({}, control, { cursor: focusIndex <= 0 ? 'not-allowed' : 'pointer' }) }, 'Previous year'),
+                h('button', { type: 'button', onClick: toggleTimelinePlayback, style: primary }, timePlaying ? 'Pause animation' : 'Play timeline'),
+                h('button', { type: 'button', onClick: function () { setTimeFocusYear(timeYears[Math.min(timeYears.length - 1, focusIndex + 1)]); setTimePlaying(false); }, disabled: focusIndex >= timeYears.length - 1, style: Object.assign({}, control, { cursor: focusIndex >= timeYears.length - 1 ? 'not-allowed' : 'pointer' }) }, 'Next year'),
+                h('button', { type: 'button', onClick: sonifyTemporalChange, disabled: !temporalComplete.length, style: Object.assign({}, primary, { background: '#083344', border: '1px solid #22d3ee', opacity: temporalComplete.length ? 1 : 0.55 }) }, '♫ Sonify changes')),
+              h('p', { style: { margin: '9px 0 0', color: '#a7c7d8', fontSize: 10 } }, 'Sound orders locations from decrease to increase. Sawtooth tones mark decreases; sine tones mark increases.')),
+            h('section', { 'aria-label': 'Synchronized before and after maps', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(330px,1fr))', gap: 12 } },
+              h('div', null,
+                h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, 'Baseline: ' + effectiveBaseline),
+                h('div', { ref: timeLeftNode, tabIndex: 0, role: 'application', 'aria-label': 'Baseline interactive map for ' + effectiveBaseline, style: { height: 370, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#071827' } })),
+              h('div', null,
+                h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, 'Focus year: ' + effectiveFocusYear),
+                h('div', { ref: timeRightNode, tabIndex: 0, role: 'application', 'aria-label': 'Focus-year interactive map for ' + effectiveFocusYear, style: { height: 370, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#071827' } }))),
+            h('p', { role: 'status', style: { margin: 0, color: '#a7c7d8', fontSize: 11 } }, timeStatus),
+            h('section', { 'aria-labelledby': 'gis-change-summary-heading', style: panel },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' } },
+                h('div', null,
+                  h('h2', { id: 'gis-change-summary-heading', style: { margin: '0 0 5px', color: '#f0fdfa', fontSize: 16 } }, 'Accessible change summary'),
+                  h('p', { style: { margin: 0, color: '#cfe8f3', fontSize: 12, lineHeight: 1.5 } }, temporalSummary)),
+                h('button', { type: 'button', onClick: downloadTimeEvidence, style: primary }, 'Download change evidence report')),
+              temporalResult.warnings.length > 0 && h('div', { role: 'alert', style: { marginTop: 10, padding: 9, borderLeft: '4px solid #f59e0b', background: '#2b2617', color: '#fde68a', fontSize: 11 } },
+                temporalResult.warnings.join(' ')),
+              h('label', { style: { display: 'grid', gap: 6, marginTop: 12, color: '#e6fffb', fontSize: 12, fontWeight: 700 } }, 'Change claim or observation',
+                h('textarea', { value: timeObservation, onChange: function (event) { setTimeObservation(event.target.value); }, rows: 3, placeholder: 'From the baseline to the focus year... Evidence... A limitation...', style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 8, border: '1px solid #3f6b82', background: '#071827', color: '#fff' } })),
+              h('div', { style: { overflowX: 'auto', marginTop: 12 } },
+                h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
+                  h('caption', { style: { textAlign: 'left', color: '#a7c7d8', paddingBottom: 7 } }, 'Change by location from ' + effectiveBaseline + ' to ' + effectiveFocusYear),
+                  h('thead', null, h('tr', null, ['Location', 'Baseline', 'Focus year', 'Absolute change', 'Percent change', 'Trend'].map(function (heading) {
+                    return h('th', { key: heading, scope: 'col', style: { textAlign: 'left', padding: 7, color: '#67e8f9', borderBottom: '1px solid #3f6b82' } }, heading);
+                  }))),
+                  h('tbody', null, temporalResult.rows.map(function (row) {
+                    return h('tr', { key: row.name },
+                      h('th', { scope: 'row', style: { textAlign: 'left', padding: 7, color: '#fff', borderBottom: '1px solid #1e4154' } }, row.name),
+                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, row.startValue == null ? 'Missing' : row.startValue),
+                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, row.endValue == null ? 'Missing' : row.endValue),
+                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154', fontWeight: 800 } }, row.change == null ? 'Not calculated' : (row.change >= 0 ? '+' : '') + row.change.toFixed(1)),
+                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, row.percent == null ? 'Not calculated' : (row.percent >= 0 ? '+' : '') + row.percent.toFixed(1) + '%'),
+                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, row.trend));
+                  }))))),
+            h('aside', { style: { padding: 12, borderLeft: '4px solid #f59e0b', background: '#2b2617', color: '#fde68a', borderRadius: 8, fontSize: 11, lineHeight: 1.5 } },
+              h('strong', null, 'Compatibility check: '), 'A numeric difference is meaningful only when years use compatible definitions, units, geography, collection methods, and coverage. Missing records are excluded from ranked change.'));
+        }
+
+        function missionView() {
+          return h('div', { style: { display: 'grid', gap: 14 } },
+            h('section', { 'aria-labelledby': 'gis-missions-heading', style: panel },
+              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'MAINE INQUIRY SERIES'),
+              h('h2', { id: 'gis-missions-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, 'Guided GIS missions'),
+              h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, 'Choose a question, prepare the right GIS workspace, gather evidence from the map or its table twin, and document what the data can and cannot support.'),
+              h('div', { role: 'tablist', 'aria-label': 'Maine GIS missions', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: 9, marginTop: 13 } },
+                GIS_MISSIONS.map(function (mission) {
+                  var active = mission.id === activeMission.id;
+                  var completion = missionCompletion(mission, missionProgress[mission.id] || {});
+                  return h('button', {
+                    key: mission.id, type: 'button', role: 'tab', 'aria-selected': active,
+                    onClick: function () { setActiveMissionId(mission.id); persist('gisActiveMission', mission.id); },
+                    style: { textAlign: 'left', padding: 12, borderRadius: 10, border: '1px solid ' + (active ? '#5eead4' : '#36586b'), background: active ? '#0f766e' : '#071827', color: '#fff', cursor: 'pointer' }
+                  },
+                    h('strong', { style: { display: 'block', fontSize: 13 } }, mission.title),
+                    h('span', { style: { display: 'block', marginTop: 4, color: active ? '#ecfeff' : '#a7c7d8', fontSize: 10 } }, mission.duration + ' - ' + completion.complete + '/' + completion.total + ' steps'));
+                }))),
+            h('section', { role: 'tabpanel', 'aria-labelledby': 'gis-active-mission-heading', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 14 } },
+              h('div', { style: Object.assign({}, panel, { padding: 18 }) },
+                h('p', { style: { margin: 0, color: '#67e8f9', fontSize: 10, fontWeight: 900 } }, activeMission.duration.toUpperCase()),
+                h('h2', { id: 'gis-active-mission-heading', style: { margin: '5px 0 8px', color: '#f0fdfa', fontSize: 20 } }, activeMission.title),
+                h('p', { style: { margin: '0 0 13px', color: '#dbeafe', fontSize: 14, lineHeight: 1.55 } }, activeMission.question),
+                h('label', { style: { display: 'grid', gap: 5, color: '#a7c7d8', fontSize: 11, marginBottom: 14 } },
+                  h('span', null, 'Mission progress: ' + activeMissionCompletion.complete + ' of ' + activeMissionCompletion.total + ' steps (' + activeMissionCompletion.percent + '%)'),
+                  h('progress', { value: activeMissionCompletion.complete, max: activeMissionCompletion.total, style: { width: '100%', height: 16 } })),
+                h('fieldset', { style: { margin: 0, padding: 12, border: '1px solid #3f6b82', borderRadius: 10 } },
+                  h('legend', { style: { color: '#fde68a', fontWeight: 800, padding: '0 5px' } }, 'Investigation checklist'),
+                  activeMission.steps.map(function (step) {
+                    return h('label', { key: step.id, style: { display: 'flex', alignItems: 'flex-start', gap: 8, padding: '7px 0', color: '#e2e8f0', fontSize: 12, lineHeight: 1.45 } },
+                      h('input', { type: 'checkbox', checked: !!activeMissionProgress[step.id], onChange: function (event) { saveMissionProgress(activeMission.id, step.id, event.target.checked); } }),
+                      step.label);
+                  })),
+                h('button', { type: 'button', onClick: function () { prepareMission(activeMission); }, style: Object.assign({}, primary, { marginTop: 13 }) },
+                  activeMission.workspace === 'compare' ? 'Prepare and open comparison maps' : 'Prepare and open analysis map'),
+                h('label', { style: { display: 'grid', gap: 6, marginTop: 15, color: '#e6fffb', fontSize: 12, fontWeight: 700 } }, 'Evidence response',
+                  h('span', { style: { color: '#a7c7d8', fontSize: 10, fontWeight: 400, lineHeight: 1.45 } }, activeMission.evidencePrompt),
+                  h('textarea', {
+                    value: missionResponses[activeMission.id] || '',
+                    onChange: function (event) { saveMissionResponse(activeMission.id, event.target.value); },
+                    rows: 6, placeholder: 'Claim... Evidence... Reasoning... Limitation...',
+                    style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 8, border: '1px solid #3f6b82', background: '#071827', color: '#fff', lineHeight: 1.5 }
+                  })),
+                h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 11 } },
+                  h('button', { type: 'button', onClick: function () { downloadMissionEvidence(activeMission); }, style: primary }, 'Download mission evidence report'),
+                  h('button', { type: 'button', onClick: function () { setTab('missions'); persist('gisTab', 'missions'); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Stay with mission guide'))),
+              h('aside', { 'aria-labelledby': 'gis-teacher-lens-heading', style: Object.assign({}, panel, { alignSelf: 'start' }) },
+                h('h2', { id: 'gis-teacher-lens-heading', style: { margin: '0 0 7px', color: '#86efac', fontSize: 15 } }, 'Teacher lens'),
+                h('p', { style: { color: '#cfe8f3', fontSize: 11, lineHeight: 1.55 } }, activeMission.teacherNote),
+                h('h3', { style: { color: '#67e8f9', fontSize: 12, margin: '13px 0 6px' } }, 'Curricular practices'),
+                h('ul', { style: { margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 11, lineHeight: 1.6 } },
+                  activeMission.practices.map(function (practice) { return h('li', { key: practice }, practice); })),
+                h('h3', { style: { color: '#67e8f9', fontSize: 12, margin: '13px 0 6px' } }, 'Quick evidence rubric'),
+                h('ol', { style: { margin: 0, paddingLeft: 18, color: '#dbeafe', fontSize: 11, lineHeight: 1.6 } },
+                  h('li', null, 'Names a defensible spatial pattern.'),
+                  h('li', null, 'Cites mapped or tabular evidence.'),
+                  h('li', null, 'Explains a method or spatial relationship.'),
+                  h('li', null, 'Names a meaningful limitation.')),
+                h('p', { style: { margin: '13px 0 0', padding: 9, borderLeft: '4px solid #f59e0b', background: '#2b2617', color: '#fde68a', fontSize: 10, lineHeight: 1.45 } },
+                  'The included values and simplified regions are for learning. Do not use them for public policy or resource-allocation decisions.'))));
+        }
+
         function projectionView() {
           var scale = 1 / Math.max(0.05, Math.cos(latitude * Math.PI / 180));
           var factor = projection === 'mercator' ? scale * scale : projection === 'equirectangular' ? scale : 1;
@@ -1260,7 +2173,7 @@
               'Mercator for local direction, equirectangular for simple coordinate grids, and equal-area for choropleth comparisons.'));
         }
 
-        var tabs = [['map', 'Map + layers'], ['import', 'Import data'], ['projection', 'Projection lab']];
+        var tabs = [['missions', 'Maine missions'], ['timeline', 'Change over time'], ['map', 'Map + layers'], ['compare', 'Compare + export'], ['import', 'Import data'], ['projection', 'Projection lab']];
         return h('div', { 'data-gis-studio': 'true', style: { minHeight: '100%', background: 'linear-gradient(155deg,#06131f,#0b2531 52%,#102332)', color: '#e2e8f0', padding: 16, boxSizing: 'border-box', fontFamily: 'Inter,system-ui,sans-serif' } },
           h('header', { style: { maxWidth: 1180, margin: '0 auto 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' } },
             h('div', null,
@@ -1272,7 +2185,7 @@
                 var active = tab === item[0];
                 return h('button', { key: item[0], type: 'button', onClick: function () { go(item[0]); }, 'aria-current': active ? 'page' : undefined, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (active ? '#5eead4' : '#36586b'), background: active ? '#0f766e' : '#102536', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, item[1]);
               }))),
-          h('main', { style: { maxWidth: 1180, margin: '0 auto' } }, tab === 'map' ? mapView() : tab === 'import' ? importView() : projectionView()),
+          h('main', { style: { maxWidth: 1180, margin: '0 auto' } }, tab === 'missions' ? missionView() : tab === 'timeline' ? timelineView() : tab === 'map' ? mapView() : tab === 'compare' ? comparisonView() : tab === 'import' ? importView() : projectionView()),
           h('footer', { style: { maxWidth: 1180, margin: '14px auto 0', color: '#8ba7b7', fontSize: 10, lineHeight: 1.5 } },
             'Learning data: density values are rounded approximations; the access index, practice polygons, and coastal guide are illustrative. Basemaps \u00A9 OpenStreetMap, Esri, and contributors. Official ecoregions \u00A9 Maine Natural Areas Program. Verify claims with authoritative data before making decisions.'));
       }

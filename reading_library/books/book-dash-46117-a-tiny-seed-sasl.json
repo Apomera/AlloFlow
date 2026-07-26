@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-46117-a-tiny-seed-sasl",
+  "title": "A Tiny Seed (SASL)",
+  "description": "In a village on the slopes of Mount Kenya, a little girl worked in the fields with her mother. She worried as she saw the big forests disappearing, but she knew the power of a tiny seed.",
+  "language": "South African Sign Language",
+  "langCode": "sgn",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Nature and looking after our planet",
+    "Powerful female characters"
+  ],
+  "authors": [
+    "Nicola Rijsdijk"
+  ],
+  "illustrators": [
+    "Maya Marshak"
+  ],
+  "contributors": [
+    {
+      "name": "Maya Marshak",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Nicola Rijsdijk",
+      "role": "Writer"
+    },
+    {
+      "name": "Tarryn-Anne Anderson",
+      "role": "Designer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/a-tiny-seed-sasl/",
+    "attributionUrl": "https://bookdash.org/books/a-tiny-seed-sasl/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=a-tiny-seed"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2025/11/a-tiny-seed_sasl-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2025/11/a-tiny-seed_sasl-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "In a village on the slopes of Mount Kenya, a little girl worked in the fields with her mother. She worried as she saw the big forests disappearing, but she knew the power of a tiny seed."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Maya Marshak (Illustrator); Nicola Rijsdijk (Writer); Tarryn-Anne Anderson (Designer)\n\nLanguage: South African Sign Language. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=a-tiny-seed"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 103
+  }
+}

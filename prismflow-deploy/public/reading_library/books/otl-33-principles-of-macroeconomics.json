@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-33-principles-of-macroeconomics",
+  "title": "Principles of Macroeconomics",
+  "description": "Recognizing that a course in economics may seem daunting to some students, we have tried to make the writing clear and engaging. Clarity comes in part from the intuitive presentation style, but we have also integrated a number of pedagogical features that we believe make learning economic concepts and principles easier and more fun. These features are very student-focused. The chapters themselves are written using a “modular” format. In particular, chapters generally consist of three main content sections that break down a particular topic into manageable parts. Each content section contains not only an exposition of the material at hand but also learning objectives, summaries, examples, and problems. Each chapter is introduced with a story to motivate the material and each chapter ends with a wrap-up and additional problems. Our goal is to encourage active learning by including many examples and many problems of different types. A tour of the features available for each chapter may give a better sense of what we mean: Start Up—Chapter introductions set the stage for each chapter with an example that we hope will motivate readers to study the material that follows. These essays, on topics such as the value of a college degree in the labor market or how policy makers reacted to a particular economic recession, lend themselves to the type of analysis explained in the chapter. We often refer to these examples later in the text to demonstrate the link between theory and reality. Learning Objectives—These succinct statements are guides to the content of each section. Instructors can use them as a snapshot of the important points of the section. After completing the section, students can return to the learning objectives to check if they have mastered the material.Heads Up!—These notes throughout the text warn of common errors and explain how to avoid making them. After our combined teaching experience of more than fifty years, we have seen the same mistakes made by many students. This feature provides additional clarification and shows students how to navigate possibly treacherous waters. Key Takeaways—These statements review the main points covered in each content section. Key Terms—Defined within the text, students can review them in context, a process that enhances learning. Try It! questions—These problems, which appear at the end of each content section and which are answered completely in the text, give students the opportunity to be active learners. They are designed to give students a clear signal as to whether they understand the material before they go on to the next topic. Cases in Point—These essays included at the end of each content section illustrate the influence of economic forces on real issues and real people. Unlike other texts that use boxed features to present interesting new material or newspaper articles, we have written each case ourselves to integrate them more clearly with the rest of the text. Summary—In a few paragraphs, the information presented in the chapter is pulled together in a way that allows for a quick review of the material.End-of-chapter concept and numerical problems—These are bountiful and are intended to check understanding, to promote discussion of the issues raised in the chapter, and to engage students in critical thinking about the material. Included are not only general review questions to test basic understanding but also examples drawn from the news and from results of economics research. Some have students working with real-world data.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Economics"
+  ],
+  "authors": [
+    "Open Textbook Library record"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Minnesota Libraries Publishing",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/principles-of-macroeconomics"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Recognizing that a course in economics may seem daunting to some students, we have tried to make the writing clear and engaging. Clarity comes in part from the intuitive presentation style, but we have also integrated a number of pedagogical features that we believe make learning economic concepts and principles easier and more fun. These features are very student-focused. The chapters themselves are written using a “modular” format. In particular, chapters generally consist of three main content sections that break down a particular topic into manageable parts. Each content section contains not only an exposition of the material at hand but also learning objectives, summaries, examples, and problems. Each chapter is introduced with a story to motivate the material and each chapter ends with a wrap-up and additional problems. Our goal is to encourage active learning by including many examples and many problems of different types. A tour of the features available for each chapter may give a better sense of what we mean: Start Up—Chapter introductions set the stage for each chapter with an example that we hope will motivate readers to study the material that follows. These essays, on topics such as the value of a college degree in the labor market or how policy makers reacted to a particular economic recession, lend themselves to the type of analysis explained in the chapter. We often refer to these examples later in the text to demonstrate the link between theory and reality. Learning Objectives—These succinct statements are guides to the content of each section. Instructors can use them as a snapshot of the important points of the section. After completing the section, students can return to the learning objectives to check if they have mastered the material.Heads Up!—These notes throughout the text warn of common errors and explain how to avoid making them. After our combined teaching experience of more than fifty years, we have seen the same mistakes made by many students. This feature provides additional clarification and shows students how to navigate possibly treacherous waters. Key Takeaways—These statements review the main points covered in each content section. Key Terms—Defined within the text, students can review them in context, a process that enhances learning. Try It! questions—These problems, which appear at the end of each content section and which are answered completely in the text, give students the opportunity to be active learners. They are designed to give students a clear signal as to whether they understand the material before they go on to the next topic. Cases in Point—These essays included at the end of each content section illustrate the influence of economic forces on real issues and real people. Unlike other texts that use boxed features to present interesting new material or newspaper articles, we have written each case ourselves to integrate them more clearly with the rest of the text. Summary—In a few paragraphs, the information presented in the chapter is pulled together in a way that allows for a quick review of the material.End-of-chapter concept and numerical problems—These are bountiful and are intended to check understanding, to promote discussion of the issues raised in the chapter, and to engage students in critical thinking about the material. Included are not only general review questions to test basic understanding but also examples drawn from the news and from results of economics research. Some have students working with real-world data."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2016."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 586
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "33",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

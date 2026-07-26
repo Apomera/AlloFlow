@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-21178-untitled-ti",
+  "title": "ሓርገፅን ከልብን",
+  "description": "ከልቢ ኣብ ደንደስ ሩባ እንቛቕሖ ረኺቡ ናብ ገዝኡ ወሰዶ። እታ ብዓልቲ እንቛቕሖ ሓርገፅ ምውሳዶም ምስ ፈለጠት እንታይ ከምትገብር ንትዓዘብ።",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "1",
+  "readingLevelLabel": "First words",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Candiru Enzikuru Mary"
+  ],
+  "illustrators": [
+    "Rob Owen"
+  ],
+  "translators": [
+    "Angesom Abadi"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Candiru Enzikuru Mary",
+      "role": "Author"
+    },
+    {
+      "name": "Angesom Abadi",
+      "role": "Translation"
+    },
+    {
+      "name": "Rob Owen",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Candiru Enzikuru Mary (Author); Angesom Abadi (Translation); Rob Owen (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "21178",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-578825bc66fec737",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/17149.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17139.png",
+      "text": "ሓደ መዓልቲ፣ ከልቢ ኣብ ደንደስ ሩባ እንቛቕሖ ረኺቡ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178#page=1",
+      "sourceDigest": "sha256:848f26bc6e6f90c765dd6b3e151241f7fc406aa6807402dabb970ea82bf841d6"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17140.png",
+      "text": "ከልቢ ዓሰርተ እንቛቕሖ ኣልዒሉ ኣብ ሻንጥኡ ኣቐመጠ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178#page=2",
+      "sourceDigest": "sha256:cf94503be055d34b9203637d585f6ec48b4747f28be1133620aa085aae116106"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17141.png",
+      "text": "ከልቢ ነተን እንቛቕሖ እናሞቐ ተንከባኸበን ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178#page=3",
+      "sourceDigest": "sha256:7224ebdd0dfd8233658b33273c1b7f7e56632669331deba636865fa65b61dda1"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17142.png",
+      "text": "“እንቛቕሖ ኣይርኣኻን?” ኢላ ሓርገፅ ንከልቢ ሓተተቶ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178#page=4",
+      "sourceDigest": "sha256:155e49627c3e35a86db3538e73abd9db68203bd866d8d0c40de8ed5bd6aac2c2"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17143.png",
+      "text": "ሓርገፅ ብዛዕባ እንቛቕሖኣ ንኹሎም እንስሳታት ሓተተት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178#page=5",
+      "sourceDigest": "sha256:760e45b5b5d4a6222fd14f21f0973d6c063491cf1dddb5f48c0201aaead674a4"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17144.png",
+      "text": "ድሓር እቶም እንቛቕሖ ሓደ ብሓደ ተጫጪሖም።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178#page=6",
+      "sourceDigest": "sha256:e897af1811cd75c7a47b8cd8c58578957c6ce55f103677eef820fc911fe1c51d"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17145.png",
+      "text": "ከልቢ ነቶም ኣናእሽቲ ሓርገፃት እኹል ምግቢ ክህቦም ኣይክኣለን።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178#page=7",
+      "sourceDigest": "sha256:71004157d1ec2e807d4a65b2ac92adb5c87823ccb236582c47a20095596790e3"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17146.png",
+      "text": "ሓደ መዓልቲ፣ ሓርገፅ ሓጎጭጎጭ ዝብል ናይ ኣናእሽቲ ሓርገፃት ከብዲ ሰምዐት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178#page=8",
+      "sourceDigest": "sha256:3e4202b58047aaa68e1eb2507be8234e78dce862e34d5380eb161b4593beccf2"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17147.png",
+      "text": "ሓርገፅ ናብ ውሽጢ ኣትያ ንከልቢ ብጭርኣ ወቒዓቶ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178#page=9",
+      "sourceDigest": "sha256:d03a10cb89d7bdfa82163a54fd67002da3ac68b305dddff3e7744844955109f9"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17148.png",
+      "text": "ሓርገፅ ንከልቢ እናተኸተለት ኣጓየየቶ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178#page=10",
+      "sourceDigest": "sha256:3662bdf6e179755df31a1b6d0c7b2789a985177f64c41457a60a98a1aaa836c8"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17149.png",
+      "text": "ከልቢ ጠጠው ኢሉ ንሓርገፅ \"ይቕረታ ግበርለይ\" በላ።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178#page=11",
+      "sourceDigest": "sha256:abf49628cb329043832f1bbee5def065e1c8a3dbf19cff71cbdf5b374db2bbc4"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/17150.png",
+      "text": "ሓርገፅ ይቕረ ኢላቶ ምስ ደቃ ናብ ምሕምባሳ ኣተወት።",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=21178#page=12",
+      "sourceDigest": "sha256:0966690483f5742cac26c83504b39e5a4748ccd2f6961c9ca52182b95950e543"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 83
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:ffff190c8a91c767ac5f93fd5b7b9b449e199017afbc4fddd4917fbffb13775b"
+  }
+}

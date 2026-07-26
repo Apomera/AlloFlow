@@ -1,0 +1,86 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-343-zanele-situ-my-story",
+  "title": "Zanele Situ: My Story",
+  "description": "As a young girl Zanele Situ was told that she would never walk again. Being in a wheelchair did not stop her. She worked and trained hard and became a winning athlete on the world stage. This is her story…",
+  "language": "English",
+  "langCode": "eng",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Heritage, diversity, and inclusivity",
+    "Let's play!",
+    "Powerful female characters"
+  ],
+  "authors": [
+    "Liz Sparg"
+  ],
+  "illustrators": [
+    "Jesse Breytenbach"
+  ],
+  "contributors": [
+    {
+      "name": "Andy Thesen",
+      "role": "Designer"
+    },
+    {
+      "name": "Jesse Breytenbach",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Liz Sparg",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/zanele-situ-my-story/",
+    "attributionUrl": "https://bookdash.org/books/zanele-situ-my-story/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=zanele-situ-my-story"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2014/10/zanele-situ-my-story_front-cover_20141003-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2014/10/zanele-situ-my-story_front-cover_20141003-600x600.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "As a young girl Zanele Situ was told that she would never walk again. Being in a wheelchair did not stop her. She worked and trained hard and became a winning athlete on the world stage. This is her story…"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Andy Thesen (Designer); Jesse Breytenbach (Illustrator); Liz Sparg (Writer)\n\nLanguage: English. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=zanele-situ-my-story"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 103
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alloflow.org/schemas/interoperability-bundle-v2.json",
+  "title": "AlloFlow Inquiry Interoperability Bundle",
+  "type": "object",
+  "required": ["format", "schemaVersion", "snapshotId", "exportedAt", "portfolio", "evidenceGraph", "webAnnotations", "cslJson", "roCrateMetadata"],
+  "properties": {
+    "format": { "const": "alloflow-inquiry-interoperability-bundle" },
+    "schemaVersion": { "const": 2 },
+    "snapshotId": { "type": "string" },
+    "exportedAt": { "type": "string", "format": "date-time" },
+    "portfolio": { "$ref": "alloflow-inquiry-portfolio.schema.json" },
+    "evidenceGraph": { "$ref": "alloflow-evidence-graph.schema.json" },
+    "webAnnotations": { "type": "object", "required": ["type", "items"], "properties": { "type": { "const": "AnnotationPage" }, "items": { "type": "array" } } },
+    "cslJson": { "type": "array" },
+    "roCrateMetadata": { "type": "object", "required": ["@context", "@graph"] }
+  }
+}

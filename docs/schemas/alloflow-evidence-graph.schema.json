@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alloflow.org/schemas/evidence-graph-v2.json",
+  "title": "AlloFlow Evidence Graph",
+  "type": "object",
+  "required": ["schemaVersion", "generatorVersion", "snapshotId", "generatedAt", "nodes", "edges", "diagnostics", "status"],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "generatorVersion": { "type": "string" },
+    "snapshotId": { "type": "string", "pattern": "^snapshot:" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
+    "edges": { "type": "array", "items": { "$ref": "#/$defs/edge" } },
+    "diagnostics": { "type": "array" },
+    "status": { "enum": ["ready", "review_recommended", "action_needed"] }
+  },
+  "$defs": {
+    "node": {
+      "type": "object",
+      "required": ["id", "type", "label"],
+      "properties": { "id": { "type": "string" }, "type": { "type": "string" }, "label": { "type": "string" }, "record": { "type": "object" } }
+    },
+    "edge": {
+      "type": "object",
+      "required": ["id", "from", "type", "to"],
+      "properties": {
+        "id": { "type": "string" }, "from": { "type": "string" }, "to": { "type": "string" },
+        "type": { "enum": ["supports", "complicates", "contradicts", "contextualizes", "derivedFrom", "requiresWarrant", "frames"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-204-literature-the-humanities-and-humanity",
+  "title": "Literature, the Humanities, and Humanity",
+  "description": "Literature, the Humanities, and Humanity attempts to make the study of literature more than simply another school subject that students have to take. At a time when all subjects seem to be valued only for their testability, this book tries to show the value of reading and studying literature, even earlier literature. It shows students, some of whom will themselves become teachers, that literature actually has something to say to them. Furthermore, it shows that literature is meant to be enjoyed, that, as the Roman poet Horace (and his Renaissance disciple Sir Philip Sidney) said, the functions of literature are to teach and to delight. The book will also be useful to teachers who want to convey their passion for literature to their students. After an introductory chapter that offers advice on how to read (and teach) literature, the book consists of a series of chapters that examine individual literary works ranging from The Iliad to Charles Dickens' Bleak House. These chapters can not substitute for reading the actual works. Rather they are intended to help students read those works. They are attempts to demystify the act of reading and to show that these works, whether they are nearly three thousand or less than two hundred years old, still have important things to say to contemporary readers.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Literature, Rhetoric, and Poetry"
+  ],
+  "authors": [
+    "Theodore L. Steinberg - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open SUNY",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/literature-the-humanities-and-humanity"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Literature, the Humanities, and Humanity attempts to make the study of literature more than simply another school subject that students have to take. At a time when all subjects seem to be valued only for their testability, this book tries to show the value of reading and studying literature, even earlier literature. It shows students, some of whom will themselves become teachers, that literature actually has something to say to them. Furthermore, it shows that literature is meant to be enjoyed, that, as the Roman poet Horace (and his Renaissance disciple Sir Philip Sidney) said, the functions of literature are to teach and to delight. The book will also be useful to teachers who want to convey their passion for literature to their students. After an introductory chapter that offers advice on how to read (and teach) literature, the book consists of a series of chapters that examine individual literary works ranging from The Iliad to Charles Dickens' Bleak House. These chapters can not substitute for reading the actual works. Rather they are intended to help students read those works. They are attempts to demystify the act of reading and to show that these works, whether they are nearly three thousand or less than two hundred years old, still have important things to say to contemporary readers."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2014."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 240
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "204",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

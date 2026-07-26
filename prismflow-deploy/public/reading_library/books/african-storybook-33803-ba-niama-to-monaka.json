@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-33803-ba-niama-to-monaka",
+  "title": "Ba niama to monaka",
+  "description": "Mobembo na libota na ngayi pona kokende kotala ba niama. (Lisapo na bandakisa oyo esalamaki na sanza ya motoba na mobu tuku mibale na zomi na libwa na tango ya bopemi ya mosala, na lisalisi ya Sophia town Community Psychological Services, na Johannesburg).",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Penuel K"
+  ],
+  "illustrators": [
+    "Penuel K"
+  ],
+  "translators": [
+    "Guillain Sompa, Theresa Nyemba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Penuel K",
+      "role": "Author"
+    },
+    {
+      "name": "Guillain Sompa, Theresa Nyemba",
+      "role": "Translation"
+    },
+    {
+      "name": "Penuel K",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Penuel K (Author); Guillain Sompa, Theresa Nyemba (Translation); Penuel K (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33803",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33803",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "33803",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-d1e72069d4905d23",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/85940108.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940106.png",
+      "text": "Oyo libota na ngayi. Noko na ngayi, mwana ya mama leki na ngayi, mama na ngayi, bandeko na ngayi mibale ya basi, (oyo tango inso balataka ndenge moko), ndeko na ngayi ya mobali, pe ngayi!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33803#page=1",
+      "sourceDigest": "sha256:d3a4a497bc252ab861f330a1aeffab03edffddb2cd3a0edf2bce3f8c7c12a4fd"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940107.png",
+      "text": "Oyo libota na ngai na mutuka ya monene pona kokende kotala ba niama. Ezalaki mama leki na ngai, mama na ngai, nkana na ngai ya mobali, bandeko na ngai mibale ya basi (oyo mbala inso balataka ndenge moko), na ngai!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33803#page=2",
+      "sourceDigest": "sha256:7d23ec8883472076910bba827ecec530453cab96d935f5b3842ddb629c71ec59"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940108.png",
+      "text": "Tomonaka ba niama tango tozalaka nakati ya bisi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33803#page=3",
+      "sourceDigest": "sha256:204ef29f74fc6ee3c918cd41087163979c2f75db46158029bcf7fd3f99597df3"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940109.png",
+      "text": "Tomonaka girafe.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33803#page=4",
+      "sourceDigest": "sha256:7f52eb49055d3ff243369d382aea2b24f61ec4ff02c2ca984d51d9b28594a259"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940110.png",
+      "text": "Tomonaka mboloko.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33803#page=5",
+      "sourceDigest": "sha256:5407702688109585ea283d88251a8a955784a8248651dfa1d7f01a13b15ebcb7"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940111.png",
+      "text": "Tomonaka nkosi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33803#page=6",
+      "sourceDigest": "sha256:18b9c06f5c8c034f2d6d561c06051723bed05fc7bef56689d995cbbb47926519"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940112.png",
+      "text": "Tomonaka nzoku. Bongo tosekakape tosekaka nzoku, pamba te...",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33803#page=7",
+      "sourceDigest": "sha256:5e2c163785aa038d80d406db05284381ca82ee796518e383fcb782eb4bd0a32a"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940113.png",
+      "text": "...nzoku wana asumbaka na nzete!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33803#page=8",
+      "sourceDigest": "sha256:e89a0eadeefac1edcb7f2c0df4723c7069bf4d0c97994d542025b2e31e9ea4e2"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 102
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:e9e42d8b8b6718eccb87018bd31c6cb8510891ff90aec96bc72ab297416385dc"
+  }
+}

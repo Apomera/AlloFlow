@@ -23,10 +23,20 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/molstar@4.9.0/build/viewer/molstar.css">
 <script>
 (function () {
-  var requested = new URLSearchParams(window.location.search).get('theme');
-  var theme = requested === 'light' || requested === 'contrast' ? requested : 'dark';
-  document.documentElement.setAttribute('data-theme', theme);
-  document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+  function applyAlloFlowTheme(value) {
+    var theme = value === 'light' || value === 'contrast' ? value : 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+    return theme;
+  }
+  window.applyAlloFlowTheme = applyAlloFlowTheme;
+  applyAlloFlowTheme(new URLSearchParams(window.location.search).get('theme'));
+  window.addEventListener('message', function (event) {
+    if (window.opener && event.source !== window.opener) return;
+    var data = event && event.data;
+    if (!data || data.type !== 'alloflow-theme-change') return;
+    applyAlloFlowTheme(data.theme);
+  });
 })();
 </script>
 <style>

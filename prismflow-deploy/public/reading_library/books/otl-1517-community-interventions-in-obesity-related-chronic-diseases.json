@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1517-community-interventions-in-obesity-related-chronic-diseases",
+  "title": "Community interventions in obesity-related chronic diseases",
+  "description": "The rate of obesity continues to climb in the United States in all age groups. National reports, including the Trust for America’s Health annual report State of Obesity: Better Policies for a Healthier America, highlight key findings and policy recommendations. The need to continue to work towards stabilization of the obesity epidemic could not be more important as consequences of this chronic disease can be dire, potentially affecting physical health with an increase in risk for chronic diseases including cardiovascular disease, type 2 diabetes and several types of cancer as well as potentially affecting behavioral health. Curbing the high rates of obesity is particularly of importance when considering the prevalence of childhood obesity, which is on the rise not only in the United States but is also increasing globally. Although there are certain risk factors such as genetics that are not modifiable in this group, there are many dietary, physical activity and environmental factors that are modifiable through lifestyle changes. This course will explore ways to address these lifestyle changes for children through adults with both federally- and NGO- based community interventions that are working towards combating overweight and obesity and how they aim to do so with a health equity lens in mind.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Medicine",
+    "Social Sciences"
+  ],
+  "authors": [
+    "Sherri M. Cirignano - Author / Sara A. Elnakib - Author / Karen Ensle - Author / Christine Zellers - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Rutgers University Libraries (RUcore)",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/community-interventions-in-obesity-related-chronic-diseases"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The rate of obesity continues to climb in the United States in all age groups. National reports, including the Trust for America’s Health annual report State of Obesity: Better Policies for a Healthier America, highlight key findings and policy recommendations. The need to continue to work towards stabilization of the obesity epidemic could not be more important as consequences of this chronic disease can be dire, potentially affecting physical health with an increase in risk for chronic diseases including cardiovascular disease, type 2 diabetes and several types of cancer as well as potentially affecting behavioral health. Curbing the high rates of obesity is particularly of importance when considering the prevalence of childhood obesity, which is on the rise not only in the United States but is also increasing globally. Although there are certain risk factors such as genetics that are not modifiable in this group, there are many dietary, physical activity and environmental factors that are modifiable through lifestyle changes. This course will explore ways to address these lifestyle changes for children through adults with both federally- and NGO- based community interventions that are working towards combating overweight and obesity and how they aim to do so with a health equity lens in mind."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 227
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1517",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

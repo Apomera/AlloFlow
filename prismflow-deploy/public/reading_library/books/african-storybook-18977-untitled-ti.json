@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-18977-untitled-ti",
+  "title": "ትርሓስ - ኾኸብ ተፃዋቲት እግሪ ኩዕሶ",
+  "description": "Andiswa really wants to play soccer with the school team, but the coach says that soccer is only for boys. Then Andiswa gets a chance to play at an important match and proves everyone wrong.",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "2",
+  "readingLevelLabel": "First sentences",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Eden Daniels"
+  ],
+  "illustrators": [
+    "Eden Daniels"
+  ],
+  "translators": [
+    "ኣንገሶም ኣባዲ፣ ጎይትኦም ከበደ"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Eden Daniels",
+      "role": "Author"
+    },
+    {
+      "name": "ኣንገሶም ኣባዲ፣ ጎይትኦም ከበደ",
+      "role": "Translation"
+    },
+    {
+      "name": "Eden Daniels",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY-NC 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/3.0/",
+  "attribution": "Eden Daniels (Author); ኣንገሶም ኣባዲ፣ ጎይትኦም ከበደ (Translation); Eden Daniels (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=18977",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=18977",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "18977",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution. This edition is restricted to noncommercial use."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY-NC 3.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-0711865f3d5f6e5b",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/4459.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/4460.png",
+      "text": "ትርሓስ ደቂ ተባዕትዮ ኩዕሶ እግሪ ክፃወቱ ሪኣ፤ ናብኣቶም ተሓዊሳ ክትፃወት ደልያ፡፡ ምስአቶም ተሓዊሳ ክትለማመድ ትክእል እንተኾይና ድማ ነቲ ኣሰልጣኒ ሓቲታቶ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=18977#page=1",
+      "sourceDigest": "sha256:0c69ff24e77a728d4221be3b3ba07a6dd592e56c983bbd3b2096f064da3ac471"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/4461.png",
+      "text": "እቲ አሰልጣኒ አእዳው አብ ሽምጡ ገይሩ፡፡ ''አብዚ ቤት ትምህርቲ ፀወታ እግሪ ኩዕሶ ንደቂ ተባዕትዮ ጥራሕ እዩ ክፃወቱ ተፈቂዱ'' ኢሉ መለሰላ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=18977#page=2",
+      "sourceDigest": "sha256:684c444c3094ba9d36c58dc3c955e5633bb9ed3a872c7b212c57a3c0564d3629"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/4462.png",
+      "text": "እቶም ደቂ ተባዕትዮ ንዓአ መርበብ ኩዕሶ ኸይዳ ንክትፃወት ነጊሮማ፡፡ ከምዚ እውን ኢሎም መርበብ ኩዕሶ ንደቂ ኣንስትዮ እግሪ ኩዕሶ ድማ ንደቂ ተባዕትዮ እዩ ምስበልዋ ትርሓስ ሓሪቃ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=18977#page=3",
+      "sourceDigest": "sha256:214b4bafda8fccc97a7fed87821ff5571df99b80ea39bee331af18d752e715c4"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/4463.png",
+      "text": "ኣብቲ ካልአይ መዓንቲ፤ እቲ ቤት ትምህርቲ ከቢድ ውድድር ፀወታ እግሪ ኩዕሶ ነይርዎ፡፡ እቲ አሰልጣኒ አብዚ ውድድር ብጣዕሚ እዩ ሓዚኑ ነይሩ ምክንያቱ ድማ እቲ ብሉፅ ተፃወቲኡ ብምሕማሙ፡፡.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=18977#page=4",
+      "sourceDigest": "sha256:e1940bd892a98217cafda8d42727b75f50205062775a9456cfd8d7147d49a3f8"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/4464.png",
+      "text": "ትርሓስ ናብቲ አሰልጣኒ ብፍጥነት ከይዳ ንኽትፃወት ንክፈቅደላ ለሚናቶ፡፡ እቲ አሰልጣኒ እንታይ ከም ዝውስን ርግፀኛ ኣይነበረን፡፡ ደሓር ግን ትርሓስ ናብቲ ቡድን ተሓዊሳ ንኽትፃወት ፈቂዱላ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=18977#page=5",
+      "sourceDigest": "sha256:a5fa533a04b4d25e97d622546bcf73c6467e2c0ce97713969df2ec20d5a65b38"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/4465.png",
+      "text": "እቲ ፀወታ ከቢድ ብምንባሩ ክሳብ ጊዜ ዕረፍቲ ምንም ጎል (ሽቶ) ክምዝገብ ኣይክአለን ነይሩ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=18977#page=6",
+      "sourceDigest": "sha256:3ee0c1a033567b4be2b6f230a0a296e0d874f81ebdc01fc1c41414a3b21d6c1d"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/4466.png",
+      "text": "ካብ ዕረፍቲ መልሲ ሓደ ተፃዋቲ እታ ኩዕሶ ናብ ትርሓስ ኣሕሊፍ ሂብዋ፡፡ ንሳ ብፍጥትን ናብ ጎል ገፅ ብምሕላፍ ብሓይሊ ብምውቃዕ ሽቶ አመዝጊባ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=18977#page=7",
+      "sourceDigest": "sha256:56842a42803cec631de0d91410fc0c2d375740c9e84f6fb094597047a2f525fe"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/4467.png",
+      "text": "እቶም ተመልከቲ ወሰን ዘይብሉ ሓጎስ ተሰመዖም፤ ካብዚ ዕለት ጀሚሩ አብቲ ቤት ትምህርቲ ንደቂ ኣንስትዮ ፀወታ እግሪ ኩዕሶ ተፈቂዱ፡፡",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=18977#page=8",
+      "sourceDigest": "sha256:e03b142c2578bebbdb33e7c024235370153c1a60894578d614223eca705caa55"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 166
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:b16fb7557652062488b6a8a6557498676eb34933f7dd9018e08174fccd49a779"
+  }
+}

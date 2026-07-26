@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1472-biomedical-engineering-lab-manual-volume-1",
+  "title": "Biomedical Engineering Lab Manual Volume 1",
+  "description": "The lab manual was written as the first installment that coincides with two lab courses taught at the University of Oklahoma (BME3171, BME3181). These courses are designed to provide Biomedical Engineering students with lab skills and experience in biomedical engineering research and clinical techniques. This manual is used with BME3171 Lab 1 and the following topics are covered in this lab manual; functional human models, musculoskeletal lever systems, bioimaging (ultrasound), bioelectricity (electromyography), & uni-axial testing.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology"
+  ],
+  "authors": [
+    "Sarah Breen - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SHAREOK",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/biomedical-engineering-lab-manual-volume-1"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The lab manual was written as the first installment that coincides with two lab courses taught at the University of Oklahoma (BME3171, BME3181). These courses are designed to provide Biomedical Engineering students with lab skills and experience in biomedical engineering research and clinical techniques. This manual is used with BME3171 Lab 1 and the following topics are covered in this lab manual; functional human models, musculoskeletal lever systems, bioimaging (ultrasound), bioelectricity (electromyography), & uni-axial testing."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2022."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 98
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1472",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

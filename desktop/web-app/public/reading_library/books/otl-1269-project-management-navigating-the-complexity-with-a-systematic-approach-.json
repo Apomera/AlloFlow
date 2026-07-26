@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1269-project-management-navigating-the-complexity-with-a-systematic-approach-",
+  "title": "Project Management: Navigating the Complexity with a Systematic Approach - 2nd Edition",
+  "description": "The world has become more complicated with the introduction and development of new technologies and methods, and novel risks such as Covid-19 pandemic. Competition has been tougher than it used to be. Organizations strive to keep up with the changes in the internal and external environment. In the light of unprecedented changes, project managers must be prepared in response to the demands from their organizations and key stakeholders like clients, customers and government agencies. This book covers the fundamentals of project management, and aims to guide undergraduate and graduate students to acquire the building blocks of project management. This book also includes Microsoft Project tutorials for project scope, schedule, resources, and cost, and monitoring and controlling.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Business - Management"
+  ],
+  "authors": [
+    "Abdullah Oguz - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "MSL Academic Endeavors",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/project-management-navigating-the-complexity-with-a-systematic-approach"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The world has become more complicated with the introduction and development of new technologies and methods, and novel risks such as Covid-19 pandemic. Competition has been tougher than it used to be. Organizations strive to keep up with the changes in the internal and external environment. In the light of unprecedented changes, project managers must be prepared in response to the demands from their organizations and key stakeholders like clients, customers and government agencies. This book covers the fundamentals of project management, and aims to guide undergraduate and graduate students to acquire the building blocks of project management. This book also includes Microsoft Project tutorials for project scope, schedule, resources, and cost, and monitoring and controlling."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 139
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1269",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

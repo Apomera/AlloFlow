@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1945-developmental-biology-laboratory-experiments-in-classical-and-experiment",
+  "title": "Developmental Biology Laboratory: Experiments in Classical and Experimental Embryology",
+  "description": "This work is designed primarily for use as a laboratory manual in college-level Embryology and Developmental Biology courses and as a companion to developmental biology textbooks. It explores several model animal systems and a variety of the scientific approaches that have been used to study them. It includes both classical embryological observations and manipulations, and more modern techniques, including organ culture and the disruption of developmental processes through pharmacology. The experiments described in the lab manual are designed for 2- to 3-hour laboratory periods. The introductory protocols in each chapter can be adapted to Introductory Biology or Cell Biology courses, while the later protocols are more suited to an advanced course in Developmental Biology. The manual also includes extensive illustrations, preparation guides and appendices to aid the instructor in setting up each lab.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology"
+  ],
+  "authors": [
+    "Judith A. Cebra-Thomas - Author / Matthew E. Smith - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "The Pennsylvania Alliance for Design of Open Textbooks (PA-ADOPT)",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/developmental-biology-laboratory-experiments-in-classical-and-experimental-embryology"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This work is designed primarily for use as a laboratory manual in college-level Embryology and Developmental Biology courses and as a companion to developmental biology textbooks. It explores several model animal systems and a variety of the scientific approaches that have been used to study them. It includes both classical embryological observations and manipulations, and more modern techniques, including organ culture and the disruption of developmental processes through pharmacology. The experiments described in the lab manual are designed for 2- to 3-hour laboratory periods. The introductory protocols in each chapter can be adapted to Introductory Biology or Cell Biology courses, while the later protocols are more suited to an advanced course in Developmental Biology. The manual also includes extensive illustrations, preparation guides and appendices to aid the instructor in setting up each lab."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 156
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1945",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

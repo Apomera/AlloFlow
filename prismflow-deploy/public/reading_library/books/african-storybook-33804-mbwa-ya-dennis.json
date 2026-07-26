@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-33804-mbwa-ya-dennis",
+  "title": "Mbwa ya Dennis",
+  "description": "Mbwa ya sika ya Dennis asubeli moninga na ye na sapato naye ya boti! (Lisapo na bandakisa oyo esalemaki na sanza ya motoba ya mobu tuku mibale na zomi na libwa na tango ya bopemi ya mosala, na lisalisi ya Sophia town Community Psychological Services, na Johannesburg).",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Merdi K"
+  ],
+  "illustrators": [
+    "Merdi K"
+  ],
+  "translators": [
+    "Guillain Sompa, Theresa Nyemba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Merdi K",
+      "role": "Author"
+    },
+    {
+      "name": "Guillain Sompa, Theresa Nyemba",
+      "role": "Translation"
+    },
+    {
+      "name": "Merdi K",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Merdi K (Author); Guillain Sompa, Theresa Nyemba (Translation); Merdi K (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33804",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33804",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "33804",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-41c651b9032258bb",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/85940115.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940114.png",
+      "text": "Moninga na ngayi Dennis oyo afandaka na ekuke oyo elandi abengaka ngayi. \"Yaka kotala mbwa na ngayi ya sika,\" Dennis alobaka.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33804#page=1",
+      "sourceDigest": "sha256:92b6445ac6db5b54115944ad971bb4c16f056fede0d866e3c390ce16cb78f23b"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940115.png",
+      "text": "Mbwa azalaki na madodo ya moyindo pe moto monene. Abangisaki ngayi! Nayokaki mabe ke akokaki ko suwa ngayi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33804#page=2",
+      "sourceDigest": "sha256:fb6715ab7bbef59f2888451f893fc27edccb2e978d46a1d2a59435a55885a9a2"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940116.png",
+      "text": "To zuaka mbwa ya sika pe to ko kendeki kotambola, Dennis na ngayi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33804#page=3",
+      "sourceDigest": "sha256:59f80eea183043e33ffdbe967f278bc6ac7081b675ea0d6fc4d04df7162fc7fa"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940117.png",
+      "text": "Mbwa aningisaki mokila na ye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33804#page=4",
+      "sourceDigest": "sha256:969a29b9f1d1bdbea46254b583c56fd8ba72467308e33f513a4a4ce810023f9f"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940118.png",
+      "text": "Agangaki!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33804#page=5",
+      "sourceDigest": "sha256:34b524f70d469ffd80ef8a1276c749243c7f16aaa7bf24ed207487d89fd9bcb0"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940119.png",
+      "text": "Pe asubelaka ngayi! Na sapato na ngayi ya boti! Yuuuk!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33804#page=6",
+      "sourceDigest": "sha256:37e3eff8cca72fa82bdaebfd222c5a81eddf8f133c37d1434e9b0106e7a979df"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940120.png",
+      "text": "Dennis azuaka eteni ya lokasa pe apangusaka masuba.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33804#page=7",
+      "sourceDigest": "sha256:a53b95f1c0dfb7f29e1bc3d98ec256db9ba1f4619eee755980794eec6e3ee2e4"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940121.png",
+      "text": "Namonaka ete Dennis azalaka moninga malamu epayi na ngayi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33804#page=8",
+      "sourceDigest": "sha256:454bc867a7d20c76d3e0d38b55c75f60b1ca0ce6ee4b68769026810d6dbe05b6"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 85
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:bccc6885a03a74fc1721bb868840c0d3461bd9041336871401180f69d4c493b5"
+  }
+}

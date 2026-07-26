@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1136-teaching-early-and-elementary-stem",
+  "title": "Teaching Early and Elementary STEM",
+  "description": "This Open Access Educational textbook, \"Teaching Early and Elementary STEM\", was written to support pre-service early childhood and elementary teachers in their journey to become facilitators of science, technology, engineering, and math, or “STEM,” and \"integrated STEM\" in their future classrooms. Students who read and use this text will deepen their understanding of “STEM” and “integrated STEM,” learn what early childhood and elementary students need to know and be able to do in relation to STEM, and understand ways to create activity plans and implement current research-based approaches to teaching and pedagogy. This text arose out of our Early/Elementary STEM Collaboration project, which started in 2017 with the intention of increasing the quality of teacher preparation in STEM across early childhood and elementary education. The team is composed of math and science education professors, classroom in-service teachers, and pre-service teachers in pre-school through fifth grade. We are driven by the values of collaboration, strengths-based approaches to teaching and learning, constructivist philosophy of teaching and learning, and applied STEM experiences to increase access and equity. Our model of preparing pre-service teachers has been published elsewhere in more detail (Robertson, Nivens, & Lange, 2019). We built this open access product to include the following: 1) completely new content that includes input from our team as well as examples of integrated STEM learning experiences; 2) adaptations of existing resources, and; 3) compilations of existing free resources (e.g., Next Generation Science Standards).",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education - Curriculum & Instruction",
+    "Education"
+  ],
+  "authors": [
+    "Alissa A, Lange - Author / Laura Robertson - Author / Jamie Price - Author / Amie Craven - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "East Tennessee State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/teaching-early-and-elementary-stem"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This Open Access Educational textbook, \"Teaching Early and Elementary STEM\", was written to support pre-service early childhood and elementary teachers in their journey to become facilitators of science, technology, engineering, and math, or “STEM,” and \"integrated STEM\" in their future classrooms. Students who read and use this text will deepen their understanding of “STEM” and “integrated STEM,” learn what early childhood and elementary students need to know and be able to do in relation to STEM, and understand ways to create activity plans and implement current research-based approaches to teaching and pedagogy. This text arose out of our Early/Elementary STEM Collaboration project, which started in 2017 with the intention of increasing the quality of teacher preparation in STEM across early childhood and elementary education. The team is composed of math and science education professors, classroom in-service teachers, and pre-service teachers in pre-school through fifth grade. We are driven by the values of collaboration, strengths-based approaches to teaching and learning, constructivist philosophy of teaching and learning, and applied STEM experiences to increase access and equity. Our model of preparing pre-service teachers has been published elsewhere in more detail (Robertson, Nivens, & Lange, 2019). We built this open access product to include the following: 1) completely new content that includes input from our team as well as examples of integrated STEM learning experiences; 2) adaptations of existing resources, and; 3) compilations of existing free resources (e.g., Next Generation Science Standards)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2021."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 261
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1136",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -664,7 +664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       dataRef.current = d;
       var upd = function(key, val) { ctx.update('echoTrainer', key, val); };
       var updMulti = function(obj) { ctx.updateMulti('echoTrainer', obj); };
-      var addToast = ctx.addToast; var announceToSR = ctx.announceToSR; var awardXP = ctx.awardXP; var setStemLabTool = ctx.setStemLabTool; var ArrowLeft = ctx.icons.ArrowLeft; var isDark = ctx.isDark; var theme = ctx.theme;
+      var addToast = ctx.addToast; var announceToSR = ctx.announceToSR; var awardXP = ctx.awardXP; var setStemLabTool = ctx.setStemLabTool; var ArrowLeft = ctx.icons.ArrowLeft; var isContrast = !!ctx.isContrast; var isDark = !!ctx.isDark || isContrast; var theme = ctx.theme;
 
       var envType = d.envType || 'simple_room';
       var seed = d.seed || 42;

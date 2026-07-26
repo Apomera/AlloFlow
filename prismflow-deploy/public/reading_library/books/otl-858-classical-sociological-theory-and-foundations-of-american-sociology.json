@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-858-classical-sociological-theory-and-foundations-of-american-sociology",
+  "title": "Classical Sociological Theory and Foundations of American Sociology",
+  "description": "There are a few major themes that come up over and over again during the course of classical sociological theory’s development. All three classical theorists were writing at a time when sociology was a new and emerging discipline. This new discipline was called forth by momentous social changes taking place in European (and American) society during this time period. These changes were related to the rise of capitalism, industrialization, and new political representation for the majority of people (or, at least, a desire for such by many). Calls for socialism emerged as a response to recognition of new social divisions. Each of the three theorists you will read here weighed in on these historical changes, theorizing the contours and dynamics of this new “modern” society.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences - Sociology"
+  ],
+  "authors": [
+    "Allison L. Hurst - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Oregon State University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/classical-sociological-theory-and-foundations-of-american-sociology-hurst"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "There are a few major themes that come up over and over again during the course of classical sociological theory’s development. All three classical theorists were writing at a time when sociology was a new and emerging discipline. This new discipline was called forth by momentous social changes taking place in European (and American) society during this time period. These changes were related to the rise of capitalism, industrialization, and new political representation for the majority of people (or, at least, a desire for such by many). Calls for socialism emerged as a response to recognition of new social divisions. Each of the three theorists you will read here weighed in on these historical changes, theorizing the contours and dynamics of this new “modern” society."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 148
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "858",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

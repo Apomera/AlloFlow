@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1099-intermediate-algebra",
+  "title": "Intermediate Algebra",
+  "description": "Intermediate Algebra is a textbook for students who have some acquaintance with the basic notions of variables and equations, negative numbers, and graphs, although we provide a \"Toolkit\" to help the reader refresh any skills that may have gotten a little rusty. In this book we journey farther into the subject, to explore a greater variety of topics including graphs and modeling, curve-fitting, variation, exponentials and logarithms, and the conic sections. We use technology to handle data and give some instructions for using a graphing calculator, but these can easily be adapted to any other graphing utility.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Algebra",
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "Katherine Yoshiwara - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bruce Yoshiwara",
+  "license": "CC0 1.0 catalog metadata · linked title: Free Documentation License (GNU)",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/intermediate-algebra-2020"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Free Documentation License (GNU)"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Intermediate Algebra is a textbook for students who have some acquaintance with the basic notions of variables and equations, negative numbers, and graphs, although we provide a \"Toolkit\" to help the reader refresh any skills that may have gotten a little rusty. In this book we journey farther into the subject, to explore a greater variety of topics including graphs and modeling, curve-fitting, variation, exponentials and logarithms, and the conic sections. We use technology to handle data and give some instructions for using a graphing calculator, but these can easily be adapted to any other graphing utility."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Free Documentation License (GNU). Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 123
+  },
+  "linkedContentLicense": "Free Documentation License (GNU)",
+  "externalRecordId": "1099",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

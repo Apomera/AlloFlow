@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1491-basic-english-for-teaching-korean",
+  "title": "Basic English for Teaching Korean 수업이 참 쉬워지는 한국어 교실 기초 영어",
+  "description": "The book is titled \"Basic English for Teaching Korean,\" and its primary audience consists of Korean teachers whose native language is not English and who plan to work in an English-speaking country. Given the increasing global demand for learning the Korean language, many individuals aspire to become Korean instructors. Among these future Korean educators, there are those who lack confidence in their English speaking skills and seek guidance on effectively teaching the Korean language using clear and fluent English. They are also interested in acquiring the appropriate terminology and expressions for conveying aspects of the Korean language and culture when instructing in the classroom. Within this book, we will offer a comprehensive, step-by-step guide on how to teach the Korean language in English. \"수업이 참 쉬워지는 한국어 교실 기초 영어\"는 영어 실력이 부족하다고 느끼시거나 영어에 자신감이 없으 신 한국어 선생님들이 수업에 필요한 영어를 쉽게 익힐 수 있도록 구성한 책 입니다. 생소한 영어가 아닌, 우리가 알고 있는 영어를 최대한 활용 할 수 있도록 핵심적인 내용을 간결하게 담는 데 초점을 두었습니다. 책은 한 학기의 흐름에 맞추어 ‘수업 소개-수업 진행-수업 마무리’의 세 파트로 구분됩니다. 각 파트를 이루는 챕터들은 세부 상황으로 구 분하여 핵심 단어와 표현, 응용 문장과 대화를 수록했습니다. 설레는 학기의 시작부터 마음 따뜻해지는 학기 마무리까지 이 책 한 권으로 선생님들께 도움을 드릴 수 있다면 좋겠습니다.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages"
+  ],
+  "authors": [
+    "Kyuin Kim - Author / Sehee Park - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "The University of Sheffield",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/basic-english-for-teaching-korean"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The book is titled \"Basic English for Teaching Korean,\" and its primary audience consists of Korean teachers whose native language is not English and who plan to work in an English-speaking country. Given the increasing global demand for learning the Korean language, many individuals aspire to become Korean instructors. Among these future Korean educators, there are those who lack confidence in their English speaking skills and seek guidance on effectively teaching the Korean language using clear and fluent English. They are also interested in acquiring the appropriate terminology and expressions for conveying aspects of the Korean language and culture when instructing in the classroom. Within this book, we will offer a comprehensive, step-by-step guide on how to teach the Korean language in English. \"수업이 참 쉬워지는 한국어 교실 기초 영어\"는 영어 실력이 부족하다고 느끼시거나 영어에 자신감이 없으 신 한국어 선생님들이 수업에 필요한 영어를 쉽게 익힐 수 있도록 구성한 책 입니다. 생소한 영어가 아닌, 우리가 알고 있는 영어를 최대한 활용 할 수 있도록 핵심적인 내용을 간결하게 담는 데 초점을 두었습니다. 책은 한 학기의 흐름에 맞추어 ‘수업 소개-수업 진행-수업 마무리’의 세 파트로 구분됩니다. 각 파트를 이루는 챕터들은 세부 상황으로 구 분하여 핵심 단어와 표현, 응용 문장과 대화를 수록했습니다. 설레는 학기의 시작부터 마음 따뜻해지는 학기 마무리까지 이 책 한 권으로 선생님들께 도움을 드릴 수 있다면 좋겠습니다."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 236
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1491",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

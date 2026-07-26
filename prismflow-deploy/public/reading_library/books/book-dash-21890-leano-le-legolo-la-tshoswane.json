@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-21890-leano-le-legolo-la-tshoswane",
+  "title": "Leano le Legolo la Tshoswane",
+  "description": "Eno ke kgang ka tshoswanenyana e e nang le leano le legolo, le ka fa go rata go buisa ga yone go thusitseng ka teng.",
+  "language": "Setswana",
+  "langCode": "tsn",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Let's learn!"
+  ],
+  "authors": [
+    "Candice Dingwall"
+  ],
+  "illustrators": [
+    "Steven McKimmie"
+  ],
+  "contributors": [
+    {
+      "name": "Steven McKimmie",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Telri Stoop",
+      "role": "Designer"
+    },
+    {
+      "name": "Candice Dingwall",
+      "role": "Writer"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/leano-le-legolo-la-tshoswane/",
+    "attributionUrl": "https://bookdash.org/books/leano-le-legolo-la-tshoswane/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=little-ants-big-plan"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/02/little-ants-big-plan_tn_20201202_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/02/little-ants-big-plan_tn_20201202_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Eno ke kgang ka tshoswanenyana e e nang le leano le legolo, le ka fa go rata go buisa ga yone go thusitseng ka teng."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Steven McKimmie (Illustrator); Telri Stoop (Designer); Candice Dingwall (Writer)\n\nLanguage: Setswana. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=little-ants-big-plan"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 88
+  }
+}

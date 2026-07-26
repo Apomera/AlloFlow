@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-36340-khoho-le-lefokololi",
+  "title": "Khoho le Lefokololi",
+  "description": "Khoho le Lefokololi e ne e le metsoalle e hlolisanang. Ka tsatsi le leng eaba Khoho e koatela ho hlolisoa ka hore e ne e entse ntho e fosahetseng.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "3",
+  "readingLevelLabel": "First paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Winny Asara"
+  ],
+  "illustrators": [
+    "Magriet Brink"
+  ],
+  "translators": [
+    "Khothatso Ranoosi, Marion Drew"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Winny Asara",
+      "role": "Author"
+    },
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Translation"
+    },
+    {
+      "name": "Magriet Brink",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Winny Asara (Author); Khothatso Ranoosi, Marion Drew (Translation); Magriet Brink (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "36340",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-eae808b10bf85c3f",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/8983.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8983.png",
+      "text": "Khoho le Lefokololi e ne e le metsoalle. Empa ba ne ba lula ba hlolisana. Tsatsi le leng ba qeta ka ho ba bapala bolo ea maoto ho bona hore na ke mang eo e leng sebapali se hloahloa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340#page=1",
+      "sourceDigest": "sha256:07f3daa3691005a3717dfb520fb94ea1895492e3822acdf3ee07263044f1095f"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8989.png",
+      "text": "Ba ile ba ea lebaleng la papali ea bolo ba qala ho bapala. Khoho e ne e le lebelo, empa Lefokololi le le lebelo ho feta Kholo haholo. Khoho e rahela hole, empa Lefokololi le rahela holenyana ho mo feta. Khoho ea qalella ho koata.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340#page=2",
+      "sourceDigest": "sha256:ba0417e8af5e88c193342aa4765b305d19a919148ce91336c4ba3e16172fc796"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8995.png",
+      "text": "Ba ile ba nka qeto ea ho raha lipenalete. Lefokololi ea ba lona la pele la ho ba sethibathibane. Khoho ea hlaba ntlha e le 'ngoe feela. Eaba eba nako ea khoho ea ho ba sethibathibane.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340#page=3",
+      "sourceDigest": "sha256:e279514a55b8585bd06b22b9710e9854e9debafe86923330348459d8a75f433d"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8986.png",
+      "text": "Lefokololi le ile la raha bolo la hlaba ntlha. Lefokololi le ile la tiribola khoho la ba la hlaba ntlha. Lefokololi le ile la heta bolo ka hlooho la hlaba ntlha. Lefokololi le hlabile lintlha tse hlano!",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340#page=4",
+      "sourceDigest": "sha256:be44d06bf8f2ee480ff31ced25d7a205c3faf9fa29e2c5ed15d6352b200fb5ff"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8984.png",
+      "text": "Khoho e ne e halefile hore e hlotsoe ke Lefokololi. E ne e hlotsoe hampe. Lefokololi le ile la qalella ho ts'eha hobane motsoalle oa lona a ne a koatile haholo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340#page=5",
+      "sourceDigest": "sha256:b0604bbce9e92ee15fe50f54d92a168e9cd5a01f8002f435721fbe5093587a76"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8985.png",
+      "text": "Khoho e ne e halefile hoo e bileng ea ba ea kobola Lefokololi ea le koenya.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340#page=6",
+      "sourceDigest": "sha256:52db3d0d564690176fc08a27b9c5135cc38a21fc5782f45b6e321e648593e72c"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8987.png",
+      "text": "Ea re ha khoho e tsamaea ho ea hae, ea kopana le 'M'e oa Lefokololi. M'e oa Lefokololi a botsa Khoho, \"Ha o so bone ngoana'ka?\" Khoho ea se mo arabele. 'M'e oa Lefokololi o ne a ts'oenyehile.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340#page=7",
+      "sourceDigest": "sha256:99f7772fd666aee572c312a826bf9b86b25943630ad89359bb7ee6078b99b96d"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8991.png",
+      "text": "Ea ba 'M'e oa Lefokololi o utloa lentsoe le lesesane. \"Nthuse 'M'e!\" ha utloahala lentsoe le llang. 'M'e oa Lefokololi a qamaka a mamelisa ka hloko. Lentsoe le ne le tsoa ka hara Khoho.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340#page=8",
+      "sourceDigest": "sha256:c10cb1c35c7d4c92ad49450bf5d044625244a58c309b6b7245d33f9c37a6e68d"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8990.png",
+      "text": "'M'e oa Lefokololi a hoelehetsa, \"Sebelisa matla a hao a ikhethileng ngoana'ka!\" Mafokololi a ka nts'a monko o mobe le tatso e mpe haholo. Khoho ea qalella ho kula.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340#page=9",
+      "sourceDigest": "sha256:e95ad6339be2b62043fe6795a29d3b17ea8bf7c6da3f531423bcd3108a8cf73a"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8993.png",
+      "text": "Khoho ea bohla. Ea ba e ea koenya, e ea ts'oela. Ea thimola, ea ba e ea hohlola. Tatso ea Lefokololi e ne e le e mpe hona hoo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340#page=10",
+      "sourceDigest": "sha256:80624e086d2c1dc2eb859d76faf85f94355fab39c7bbb5a938628c47bc6341e6"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8992.png",
+      "text": "Khoho e ile ea hohlola hona hoo ebileng ea hlatsa Lefokololi leo le neng le le ka mpeng ea eona. 'M'e oa Lefokololi le ngoana oa hae ba ngoagoarela sefate ba hloella ho ea ipata.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340#page=11",
+      "sourceDigest": "sha256:5ef5293e3926566843daf1b1c5e60cb4b5a0d4a6ab66b58acbe88c500e3ec4e9"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/8994.png",
+      "text": "Ho tloha ka eona nako eo, likhoho le mafokololi esale e le lira.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=36340#page=12",
+      "sourceDigest": "sha256:64071c77304d196d786b987069fcf2e704645f918af72511c5996a04705f17cf"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 382
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:d9a43c532303d627f021d29f946e0754b0965fcba5baa6ce5f1842fa5ba5abb7"
+  }
+}

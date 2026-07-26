@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-college-physics-2e-catalog",
+  "title": "OpenStax College Physics 2e",
+  "description": "A source card for the OpenStax College Physics 2e textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Physics",
+    "Textbooks",
+    "Motion",
+    "Energy"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "CC BY-NC-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/college-physics-2e",
+    "attributionUrl": "https://openstax.org/details/books/college-physics-2e"
+  },
+  "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Professor_louise_sherwood_mcdowell_in_wellesley_college_physics_lab_ca_1909-20.jpg/960px-Professor_louise_sherwood_mcdowell_in_wellesley_college_physics_lab_ca_1909-20.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax College Physics 2e covers motion, forces, energy, waves, electricity, magnetism, optics, atomic physics, and nuclear physics with applied examples."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for older students who need structured physics explanations, quantitative examples, and diagrams before or after hands-on investigations."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters or figures."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 60
+  },
+  "usagePolicy": {
+    "access": "link-out",
+    "mirror": true,
+    "adapt": true,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": true,
+    "auditedAt": "2026-07-23",
+    "auditSource": "https://help.openstax.org/s/article/Licensing-information-of-OpenStax-textbooks",
+    "aiPermissionRequired": true,
+    "reason": "This book may not be used in the training of large language models or otherwise be ingested into large language models or generative AI offerings without OpenStax's permission.",
+    "aiRestrictionSource": "https://openstax.org/details/books/college-physics-2e"
+  },
+  "licenseAudit": {
+    "auditedAt": "2026-07-23",
+    "source": "https://help.openstax.org/s/article/Licensing-information-of-OpenStax-textbooks",
+    "note": "OpenStax attribution, noncommercial, and share-alike requirements apply to adaptations. Generative-AI ingestion requires OpenStax permission."
+  }
+}

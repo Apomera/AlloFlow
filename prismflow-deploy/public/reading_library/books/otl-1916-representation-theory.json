@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1916-representation-theory",
+  "title": "Representation Theory",
+  "description": "This volume offers a fresh and modern introduction to one of abstract algebra’s key topics. Guiding readers through the transition between structure theory and representation theory, this textbook explores how algebraic objects like groups and rings act as symmetries of other structures. Using the accessible yet powerful language of category theory, the book reimagines standard approaches to topics such as modules and algebras in a way that unlocks modern treatments of more advanced topics such as quiver representations and even representations of Hopf algebras and categories. Aimed at undergraduate students with prior exposure to linear algebra and basic group theory, the book introduces categories early and uses them throughout, providing a cohesive framework that mirrors current mathematical research. Though technically sophisticated, it also includes examples and exercises designed to develop intuition and understanding. Grabowski’s inclusion of computational tools such as SageMath offers a valuable and traditionally underdeveloped bridge between abstract theory and hands-on exploration. This is a uniquely valuable guide for students ready to stretch their understanding of the subject’s conceptual depth and evolving frontiers.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Algebra"
+  ],
+  "authors": [
+    "Jan Grabowski - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Book Publishers",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/representation-theory"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This volume offers a fresh and modern introduction to one of abstract algebra’s key topics. Guiding readers through the transition between structure theory and representation theory, this textbook explores how algebraic objects like groups and rings act as symmetries of other structures. Using the accessible yet powerful language of category theory, the book reimagines standard approaches to topics such as modules and algebras in a way that unlocks modern treatments of more advanced topics such as quiver representations and even representations of Hopf algebras and categories. Aimed at undergraduate students with prior exposure to linear algebra and basic group theory, the book introduces categories early and uses them throughout, providing a cohesive framework that mirrors current mathematical research. Though technically sophisticated, it also includes examples and exercises designed to develop intuition and understanding. Grabowski’s inclusion of computational tools such as SageMath offers a valuable and traditionally underdeveloped bridge between abstract theory and hands-on exploration. This is a uniquely valuable guide for students ready to stretch their understanding of the subject’s conceptual depth and evolving frontiers."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 198
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1916",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

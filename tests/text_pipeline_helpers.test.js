@@ -242,3 +242,196 @@ describe('generateBibliographyString', () => {
     expect(r).toContain('have not been independently verified'); // every path carries the caveat now
   });
 });
+
+describe('processGrounding deterministic support placement', () => {
+  const source = (uri, title = 'Source') => ({ web: { uri, title } });
+  const support = (segment, groundingChunkIndices) => ({ segment, groundingChunkIndices });
+
+  it('does not scan a support into the following same-line sentence', () => {
+    const text = 'Claim one. Claim two.';
+    const segmentText = 'Claim one.';
+    const result = TPH.processGrounding(text, {
+      groundingChunks: [source('https://example.edu/one')],
+      groundingSupports: [support({
+        partIndex: 0,
+        startIndex: 0,
+        endIndex: Buffer.byteLength(segmentText, 'utf8'),
+        text: segmentText,
+      }, [0])],
+    }, 'Links Only', false, false);
+
+    expect(result).toBe('Claim one. [⁽¹⁾](https://example.edu/one) Claim two.');
+  });
+
+  it('honors partIndex and UTF-8 byte offsets for emoji and accented text', () => {
+    const part0 = 'Preface 😀. ';
+    const part1 = 'Café is warm. Next sentence.';
+    const segmentText = 'Café is warm.';
+    const metadata = {
+      __textParts: [{ text: part0 }, { text: part1 }],
+      groundingChunks: [source('https://example.edu/cafe')],
+      groundingSupports: [support({
+        partIndex: 1,
+        startIndex: 0,
+        endIndex: Buffer.byteLength(segmentText, 'utf8'),
+        text: segmentText,
+      }, [0])],
+    };
+
+    expect(TPH.processGrounding(part0 + part1, metadata, 'Links Only', false, false))
+      .toBe('Preface 😀. Café is warm. [⁽¹⁾](https://example.edu/cafe) Next sentence.');
+  });
+
+  it('accepts aligned text parts through the optional sixth argument', () => {
+    const parts = ['First part. ', 'Second part.'];
+    const segmentText = 'Second part.';
+    const metadata = {
+      groundingChunks: [source('https://example.edu/second')],
+      groundingSupports: [support({
+        partIndex: 1,
+        startIndex: 0,
+        endIndex: Buffer.byteLength(segmentText, 'utf8'),
+        text: segmentText,
+      }, [0])],
+    };
+    expect(TPH.processGrounding(parts.join(''), metadata, 'Links Only', false, false, parts))
+      .toBe('First part. Second part. [⁽¹⁾](https://example.edu/second)');
+  });
+
+  it('skips mismatched segment text instead of searching for a duplicate phrase', () => {
+    const text = 'Repeated claim. Repeated claim.';
+    const metadata = {
+      groundingChunks: [source('https://example.edu/repeated')],
+      groundingSupports: [support({
+        startIndex: 0,
+        endIndex: Buffer.byteLength('Repeated claim.', 'utf8'),
+        text: 'Different claim.',
+      }, [0])],
+    };
+    expect(TPH.processGrounding(text, metadata, 'Links Only', false, false)).toBe(text);
+  });
+
+  it('preserves original chunk identity through filtering and keeps bibliography numbering aligned', () => {
+    const text = 'Supported fact.';
+    const metadata = {
+      groundingChunks: [
+        source('https://youtube.com/watch?v=rejected', 'Rejected video'),
+        source('https://example.edu/accepted', 'Accepted article'),
+      ],
+      groundingSupports: [support({
+        startIndex: 0,
+        endIndex: Buffer.byteLength(text, 'utf8'),
+        text,
+      }, [1])],
+    };
+    const result = TPH.processGrounding(text, metadata);
+    expect(result).toContain('[⁽²⁾](https://example.edu/accepted)');
+    expect(result).toContain('2. [Accepted article](https://example.edu/accepted)');
+    expect(result).not.toContain('Rejected video');
+    expect(result).not.toContain('1. [Accepted article]');
+  });
+
+  it('does not fabricate paragraph citations when grounding supports are absent', () => {
+    const text = 'First paragraph.\n\nSecond paragraph keeps [Source 1].';
+    const metadata = { groundingChunks: [source('https://example.edu/consulted', 'Consulted source')] };
+    const result = TPH.processGrounding(text, metadata);
+    expect(result.startsWith(text)).toBe(true);
+    expect(result.slice(0, text.length)).toBe(text);
+    expect(result).toContain('[Source 1]');
+    expect(result).not.toContain('[⁽¹⁾]');
+    expect(result).toContain('1. [Consulted source](https://example.edu/consulted)');
+  });
+});
+
+describe('normalizeCitationPlacement deterministic clusters', () => {
+  const one = '[⁽¹⁾](https://a.test/path_(one))';
+  const two = '[⁽²⁾](https://b.test/two)';
+
+  it('uses one space and no comma or semicolon between adjacent citations', () => {
+    expect(TPH.normalizeCitationPlacement(`Fact ${one}, ${two}.`)).toBe(`Fact. ${one} ${two}`);
+    expect(TPH.normalizeCitationPlacement(`Fact ${one}; ${two}.`)).toBe(`Fact. ${one} ${two}`);
+  });
+
+  it('is idempotent and never creates comma-period or semicolon-period artifacts', () => {
+    const once = TPH.normalizeCitationPlacement(`Fact ${one}, ${two}.`);
+    expect(TPH.normalizeCitationPlacement(once)).toBe(once);
+    expect(once).not.toContain(',.');
+    expect(once).not.toContain(';.');
+  });
+
+  it('does not alter fenced code, Markdown hard breaks, or unrelated repeated spaces', () => {
+    const input = `\`\`\`md\nCode ${one}, ${two}.  \n\`\`\`\nOutside  repeated  spaces.  \nFact ${one}, ${two}.`;
+    const result = TPH.normalizeCitationPlacement(input);
+    expect(result).toContain(`Code ${one}, ${two}.  `);
+    expect(result).toContain('Outside  repeated  spaces.  \n');
+    expect(result).toContain(`Fact. ${one} ${two}`);
+  });
+});
+
+describe('reference structure helpers', () => {
+  it.each([
+    '# Source Text References',
+    '## Accuracy Check References',
+    '### Verified Sources',
+    '#### Referenced Sources',
+    '##### Sources',
+    '###### References',
+    '# Bibliography',
+    '# R\u00e9f\u00e9rences',
+    '## Sources du texte',
+    '### Referencias',
+    '#### Quellen',
+    '## Works Cited',
+  ])('recognizes the case-insensitive 1-6 hash header %s', (header) => {
+    const mixedCase = header.replace(/[A-Za-z]/g, (char, index) => index % 2 ? char.toUpperCase() : char.toLowerCase());
+    const split = TPH.splitReferencesFromBody(`Body.\n\n${mixedCase}\n\n1. [A](https://a.test)`);
+    expect(split.body).toBe('Body.');
+    expect(split.references).toContain(mixedCase);
+  });
+
+  it('keeps the bilingual delimiter and English body outside an earlier reference block', () => {
+    const text = 'Hola.\n\n### References\n\n1. [Fuente](https://fuente.test)\n\n--- ENGLISH TRANSLATION ---\n\nHello.';
+    const split = TPH.splitReferencesFromBody(text);
+    expect(split.body).toBe('Hola.\n\n--- ENGLISH TRANSLATION ---\n\nHello.');
+    expect(split.references).toContain('[Fuente](https://fuente.test)');
+    expect(split.references).not.toContain('ENGLISH TRANSLATION');
+    expect(split.references).not.toContain('Hello.');
+  });
+
+  it('parses balanced title brackets and URL parentheses without dropping duplicate entries or numbers', () => {
+    const refs = '### References\n\n4. [Study [2026]](https://example.test/path_(v2))\n7. [Study [2026]](https://example.test/path_(v2))';
+    const items = TPH.parseReferenceItems(refs);
+    expect(items).toHaveLength(2);
+    expect(items.map(item => item.num)).toEqual(['4', '7']);
+    expect(items[0].title).toBe('Study [2026]');
+    expect(items[0].url).toBe('https://example.test/path_(v2)');
+  });
+});
+
+describe('citation conservation ledger', () => {
+  it('records exact balanced-URL occurrences and ignores examples in fenced code', () => {
+    const citation = '[⁽¹²⁾](https://example.test/path_(v2))';
+    const text = `Use ${citation}.\n\n\`\`\`md\nIgnore ${citation}.\n\`\`\``;
+    const ledger = TPH.extractCitationLedger(text);
+    expect(ledger.occurrences).toHaveLength(1);
+    expect(ledger.occurrences[0]).toMatchObject({ number: '12', url: 'https://example.test/path_(v2)' });
+    expect(Object.keys(ledger.byKey)).toHaveLength(1);
+  });
+
+  it('reports missing, extra, and conflicting number-to-URL mappings', () => {
+    const original = 'A [⁽¹⁾](https://a.test). B [⁽²⁾](https://b.test).';
+    const candidate = 'A [⁽¹⁾](https://a.test). B [⁽²⁾](https://changed.test). C [⁽³⁾](https://c.test).';
+    const report = TPH.validateCitationConservation(original, candidate);
+    expect(report.valid).toBe(false);
+    expect(report.missing).toContainEqual({ number: '2', url: 'https://b.test', count: 1 });
+    expect(report.extra).toContainEqual({ number: '2', url: 'https://changed.test', count: 1 });
+    expect(report.extra).toContainEqual({ number: '3', url: 'https://c.test', count: 1 });
+    expect(report.conflictingMappings.map(item => item.number)).toEqual(expect.arrayContaining(['2', '3']));
+  });
+
+  it('accepts formatting-only citation movement when the exact occurrence multiset is conserved', () => {
+    const original = 'Fact [⁽¹⁾](https://a.test).';
+    const candidate = 'Fact. [⁽¹⁾](https://a.test)';
+    expect(TPH.validateCitationConservation(original, candidate).valid).toBe(true);
+  });
+});

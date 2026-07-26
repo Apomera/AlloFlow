@@ -214,7 +214,7 @@ describe('Integrated scan-to-cell procedure', () => {
     expect(html).toContain('Use Retractor without drawing');
     expect(html).toContain('Direct control:');
     expect(html).toContain('Gesture replay and coaching');
-    expect(html).toContain('aria-keyshortcuts="Enter Space ArrowUp ArrowDown"');
+    expect(html).toContain('aria-keyshortcuts="Enter Space ArrowUp ArrowDown [ ] F"');
     expect(html).toContain('Pressure 5 / 10');
     expect(html).toContain('Blade approach angle 45°');
     expect(html).not.toContain('data-anatomy-model-shell="true"');
@@ -227,7 +227,7 @@ describe('Integrated scan-to-cell procedure', () => {
     expect(planning).toContain('data-procedure-planning-scan="true"');
     expect(planning).toContain('Planning slice 58 / 100');
     expect(planning).toContain('Lock scan plan');
-    expect(planning).toContain('synthetic thoracic target');
+    expect(planning).toContain('Case: Central target');
 
     const prep = renderTool('anatomy', { anatomy: { _activeTab: 'procedure', procedure: { stage: 1, planLocked: true, timeoutConfirmed: true, sterilePrep: true, eyeProtection: true } } });
     expect(prep).toContain('Preparation checkpoint');
@@ -284,7 +284,7 @@ describe('Integrated scan-to-cell procedure', () => {
     const anatomySource = fs.readFileSync(ANATOMY_PATHS[0], 'utf8');
     expect(anatomySource).toContain("next.cell = Object.assign({}, next.cell || {}, { mode: 'microdissection'");
     expect(anatomySource).toContain("actionLog: procedure.actionLog.concat([entry]).slice(-14)");
-    expect(anatomySource).toContain("if (!collected && depth >= 66 && exposure >= 50 && bleeding <= 35) stage = 4");
+    expect(anatomySource).toContain("if (!collected && complication === 'none' && depth >= caseMeta.requiredDepth && exposure >= 50 && bleeding <= 35) stage = 4");
   });
 });
 describe('Procedure direct manipulation and replay', () => {
@@ -366,5 +366,564 @@ describe('Procedure direct manipulation and replay', () => {
     expect(source).toContain('canvas._procedureStroke.length > 96');
     expect(source).toContain('state.reducedVisuals ? 0');
     expect(source).toContain("impact < 60 ? '#fb7185'");
+  });
+});
+describe('Procedure tissue realism and recoverable model events', () => {
+  it('maps depth to distinct tissue resistance and measures segment proximity', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    expect(pure.tissueResponse(0)).toMatchObject({ id: 'skin', resistance: 38 });
+    expect(pure.tissueResponse(12)).toMatchObject({ id: 'adipose', resistance: 18 });
+    expect(pure.tissueResponse(32)).toMatchObject({ id: 'fascia', resistance: 82 });
+    expect(pure.tissueResponse(50)).toMatchObject({ id: 'muscle', resistance: 58 });
+    expect(pure.tissueResponse(80)).toMatchObject({ id: 'target', resistance: 44 });
+    expect(pure.distanceToHazard([{ x: 0.2, y: 0.55 }, { x: 0.5, y: 0.55 }], 0.36, 0.55)).toBe(0);
+    expect(pure.distanceToHazard([{ x: 0.1, y: 0.1 }, { x: 0.2, y: 0.2 }], 0.69, 0.64)).toBeGreaterThan(0.6);
+  });
+
+  it('detects a vessel event, resolves it with a bounded model gesture, and restores it with undo', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const initial = { stage: 3, incisionDepth: 60, exposure: 55, bleeding: 8, tissueDamage: 3, tool: 'scalpel', actions: 2 };
+    const event = pure.applyStroke(initial, { id: 'vessel-hit', tool: 'scalpel', points: [
+      { x: 0.36, y: 0.45, pressure: 0.5, time: 1000 },
+      { x: 0.36, y: 0.66, pressure: 0.5, time: 1400 },
+    ] });
+    expect(event).toMatchObject({ complication: 'vessel_bleed', hazardEvents: 1 });
+    expect(event.vesselIntegrity).toBeLessThan(100);
+    expect(event.bleeding).toBeGreaterThan(initial.bleeding);
+    expect(event.complicationLog.at(-1)).toMatchObject({ type: 'vessel_bleed', resolved: false });
+    expect(event.strokes.at(-1).metrics.vesselDistance).toBe(0);
+
+    const restored = pure.undoStroke(event);
+    expect(restored).toMatchObject({ complication: 'none', hazardEvents: 0, vesselIntegrity: 100, bleeding: 8 });
+    expect(restored.complicationLog).toEqual([]);
+
+    const resolved = pure.applyStroke({ ...event, tool: 'cautery' }, { id: 'controlled-cautery', tool: 'cautery', points: [
+      { x: 0.34, y: 0.54, pressure: 0.5, time: 1800 },
+      { x: 0.38, y: 0.56, pressure: 0.5, time: 2200 },
+    ] });
+    expect(resolved.complication).toBe('none');
+    expect(resolved.complicationSeverity).toBe(0);
+    expect(resolved.complicationLog.at(-1)).toMatchObject({ type: 'vessel_bleed', resolved: true });
+    expect(resolved.feedback).toContain('resolved');
+  });
+
+  it('models nerve contact, tissue tear, thermal spread, and specimen compression as distinct events', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const nerve = pure.applyStroke({ stage: 3, incisionDepth: 60, exposure: 55, tool: 'scalpel' }, { tool: 'scalpel', points: [
+      { x: 0.69, y: 0.5, pressure: 0.45, time: 1000 }, { x: 0.69, y: 0.7, pressure: 0.45, time: 1400 },
+    ] });
+    expect(nerve.complication).toBe('nerve_contact');
+    expect(nerve.nerveIntegrity).toBeLessThan(100);
+
+    const tear = pure.applyStroke({ stage: 3, incisionDepth: 70, exposure: 20, tool: 'retractor' }, { tool: 'retractor', points: [
+      { x: 0.25, y: 0.52, pressure: 0.9, time: 1000 }, { x: 0.75, y: 0.52, pressure: 0.9, time: 1500 },
+    ] });
+    expect(tear.complication).toBe('tissue_tear');
+    expect(tear.tearLevel).toBeGreaterThan(50);
+
+    const thermal = pure.applyStroke({ stage: 3, incisionDepth: 70, exposure: 55, tool: 'cautery' }, { tool: 'cautery', points: [
+      { x: 0.5, y: 0.38, pressure: 0.9, time: 1000 }, { x: 0.5, y: 0.48, pressure: 0.9, time: 1500 },
+    ] });
+    expect(thermal.complication).toBe('thermal_spread');
+    expect(thermal.thermalLoad).toBeGreaterThan(0);
+
+    const crushed = pure.applyStroke({ stage: 4, incisionDepth: 70, exposure: 65, bleeding: 10, tool: 'forceps' }, { tool: 'forceps', points: [
+      { x: 0.5, y: 0.68, pressure: 0.9, time: 1000 }, { x: 0.57, y: 0.78, pressure: 0.9, time: 1500 },
+    ] });
+    expect(crushed).toMatchObject({ complication: 'specimen_crush', specimenCollected: false });
+    expect(crushed.sampleIntegrity).toBeLessThan(100);
+  });
+
+  it.each(ANATOMY_PATHS)('renders deformable tissue feedback, anatomy guides, and checkpoint recovery from %s', (filePath) => {
+    loadTool(filePath, 'anatomy');
+    const html = renderTool('anatomy', { anatomy: { _activeTab: 'procedure', procedure: {
+      stage: 3, incisionDepth: 62, exposure: 60, bleeding: 52, tool: 'cautery', showHazards: true,
+      vesselIntegrity: 58, nerveIntegrity: 92, complication: 'vessel_bleed', complicationSeverity: 68, hazardEvents: 1,
+      strokes: [{ id: 'v1', tool: 'scalpel', points: [{ x: 0.36, y: 0.45, pressure: 0.5, time: 1000 }, { x: 0.36, y: 0.66, pressure: 0.5, time: 1400 }], before: { complication: 'none' } }],
+      complicationLog: [{ id: 'hazard-1', type: 'vessel_bleed', severity: 68, resolved: false, label: 'The gesture intersected the highlighted synthetic vessel.' }],
+    } } });
+    expect(html).toContain('data-procedure-tissue-response="true"');
+    expect(html).toContain('Live tissue response');
+    expect(html).toContain('Muscle · directional stretch');
+    expect(html).toContain('Resistance</dt><dd class="font-black text-slate-900">58%');
+    expect(html).toContain('Vessel integrity</dt><dd class="font-black text-slate-900">58%');
+    expect(html).toContain('Hide anatomy guides');
+    expect(html).toContain('data-procedure-complication="vessel_bleed"');
+    expect(html).toContain('Synthetic vessel-source event');
+    expect(html).toContain('Restore previous checkpoint');
+    expect(html).toContain('data-procedure-event-history="true"');
+  });
+
+  it('draws deformation, hazards, and instrument-following state without mutating inputs', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const noop = () => {};
+    const context = { save: noop, restore: noop, clearRect: noop, fillRect: noop, fillText: noop, beginPath: noop, closePath: noop, ellipse: noop, fill: noop, stroke: noop, moveTo: noop, lineTo: noop, arc: noop, setLineDash: noop };
+    const input = { stage: 3, tool: 'retractor', incisionDepth: 62, exposure: 60, complication: 'tissue_tear', complicationSeverity: 64, showHazards: true, strokes: [{ id: 'r1', tool: 'retractor', points: [{ x: 0.3, y: 0.5, pressure: 0.82, time: 1 }, { x: 0.7, y: 0.5, pressure: 0.82, time: 2 }] }] };
+    const snapshot = JSON.stringify(input);
+    const result = pure.draw(context, 760, 440, input);
+    expect(result).toMatchObject({ tissue: 'muscle', resistance: 58, complication: 'tissue_tear', hazardsVisible: true });
+    expect(result.deformation).toBeGreaterThan(0);
+    expect(JSON.stringify(input)).toBe(snapshot);
+  });
+
+  it('keeps model-event state bounded and exposes the realism contracts in source', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const complicationLog = Array.from({ length: 15 }, (_, index) => ({ id: String(index), type: 'vessel_bleed', label: 'event ' + index }));
+    const normalized = pure.normalize({ complication: 'forged', vesselIntegrity: -8, nerveIntegrity: 500, thermalLoad: 999, tearLevel: -4, complicationLog });
+    expect(normalized).toMatchObject({ complication: 'none', vesselIntegrity: 0, nerveIntegrity: 100, thermalLoad: 100, tearLevel: 0 });
+    expect(normalized.complicationLog).toHaveLength(8);
+    const source = fs.readFileSync(ANATOMY_PATHS[0], 'utf8');
+    expect(source).toContain('function registerComplication');
+    expect(source).toContain('vesselDistance <= 0.06');
+    expect(source).toContain('nerveDistance <= 0.055');
+    expect(source).toContain('state.exposure * 0.22');
+    expect(source).toContain('drawAnatomyProcedureInstrument');
+  });
+});
+describe('Procedure case variation and optical field feedback', () => {
+  it('normalizes deterministic cases and scores each case against its own planning slice', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    expect(pure.getCase('standard')).toMatchObject({ label: 'Central target', planSlice: 58, requiredDepth: 66 });
+    expect(pure.getCase('lateral')).toMatchObject({ label: 'Lateral target', planSlice: 44, requiredDepth: 68 });
+    expect(pure.getCase('deep')).toMatchObject({ label: 'Deep target', planSlice: 72, requiredDepth: 72 });
+    expect(pure.getCase('forged')).toMatchObject({ id: 'standard' });
+    expect(pure.normalize({ caseId: 'forged', illumination: 'unsafe', showLoupe: true })).toMatchObject({ caseId: 'standard', illumination: 'standard', showLoupe: true });
+    expect(pure.evaluate({ caseId: 'deep', planLocked: true, planSlice: 72 }).planning).toBe(20);
+    expect(pure.evaluate({ caseId: 'deep', planLocked: true, planSlice: 58 }).planning).toBeLessThan(20);
+  });
+
+  it('shifts hazard detection and collection depth with the selected synthetic case', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const lateralEvent = pure.applyStroke({ caseId: 'lateral', stage: 3, incisionDepth: 65, exposure: 55, tool: 'scalpel' }, { tool: 'scalpel', points: [
+      { x: 0.42, y: 0.48, pressure: 0.45, time: 1000 }, { x: 0.42, y: 0.68, pressure: 0.45, time: 1500 },
+    ] });
+    expect(lateralEvent.complication).toBe('vessel_bleed');
+    expect(lateralEvent.strokes.at(-1).metrics.vesselDistance).toBe(0);
+    const forcepsStroke = { tool: 'forceps', points: [{ x: 0.48, y: 0.74, pressure: 0.4, time: 1000 }, { x: 0.54, y: 0.84, pressure: 0.4, time: 1500 }] };
+    const tooShallow = pure.applyStroke({ caseId: 'deep', stage: 4, incisionDepth: 70, exposure: 65, bleeding: 8, tool: 'forceps' }, forcepsStroke);
+    expect(tooShallow.specimenCollected).toBe(false);
+    expect(tooShallow.feedback).toContain('target depth');
+    expect(pure.applyStroke({ caseId: 'deep', stage: 4, incisionDepth: 72, exposure: 65, bleeding: 8, tool: 'forceps' }, forcepsStroke)).toMatchObject({ stage: 5, specimenCollected: true });
+  });
+
+  it('derives visibility from field conditions and renders case and optical controls in both copies', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    expect(pure.visibility({ exposure: 70, bleeding: 5, illumination: 'focused' }).label).toBe('Clear');
+    expect(pure.visibility({ exposure: 40, bleeding: 28, illumination: 'standard' }).label).toBe('Workable');
+    expect(pure.visibility({ exposure: 15, bleeding: 70, thermalLoad: 50, complication: 'vessel_bleed', illumination: 'soft' })).toMatchObject({ score: 0, label: 'Obscured' });
+    ANATOMY_PATHS.forEach((filePath) => {
+      loadTool(filePath, 'anatomy');
+      const planning = renderTool('anatomy', { anatomy: { _activeTab: 'procedure', procedure: { stage: 0, caseId: 'deep', planSlice: 72 } } });
+      expect(planning).toContain('data-procedure-case-selector="true"');
+      expect(planning).toContain('Advanced · fibrotic · slice 72');
+      expect(planning).toContain('Case: Deep target');
+      const working = renderTool('anatomy', { anatomy: { _activeTab: 'procedure', procedure: { stage: 3, caseId: 'lateral', incisionDepth: 62, exposure: 60, bleeding: 20, illumination: 'focused', showLoupe: true } } });
+      expect(working).toContain('data-procedure-optics="true"');
+      expect(working).toContain('Lateral target synthetic layered tissue model');
+      expect(working).toContain('Visibility</dt>');
+      expect(working).toContain('Hide 2× view');
+      expect(working).toMatch(/aria-pressed="true"[^>]*>Focused<\/button>/);
+    });
+  });
+
+  it('returns case, visibility, and loupe telemetry without mutation and exposes source contracts', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const noop = () => {};
+    const context = { save: noop, restore: noop, clearRect: noop, fillRect: noop, fillText: noop, beginPath: noop, closePath: noop, ellipse: noop, fill: noop, stroke: noop, moveTo: noop, lineTo: noop, arc: noop, setLineDash: noop };
+    const state = { caseId: 'deep', stage: 3, tool: 'forceps', incisionDepth: 72, exposure: 65, bleeding: 8, illumination: 'focused', showLoupe: true, showHazards: true };
+    const snapshot = JSON.stringify(state);
+    expect(pure.draw(context, 760, 440, state)).toMatchObject({ caseId: 'deep', visibilityLabel: 'Clear', loupe: true, hazardsVisible: true });
+    expect(JSON.stringify(state)).toBe(snapshot);
+    const source = fs.readFileSync(ANATOMY_PATHS[0], 'utf8');
+    expect(source).toContain('var ANATOMY_PROCEDURE_CASES');
+    expect(source).toContain('depth >= caseMeta.requiredDepth');
+    expect(source).toContain('anatomyProcedureStrokeDistance(stroke.points, caseMeta.targetX, caseMeta.targetY)');
+    expect(source).toContain("state.viewZoom.toFixed(1)");
+  });
+});
+describe('Procedure coordination, challenge mode, and repeat practice', () => {
+  it('normalizes bounded coordination settings and attempt history', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const attempts = Array.from({ length: 9 }, (_, index) => ({ id: 'a' + index, score: index * 20, caseId: index % 2 ? 'deep' : 'forged', mode: index % 2 ? 'challenge' : 'guided', integrity: 120, hazards: -2, actions: 1001 }));
+    const state = pure.normalize({ assistTool: 'unsafe', practiceMode: 'unsafe', toolChanges: -4, coordinationUses: 1001, hintUses: 3.8, attempts });
+    expect(state).toMatchObject({ assistTool: 'none', practiceMode: 'guided', toolChanges: 0, coordinationUses: 999, hintUses: 4 });
+    expect(state.attempts).toHaveLength(5);
+    expect(state.attempts[0]).toMatchObject({ id: 'a4', caseId: 'standard', score: 80, integrity: 100, hazards: 0, actions: 999 });
+  });
+
+  it('applies retractor and suction assistance as real coordinated effects and restores them with undo', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const retractorAssist = pure.applyStroke({ stage: 3, incisionDepth: 60, exposure: 20, bleeding: 12, tool: 'scalpel', assistTool: 'retractor' }, { tool: 'scalpel', points: [
+      { x: 0.5, y: 0.48, pressure: 0.4, time: 1000 }, { x: 0.5, y: 0.6, pressure: 0.4, time: 1500 },
+    ] });
+    expect(retractorAssist.exposure).toBeGreaterThan(20);
+    expect(retractorAssist.coordinationUses).toBe(1);
+    expect(retractorAssist.strokes.at(-1).metrics).toMatchObject({ assistTool: 'retractor' });
+    expect(retractorAssist.strokes.at(-1).metrics.coordinationBenefit).toContain('exposure');
+    expect(retractorAssist.feedback).toContain('Coordinated assist');
+    expect(pure.undoStroke(retractorAssist)).toMatchObject({ exposure: 20, coordinationUses: 0 });
+
+    const suctionAssist = pure.applyStroke({ stage: 3, incisionDepth: 70, exposure: 20, bleeding: 50, tool: 'retractor', assistTool: 'suction' }, { tool: 'retractor', points: [
+      { x: 0.38, y: 0.55, pressure: 0.45, time: 1000 }, { x: 0.62, y: 0.55, pressure: 0.45, time: 1500 },
+    ] });
+    expect(suctionAssist.bleeding).toBeLessThan(50);
+    expect(suctionAssist.coordinationUses).toBe(1);
+    expect(suctionAssist.strokes.at(-1).metrics.coordinationBenefit).toContain('fluid');
+  });
+
+  it('derives an objective board and accounts for coordination, switches, and hints in efficiency', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const objectives = pure.objectives({ caseId: 'standard', planLocked: true, planSlice: 58, timeoutConfirmed: true, sterilePrep: true, eyeProtection: true, incisionDepth: 68, tissueDamage: 8, exposure: 60, bleeding: 10, coordinationUses: 2, specimenCollected: true, sampleIntegrity: 90 });
+    expect(objectives).toHaveLength(6);
+    expect(objectives.every((item) => item.complete)).toBe(true);
+    const efficient = pure.evaluate({ actions: 8, coordinationUses: 4, toolChanges: 4, hintUses: 0 });
+    const inefficient = pure.evaluate({ actions: 8, coordinationUses: 0, toolChanges: 12, hintUses: 8 });
+    expect(efficient.efficiency).toBe(15);
+    expect(inefficient.efficiency).toBeLessThan(efficient.efficiency);
+  });
+
+  it.each(ANATOMY_PATHS)('renders the two-hand tray, challenge hint gate, objectives, and comparisons from %s', (filePath) => {
+    loadTool(filePath, 'anatomy');
+    const html = renderTool('anatomy', { anatomy: { _activeTab: 'procedure', procedure: {
+      stage: 3, practiceMode: 'challenge', showHazards: false, assistTool: 'suction', tool: 'scalpel', incisionDepth: 62, exposure: 48, bleeding: 28, actions: 2,
+      attempts: [{ id: 'a1', score: 72, caseId: 'standard', mode: 'guided', integrity: 88, hazards: 1, actions: 9 }],
+      strokes: [{ id: 's1', tool: 'scalpel', points: [{ x: 0.5, y: 0.3, pressure: 0.4, time: 1000 }, { x: 0.5, y: 0.6, pressure: 0.4, time: 1500 }], metrics: { precision: 90, steadiness: 92, meanPressure: 0.4, control: 91, quality: 91, pathAngle: 90, speed: 0.6, recommendation: 'Preserve the controlled path.' } }],
+    } } });
+    expect(html).toContain('data-procedure-practice-mode="challenge"');
+    expect(html).toContain('data-procedure-instrument-tray="true"');
+    expect(html).toContain('aria-label="Active procedure instrument"');
+    expect(html).toContain('aria-label="Assisting procedure instrument"');
+    expect(html).toMatch(/aria-pressed="true"[^>]*>Suction assist/);
+    expect(html).toContain('data-procedure-objectives="true"');
+    expect(html).toContain('Use an assisting instrument effectively');
+    expect(html).toContain('data-procedure-reveal-hint="true"');
+    expect(html).not.toContain('data-procedure-coach="visible"');
+    expect(html).toContain('data-procedure-attempt-history="true"');
+    expect(html).toContain('Best 72/100');
+    expect(html).toContain('Archive attempt and reset');
+  });
+
+  it('renders the assisting instrument and exposes coordination telemetry without mutation', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const noop = () => {};
+    const context = { save: noop, restore: noop, clearRect: noop, fillRect: noop, fillText: noop, beginPath: noop, closePath: noop, ellipse: noop, fill: noop, stroke: noop, moveTo: noop, lineTo: noop, arc: noop, setLineDash: noop };
+    const state = { stage: 3, tool: 'scalpel', assistTool: 'retractor', coordinationUses: 3, incisionDepth: 62, exposure: 55, bleeding: 12 };
+    const snapshot = JSON.stringify(state);
+    expect(pure.draw(context, 760, 440, state)).toMatchObject({ assistTool: 'retractor', coordinationUses: 3 });
+    expect(JSON.stringify(state)).toBe(snapshot);
+    const source = fs.readFileSync(ANATOMY_PATHS[0], 'utf8');
+    expect(source).toContain("state.assistTool === 'retractor'");
+    expect(source).toContain("state.assistTool === 'suction'");
+    expect(source).toContain("'data-procedure-instrument-tray': 'true'");
+    expect(source).toContain("'data-procedure-objectives': 'true'");
+  });
+});
+describe('Procedure camera control and tissue behavior', () => {
+  it('normalizes bounded camera, elastic, and compression state', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    expect(pure.normalize({ viewFocus: 'unsafe', viewZoom: 9, focusLock: true, elasticTension: -4, compressionLevel: 500 }))
+      .toMatchObject({ viewFocus: 'instrument', viewZoom: 3, focusLock: true, elasticTension: 0, compressionLevel: 100 });
+    expect(pure.normalize({ viewFocus: 'nerve', viewZoom: 0.2 }))
+      .toMatchObject({ viewFocus: 'nerve', viewZoom: 1 });
+  });
+
+  it('models retraction tension, unsupported recoil, assisted exposure, and forceps compression', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const retracted = pure.applyStroke({ stage: 3, incisionDepth: 70, exposure: 20, tool: 'retractor' }, { tool: 'retractor', points: [
+      { x: 0.34, y: 0.52, pressure: 0.5, time: 1000 }, { x: 0.68, y: 0.52, pressure: 0.5, time: 1500 },
+    ] });
+    expect(retracted.elasticTension).toBeGreaterThan(0);
+    const released = pure.applyStroke({ ...retracted, tool: 'suction', assistTool: 'none' }, { tool: 'suction', points: [
+      { x: 0.46, y: 0.58, pressure: 0.4, time: 1800 }, { x: 0.54, y: 0.58, pressure: 0.4, time: 2200 },
+    ] });
+    expect(released.exposure).toBeLessThan(retracted.exposure);
+    expect(released.elasticTension).toBeLessThan(retracted.elasticTension);
+    expect(released.strokes.at(-1).metrics.elasticReturn).toBeGreaterThan(0);
+
+    const assisted = pure.applyStroke({ ...retracted, tool: 'suction', assistTool: 'retractor' }, { tool: 'suction', points: [
+      { x: 0.46, y: 0.58, pressure: 0.4, time: 1800 }, { x: 0.54, y: 0.58, pressure: 0.4, time: 2200 },
+    ] });
+    expect(assisted.exposure).toBeGreaterThan(retracted.exposure);
+    expect(assisted.strokes.at(-1).metrics.elasticReturn).toBe(0);
+
+    const compressed = pure.applyStroke({ stage: 4, incisionDepth: 70, exposure: 65, bleeding: 8, tool: 'forceps', compressionLevel: 12 }, { tool: 'forceps', points: [
+      { x: 0.5, y: 0.7, pressure: 0.82, time: 1000 }, { x: 0.57, y: 0.78, pressure: 0.82, time: 1500 },
+    ] });
+    expect(compressed.compressionLevel).toBeGreaterThan(80);
+    expect(pure.undoStroke(compressed).compressionLevel).toBe(12);
+  });
+
+  it('returns camera and localized tissue telemetry without mutating the draw input', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const noop = () => {};
+    const context = { save: noop, restore: noop, clearRect: noop, fillRect: noop, fillText: noop, beginPath: noop, closePath: noop, ellipse: noop, fill: noop, stroke: noop, moveTo: noop, lineTo: noop, arc: noop, setLineDash: noop };
+    const state = { stage: 3, tool: 'cautery', incisionDepth: 70, exposure: 62, thermalLoad: 44, elasticTension: 58, compressionLevel: 36, showLoupe: true, viewFocus: 'vessel', viewZoom: 3, focusLock: true, strokes: [{ id: 'heat-1', tool: 'cautery', points: [{ x: 0.42, y: 0.55, pressure: 0.4, time: 1 }, { x: 0.45, y: 0.57, pressure: 0.4, time: 2 }] }] };
+    const snapshot = JSON.stringify(state);
+    expect(pure.draw(context, 760, 440, state)).toMatchObject({ viewFocus: 'vessel', viewZoom: 3, focusLock: true, elasticTension: 58, compressionLevel: 36, thermalZoneVisible: true });
+    expect(JSON.stringify(state)).toBe(snapshot);
+  });
+
+  it.each(ANATOMY_PATHS)('renders adjustable optics, focus targets, keyboard parity, and live deformation metrics from %s', (filePath) => {
+    loadTool(filePath, 'anatomy');
+    const html = renderTool('anatomy', { anatomy: { _activeTab: 'procedure', procedure: { stage: 3, incisionDepth: 68, exposure: 60, showLoupe: true, viewFocus: 'target', viewZoom: 2.5, focusLock: true, elasticTension: 54, compressionLevel: 31 } } });
+    expect(html).toContain('aria-label="Working view magnification"');
+    expect(html).toContain('aria-label="Working view focus target"');
+    expect(html).toContain('Hide 2.5× view');
+    expect(html).toContain('Unlock focus');
+    expect(html).toContain('aria-keyshortcuts="Enter Space ArrowUp ArrowDown [ ] F"');
+    expect(html).toContain('Elastic tension</dt><dd class="font-black text-slate-900">54%');
+    expect(html).toContain('Compression</dt><dd class="font-black text-slate-900">31%');
+  });
+});
+describe('Contact-aware procedure instruments and sensory debrief', () => {
+  it('normalizes bounded contact, incision, and opt-in sensory state', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    expect(pure.normalize({ sensoryCues: true, incisionContinuity: 500, lastContact: 'unsafe', contactAccuracy: -5 }))
+      .toMatchObject({ sensoryCues: true, incisionContinuity: 100, lastContact: 'none', contactAccuracy: 0 });
+  });
+
+  it('requires bilateral incision-edge engagement and distinguishes a retractor slip', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const base = { stage: 3, incisionDepth: 70, exposure: 20, tool: 'retractor' };
+    const engaged = pure.applyStroke(base, { tool: 'retractor', points: [
+      { x: 0.35, y: 0.66, pressure: 0.5, time: 1000 }, { x: 0.65, y: 0.66, pressure: 0.5, time: 1500 },
+    ] });
+    expect(engaged.exposure).toBeGreaterThan(20);
+    expect(engaged).toMatchObject({ lastContact: 'incision_edge' });
+    expect(engaged.strokes.at(-1).metrics).toMatchObject({ edgeEngaged: true, contact: 'incision_edge' });
+
+    const slipped = pure.applyStroke(base, { tool: 'retractor', points: [
+      { x: 0.66, y: 0.66, pressure: 0.5, time: 1000 }, { x: 0.86, y: 0.66, pressure: 0.5, time: 1500 },
+    ] });
+    expect(slipped.exposure).toBe(20);
+    expect(slipped).toMatchObject({ lastContact: 'slip' });
+    expect(slipped.feedback).toContain('slipped');
+  });
+
+  it('makes suction and cautery local while cooling thermal load during later actions', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const base = { stage: 3, incisionDepth: 70, exposure: 55, bleeding: 50 };
+    const near = [{ x: 0.48, y: 0.65, pressure: 0.4, time: 1000 }, { x: 0.52, y: 0.69, pressure: 0.4, time: 1450 }];
+    const far = [{ x: 0.78, y: 0.2, pressure: 0.4, time: 1000 }, { x: 0.84, y: 0.24, pressure: 0.4, time: 1450 }];
+    const suctionHit = pure.applyStroke({ ...base, tool: 'suction' }, { tool: 'suction', points: near });
+    const suctionMiss = pure.applyStroke({ ...base, tool: 'suction' }, { tool: 'suction', points: far });
+    expect(suctionHit.bleeding).toBeLessThan(50);
+    expect(suctionHit.lastContact).toBe('fluid_pool');
+    expect(suctionMiss).toMatchObject({ bleeding: 50, lastContact: 'miss' });
+
+    const cauteryHit = pure.applyStroke({ ...base, tool: 'cautery' }, { tool: 'cautery', points: near });
+    const cauteryMiss = pure.applyStroke({ ...base, tool: 'cautery' }, { tool: 'cautery', points: far });
+    expect(cauteryHit.bleeding).toBeLessThan(50);
+    expect(cauteryMiss.bleeding).toBe(50);
+    expect(cauteryMiss.thermalLoad).toBeGreaterThan(0);
+    const cooled = pure.applyStroke({ ...cauteryHit, bleeding: 0, tool: 'suction' }, { tool: 'suction', points: near });
+    expect(cooled.thermalLoad).toBeLessThan(cauteryHit.thermalLoad);
+  });
+
+  it('records incision continuity, grasp alignment, and path-local rendering without mutation', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const cut = pure.applyStroke({ stage: 2, tool: 'scalpel' }, { tool: 'scalpel', points: [
+      { x: 0.44, y: 0.12, pressure: 0.42, time: 1000 }, { x: 0.48, y: 0.61, pressure: 0.42, time: 1600 },
+    ] });
+    expect(cut.incisionContinuity).toBeGreaterThan(50);
+    expect(cut.lastContact).toBe('muscle');
+
+    const grasp = pure.applyStroke({ stage: 4, incisionDepth: 70, exposure: 65, bleeding: 8, tool: 'forceps' }, { tool: 'forceps', points: [
+      { x: 0.5, y: 0.7, pressure: 0.4, time: 1800 }, { x: 0.57, y: 0.78, pressure: 0.4, time: 2250 },
+    ] });
+    expect(grasp.strokes.at(-1).metrics.graspAlignment).toBeGreaterThan(80);
+    expect(grasp.lastContact).toBe('target');
+
+    const noop = () => {};
+    const context = { save: noop, restore: noop, clearRect: noop, fillRect: noop, fillText: noop, beginPath: noop, closePath: noop, ellipse: noop, fill: noop, stroke: noop, moveTo: noop, lineTo: noop, arc: noop, setLineDash: noop };
+    const state = { stage: 3, incisionDepth: 62, exposure: 48, bleeding: 36, incisionContinuity: 72, lastContact: 'fluid_pool', contactAccuracy: 88, strokes: cut.strokes };
+    const snapshot = JSON.stringify(state);
+    expect(pure.draw(context, 760, 440, state)).toMatchObject({ incisionContinuity: 72, lastContact: 'fluid_pool', contactAccuracy: 88, fluidPool: { amount: 36 } });
+    expect(JSON.stringify(state)).toBe(snapshot);
+  });
+
+  it.each(ANATOMY_PATHS)('renders contact metrics, sensory opt-in, and the synchronized debrief timeline from %s', (filePath) => {
+    loadTool(filePath, 'anatomy');
+    const stroke = { id: 'contact-1', tool: 'retractor', points: [{ x: 0.35, y: 0.66, pressure: 0.5, time: 1 }, { x: 0.65, y: 0.66, pressure: 0.5, time: 2 }], metrics: { quality: 91, precision: 90, steadiness: 92, meanPressure: 0.5, control: 91, pathAngle: 0, speed: 0.6, contact: 'incision_edge', contactAccuracy: 94, edgeEngaged: true, recommendation: 'Maintain placement.' } };
+    const working = renderTool('anatomy', { anatomy: { _activeTab: 'procedure', procedure: { stage: 3, incisionDepth: 70, exposure: 60, incisionContinuity: 74, lastContact: 'incision_edge', contactAccuracy: 94, sensoryCues: true, strokes: [stroke] } } });
+    expect(working).toContain('Incision continuity</dt><dd class="font-black text-slate-900">74%');
+    expect(working).toContain('Last contact</dt><dd class="font-black text-slate-900">incision edge');
+    expect(working).toContain('Contact accuracy');
+    expect(working).toContain('data-procedure-sensory-cues="true"');
+    expect(working).toContain('Disable sensory cues');
+
+    const debrief = renderTool('anatomy', { anatomy: { _activeTab: 'procedure', procedure: { stage: 6, incisionDepth: 70, exposure: 60, strokes: [stroke], specimenCollected: true, microscopyComplete: true } } });
+    expect(debrief).toContain('data-procedure-contact-timeline="true"');
+    expect(debrief).toContain('Contact-aware procedure timeline');
+    expect(debrief).toContain('incision edge');
+  });
+});
+describe('Deterministic pathology scenarios and instructor case builder', () => {
+  it('normalizes scenario configuration and preserves repeat-attempt context', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    expect(pure.normalize({ caseId: 'vascular', scenarioSeed: 12000, approach: 'minimal', scenarioDifficulty: 'expert' }))
+      .toMatchObject({ caseId: 'vascular', scenarioSeed: 9999, approach: 'minimal', scenarioDifficulty: 'expert' });
+    expect(pure.normalize({ caseId: 'forged', scenarioSeed: -4, approach: 'unsafe', scenarioDifficulty: 'unsafe' }))
+      .toMatchObject({ caseId: 'standard', scenarioSeed: 1, approach: 'central', scenarioDifficulty: 'adaptive' });
+    expect(pure.normalize({ attempts: [{ id: 'a1', score: 81, caseId: 'friable', scenarioSeed: 4321, approach: 'lateral' }] }).attempts[0])
+      .toMatchObject({ caseId: 'friable', scenarioSeed: 4321, approach: 'lateral' });
+  });
+
+  it('creates repeatable seeded geometry, branches, pathology, and a legacy-safe seed', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const legacy = pure.getScenario({ caseId: 'standard', scenarioSeed: 100 });
+    expect(legacy).toMatchObject({ planSlice: 58, targetX: 0.57, targetY: 0.78, vesselX: 0.36, vesselY: 0.55, nerveX: 0.69, nerveY: 0.64 });
+    const first = pure.getScenario({ caseId: 'vascular', scenarioSeed: 4321, approach: 'minimal', scenarioDifficulty: 'expert' });
+    const repeated = pure.getScenario({ caseId: 'vascular', scenarioSeed: 4321, approach: 'minimal', scenarioDifficulty: 'expert' });
+    const alternate = pure.getScenario({ caseId: 'vascular', scenarioSeed: 4322, approach: 'minimal', scenarioDifficulty: 'expert' });
+    expect(repeated).toEqual(first);
+    expect(alternate.targetX).not.toBe(first.targetX);
+    expect(first).toMatchObject({ region: 'chest', pathology: { id: 'vascular' }, approach: { id: 'minimal' }, adaptive: { id: 'expert' } });
+    expect(first.tissueProfile.vascularity).toBeGreaterThan(1);
+    expect(first.vesselPath).toHaveLength(6);
+    expect(first.nervePath).toHaveLength(6);
+  });
+
+  it('adapts difficulty from prior performance while honoring explicit instructor levels', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    expect(pure.difficulty({ scenarioDifficulty: 'adaptive' }).id).toBe('supported');
+    expect(pure.difficulty({ scenarioDifficulty: 'adaptive', attempts: [{ score: 70 }] }).id).toBe('standard');
+    expect(pure.difficulty({ scenarioDifficulty: 'adaptive', attempts: [{ score: 90 }] }).id).toBe('expert');
+    expect(pure.difficulty({ scenarioDifficulty: 'supported', attempts: [{ score: 99 }] }).id).toBe('supported');
+  });
+
+  it('changes bleeding, retraction, and thermal response with pathology and approach', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const scalpel = { tool: 'scalpel', points: [{ x: 0.5, y: 0.12, pressure: 0.45, time: 1000 }, { x: 0.5, y: 0.42, pressure: 0.45, time: 1500 }] };
+    const standardCut = pure.applyStroke({ caseId: 'standard', scenarioSeed: 100, stage: 2, tool: 'scalpel' }, scalpel);
+    const vascularCut = pure.applyStroke({ caseId: 'vascular', scenarioSeed: 100, stage: 2, tool: 'scalpel' }, scalpel);
+    expect(vascularCut.bleeding).toBeGreaterThan(standardCut.bleeding);
+
+    const retract = { tool: 'retractor', points: [{ x: 0.34, y: 0.67, pressure: 0.5, time: 1000 }, { x: 0.68, y: 0.67, pressure: 0.5, time: 1500 }] };
+    const standardRetraction = pure.applyStroke({ caseId: 'standard', scenarioSeed: 100, stage: 3, incisionDepth: 70, exposure: 20, tool: 'retractor' }, retract);
+    const adherentRetraction = pure.applyStroke({ caseId: 'adhesion', scenarioSeed: 100, stage: 3, incisionDepth: 70, exposure: 20, tool: 'retractor' }, retract);
+    expect(adherentRetraction.exposure).toBeLessThan(standardRetraction.exposure);
+
+    const cautery = { tool: 'cautery', points: [{ x: 0.8, y: 0.2, pressure: 0.4, time: 1000 }, { x: 0.84, y: 0.24, pressure: 0.4, time: 1450 }] };
+    const standardThermal = pure.applyStroke({ caseId: 'standard', scenarioSeed: 100, stage: 3, bleeding: 20, tool: 'cautery' }, cautery);
+    const friableThermal = pure.applyStroke({ caseId: 'friable', scenarioSeed: 100, stage: 3, bleeding: 20, tool: 'cautery' }, cautery);
+    expect(friableThermal.thermalLoad).toBeGreaterThan(standardThermal.thermalLoad);
+    expect(friableThermal.strokes.at(-1).metrics).toMatchObject({ approach: 'central' });
+    expect(friableThermal.strokes.at(-1).metrics.approachAccuracy).toBeGreaterThanOrEqual(0);
+  });
+
+  it('reports seeded pathology, approach, adaptive level, and branching without mutating draw input', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const noop = () => {};
+    const context = { save: noop, restore: noop, clearRect: noop, fillRect: noop, fillText: noop, beginPath: noop, closePath: noop, ellipse: noop, fill: noop, stroke: noop, moveTo: noop, lineTo: noop, arc: noop, setLineDash: noop };
+    const state = { caseId: 'vascular', scenarioSeed: 4321, approach: 'minimal', scenarioDifficulty: 'expert', stage: 3, incisionDepth: 70, exposure: 60 };
+    const snapshot = JSON.stringify(state);
+    expect(pure.draw(context, 760, 440, state)).toMatchObject({ caseId: 'vascular', scenarioSeed: 4321, pathology: 'vascular', approach: 'minimal', adaptiveDifficulty: 'expert', branchCounts: { vessels: 6, nerves: 6 } });
+    expect(JSON.stringify(state)).toBe(snapshot);
+  });
+
+  it.each(ANATOMY_PATHS)('renders instructor assignments, approach reflection, and the 3D launch from %s', (filePath) => {
+    loadTool(filePath, 'anatomy');
+    const planning = renderTool('anatomy', { anatomy: { _activeTab: 'procedure', procedure: { stage: 0, caseId: 'vascular', scenarioSeed: 4321, approach: 'minimal', scenarioDifficulty: 'expert', instructorMode: true } } });
+    expect(planning).toContain('data-procedure-scenario-builder="true"');
+    expect(planning).toContain('Assignment VASCULAR-4321-MINIMAL');
+    expect(planning).toContain('Deterministic seed');
+    expect(planning).toContain('aria-label="Procedure approach"');
+    expect(planning).toContain('Scenario difficulty');
+    expect(planning).toContain('Hypervascular synthetic lesion');
+    expect(planning).toContain('Vascularity');
+
+    const overview3d = renderTool('anatomy', { anatomy: { _activeTab: 'explore', system: 'circulatory', complexity: 3, _bodyView3d: true } });
+    expect(overview3d).toContain('data-anatomy-3d-procedure-launch="true"');
+    expect(overview3d).toContain('Open matching procedure');
+
+    const debrief = renderTool('anatomy', { anatomy: { _activeTab: 'procedure', procedure: { stage: 6, caseId: 'vascular', scenarioSeed: 4321, approach: 'minimal', specimenCollected: true, microscopyComplete: true, tissueDamage: 12, attempts: [{ id: 'a1', score: 75, caseId: 'vascular', scenarioSeed: 4310, approach: 'lateral', mode: 'guided' }] } } });
+    expect(debrief).toContain('data-procedure-approach-comparison="true"');
+    expect(debrief).toContain('Approach comparison');
+    expect(debrief).toContain('These estimates support reflection and are not clinical guidance.');
+    expect(debrief).toContain('seed 4310');
+    expect(debrief).toContain('lateral');
+  });
+});
+describe('Enhanced dissection lighting, texture, motion, and fluid visuals', () => {
+  function createVisualContext() {
+    const gradientStops = [];
+    const ellipses = [];
+    const noop = () => {};
+    function gradient(kind) { return { addColorStop(position, color) { gradientStops.push({ kind, position, color }); } }; }
+    return {
+      context: {
+        save: noop, restore: noop, clearRect: noop, fillRect: noop, fillText: noop, beginPath: noop, closePath: noop,
+        fill: noop, stroke: noop, moveTo: noop, lineTo: noop, arc: noop, setLineDash: noop,
+        ellipse(...args) { ellipses.push(args); },
+        createLinearGradient() { return gradient('linear'); },
+        createRadialGradient() { return gradient('radial'); },
+      },
+      gradientStops,
+      ellipses,
+    };
+  }
+
+  it('renders five textured tissue bands with layered lighting and dimensional fluid', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const visual = createVisualContext();
+    const state = { caseId: 'vascular', scenarioSeed: 4321, scenarioDifficulty: 'expert', stage: 3, incisionDepth: 70, exposure: 58, bleeding: 42, complication: 'vessel_bleed', showHazards: true, illumination: 'focused', visualPhase: 1.25 };
+    const snapshot = JSON.stringify(state);
+    const result = pure.draw(visual.context, 760, 440, state);
+    expect(result.visualFidelity).toMatchObject({ lighting: 'focused', textureBands: 5, motion: true, fluidLayers: 3 });
+    expect(visual.gradientStops.some((stop) => stop.kind === 'linear')).toBe(true);
+    expect(visual.gradientStops.some((stop) => stop.kind === 'radial')).toBe(true);
+    expect(visual.ellipses.length).toBeGreaterThan(12);
+    expect(JSON.stringify(state)).toBe(snapshot);
+  });
+
+  it('advances subtle physiological and fluid motion while honoring reduced visuals', () => {
+    loadTool(ANATOMY_PATHS[0], 'anatomy');
+    const pure = window.__alloAnatomyProcedurePure;
+    const early = pure.draw(createVisualContext().context, 760, 440, { caseId: 'vascular', scenarioSeed: 4321, scenarioDifficulty: 'expert', stage: 3, incisionDepth: 70, bleeding: 42, visualPhase: 0.2 });
+    const later = pure.draw(createVisualContext().context, 760, 440, { caseId: 'vascular', scenarioSeed: 4321, scenarioDifficulty: 'expert', stage: 3, incisionDepth: 70, bleeding: 42, visualPhase: 1.4 });
+    expect(later.visualFidelity.physiologyOffset).not.toBe(early.visualFidelity.physiologyOffset);
+    expect(later.visualFidelity.fluidSurfaceOffset).not.toBe(early.visualFidelity.fluidSurfaceOffset);
+    const reduced = pure.draw(createVisualContext().context, 760, 440, { caseId: 'vascular', scenarioSeed: 4321, scenarioDifficulty: 'expert', stage: 3, incisionDepth: 70, bleeding: 42, visualPhase: 1.4, reducedVisuals: true });
+    expect(reduced.visualFidelity).toMatchObject({ motion: false, fluidLayers: 0, physiologyOffset: 0, fluidSurfaceOffset: 0 });
+  });
+
+  it.each(ANATOMY_PATHS)('exposes the enhanced canvas and capped reduced-motion-aware animation from %s', (filePath) => {
+    loadTool(filePath, 'anatomy');
+    const html = renderTool('anatomy', { anatomy: { _activeTab: 'procedure', procedure: { stage: 3, caseId: 'friable', scenarioSeed: 77, incisionDepth: 68, exposure: 55, bleeding: 24 } } });
+    expect(html).toContain('data-procedure-visual-fidelity="enhanced"');
+    expect(html).toContain('Reduce visual intensity');
+    const source = fs.readFileSync(filePath, 'utf8');
+    expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
+    expect(source).toContain('timestamp - lastProcedurePaint >= 48');
+    expect(source).toContain('requestAnimationFrame(animateProcedureField)');
+    expect(source).toContain('function drawProcedureLayerTexture');
+    expect(source).toContain('fluidVisualLayers = 3');
   });
 });

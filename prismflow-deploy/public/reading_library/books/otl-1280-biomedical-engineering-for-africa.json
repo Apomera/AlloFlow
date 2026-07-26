@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1280-biomedical-engineering-for-africa",
+  "title": "Biomedical Engineering for Africa",
+  "description": "Health technology innovation in low- and middle-income countries (LMICs), including countries in Africa, falls far short of meeting the healthcare needs of these settings. The result is a heavy reliance on products and technologies imported from industrialised countries that are often not suited to, or sustainable for, LMICs. Appropriate healthcare products for LMICs are best developed in these countries, where local knowledge and understanding of needs, context and available resources may be incorporated into designs and implementation plans. The objectives for enabling health technology development in LMICs include: 1) expanding the base of expertise through research training programmes with a problem-solving focus; 2) stimulating new knowledge, approaches and solutions by enabling innovation; and 3) integrating research communities within and across institutions to build critical mass. The field of biomedical engineering is central to health technology innovation. This book is a response to the need for biomedical engineering capacity in Africa. It is grounded in the African context. It serves as a resource for academics and students in biomedical engineering, for those interested in entering the field in any capacity and for practitioners at every stage of product development. University leaders intent on establishing new biomedical engineering programmes or departments, may draw on the content for guidance on structuring their offerings. The book reaches beyond Africa, as it is relevant to other LMIC settings, and provides insights to guide global health initiatives focused on technology innovation.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology",
+    "Engineering & Technology"
+  ],
+  "authors": [
+    "Tania S Douglas - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Cape Town Libraries",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/biomedical-engineering-for-africa"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Health technology innovation in low- and middle-income countries (LMICs), including countries in Africa, falls far short of meeting the healthcare needs of these settings. The result is a heavy reliance on products and technologies imported from industrialised countries that are often not suited to, or sustainable for, LMICs. Appropriate healthcare products for LMICs are best developed in these countries, where local knowledge and understanding of needs, context and available resources may be incorporated into designs and implementation plans. The objectives for enabling health technology development in LMICs include: 1) expanding the base of expertise through research training programmes with a problem-solving focus; 2) stimulating new knowledge, approaches and solutions by enabling innovation; and 3) integrating research communities within and across institutions to build critical mass. The field of biomedical engineering is central to health technology innovation. This book is a response to the need for biomedical engineering capacity in Africa. It is grounded in the African context. It serves as a resource for academics and students in biomedical engineering, for those interested in entering the field in any capacity and for practitioners at every stage of product development. University leaders intent on establishing new biomedical engineering programmes or departments, may draw on the content for guidance on structuring their offerings. The book reaches beyond Africa, as it is relevant to other LMIC settings, and provides insights to guide global health initiatives focused on technology innovation."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-ShareAlike. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 258
+  },
+  "linkedContentLicense": "Attribution-ShareAlike",
+  "externalRecordId": "1280",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

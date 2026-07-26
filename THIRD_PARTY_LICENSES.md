@@ -133,6 +133,7 @@ uses an open range.
 | [React & React DOM](https://react.dev) | UI framework (app + Whiteboard window) | MIT | Copyright (c) Meta Platforms, Inc. and affiliates. |
 | [Lucide](https://lucide.dev) | icon set | ISC | Copyright (c) 2020 Lucide Contributors; portions (c) 2013-present Cole Bemis (Feather, MIT) |
 | [Tailwind CSS](https://tailwindcss.com) | styling | MIT | Copyright (c) Tailwind Labs, Inc. |
+| [Blockly](https://developers.google.com/blockly) | accessible visual block coding | Apache-2.0 | Copyright Google LLC and Blockly contributors |
 | [Firebase JS SDK](https://firebase.google.com) | sign-in & class sync | Apache-2.0 | Copyright (c) Google LLC |
 
 ### Documents, PDF & accessibility
@@ -181,6 +182,7 @@ uses an open range.
 | [Smithsonian Open Access](https://www.si.edu/openaccess) | museum images (Zoom Gallery) | CC0 1.0 | Public domain (CC0) — Smithsonian Institution |
 | [NASA Image and Video Library](https://images.nasa.gov) | space photographs (Zoom Gallery) | Public domain (NASA guidelines) | Courtesy NASA (public domain; some third-party content excepted) |
 | [StoryWeaver](https://storyweaver.org.in) | openly licensed picture books (Reading Library) | CC BY 4.0 | © Pratham Books and per-book authors/illustrators (credited per book) |
+| [African Storybook](https://www.africanstorybook.org/) | ASb-approved multilingual picture books (Reading Library) | Per-edition CC BY / CC BY-SA / CC BY-NC / CC BY-NC-SA | Per-book authors, illustrators, translators, and copyright holders are credited in each catalog record |
 
 ### 3D, graphics, maps & media
 | Library | Used for | License | Copyright |

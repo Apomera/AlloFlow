@@ -1,0 +1,170 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-9790-senkokomaile-sa-keke",
+  "title": "Senkokomaile sa Keke",
+  "description": "Keke o palame senkokomaile sa hae sa seratang. O ea holimo-limo. O tšaba hore o tlaea holimo khoeling.",
+  "language": "Lesotho Sesotho",
+  "langCode": "sot",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Khothatso Ranoosi, Marion Drew"
+  ],
+  "illustrators": [
+    "Marion Drew"
+  ],
+  "translators": [],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Khothatso Ranoosi, Marion Drew",
+      "role": "Author"
+    },
+    {
+      "name": "Marion Drew",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Khothatso Ranoosi, Marion Drew (Author); Marion Drew (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": "http://paleng.weebly.com/",
+    "editionId": "9790",
+    "bookType": "1",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-569beb4a0cfb9f8f",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/9324.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9319.png",
+      "text": "Keke o ne a lutse holima senkokomaile sa hae antse a bapala. Hee o ne a serata haholo bophelong bahae. E ne e le senkokomaile sa bokhlokoa sekolong sa hae.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790#page=1",
+      "sourceDigest": "sha256:97dc3a77bc2f71ce6478b099b5050f9df4e59e72412d494bfc1f8cbc25b4c641"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9320.png",
+      "text": "Keke eare hantse a bapala. O ne antse a se qhoshomisa butle-butle hantle. Aseisa pele le morao, pele le morao. Eare ha antse ase palame, antse aseisa pele le morao, eaba senkokomaile sena sentse se eketsa lebelo. Eare nenneng aiphuma a se ale holimo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790#page=2",
+      "sourceDigest": "sha256:20db32794dee6569087d5ab9fdcfce88196635b055d900354f70902c438fb9c1"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9321.png",
+      "text": "Keke asheba fatše. O ne ale holimo haholo. Eaba ore, \"Aieeeee! Shebang hore na ke holimo joang.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790#page=3",
+      "sourceDigest": "sha256:f60c2976426a9c2de7ac8a8943f4ff7789e6f2f1b0e7d4c972ae5f73d48d3aac"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9322.png",
+      "text": "O ne a thabile haholo ha a le holimo sebakeng. O ne a bona motse kaofela. O ne ale holimo ba nonyana ebitsoang lekhoaba haefofa.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790#page=4",
+      "sourceDigest": "sha256:7cf75c7c0378e5f4a11a7bcc80a405a42fd9dd59a994a59d0d8ea0ad20e4a087"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9323.png",
+      "text": "Kamora nako eseng kae, eaba Keke o nahana hotheoha senkokomaileng sa hae. Hona lehore seeme, sene sea holimo haholo hofeta. \"Oooh, oooh, oooh,\" ke Keke ea chong joalo, \"haketsebe hore na nka emisa senkokomaile sena joang.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790#page=5",
+      "sourceDigest": "sha256:d44f48159835cb070d0c9f5fc81247a8af8c1a1d8cb74cd1562068cc47660514"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9324.png",
+      "text": "Eaba sona senkokomaile sena sentse sea holimolimo. Keke o ne a ts'ohile haholo. \"Ebe ketla fella kae le senkokomaile see?\" \"Mohlomong ketlabe kelo fihla holimo mane khoeling. Ketlameha hotheoha,\" ke Keke ea chong joalo.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790#page=6",
+      "sourceDigest": "sha256:ebee9da2863d6bb0b073626b2dc210375cecfb4df28505fb4ceba882d881e042"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9325.png",
+      "text": "Eaba o ea theoha, a se tlohela se leseng. Eaba o ea oela, hoea tlase, tlaaase.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790#page=7",
+      "sourceDigest": "sha256:bbff012daf45749ad16e4bdd4039360189a15e6f7ef012e3d840cf0ab833fd60"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9326.png",
+      "text": "\"Oh, oh, oh joooeeeeeee!\" ke bana bachong joalo baneng bantse ba bapala le ena. Keke a oela fatše. O ne a oetse ka hlooho fatše, 'me autloile bohloko hloohong ea hae. Eaba oalla haholo, \"Eeeh, eeeh, eeeh!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790#page=8",
+      "sourceDigest": "sha256:821ccc21e6222a8e01e7beb1d5501ed7e3169a8b5edc93249b4983fb8713dd3f"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9327.png",
+      "text": "Bana babang bao baneng bantse ba bapala le eena, ba koatile haholo. Keke o ne a sa tsebe hore na aka etsa eng. Eaba Keke ena ontse alla feela, \"Eeeh, eeeh, eeeh, joooeeeeeeh!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790#page=9",
+      "sourceDigest": "sha256:877c09e88708de110c930f473b898e86fd6e550d500c24df76eb16e4739705e6"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9328.png",
+      "text": "Eaba metsoallenyana ea hae e potlakela hoea bitsa tichere ea bona. \"M'e Mampho, tloho!\" baea 'mitsa. \"Keke o oetse fatše hotloha senkokomaileng sa hae. O tsoile kotsi hloohong ea hae.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790#page=10",
+      "sourceDigest": "sha256:5aeda0e59b52e91d43f8cc0f421a650b09b11b457c90806744b2a741b41346b7"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9329.png",
+      "text": "Eaba M'e Mampho o matha kapele hoea mo phahamisa fatše hoea thusa Keke. A mo phahamisa fatše. Eaba o meta hlooho ea Keke. Keke a bososela ka pontso ea hothaba. \"Ke betere hona joale.\" \"Ha ke satlaea bapala senkokomaileng kele mong hape,\" ke Keke ea chong joalo. \"Ha ke batle hoiphumana kele khoeling.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790#page=11",
+      "sourceDigest": "sha256:1884ec79b17316f6c3302a817b0540489e4eb6d404c11a5a3dd043bc172ff9c2"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/9330.png",
+      "text": "Eaba M'e Mampho ore, \"Nako etlang, ha o batla hoea bapala, o mpitse ke tlaea le oena. Re tlaea khoeling le oena rele babeli!\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=1&dual=false&id=9790#page=12",
+      "sourceDigest": "sha256:d8568befd0dc81dc8cd116ece87474415dd62861b4e8ab8e3232a53d076626bc"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 379
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:f815667e6f74c828fbf4bd5d261fb789cba7eea70800c2f1f49217bff45046ae"
+  }
+}

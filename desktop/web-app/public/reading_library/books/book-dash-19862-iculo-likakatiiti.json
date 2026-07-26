@@ -1,0 +1,90 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-19862-iculo-likakatiiti",
+  "title": "Iculo likaKatiiti",
+  "description": "Nsukuzonke, umama kaKatiiti uhlezi embiza ngeculo elimnandi. Ngelinye ilanga, imfene eyiqili izama ukucula kamnandi njengomama wakhe.",
+  "language": "isiZulu",
+  "langCode": "zul",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animals, birds, and insects",
+    "Emotions and life skills",
+    "Family, friends, and home"
+  ],
+  "authors": [
+    "Philippa Kabali-Kagwa"
+  ],
+  "illustrators": [
+    "Mary Marble"
+  ],
+  "contributors": [
+    {
+      "name": "Philippa Kabali-Kagwa",
+      "role": "Writer"
+    },
+    {
+      "name": "Mary Marble",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Kirsten Walker",
+      "role": "Designer"
+    },
+    {
+      "name": "Helen Moffett",
+      "role": "Editor"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/iculo-likakatiiti/",
+    "attributionUrl": "https://bookdash.org/books/iculo-likakatiiti/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=katiitis-song"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2021/02/katiitis-song_zu_20200717_cover-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2021/02/katiitis-song_zu_20200717_cover-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Nsukuzonke, umama kaKatiiti uhlezi embiza ngeculo elimnandi. Ngelinye ilanga, imfene eyiqili izama ukucula kamnandi njengomama wakhe."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Philippa Kabali-Kagwa (Writer); Mary Marble (Illustrator); Kirsten Walker (Designer); Helen Moffett (Editor)\n\nLanguage: isiZulu. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=katiitis-song"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 82
+  }
+}

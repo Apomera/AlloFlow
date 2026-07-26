@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-50839-joanna-and-8217-s-grannies-sasl",
+  "title": "Joanna’s Grannies (SASL)",
+  "description": "Joanna has two grannies. They are very different but they both love her the same.",
+  "language": "South African Sign Language",
+  "langCode": "sgn",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Family, friends, and home",
+    "Let's learn!"
+  ],
+  "authors": [
+    "Dawn Garisch"
+  ],
+  "illustrators": [
+    "Richard Bolland"
+  ],
+  "contributors": [
+    {
+      "name": "Dawn Garisch",
+      "role": "Writer"
+    },
+    {
+      "name": "Richard Bolland",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Janet Campbell",
+      "role": "Designer"
+    },
+    {
+      "name": "Kelly Norwood-Young",
+      "role": "Editor"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/joannas-grannies-sasl/",
+    "attributionUrl": "https://bookdash.org/books/joannas-grannies-sasl/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=joannas-grannies"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2026/05/joannas-grannies_sasl-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2026/05/joannas-grannies_sasl-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Joanna has two grannies. They are very different but they both love her the same."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Dawn Garisch (Writer); Richard Bolland (Illustrator); Janet Campbell (Designer); Kelly Norwood-Young (Editor)\n\nLanguage: South African Sign Language. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=joannas-grannies"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 84
+  }
+}

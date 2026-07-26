@@ -389,6 +389,19 @@ describe('Lingua Practice enhanced accessibility behavior', () => {
     try {
       await mount({ addToast: (message) => { toasts.push(message); } });
       await click('Build practice set');
+      await click('Speak');
+
+      const typedFallback = host.querySelector('#lingua-speak-response');
+      expect(typedFallback).toBeTruthy();
+      expect(host.querySelector('label[for="lingua-speak-response"]').control).toBe(typedFallback);
+      const inputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+      await act(async () => {
+        inputSetter.call(typedFallback, 'Necesito un lapiz.');
+        typedFallback.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      expect(host.textContent).toContain('100% word match');
+      await expectNoAxeViolations('typed speaking fallback');
+
       await click('Conversation');
 
       const speechButton = host.querySelector('button[aria-label="Speak response"]');
@@ -606,6 +619,40 @@ describe('Lingua Practice stale AI request protection', () => {
     expect(host.textContent).not.toContain(lesson.goal);
     expect(localStorage.getItem('allo_lingua_recent_v1')).toBe(null);
     await expectNoAxeViolations('stale lesson ignored');
+  });
+
+  it('ignores a lesson response after the learner changes level or source material', async () => {
+    let resolveLesson;
+    const pendingLesson = new Promise((resolve) => { resolveLesson = resolve; });
+    await mount({ callGemini: () => pendingLesson });
+
+    const buildButton = findButton('Build practice set');
+    act(() => { buildButton.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(buildButton.disabled).toBe(true);
+
+    const level = host.querySelector('select[aria-label="My level"]');
+    await act(async () => {
+      level.value = 'Advanced';
+      level.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    const source = host.querySelector('#lingua-source');
+    const textareaSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+    await act(async () => {
+      textareaSetter.call(source, 'A replacement reading passage.');
+      source.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(findButton('Build practice set').disabled).toBe(false);
+
+    await act(async () => {
+      resolveLesson(JSON.stringify(lesson));
+      await pendingLesson;
+      await Promise.resolve();
+    });
+
+    expect(findButton('Vocabulary').disabled).toBe(true);
+    expect(host.textContent).not.toContain(lesson.goal);
+    expect(localStorage.getItem('allo_lingua_recent_v1')).toBe(null);
+    await expectNoAxeViolations('stale setup-context lesson ignored');
   });
 
   it('ignores coaching feedback after the learner advances turns', async () => {

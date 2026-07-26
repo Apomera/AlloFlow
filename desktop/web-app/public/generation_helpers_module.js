@@ -525,11 +525,67 @@ const handleComplexityAdjustment = async (deps) => {
     try {
         const isSimpler = complexityLevel < 5;
         const intensity = Math.abs(complexityLevel - 5);
+        const splitReferenceTrailer = (value) => {
+            const helpers = typeof window !== 'undefined' && window.AlloModules;
+            const shared = helpers?.TextPipelineHelpers?.splitReferencesFromBody;
+            const dispatcherSplit = helpers?.GenDispatcher?.splitAdaptationReferences;
+            try {
+                if (typeof shared === 'function') return shared(String(value || ''));
+                if (typeof dispatcherSplit === 'function') return dispatcherSplit(String(value || ''));
+            } catch (_) {}
+            return { body: String(value || ''), references: '' };
+        };
+        const validateCitationsInOrder = (original, candidate) => {
+            const helpers = typeof window !== 'undefined' && window.AlloModules;
+            const dispatcherValidate = helpers?.GenDispatcher?.validateAdaptationCitationConservation;
+            if (typeof dispatcherValidate === 'function') {
+                return dispatcherValidate(original, candidate);
+            }
+            const pipeline = helpers?.TextPipelineHelpers;
+            const hasPipelineValidator = typeof pipeline?.validateCitationConservation === 'function';
+            const hasPipelineLedger = typeof pipeline?.extractCitationLedger === 'function';
+            const citationShaped = /\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/.test(`${original}\n${candidate}`);
+            if ((!hasPipelineValidator || !hasPipelineLedger) && citationShaped) {
+                return {
+                    valid: false,
+                    ok: false,
+                    reason: 'citation-validator-unavailable',
+                    beforeCount: null,
+                    afterCount: null,
+                    orderChanged: false
+                };
+            }
+            if (!hasPipelineValidator || !hasPipelineLedger) {
+                return { valid: true, ok: true, beforeCount: 0, afterCount: 0, orderChanged: false };
+            }
+            const sharedResult = pipeline.validateCitationConservation(original, candidate);
+            const originalOccurrences = pipeline.extractCitationLedger(original).occurrences || [];
+            const candidateOccurrences = pipeline.extractCitationLedger(candidate).occurrences || [];
+            const orderChanged = originalOccurrences.length !== candidateOccurrences.length
+                || originalOccurrences.some((entry, index) => entry.key !== candidateOccurrences[index]?.key);
+            return {
+                ...sharedResult,
+                valid: !!sharedResult.valid && !orderChanged,
+                orderChanged,
+                beforeCount: originalOccurrences.length,
+                afterCount: candidateOccurrences.length
+            };
+        };
         let prompt = '';
         let jsonMode = false;
+        let simplifiedCitationContext = null;
+        let complexityCitationAudit = null;
         if (generatedContent.type === 'simplified') {
             const rawText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
-            const { text: currentText } = extractSourceTextForProcessing(rawText, false);
+            const referenceParts = splitReferenceTrailer(rawText);
+            const sourceExtraction = extractSourceTextForProcessing(referenceParts.body, false);
+            const currentText = sourceExtraction.text;
+            simplifiedCitationContext = {
+                sourceBody: referenceParts.body,
+                sourceTarget: currentText,
+                references: referenceParts.references || '',
+                wasBilingual: !!sourceExtraction.isBilingual
+            };
             const direction = isSimpler ? "Simpler / Easier to read" : "More Complex / Academic / Rigorous";
             prompt = `
                 Rewrite the following educational text.
@@ -540,6 +596,8 @@ const handleComplexityAdjustment = async (deps) => {
                 - Keep the same topic and core information.
                 - ${isSimpler ? "Shorten sentences, reduce vocabulary difficulty, focus on clarity." : "Increase sentence variety, use more precise academic vocabulary, add nuance."}
                 - Write the rewritten text in ${leveledTextLanguage}.
+                - Preserve every inline citation exactly, including its superscript number, URL, occurrence count, and order.
+                - Do not produce a Sources, References, Bibliography, or Works Cited section; AlloFlow appends the preserved reference trailer after validation.
                 Current Text:
                 "${currentText}"
             `;
@@ -598,9 +656,56 @@ const handleComplexityAdjustment = async (deps) => {
                 Return ONLY JSON matching the input structure exactly.
             `;
         }
-        const result = (!jsonMode && generatedContent.type === 'simplified')
+        let result = (!jsonMode && generatedContent.type === 'simplified')
             ? await generateBilingualText(prompt, leveledTextLanguage, callGemini)
             : await callGemini(prompt, jsonMode);
+        if (generatedContent.type === 'simplified' && simplifiedCitationContext) {
+            const candidateParts = splitReferenceTrailer(result);
+            const candidateBody = candidateParts.body.trim();
+            const candidateExtraction = extractSourceTextForProcessing(candidateBody, false);
+            const candidateTarget = candidateExtraction.targetLangBlock || candidateExtraction.text;
+            const originalForValidation = simplifiedCitationContext.wasBilingual
+                ? simplifiedCitationContext.sourceBody
+                : simplifiedCitationContext.sourceTarget;
+            const candidateForValidation = simplifiedCitationContext.wasBilingual
+                ? candidateBody
+                : candidateTarget;
+            let conservation = validateCitationsInOrder(originalForValidation, candidateForValidation);
+            const shouldValidateGeneratedEnglish = !simplifiedCitationContext.wasBilingual
+                && (candidateExtraction.isBilingual || String(leveledTextLanguage || '').trim().toLowerCase() !== 'english');
+            if (shouldValidateGeneratedEnglish) {
+                const englishConservation = validateCitationsInOrder(
+                    candidateTarget,
+                    candidateExtraction.isBilingual ? candidateExtraction.englishBlock : ''
+                );
+                conservation = {
+                    ...conservation,
+                    valid: !!conservation.valid && !!englishConservation.valid,
+                    ok: !!conservation.valid && !!englishConservation.valid,
+                    beforeCount: Number(conservation.beforeCount || 0) + Number(englishConservation.beforeCount || 0),
+                    afterCount: Number(conservation.afterCount || 0) + Number(englishConservation.afterCount || 0),
+                    orderChanged: !!conservation.orderChanged || !!englishConservation.orderChanged,
+                    english: englishConservation
+                };
+            }
+            complexityCitationAudit = {
+                stage: 'complexity-adjustment',
+                valid: !!conservation.valid,
+                beforeCount: Number(conservation.beforeCount ?? conservation.originalLedger?.occurrences?.length ?? 0),
+                afterCount: Number(conservation.afterCount ?? conservation.candidateLedger?.occurrences?.length ?? 0),
+                orderChanged: !!conservation.orderChanged
+            };
+            if (!conservation.valid) {
+                const citationError = new Error('Complexity adjustment changed source citations.');
+                citationError.code = 'citation-conservation-failed';
+                citationError.details = conservation;
+                throw citationError;
+            }
+            result = [
+                candidateBody,
+                simplifiedCitationContext.references
+            ].filter(Boolean).join('\n\n');
+        }
         let updatedData;
         if (jsonMode) {
             const parsed = JSON.parse(cleanJson(result));
@@ -624,6 +729,27 @@ const handleComplexityAdjustment = async (deps) => {
         const changeLabel = generatedContent.type === 'sentence-frames'
             ? (isSimpler ? 'More Support' : 'Less Support')
             : (isSimpler ? 'Adapted' : 'Increased Rigor');
+        const priorConfig = generatedContent.config && typeof generatedContent.config === 'object'
+            ? generatedContent.config
+            : {};
+        const priorAudit = priorConfig.citationAudit && typeof priorConfig.citationAudit === 'object'
+            ? priorConfig.citationAudit
+            : null;
+        const adjustedConfig = {
+            ...priorConfig,
+            ...(complexityCitationAudit ? {
+                citationAudit: {
+                    ...(priorAudit || {
+                        version: 1,
+                        policy: 'exact-marker-order',
+                        enabled: complexityCitationAudit.beforeCount > 0,
+                        status: 'valid',
+                        fallbackCount: 0
+                    }),
+                    stages: [...(Array.isArray(priorAudit?.stages) ? priorAudit.stages : []), complexityCitationAudit]
+                }
+            } : {})
+        };
         if (saveOriginalOnAdjust) {
             const newItem = {
                 ...generatedContent,
@@ -631,7 +757,7 @@ const handleComplexityAdjustment = async (deps) => {
                 data: updatedData,
                 title: `${generatedContent.title || getDefaultTitle(generatedContent.type)} (${changeLabel})`,
                 timestamp: new Date(),
-                config: {}
+                config: adjustedConfig
             };
             if (newItem.levelCheck) delete newItem.levelCheck;
             if (newItem.alignmentCheck) delete newItem.alignmentCheck;
@@ -639,7 +765,7 @@ const handleComplexityAdjustment = async (deps) => {
             setHistory(prev => [...prev, newItem]);
             addToast(t('toasts.saved_new_version', { label: changeLabel }), "success");
         } else {
-            const updatedContent = { ...generatedContent, data: updatedData };
+            const updatedContent = { ...generatedContent, data: updatedData, config: adjustedConfig };
             if (updatedContent.levelCheck) delete updatedContent.levelCheck;
             if (updatedContent.alignmentCheck) delete updatedContent.alignmentCheck;
             setGeneratedContent(updatedContent);
@@ -647,6 +773,11 @@ const handleComplexityAdjustment = async (deps) => {
             addToast(t('toasts.adjusted_version', { label: changeLabel }), "success");
         }
     } catch (err) {
+        if (err?.code === 'citation-conservation-failed') {
+            warnLog('[CitationConservation] Complexity adjustment rejected; original resource retained.', err.details || err);
+            addToast('The adjustment changed a source citation, so the original citation-safe version was retained.', 'warning');
+            return;
+        }
         warnLog("Unhandled error:", err);
         setError(t('errors.complexity_adjustment_failed'));
         addToast(t('toasts.adjustment_failed'), "error");

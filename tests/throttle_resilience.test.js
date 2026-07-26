@@ -61,14 +61,61 @@ describe('anti-drift: the breaker + floor ship the fixes', () => {
   it('the breaker has a transient-storm handler fed from the generic-transient path', () => {
     expect(pipeSrc).toMatch(/var _geminiNoteTransientFail = function/);
     expect(pipeSrc).toMatch(/_GEMINI_TRANSIENT_TRIP = 3/);
-    expect(pipeSrc).toMatch(/_geminiNoteTransientFail\(\);\s*\n\s*if \(n >= 1\) throw err;/);
+expect(pipeSrc).toMatch(/_geminiNoteTransientFail\(_callStats, owner\);\s*\n\s*if \(n >= 1\) throw err;/);
     expect(pipeSrc).toMatch(/var _transientBackoff = Math\.round\(2500 \* \(0\.7 \+ Math\.random\(\) \* 0\.6\)\)/);
-    expect(pipeSrc).toMatch(/if \(res == null \|\| \(typeof res === 'string' && !res\.trim\(\)\)\) _geminiNoteTransientFail\(\)/);
+expect(pipeSrc).toMatch(/if \(res == null \|\| \(typeof res === 'string' && !res\.trim\(\)\)[\s\S]{0,160}_geminiNoteTransientFail\(_callStats, owner\)/);
+    expect(pipeSrc).toMatch(/if \(res == null[\s\S]{0,260}else \{\s*if \(n > 0\) _callStats\.recoveredRetries/);
   });
   it('the transient streak resets on success (so isolated blips do not trip it)', () => {
     expect(pipeSrc).toMatch(/_geminiAuthStreak = 0;\s*\n\s*_geminiTransientStreak = 0;/);
   });
   it('the partial-audit floor requires material failures, not the bare ratio', () => {
     expect(pipeSrc).toMatch(/\(_failedChunks \/ chunks\.length\) > 0\.25 && \(_failedChunks >= 2 \|\| _auditedCount < 2\)/);
+  });
+});
+
+
+describe('run-scoped cancellation and post-loop containment', () => {
+  it('throws immediately when the main loop returns after losing ownership', () => {
+    const loop = pipeSrc.indexOf('const _loopOut = await _runMainFixLoop');
+    const guard = pipeSrc.indexOf('_throwIfRunCancelled();', loop);
+    expect(loop).toBeGreaterThan(-1);
+    expect(guard).toBeGreaterThan(loop);
+    expect(guard - loop).toBeLessThan(900);
+  });
+
+  it('threads the immutable signal through final/deferred/post-mutation AI audits', () => {
+    expect(pipeSrc).toContain('auditOutputAccessibility(_finalAuditHtml, { signal: _runAbortSignal })');
+    expect(pipeSrc).toContain('auditOutputAccessibility(_reFinalAuditHtml, { signal: _runAbortSignal })');
+    expect(pipeSrc).toContain('auditOutputAccessibility(accessibleHtml, { signal: _runAbortSignal })');
+    expect(pipeSrc).toContain('const _genStale = _runGenStale;');
+    expect(pipeSrc).toContain('signal: _runAbortSignal,');
+    expect(pipeSrc).toContain('owner: _runTelemetry,');
+  });
+
+  it('captures explicit signals at the gate and rechecks nested chunk calls after awaits', () => {
+    expect(pipeSrc).toContain('owner, explicitSignal)');
+    expect(pipeSrc).toContain('var _gateSignal = explicitSignal ||');
+    expect(pipeSrc).toContain('callGemini(prompt, false, false, null, null, _control && _control.signal)');
+    expect(pipeSrc).toContain('const _retryRaw = await callGemini(retryPrompt');
+    expect(pipeSrc).toContain('var _capturedVisionSignal = _explicitSignal');
+    expect(pipeSrc).toContain("args[3] = _capturedOptions;");
+    expect(pipeSrc).toContain("throw _mkGateAbortErr('local PDF Vision extraction')");
+    expect(pipeSrc).toContain('const _throwIfImageCancelled =');
+    expect(pipeSrc).toContain('_base64, _mimeType, { signal: _imageSignal }');
+    expect(pipeSrc).toContain('signal: _runAbortSignal, shouldAbort: _runGenStale');
+    expect(pipeSrc).toContain('if ((imgErr && (imgErr.name === \'AbortError\' || imgErr.isAbort)) || _imageCancelled()) throw imgErr;');
+    expect(pipeSrc).toContain('const _halfRaw = await callGemini(halfPrompt');
+  });
+});
+
+describe('honest empty-response and cancellation telemetry', () => {
+  it('logs empty responses as terminal failures, but does not count AbortError as a service failure', () => {
+    expect(pipeSrc).toContain("_pipeLog('API-empty'");
+    expect(pipeSrc).toContain("_pipeLog('Vision-empty'");
+    expect(pipeSrc).toContain("var _abortedCall = !!(err && (err.name === 'AbortError' || err.isAbort));");
+    expect(pipeSrc).toContain('if (!_abortedCall) _callStats.terminalFailures');
+    expect(pipeSrc).toContain('_geminiSuccessRepresentsFailure(requestProfile)');
+    expect(pipeSrc).toMatch(/catch\(function\(err\) \{[\s\S]*?_callStats\.totalApiMs \+= dur;[\s\S]*?API-stop/);
   });
 });

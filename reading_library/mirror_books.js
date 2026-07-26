@@ -40,6 +40,10 @@ const INDEX_PATH = path.join(ROOT, 'index.json');
 const CARD_INDEX_PATH = path.join(ROOT, 'index_cards.json');
 // Content type split out of the core index and loaded lazily by the module.
 const LAZY_CARD_TYPE = 'public-domain-catalog-card';
+const EXTENDED_LAZY_SOURCE_IDS = new Set([
+  'open-textbook-library', 'wikibooks', 'core-knowledge', 'pressbooks',
+  'standard-ebooks', 'book-dash', 'oapen', 'doab', 'mit-ocw', 'ncbi-bookshelf'
+]);
 const OPEN_CATALOG_PATH = path.join(ROOT, 'open_catalog.json');
 const CLI_ARGS = process.argv.slice(2);
 
@@ -483,8 +487,10 @@ async function fetchAll(onlySlug) {
   // actually needs them; the default Stories/Science/Study shelves and the
   // language stats stay complete without it.
   const generatedAt = new Date().toISOString();
-  const coreBooks = indexBooks.filter((b) => b.contentType !== LAZY_CARD_TYPE);
-  const cardBooks = indexBooks.filter((b) => b.contentType === LAZY_CARD_TYPE);
+  const isLazyCard = (book) => book.contentType === LAZY_CARD_TYPE ||
+    EXTENDED_LAZY_SOURCE_IDS.has(book.sourceId);
+  const coreBooks = indexBooks.filter((book) => !isLazyCard(book));
+  const cardBooks = indexBooks.filter(isLazyCard);
   const index = {
     schema: 'allo-reading-library-index@1',
     generatedAt,

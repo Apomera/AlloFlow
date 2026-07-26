@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1989-introduction-to-adulthood-and-aging-1",
+  "title": "Introduction to Adulthood and Aging - 1",
+  "description": "Introduction to Adulthood and Aging (2026) is a research-based, 358-page Open Educational Resource (OER) adapted with original material added for use in Virginia Tech’s Human Development course, HD 2004: Adulthood and Aging. This text aims to spark reader ideas to address the significant global challenges and opportunities related to aging worldwide, exploring development, loss, resilience, and change and challenging common assumptions about aging. More than just a textbook, this resource is intended to spark reflection, empathy, and connection. The text is a foundation of knowledge and compassion that can be applied in both academic and personal settings, assisting readers to engage with the topic in practical and meaningful ways. Developed in response to the increasing cost of textbooks, with the goal of reducing the financial burden on students and families, Introduction to Adulthood and Aging adapts and expands the openly-licensed works of other authors. It was adapted with original content added from existing openly-licensed texts, developed as a course reader in Canvas, and has been converted into MSWord and PDF. It is shared broadly in an effort to increase access to the content. While it is freely available under a Creative Commons Attribution NonCommercial ShareAlike (CC BY NC-SA) 4.0 license, the value of the content remains high, grounded in research, empathy, and a commitment to accessible education. Instructors reviewing or adopting this book for a course, please help us understand your use by filling out this form: https://bit.ly/interest_introductiontoadulthoodandaging",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Social Sciences"
+  ],
+  "authors": [
+    "Maham Khan - Editor"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Virginia Tech Libraries",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introduction-to-adulthood-and-aging-1"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Introduction to Adulthood and Aging (2026) is a research-based, 358-page Open Educational Resource (OER) adapted with original material added for use in Virginia Tech’s Human Development course, HD 2004: Adulthood and Aging. This text aims to spark reader ideas to address the significant global challenges and opportunities related to aging worldwide, exploring development, loss, resilience, and change and challenging common assumptions about aging. More than just a textbook, this resource is intended to spark reflection, empathy, and connection. The text is a foundation of knowledge and compassion that can be applied in both academic and personal settings, assisting readers to engage with the topic in practical and meaningful ways. Developed in response to the increasing cost of textbooks, with the goal of reducing the financial burden on students and families, Introduction to Adulthood and Aging adapts and expands the openly-licensed works of other authors. It was adapted with original content added from existing openly-licensed texts, developed as a course reader in Canvas, and has been converted into MSWord and PDF. It is shared broadly in an effort to increase access to the content. While it is freely available under a Creative Commons Attribution NonCommercial ShareAlike (CC BY NC-SA) 4.0 license, the value of the content remains high, grounded in research, empathy, and a commitment to accessible education. Instructors reviewing or adopting this book for a course, please help us understand your use by filling out this form: https://bit.ly/interest_introductiontoadulthoodandaging"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2026."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 261
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1989",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1765-semillas-elementary-spanish-i",
+  "title": "Semillas: Elementary Spanish I",
+  "description": "Semillas: Elementary Spanish I is a comprehensive introductory Spanish open-access textbook with reading, listening, speaking, and writing practice. This Open Educational Resource (OER) aims to help students begin learning Spanish in a comprehensive manner. This textbook was created in Pressbooks, a versatile platform that allows us to integrate interactive activities (h5p) and present authentic material such as video interviews with Spanish speakers and other resources. Grammar is not presented just as a standalone topic, but rather is seamlessly integrated into all parts of this book. To ensure that our textbook is diverse and inclusive we have built a team of writers who cross gender, age, and nationality. We have consulted with people whose voices represent diverse demographic segments of the Spanish-speaking world to include a plurality of pronunciations and appearances. We have elected to use the feminine as the base form in our vocabulary lists and have introduced students to non-binary endings. This textbook underwent a rigorous review process that included professionals from more than ten higher education organizations in the United States.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages"
+  ],
+  "authors": [
+    "Gabriela Olivares - Author / eden jones - Author / Rachel Klevar - Author / Giovanni Zimotti - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Iowa",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/semillas-elementary-spanish-i"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Semillas: Elementary Spanish I is a comprehensive introductory Spanish open-access textbook with reading, listening, speaking, and writing practice. This Open Educational Resource (OER) aims to help students begin learning Spanish in a comprehensive manner. This textbook was created in Pressbooks, a versatile platform that allows us to integrate interactive activities (h5p) and present authentic material such as video interviews with Spanish speakers and other resources. Grammar is not presented just as a standalone topic, but rather is seamlessly integrated into all parts of this book. To ensure that our textbook is diverse and inclusive we have built a team of writers who cross gender, age, and nationality. We have consulted with people whose voices represent diverse demographic segments of the Spanish-speaking world to include a plurality of pronunciations and appearances. We have elected to use the feminine as the base form in our vocabulary lists and have introduced students to non-binary endings. This textbook underwent a rigorous review process that included professionals from more than ten higher education organizations in the United States."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 196
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1765",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

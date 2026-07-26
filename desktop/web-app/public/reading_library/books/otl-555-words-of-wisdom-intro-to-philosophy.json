@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-555-words-of-wisdom-intro-to-philosophy",
+  "title": "Words of Wisdom: Intro to Philosophy",
+  "description": "Words of Wisdom can come from anyone. In this text we discuss topics ranging from \"Are Humans good by nature?\" to \"Is there a God?\" to \"Do I have the right to my own opinion?\" Philosophy is the study of wisdom, and can emerge in our conversations in social media, in school, around the family dinner table, and even in the car. The text uses materials that are 2,500 years old, and materials that were in the news this year. Wise people come in all shapes and types, and from every culture on earth. We have poetry and folktales, sacred writings and letters. Dialogues and interviews, news columns, Ted Talks, You Tube recordings and even comedy are all a part of the content in this text.You will be most successful reading this on line. The formatting in the downloadable versions is not wonderful. There is work being done by the software, but in the meantime, you will want to use it by clicking here on \"read book:\".",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Philosophy"
+  ],
+  "authors": [
+    "Jody Ondich - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Jody Ondich",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/words-of-wisdom-intro-to-philosophy"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Words of Wisdom can come from anyone. In this text we discuss topics ranging from \"Are Humans good by nature?\" to \"Is there a God?\" to \"Do I have the right to my own opinion?\" Philosophy is the study of wisdom, and can emerge in our conversations in social media, in school, around the family dinner table, and even in the car. The text uses materials that are 2,500 years old, and materials that were in the news this year. Wise people come in all shapes and types, and from every culture on earth. We have poetry and folktales, sacred writings and letters. Dialogues and interviews, news columns, Ted Talks, You Tube recordings and even comedy are all a part of the content in this text.You will be most successful reading this on line. The formatting in the downloadable versions is not wonderful. There is work being done by the software, but in the meantime, you will want to use it by clicking here on \"read book:\"."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2018."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 190
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "555",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

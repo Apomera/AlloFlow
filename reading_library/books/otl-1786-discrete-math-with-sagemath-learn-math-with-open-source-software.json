@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1786-discrete-math-with-sagemath-learn-math-with-open-source-software",
+  "title": "Discrete Math with SageMath: Learn math with open-source software",
+  "description": "Our book is intended to provide concise and complete instructions on how to use Sage to solve problems in Discrete Math. It is appropriate for a first or second year undergraduate course for math and computer science majors. Our goal is to streamline the learning process with SageMath. This approach helps students focus more on mathematics and reduces the friction of learning how to code. Our resources are designed for all math students, regardless of programming experience. The novelty of our project is that the textbook is authored by students under faculty supervision. With Open Pedagogy as a guiding praxis, we present this student-created textbook as a more effective alternative in promoting student learning and engagement. Students present the contents in new and inventive ways, from the overall voice of the textbook to the actual examples drawn from their and their peers' lives. The text began as a support textbook for our undergraduate Discrete Math course developed at Wright College, one of the City Colleges of Chicago. Despite the fabulous capabilities of SageMath, students in Discrete Math were often frustrated by the lack of specific documentation geared towards beginning undergrad students in Discrete Math. We developed an OER for our students to use this mathematical software effectively.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Pure"
+  ],
+  "authors": [
+    "Zunaid Ahmed - Author / Hellen Colman - Author / Samuel Lubliner - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Zunaid Ahmed, Hellen Colman, Samuel Lubliner",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/discrete-math-with-sagemath-learn-math-with-open-source-software"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Our book is intended to provide concise and complete instructions on how to use Sage to solve problems in Discrete Math. It is appropriate for a first or second year undergraduate course for math and computer science majors. Our goal is to streamline the learning process with SageMath. This approach helps students focus more on mathematics and reduces the friction of learning how to code. Our resources are designed for all math students, regardless of programming experience. The novelty of our project is that the textbook is authored by students under faculty supervision. With Open Pedagogy as a guiding praxis, we present this student-created textbook as a more effective alternative in promoting student learning and engagement. Students present the contents in new and inventive ways, from the overall voice of the textbook to the actual examples drawn from their and their peers' lives. The text began as a support textbook for our undergraduate Discrete Math course developed at Wright College, one of the City Colleges of Chicago. Despite the fabulous capabilities of SageMath, students in Discrete Math were often frustrated by the lack of specific documentation geared towards beginning undergrad students in Discrete Math. We developed an OER for our students to use this mathematical software effectively."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 230
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1786",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

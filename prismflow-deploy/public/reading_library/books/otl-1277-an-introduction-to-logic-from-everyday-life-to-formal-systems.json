@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1277-an-introduction-to-logic-from-everyday-life-to-formal-systems",
+  "title": "An Introduction to Logic: From Everyday Life to Formal Systems",
+  "description": "An introduction to the discipline of logic covering subjects from the structures of arguments, classical and modern logic, categorical and inductive inferences, to informal fallacies. Over 30 years of development provides a sound empirical based pedagogy throughout the text. Examples in ordinary language using familiar examples avoids the suggestion of an alien cultural imposition. A focus on the basic representational techniques of classical and modern logic. Students introduced to basic concepts of set theory, using Venn diagrams to represent statements and evaluate arguments. Students introduced to basic concepts of propositional logic and the use of truth-tables. Students introduced to basic concepts of predicate logic and the use of mixed quantifiers. Students introduced to the relationship between logic diagrams, circuit diagrams, and gate diagrams in computer science. Students introduced to the use of logic in ordinary and scientific contexts. Students provided a historical introduction to the development of modern probability theory and its relationship to logic. Students introduced to basic concepts of statistical inference, with non-technical treatments of hasty and biased statistical generalizations. And a unique treatment of stereotypical thinking in terms of statistical syllogisms. Students introduced to basic notions in analogical and causal inference. Exercises requiring both passive (recognition) and active (construction) skills. Exercises including locutions and examples from standard English and ethnic dialects of English (African-American, Hispanic-American, etc) Answers for sample exercises provided, making the text closer to a self-teaching module",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Linguistics"
+  ],
+  "authors": [
+    "Albert Mosley - Author / Eulalio Baltazar - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Smith College Open Educational Resources: Textbooks",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/an-introduction-to-logic-from-everyday-life-to-formal-systems"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "An introduction to the discipline of logic covering subjects from the structures of arguments, classical and modern logic, categorical and inductive inferences, to informal fallacies. Over 30 years of development provides a sound empirical based pedagogy throughout the text. Examples in ordinary language using familiar examples avoids the suggestion of an alien cultural imposition. A focus on the basic representational techniques of classical and modern logic. Students introduced to basic concepts of set theory, using Venn diagrams to represent statements and evaluate arguments. Students introduced to basic concepts of propositional logic and the use of truth-tables. Students introduced to basic concepts of predicate logic and the use of mixed quantifiers. Students introduced to the relationship between logic diagrams, circuit diagrams, and gate diagrams in computer science. Students introduced to the use of logic in ordinary and scientific contexts. Students provided a historical introduction to the development of modern probability theory and its relationship to logic. Students introduced to basic concepts of statistical inference, with non-technical treatments of hasty and biased statistical generalizations. And a unique treatment of stereotypical thinking in terms of statistical syllogisms. Students introduced to basic notions in analogical and causal inference. Exercises requiring both passive (recognition) and active (construction) skills. Exercises including locutions and examples from standard English and ethnic dialects of English (African-American, Hispanic-American, etc) Answers for sample exercises provided, making the text closer to a self-teaching module"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2019."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 255
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1277",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

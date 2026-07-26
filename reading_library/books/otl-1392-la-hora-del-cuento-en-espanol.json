@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1392-la-hora-del-cuento-en-espanol",
+  "title": "La hora del cuento en español",
+  "description": "La hora del cuento en español is a collection of children’s stories in Spanish authored by Kwantlen Polytechnic University (KPU) students and edited by KPU Faculty Constanza Rojas-Primus and KPU alumna Sofía Rodríguez. The first part of this collection is a selection of stories written by KPU Spanish 1100 students between Fall 2017 and Spring 2019 as a result of a collaboration between KPU Spanish and Guildford Public Library Language Literacy Program “Storytime in Spanish”. The second part of this collection is a selection of stories written by KPU Spanish 1101 students between Fall 2020 and Spring 2022 as a result of an interuniversity collaboration in support of UNESCO´s Sustainable Development Goals Agenda 2030. All stories are narrated by Constanza Rojas-Primus and have been translated into English by Sofía Rodríguez. The illustrations in the cover and first part of this collection are artwork of KPU Fine Arts student Cheyenne Pokeda.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Languages"
+  ],
+  "authors": [
+    "Constanza Rojas-Primus - Author / Sofía Rodríguez - Author / Cheyenne Pokeda - Illustrator"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Kwantlen Polytechnic University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/la-hora-del-cuento-en-espanol"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "La hora del cuento en español is a collection of children’s stories in Spanish authored by Kwantlen Polytechnic University (KPU) students and edited by KPU Faculty Constanza Rojas-Primus and KPU alumna Sofía Rodríguez. The first part of this collection is a selection of stories written by KPU Spanish 1100 students between Fall 2017 and Spring 2019 as a result of a collaboration between KPU Spanish and Guildford Public Library Language Literacy Program “Storytime in Spanish”. The second part of this collection is a selection of stories written by KPU Spanish 1101 students between Fall 2020 and Spring 2022 as a result of an interuniversity collaboration in support of UNESCO´s Sustainable Development Goals Agenda 2030. All stories are narrated by Constanza Rojas-Primus and have been translated into English by Sofía Rodríguez. The illustrations in the cover and first part of this collection are artwork of KPU Fine Arts student Cheyenne Pokeda."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 173
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1392",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

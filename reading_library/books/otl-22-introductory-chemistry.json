@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-22-introductory-chemistry",
+  "title": "Introductory Chemistry",
+  "description": "David W. Ball of Cleveland State University brings his new survey of general chemistry text, Introductory Chemistry, to the market with a fresh theme that will be sure to hold student interest: \"Chemistry is Everywhere.\" Introductory Chemistry is intended for a one-semester introductory or preparatory chemistry course. Throughout the chapters, David presents two features that reinforce the theme of the textbook, that chemistry is everywhere. The first is the boxed feature titled, appropriately, ”Chemistry is Everywhere“. This feature takes a topic of the chapter and demonstrates how this topic shows up in everyday life. In the introductory chapter, ”Chemistry is Everywhere“ focuses on the personal hygiene products that students may use every morning: toothpaste, soap, shampoo among others. These products are chemicals, aren't they? This book explores some of the chemical reactions like the ones that give students clean and healthy teeth, and shiny hair. This feature makes it clear to students that chemistry is, indeed, everywhere, and it will promote student retention in what is sometimes considered an intimidating course. The second boxed feature focuses on chemistry that students likely indulge in every day: eating and drinking. In the ”Food and Drink App“, David discusses how the chemistry of the chapter applies to things that students eat and drink every day. Carbonated beverages depend on the behavior of gases, foods contain acids and bases, and everyone actually eats certain rocks. (Yikes!) Cooking, eating, drinking, metabolism — all chemical processes students are involved with all the time. These features allow students to see the things we interact with every day in a new light — as chemistry. Just like many of the one-semester chemistry books you may be used to, each section in David Ball's starts with one or more Learning Objectives, which list the main points of the section. Each section ends with Key Takeaways, which are reviews of the main points of the section. Each chapter is full of examples to illustrate the key points of the materials, and each example is followed with a similar ”Test Yourself“ exercise to see if the student understands the concept. Each section ends with its own set of paired exercises to practice the material from that section, and each chapter ends with a section of ”Additional Exercises“ that are more challenging or require multiple steps or skills to answer. David took the time to treat mathematical problems in Introductory Chemistry one of two ways, either as a conversion-factor problem or as a formula problem. David believes having two basic mathematical approaches (converting and formulas) allows the text to focus on the logic of the approach and not tricks or shortcuts; which speaks to the final point about Introductory Chemistry. You'll notice that David took no shortcuts with the material in this text, his inviting writing style, concise approach, consistent presentation, and interesting pedagogy have given it some of the best peer reviews we've seen at Flat World. So, order a desk copy or dive in now to see for yourself.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Chemistry"
+  ],
+  "authors": [
+    "David W. Ball - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Saylor Foundation",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/introductory-chemistry"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "David W. Ball of Cleveland State University brings his new survey of general chemistry text, Introductory Chemistry, to the market with a fresh theme that will be sure to hold student interest: \"Chemistry is Everywhere.\" Introductory Chemistry is intended for a one-semester introductory or preparatory chemistry course. Throughout the chapters, David presents two features that reinforce the theme of the textbook, that chemistry is everywhere. The first is the boxed feature titled, appropriately, ”Chemistry is Everywhere“. This feature takes a topic of the chapter and demonstrates how this topic shows up in everyday life. In the introductory chapter, ”Chemistry is Everywhere“ focuses on the personal hygiene products that students may use every morning: toothpaste, soap, shampoo among others. These products are chemicals, aren't they? This book explores some of the chemical reactions like the ones that give students clean and healthy teeth, and shiny hair. This feature makes it clear to students that chemistry is, indeed, everywhere, and it will promote student retention in what is sometimes considered an intimidating course. The second boxed feature focuses on chemistry that students likely indulge in every day: eating and drinking. In the ”Food and Drink App“, David discusses how the chemistry of the chapter applies to things that students eat and drink every day. Carbonated beverages depend on the behavior of gases, foods contain acids and bases, and everyone actually eats certain rocks. (Yikes!) Cooking, eating, drinking, metabolism — all chemical processes students are involved with all the time. These features allow students to see the things we interact with every day in a new light — as chemistry. Just like many of the one-semester chemistry books you may be used to, each section in David Ball's starts with one or more Learning Objectives, which list the main points of the section. Each section ends with Key Takeaways, which are reviews of the main points of the section. Each chapter is full of examples to illustrate the key points of the materials, and each example is followed with a similar ”Test Yourself“ exercise to see if the student understands the concept. Each section ends with its own set of paired exercises to practice the material from that section, and each chapter ends with a section of ”Additional Exercises“ that are more challenging or require multiple steps or skills to answer. David took the time to treat mathematical problems in Introductory Chemistry one of two ways, either as a conversion-factor problem or as a formula problem. David believes having two basic mathematical approaches (converting and formulas) allows the text to focus on the logic of the approach and not tricks or shortcuts; which speaks to the final point about Introductory Chemistry. You'll notice that David took no shortcuts with the material in this text, his inviting writing style, concise approach, consistent presentation, and interesting pedagogy have given it some of the best peer reviews we've seen at Flat World. So, order a desk copy or dive in now to see for yourself."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2011."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 522
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "22",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

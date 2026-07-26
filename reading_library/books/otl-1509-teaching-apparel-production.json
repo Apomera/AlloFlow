@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1509-teaching-apparel-production",
+  "title": "Teaching Apparel Production",
+  "description": "This text was written to provide students and teacher candidates with an introductory understanding of the skills associated with teaching apparel production. The book is broken into units and chapters that focus on essential skills for constructing garments and, more specifically, teaching others how to construct apparel and apparel-related products. Readers are invited to explore this text in any order, as it is not necessary to read each unit or chapter in sequence. Embedded within each chapter are key concepts related to the topic, pedagogical tips and tricks, a variety of resources, and references",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Humanities - Arts"
+  ],
+  "authors": [
+    "Sheri Deaton - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "University of Arkansas",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/teaching-apparel-production"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "This text was written to provide students and teacher candidates with an introductory understanding of the skills associated with teaching apparel production. The book is broken into units and chapters that focus on essential skills for constructing garments and, more specifically, teaching others how to construct apparel and apparel-related products. Readers are invited to explore this text in any order, as it is not necessary to read each unit or chapter in sequence. Embedded within each chapter are key concepts related to the topic, pedagogical tips and tricks, a variety of resources, and references"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 117
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1509",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

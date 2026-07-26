@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1485-aviation-maintenance-technician-handbook-airframe-faa-h-8083-31b",
+  "title": "Aviation Maintenance Technician Handbook – Airframe (FAA-H-8083-31B)",
+  "description": "The Aviation Maintenance Technician Handbook—Airframe (FAA-H-8083-31B) is one of a series of three handbooks for persons preparing for certification as an airframe or powerplant mechanic. This handbook provides basic information on principles, fundamentals, and technical procedures in the subject matter areas relating to the airframe rating. It is designed to aid students enrolled in a formal course of instruction, as well as the individual who is studying on their own. Since the knowledge requirements for the airframe and powerplant ratings closely parallel each other in some subject areas, the chapters which discuss fire protection systems and electrical systems contain some material which is also duplicated in the Aviation Maintenance Technician Handbook—Powerplant (FAA-H-8083-32B). This handbook contains information on airframe construction features, assembly and rigging, fabric covering, structural repairs, and aircraft welding. The handbook also contains an explanation of the units that make up the various airframe systems. Because there are so many different types of aircraft in use today, it is reasonable to expect that differences exist in airframe components and systems. To avoid undue repetition, the practice of using representative systems and units is carried out throughout the handbook. Subject matter treatment is from a generalized point of view and should be supplemented by reference to manufacturers’ manuals or other textbooks if more detail is desired. This handbook is not intended to replace, substitute for, or supersede official regulations or manufacturers’ instructions. Occasionally the word “must” or similar language is used where the desired action is deemed critical. The use of such language is not intended to add to, interpret, or relieve a duty imposed by Title 14 of the Code of Federal Regulations (14 CFR).",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Engineering & Technology"
+  ],
+  "authors": [
+    "U.S. Department of Transportation Federal Aviation Administration - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Federal Aviation Administration",
+  "license": "CC0 1.0 catalog metadata · linked title: No Rights Reserved",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/aviation-maintenance-technician-handbook-airframe-faa-h-8083-31b"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "No Rights Reserved"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Aviation Maintenance Technician Handbook—Airframe (FAA-H-8083-31B) is one of a series of three handbooks for persons preparing for certification as an airframe or powerplant mechanic. This handbook provides basic information on principles, fundamentals, and technical procedures in the subject matter areas relating to the airframe rating. It is designed to aid students enrolled in a formal course of instruction, as well as the individual who is studying on their own. Since the knowledge requirements for the airframe and powerplant ratings closely parallel each other in some subject areas, the chapters which discuss fire protection systems and electrical systems contain some material which is also duplicated in the Aviation Maintenance Technician Handbook—Powerplant (FAA-H-8083-32B). This handbook contains information on airframe construction features, assembly and rigging, fabric covering, structural repairs, and aircraft welding. The handbook also contains an explanation of the units that make up the various airframe systems. Because there are so many different types of aircraft in use today, it is reasonable to expect that differences exist in airframe components and systems. To avoid undue repetition, the practice of using representative systems and units is carried out throughout the handbook. Subject matter treatment is from a generalized point of view and should be supplemented by reference to manufacturers’ manuals or other textbooks if more detail is desired. This handbook is not intended to replace, substitute for, or supersede official regulations or manufacturers’ instructions. Occasionally the word “must” or similar language is used where the desired action is deemed critical. The use of such language is not intended to add to, interpret, or relieve a duty imposed by Title 14 of the Code of Federal Regulations (14 CFR)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: No Rights Reserved. Copyright year: 2023."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 301
+  },
+  "linkedContentLicense": "No Rights Reserved",
+  "externalRecordId": "1485",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

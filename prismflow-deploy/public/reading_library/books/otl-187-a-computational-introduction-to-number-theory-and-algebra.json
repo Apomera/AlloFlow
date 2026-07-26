@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-187-a-computational-introduction-to-number-theory-and-algebra",
+  "title": "A Computational Introduction to Number Theory and Algebra",
+  "description": "All of the mathematics required beyond basic calculus is developed “from scratch.” Moreover, the book generally alternates between “theory” and “applications”: one or two chapters on a particular set of purely mathematical concepts are followed by one or two chapters on algorithms and applications; the mathematics provides the theoretical underpinnings for the applications, while the applications both motivate and illustrate the mathematics. Of course, this dichotomy between theory and applications is not perfectly maintained: the chapters that focus mainly on applications include the development of some of the mathematics that is specific to a particular application, and very occasionally, some of the chapters that focus mainly on mathematics include a discussion of related algorithmic ideas as well. The mathematical material covered includes the basics of number theory (including unique factorization, congruences, the distribution of primes, and quadratic reciprocity) and of abstract algebra (including groups, rings, fields, and vector spaces). It also includes an introduction to discrete probability theory—this material is needed to properly treat the topics of probabilistic algorithms and cryptographic applications. The treatment of all these topics is more or less standard, except that the text only deals with commutative structures (i.e., abelian groups and commutative rings with unity) — this is all that is really needed for the purposes of this text, and the theory of these structures is much simpler and more transparent than that of more general, non-commutative structures. There are a few sections that are marked with a “(∗),” indicating that the material covered in that section is a bit technical, and is not needed else- where. There are many examples in the text, which form an integral part of the book, and should not be skipped. There are a number of exercises in the text that serve to reinforce, as well as to develop important applications and generalizations of, the material presented in the text. Some exercises are underlined. These develop important (but usually simple) facts, and should be viewed as an integral part of the book. It is highly recommended that the reader work these exercises, or at the very least, read and understand their statements. In solving exercises, the reader is free to use any previously stated results in the text, including those in previous exercises. However, except where otherwise noted, any result in a section marked with a “(∗),” or in §5.5, need not and should not be used outside the section in which it appears. There is a very brief “Preliminaries” chapter, which fixes a bit of notation and recalls a few standard facts. This should be skimmed over by the reader. There is an appendix that contains a few useful facts; where such a fact is used in the text, there is a reference such as “see §An,” which refers to the item labeled “An” in the appendix.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics - Algebra",
+    "Mathematics - Applied"
+  ],
+  "authors": [
+    "Victor Shoup - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Cambridge University Press",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-NoDerivs",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/a-computational-introduction-to-number-theory-and-algebra"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-NoDerivs"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "All of the mathematics required beyond basic calculus is developed “from scratch.” Moreover, the book generally alternates between “theory” and “applications”: one or two chapters on a particular set of purely mathematical concepts are followed by one or two chapters on algorithms and applications; the mathematics provides the theoretical underpinnings for the applications, while the applications both motivate and illustrate the mathematics. Of course, this dichotomy between theory and applications is not perfectly maintained: the chapters that focus mainly on applications include the development of some of the mathematics that is specific to a particular application, and very occasionally, some of the chapters that focus mainly on mathematics include a discussion of related algorithmic ideas as well. The mathematical material covered includes the basics of number theory (including unique factorization, congruences, the distribution of primes, and quadratic reciprocity) and of abstract algebra (including groups, rings, fields, and vector spaces). It also includes an introduction to discrete probability theory—this material is needed to properly treat the topics of probabilistic algorithms and cryptographic applications. The treatment of all these topics is more or less standard, except that the text only deals with commutative structures (i.e., abelian groups and commutative rings with unity) — this is all that is really needed for the purposes of this text, and the theory of these structures is much simpler and more transparent than that of more general, non-commutative structures. There are a few sections that are marked with a “(∗),” indicating that the material covered in that section is a bit technical, and is not needed else- where. There are many examples in the text, which form an integral part of the book, and should not be skipped. There are a number of exercises in the text that serve to reinforce, as well as to develop important applications and generalizations of, the material presented in the text. Some exercises are underlined. These develop important (but usually simple) facts, and should be viewed as an integral part of the book. It is highly recommended that the reader work these exercises, or at the very least, read and understand their statements. In solving exercises, the reader is free to use any previously stated results in the text, including those in previous exercises. However, except where otherwise noted, any result in a section marked with a “(∗),” or in §5.5, need not and should not be used outside the section in which it appears. There is a very brief “Preliminaries” chapter, which fixes a bit of notation and recalls a few standard facts. This should be skimmed over by the reader. There is an appendix that contains a few useful facts; where such a fact is used in the text, there is a reference such as “see §An,” which refers to the item labeled “An” in the appendix."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-NoDerivs. Copyright year: 2009."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 492
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-NoDerivs",
+  "externalRecordId": "187",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

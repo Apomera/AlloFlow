@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1807-bacterial-genomes",
+  "title": "Bacterial Genomes",
+  "description": "Microbes form the “unseen majority” of life on Earth, with bacteria at the forefront as both the architects of life’s chemical foundations and agents of disease. But their story is far more complex. Bacteria thrive in diverse and extreme environments, driven by the dynamic evolution of their genomes. These tiny organisms wield an extraordinary ability to adapt, balancing genetic changes across generations with rapid physiological responses to environmental shifts. In Bacterial Genomes, the evolutionary and regulatory processes that shape bacterial life are brought to life. This textbook offers a conceptual exploration of how bacterial genomes are organized, how they evolve, and how their genetic information is interpreted through intricate molecular networks. Drawing on both cutting-edge research and the historical milestones that shaped microbiology, it illuminates how bacteria navigate the intersection of genetic adaptation and ecological resilience. Designed for college students, interdisciplinary researchers, and even the determined amateur, Aswin Seshasayee moves beyond technical jargon to provide a thought-provoking synthesis of bacterial evolution and adaptation. Unlike traditional genomics texts, this book blends historical insights with contemporary discoveries, offering a fresh perspective on the role of bacteria in shaping the living world.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Biology"
+  ],
+  "authors": [
+    "Aswin Sai Narain Seshasayee - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Open Book Publishers",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/bacterial-genomes"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Microbes form the “unseen majority” of life on Earth, with bacteria at the forefront as both the architects of life’s chemical foundations and agents of disease. But their story is far more complex. Bacteria thrive in diverse and extreme environments, driven by the dynamic evolution of their genomes. These tiny organisms wield an extraordinary ability to adapt, balancing genetic changes across generations with rapid physiological responses to environmental shifts. In Bacterial Genomes, the evolutionary and regulatory processes that shape bacterial life are brought to life. This textbook offers a conceptual exploration of how bacterial genomes are organized, how they evolve, and how their genetic information is interpreted through intricate molecular networks. Drawing on both cutting-edge research and the historical milestones that shaped microbiology, it illuminates how bacteria navigate the intersection of genetic adaptation and ecological resilience. Designed for college students, interdisciplinary researchers, and even the determined amateur, Aswin Seshasayee moves beyond technical jargon to provide a thought-provoking synthesis of bacterial evolution and adaptation. Unlike traditional genomics texts, this book blends historical insights with contemporary discoveries, offering a fresh perspective on the role of bacteria in shaping the living world."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 212
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1807",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

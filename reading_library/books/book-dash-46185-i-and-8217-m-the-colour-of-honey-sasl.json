@@ -1,0 +1,89 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "book-dash-46185-i-and-8217-m-the-colour-of-honey-sasl",
+  "title": "I’m the Colour of Honey (SASL)",
+  "description": "Is that your teacher? Is that your Aunty? Amanda is fed up with these questions and wishes that she looked just like her Mummy and Daddy. But maybe they are more alike than she realises!",
+  "language": "South African Sign Language",
+  "langCode": "sgn",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "landscape",
+  "sourceId": "book-dash",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Family, friends, and home",
+    "Heritage, diversity, and inclusivity"
+  ],
+  "authors": [
+    "Maimouna Jallow"
+  ],
+  "illustrators": [
+    "Caroline Faysse"
+  ],
+  "contributors": [
+    {
+      "name": "Maimouna Jallow",
+      "role": "Writer"
+    },
+    {
+      "name": "Charné Casey",
+      "role": "Designer"
+    },
+    {
+      "name": "Caroline Faysse",
+      "role": "Illustrator"
+    },
+    {
+      "name": "Alison Ziki",
+      "role": "Editor"
+    }
+  ],
+  "publisher": "Book Dash",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "book-dash",
+    "name": "Book Dash",
+    "url": "https://bookdash.org/books/im-the-colour-of-honey-sasl/",
+    "attributionUrl": "https://bookdash.org/books/im-the-colour-of-honey-sasl/",
+    "sourceFilesUrl": "https://bookdash.org/book-source-files/?book=im-the-colour-of-honey"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://bookdash.org/about/what-we-do/our-books/",
+    "reason": "The complete illustrated edition and editable source files remain at Book Dash; this local entry preserves discovery and creator attribution."
+  },
+  "cover": {
+    "card": "https://bookdash.org/wp-content/uploads/2025/11/im-the-colour-of-honey_sasl-300x300.jpg",
+    "large": "https://bookdash.org/wp-content/uploads/2025/11/im-the-colour-of-honey_sasl-880x880.jpg"
+  },
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Is that your teacher? Is that your Aunty? Amanda is fed up with these questions and wishes that she looked just like her Mummy and Daddy. But maybe they are more alike than she realises!"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Creator attribution: Maimouna Jallow (Writer); Charné Casey (Designer); Caroline Faysse (Illustrator); Alison Ziki (Editor)\n\nLanguage: South African Sign Language. License: Creative Commons Attribution 4.0 International (CC BY 4.0)."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "This is a discovery record, not a flattened copy of the illustrated book. Use Open original to read or watch the complete edition at Book Dash. Book Dash also provides the editable source files for reuse and accessible adaptations at https://bookdash.org/book-source-files/?book=im-the-colour-of-honey"
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 104
+  }
+}

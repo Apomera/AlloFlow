@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1758-innovacion-pedagogica-en-ciencias-sociales-y-derecho-estrategias-y-tecni",
+  "title": "Innovación Pedagógica en ciencias sociales y Derecho: Estrategias y Técnicas de Educación Superior",
+  "description": "La innovación pedagógica en el ámbito del derecho aborda la necesidad de modernizar los métodos de enseñanza para adaptarse a las demandas contemporáneas de la educación superior y del mercado laboral. El objetivo principal es transformar las prácticas educativas tradicionales en estrategias más dinámicas e interactivas que promuevan el aprendizaje activo y la participación estudiantil. La metodología utilizada incluye la integración de tecnologías de la información y la comunicación (TIC), el aprendizaje basado en problemas (ABP), y las simulaciones de juicios, que permiten a los estudiantes desarrollar habilidades prácticas esenciales. Los resultados muestran una mejora significativa en la motivación, el rendimiento académico y la adquisición de competencias críticas como el pensamiento analítico y la resolución de problemas. La discusión señala la importancia de un enfoque holístico que combine diferentes teorías del aprendizaje para maximizar el impacto educativo. La conclusión destaca que, aunque los avances son prometedores, es fundamental abordar desafíos como la resistencia al cambio y la equidad en el acceso a recursos educativos innovadores para asegurar una implementación efectiva y sostenida de estas estrategias pedagógicas.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Law",
+    "Social Sciences"
+  ],
+  "authors": [
+    "Marcelo Eduardo Rojas-Montero - Author / Gabriela Fernanda Ocampo-Valle - Author / Renata Valeria Llanos-García - Author / Luis Fernando Bonilla-Fierro - Author / Luis Alfonso Bonilla-Alarcón - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/innovacion-pedagogica-en-ciencias-sociales-y-derecho-estrategias-y-tecnicas-de-educacion-superior"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "La innovación pedagógica en el ámbito del derecho aborda la necesidad de modernizar los métodos de enseñanza para adaptarse a las demandas contemporáneas de la educación superior y del mercado laboral. El objetivo principal es transformar las prácticas educativas tradicionales en estrategias más dinámicas e interactivas que promuevan el aprendizaje activo y la participación estudiantil. La metodología utilizada incluye la integración de tecnologías de la información y la comunicación (TIC), el aprendizaje basado en problemas (ABP), y las simulaciones de juicios, que permiten a los estudiantes desarrollar habilidades prácticas esenciales. Los resultados muestran una mejora significativa en la motivación, el rendimiento académico y la adquisición de competencias críticas como el pensamiento analítico y la resolución de problemas. La discusión señala la importancia de un enfoque holístico que combine diferentes teorías del aprendizaje para maximizar el impacto educativo. La conclusión destaca que, aunque los avances son prometedores, es fundamental abordar desafíos como la resistencia al cambio y la equidad en el acceso a recursos educativos innovadores para asegurar una implementación efectiva y sostenida de estas estrategias pedagógicas."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 199
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1758",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1811-communication-and-teamwork-skills-to-support-neurodiversity",
+  "title": "Communication and Teamwork Skills to Support Neurodiversity",
+  "description": "A significant challenge for neurodivergent students is the transition to studying in a new environment. This book focuses on assisting students with this transition by guiding them through different learning activities and information to support the team-based learning they will engage in during their degree. The resources in this book are designed to be accessible for all students and staff, with the aim of developing an understanding of disability and neurodiversity, teamwork and communication skills and the ability to work collaboratively with peers to achieve common goals. The resources shared here can be utilised within individual units to support student skill development in inclusivity, engagement with others and the capacity to contribute towards highly functional teams.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Education",
+    "Journalism, Media Studies & Communications"
+  ],
+  "authors": [
+    "Teagan Menhenett - Author / Nick Milne - Author / Siva Krishnan - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Deakin University",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/communication-and-teamwork-skills-to-support-neurodiversity"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "A significant challenge for neurodivergent students is the transition to studying in a new environment. This book focuses on assisting students with this transition by guiding them through different learning activities and information to support the team-based learning they will engage in during their degree. The resources in this book are designed to be accessible for all students and staff, with the aim of developing an understanding of disability and neurodiversity, teamwork and communication skills and the ability to work collaboratively with peers to achieve common goals. The resources shared here can be utilised within individual units to support student skill development in inclusivity, engagement with others and the capacity to contribute towards highly functional teams."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial. Copyright year: 2025."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 139
+  },
+  "linkedContentLicense": "Attribution-NonCommercial",
+  "externalRecordId": "1811",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

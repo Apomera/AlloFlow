@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1740-inteligencia-artificial-aplicada-a-procesamiento-de-lenguaje-natural-nlp",
+  "title": "Inteligencia Artificial Aplicada a Procesamiento de Lenguaje Natural (NLP) con Python y Machine Learning.",
+  "description": "Este libro refleja el trabajo realizado bajo investigación entre docentes investigadores con el afán de que sea útil al lector, el uso de predicciones al momento de entrenar un algoritmo clasificado de texto en procesamiento de lenguaje natural (PLN) basado en machine learning. Conformado de 4 capítulos con la utilidad para el inicio al mundo de la IA de la rama de procesamiento de lenguaje natural con Python en machine learning. El Capítulo 1 menciona conceptos y la evolución de las diferentes ramas de conocimiento que abarca la inteligencia artificial (AI), el entendimiento del NLP, machine learning, tipos de aprendizaje para resolver problemas como el supervisado, no supervisado y refuerzo. Capítulo 2 se profundiza el NLP conociendo los contenidos básicos de clasificación como: Las técnicas y diseño de LSTM, tokeización, stopword, lematización, bag of Word (part of speech tagging). Capítulo 3 es la estructuración de este capítulo el conocer las definiciones de los modelos de aprendizaje supervisado que son útiles en NLP orientado a la clasificación de texto. Capítulo 4 un caso de predicción o grado de asertividad del modelamiento de un algoritmo, la intención es demostrar la utilización de un modelo y varias técnicas aplicando NLP basado en machine learning.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Computer Science - Artificial Intelligence"
+  ],
+  "authors": [
+    "Lady Mariuxi Sangacha-Tapia - Author / Ricardo Javier Celi - Author / Ivan Leonel Acosta-Guzmán - Author / Eleanor Alexandra Varela-Tapia - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Editorial Grupo AEA",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution-NonCommercial-ShareAlike",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/inteligencia-artificial-aplicada-a-procesamiento-de-lenguaje-natural-nlp-con-python-y-machine-learning"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution-NonCommercial-ShareAlike"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Este libro refleja el trabajo realizado bajo investigación entre docentes investigadores con el afán de que sea útil al lector, el uso de predicciones al momento de entrenar un algoritmo clasificado de texto en procesamiento de lenguaje natural (PLN) basado en machine learning. Conformado de 4 capítulos con la utilidad para el inicio al mundo de la IA de la rama de procesamiento de lenguaje natural con Python en machine learning. El Capítulo 1 menciona conceptos y la evolución de las diferentes ramas de conocimiento que abarca la inteligencia artificial (AI), el entendimiento del NLP, machine learning, tipos de aprendizaje para resolver problemas como el supervisado, no supervisado y refuerzo. Capítulo 2 se profundiza el NLP conociendo los contenidos básicos de clasificación como: Las técnicas y diseño de LSTM, tokeización, stopword, lematización, bag of Word (part of speech tagging). Capítulo 3 es la estructuración de este capítulo el conocer las definiciones de los modelos de aprendizaje supervisado que son útiles en NLP orientado a la clasificación de texto. Capítulo 4 un caso de predicción o grado de asertividad del modelamiento de un algoritmo, la intención es demostrar la utilización de un modelo y varias técnicas aplicando NLP basado en machine learning."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution-NonCommercial-ShareAlike. Copyright year: 2024."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 224
+  },
+  "linkedContentLicense": "Attribution-NonCommercial-ShareAlike",
+  "externalRecordId": "1740",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-47419-abantu-bibagira",
+  "title": "Abantu bibagira",
+  "description": "Igisagara kimwe cari kimerewe nabi cane kugeza aho umutware waco mushasha yabonekeye. (Uwu mugani wandikiwe i Abuja mu ruganda rwo kwandika ibijanye n'imigani mu mwaka wa 2018).",
+  "language": "Kirundi",
+  "langCode": "rn",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Edwin Irabor"
+  ],
+  "illustrators": [
+    "Edwin Irabor"
+  ],
+  "translators": [
+    "Fanuel Ndayishimiye"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Edwin Irabor",
+      "role": "Author"
+    },
+    {
+      "name": "Fanuel Ndayishimiye",
+      "role": "Translation"
+    },
+    {
+      "name": "Edwin Irabor",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Edwin Irabor (Author); Fanuel Ndayishimiye (Translation); Edwin Irabor (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "47419",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-c10bcb7c810c7458",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/27234.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27230.png",
+      "text": "Kera habayeho igisagara kimwe citwa I Butanyerera. Ico gisagara cabamwo abantu bakiri bato. Nta mutama canke umutamakazi yaba aho hantu.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419#page=1",
+      "sourceDigest": "sha256:67560a2b257b3f265e47a469e80ce0a9d9a2153b8c42b49b1e6236a7099fc010"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27231.png",
+      "text": "Abantu bo muri ico gisagara baba abagabo canke abagore barakunda gutamba bakaryoherwa cane. Barya ico bashatse bakongera bakanywa icarico cose coshobora kubaboreza. Barangwa no kwiryohera ijoro n'umurango.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419#page=2",
+      "sourceDigest": "sha256:70cc3f358f7c828eeab17a215e1c05deb4d057e3eb31b47ebc60a549bacc76c1"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27232.png",
+      "text": "Baribagiye n'ivyabashikiye ubwa mbere. Abo bantu b'i Butanyerera umusi umwe baravyutse basanga nta vyo kurya bisigaye. Nta n'ima ry' inzoga ryari risigaye. N'ivyuma vy'umuziki basanga vyajanjaguritse.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419#page=3",
+      "sourceDigest": "sha256:075cb2c9ebcbf39f9b88e51718b43f7698d28eb0d70e4c30172c75d66ba14833"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27233.png",
+      "text": "Nta muziki wari uhari ngo batambe. No gutamba ntivyari bigikunda kuko bari bashonje kandi bafise intege nke. Abo bantu baca baja k'umutware w'igisagara, yitwa Oza, baraboroga cane.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419#page=4",
+      "sourceDigest": "sha256:bb143b990af5a0a819a153a3b7db29e3cf90dec23877e9451b7a4e2d18d9cfc0"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27234.png",
+      "text": "Baraboroga bicuza. Uwo mutware akiri muto arasohoka mu nzu yiwe arababwira, \"Ni muhore bantu b'i Butanyerera. Ni mureke kurira. Turashobora gupfa mu gihe gito, reka tuje hamwe turabe uko twokora kugira tube turabayeho.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419#page=5",
+      "sourceDigest": "sha256:adf70b45ed8fa1d07bac14d830a882bad9124c940bfde1ab179930a96adc5d8f"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27235.png",
+      "text": "Abantu barasemerera, \"Uri umutware wacu, utegerezwa kudutabara!\" Uwo mutware Oza aca arihorera. Haciye akanya gato, arahaguruka arababwira, \"Sinkiri umutware wanyu. Ngira nivire muri iki gisagira nje ahandi hari umutekano. Ni mutore uwundi mutware.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419#page=6",
+      "sourceDigest": "sha256:02f98ed3657f0982e0af429673b9df606b99af1dd6a9d141c6cd1238627e8579"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27236.png",
+      "text": "Oza aca yinjira mu nzu, aratekera ibintu vyiwe aca arigira. Abantu ntibabona uwoshobora kuba umutware wabo. Baraburanirwa. Barushirizaho kuboroga.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419#page=7",
+      "sourceDigest": "sha256:768640039046f19fa294cb1047ac9bac49d1ee4cdfa01fc9ed0b53f0d2f0967e"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27237.png",
+      "text": "Haca humvikana akajwi gato mugabo kumvikana kavuga ngo, \"Nzoba umutware wanyu!\" Bose bahindukira kurondera iyo ako kajwi kaje kava. Bararabana. Bararaba barasubira. Ariko ntibatora uwavuze ko azobatwara.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419#page=8",
+      "sourceDigest": "sha256:8621e7693db4cfc6d3d09cd318b95e3c72f76a9175ab8eba732c2737058dbb8c"
+    },
+    {
+      "n": 9,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27238.png",
+      "text": "Ibitari vyitezwe muri abo bantu, agahungu gatoya kaca karahaguruka mu bantu bose. Ako gahungu karavuga, \"Ego cane ngiye kubaja imbere nk'umutware wanyu! Nzobafasha. Mugabo musabwa guhagarika irya ngeso yo gutwarwa n'ikirori umurango n'ijoro. Kandi mwumvirize impanuro zanje.\"",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419#page=9",
+      "sourceDigest": "sha256:0bcfc37824a61feecee0ba07f5839b26e8f51e86cf4cb72d1e59c484a393cad8"
+    },
+    {
+      "n": 10,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27239.png",
+      "text": "Ba bantu bose bagizwe n'abakiri bato baratangazwa n'ubwitange bw'uwo muhungu, basezerana kuzohora bamwumvira. Wa mutware mushasha ac'abatwara ahantu hari imirima myiza. Barahabwa ibifungurwa bararuhuka. Ac'atangura kubigisha. Arabibutsa ingene bakwiye kurima no kworora.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419#page=10",
+      "sourceDigest": "sha256:5f3be9d65e93cdd02648a605e7b9823266f93ac57a6995fa3b0a615d2a889c7d"
+    },
+    {
+      "n": 11,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27240.png",
+      "text": "Kuba bafise agahungu gatoya nk'umukuru wabo, abenegihugu bo muri ako karere batangura kumenyera gukora cane. Barakora bakongera bagakora. Haciye igihe bari bafise ibintu vyinshi, bafise ivyo kurya no kunywa. Basubira kuryoherwa no kuja mu kirori. Ariko bikabera rimwe bakanakora.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419#page=11",
+      "sourceDigest": "sha256:3014f2e4ca934f01bcf3140f71f220e22b7cff3b7b3a1505f7f68b4607b4bf1c"
+    },
+    {
+      "n": 12,
+      "img": "https://www.africanstorybook.org/illustrations/pages/27241.png",
+      "text": "Ako gahungu kabatwara kahora kava mu gisagara mw'ijoro kenshi kaja guhura n'umukurambere. Uwo akakabwira amakuru menshi hamwe n'imigani yerekeye abantu benshi babaye abahizi mu gutorera inyishu ibibazo abantu babo bari bafise. Muri ico gihe, ka gahungu kakaba akanyabwenge bwinshi mbere kanakomeye cane.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=47419#page=12",
+      "sourceDigest": "sha256:da567203bd0138974293a84f68debcc917b401bc8be9d00d2fd03d3d6e31b614"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 362
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:544ba5ca0289c5c402d528b730a8bb1fe9557ea74b823a7aad85780e0418e1fb"
+  }
+}

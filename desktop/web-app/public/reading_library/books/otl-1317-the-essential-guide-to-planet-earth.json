@@ -1,0 +1,74 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "otl-1317-the-essential-guide-to-planet-earth",
+  "title": "The Essential Guide to Planet Earth",
+  "description": "Every moment of your life will be from the perspective of a single planet—Planet Earth. You were born here and you will die here. This textbook is a guide to your home, to your place in the universe. By taking this course, you will learn about your home planet: how it works and how we know it works this way. This course is a user's manual for planet Earth, with direct recommendations for future generations, such as yourself, to maintain its health and natural wonders. As an astute student, you will be introduced to the theoretical principles of science and of how to defend yourself from the spread of ignorance. You will learn about Earth’s dimensions and motions, as well as how to navigate its surface. You will learn how energy originates from the closest star (the Sun), its Moon, and other sources of energy in the Earth’s active core and how this energy can be used and stored. You will learn basic scientific principles of matter, the makeup of substances that form the field of chemistry. You will examine the planet’s atmosphere, the air that you are breathing as you read this, and how that air is slowly changing. You will explore the vast abundance of Earth’s water, covering the planet in enormous oceans, abundant lakes, and rivers, as well as frozen water locked within snow and ice. You will learn how to predict wind and storms and how climates shift. You will lead your own exploration of the solid interior of the Earth, the composition of mountains, rocks, and dirt. You will learn about life, the most unique feature of the planet. You will explore theories of how life arose and how it has evolved and changed over time, learning that you are of Earth and the story of your own origin on this planet. You will undertake an examination of the great biomes of jungles, forests, and deserts and the life that exists within them. You will survey the important field of biology as you learn about life and its interactions with the planet. In the end, you will come to face the ominous future of your own planet, of the changes that are now occurring. Your planet is not the same as your ancestors, nor grandparents, nor your parents at your age—Earth today is quickly being altered, and you will need to adapt to this change. This course will teach you how to prepare for this change and how to protect the planet from further alteration to the point that it becomes lifeless. This class will be challenging, but with enough dedication and commitment, you will succeed in learning the material. You will cherish the knowledge presented in this class for the rest of your life.",
+  "language": "Not specified",
+  "langCode": "und",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "open-textbook-library",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Natural Sciences - Earth Sciences"
+  ],
+  "authors": [
+    "Benjamin J. Burger - Author"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Benjamin Burger",
+  "license": "CC0 1.0 catalog metadata · linked title: Attribution",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "open-textbook-library",
+    "name": "Open Textbook Library",
+    "url": "https://open.umn.edu/opentextbooks/textbooks/the-essential-guide-to-planet-earth"
+  },
+  "usagePolicy": {
+    "access": "link-only",
+    "mirror": false,
+    "adapt": false,
+    "ai": false,
+    "commercial": false,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://open.umn.edu/opentextbooks/discovery",
+    "reason": "Only CC0 catalog metadata and an AlloFlow-authored summary are stored. The linked textbook remains subject to its title-level license.",
+    "metadataLicense": "CC0 1.0",
+    "linkedContentLicense": "Attribution"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Every moment of your life will be from the perspective of a single planet—Planet Earth. You were born here and you will die here. This textbook is a guide to your home, to your place in the universe. By taking this course, you will learn about your home planet: how it works and how we know it works this way. This course is a user's manual for planet Earth, with direct recommendations for future generations, such as yourself, to maintain its health and natural wonders. As an astute student, you will be introduced to the theoretical principles of science and of how to defend yourself from the spread of ignorance. You will learn about Earth’s dimensions and motions, as well as how to navigate its surface. You will learn how energy originates from the closest star (the Sun), its Moon, and other sources of energy in the Earth’s active core and how this energy can be used and stored. You will learn basic scientific principles of matter, the makeup of substances that form the field of chemistry. You will examine the planet’s atmosphere, the air that you are breathing as you read this, and how that air is slowly changing. You will explore the vast abundance of Earth’s water, covering the planet in enormous oceans, abundant lakes, and rivers, as well as frozen water locked within snow and ice. You will learn how to predict wind and storms and how climates shift. You will lead your own exploration of the solid interior of the Earth, the composition of mountains, rocks, and dirt. You will learn about life, the most unique feature of the planet. You will explore theories of how life arose and how it has evolved and changed over time, learning that you are of Earth and the story of your own origin on this planet. You will undertake an examination of the great biomes of jungles, forests, and deserts and the life that exists within them. You will survey the important field of biology as you learn about life and its interactions with the planet. In the end, you will come to face the ominous future of your own planet, of the changes that are now occurring. Your planet is not the same as your ancestors, nor grandparents, nor your parents at your age—Earth today is quickly being altered, and you will need to adapt to this change. This course will teach you how to prepare for this change and how to protect the planet from further alteration to the point that it becomes lifeless. This class will be challenging, but with enough dedication and commitment, you will succeed in learning the material. You will cherish the knowledge presented in this class for the rest of your life."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Linked title license: Attribution. Copyright year: 2020."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Open the official record to review formats, accessibility details, and the complete title-level license before reuse."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 483
+  },
+  "linkedContentLicense": "Attribution",
+  "externalRecordId": "1317",
+  "accessibilityFeatures": [],
+  "licenseAudit": {
+    "auditedAt": "2026-07-25",
+    "source": "https://open.umn.edu/opentextbooks/discovery",
+    "note": "Open Textbook Library records are CC0. Linked textbook content is not mirrored by this card."
+  }
+}

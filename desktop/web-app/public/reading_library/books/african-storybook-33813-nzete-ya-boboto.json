@@ -1,0 +1,148 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "african-storybook-33813-nzete-ya-boboto",
+  "title": "Nzete ya boboto",
+  "description": "Biso nionso tolingaka esika oyo tokoki kozwa boboto. (Lisapo oyo esalemaki na sanza ya sambo na mobu tuku mibale na zomi na libwa na tango ya bopemi ya mosala, na lisalisi ya African Storybook na Pimville Library na Soweto).",
+  "language": "Lingala",
+  "langCode": "ln",
+  "isRtl": false,
+  "level": "4",
+  "readingLevelLabel": "Longer paragraphs",
+  "orientation": "landscape",
+  "sourceId": "african-storybook",
+  "contentType": "story",
+  "subjects": [
+    "Children’s literature",
+    "Early literacy"
+  ],
+  "authors": [
+    "Mpumelelo Mlangeni, Tshiamo Msimanga, Tumi Mofokane"
+  ],
+  "illustrators": [
+    "Mpumelelo Mlangeni, Tshiamo Msimanga, Tumi Mofokane"
+  ],
+  "translators": [
+    "Guillain Sompa, Theresa Nyemba"
+  ],
+  "assurance": [],
+  "contributors": [
+    {
+      "name": "Mpumelelo Mlangeni, Tshiamo Msimanga, Tumi Mofokane",
+      "role": "Author"
+    },
+    {
+      "name": "Guillain Sompa, Theresa Nyemba",
+      "role": "Translation"
+    },
+    {
+      "name": "Mpumelelo Mlangeni, Tshiamo Msimanga, Tumi Mofokane",
+      "role": "Illustration"
+    }
+  ],
+  "originalAuthors": [],
+  "publisher": "African Storybook contributors",
+  "copyrightYear": null,
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Mpumelelo Mlangeni, Tshiamo Msimanga, Tumi Mofokane (Author); Guillain Sompa, Theresa Nyemba (Translation); Mpumelelo Mlangeni, Tshiamo Msimanga, Tumi Mofokane (Illustration)",
+  "source": {
+    "id": "african-storybook",
+    "name": "African Storybook",
+    "url": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33813",
+    "attributionUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33813",
+    "catalogUrl": "https://www.africanstorybook.org/lists/booklist.approved.php",
+    "originalSourceUrl": null,
+    "editionId": "33813",
+    "bookType": "3",
+    "approved": true
+  },
+  "usagePolicy": {
+    "access": "mirrored",
+    "mirror": true,
+    "adapt": true,
+    "ai": true,
+    "commercial": true,
+    "attributionRequired": true,
+    "shareAlike": false,
+    "auditedAt": "2026-07-25",
+    "auditSource": "https://www.africanstorybook.org/terms.html",
+    "reason": "The title-level back cover permits copying and adaptation with attribution."
+  },
+  "rightsNotice": "Keep the complete creator attribution and exact CC BY 4.0 license with copies or adaptations of this edition.",
+  "accessibility": {
+    "structuredPageText": true,
+    "pageImagesPaired": true,
+    "languageDeclared": true,
+    "accessibilityTransformationAllowed": true
+  },
+  "workKey": "asb-images-e7c2d0e4a82f566c",
+  "cover": "https://www.africanstorybook.org/illustrations/pages/85940129.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Ezalaka na mwana mwasi moko nakombo ya Ayanda. Ayanda azalaka mwana mwasi se moko ya baboti na ye. Mama na ye na tata na ye balingaki kokabwana.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33813#page=1",
+      "sourceDigest": "sha256:f9d276328e684bbba876812faa4f17f5f169436e64dc8b23e7e678a28be018eb"
+    },
+    {
+      "n": 2,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940129.png",
+      "text": "Ayanda azuaki mokano yako kima ndako. Akendeki na zamba po ete ayebakite esika mosusu ya kokende.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33813#page=2",
+      "sourceDigest": "sha256:dd092761e8a6ae2cd89e60c923f7edd68c9765e4aaf2ddca6a4a3702f7df159b"
+    },
+    {
+      "n": 3,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940130.png",
+      "text": "Mbwa ya zamba abenganaki Ayanda, yango a mataki na nzete. Mbwa ya zamba alingaki ko suwa ye, na yango amataki nalikolo makasi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33813#page=3",
+      "sourceDigest": "sha256:cfce61d772f0b3b279cd0c673a65fb1b83285503075687d1df7855b96f538659"
+    },
+    {
+      "n": 4,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940131.png",
+      "text": "Nalikolo nasuka ya nzete, Ayanda amonaki moyi ya kitoko. Akomaki na bolingo ya moyi pe azwaki mokano yako tikala na zamba.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33813#page=4",
+      "sourceDigest": "sha256:8440f2e671113ad0f5503434ae13454ae549991b79bef3ef382c710198d51808"
+    },
+    {
+      "n": 5,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940132.png",
+      "text": "Ayanda azalaki ko mata nzete mikolo nioso po asolola na moyi. Moyi ekomaki Libota na ye.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33813#page=5",
+      "sourceDigest": "sha256:d02a8c5cda43db516a416f6f0a22e200ebed4e22aee966eeac06479988eeb01a"
+    },
+    {
+      "n": 6,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940133.png",
+      "text": "Mokolo moko, Ayanda amonaki mobali moko nase ya nzete. Mobali wana azalaki tata naye. Ayanda akataki nase ya nzete pe tata naye alimbolelaki ye pona nini azalaki wana.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33813#page=6",
+      "sourceDigest": "sha256:cdd5856df1e6647b3102227d4b87b7f1d526992ae9fb3310dc7a0810bb269b53"
+    },
+    {
+      "n": 7,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940134.png",
+      "text": "Alobi, \"Tango ya kala liboso obotama, mama nayo na ngayi tozalaki ko kutana awa. Esika oyo ekokani na bisika mosusu te.\" \"Sikoyo na mati na nzete oyo pona kozua kimia tango mama na yo na ngayi kozo bunda,\" tata na Ayanda alobi.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33813#page=7",
+      "sourceDigest": "sha256:6fa548c99c2e73bdfe715ca23d93c8d99779719ea40d43f6f112937d95c496f0"
+    },
+    {
+      "n": 8,
+      "img": "https://www.africanstorybook.org/illustrations/pages/85940135.png",
+      "text": "Sima ya tango moke mama na Ayanda pe akomaki na kati ya zamba. Ayaki koluka boboto na tata na Ayanda. Oyo ezalaki nzete ya bango ya boboto.",
+      "sourceUrl": "https://www.africanstorybook.org/newviewer/index.php?bt=3&dual=false&id=33813#page=8",
+      "sourceDigest": "sha256:b9bf48c6fff08d058a5725c1ac47c83be24ed432e1440eaac79be83caeb1112e"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 199
+  },
+  "mirror": {
+    "importedAt": "2026-07-25",
+    "illustrationMode": "source-hosted",
+    "contentDigest": "sha256:079dea08a0baca52b97dcb49c4b93ad8250f8863d3c6cffdededf28d9c151485"
+  }
+}

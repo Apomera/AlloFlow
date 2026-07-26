@@ -44,7 +44,7 @@
         {
           "pairKey": "eppp-b002-professional-2::eppp-v2-professional-040",
           "pairedItemId": "eppp-b002-professional-2",
-          "similarity": 0.1996,
+          "similarity": 0.2041,
           "matchBasis": [
             "shared-rare-hyphenated-term"
           ],
@@ -55,7 +55,7 @@
         {
           "pairKey": "eppp-v2-professional-030::eppp-v2-professional-040",
           "pairedItemId": "eppp-v2-professional-030",
-          "similarity": 0.1645,
+          "similarity": 0.1682,
           "matchBasis": [
             "shared-rare-hyphenated-term"
           ],
@@ -88,7 +88,7 @@
         {
           "pairKey": "eppp-b016-social-1::eppp-v3-social-cultural-049",
           "pairedItemId": "eppp-v3-social-cultural-049",
-          "similarity": 0.1969,
+          "similarity": 0.1971,
           "matchBasis": [
             "shared-rare-hyphenated-term"
           ],
@@ -121,7 +121,7 @@
         {
           "pairKey": "eppp-b022-assessment-1::eppp-v3-assessment-078",
           "pairedItemId": "eppp-v3-assessment-078",
-          "similarity": 0.2694,
+          "similarity": 0.2685,
           "matchBasis": [
             "shared-rare-hyphenated-term"
           ],
@@ -154,7 +154,7 @@
         {
           "pairKey": "eppp-b010-professional-1::eppp-v3-professional-030",
           "pairedItemId": "eppp-b010-professional-1",
-          "similarity": 0.317,
+          "similarity": 0.3177,
           "matchBasis": [
             "shared-ethics-standard"
           ],
@@ -187,7 +187,7 @@
         {
           "pairKey": "eppp-b002-professional-2::eppp-v2-professional-030",
           "pairedItemId": "eppp-b002-professional-2",
-          "similarity": 0.4852,
+          "similarity": 0.4889,
           "matchBasis": [
             "shared-ethics-standard",
             "shared-rare-hyphenated-term"
@@ -200,7 +200,7 @@
         {
           "pairKey": "eppp-v2-professional-030::eppp-v2-professional-040",
           "pairedItemId": "eppp-v2-professional-040",
-          "similarity": 0.1645,
+          "similarity": 0.1682,
           "matchBasis": [
             "shared-rare-hyphenated-term"
           ],
