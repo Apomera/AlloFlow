@@ -887,9 +887,13 @@
           var range = Math.sqrt(st.x * st.x + st.y * st.y);
           var speed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
           if (range < 5) {
-            if (speed <= 0.6 && Math.abs(st.x) < 2.5) endRun('docked', __alloT('stem.spacestation.dock_win', 'Soft capture! Contact at ' + speed.toFixed(2) + ' m/s — gentle enough for the docking latches.'));
-            else endRun('bonk', __alloT('stem.spacestation.dock_bonk', 'Contact too fast or off-axis (' + speed.toFixed(2) + ' m/s). Real vehicles would abort long before this — try arriving under 0.6 m/s, centered.'));
-          } else if (range > 420 || st.fuel <= 0 && speed < 0.05 && range > 60) {
+            // {speed} is substituted AFTER translation. Interpolating it into the
+            // fallback instead would work today but silently drop the measured
+            // contact speed the moment a lang pack supplies these keys, because
+            // __alloT then returns the pack string and never sees the number.
+            if (speed <= 0.6 && Math.abs(st.x) < 2.5) endRun('docked', __alloT('stem.spacestation.dock_win', 'Soft capture! Contact at {speed} m/s — gentle enough for the docking latches.').replace('{speed}', speed.toFixed(2)));
+            else endRun('bonk', __alloT('stem.spacestation.dock_bonk', 'Contact too fast or off-axis ({speed} m/s). Real vehicles would abort long before this — try arriving under 0.6 m/s, centered.').replace('{speed}', speed.toFixed(2)));
+          } else if (range > 420 || (st.fuel <= 0 && speed < 0.05 && range > 60)) {
             endRun('drift', __alloT('stem.spacestation.dock_drift', 'Drifted out of the approach zone. Notice HOW you drifted — in orbit, thrusting forward raises you and slows you.'));
           }
         }
@@ -1093,8 +1097,19 @@
         var next = Math.min(EVA_RAILS.length - 1, evaS.pos + 1);
         var clippedAhead = evaS.tetherA === next || evaS.tetherB === next;
         if (!clippedAhead) {
-          evaLog('⚠ Moved WITHOUT clipping ahead — one slip and you are a satellite. Safety violation: −12% O₂ (sim penalty).', 12, {});
-          if ((evaS.o2 - 12) <= 0) evaUpd({ done: true, failMsg: __alloT('stem.spacestation.eva_o2_out', 'Suit consumables exhausted — EVA aborted. Real spacewalks budget every breath; try a cleaner run.') });
+          // ONE update. evaUpd rebuilds `eva` from the closure snapshot `evaS`,
+          // so a second call in the same handler silently reverted the first:
+          // the fatal case used to show "consumables exhausted" while the O2
+          // readout snapped back to its pre-penalty value and the safety-
+          // violation log line vanished.
+          var penalised = Math.max(0, evaS.o2 - 12);
+          var violationLog = (evaS.log || []).concat(['⚠ Moved WITHOUT clipping ahead — one slip and you are a satellite. Safety violation: −12% O₂ (sim penalty).']).slice(-4);
+          var violationPatch = { log: violationLog, o2: penalised };
+          if (penalised <= 0) {
+            violationPatch.done = true;
+            violationPatch.failMsg = __alloT('stem.spacestation.eva_o2_out', 'Suit consumables exhausted — EVA aborted. Real spacewalks budget every breath; try a cleaner run.');
+          }
+          evaUpd(violationPatch);
           return;
         }
         var trailing = evaS.tetherA === next ? 'B' : 'A';
@@ -1106,7 +1121,13 @@
         if (evaS.done || evaS.pos !== EVA_RAILS.length - 1) return;
         var b = Math.min(4, (evaS.bolts || 0) + 1);
         if (b >= 4) {
-          evaUpd({ bolts: 4, done: true, failMsg: '' });
+          // Charge and log the last bolt like the other three. The route
+          // display's "PROJECTED AT WORKSITE" figure already bills 5% per
+          // remaining bolt, so leaving the fourth free made the simulation
+          // disagree with the projection the student plans against — and the
+          // log simply stopped instead of reporting the final torque.
+          var finalLog = (evaS.log || []).concat(['🔩 Bolt 4/4 torqued. Pump module secured.']).slice(-4);
+          evaUpd({ bolts: 4, o2: Math.max(0, evaS.o2 - 5), log: finalLog, done: true, failMsg: '' });
           if (addToast) addToast('🧑‍🚀 ' + __alloT('stem.spacestation.eva_win_toast', 'Pump module secured — EVA objective complete!'), 'success');
           if (typeof awardXP === 'function') { try { awardXP(5); } catch (e) {} }
         } else {
@@ -1370,7 +1391,7 @@
                 h('div', { role: 'log', 'aria-live': 'polite', style: { marginTop: 8, padding: 8, borderRadius: 8, background: 'rgba(2,6,23,0.4)', border: '1px solid #334155', fontSize: 11.5, color: TEXT, lineHeight: 1.6, minHeight: 40 } },
                   (evaS.log || []).map(function (l, i) { return h('div', { key: i }, l); })),
                 evaS.done ? h('div', { role: 'status', style: { marginTop: 8, padding: 8, borderRadius: 8, background: evaS.failMsg ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)', borderLeft: '3px solid ' + (evaS.failMsg ? '#ef4444' : '#22c55e'), fontSize: 12, color: TEXT, lineHeight: 1.55 } },
-                  evaS.failMsg || __alloT('stem.spacestation.eva_win', '✅ Pump secured with ' + evaS.o2.toFixed(0) + '% consumables to spare. Real EVAs run 6-8 hours with the same discipline you just practiced: clip, verify, move, repeat — hundreds of times.')) : null
+                  evaS.failMsg || __alloT('stem.spacestation.eva_win', '✅ Pump secured with {pct}% consumables to spare. Real EVAs run 6-8 hours with the same discipline you just practiced: clip, verify, move, repeat — hundreds of times.').replace('{pct}', evaS.o2.toFixed(0))) : null
               ),
               h('p', { style: { fontSize: 11, color: SOFT, marginTop: 8, lineHeight: 1.5 } },
                 __alloT('stem.spacestation.eva_science', '🔬 The science: nothing about a spacewalk is casual. Astronauts pre-breathe pure O₂ for hours (decompression safety), gloves stiffen every grip like squeezing a tennis ball for 7 hours, and the two-tether rule exists because in orbit a slip does not mean falling — it means becoming a slowly departing satellite.'))

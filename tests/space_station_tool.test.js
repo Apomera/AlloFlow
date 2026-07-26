@@ -616,6 +616,50 @@ describe('space station tool', () => {
       expect(html).toContain('Torque bolt');
     });
 
+    // The EVA consumables arithmetic had no behavioural coverage, which is how
+    // both of these survived. Driven through the live harness, not the source.
+    it('charges the EVA consumables budget consistently', () => {
+      const findButton = (host, text) =>
+        [...host.querySelectorAll('button')].find((b) => b.textContent.includes(text));
+      // The route SVG's aria-label carries the exact figure ("Suit consumables N
+      // percent"), so assert against that rather than a bare "N%" substring —
+      // "8%" would also match the "98%" water-recovery readout on the page.
+      const suitPct = (host) =>
+        host.querySelector('.iss-eva-visual svg').getAttribute('aria-label');
+
+      // A move with nothing clipped ahead must apply the penalty AND log it. Two
+      // updates built from the same snapshot used to make the second revert the
+      // first, so the abort message showed while O2 snapped back un-penalised.
+      const fatal = mountLiveWithSeed({
+        ...BASE, tab: 'missions',
+        eva: { pos: 0, tetherA: 0, tetherB: 0, freeTether: 'B', o2: 8, bolts: 0, done: false, failMsg: '', started: true, log: [] },
+      });
+      try {
+        act(() => { findButton(fatal.host, 'Translate').click(); });
+        expect(fatal.host.textContent).toContain('Moved WITHOUT clipping ahead');
+        expect(fatal.host.textContent).toContain('Suit consumables exhausted');
+        // 8% - 12% floors at 0, and the penalty must survive the abort update.
+        expect(suitPct(fatal.host)).toContain('Suit consumables 0 percent');
+      } finally {
+        fatal.cleanup();
+      }
+
+      // The fourth bolt is charged and logged like the other three, so the sim
+      // agrees with the "PROJECTED AT WORKSITE" figure that bills 5% per bolt.
+      const lastBolt = mountLiveWithSeed({
+        ...BASE, tab: 'missions',
+        eva: { pos: 6, tetherA: 6, tetherB: 6, freeTether: 'A', o2: 50, bolts: 3, done: false, failMsg: '', started: true, log: [] },
+      });
+      try {
+        act(() => { findButton(lastBolt.host, 'Torque bolt').click(); });
+        expect(lastBolt.host.textContent).toContain('Bolt 4/4 torqued');
+        expect(suitPct(lastBolt.host)).toContain('Suit consumables 45 percent');
+        expect(lastBolt.host.textContent).toContain('Pump secured');
+      } finally {
+        lastBolt.cleanup();
+      }
+    });
+
     it('lets learners jump directly between assembly milestones', () => {
       const live = mountLiveWithSeed({ ...BASE, tab: 'history', assemblyIdx: 6 });
       try {
