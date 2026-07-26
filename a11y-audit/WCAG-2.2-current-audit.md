@@ -223,6 +223,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Programmatically associated Model UN's clause, amendment text, optional amendment rationale, backchannel note, and private-notes fields with persistent visible labels; kept the speech composer directly named near its declaration; and extended dual-color focus-visible and forced-colors styling to all remediated fields. The focused static audit now reports no input-label findings in the module (WCAG 1.3.1, 2.4.6, 2.4.7, 3.3.2, 4.1.2).
 
+- Added an equivalent keyboard and nonvisual response mode to solo Concept Pictionary: students can describe a concept without naming it, and the description follows the same option pool, AI parser, scoring, and round flow as a drawing. The freehand canvas is explicitly named and described with fallback content, the pointer requirement points to the text alternative, stroke changes now rerender Ask AI readiness, Minutes is associated with its select, AI results are announced, and primary mode/action controls provide 44 CSS-pixel targets with strong forced-colors-aware focus (WCAG 1.1.1, 1.3.1, 2.1.1, 2.4.6, 2.4.7, 2.5.7, 2.5.8, 3.3.2, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
