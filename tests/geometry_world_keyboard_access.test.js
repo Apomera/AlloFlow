@@ -369,3 +369,98 @@ describe('Geometry World held-key release', () => {
     expect(SOURCE).toContain("case 'ArrowDown': engine.lookState.down = false; break;");
   });
 });
+
+describe('Geometry World every overlay is a dialog', () => {
+  let cfg;
+
+  beforeAll(() => {
+    resetStemLab();
+    window.THREE = makeThreeStub();
+    cfg = loadTool(FILE, 'geometryWorld');
+  });
+
+  beforeEach(() => {
+    window.THREE = makeThreeStub();
+    window[ENGINE_KEY] = makeFakeEngine();
+  });
+
+  afterEach(() => {
+    delete window[ENGINE_KEY];
+    document.body.innerHTML = '';
+  });
+
+  // Panel flag -> the accessible name it should carry.
+  const PANELS = [
+    ['showHelp', 'Controls and help'],
+    ['showMyLessons', 'My lessons'],
+    ['showPeerWorlds', 'Class world library'],
+    ['showTeacherView', 'Teacher view'],
+    ['showLessonIntro', 'Lesson introduction'],
+  ];
+
+  PANELS.forEach(([flag, label]) => {
+    it(`${flag} opens a named dialog that takes focus`, () => {
+      const m = mountTool(cfg, { _introShownOnce: true, worldActive: true, [flag]: true });
+      const dlg = m.container.querySelector(`[aria-label="${label}"]`);
+
+      expect(dlg).toBeTruthy();
+      expect(dlg.getAttribute('role')).toBe('dialog');
+      expect(dlg.getAttribute('aria-modal')).toBe('true');
+      expect(document.activeElement).toBe(dlg);
+      m.unmount();
+    }, 20000);
+  });
+
+  it('hands focus back to the world on every Escape close, not just the NPC dialog', () => {
+    // Closing with focus inside a panel dropped the caret to the top of the
+    // document, so WASD did nothing until the student tabbed all the way back in.
+    const chain = SOURCE.match(/if \(ms\.show\w+\) \{ upd\('show\w+', false\); focusWorldSurface\(\); break; \}/g) || [];
+    expect(chain.length).toBeGreaterThanOrEqual(10);
+    // No close path left without it.
+    expect(SOURCE).not.toMatch(/if \(ms\.show\w+\) \{ upd\('show\w+', false\); break; \}/);
+  });
+
+  it('shares one guarded focus ref rather than repeating it per panel', () => {
+    expect(SOURCE).toContain('function gwDialogRef(node) {');
+    expect(SOURCE).toContain('if (node && !node._gwDialogFocused) {');
+    expect((SOURCE.match(/ref: gwDialogRef/g) || []).length).toBeGreaterThanOrEqual(9);
+  });
+});
+
+describe('Geometry World single measurement path', () => {
+  it('routes keyboard and touch through engine.performMeasurement', () => {
+    expect(SOURCE).toContain('engine.performMeasurement = function(inputMode) {');
+    expect(SOURCE).toContain("engine.performMeasurement('key');");
+    expect(SOURCE).toContain("engine.performMeasurement('touch');");
+  });
+
+  it('gives touch the feedback the duplicate had lost', () => {
+    // The mobile copy never drew the dimension lines or the selection glow — the
+    // main visual affordance for reading L x W x H — gave no first-measurement XP,
+    // and never advanced past tutorial step 2.
+    const fn = SOURCE.slice(
+      SOURCE.indexOf('engine.performMeasurement = function(inputMode) {'),
+      SOURCE.indexOf('// Shared crosshair interaction'),
+    );
+    expect(fn).toContain('showDimLines(m, m.minX, m.minY, m.minZ);');
+    expect(fn).toContain('if (m.blocks) showSelectionGlow(m.blocks);');
+    expect(fn).toContain("awardXP('geometryWorld', 5, 'First measurement');");
+    expect(fn).toContain("if (ts2.step === 2 && !ts2.dismissed) upd('tutorialStep', 3);");
+    // History comes from the engine bridge, not a stale React closure.
+    expect(fn).toContain('(((engine._predictionState || {}).history) || [])');
+  });
+
+  it('uses the cached block array instead of rebuilding it per keypress', () => {
+    expect(SOURCE).toContain('engine.blockUnderCrosshair = function() {');
+    expect(SOURCE).toContain('var hits = engine.raycaster.intersectObjects(engine.getBlocksArr());');
+    // Object.values(engine.blocks) rebuilt up to MAX_BLOCKS entries every time.
+    expect(SOURCE).not.toContain('engine.raycaster.intersectObjects(Object.values(engine.blocks))');
+  });
+
+  it('does not index the block palette without a fallback', () => {
+    // Both indices persist in toolData; a shrunken palette would throw at click time.
+    expect(SOURCE).not.toContain('BLOCK_TYPES[ps.selectedBlock].id');
+    expect(SOURCE).toContain('var typeDef = BLOCK_TYPES[ps.selectedBlock] || BLOCK_TYPES[0];');
+    expect(SOURCE).toContain('var shapeDef2 = BLOCK_SHAPES[ps.selectedShape] || BLOCK_SHAPES[0];');
+  });
+});

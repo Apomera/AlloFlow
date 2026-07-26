@@ -490,12 +490,20 @@ describe('Geometry World measurement model', () => {
   });
 
   it('keeps touch measurements in history and exposes accessible prediction feedback in the HUD', () => {
-    expect(SOURCE).toContain('var mobileHistory = (measureHistory || []).concat');
+    // The touch path used to be a SECOND measurement implementation with its own
+    // `mobileHistory` / `mobilePrediction` locals; it had drifted badly (no dimension
+    // lines, no selection glow, no first-measurement XP, no tutorial advance) and read
+    // history from a stale React closure. Both inputs now go through
+    // engine.performMeasurement, so what matters is that touch still records history
+    // and still tags the event as touch — asserted here instead of the old locals.
+    expect(SOURCE).toContain("engine.performMeasurement('touch');");
+    expect(SOURCE).toContain("blocks: m.count, input: inputMode || 'key' });");
+    expect(SOURCE).toContain('(((engine._predictionState || {}).history) || []).concat');
     expect(SOURCE).toContain("'Composite structure'");
     expect(SOURCE).toContain("'Bounding box ' + measureResult.boundingVolume");
     expect(SOURCE).toContain("'aria-label': 'Predicted volume in cubic units'");
     expect(SOURCE).toContain("'data-geometry-prediction-result': 'true'");
-    expect(SOURCE).toContain('var mobilePrediction = m.isComplete === false ? null : evaluateVolumePrediction');
+    expect(SOURCE).toContain('var predictionComparison = m.isComplete === false ? null : evaluateVolumePrediction');
     expect(SOURCE).toContain("'data-geometry-prediction-cycle': 'predict-explain'");
     expect(SOURCE).toContain("'data-geometry-misconception-feedback': predictionResult.diagnosisCode");
     expect(SOURCE).toContain("'data-geometry-revision-result': 'true'");

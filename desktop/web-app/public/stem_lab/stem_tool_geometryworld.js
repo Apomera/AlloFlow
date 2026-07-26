@@ -2118,6 +2118,21 @@
       // are read by assistive tech even when the visual game UI changes. Previously the tool
       // referenced `announceToSR` without defining it — the `typeof === 'function'` guards
       // silently skipped announcements, which meant no SR support.
+      // Standard modal wiring, applied with Object.assign so each overlay keeps its
+      // own styles. Every panel in this tool was an anonymous div: no role, no
+      // accessible name, and no focus — a screen reader got no signal that one had
+      // opened, and a keyboard student had to tab through the whole HUD to reach it.
+      //
+      // The ref is guarded on the NODE rather than being identity-stable. React
+      // re-invokes an inline ref on every commit, so an unguarded one would drag
+      // focus back to the panel each time the student typed a character into it.
+      function gwDialogRef(node) {
+        if (node && !node._gwDialogFocused) {
+          node._gwDialogFocused = true;
+          try { node.focus({ preventScroll: true }); } catch (e) { try { node.focus(); } catch (e2) {} }
+        }
+      }
+
       // Send focus back to the 3D world. Closing a dialog with focus inside it drops
       // the caret to the top of the document, so a keyboard student had to tab all the
       // way back in before WASD meant anything again.
@@ -3502,16 +3517,16 @@
               // Read from engine._modalState (updated each React render) to avoid stale closure.
               var ms = (engine && engine._modalState) || {};
               if (ms.showNpcDialog) { upd('showNpcDialog', false); focusWorldSurface(); break; }
-              if (ms.showHelp) { upd('showHelp', false); break; }
-              if (ms.showGrowthNudge) { upd('showGrowthNudge', false); break; }
-              if (ms.showPeerWorlds) { upd('showPeerWorlds', false); break; }
-              if (ms.showTeacherView) { upd('showTeacherView', false); break; }
-              if (ms.showMyLessons) { upd('showMyLessons', false); break; }
-              if (ms.showLessonEditor) { upd('showLessonEditor', false); break; }
-              if (ms.showLessonIntro) { upd('showLessonIntro', false); break; }
-              if (ms.showReflection) { upd('showReflection', false); break; }
-              if (ms.showCreatorPanel) { upd('showCreatorPanel', false); break; }
-              if (ms.creatorMode) { upd('creatorMode', false); break; }
+              if (ms.showHelp) { upd('showHelp', false); focusWorldSurface(); break; }
+              if (ms.showGrowthNudge) { upd('showGrowthNudge', false); focusWorldSurface(); break; }
+              if (ms.showPeerWorlds) { upd('showPeerWorlds', false); focusWorldSurface(); break; }
+              if (ms.showTeacherView) { upd('showTeacherView', false); focusWorldSurface(); break; }
+              if (ms.showMyLessons) { upd('showMyLessons', false); focusWorldSurface(); break; }
+              if (ms.showLessonEditor) { upd('showLessonEditor', false); focusWorldSurface(); break; }
+              if (ms.showLessonIntro) { upd('showLessonIntro', false); focusWorldSurface(); break; }
+              if (ms.showReflection) { upd('showReflection', false); focusWorldSurface(); break; }
+              if (ms.showCreatorPanel) { upd('showCreatorPanel', false); focusWorldSurface(); break; }
+              if (ms.creatorMode) { upd('creatorMode', false); focusWorldSurface(); break; }
               break;
             // ── Arrow-key look (keyboard equivalent of mouse-look) ──
             // Only while pointer-locked or while the world surface itself holds
@@ -3583,47 +3598,7 @@
               if (nearest >= 0) { if (document.pointerLockElement) document.exitPointerLock(); upd({ showNpcDialog: true, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest }); sfxNpcChime(); var ts1 = engine._tutorialState || {}; if (ts1.step === 1 && !ts1.dismissed) upd('tutorialStep', 2); }
               break;
             case 'KeyM':
-              engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
-              var hits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
-              if (hits.length > 0 && hits[0].object.userData.gridPos) {
-                var gp = hits[0].object.userData.gridPos;
-                var m = engine.measureStructure(gp.x, gp.y, gp.z);
-                if (m) {
-                  sfxMeasure();
-                  // Save to measurement history (last 10)
-                  var predictionComparison = m.isComplete === false ? null : evaluateVolumePrediction(m, engine._predictionState || {});
-                  var mh = (((engine._predictionState || {}).history) || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, boundingVolume: m.boundingVolume, missingVolume: m.missingVolume, hasFractions: m.hasFractions, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, strategy: predictionComparison ? predictionComparison.strategy : '', reason: predictionComparison ? predictionComparison.reason : '', diagnosisCode: predictionComparison ? predictionComparison.diagnosisCode : '', t: Date.now() }]);
-                  if (mh.length > 10) mh = mh.slice(-10);
-                  var measurementFeedback = m.isComplete === false
-                    ? 'Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
-                    : m.isSolidPrism
-                      ? m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume
-                      : m.formattedOccupiedVolume + ' cubic units occupied (' + m.fillPercent + '% of ' + m.boundingVolume + '-unit bounding box)';
-                  upd({ measureResult: m, measureHistory: mh, predictionResult: predictionComparison, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: '\uD83D\uDCCF Measured: ' + measurementFeedback + (predictionComparison ? ' \u2022 ' + predictionComparison.accuracyLabel : '') });
-                  announceToSR((m.isComplete === false
-                    ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete'
-                    : m.isSolidPrism
-                    ? 'Measured solid rectangular prism: length ' + m.L + ' by width ' + m.W + ' by height ' + m.H + ' equals ' + m.formattedOccupiedVolume + ' cubic units'
-                    : 'Measured composite structure: ' + m.formattedOccupiedVolume + ' cubic units occupied, ' + formatVolume(m.missingVolume) + ' cubic units empty inside a ' + m.boundingVolume + ' cubic unit bounding box') + (predictionComparison ? '. Your prediction was ' + formatVolume(predictionComparison.prediction) + '. ' + predictionComparison.accuracyLabel : ''));
-                  setTimeout(function() { upd('actionFeedback', ''); }, 2500);
-                  // Show 3D dimension lines + selection glow around the measured structure
-                  if (m.isComplete !== false) {
-                  if (engine._dimTimer) clearTimeout(engine._dimTimer);
-                  showDimLines(m, m.minX, m.minY, m.minZ);
-                  if (m.blocks) showSelectionGlow(m.blocks);
-                  // Measurement sparkle particles at structure center
-                  var mcx = m.minX + m.L / 2, mcy = m.minY + m.H / 2 + 0.5, mcz = m.minZ + m.W / 2;
-                  for (var sp = 0; sp < 8; sp++) spawnPlaceParticles(engine, mcx + (Math.random() - 0.5) * m.L, mcy + (Math.random() - 0.5) * m.H, mcz + (Math.random() - 0.5) * m.W);
-                  }
-                  if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, materialCounts: m.materialCounts, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: predictionComparison ? predictionComparison.prediction : null, predictionPercentError: predictionComparison ? predictionComparison.percentError : null, predictionStrategy: predictionComparison ? predictionComparison.strategy : '', predictionReason: predictionComparison ? predictionComparison.reason : '', misconception: predictionComparison ? predictionComparison.diagnosisCode : '', blocks: m.count });
-                  var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement' && (!e.data || e.data.isComplete !== false); }).length;
-                  if (m.isComplete !== false) {
-                  if (mCount <= 1 && typeof awardXP === 'function') awardXP('geometryWorld', 5, 'First measurement');
-                  var ts2 = engine._tutorialState || {}; if (ts2.step === 2 && !ts2.dismissed) upd('tutorialStep', 3);
-                  setTimeout(runAchievementCheck, 100);
-                  }
-                }
-              }
+              engine.performMeasurement('key');
               break;
             case 'Digit1': case 'Digit2': case 'Digit3': case 'Digit4': case 'Digit5': case 'Digit6': case 'Digit7': case 'Digit8': case 'Digit9':
               var bIdx = parseInt(ev.code.charAt(5)) - 1;
@@ -3662,10 +3637,9 @@
               setTimeout(function() { upd('actionFeedback', ''); }, 1200);
               break;
             case 'KeyT': // Point-to-point ruler: set point A, then point B
-              engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
-              var rHits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
-              if (rHits.length > 0 && rHits[0].point) {
-                var rp = rHits[0].point;
+              var rHit = engine.blockUnderCrosshair();
+              if (rHit && rHit.point) {
+                var rp = rHit.point;
                 if (!engine._rulerA) {
                   // Set point A
                   engine._rulerA = rp.clone();
@@ -3713,10 +3687,9 @@
               setTimeout(function() { upd('actionFeedback', ''); }, 1500);
               break;
             case 'KeyV': // 3-point angle tool: click 3 blocks (A, vertex B, C), get the angle at B
-              engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
-              var vHits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
-              if (vHits.length > 0 && vHits[0].object.userData.gridPos) {
-                var vp = vHits[0].object.userData.gridPos;
+              var vHit = engine.blockUnderCrosshair();
+              if (vHit && vHit.object.userData.gridPos) {
+                var vp = vHit.object.userData.gridPos;
                 // Use block center as the geometric point for the angle calc.
                 var vPoint = new THREE.Vector3(vp.x + 0.5, vp.y + 0.5, vp.z + 0.5);
                 if (!engine._anglePoints) engine._anglePoints = [];
@@ -3783,10 +3756,9 @@
               }
               break;
             case 'KeyN': // Net unfolding for prisms; exposed-face analysis for composite structures
-              engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
-              var nHits = engine.raycaster.intersectObjects(Object.values(engine.blocks));
-              if (nHits.length > 0 && nHits[0].object.userData.gridPos) {
-                var ngp = nHits[0].object.userData.gridPos;
+              var nHit = engine.blockUnderCrosshair();
+              if (nHit && nHit.object.userData.gridPos) {
+                var ngp = nHit.object.userData.gridPos;
                 var nm = engine.measureStructure(ngp.x, ngp.y, ngp.z);
                 if (nm) {
                   if (nm.isComplete === false) {
@@ -3909,6 +3881,72 @@
           }
         });
 
+        // What block is the crosshair on? Five sites (M, T, V, N and the mobile
+        // measure button) each rebuilt this, and all of them used
+        // Object.values(engine.blocks) — rebuilding an array of up to MAX_BLOCKS
+        // meshes on every keypress, when getBlocksArr() exists precisely to cache it
+        // behind the _blocksDirty flag.
+        engine.blockUnderCrosshair = function() {
+          var THREE = window.THREE;
+          if (!THREE || !engine.raycaster || !engine.camera) return null;
+          engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
+          var hits = engine.raycaster.intersectObjects(engine.getBlocksArr());
+          return hits.length > 0 ? hits[0] : null;
+        };
+
+        // One measurement path for every input mode.
+        //
+        // The mobile measure button was a second copy that had drifted badly: it
+        // never called showDimLines / showSelectionGlow, so a student measuring on a
+        // tablet saw NO dimension lines around the structure — the main visual
+        // affordance for reading L x W x H — got no first-measurement XP, and never
+        // advanced past tutorial step 2, because that advance lived only in the
+        // keyboard branch. It also read measureHistory from a React closure instead
+        // of the engine bridge, so its history could be stale.
+        engine.performMeasurement = function(inputMode) {
+          var hit = engine.blockUnderCrosshair();
+          if (!hit || !hit.object.userData.gridPos) return null;
+          var gp = hit.object.userData.gridPos;
+          var m = engine.measureStructure(gp.x, gp.y, gp.z);
+          if (!m) return null;
+          sfxMeasure();
+
+          var predictionComparison = m.isComplete === false ? null : evaluateVolumePrediction(m, engine._predictionState || {});
+          var mh = (((engine._predictionState || {}).history) || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, boundingVolume: m.boundingVolume, missingVolume: m.missingVolume, hasFractions: m.hasFractions, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, strategy: predictionComparison ? predictionComparison.strategy : '', reason: predictionComparison ? predictionComparison.reason : '', diagnosisCode: predictionComparison ? predictionComparison.diagnosisCode : '', t: Date.now() }]);
+          if (mh.length > 10) mh = mh.slice(-10);
+
+          var measurementFeedback = m.isComplete === false
+            ? 'Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
+            : m.isSolidPrism
+              ? m.L + '×' + m.W + '×' + m.H + ' = ' + m.formattedOccupiedVolume
+              : m.formattedOccupiedVolume + ' cubic units occupied (' + m.fillPercent + '% of ' + m.boundingVolume + '-unit bounding box)';
+          upd({ measureResult: m, measureHistory: mh, predictionResult: predictionComparison, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: '📏 Measured: ' + measurementFeedback + (predictionComparison ? ' • ' + predictionComparison.accuracyLabel : '') });
+          announceToSR((m.isComplete === false
+            ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete'
+            : m.isSolidPrism
+            ? 'Measured solid rectangular prism: length ' + m.L + ' by width ' + m.W + ' by height ' + m.H + ' equals ' + m.formattedOccupiedVolume + ' cubic units'
+            : 'Measured composite structure: ' + m.formattedOccupiedVolume + ' cubic units occupied, ' + formatVolume(m.missingVolume) + ' cubic units empty inside a ' + m.boundingVolume + ' cubic unit bounding box') + (predictionComparison ? '. Your prediction was ' + formatVolume(predictionComparison.prediction) + '. ' + predictionComparison.accuracyLabel : ''));
+          setTimeout(function() { upd('actionFeedback', ''); }, 2500);
+
+          if (m.isComplete !== false) {
+            if (engine._dimTimer) clearTimeout(engine._dimTimer);
+            showDimLines(m, m.minX, m.minY, m.minZ);
+            if (m.blocks) showSelectionGlow(m.blocks);
+            var mcx = m.minX + m.L / 2, mcy = m.minY + m.H / 2 + 0.5, mcz = m.minZ + m.W / 2;
+            for (var sp = 0; sp < 8; sp++) spawnPlaceParticles(engine, mcx + (Math.random() - 0.5) * m.L, mcy + (Math.random() - 0.5) * m.H, mcz + (Math.random() - 0.5) * m.W);
+          }
+
+          if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, materialCounts: m.materialCounts, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: predictionComparison ? predictionComparison.prediction : null, predictionPercentError: predictionComparison ? predictionComparison.percentError : null, predictionStrategy: predictionComparison ? predictionComparison.strategy : '', predictionReason: predictionComparison ? predictionComparison.reason : '', misconception: predictionComparison ? predictionComparison.diagnosisCode : '', blocks: m.count, input: inputMode || 'key' });
+
+          if (m.isComplete !== false) {
+            var mCount = (engine.sessionLog || []).filter(function(e) { return e.type === 'measurement' && (!e.data || e.data.isComplete !== false); }).length;
+            if (mCount <= 1 && typeof awardXP === 'function') awardXP('geometryWorld', 5, 'First measurement');
+            var ts2 = engine._tutorialState || {}; if (ts2.step === 2 && !ts2.dismissed) upd('tutorialStep', 3);
+            setTimeout(runAchievementCheck, 100);
+          }
+          return m;
+        };
+
         // Shared crosshair interaction. `action` is 'break' | 'place' | null (null
         // still resolves an NPC, which is what a click on a character does).
         //
@@ -3954,8 +3992,15 @@
               var placeX = p.x + Math.round(n.x), placeY = p.y + Math.round(n.y), placeZ = p.z + Math.round(n.z);
               // Read current placement state from engine bridge (closure vars are stale).
               var ps = engine._placeState || { selectedBlock: 0, selectedShape: 0, blockRotation: 0 };
-              var placeType = BLOCK_TYPES[ps.selectedBlock].id;
-              engine.placeBlock(placeX, placeY, placeZ, placeType, BLOCK_SHAPES[ps.selectedShape].id, ps.blockRotation);
+              // Fall back rather than index blindly. Every INPUT path clamps these, but
+              // both indices persist in toolData across sessions — so if the palette or
+              // the shape list ever shrinks, a returning student's saved index throws a
+              // TypeError on their very next placement. A click-time crash, which
+              // check_stem_render (render-only) cannot see.
+              var typeDef = BLOCK_TYPES[ps.selectedBlock] || BLOCK_TYPES[0];
+              var shapeDef2 = BLOCK_SHAPES[ps.selectedShape] || BLOCK_SHAPES[0];
+              var placeType = typeDef.id;
+              engine.placeBlock(placeX, placeY, placeZ, placeType, shapeDef2.id, ps.blockRotation);
               sfxPlace(placeType); if (window._alloHaptic) window._alloHaptic('place');
               spawnPlaceParticles(engine, placeX + 0.5, placeY + 0.5, placeZ + 0.5);
               engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
@@ -6688,7 +6733,7 @@
         ),
 
         // Help overlay
-        showHelp && el('div', { style: { position: 'absolute', top: '48px', right: '8px', zIndex: 20, background: 'rgba(15,23,42,0.95)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, maxWidth: '240px' } },
+        showHelp && el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Controls and help', tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', right: '8px', zIndex: 20, background: 'rgba(15,23,42,0.95)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, maxWidth: '240px' } },
           el('div', { style: { fontWeight: 700, color: '#a78bfa', marginBottom: '6px', fontSize: '12px' } }, '\uD83C\uDFAE Controls'),
           el('div', { style: { display: 'grid', gridTemplateColumns: '70px 1fr', gap: '2px 8px', marginBottom: '10px' } },
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'WASD'), 'Move around',
@@ -6778,7 +6823,7 @@
           )
         ),
         // ── My Lessons Library Panel ──
-        showMyLessons && el('div', { style: { position: 'absolute', top: '48px', right: '8px', zIndex: 22, background: 'rgba(15,23,42,0.95)', border: '1px solid #7c3aed', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', maxWidth: '280px', maxHeight: '320px', overflowY: 'auto' } },
+        showMyLessons && el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'My lessons', tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', right: '8px', zIndex: 22, background: 'rgba(15,23,42,0.95)', border: '1px solid #7c3aed', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', maxWidth: '280px', maxHeight: '320px', overflowY: 'auto' } },
           el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' } },
             '\uD83D\uDCDA My Lessons (' + getMyLessons().length + ')',
             el('button', { 'aria-label': __alloT('stem.geometryworld.close_my_lessons', 'Close My Lessons'), onClick: function() { upd('showMyLessons', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
@@ -6811,7 +6856,7 @@
           })
         ),
         // ── JSON Lesson Editor Panel ──
-        showLessonEditor && lastGeneratedLesson && el('div', { style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 26, background: 'rgba(15,23,42,0.97)', border: '2px solid #f59e0b', borderRadius: '12px', padding: '14px', width: '400px', maxHeight: '400px', fontSize: '11px' } },
+        showLessonEditor && lastGeneratedLesson && el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Lesson editor', tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 26, background: 'rgba(15,23,42,0.97)', border: '2px solid #f59e0b', borderRadius: '12px', padding: '14px', width: '400px', maxHeight: '400px', fontSize: '11px' } },
           el('div', { style: { fontWeight: 800, color: '#f59e0b', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             '\u270F\uFE0F Lesson JSON Editor',
             el('button', { 'aria-label': __alloT('stem.geometryworld.close_editor', 'Close editor'), onClick: function() { upd('showLessonEditor', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
@@ -6866,7 +6911,7 @@
           )
         ),
         // ── Creator Mode Panel ──
-        creatorMode && el('div', { style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 25, background: 'rgba(15,23,42,0.95)', border: '2px solid #7c3aed', borderRadius: '12px', padding: '14px', width: '320px', fontSize: '11px' } },
+        creatorMode && el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Creator mode', tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 25, background: 'rgba(15,23,42,0.95)', border: '2px solid #7c3aed', borderRadius: '12px', padding: '14px', width: '320px', fontSize: '11px' } },
           el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             '\uD83C\uDFA8 Lesson Creator',
             el('button', { 'aria-label': __alloT('stem.geometryworld.close_creator_panel', 'Close creator panel'), onClick: function() { upd('creatorMode', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
@@ -7290,28 +7335,10 @@
               className: 'gw-focusable', 'aria-label': 'Measure structure', title: 'Measure structure',
               onTouchStart: function(ev) {
                 ev.stopPropagation();
-                var THREE2 = window.THREE; if (!THREE2) return;
-                engine.raycaster.setFromCamera(new THREE2.Vector2(0, 0), engine.camera);
-                var h2 = engine.raycaster.intersectObjects(Object.values(engine.blocks));
-                if (h2.length > 0 && h2[0].object.userData.gridPos) {
-                  var gp = h2[0].object.userData.gridPos;
-                  var m = engine.measureStructure(gp.x, gp.y, gp.z);
-                  if (m) {
-                    sfxMeasure();
-                    var mobilePrediction = m.isComplete === false ? null : evaluateVolumePrediction(m, engine._predictionState || {});
-                    var mobileHistory = (measureHistory || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, boundingVolume: m.boundingVolume, missingVolume: m.missingVolume, hasFractions: m.hasFractions, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: mobilePrediction ? mobilePrediction.prediction : null, percentError: mobilePrediction ? mobilePrediction.percentError : null, strategy: mobilePrediction ? mobilePrediction.strategy : '', reason: mobilePrediction ? mobilePrediction.reason : '', diagnosisCode: mobilePrediction ? mobilePrediction.diagnosisCode : '', t: Date.now() }]);
-                    if (mobileHistory.length > 10) mobileHistory = mobileHistory.slice(-10);
-                    upd({ measureResult: m, measureHistory: mobileHistory, predictionResult: mobilePrediction, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: (m.isComplete === false
-                      ? '\uD83D\uDCCF Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
-                      : m.isSolidPrism
-                      ? '\uD83D\uDCCF Measured: ' + m.L + '\u00d7' + m.W + '\u00d7' + m.H + ' = ' + m.formattedOccupiedVolume
-                      : '\uD83D\uDCCF Occupied volume: ' + m.formattedOccupiedVolume + ' (' + m.fillPercent + '% filled)') + (mobilePrediction ? ' \u2022 ' + mobilePrediction.accuracyLabel : '') });
-                    announceToSR(m.isComplete === false ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete.' : 'Measured ' + m.formattedOccupiedVolume + ' cubic units' + (m.isSolidPrism ? ' in a solid rectangular prism' : ' in a composite structure') + (mobilePrediction ? '. Your prediction was ' + formatVolume(mobilePrediction.prediction) + '. ' + mobilePrediction.accuracyLabel : ''));
-                    if (engine.logEvent) engine.logEvent('measurement', { L: m.L, W: m.W, H: m.H, volume: m.occupiedVolume, boundingVolume: m.boundingVolume, surfaceArea: m.exposedSurfaceArea, fillPercent: m.fillPercent, materialCounts: m.materialCounts, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, measurementLimit: m.measurementLimit, prediction: mobilePrediction ? mobilePrediction.prediction : null, predictionPercentError: mobilePrediction ? mobilePrediction.percentError : null, predictionStrategy: mobilePrediction ? mobilePrediction.strategy : '', predictionReason: mobilePrediction ? mobilePrediction.reason : '', misconception: mobilePrediction ? mobilePrediction.diagnosisCode : '', blocks: m.count, input: 'touch' });
-                    setTimeout(function() { upd('actionFeedback', ''); }, 2500);
-                    if (m.isComplete !== false) setTimeout(runAchievementCheck, 100);
-                  }
-                }
+                // Was a second measurement implementation that had lost the
+                // dimension lines, the selection glow, the first-measurement XP
+                // and the tutorial advance.
+                if (engine.performMeasurement) engine.performMeasurement('touch');
               },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(251,191,36,0.4)', border: '2px solid rgba(251,191,36,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, '\uD83D\uDCCF'),
@@ -7515,6 +7542,7 @@
         })(),
         // ── Lesson Intro Screen ──
         showLessonIntro && el('div', {
+          role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Lesson introduction', tabIndex: -1, ref: gwDialogRef,
           style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 40,
             background: 'linear-gradient(180deg, rgba(15,23,42,0.97) 0%, rgba(30,27,58,0.97) 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'auto' }
@@ -7558,6 +7586,7 @@
         ),
         // ── Student Reflection Prompt (before Next Lesson) ──
         showReflection && score >= totalQ && totalQ > 0 && el('div', {
+          role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Quick reflection', tabIndex: -1, ref: gwDialogRef,
           style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 36, pointerEvents: 'auto',
             background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(12px)', border: '2px solid rgba(124,58,237,0.4)', borderRadius: '18px',
             padding: '24px 28px', maxWidth: '360px', textAlign: 'center', boxShadow: '0 8px 32px rgba(124,58,237,0.2)' }
@@ -8017,6 +8046,7 @@
         })(),
         // ── Growth Mindset Nudge Overlay (SEL + Academic Integration) ──
         showGrowthNudge && el('div', {
+          role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Encouragement', tabIndex: -1, ref: gwDialogRef,
           style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 35,
             background: 'linear-gradient(135deg, rgba(15,23,42,0.97), rgba(30,41,59,0.97))',
             border: '2px solid #a78bfa', borderRadius: '18px', padding: '24px 28px', maxWidth: '380px', width: '85%',
@@ -8056,6 +8086,7 @@
         ),
         // ── Peer Worlds Browser Overlay ──
         showPeerWorlds && el('div', {
+          role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Class world library', tabIndex: -1, ref: gwDialogRef,
           style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 36,
             background: 'rgba(15,23,42,0.97)', border: '2px solid #a78bfa', borderRadius: '16px',
             padding: '20px', maxWidth: '520px', width: '90%', maxHeight: '70%', overflowY: 'auto' }
@@ -8110,6 +8141,7 @@
         ),
         // ── Teacher Command Center Overlay ──
         showTeacherView && el('div', {
+          role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Teacher view', tabIndex: -1, ref: gwDialogRef,
           style: { position: 'absolute', top: '48px', right: '8px', zIndex: 22, background: 'rgba(15,23,42,0.97)',
             border: '2px solid #f87171', borderRadius: '14px', padding: '16px', width: '340px', maxHeight: '70%', overflowY: 'auto' }
         },
