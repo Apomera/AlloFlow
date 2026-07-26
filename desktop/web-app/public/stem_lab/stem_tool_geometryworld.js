@@ -3587,6 +3587,20 @@
             case 'Digit0':
               if (BLOCK_TYPES.length >= 10) upd('selectedBlock', 9);
               break;
+            // ── Build without a mouse ──
+            // Breaking and placing were reachable only through mouse buttons under
+            // pointer lock (or the mobile action buttons), so a keyboard-only student
+            // could walk, look, talk and measure but never actually build. Same
+            // crosshair, same rules — including the indestructible-lesson-block
+            // protection and the MAX_BLOCKS check.
+            case 'KeyX':
+              ev.preventDefault();
+              engine.interactAtCrosshair('break');
+              break;
+            case 'KeyB':
+              ev.preventDefault();
+              engine.interactAtCrosshair('place');
+              break;
             case 'KeyQ': // Cycle through shapes
               // Read latest shape from engine bridge (closure value is stale after first render)
               var curShape = (engine._placeState && typeof engine._placeState.selectedShape === 'number') ? engine._placeState.selectedShape : 0;
@@ -3850,9 +3864,16 @@
           }
         });
 
-        canvas.addEventListener('mousedown', _cvH.mousedown = function(ev) {
-          if (!engine.isLocked) return;
+        // Shared crosshair interaction. `action` is 'break' | 'place' | null (null
+        // still resolves an NPC, which is what a click on a character does).
+        //
+        // Extracted from the mousedown handler so the keyboard can reach it: placing
+        // and breaking were bound to mouse buttons under pointer lock, so a
+        // keyboard-only student could walk, look and measure but never BUILD -- the
+        // central activity of a block-based volume tool. X and B call this directly.
+        engine.interactAtCrosshair = function(action) {
           var THREE = window.THREE;
+          if (!THREE || !engine.raycaster || !engine.camera) return;
           engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
           var allMeshes = engine.getBlocksArr().concat(engine.npcs.map(function(n) { return n.body; }));
           var hits = engine.raycaster.intersectObjects(allMeshes);
@@ -3864,7 +3885,7 @@
               sfxNpcChime();
               return;
             }
-            if (ev.button === 0 && hit.object.userData.gridPos) {
+            if (action === 'break' && hit.object.userData.gridPos) {
               var p = hit.object.userData.gridPos;
               var breakType = hit.object.userData.blockType || 'stone';
               engine.removeBlock(p.x, p.y, p.z);
@@ -3877,7 +3898,7 @@
               checkBreakFrustration();
               var ps1 = engine._placeState || {};
               if (ps1.collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
-            } else if (ev.button === 2 && hit.object.userData.gridPos && hit.face) {
+            } else if (action === 'place' && hit.object.userData.gridPos && hit.face) {
               // Block limit check
               if (Object.keys(engine.blocks).length >= MAX_BLOCKS) {
                 if (addToast) addToast('\u26A0\uFE0F Block limit reached (' + MAX_BLOCKS + '). Remove blocks first!', 'error');
@@ -3921,6 +3942,11 @@
               if (ps.collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
             }
           }
+        };
+
+        canvas.addEventListener('mousedown', _cvH.mousedown = function(ev) {
+          if (!engine.isLocked) return;
+          engine.interactAtCrosshair(ev.button === 0 ? 'break' : ev.button === 2 ? 'place' : null);
         });
 
         canvas.addEventListener('contextmenu', _cvH.contextmenu = function(ev) { ev.preventDefault(); });
@@ -6614,6 +6640,7 @@
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, '←↑↓→'), 'Look around (no mouse)',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'L-Click'), 'Break block',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'R-Click'), 'Place block',
+            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'X / B'), 'Break / build (no mouse)',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'E'), 'Talk to NPC',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'M'), 'Measure structure',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'Space'), 'Jump',
@@ -7170,21 +7197,9 @@
               className: 'gw-focusable', 'aria-label': 'Place block', title: 'Place block',
               onTouchStart: function(ev) {
                 ev.stopPropagation();
-                var THREE2 = window.THREE; if (!THREE2) return;
-                engine.raycaster.setFromCamera(new THREE2.Vector2(0, 0), engine.camera);
-                var h2 = engine.raycaster.intersectObjects(Object.values(engine.blocks));
-                if (h2.length > 0 && h2[0].face) {
-                  var pp = h2[0].object.userData.gridPos; var nn = h2[0].face.normal;
-                  var px = pp.x + Math.round(nn.x), py = pp.y + Math.round(nn.y), pz = pp.z + Math.round(nn.z);
-                  if (Object.keys(engine.blocks).length < MAX_BLOCKS) {
-                    engine.placeBlock(px, py, pz, BLOCK_TYPES[selectedBlock].id, BLOCK_SHAPES[selectedShape].id, blockRotation);
-                    sfxPlace(BLOCK_TYPES[selectedBlock].id);
-                    spawnPlaceParticles(engine, px + 0.5, py + 0.5, pz + 0.5);
-                    engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
-                    upd('blocksPlaced', engine.blocksPlaced); // keep React state + HUD in sync
-                    if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
-                  }
-                }
+                // Was a second copy of the build path that quietly diverged: no XP
+                // milestones, no first-block celebration, no tutorial-step advance.
+                if (engine.interactAtCrosshair) engine.interactAtCrosshair('place');
               },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(34,197,94,0.4)', border: '2px solid rgba(34,197,94,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, '\uD83E\uDDF1'),
@@ -7193,16 +7208,9 @@
               className: 'gw-focusable', 'aria-label': 'Break block', title: 'Break block',
               onTouchStart: function(ev) {
                 ev.stopPropagation();
-                var THREE2 = window.THREE; if (!THREE2) return;
-                engine.raycaster.setFromCamera(new THREE2.Vector2(0, 0), engine.camera);
-                var h2 = engine.raycaster.intersectObjects(Object.values(engine.blocks));
-                if (h2.length > 0 && h2[0].object.userData.gridPos) {
-                  var pp = h2[0].object.userData.gridPos;
-                  engine.removeBlock(pp.x, pp.y, pp.z); sfxBreak(h2[0].object.userData.blockType || 'stone');
-                  engine.blocksPlaced = Math.max(0, (engine.blocksPlaced || 0) - 1);
-                  upd('blocksPlaced', engine.blocksPlaced);
-                  if (collabMode) { clearTimeout(engine._collabSyncTimer); engine._collabSyncTimer = setTimeout(syncBlocksToFirestore, 500); }
-                }
+                // Third copy of the break path; it skipped checkBreakFrustration(),
+                // the SEL growth-mindset nudge, so mobile students never saw it.
+                if (engine.interactAtCrosshair) engine.interactAtCrosshair('break');
               },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(239,68,68,0.4)', border: '2px solid rgba(239,68,68,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, '\u26CF\uFE0F'),
@@ -8145,7 +8153,7 @@
               el('div', {
                 id: 'geoworld-instructions',
                 style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0, whiteSpace: 'nowrap' }
-              }, 'Interactive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.'),
+              }, 'Interactive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.'),
               // Fullscreen toggle (top-right). React will mount this as a
               // child of the engine container; the engine's renderer DOM
               // element is appended later via initEngine, so the button

@@ -174,6 +174,45 @@ describe('Geometry World world-surface accessibility', () => {
   }, 20000);
 });
 
+describe('Geometry World keyboard building', () => {
+  // Placing and breaking were reachable only through mouse buttons under pointer
+  // lock (or the mobile touch buttons), so a keyboard-only student could walk,
+  // look, talk and measure but never actually BUILD — the central activity of a
+  // block-based volume tool.
+
+  it('binds break and build to keys', () => {
+    expect(SOURCE).toContain("engine.interactAtCrosshair('break');");
+    expect(SOURCE).toContain("engine.interactAtCrosshair('place');");
+    expect(SOURCE).toMatch(/case 'KeyX':[\s\S]{0,120}interactAtCrosshair\('break'\)/);
+    expect(SOURCE).toMatch(/case 'KeyB':[\s\S]{0,120}interactAtCrosshair\('place'\)/);
+  });
+
+  it('routes mouse, keyboard and touch through ONE crosshair path', () => {
+    // Three divergent copies existed. The mobile pair skipped the XP milestones,
+    // the first-block celebration, the tutorial-step advance and
+    // checkBreakFrustration() — an SEL nudge mobile students never received.
+    expect(SOURCE).toContain('engine.interactAtCrosshair = function(action) {');
+    expect(SOURCE).toContain("engine.interactAtCrosshair(ev.button === 0 ? 'break' : ev.button === 2 ? 'place' : null);");
+    // The duplicated mobile bodies are gone.
+    expect(SOURCE).not.toContain('engine.placeBlock(px, py, pz, BLOCK_TYPES[selectedBlock].id, BLOCK_SHAPES[selectedShape].id, blockRotation);');
+    expect(SOURCE).not.toContain("engine.removeBlock(pp.x, pp.y, pp.z); sfxBreak(h2[0].object.userData.blockType || 'stone');");
+    // Exactly one place and one break implementation remain.
+    expect((SOURCE.match(/checkBreakFrustration\(\);/g) || [])).toHaveLength(1);
+  });
+
+  it('keeps the block limit and lesson-block protection on the shared path', () => {
+    // The keyboard route must not become a way around either guard.
+    expect(SOURCE).toMatch(/interactAtCrosshair = function[\s\S]{0,4000}Object\.keys\(engine\.blocks\)\.length >= MAX_BLOCKS/);
+    // Protection lives in removeBlock itself, which the shared path calls.
+    expect(SOURCE).toContain('if (mesh.userData._lessonBlock && !forceRemove) {');
+  });
+
+  it('documents the new keys where students and screen readers will find them', () => {
+    expect(SOURCE).toContain("'X / B'), 'Break / build (no mouse)',");
+    expect(SOURCE).toMatch(/B builds a block where you are facing and X breaks one/);
+  });
+});
+
 describe('Geometry World arrow-key look', () => {
   const math = loadLookMath();
 
