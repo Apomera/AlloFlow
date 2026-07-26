@@ -4,9 +4,9 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-function scanFixture(source) {
+function scanFixture(source, fileName = 'fixture.js') {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'alloflow-ui-rule-'));
-  const fixture = path.join(directory, 'fixture.js');
+  const fixture = path.join(directory, fileName);
   fs.writeFileSync(fixture, source, 'utf8');
   try {
     return spawnSync(process.execPath, ['a11y-audit/static-audit.js', '--file', fixture], {
@@ -118,5 +118,39 @@ describe('static audit UI heuristics', () => {
       "}, 'Item');",
     ].join('\n'));
     expect(report).toContain('DRAGDROP-001');
+  });
+
+  it('does not require a live region inside a headless status service', () => {
+    const report = scanFixture([
+      '// Returns Promise<string> and emits a rubric value like <integer 1-20>.',
+      'let status = { state: "idle" };',
+      'const observers = [];',
+      'function setState(next) {',
+      '  status = next;',
+      '  observers.forEach((observer) => observer(status));',
+      '}',
+      'function subscribeToStatus(observer) { observers.push(observer); }',
+    ].join('\n'), 'voice_module.js');
+    expect(report).not.toContain('LIVE-001');
+  });
+
+  it('still reports an interactive rendered module without a live region', () => {
+    const report = scanFixture([
+      'function StatusTool() {',
+      '  const [done, setState] = React.useState(false);',
+      '  return React.createElement("button", { onClick: () => setState(true) }, done ? "Done" : "Run");',
+      '}',
+    ].join('\n'), 'status_tool.js');
+    expect(report).toContain('LIVE-001');
+  });
+
+  it('still recognizes authored JSX as rendered UI', () => {
+    const report = scanFixture([
+      'function StatusTool() {',
+      '  const [done, setState] = useState(false);',
+      '  return <button onClick={() => setState(true)}>{done ? "Done" : "Run"}</button>;',
+      '}',
+    ].join('\n'), 'status_tool.jsx');
+    expect(report).toContain('LIVE-001');
   });
 });

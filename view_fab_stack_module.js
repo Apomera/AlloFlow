@@ -68,6 +68,7 @@ function FabStack(props) {
   const dictationPhase = dictationStatus?.state || (isDictationMode ? "listening" : "idle");
   const dictationEngineLabel = dictationStatus?.engineLabel || "";
   const dictationBusy = dictationPhase === "starting" || dictationPhase === "transcribing";
+  const dictationAnnouncement = dictationStatus?.message || (dictationPhase !== "idle" ? dictationEngineLabel : "");
   React.useEffect(() => {
     if (!isFabExpanded) return void 0;
     const focusTimer = window.setTimeout(() => {
@@ -295,7 +296,7 @@ function FabStack(props) {
       },
       isDictationMode || dictationBusy ? /* @__PURE__ */ React.createElement(Mic, { size: 20, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(MicOff, { size: 20, "aria-hidden": "true" })
     ),
-    dictationStatus && dictationPhase !== "idle" && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: `fab-section-label max-w-44 px-2 text-center text-[10px] leading-tight ${dictationPhase === "error" ? "text-rose-700" : "text-slate-700"}` }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, dictationStatus.message || dictationEngineLabel), dictationStatus.privacy && /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-slate-600" }, dictationStatus.privacy))
+    dictationStatus && dictationAnnouncement && /* @__PURE__ */ React.createElement("div", { role: dictationPhase === "error" ? "alert" : "status", "aria-live": dictationPhase === "error" ? "assertive" : "polite", "aria-atomic": "true", className: `fab-section-label max-w-44 px-2 text-center text-[10px] leading-tight ${dictationPhase === "error" ? "text-rose-700" : "text-slate-700"}` }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, dictationAnnouncement), dictationStatus.privacy && /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-slate-600" }, dictationStatus.privacy))
   ), /* @__PURE__ */ React.createElement(
     "button",
     {

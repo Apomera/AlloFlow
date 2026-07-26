@@ -916,9 +916,16 @@
         },
         onEnd: function () {
           if (generation !== myGeneration) return;
+          // Permission/no-speech errors release the controller before the
+          // browser's trailing end event. Do not overwrite their meaningful
+          // status with a generic idle state.
+          if (state === 'error' || (state === 'idle' && activeDictationController !== controller)) return;
           if (opts.restartOnEnd && !stoppedByUser) return;
           releaseActive();
-          setState('idle', { message: '', reason: stoppedByUser ? 'stopped' : 'completed' });
+          setState('idle', {
+            message: stoppedByUser ? 'Dictation stopped.' : 'Dictation finished.',
+            reason: stoppedByUser ? 'stopped' : 'completed'
+          });
           if (typeof opts.onEnd === 'function') opts.onEnd({ reason: stoppedByUser ? 'stopped' : 'completed' });
         }
       });

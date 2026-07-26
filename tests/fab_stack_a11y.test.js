@@ -36,7 +36,11 @@ describe('Floating student-tools stack accessibility', () => {
     expect(source).toContain('voice.isDictationSupported()');
     expect(source).toContain('data-dictation-engine');
     expect(source).toContain('dictationStatus.privacy');
-    expect(source).toContain('role="status"');
+    expect(source).toContain("role={dictationPhase === 'error' ? 'alert' : 'status'}");
+    expect(source).toContain("aria-live={dictationPhase === 'error' ? 'assertive' : 'polite'}");
+    expect(source).toContain('aria-atomic="true"');
+    expect(source).toContain('dictationStatus && dictationAnnouncement');
+    expect(source).toContain("dictationStatus?.message || (dictationPhase !== 'idle' ? dictationEngineLabel : '')");
     expect(source).toContain('aria-busy={dictationBusy}');
     expect(source).toContain("dictationPhase === 'transcribing'");
   });

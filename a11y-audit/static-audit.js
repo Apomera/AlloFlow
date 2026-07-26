@@ -105,6 +105,14 @@ const CHECKS = [
     testFile(content, filePath) {
       // Only check tool/module files
       if (!/(module|tool)/.test(filePath)) return false;
+      // Headless services can publish state through callbacks/observers but do
+      // not own rendered status messages. Apply this UI rule only to files that
+      // actually render elements; their consumers own the live-region contract.
+      const executableContent = content
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/(^|\s)\/\/.*$/gm, '$1');
+      const rendersUi = /React\.createElement\s*\(|(?:^|[\s,(])(?:e|h)\(\s*['"][a-z][\w-]*['"]|document\.createElement\s*\(\s*['"][a-z][\w-]*['"]|<(?:a|button|canvas|div|form|h[1-6]|img|input|label|li|main|nav|ol|option|p|section|select|span|svg|table|textarea|ul)(?:\s|\/?>)/im.test(executableContent);
+      if (!rendersUi) return false;
       // Check if file has dynamic state (onClick, onChange, setState, upd()
       const hasDynamic = /onClick|onChange|setState|upd\(/.test(content);
       if (!hasDynamic) return false;

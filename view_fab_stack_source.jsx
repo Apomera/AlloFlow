@@ -39,6 +39,7 @@ function FabStack(props) {
   const dictationPhase = dictationStatus?.state || (isDictationMode ? 'listening' : 'idle');
   const dictationEngineLabel = dictationStatus?.engineLabel || '';
   const dictationBusy = dictationPhase === 'starting' || dictationPhase === 'transcribing';
+  const dictationAnnouncement = dictationStatus?.message || (dictationPhase !== 'idle' ? dictationEngineLabel : '');
 
   React.useEffect(() => {
     if (!isFabExpanded) return undefined;
@@ -250,9 +251,9 @@ function FabStack(props) {
                     {isDictationMode || dictationBusy ? <Mic size={20} aria-hidden="true" /> : <MicOff size={20} aria-hidden="true" />}
                   </button>
                   )}
-                  {dictationStatus && dictationPhase !== 'idle' && (
-                    <div role="status" aria-live="polite" className={`fab-section-label max-w-44 px-2 text-center text-[10px] leading-tight ${dictationPhase === 'error' ? 'text-rose-700' : 'text-slate-700'}`}>
-                      <div className="font-bold">{dictationStatus.message || dictationEngineLabel}</div>
+                  {dictationStatus && dictationAnnouncement && (
+                    <div role={dictationPhase === 'error' ? 'alert' : 'status'} aria-live={dictationPhase === 'error' ? 'assertive' : 'polite'} aria-atomic="true" className={`fab-section-label max-w-44 px-2 text-center text-[10px] leading-tight ${dictationPhase === 'error' ? 'text-rose-700' : 'text-slate-700'}`}>
+                      <div className="font-bold">{dictationAnnouncement}</div>
                       {dictationStatus.privacy && <div className="mt-0.5 text-slate-600">{dictationStatus.privacy}</div>}
                     </div>
                   )}

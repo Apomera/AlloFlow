@@ -104,6 +104,40 @@ describe('shared dictation controller', () => {
     expect(recognitionInstances).toHaveLength(2);
   });
 
+  it('publishes an announced stopped state for a user-ended session', () => {
+    const states = [];
+    const controller = window.AlloFlowVoice.createDictationController({
+      onStateChange: (status) => states.push(status),
+    });
+
+    controller.start();
+    controller.stop();
+
+    expect(states.at(-1)).toMatchObject({
+      state: 'idle',
+      reason: 'stopped',
+      message: 'Dictation stopped.',
+    });
+  });
+
+  it('preserves no-speech feedback when the browser emits a trailing end event', () => {
+    const states = [];
+    const controller = window.AlloFlowVoice.createDictationController({
+      continuous: false,
+      onStateChange: (status) => states.push(status),
+    });
+
+    controller.start();
+    recognitionInstances[0].onerror({ error: 'no-speech' });
+    recognitionInstances[0].onend();
+
+    expect(states.at(-1)).toMatchObject({
+      state: 'idle',
+      reason: 'no-speech',
+      message: 'No speech detected.',
+    });
+  });
+
   it('respects the shared Off preference', () => {
     window.AlloFlowVoice.savePreference({ engine: 'off' });
     const states = [];
