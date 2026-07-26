@@ -2560,6 +2560,13 @@
         var cnv = document.createElement('canvas');
         cnv.style.width = '100%';
         cnv.style.height = '100%';
+        // A canvas is display:inline by default, so it sits on the text baseline and
+        // leaves ~4px of descender space beneath it. That gap made the container's
+        // content 4px taller than the canvas, the ResizeObserver fed the container's
+        // height back into renderer.setSize, and the canvas grew by that gap on every
+        // tick — measured climbing 8px per 220ms, unbounded, reallocating the
+        // renderer's buffers each time. display:block removes the gap.
+        cnv.style.display = 'block';
         container.appendChild(cnv);
         engine.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true, powerPreference: 'high-performance' });
         engine.renderer.setSize(container.clientWidth, container.clientHeight);
@@ -2689,6 +2696,19 @@
         engine.velocity = new THREE.Vector3();
         engine.onGround = false;
         engine.isLocked = false;
+        // Is the world accepting movement / aim input right now?
+        //
+        // Everything used to key off engine.isLocked alone, which is only ever true
+        // after a MOUSE click grabs pointer lock. So WASD set moveState and the
+        // animate loop ignored it, and the crosshair never highlighted a target: a
+        // keyboard-only student could not walk or see what they were aiming at, even
+        // though the key handlers were all wired. Caught by the WebGL e2e, not by any
+        // jsdom test — there is no animate loop without a GL context.
+        engine.isInputActive = function() {
+          if (engine.isLocked || engine._touchActive) return true;
+          var wrap = document.getElementById('geoworld-fs-wrap');
+          return !!(wrap && document.activeElement === wrap);
+        };
         engine._wasOnGround = true; // for land detection
         engine._footstepTimer = 0;
         engine.flyMode = false; // toggled with F key
@@ -3448,11 +3468,7 @@
         // pointer-locked (mouse user), or the container has keyboard focus (the
         // keyboard-only path — the wrapper is tabIndex=0). Anywhere else the arrows
         // belong to the page: scrolling, and the lesson-picker <select>.
-        function keyLookAllowed() {
-          if (engine.isLocked) return true;
-          var wrap = document.getElementById('geoworld-fs-wrap');
-          return !!(wrap && document.activeElement === wrap);
-        }
+        function keyLookAllowed() { return engine.isInputActive(); }
         document.addEventListener('mousemove', _docH.mousemove = function(ev) {
           if (!engine.isLocked) return;
           engine.euler.setFromQuaternion(engine.camera.quaternion);
@@ -4085,7 +4101,7 @@
         engine._crosshairTarget = 'none'; // 'none' | 'block' | 'npc' | 'npc_question'
         function updateGhostPreview() {
           var THREE = window.THREE;
-          if ((!engine.isLocked && !engine._touchActive) || !THREE) {
+          if (!engine.isInputActive() || !THREE) {
             if (engine._ghostMesh) engine._ghostMesh.visible = false;
             if (engine._highlightMesh) engine._highlightMesh.visible = false;
             if (engine._hoverGlowMesh) engine._hoverGlowMesh.visible = false;
@@ -4297,7 +4313,7 @@
           }
 
           // ── Camera entry animation (swoop down to spawn) ──
-          if (engine._entryAnim && !engine.isLocked) {
+          if (engine._entryAnim && !engine.isInputActive()) {
             var ea = engine._entryAnim;
             ea.progress = Math.min(1, ea.progress + dt * 0.6);
             var easeP = 1 - Math.pow(1 - ea.progress, 3); // ease-out cubic
@@ -4308,7 +4324,7 @@
             if (ea.progress >= 1) engine._entryAnim = null;
           }
 
-          if (engine.isLocked) {
+          if (engine.isInputActive()) {
             var THREE = window.THREE;
             // ── Smooth movement with acceleration, deceleration, and proper XZ + Y collision ──
             var dir = new THREE.Vector3();
@@ -4899,11 +4915,21 @@
         // Handle resize
         var ro = new ResizeObserver(function() {
           if (!container.isConnected) { ro.disconnect(); return; }
-          if (!container.clientWidth) return;
-          engine.camera.aspect = container.clientWidth / container.clientHeight;
+          var cw = container.clientWidth, ch = container.clientHeight;
+          if (!cw || !ch) return;
+          // Only act on a REAL size change. renderer.setSize writes explicit pixel
+          // width/height onto the canvas, which perturbs layout and re-triggers this
+          // observer — an unguarded callback fed itself, reallocating the renderer's
+          // buffers over and over ("ResizeObserver loop completed with undelivered
+          // notifications" fired 28x on a single mount) and leaving the layout never
+          // quite still.
+          var last = engine._lastViewport;
+          if (last && last.w === cw && last.h === ch) return;
+          engine._lastViewport = { w: cw, h: ch };
+          engine.camera.aspect = cw / ch;
           engine.camera.updateProjectionMatrix();
-          engine.renderer.setSize(container.clientWidth, container.clientHeight);
-          if (engine.composer) { try { engine.composer.setSize(container.clientWidth, container.clientHeight); } catch (e) {} }
+          engine.renderer.setSize(cw, ch);
+          if (engine.composer) { try { engine.composer.setSize(cw, ch); } catch (e) {} }
         });
         ro.observe(container);
         // Track it so destroyEngine can disconnect. The self-disconnect above only
@@ -8211,7 +8237,11 @@
               'aria-label': (currentLesson.title || 'Geometry World') + ' — interactive 3D world. ' + score + ' of ' + totalQ + ' questions answered.',
               'aria-describedby': 'geoworld-instructions',
               tabIndex: 0,
-              style: { flex: 1, position: 'relative' }
+              // minHeight/minWidth 0: a flex item defaults to min-height:auto, which
+              // refuses to shrink below its content — so the canvas could push this
+              // container taller than its flex allotment instead of being bounded by
+              // it, which is what let the resize feedback loop run away.
+              style: { flex: 1, position: 'relative', minHeight: 0, minWidth: 0, overflow: 'hidden' }
             },
               // Keyboard contract, announced on focus. Previously the only hint was
               // "Click to enter" in the label — mouse-only guidance on a surface
