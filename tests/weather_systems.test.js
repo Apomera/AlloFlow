@@ -2524,6 +2524,47 @@ describe('Weather Systems immersive 3D scene', () => {
   });
 });
 
+describe('Weather Systems teacher guide', () => {
+  const { readFileSync } = require('node:fs');
+  const { resolve } = require('node:path');
+  const source = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weathersystems.js'), 'utf8');
+
+  it('shares one clipboard implementation instead of two', () => {
+    const text = source();
+    // The mission builder and the teacher handoff each carried their own copy of the
+    // async-API-then-execCommand dance.
+    expect((text.match(/document\.execCommand\('copy'\)/g) || [])).toHaveLength(1);
+    expect(text).toContain('function copyToClipboard(text, onResult)');
+    expect(text).toContain('copyToClipboard(text, function (ok) { copyStatus(ok, label); })');
+    expect(text).toContain('copyToClipboard(handoffText, copyResult)');
+  });
+
+  it('states honestly what the checkpoint indicators are and are not', () => {
+    const html = renderTool('weatherSystems', { weatherSystems: { tab: 'teacher', scenario: 'coldFront' } }, { gradeLevel: '8th Grade' });
+    expect(html).toContain('they are not a grade or proof of scientific understanding');
+    // The exportable record warns against putting identifiable student data in it.
+    expect(source()).toContain('Do not add student names or sensitive personal information.');
+  });
+
+  it('keeps the lesson timings adding up to the advertised duration', () => {
+    const text = source();
+    const block = (text.match(/var durations = \{[\s\S]*?\};/) || [''])[0];
+    const rows = [...block.matchAll(/'(\d+)': \{ label: '[^']*', timing: 'Launch (\d+) min \| Investigate (\d+) min \| Share (\d+) min' \}/g)];
+    expect(rows.length).toBeGreaterThanOrEqual(3);
+    rows.forEach(([, total, launch, investigate, share]) => {
+      expect(Number(launch) + Number(investigate) + Number(share), total + '-minute plan should sum to ' + total).toBe(Number(total));
+    });
+  });
+
+  it('offers a mission for every grade band', () => {
+    ['Kindergarten', '4th Grade', '7th Grade', '11th Grade'].forEach((gradeLevel) => {
+      const html = renderTool('weatherSystems', { weatherSystems: { tab: 'teacher', scenario: 'coldFront' } }, { gradeLevel });
+      expect(html, gradeLevel).toContain('data-weather-mission-builder');
+      expect(html, gradeLevel).toContain('Copy mission brief');
+    });
+  });
+});
+
 describe('Weather Systems geographic map loader resilience', () => {
   const { readFileSync } = require('node:fs');
   const { resolve } = require('node:path');

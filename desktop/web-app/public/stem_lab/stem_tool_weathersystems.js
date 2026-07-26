@@ -1765,6 +1765,40 @@ var GEOGRAPHY_PROFILES = {
     g.closePath();
   }
 
+  // One clipboard path for the whole tool: the async API when it is available, an
+  // execCommand fallback when it is not, and an honest result either way. The mission
+  // builder and the teacher handoff each carried their own copy of this.
+  function legacyClipboardCopy(text, finish) {
+    try {
+      var field = document.createElement('textarea');
+      field.value = text;
+      field.setAttribute('readonly', '');
+      field.style.position = 'fixed';
+      field.style.left = '-9999px';
+      field.style.top = '0';
+      document.body.appendChild(field);
+      field.focus();
+      field.select();
+      var copied = false;
+      try { copied = document.execCommand('copy'); } catch (error) { copied = false; }
+      document.body.removeChild(field);
+      finish(copied);
+    } catch (error) {
+      finish(false);
+    }
+  }
+
+  function copyToClipboard(text, onResult) {
+    function finish(ok) { if (onResult) onResult(!!ok); }
+    try {
+      if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) {
+        window.navigator.clipboard.writeText(text).then(function () { finish(true); }).catch(function () { legacyClipboardCopy(text, finish); });
+        return;
+      }
+    } catch (error) {}
+    legacyClipboardCopy(text, finish);
+  }
+
   // Deterministic per-element jitter keeps the scene varied without flickering between frames.
   function sceneNoise(seed) {
     var value = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
@@ -8123,31 +8157,8 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
             if (addToast) addToast(message, ok ? 'success' : 'info');
             if (announce) announce(message);
           }
-          function legacyCopy(text, label) {
-            try {
-              var field = document.createElement('textarea');
-              field.value = text;
-              field.setAttribute('readonly', '');
-              field.style.position = 'fixed';
-              field.style.left = '-9999px';
-              field.style.top = '0';
-              document.body.appendChild(field);
-              field.focus();
-              field.select();
-              var copied = false;
-              try { copied = document.execCommand('copy'); } catch (error) { copied = false; }
-              document.body.removeChild(field);
-              copyStatus(copied, label);
-            } catch (error) { copyStatus(false, label); }
-          }
           function copyText(text, label) {
-            try {
-              if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) {
-                window.navigator.clipboard.writeText(text).then(function () { copyStatus(true, label); }).catch(function () { legacyCopy(text, label); });
-                return;
-              }
-            } catch (error) {}
-            legacyCopy(text, label);
+            copyToClipboard(text, function (ok) { copyStatus(ok, label); });
           }
           function copyMission() {
             copyText(missionText, 'Classroom mission');
@@ -8519,33 +8530,8 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
               if (addToast) addToast(message, ok ? 'success' : 'info');
               if (announce) announce(message);
             }
-            function legacyCopy(text) {
-              try {
-                var field = document.createElement('textarea');
-                field.value = text;
-                field.setAttribute('readonly', '');
-                field.style.position = 'fixed';
-                field.style.left = '-9999px';
-                field.style.top = '0';
-                document.body.appendChild(field);
-                field.focus();
-                field.select();
-                var copied = false;
-                try { copied = document.execCommand('copy'); } catch (error) { copied = false; }
-                document.body.removeChild(field);
-                copyResult(copied);
-              } catch (error) {
-                copyResult(false);
-              }
-            }
             function copyHandoff() {
-              try {
-                if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) {
-                  window.navigator.clipboard.writeText(handoffText).then(function () { copyResult(true); }).catch(function () { legacyCopy(handoffText); });
-                  return;
-                }
-              } catch (error) {}
-              legacyCopy(handoffText);
+              copyToClipboard(handoffText, copyResult);
             }
             return h('section', {
               className: 'mt-4 overflow-hidden rounded-xl border ' + (dark ? 'border-teal-800 bg-teal-950/20' : 'border-teal-200 bg-teal-50'),
