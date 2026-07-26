@@ -1694,6 +1694,28 @@
 
   var LESSON_ORDER = ['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze'];
   var MAX_BLOCKS = 1500; // Performance safety limit
+  // Radians/second for arrow-key look. ~100°/s: fast enough to sweep a structure
+  // without hunting, slow enough to land the crosshair on an NPC.
+  var KEY_LOOK_SPEED = 1.75;
+  // Straight up / straight down, minus a hair. Going all the way to PI/2 flips the
+  // YXZ euler and the world snaps 180°.
+  var PITCH_LIMIT = Math.PI * 0.49;
+
+  // Integrate one frame of arrow-key look into `euler`. Standalone (rather than
+  // inline in the animate loop) so the direction signs and the pitch clamp are
+  // unit-testable without standing up a WebGL context. Returns whether anything
+  // moved, so the caller can skip the quaternion write on idle frames.
+  function applyKeyLook(euler, lookState, dt) {
+    if (!euler || !lookState) return false;
+    var rate = KEY_LOOK_SPEED * dt;
+    var moved = false;
+    if (lookState.left) { euler.y += rate; moved = true; }
+    if (lookState.right) { euler.y -= rate; moved = true; }
+    if (lookState.up) { euler.x += rate; moved = true; }
+    if (lookState.down) { euler.x -= rate; moved = true; }
+    if (moved) euler.x = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, euler.x));
+    return moved;
+  }
   var MEASUREMENT_BLOCK_LIMIT = MAX_BLOCKS;
 
   // Stable chat-key derivation — used by both the read site in engine.loadLesson
@@ -2598,6 +2620,7 @@
         engine.clock = new THREE.Clock();
         engine.euler = new THREE.Euler(0, 0, 0, 'YXZ');
         engine.moveState = { forward: false, backward: false, left: false, right: false, sprint: false };
+        engine.lookState = { left: false, right: false, up: false, down: false };
         engine.velocity = new THREE.Vector3();
         engine.onGround = false;
         engine.isLocked = false;
@@ -3315,6 +3338,16 @@
         // firing forever after the user navigates away from Geometry World.
         var _docH = engine._docHandlers = {};
         var _cvH = engine._canvasHandlers = {};
+        var _winH = engine._winHandlers = {};
+        // Releasing the keys on blur. Held keys never emit a keyup once the window
+        // loses focus (alt-tab, switching apps), so movement latched on: the student
+        // came back to a player walking into a wall by itself. Arrow-key look would
+        // latch the same way, spinning the camera forever.
+        window.addEventListener('blur', _winH.blur = function() {
+          engine.moveState = { forward: false, backward: false, left: false, right: false, sprint: false };
+          engine.lookState = { left: false, right: false, up: false, down: false };
+          engine._jumpLock = false;
+        });
         canvas.addEventListener('click', _cvH.click = function() { if (!engine.isLocked) canvas.requestPointerLock(); });
         document.addEventListener('pointerlockchange', _docH.pointerlockchange = function() {
           engine.isLocked = !!document.pointerLockElement;
@@ -3323,6 +3356,15 @@
 
         // Smooth mouse look with configurable sensitivity
         var MOUSE_SENSITIVITY = 0.0018;
+        // Arrow keys steer the camera only when the world is genuinely the target:
+        // pointer-locked (mouse user), or the container has keyboard focus (the
+        // keyboard-only path — the wrapper is tabIndex=0). Anywhere else the arrows
+        // belong to the page: scrolling, and the lesson-picker <select>.
+        function keyLookAllowed() {
+          if (engine.isLocked) return true;
+          var wrap = document.getElementById('geoworld-fs-wrap');
+          return !!(wrap && document.activeElement === wrap);
+        }
         document.addEventListener('mousemove', _docH.mousemove = function(ev) {
           if (!engine.isLocked) return;
           engine.euler.setFromQuaternion(engine.camera.quaternion);
@@ -3366,6 +3408,15 @@
               if (ms.showCreatorPanel) { upd('showCreatorPanel', false); break; }
               if (ms.creatorMode) { upd('creatorMode', false); break; }
               break;
+            // ── Arrow-key look (keyboard equivalent of mouse-look) ──
+            // Only while pointer-locked or while the world surface itself holds
+            // focus, so arrows still scroll the page and still operate the lesson
+            // <select> everywhere else. preventDefault stops the page scrolling
+            // underneath the world when we do consume them.
+            case 'ArrowLeft':  if (!keyLookAllowed()) break; ev.preventDefault(); engine.lookState.left = true; break;
+            case 'ArrowRight': if (!keyLookAllowed()) break; ev.preventDefault(); engine.lookState.right = true; break;
+            case 'ArrowUp':    if (!keyLookAllowed()) break; ev.preventDefault(); engine.lookState.up = true; break;
+            case 'ArrowDown':  if (!keyLookAllowed()) break; ev.preventDefault(); engine.lookState.down = true; break;
             case 'KeyW': engine.moveState.forward = true; break;
             case 'KeyS': engine.moveState.backward = true; break;
             case 'KeyA': engine.moveState.left = true; break;
@@ -3723,6 +3774,13 @@
         });
         document.addEventListener('keyup', _docH.keyup = function(ev) {
           switch (ev.code) {
+            // Cleared unconditionally (no keyLookAllowed guard): if focus moves away
+            // while an arrow is held, the keyup must still stop the camera or it
+            // spins forever.
+            case 'ArrowLeft': engine.lookState.left = false; break;
+            case 'ArrowRight': engine.lookState.right = false; break;
+            case 'ArrowUp': engine.lookState.up = false; break;
+            case 'ArrowDown': engine.lookState.down = false; break;
             case 'KeyW': engine.moveState.forward = false; break;
             case 'KeyS': engine.moveState.backward = false; break;
             case 'KeyA': engine.moveState.left = false; break;
@@ -4083,6 +4141,18 @@
           // undefined on frames where those branches do not run.
           var THREE = window.THREE;
           var dt = Math.min(engine.clock.getDelta(), 0.1);
+
+          // ── Keyboard look (arrow keys) ──
+          // Looking used to be mouse-only (pointer-lock mousemove / touch drag), which
+          // left keyboard-only students able to WALK but never to TURN — and both
+          // "E to talk" and "M to measure" raycast from the crosshair, so they could
+          // never aim at an NPC or a structure. Applied here rather than on keydown so
+          // it is smooth and frame-rate independent instead of following key-repeat.
+          var ls = engine.lookState;
+          if (ls && (ls.left || ls.right || ls.up || ls.down)) {
+            engine.euler.setFromQuaternion(engine.camera.quaternion);
+            if (applyKeyLook(engine.euler, ls, dt)) engine.camera.quaternion.setFromEuler(engine.euler);
+          }
 
           // ── Smooth environment transitions ──
           updateEnvTransition(engine, dt);
@@ -4514,8 +4584,15 @@
             // Remove avatars for disconnected players
             Object.keys(engine._peerAvatars).forEach(function(key) {
               if (!_collabPlayers[key]) { // was the stale closure copy, unlike the add path above
-                engine.scene.remove(engine._peerAvatars[key].body);
-                engine.scene.remove(engine._peerAvatars[key].head);
+                var gone = engine._peerAvatars[key];
+                [gone.body, gone.head].forEach(function(m) {
+                  if (!m) return;
+                  engine.scene.remove(m);
+                  // Removing from the scene doesn't free GPU memory — a long collab
+                  // session with players joining/leaving leaked a Mesh per departure.
+                  if (m.geometry) m.geometry.dispose();
+                  if (m.material && m.material.dispose) m.material.dispose();
+                });
                 delete engine._peerAvatars[key];
               }
             });
@@ -4714,6 +4791,11 @@
           if (engine.composer) { try { engine.composer.setSize(container.clientWidth, container.clientHeight); } catch (e) {} }
         });
         ro.observe(container);
+        // Track it so destroyEngine can disconnect. The self-disconnect above only
+        // runs if the observer FIRES after the container detaches, which may never
+        // happen — and a live observer pins the whole engine closure, so navigating
+        // away and back accumulated one per visit.
+        engine._resizeObserver = ro;
 
         // ── Session Analytics (research data collection) ──
         engine.sessionLog = [];
@@ -5052,6 +5134,12 @@
             });
             engine._docHandlers = null;
           }
+          if (engine._winHandlers) {
+            Object.keys(engine._winHandlers).forEach(function (ev) {
+              window.removeEventListener(ev, engine._winHandlers[ev]);
+            });
+            engine._winHandlers = null;
+          }
           if (engine._canvasHandlers && engine.renderer && engine.renderer.domElement) {
             var _cv = engine.renderer.domElement;
             Object.keys(engine._canvasHandlers).forEach(function(ev) {
@@ -5070,6 +5158,21 @@
           if (engine._dimLines) engine._dimLines.forEach(function(obj) { engine.scene.remove(obj); if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });
           if (engine._selectionGlows) engine._selectionGlows.forEach(function(g) { engine.scene.remove(g); g.geometry.dispose(); g.material.dispose(); });
           if (engine._gridHelper) { engine.scene.remove(engine._gridHelper); engine._gridHelper.geometry.dispose(); engine._gridHelper.material.dispose(); }
+          if (engine._resizeObserver) { try { engine._resizeObserver.disconnect(); } catch (e) {} engine._resizeObserver = null; }
+          // Collab peer avatars are built inside the animate loop, so teardown never
+          // saw them — each body/head Mesh (plus its material) outlived the engine.
+          if (engine._peerAvatars) {
+            Object.keys(engine._peerAvatars).forEach(function(k) {
+              var av = engine._peerAvatars[k] || {};
+              [av.body, av.head].forEach(function(m) {
+                if (!m) return;
+                if (engine.scene) engine.scene.remove(m);
+                if (m.geometry) m.geometry.dispose();
+                if (m.material && m.material.dispose) m.material.dispose();
+              });
+            });
+            engine._peerAvatars = null;
+          }
           if (engine._dimTimer) clearTimeout(engine._dimTimer);
           // Clear the auto-clear measurement timers, the collab position-sync interval + Firestore listener,
           // and the typewriter timer that teardown previously missed (they kept firing after unmount / mid-collab).
@@ -6365,6 +6468,7 @@
           el('div', { style: { display: 'grid', gridTemplateColumns: '70px 1fr', gap: '2px 8px', marginBottom: '10px' } },
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'WASD'), 'Move around',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'Mouse'), 'Look around',
+            el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, '←↑↓→'), 'Look around (no mouse)',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'L-Click'), 'Break block',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'R-Click'), 'Place block',
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'E'), 'Talk to NPC',
@@ -7874,11 +7978,27 @@
               // loaded. gwContainerRef still tears the engine down on real unmount.
               ref: gwContainerRef,
               id: 'geoworld-fs-wrap',
-              role: 'img',
-              'aria-label': 'Interactive 3D world view. Click to enter. ' + (currentLesson.title || 'Geometry World') + '. ' + score + ' of ' + totalQ + ' questions answered.',
+              // WCAG 4.1.2 — this was role="img". ARIA treats an img's subtree as
+              // presentational, so the Fullscreen and Enter VR buttons rendered
+              // inside it were pruned from the accessibility tree entirely, and a
+              // focusable surface with its own WASD/pointer-lock key handling was
+              // announced as a static graphic. role="application" is what the other
+              // interactive 3D STEM tools use (galaxy, flightsim, dinolab, …): it
+              // passes keystrokes through to the tool instead of the reader's
+              // browse mode, which is exactly what the movement keys need.
+              role: 'application',
+              'aria-label': (currentLesson.title || 'Geometry World') + ' — interactive 3D world. ' + score + ' of ' + totalQ + ' questions answered.',
+              'aria-describedby': 'geoworld-instructions',
               tabIndex: 0,
               style: { flex: 1, position: 'relative' }
             },
+              // Keyboard contract, announced on focus. Previously the only hint was
+              // "Click to enter" in the label — mouse-only guidance on a surface
+              // that is fully keyboard-drivable.
+              el('div', {
+                id: 'geoworld-instructions',
+                style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0, whiteSpace: 'nowrap' }
+              }, 'Interactive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.'),
               // Fullscreen toggle (top-right). React will mount this as a
               // child of the engine container; the engine's renderer DOM
               // element is appended later via initEngine, so the button
