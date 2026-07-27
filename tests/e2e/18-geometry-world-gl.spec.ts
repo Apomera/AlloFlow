@@ -168,6 +168,27 @@ const HARNESS = `<!doctype html>
     return !!en.blocks[x + ',' + y + ',' + z];
   };
 
+  // Enclosed volume of a placed block's mesh, by the divergence theorem
+  // (sum of signed tetrahedron volumes over its triangles). This is what a slicer
+  // would print, so it is the honest check that the model matches the lesson.
+  window.__meshVolume = function (x, y, z) {
+    var en = window.__geoWorldEngine;
+    var m = en && en.blocks[x + ',' + y + ',' + z];
+    if (!m) return null;
+    m.updateMatrixWorld(true);
+    var g = m.geometry, pos = g.attributes.position;
+    var idx = g.index ? g.index.array : null;
+    var count = idx ? idx.length : pos.count;
+    var v = new THREE.Vector3();
+    var get = function (i) { v.set(pos.getX(i), pos.getY(i), pos.getZ(i)).applyMatrix4(m.matrixWorld); return v.clone(); };
+    var vol = 0;
+    for (var i = 0; i + 2 < count; i += 3) {
+      var a = get(idx ? idx[i] : i), b = get(idx ? idx[i + 1] : i + 1), c = get(idx ? idx[i + 2] : i + 2);
+      vol += a.dot(new THREE.Vector3().crossVectors(b, c)) / 6;
+    }
+    return { volume: Math.abs(Math.round(vol * 10000) / 10000), shape: m.userData.shape, claimed: m.userData.volume };
+  };
+
   window.__liveRegion = function () {
     var el = document.getElementById('allo-live-geometryworld');
     return el ? el.textContent : null;
@@ -507,6 +528,34 @@ test.describe('Geometry World — real WebGL', () => {
       expect(b.max[0], 'rot ' + rot + ' maxX').toBeLessThanOrEqual(x + 1.001);
       expect(b.min[2], 'rot ' + rot + ' minZ').toBeGreaterThanOrEqual(z - 0.001);
       expect(b.max[2], 'rot ' + rot + ' maxZ').toBeLessThanOrEqual(z + 1.001);
+    }
+  });
+
+  test('a printed block encloses the volume the lesson teaches', async ({ page }) => {
+    // The STL exporter now derives its triangles from these very meshes, so if the
+    // mesh encloses the right volume the print does too. Before, every block exported
+    // as a unit cube: a student could measure 12 cubic units on screen and hold 24 in
+    // their hand — in a tool that exists to teach volume.
+    await mount(page, { _introShownOnce: true });
+
+    const expected = [
+      { shape: 'cube', volume: 1 },
+      { shape: 'halfB', volume: 0.5 },
+      { shape: 'halfA', volume: 0.5 },
+      { shape: 'quarter', volume: 0.25 },
+    ];
+
+    for (let i = 0; i < expected.length; i += 1) {
+      const at: [number, number, number] = [24 + i * 2, 7, 24];
+      const placed = await page.evaluate(([x, y, z, s]) => (window as any).__placeShaped(x, y, z, s, 0),
+        [...at, expected[i].shape] as [number, number, number, string]);
+      expect(placed, expected[i].shape).toBe(true);
+
+      const r = await page.evaluate(([x, y, z]) => (window as any).__meshVolume(x, y, z), at);
+      // The geometry must enclose what BLOCK_SHAPES claims, or the manipulative
+      // contradicts the arithmetic the student just did.
+      expect(r.claimed, expected[i].shape + ' metadata').toBeCloseTo(expected[i].volume, 6);
+      expect(r.volume, expected[i].shape + ' actual enclosed volume').toBeCloseTo(expected[i].volume, 3);
     }
   });
 

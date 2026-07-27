@@ -294,6 +294,65 @@
     }
   }
 
+  // ── STL geometry, taken from what is actually on screen ──
+  // The exporter used to emit a unit cube per block and ignore userData.shape, so a
+  // build made of half-slabs (½ unit) and wedges (¼ unit) printed as solid cubes —
+  // the physical manipulative would have contradicted the volume lesson it exists to
+  // teach. Rather than maintain a second copy of each shape's geometry, read the real
+  // mesh: then the print and the screen cannot drift apart, and any shape added later
+  // is handled for free.
+  //
+  // Pure and module-scope (matrix passed in as a plain 16-element array) so the
+  // transform maths is unit-testable without a WebGL context.
+  function applyMatrix4(e, v) {
+    var x = v[0], y = v[1], z = v[2];
+    var w = e[3] * x + e[7] * y + e[11] * z + e[15];
+    var iw = w ? 1 / w : 1;
+    return [
+      (e[0] * x + e[4] * y + e[8] * z + e[12]) * iw,
+      (e[1] * x + e[5] * y + e[9] * z + e[13]) * iw,
+      (e[2] * x + e[6] * y + e[10] * z + e[14]) * iw
+    ];
+  }
+
+  function triangleNormal(a, b, c) {
+    var ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+    var vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+    var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    var len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+    if (!len) return [0, 0, 0]; // degenerate triangle — STL allows a zero normal
+    return [nx / len, ny / len, nz / len];
+  }
+
+  // World-space triangles for one mesh. Handles indexed (BoxGeometry) and
+  // non-indexed (the hand-authored wedges) buffers alike.
+  function stlTrianglesFromMesh(mesh) {
+    var geo = mesh && mesh.geometry;
+    var pos = geo && geo.attributes && geo.attributes.position;
+    if (!pos || !mesh.matrixWorld) return [];
+    var e = mesh.matrixWorld.elements;
+    var index = geo.index ? geo.index.array : null;
+    var count = index ? index.length : pos.count;
+    var tris = [];
+    for (var i = 0; i + 2 < count; i += 3) {
+      var i0 = index ? index[i] : i, i1 = index ? index[i + 1] : i + 1, i2 = index ? index[i + 2] : i + 2;
+      var a = applyMatrix4(e, [pos.getX(i0), pos.getY(i0), pos.getZ(i0)]);
+      var b = applyMatrix4(e, [pos.getX(i1), pos.getY(i1), pos.getZ(i1)]);
+      var c = applyMatrix4(e, [pos.getX(i2), pos.getY(i2), pos.getZ(i2)]);
+      tris.push({ n: triangleNormal(a, b, c), v: [a, b, c] });
+    }
+    return tris;
+  }
+
+  // A cube face may only be culled when the neighbour actually COVERS it, i.e. is
+  // itself a full cube. The old test culled against any non-grass neighbour, so a
+  // slab or wedge next door punched a hole in the printed model.
+  function coversFullFace(neighbor) {
+    if (!neighbor || !neighbor.userData) return false;
+    if (neighbor.userData.blockType === 'grass') return false;
+    return (neighbor.userData.shape || 'cube') === 'cube';
+  }
+
   // Format fractional volume for display
   function formatVolume(vol) {
     if (vol === Math.floor(vol)) return vol.toString();
@@ -6295,10 +6354,19 @@
 
               // Build STL binary — each block face = 2 triangles, only render exposed faces
               var faces = [];
+              var shapedCount = 0;
               blockKeys.forEach(function(key) {
                 var m = eng.blocks[key];
                 var p = m.userData.gridPos;
                 var x = p.x, y = p.y, z = p.z;
+                // Non-cube shapes: emit their real geometry. Face-culling assumes a
+                // shape tiles the cell, which slabs and wedges do not.
+                if ((m.userData.shape || 'cube') !== 'cube') {
+                  try { m.updateMatrixWorld(true); } catch (e) {}
+                  var shapeTris = stlTrianglesFromMesh(m);
+                  if (shapeTris.length) { shapedCount++; shapeTris.forEach(function(t) { faces.push(t); }); }
+                  return;
+                }
                 // Check 6 neighbors — only add face if neighbor is empty
                 var dirs = [
                   { dx: 1, dy: 0, dz: 0, n: [1,0,0], verts: [[1,0,0],[1,1,0],[1,1,1],[1,0,1]] },
@@ -6311,7 +6379,7 @@
                 dirs.forEach(function(d) {
                   var nk = (x+d.dx)+','+(y+d.dy)+','+(z+d.dz);
                   var neighbor = eng.blocks[nk];
-                  if (!neighbor || (neighbor.userData.blockType === 'grass')) {
+                  if (!coversFullFace(neighbor)) {
                     // Add two triangles for this face
                     var v = d.verts.map(function(vt) { return [x+vt[0], y+vt[1], z+vt[2]]; });
                     faces.push({ n: d.n, v: [v[0], v[1], v[2]] });
@@ -6353,8 +6421,10 @@
               a.download = 'geometry_world_' + new Date().toISOString().slice(0, 10) + '.stl';
               document.body.appendChild(a); a.click(); document.body.removeChild(a);
               URL.revokeObjectURL(a.href);
-              if (addToast) addToast('\uD83E\uDE78 STL exported! ' + blockKeys.length + ' blocks \u2192 ' + numTriangles + ' triangles. Ready for 3D printing!', 'success');
-              if (eng.logEvent) eng.logEvent('stl_export', { blocks: blockKeys.length, triangles: numTriangles });
+              if (addToast) addToast('\uD83E\uDE78 STL exported! ' + blockKeys.length + ' blocks \u2192 ' + numTriangles + ' triangles'
+                + (shapedCount ? ' (incl. ' + shapedCount + ' half/wedge block' + (shapedCount === 1 ? '' : 's') + ' at true volume)' : '')
+                + '. Ready for 3D printing!', 'success');
+              if (eng.logEvent) eng.logEvent('stl_export', { blocks: blockKeys.length, triangles: numTriangles, shapedBlocks: shapedCount });
             },
             title: __alloT('stem.geometryworld.export_structures_as_stl_file_for_3d_p', 'Export structures as STL file for 3D printing'),
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#f472b6', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
