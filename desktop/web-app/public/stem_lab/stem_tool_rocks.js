@@ -4855,6 +4855,19 @@ const d = labToolData.rockCycle || {};
             return h('g', { key: key, opacity: opacity == null ? 1 : opacity }, kids);
           };
 
+          // A standalone family chip, so the process list and the transformation
+          // machine speak the same visual language. One representative texture
+          // per family: igneous crystallises, sedimentary beds, metamorphic bands.
+          const RC_FAMILY_TEXTURE = { igneous: 'crystalline', sedimentary: 'clastic', metamorphic: 'banded' };
+          const rcFamilyChip = function (key, familyId, size) {
+            var S = size || 24;
+            return h('svg', {
+              width: S, height: S, viewBox: '0 0 ' + S + ' ' + S,
+              'aria-hidden': true, focusable: 'false',
+              style: { display: 'block', flexShrink: 0 }
+            }, rcSwatch(key, RC_FAMILY_TEXTURE[familyId] || 'crystalline', familyId, 0, 0, S, S, 1));
+          };
+
           // ── Animated Canvas2D for Rock Cycle ──
           // This initialiser is re-created each render (it closes over the current
           // upd/setLabToolData), but it is NOT handed to React as the ref. It is
@@ -5808,11 +5821,22 @@ const d = labToolData.rockCycle || {};
 
             React.createElement("div", { className: "mb-3" },
 
-              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2" }, "\u2194\uFE0F " + __alloT('stem.rocks.transformation_processes', "Transformation Processes")),
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\u2194\uFE0F " + __alloT('stem.rocks.transformation_processes', "Transformation Processes")),
 
-              React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+              // This panel used to render only the first three PROCESSES \u2014 the
+              // steps of the simple loop. The three DIRECT branches (igneous \u2192
+              // metamorphic, sedimentary \u2192 igneous, metamorphic \u2192 sedimentary)
+              // were unreachable, which flatly contradicted this tool's own
+              // teaching two panels down ("the diagram's 6 arrows show every
+              // path", "the cycle only goes one way" listed as a myth) and the
+              // mission "Explain the branching cycle". The canvas already drew
+              // all six; only the clickable list was truncated. All six now.
+              React.createElement("p", { className: "text-[11px] text-slate-700 mb-2" },
+                __alloT('stem.rocks.processes_intro', "Every pathway is real. The three on the left are the familiar loop; the three on the right skip a step entirely.")),
 
-                PROCESSES.slice(0, 3).map(function (proc, i) {
+              React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2" },
+
+                PROCESSES.map(function (proc, i) {
 
                   var isActive = d.selectedProcess && d.selectedProcess.label === proc.label && d.selectedProcess.from === proc.from;
 
@@ -5823,15 +5847,32 @@ const d = labToolData.rockCycle || {};
                   var toRock = window.StemLab && window.StemLab.findById ? window.StemLab.findById(ROCKS, proc.to) : null;
                   var processFromTo = (fromRock ? fromRock.label : proc.from) + " \u2192 " + (toRock ? toRock.label : proc.to);
 
+                  // A "direct branch" skips the familiar loop order entirely.
+                  var isBranch = i >= 3;
+
                   return React.createElement("button", { key: i, onClick: function () { upd('selectedProcess', proc); },
 
-                    className: "p-2 rounded-lg text-left border transition-all " + (isActive ? 'bg-orange-100 border-orange-400 shadow-md' : 'transition-colors bg-slate-50 border-slate-200 hover:bg-orange-50 active:scale-[0.97]')
+                    "aria-pressed": !!isActive,
+                    "aria-label": processFromTo + " by " + proc.label + (isBranch ? " — a direct branch" : ""),
+
+                    className: "p-2 rounded-lg text-left border transition-colors " + (isActive ? 'bg-orange-100 border-orange-500 shadow-md' : 'bg-slate-50 border-slate-200 hover:bg-orange-50 active:scale-[0.97]')
 
                   },
 
-                    React.createElement("p", { className: "text-sm font-bold " + (isActive ? 'text-orange-700' : 'text-slate-600') }, proc.emoji + " " + proc.label),
+                    React.createElement("p", { className: "text-sm font-bold " + (isActive ? 'text-orange-800' : 'text-slate-700') }, proc.emoji + " " + proc.label),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600" }, processFromTo)
+                    // Show the two rock families rather than only naming them, so
+                    // the pathway reads at a glance and matches the textures the
+                    // transformation machine uses.
+                    React.createElement("div", { className: "flex items-center gap-1 my-1" },
+                      rcFamilyChip('pf' + i, proc.from, 22),
+                      React.createElement("span", { className: "text-[11px] font-black text-slate-600" }, "→"),
+                      rcFamilyChip('pt' + i, proc.to, 22)
+                    ),
+
+                    React.createElement("p", { className: "text-[11px] text-slate-700" }, processFromTo),
+
+                    isBranch && React.createElement("p", { className: "text-[10px] font-bold text-violet-800 mt-0.5" }, __alloT('stem.rocks.process_direct_branch', "direct branch"))
 
                   );
 
@@ -5839,9 +5880,21 @@ const d = labToolData.rockCycle || {};
 
               ),
 
-              d.selectedProcess && React.createElement("div", { className: "mt-2 p-3 bg-orange-50 rounded-lg border border-orange-200 animate-in slide-in-from-bottom text-sm text-orange-700" },
+              d.selectedProcess && React.createElement("div", { className: "mt-2 p-3 bg-orange-50 rounded-lg border border-orange-300 animate-in slide-in-from-bottom" },
 
-                React.createElement("strong", null, d.selectedProcess.emoji + " " + d.selectedProcess.label + ": "), d.selectedProcess.desc
+                // Larger from → to figure: the selected pathway was described in
+                // prose with nothing to look at.
+                React.createElement("div", { className: "flex items-center gap-3 mb-2" },
+                  React.createElement("div", { className: "rounded-lg border border-slate-400 bg-white p-0.5" }, rcFamilyChip('selFrom', d.selectedProcess.from, 40)),
+                  React.createElement("div", { className: "text-center" },
+                    React.createElement("div", { className: "text-lg leading-none", "aria-hidden": true }, d.selectedProcess.emoji),
+                    React.createElement("div", { className: "text-[11px] font-black text-orange-800" }, "→")
+                  ),
+                  React.createElement("div", { className: "rounded-lg border border-slate-400 bg-white p-0.5" }, rcFamilyChip('selTo', d.selectedProcess.to, 40)),
+                  React.createElement("p", { className: "text-xs font-black text-orange-900 ml-1" }, d.selectedProcess.label)
+                ),
+
+                React.createElement("p", { className: "text-sm text-orange-900 leading-relaxed" }, d.selectedProcess.desc)
 
               )
 
