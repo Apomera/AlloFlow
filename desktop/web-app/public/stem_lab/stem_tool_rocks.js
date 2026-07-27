@@ -379,6 +379,229 @@
     'banded': 'alternating light and dark mineral bands',
   };
 
+  // ══ Mineral test-bench visuals ══
+  // The three classic hands-on identification tests — streak, scratch, acid —
+  // were each a button, a progress bar and a sentence of result text. The whole
+  // point of these tests is that you LOOK at what happens, so the tool was
+  // describing an observation instead of letting a student make one.
+  //
+  // Animation is CSS keyframes rather than JS timers: no new intervals to leak,
+  // and the reduced-motion block already injected above collapses them to
+  // 0.01ms for free (WCAG 2.3.3).
+  function rkEnsureBenchCss() {
+    if (typeof document === 'undefined') return;
+    var el = document.getElementById('rock-a11y');
+    if (!el || el._rkBenchCss) return;
+    el._rkBenchCss = true;
+    el.textContent += [
+      '@keyframes rkBubbleRise{0%{transform:translateY(0);opacity:0}',
+      '15%{opacity:.9}80%{opacity:.7}100%{transform:translateY(-34px);opacity:0}}',
+      '@keyframes rkSmear{from{stroke-dashoffset:150}to{stroke-dashoffset:0}}',
+      '.rk-bubble{animation:rkBubbleRise 1.6s linear infinite}',
+      '.rk-smear{stroke-dasharray:150;animation:rkSmear .7s ease-out forwards}'
+    ].join('');
+  }
+
+  // Known streak colours, keyed off the MINERALS data's `streak` strings.
+  var RK_STREAK_HEX = {
+    'White': '#f1f5f9',
+    'Greenish-black': '#16301c',
+    'Black': '#171717',
+    'Red-brown': '#8b3a2a',
+    'Reddish-brown': '#8b3a2a',
+    'Lead-gray': '#8d949e',
+    'White-yellow': '#fdf3c0',
+    'Yellow': '#fadf72',
+    'Brown-yellow': '#a1741f',
+    'Colorless': '#e9eef5',
+    'None (too hard)': null
+  };
+
+  // 1) STREAK PLATE — the test's whole lesson is that a mineral's streak is
+  // often NOT its outward colour, so the two are shown side by side. Pyrite is
+  // the classic case: brassy gold specimen, greenish-black powder.
+  function rkStreakPlateSvg(h, mineral, revealed) {
+    rkEnsureBenchCss();
+    var streakName = (mineral && mineral.streak) || '';
+    var hex = Object.prototype.hasOwnProperty.call(RK_STREAK_HEX, streakName)
+      ? RK_STREAK_HEX[streakName]
+      : '#cbd5e1';
+    var tooHard = hex === null;
+    var body = (mineral && mineral.color) || '#cbd5e1';
+    var rnd = rkSeed((mineral ? mineral.id : 'x') + '-streak');
+    var kids = [];
+    var i;
+
+    // Unglazed porcelain plate
+    kids.push(h('rect', { key: 'plate', x: 4, y: 8, width: 116, height: 62, rx: 5, fill: '#fbfbfa', stroke: '#94a3b8', strokeWidth: 1.2 }));
+    for (i = 0; i < 40; i++) {
+      kids.push(h('circle', { key: 'g' + i, cx: (6 + rnd() * 112).toFixed(1), cy: (10 + rnd() * 58).toFixed(1), r: 0.5, fill: '#e2e8f0' }));
+    }
+
+    if (revealed) {
+      if (tooHard) {
+        // Harder than the plate: the MINERAL wins and grooves the porcelain.
+        kids.push(h('path', {
+          key: 'groove', className: 'rk-smear',
+          d: 'M18,52 L102,26', stroke: '#94a3b8', strokeWidth: 2.4, strokeLinecap: 'round', fill: 'none'
+        }));
+        kids.push(h('text', { key: 'th', x: 62, y: 66, textAnchor: 'middle', fontSize: '8', fontWeight: '700', fill: '#334155' }, 'plate scratched — no powder'));
+      } else {
+        // Powder smear: a broad soft stroke plus scattered grains at the edges.
+        kids.push(h('path', {
+          key: 'smear', className: 'rk-smear',
+          d: 'M18,52 Q60,34 102,26', stroke: hex, strokeWidth: 9, strokeLinecap: 'round', fill: 'none', opacity: 0.92
+        }));
+        for (i = 0; i < 26; i++) {
+          var t = rnd();
+          var sx = 18 + t * 84;
+          var sy = 52 - t * 26 + (rnd() - 0.5) * 13;
+          kids.push(h('circle', { key: 'p' + i, cx: sx.toFixed(1), cy: sy.toFixed(1), r: (0.6 + rnd() * 1.1).toFixed(2), fill: hex, opacity: 0.75 }));
+        }
+      }
+    } else {
+      kids.push(h('text', { key: 'hint', x: 62, y: 43, textAnchor: 'middle', fontSize: '9', fill: '#64748b' }, 'unglazed porcelain'));
+    }
+
+    // Side-by-side comparison — the actual teaching point.
+    var cmp = [];
+    if (revealed && !tooHard) {
+      cmp.push(h('rect', { key: 'c1', x: 132, y: 14, width: 26, height: 18, rx: 3, fill: body, stroke: '#64748b', strokeWidth: 1 }));
+      cmp.push(h('text', { key: 't1', x: 145, y: 41, textAnchor: 'middle', fontSize: '7.5', fontWeight: '700', fill: '#334155' }, 'looks like'));
+      cmp.push(h('rect', { key: 'c2', x: 132, y: 48, width: 26, height: 18, rx: 3, fill: hex, stroke: '#64748b', strokeWidth: 1 }));
+      cmp.push(h('text', { key: 't2', x: 145, y: 75, textAnchor: 'middle', fontSize: '7.5', fontWeight: '700', fill: '#334155' }, 'streak'));
+    }
+
+    return h('svg', {
+      viewBox: '0 0 168 80', width: '100%', role: 'img',
+      style: { maxWidth: '340px', display: 'block' },
+      'aria-label': revealed
+        ? (tooHard
+            ? (mineral.label + ' is harder than the porcelain plate, so it scratches the plate instead of leaving a powder streak.')
+            : (mineral.label + ' leaves a ' + streakName.toLowerCase() + ' streak, next to its outward colour for comparison.'))
+        : 'An empty unglazed porcelain streak plate, ready for testing.'
+    }, kids, cmp);
+  }
+
+  // 2) SCRATCH TEST — shows WHY the result happened. A groove appears only when
+  // the tool is at least as hard as the mineral; when it is softer the tool
+  // itself smears off, which is the observation students are told about but
+  // never got to see.
+  function rkScratchSvg(h, mineral, toolLabel, toolH, progress, done) {
+    var mh = (mineral && mineral.hardness) || 0;
+    var scratches = toolH >= mh;
+    var body = (mineral && mineral.color) || '#cbd5e1';
+    var p = Math.max(0, Math.min(100, progress || 0));
+    var x0 = 20, x1 = 148, y = 54;
+    var tipX = x0 + (x1 - x0) * (p / 100);
+    var kids = [];
+    var i;
+
+    // Mineral surface
+    kids.push(h('rect', { key: 'surf', x: 12, y: 40, width: 144, height: 30, rx: 4, fill: body, stroke: '#475569', strokeWidth: 1.2 }));
+    kids.push(h('rect', { key: 'shine', x: 12, y: 40, width: 144, height: 9, rx: 4, fill: '#ffffff', opacity: 0.22 }));
+
+    // The mark left behind, revealed up to the tool's current position.
+    if (p > 0) {
+      if (scratches) {
+        kids.push(h('line', { key: 'groove', x1: x0, y1: y, x2: tipX, y2: y, stroke: '#1f2937', strokeWidth: 2.6, strokeLinecap: 'round', opacity: 0.85 }));
+        kids.push(h('line', { key: 'grooveHi', x1: x0, y1: y - 1.6, x2: tipX, y2: y - 1.6, stroke: '#ffffff', strokeWidth: 1, strokeLinecap: 'round', opacity: 0.45 }));
+        // Debris thrown ahead of the tip.
+        for (i = 0; i < 6; i++) {
+          var dr = rkSeed((mineral ? mineral.id : 'x') + 'd' + i)();
+          kids.push(h('circle', { key: 'db' + i, cx: (tipX + 2 + dr * 7).toFixed(1), cy: (y + 4 + dr * 5).toFixed(1), r: 0.9, fill: '#1f2937', opacity: 0.5 }));
+        }
+      } else {
+        // Softer tool: its own material rubs off as a faint smear. No groove.
+        kids.push(h('line', { key: 'smear', x1: x0, y1: y, x2: tipX, y2: y, stroke: '#e2e8f0', strokeWidth: 3.4, strokeLinecap: 'round', opacity: 0.75 }));
+      }
+    }
+
+    // Tool tip
+    kids.push(h('polygon', {
+      key: 'tip',
+      points: [tipX + ',' + (y - 3), (tipX - 5) + ',' + (y - 17), (tipX + 5) + ',' + (y - 17)].join(' '),
+      fill: scratches ? '#334155' : '#94a3b8', stroke: '#0f172a', strokeWidth: 0.9
+    }));
+    kids.push(h('rect', { key: 'shaft', x: tipX - 4, y: 12, width: 8, height: 18, rx: 2, fill: '#64748b', stroke: '#0f172a', strokeWidth: 0.9 }));
+
+    // Mohs comparison strip — the reason, not just the outcome.
+    var scaleY = 84;
+    kids.push(h('rect', { key: 'scale', x: 12, y: scaleY, width: 144, height: 7, rx: 3.5, fill: '#e2e8f0' }));
+    for (i = 1; i <= 10; i++) {
+      kids.push(h('line', { key: 'tick' + i, x1: 12 + (i / 10) * 144, y1: scaleY, x2: 12 + (i / 10) * 144, y2: scaleY + 7, stroke: '#cbd5e1', strokeWidth: 0.7 }));
+    }
+    var mx = 12 + (mh / 10) * 144;
+    var tx = 12 + (toolH / 10) * 144;
+    kids.push(h('polygon', { key: 'mMark', points: [mx + ',' + (scaleY - 1), (mx - 4) + ',' + (scaleY - 8), (mx + 4) + ',' + (scaleY - 8)].join(' '), fill: '#7c3aed' }));
+    kids.push(h('text', { key: 'mTxt', x: mx, y: scaleY - 10, textAnchor: 'middle', fontSize: '7.5', fontWeight: '700', fill: '#5b21b6' }, 'mineral ' + mh));
+    kids.push(h('polygon', { key: 'tMark', points: [tx + ',' + (scaleY + 8), (tx - 4) + ',' + (scaleY + 15), (tx + 4) + ',' + (scaleY + 15)].join(' '), fill: '#0f766e' }));
+    kids.push(h('text', { key: 'tTxt', x: tx, y: scaleY + 23, textAnchor: 'middle', fontSize: '7.5', fontWeight: '700', fill: '#115e59' }, 'tool ' + toolH));
+
+    return h('svg', {
+      viewBox: '0 0 168 100', width: '100%', role: 'img',
+      style: { maxWidth: '360px', display: 'block' },
+      'aria-label': !done
+        ? ('Scratch test in progress: ' + toolLabel + ', hardness ' + toolH + ', drawn across ' + (mineral ? mineral.label : '') + ', hardness ' + mh + '.')
+        : (scratches
+            ? (toolLabel + ' at hardness ' + toolH + ' cut a groove into ' + mineral.label + ' at hardness ' + mh + ', because it is at least as hard.')
+            : (toolLabel + ' at hardness ' + toolH + ' left only its own smear on ' + mineral.label + ' at hardness ' + mh + ', because it is softer.'))
+    }, kids);
+  }
+
+  // 3) ACID FIZZ — CO2 escaping is the observation. A non-carbonate shows the
+  // drop simply beading on the surface, which is a real negative result rather
+  // than an empty panel.
+  function rkFizzSvg(h, mineral, active, done, isCarbonate) {
+    rkEnsureBenchCss();
+    var body = (mineral && mineral.color) || '#cbd5e1';
+    var kids = [];
+    var i;
+
+    kids.push(h('rect', { key: 'surf', x: 14, y: 52, width: 140, height: 26, rx: 4, fill: body, stroke: '#475569', strokeWidth: 1.2 }));
+    kids.push(h('rect', { key: 'shine', x: 14, y: 52, width: 140, height: 8, rx: 4, fill: '#ffffff', opacity: 0.22 }));
+
+    // Pipette
+    kids.push(h('rect', { key: 'pip', x: 78, y: 4, width: 10, height: 22, rx: 3, fill: '#e0f2fe', stroke: '#0369a1', strokeWidth: 1 }));
+    kids.push(h('path', { key: 'nozzle', d: 'M80,26 L86,26 L84,34 L82,34 Z', fill: '#0369a1' }));
+
+    if (active || done) {
+      // Acid pooled on the specimen
+      kids.push(h('ellipse', { key: 'drop', cx: 83, cy: 53, rx: 15, ry: 4.5, fill: '#38bdf8', opacity: 0.55 }));
+    }
+
+    if ((active || done) && isCarbonate) {
+      for (i = 0; i < 9; i++) {
+        var s = rkSeed((mineral ? mineral.id : 'x') + 'b' + i);
+        var bx = 68 + s() * 30;
+        var r = 1.6 + s() * 2.6;
+        kids.push(h('circle', {
+          key: 'bub' + i, className: active ? 'rk-bubble' : undefined,
+          cx: bx.toFixed(1), cy: 50, r: r.toFixed(2),
+          fill: '#ffffff', stroke: '#0ea5e9', strokeWidth: 0.7,
+          opacity: active ? 1 : 0.85,
+          style: active ? { animationDelay: (i * 0.17).toFixed(2) + 's' } : { transform: 'translateY(' + (-6 - i * 3) + 'px)' }
+        }));
+      }
+      if (done) {
+        kids.push(h('text', { key: 'co2', x: 120, y: 30, fontSize: '9', fontWeight: '700', fill: '#0369a1' }, 'CO₂'));
+      }
+    } else if (done) {
+      // Negative result: the drop just sits there.
+      kids.push(h('text', { key: 'no', x: 83, y: 40, textAnchor: 'middle', fontSize: '8', fontWeight: '700', fill: '#475569' }, 'no gas released'));
+    }
+
+    return h('svg', {
+      viewBox: '0 0 168 86', width: '100%', role: 'img',
+      style: { maxWidth: '340px', display: 'block' },
+      'aria-label': !(active || done)
+        ? 'A pipette of dilute hydrochloric acid above the specimen, ready to test.'
+        : (isCarbonate
+            ? ('Acid on ' + (mineral ? mineral.label : '') + ' releases a stream of carbon dioxide bubbles.')
+            : ('Acid beads on the surface of ' + (mineral ? mineral.label : '') + ' with no bubbles, so no carbonate is present.'))
+    }, kids);
+  }
+
   var ROCKS_CHALLENGES = [
     { id: 'types_explored', name: 'Petrologist', desc: 'Examine all 3 rock types (Igneous, Sedimentary, Metamorphic)', icon: '⛰️', rp: 15, check: function(s) { var st = s || {}; return Object.keys(st.typesViewed || {}).length >= 3; } },
     { id: 'specimens_examined', name: 'Rock Collector', desc: 'Examine 5+ rock specimens', icon: '🔍', rp: 15, check: function(s) { var st = s || {}; return Object.keys(st.rocksViewed || {}).length >= 5; } },
@@ -3540,20 +3763,29 @@ const d = labToolData.rocks || {};
                     var animProgress = d.scratchAnimProgress || 0;
 
                     return React.createElement("div", { className: "bg-slate-50 rounded-lg p-3 border border-slate-200" },
-                      React.createElement("div", { className: "flex justify-between items-center mb-2" },
+                      React.createElement("div", { className: "flex justify-between items-center gap-2 mb-2" },
                         React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, __alloT('stem.rocks.active_tool_label', "Active Tool: ") + toolData.label + " (" + __alloT('stem.rocks.hardness_word', "Hardness") + " " + toolData.h + ")"),
-                        animProgress === 0 && React.createElement("button", {
+                        // The old condition was `animProgress === 0`, so once a run
+                        // finished at 100 the button disappeared and the only way to
+                        // retest was to re-pick a tool. Show it whenever idle.
+                        (animProgress === 0 || animProgress >= 100) && React.createElement("button", {
                           onClick: runTest,
-                          className: "px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-[10px] font-bold transition-all shadow-sm active:scale-[0.97]"
-                        }, "⚡ " + __alloT('stem.rocks.run_scratch_test', "Run Scratch Test"))
+                          className: "px-3 py-1 bg-violet-700 hover:bg-violet-800 text-white rounded-lg text-[10px] font-bold transition-colors shadow-sm active:scale-[0.97] shrink-0"
+                        }, (animProgress >= 100 ? "↻ " + __alloT('stem.rocks.run_scratch_again', "Test again") : "⚡ " + __alloT('stem.rocks.run_scratch_test', "Run Scratch Test")))
+                      ),
+                      // Watch the tool travel, see whether it cuts a groove or just
+                      // smears itself off, and read both hardnesses on one Mohs
+                      // strip — the result text alone never showed the WHY.
+                      animProgress > 0 && React.createElement("div", { className: "rounded-lg border border-slate-300 bg-white p-2 mb-2" },
+                        rkScratchSvg(React.createElement, selMineral, toolData.label, toolData.h, animProgress, animProgress >= 100)
                       ),
                       animProgress > 0 && animProgress < 100 && React.createElement("div", { className: "w-full bg-slate-200 h-2.5 rounded-full overflow-hidden mb-2" },
                         React.createElement("div", {
-                          className: "bg-violet-600 h-full transition-all duration-75",
+                          className: "bg-violet-700 h-full transition-all duration-75",
                           style: { width: animProgress + '%' }
                         })
                       ),
-                      d.scratchResult && React.createElement("p", { className: "text-xs font-bold text-slate-700 leading-relaxed animate-in fade-in" },
+                      d.scratchResult && React.createElement("p", { className: "text-xs font-bold text-slate-800 leading-relaxed animate-in fade-in" },
                         d.scratchResult
                       )
                     );
@@ -3569,7 +3801,13 @@ const d = labToolData.rocks || {};
                   React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
                     __alloT('stem.rocks.streak_test_intro', "Scratch the mineral across an unglazed porcelain streak plate. The color of the powdered residue left behind is the streak color, which is often different from the mineral's external color.")
                   ),
-                  React.createElement("div", { className: "flex items-center gap-4" },
+                  // The plate itself is now drawn, with the specimen's outward
+                  // colour beside the powder colour — that contrast IS the lesson,
+                  // and a 40x14 swatch was not making it.
+                  React.createElement("div", { className: "rounded-xl border border-slate-300 bg-white p-2 mb-2" },
+                    rkStreakPlateSvg(React.createElement, selMineral, !!d.streakResult)
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
                     React.createElement("button", {
                       disabled: d.streakAnimActive,
                       onClick: function() {
@@ -3581,19 +3819,12 @@ const d = labToolData.rocks || {};
                           updMulti({ streakAnimActive: false, streakResult: res });
                         }, 800);
                       },
-                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
+                      className: "px-3 py-1.5 bg-violet-700 hover:bg-violet-800 text-white font-bold rounded-lg text-xs transition-colors shadow-sm disabled:opacity-50 active:scale-[0.97]"
                     }, d.streakAnimActive ? "✏️ " + __alloT('stem.rocks.scratching_plate', "Scratching plate...") : "🍽️ " + __alloT('stem.rocks.perform_streak_test', "Perform Streak Test")),
-                    d.streakResult && (function() {
-                      var streakColors = { 'White': '#f8fafc', 'Greenish-black': '#1a3a1a', 'Black': '#1e1e1e', 'Red-brown': '#8b3a2a', 'Lead-gray': '#94a3b8', 'White-yellow': '#fef9c3', 'None (too hard)': '#94a3b8' };
-                      var c = streakColors[selMineral.streak] || '#e2e8f0';
-                      var isNone = selMineral.streak.includes('None');
-                      return React.createElement("div", { className: "flex items-center gap-2 animate-in fade-in" },
-                        !isNone && React.createElement("div", {
-                          style: { backgroundColor: c, border: '1px solid #cbd5e1', width: '40px', height: '14px', borderRadius: '4px', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' }
-                        }),
-                        React.createElement("span", { className: "text-xs font-bold text-slate-700" }, d.streakResult)
-                      );
-                    })()
+                    d.streakResult && React.createElement("span", { className: "text-xs font-bold text-slate-800 animate-in fade-in" }, d.streakResult),
+                    d.streakResult && selMineral.streak && !selMineral.streak.includes('None') &&
+                      React.createElement("p", { className: "text-[11px] text-slate-700 basis-full leading-snug" },
+                        __alloT('stem.rocks.streak_vs_colour', "Compare the two chips: the powder colour is the reliable identifier, because a mineral's outward colour can vary with impurities while its streak does not."))
                   )
                 ),
 
@@ -3606,46 +3837,53 @@ const d = labToolData.rocks || {};
                   React.createElement("p", { className: "text-[11px] text-slate-600 mb-3" },
                     __alloT('stem.rocks.acid_fizz_intro', "Apply dilute hydrochloric acid (HCl) to test for the presence of carbonate minerals. Carbonates react by fizzing vigorously.")
                   ),
-                  React.createElement("div", { className: "flex items-center gap-3" },
-                    React.createElement("button", {
-                      disabled: d.fizzAnimActive,
-                      onClick: function() {
-                        upd("fizzAnimActive", true);
-                        upd("fizzResult", null);
-                        sfxRockMelt();
-                        var bubbleSoundCount = 0;
-                        var bubbleInterval = setInterval(function() {
-                          if (bubbleSoundCount < 3) {
-                            sfxRockCool();
-                            bubbleSoundCount++;
-                          } else {
-                            clearInterval(bubbleInterval);
-                          }
-                        }, 250);
+                  // Carbonate status drives the drawing too, so it is derived once
+                  // from a named set rather than an inline id comparison buried in
+                  // the click handler. Calcite is the only carbonate in MINERALS
+                  // today; adding dolomite/malachite means adding them here.
+                  (function () {
+                    var RK_CARBONATES = ['calcite'];
+                    var isCarb = RK_CARBONATES.indexOf(selMineral.id) !== -1;
+                    return React.createElement("div", null,
+                      React.createElement("div", { className: "rounded-xl border border-slate-300 bg-white p-2 mb-2" },
+                        rkFizzSvg(React.createElement, selMineral, !!d.fizzAnimActive, !!d.fizzResult, isCarb)
+                      ),
+                      React.createElement("div", { className: "flex items-center gap-3" },
+                        React.createElement("button", {
+                          disabled: d.fizzAnimActive,
+                          onClick: function() {
+                            upd("fizzAnimActive", true);
+                            upd("fizzResult", null);
+                            sfxRockMelt();
+                            var bubbleSoundCount = 0;
+                            var bubbleInterval = setInterval(function() {
+                              if (bubbleSoundCount < 3) {
+                                sfxRockCool();
+                                bubbleSoundCount++;
+                              } else {
+                                clearInterval(bubbleInterval);
+                              }
+                            }, 250);
 
-                        setTimeout(function() {
-                          var isCarbonate = false;
-                          var targetId = selMineral.id;
-                          if (targetId === 'calcite') {
-                            isCarbonate = true;
-                          }
-
-                          var res = "";
-                          if (isCarbonate) {
-                            res = "🫧 " + __alloT('stem.rocks.fizz_positive', "Fizz! The acid reacted with calcium carbonate in the specimen, releasing carbon dioxide gas:") + " CaCO3 + 2HCl -> CaCl2 + CO2 (gas) + H2O.";
-                          } else {
-                            res = __alloT('stem.rocks.fizz_no_reaction', "No reaction. The specimen does not contain carbonate minerals, so the acid simply sits on the surface.");
-                          }
-                          updMulti({ fizzAnimActive: false, fizzResult: res });
-                        }, 1200);
-                      },
-                      className: "px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all shadow-sm disabled:opacity-50 active:scale-[0.97]"
-                    }, d.fizzAnimActive ? "🫧 " + __alloT('stem.rocks.dropping_acid', "Dropping Acid...") : "🧪 " + __alloT('stem.rocks.drop_hcl_acid', "Drop HCl Acid")),
-                    d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse" },
-                      React.createElement("span", { className: "text-lg" }, "🫧"),
-                      React.createElement("span", { className: "text-[10px] text-violet-600 font-bold" }, __alloT('stem.rocks.bubbling_reaction_active', "Bubbling reaction active..."))
-                    )
-                  ),
+                            setTimeout(function() {
+                              var res = "";
+                              if (isCarb) {
+                                res = "🫧 " + __alloT('stem.rocks.fizz_positive', "Fizz! The acid reacted with calcium carbonate in the specimen, releasing carbon dioxide gas:") + " CaCO3 + 2HCl -> CaCl2 + CO2 (gas) + H2O.";
+                              } else {
+                                res = __alloT('stem.rocks.fizz_no_reaction', "No reaction. The specimen does not contain carbonate minerals, so the acid simply sits on the surface.");
+                              }
+                              updMulti({ fizzAnimActive: false, fizzResult: res });
+                            }, 1200);
+                          },
+                          className: "px-3 py-1.5 bg-violet-700 hover:bg-violet-800 text-white font-bold rounded-lg text-xs transition-colors shadow-sm disabled:opacity-50 active:scale-[0.97]"
+                        }, d.fizzAnimActive ? "🫧 " + __alloT('stem.rocks.dropping_acid', "Dropping Acid...") : "🧪 " + __alloT('stem.rocks.drop_hcl_acid', "Drop HCl Acid")),
+                        d.fizzAnimActive && React.createElement("div", { className: "flex items-center gap-1 animate-pulse" },
+                          React.createElement("span", { className: "text-lg", "aria-hidden": true }, "🫧"),
+                          React.createElement("span", { className: "text-[10px] text-violet-800 font-bold" }, __alloT('stem.rocks.bubbling_reaction_active', "Bubbling reaction active..."))
+                        )
+                      )
+                    );
+                  })(),
                   d.fizzResult && React.createElement("p", { className: "text-xs font-bold text-slate-700 mt-2 leading-relaxed animate-in fade-in" },
                     d.fizzResult
                   )
