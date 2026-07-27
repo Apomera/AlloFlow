@@ -1356,11 +1356,11 @@ const d = labToolData.rocks || {};
 
           const ROCK_TYPES = {
 
-            igneous: { label: t('stem.rocks.igneous'), icon: '🌋', color: '#ef4444', desc: t('stem.rocks.formed_from_cooled_magma_or'), process: 'Cooling & Crystallization' },
+            igneous: { label: t('stem.rocks.igneous'), icon: '🌋', color: '#ef4444', ink: '#b91c1c', desc: t('stem.rocks.formed_from_cooled_magma_or'), process: 'Cooling & Crystallization' },
 
-            sedimentary: { label: t('stem.rocks.sedimentary'), icon: '🏖️', color: '#f59e0b', desc: t('stem.rocks.formed_from_compressed_layers_of'), process: 'Compaction & Cementation' },
+            sedimentary: { label: t('stem.rocks.sedimentary'), icon: '🏖️', color: '#f59e0b', ink: '#a16207', desc: t('stem.rocks.formed_from_compressed_layers_of'), process: 'Compaction & Cementation' },
 
-            metamorphic: { label: t('stem.rocks.metamorphic'), icon: '⛰️', color: '#8b5cf6', desc: t('stem.rocks.formed_when_existing_rocks_change'), process: t('stem.rock_cycle.heat_pressure') }
+            metamorphic: { label: t('stem.rocks.metamorphic'), icon: '⛰️', color: '#8b5cf6', ink: '#6d28d9', desc: t('stem.rocks.formed_when_existing_rocks_change'), process: t('stem.rock_cycle.heat_pressure') }
 
           };
 
@@ -2711,11 +2711,11 @@ const d = labToolData.rocks || {};
             // ── Topic-accent hero band per mode ──
             (function() {
               var MODE_META = {
-                landscape: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '🗺️', title: __alloT('stem.rocks.hero_landscape_title', 'Landscape, the geology you can SEE'),           hint: __alloT('stem.rocks.hero_landscape_hint', 'Volcano, river delta, mountain face. Surface features tell you what\u2019s underneath. Plate tectonics + erosion + time = every landscape. The Hawaiian volcanoes are 30+ million years old; Mt. Etna is 500K.') },
+                landscape: { accent: '#15803d', soft: 'rgba(22,163,74,0.10)', icon: '🗺️', title: __alloT('stem.rocks.hero_landscape_title', 'Landscape, the geology you can SEE'),           hint: __alloT('stem.rocks.hero_landscape_hint', 'Volcano, river delta, mountain face. Surface features tell you what\u2019s underneath. Plate tectonics + erosion + time = every landscape. The Hawaiian volcanoes are 30+ million years old; Mt. Etna is 500K.') },
                 rocks:     { accent: '#92400e', soft: 'rgba(146,64,14,0.10)',  icon: '🪨', title: __alloT('stem.rocks.hero_rocks_title', 'Rocks: igneous, sedimentary, metamorphic'),     hint: __alloT('stem.rocks.hero_rocks_hint', 'Igneous (cooled magma: granite, basalt), sedimentary (compressed layers: sandstone, limestone), metamorphic (heat + pressure: marble, slate). The rock cycle moves stones between all three over millions of years.') },
-                minerals:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '💎', title: __alloT('stem.rocks.hero_minerals_title', 'Minerals, the building blocks of rocks'),         hint: __alloT('stem.rocks.hero_minerals_hint', 'Mohs scale 1-10: talc soft, diamond hardest. Streak, luster, cleavage, hardness, color = the 5 ID tests. Quartz is 12% of Earth\u2019s crust; you carry it in every grain of sand.') },
+                minerals:  { accent: '#0e7490', soft: 'rgba(8,145,178,0.10)',  icon: '💎', title: __alloT('stem.rocks.hero_minerals_title', 'Minerals, the building blocks of rocks'),         hint: __alloT('stem.rocks.hero_minerals_hint', 'Mohs scale 1-10: talc soft, diamond hardest. Streak, luster, cleavage, hardness, color = the 5 ID tests. Quartz is 12% of Earth\u2019s crust; you carry it in every grain of sand.') },
                 mystery:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '🔍', title: __alloT('stem.rocks.hero_mystery_title', 'Mystery Rock, detective ID'),                  hint: __alloT('stem.rocks.hero_mystery_hint', 'Real geology workflow: observe (color, crystals, layers), test (hardness, streak, fizz with HCl for carbonate), classify. The fizz test alone separates limestone from a pile of look-alikes.') },
-                quiz:      { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '🧠', title: __alloT('stem.rocks.hero_quiz_title', 'Quiz, graded ID + classification'),              hint: __alloT('stem.rocks.hero_quiz_hint', 'NGSS MS-ESS2-1: rock cycle as material system. AP ES practice: matching rocks to environment of formation. Builds the visual library so you can ID a rock at the Grand Canyon by sight.') },
+                quiz:      { accent: '#b45309', soft: 'rgba(217,119,6,0.10)',  icon: '🧠', title: __alloT('stem.rocks.hero_quiz_title', 'Quiz, graded ID + classification'),              hint: __alloT('stem.rocks.hero_quiz_hint', 'NGSS MS-ESS2-1: rock cycle as material system. AP ES practice: matching rocks to environment of formation. Builds the visual library so you can ID a rock at the Grand Canyon by sight.') },
                 // weathHunt had no entry, so the fallback below quietly served the
                 // LANDSCAPE banner: the Weathering tab announced itself as
                 // "Landscape, the geology you can SEE".
@@ -2772,7 +2772,7 @@ const d = labToolData.rocks || {};
 
                 Object.values(ROCK_TYPES).map(function (rt) {
 
-                  return React.createElement("div", { key: rt.label, className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border text-xs font-bold", style: { borderColor: rt.color, color: rt.color } },
+                  return React.createElement("div", { key: rt.label, className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border text-xs font-bold", style: { borderColor: rt.color, color: rt.ink } },
 
                     rt.icon, " ", rt.label);
 
@@ -2835,7 +2835,7 @@ const d = labToolData.rocks || {};
 
                       (d.selectedRock === rock.id ? 'bg-white shadow-lg' : 'bg-slate-50 border-slate-200'),
 
-                    style: d.selectedRock === rock.id ? { borderColor: rt.color, color: rt.color } : {}
+                    style: d.selectedRock === rock.id ? { borderColor: rt.color, color: rt.ink } : {}
 
                   },
 
@@ -3017,9 +3017,9 @@ const d = labToolData.rocks || {};
 
                   React.createElement("div", { className: "flex-1" },
 
-                    React.createElement("h4", { className: "font-bold text-base mb-1", style: { color: ROCK_TYPES[selRock.type].color } }, ROCK_TYPES[selRock.type].icon + " " + selRock.label),
+                    React.createElement("h4", { className: "font-bold text-base mb-1", style: { color: ROCK_TYPES[selRock.type].ink } }, ROCK_TYPES[selRock.type].icon + " " + selRock.label),
 
-                    React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold mb-2", style: { background: ROCK_TYPES[selRock.type].color + '20', color: ROCK_TYPES[selRock.type].color } }, ROCK_TYPES[selRock.type].label + " Rock"),
+                    React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold mb-2", style: { background: ROCK_TYPES[selRock.type].color + '20', color: ROCK_TYPES[selRock.type].ink } }, ROCK_TYPES[selRock.type].label + " Rock"),
 
                     React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selRock.desc),
 
@@ -6108,7 +6108,7 @@ const d = labToolData.rockCycle || {};
 
                   className: "px-3 py-2 rounded-lg text-xs font-bold transition-all " + (d.selectedRock === rock.id ? 'text-white shadow-md scale-105' : 'border hover:opacity-80'),
 
-                  style: { backgroundColor: d.selectedRock === rock.id ? rock.color : rock.color + '15', borderColor: rock.color, color: d.selectedRock === rock.id ? 'white' : rock.color }
+                  style: { backgroundColor: d.selectedRock === rock.id ? rock.ink : rock.color + '15', borderColor: rock.ink, color: d.selectedRock === rock.id ? '#ffffff' : rock.ink }
 
                 }, rock.emoji + " " + rock.label);
 

@@ -147,6 +147,48 @@ describe('rock cycle colour contrast', () => {
     });
   });
 
+  // ── The whole data-driven-colour class, in one place ──
+  // Three separate rounds each found the same shape: a data field doing double
+  // duty as both a decorative paint (canvas node, border, pale tint) and a text
+  // or background colour. The convention that came out of it is `color` for the
+  // decorative role, `ink` for text. These assertions pin every table that has
+  // an ink so the split cannot quietly collapse back.
+  it('every family/type ink clears AA as text on white', () => {
+    PATHS.forEach((p) => {
+      const src = readFileSync(p, 'utf8');
+      const inks = [...src.matchAll(/ink:\s*'(#[0-9a-fA-F]{6})'/g)].map((m) => m[1]);
+      // rockCycle ROCKS (3) + rocks ROCK_TYPES (3)
+      expect(inks.length).toBeGreaterThanOrEqual(6);
+      inks.forEach((hex) => {
+        const r = contrast(hex, TW.white);
+        expect(r, `ink ${hex} = ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+      });
+    });
+  });
+
+  it('never uses a bright family colour as text', () => {
+    PATHS.forEach((p) => {
+      const src = readFileSync(p, 'utf8');
+      // `color` stays for canvas nodes, borders and tints. Text takes `ink`.
+      expect(src).not.toMatch(/color:\s*rt\.color\s*\}/);
+      expect(src).not.toMatch(/color:\s*ROCK_TYPES\[[^\]]+\]\.color\s*\}/);
+      expect(src).not.toMatch(/:\s*'white'\s*:\s*rock\.color\s*\}/);
+    });
+  });
+
+  it('every mode banner accent clears AA — it doubles as the title colour', () => {
+    PATHS.forEach((p) => {
+      const src = readFileSync(p, 'utf8');
+      const block = src.slice(src.indexOf('var MODE_META = {'), src.indexOf('var meta = MODE_META[mode]'));
+      const accents = [...block.matchAll(/accent:\s*'(#[0-9a-fA-F]{6})'/g)].map((m) => m[1]);
+      expect(accents.length).toBe(6); // landscape, rocks, minerals, mystery, quiz, weathHunt
+      accents.forEach((hex) => {
+        const r = contrast(hex, TW.white);
+        expect(r, `banner accent ${hex} = ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+      });
+    });
+  });
+
   it('lets the mode tabs wrap instead of overflowing a phone', () => {
     // Six mode tabs on one non-wrapping row measured 441px, so a 390px phone
     // scrolled the whole tool sideways and the last tabs sat off-screen.
