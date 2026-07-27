@@ -1729,6 +1729,32 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
     expect(lane).toContain('your hills are close to symmetrical');
   });
 
+  it.each(TOOL_PATHS)('%s: the ride card is a real artifact, and the summary carries the safety verdict', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('id=\\"clab-btnRideCard\\"');
+    expect(src).toContain('function buildRideCard(cb){');
+    expect(src).toContain("a.download = 'coaster_lab_ride_card.png';");
+    // one gather feeds both the text summary and the card, so they cannot drift
+    expect(src).toContain('function rideCardFacts(){');
+    const s = src.indexOf('function buildRideCard(cb){');
+    const card = src.slice(s, src.indexOf('__clabGet(\'clab-btnRideCard\')', s));
+    // the photo is laid down BEFORE the background, or it gets painted over
+    expect(card).toContain('// the photo goes down FIRST — the background above would paint straight over it');
+    expect(card).toContain('function draw(img){');
+    expect(card).toContain('img.onload = () => draw(img);');
+    expect(card).toContain('img.onerror = () => draw(null);');
+    // a run that never happened still produces a card rather than nothing
+    expect(card).toContain('No ride photo yet');
+    expect(card).toContain('No completed run yet');
+    // the card carries the safety verdict, the height band with its caveat, and the rows
+    expect(card).toContain("text('RIDER SAFETY'");
+    expect(card).toContain("the restraint's number, not the track's");
+    expect(card).toContain('Educational physics simulation — not a structural safety approval.');
+    // and the pasteable summary gained the same facts plus the generator seed
+    expect(src).toContain('`Restraint the forces demand: ${f.spec.name}`');
+    expect(src).toContain("(f.seed ? ' · generated #' + f.seed : '')");
+  });
+
   it.each(TOOL_PATHS)('%s: three missions are graded row by row', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     for (const id of ['lapbar', 'ejector', 'evenkeel']) expect(src).toContain(`id: '${id}'`);
