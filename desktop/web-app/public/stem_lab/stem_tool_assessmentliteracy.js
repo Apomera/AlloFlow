@@ -9475,7 +9475,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       // MODULE 3: CAREER  (PLACEHOLDER — expanded below)
       // ─────────────────────────────────────────
       function renderCareer() {
-        return _RENDER_CAREER(h, s, upd, callGemini, addToast, backBtn);
+        return _RENDER_CAREER(h, s, upd, callGemini, addToast, backBtn, __alloT);
       }
 
       // ─────────────────────────────────────────
@@ -9753,6 +9753,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         var ciHalf = 1.96 * iq.sem;
         var ciLow = iq.observed - ciHalf;
         var ciHigh = iq.observed + ciHalf;
+        // Classical test theory ties the two sliders together: SEM = SD√(1−r),
+        // so every (r, SEM) pair implies a scale SD. They move independently
+        // here on purpose, which puts impossible instruments within reach — and
+        // the note below already says a claim like r=.99 with SEM=15 cannot
+        // exist. But that note is prose the student may have scrolled past,
+        // while the sliders let them build exactly that combination (both at
+        // maximum) and then read a confident interval off it. Compute the
+        // implied SD and say so at the moment the impossible state is created.
+        var impliedSD = iq.sem / Math.sqrt(Math.max(1 - iq.reliability, 1e-6));
+        // Real score scales cluster at SD 15 (standard scores), 10 (T-ish),
+        // 3 (subtest scaled). Past ~30 no published instrument looks like this.
+        var sdPlausible = impliedSD <= 30;
         // action confidence: high reliability narrows CI, high stakes raises bar
         var actionReady = iq.reliability > 0.90 && ciHalf < (iq.stakes < 5 ? 15 : 8);
         var state = actionReady ? 'actready' : iq.reliability < 0.70 ? 'unreliable' : iq.reliability < 0.85 ? 'screeningonly' : iq.stakes > 7 ? 'needmore' : 'usewithci';
@@ -9773,6 +9785,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('p', { className: 'text-xs opacity-70 mb-3 leading-snug italic' }, __alloT('stem.assessmentliteracy.note_in_classical_test_theory_sem_and_', 'Note: in classical test theory, SEM and reliability are NOT independent — SEM = SD × √(1−r). They are separated here so you can see each lever in isolation, but a real instrument constrains both together. A claim like "r=.99 with SEM=15" is mathematically impossible at any plausible SD.')),
             h('div', { className: 'inline-block px-3 py-1 rounded-full text-xs font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' · CI ' + ciLow.toFixed(1) + '-' + ciHigh.toFixed(1)),
             h('p', { className: 'text-xs opacity-80 mb-3' }, sm.desc),
+            // Live consistency check on the pair the student has actually built.
+            h('div', {
+              className: 'text-xs rounded-lg px-3 py-2 mb-3 leading-snug',
+              role: sdPlausible ? null : 'alert',
+              style: sdPlausible
+                ? { background: 'rgba(148,163,184,0.12)', border: '1px solid rgba(148,163,184,0.35)', color: '#cbd5e1' }
+                : { background: '#2a1a0a', border: '1px solid #ea580c', color: '#fed7aa' }
+            },
+              h('span', { className: 'font-bold' }, sdPlausible
+                ? __alloT('stem.assessmentliteracy.implied_sd_ok', 'Implied scale SD ')
+                : __alloT('stem.assessmentliteracy.implied_sd_bad', '⚠ Implied scale SD ')),
+              h('span', { className: 'font-mono font-bold' }, impliedSD.toFixed(1)),
+              ' ',
+              sdPlausible
+                ? __alloT('stem.assessmentliteracy.implied_sd_ok_body', '— SEM = SD√(1−r) works backwards too. This pairing describes a real-looking instrument (standard scores use SD 15, subtest scaled scores 3).')
+                : __alloT('stem.assessmentliteracy.implied_sd_bad_body', '— no published instrument looks like this. SEM = SD√(1−r), so this reliability and this SEM together require a score scale far wider than any test uses. The interval below is arithmetically correct and describes a test that cannot exist: raise the reliability or lower the SEM.')
+            ),
             h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', role: 'img', 'aria-label': __alloT('stem.assessmentliteracy.confidence_interval_diagram_accessible_label', 'Confidence interval diagram') + ': observed score ' + iq.observed.toFixed(0) + ', 95% confidence interval ' + ciLow.toFixed(1) + ' to ' + ciHigh.toFixed(1) + ', ' + sm.label + '.', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 12 } },
               h('line', { x1: 30, y1: 60, x2: 290, y2: 60, stroke: '#475569' }),
               h('rect', { x: Math.max(30, 30 + ((ciLow - 60) / 80) * 260), y: 50, width: Math.max(2, Math.min(260, ((ciHigh - ciLow) / 80) * 260)), height: 20, fill: sm.color, opacity: 0.45 }),
@@ -10477,7 +10506,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
   // MODULE 3: CAREER IMPLEMENTATION
   // ═══════════════════════════════════════════════════════════════
 
-  function _RENDER_CAREER(h, s, upd, callGemini, addToast, backBtn) {
+  // __alloT is passed IN. This function sits at module scope, so it cannot see
+  // the `var __alloT` declared inside the render closure — three aria-labels
+  // below called it anyway and would throw "__alloT is not defined" the moment
+  // the occupation and search panels appear (they are behind a completed career
+  // code, which is why no default render ever reached them). Same free-t()
+  // ReferenceError class the repo already tracks; check_free_vars flagged it.
+  function _RENDER_CAREER(h, s, upd, callGemini, addToast, backBtn, __alloT) {
+    // Defensive: if a future call site forgets the argument, fall back to the
+    // English second argument rather than crashing the whole careers module.
+    if (typeof __alloT !== 'function') __alloT = function (k, fb) { return fb != null ? fb : k; };
     var sub = s.sub;
 
     if (sub === 'inventory') {
