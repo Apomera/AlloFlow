@@ -1289,8 +1289,55 @@ window.StemLab = window.StemLab || {
     var proj = cen[0] * av[0] + cen[1] * av[1] + cen[2] * av[2];
     return vec3Mag(vec3Sub(cen, vec3Scale(av, proj)));
   }
+  // ── Pappus's PRECONDITIONS (PURE). The theorem V = θ·R̄·A holds only when the
+  //    spin axis LIES IN the profile's plane and the profile does not CROSS it.
+  //    Neither was enforced, and the axis picker offered X/Y/Z unconditionally, so
+  //    both failures were one button-press away from the most ordinary setup:
+  //      • a rectangle drawn flat and spun about a PERPENDICULAR axis sweeps a flat
+  //        annulus — no volume at all — while the readout claimed 22.65;
+  //      • a rectangle straddling the axis puts its centroid ON the axis, so R̄ = 0
+  //        and a solid the student can see on screen reported a volume of 0.
+  //    Real CAD refuses a sketch that crosses its axis of revolution for exactly
+  //    this reason. So does this now — and it says which hypothesis failed, because
+  //    when the lesson IS the theorem, its hypotheses are part of the lesson.
+  //    Accepts a source rect (+ axis id, + profile kind) or a built revolution. ──
+  function revolutionValidity(shape, axisId, profileKind) {
+    if (!shape || !shape.u || !shape.v || !shape.position) return { ok: false, reason: 'no_profile' };
+    var probe = { position: shape.position, u: shape.u, v: shape.v,
+      profile: profileKind || shape.profile || 'rect',
+      axis: axisId || shape.axis || 'y' };
+    var n = vec3Cross(probe.u, probe.v), nMag = vec3Mag(n);
+    if (nMag < 1e-9) return { ok: false, reason: 'degenerate' };   // u ∥ v — no plane
+    n = vec3Scale(n, 1 / nMag);
+    var av = _revAxisVec(probe);
+    // (a) axis in the plane = parallel to it AND touching it. The axis line runs
+    //     through the origin, so "touching" means the plane contains the origin.
+    var tilt = Math.abs(av[0] * n[0] + av[1] * n[1] + av[2] * n[2]);
+    var offset = Math.abs(probe.position[0] * n[0] + probe.position[1] * n[1] + probe.position[2] * n[2]);
+    if (tilt > 1e-6 || offset > 1e-6) return { ok: false, reason: 'axis_off_plane' };
+    // (b) profile on ONE side. r̂ = axis × normal is the in-plane direction square
+    //     to the axis, so c·r̂ is the SIGNED distance from the axis (origin on it).
+    var rHat = vec3Cross(av, n), rMag = vec3Mag(rHat);
+    if (rMag < 1e-9) return { ok: false, reason: 'degenerate' };
+    rHat = vec3Scale(rHat, 1 / rMag);
+    var lo = Infinity, hi = -Infinity;
+    _revProfile(probe).corners.forEach(function(c) {
+      var s = c[0] * rHat[0] + c[1] * rHat[1] + c[2] * rHat[2];
+      if (s < lo) lo = s;
+      if (s > hi) hi = s;
+    });
+    if (lo < -1e-6 && hi > 1e-6) return { ok: false, reason: 'crosses_axis' };
+    return { ok: true, reason: 'ok' };
+  }
+  // Which of X/Y/Z can actually spin this rectangle — what the picker should offer.
+  function revolutionAxisOptions(rect, profileKind) {
+    return STRETCH_AXES.filter(function(a) {
+      return revolutionValidity(rect, a.id, profileKind).ok;
+    }).map(function(a) { return a.id; });
+  }
   function revolutionVolume(o) {
     if (!o || o.type !== 'revolution') return 0;
+    if (!revolutionValidity(o).ok) return 0;   // outside Pappus — state no number rather than a wrong one
     return (o.angleDeg || 360) * Math.PI / 180 * _revRadius(o) * _revProfile(o).area;   // Pappus: θ·R̄·A
   }
   // Triangle-soup for the swept surface: sweep each profile-boundary edge around
@@ -1389,9 +1436,14 @@ window.StemLab = window.StemLab || {
         label: 'Volume', surfaceArea: geoPyramidSurfaceArea(o), oblique: obliqueP, taper: s, apex: apex };
     }
     if (o.type === 'revolution') {
+      // Builds are guarded, so an invalid revolution can only arrive from saved
+      // state — carry WHY, so the readout explains instead of printing a bare 0.
+      var rvOk = revolutionValidity(o);
       return { dim: 3, kind: 'volume', value: revolutionVolume(o), unitExp: 3,
-        formula: o.profile === 'triangle' ? 'V = ⅓πr²h  (Pappus: θ·R̄·A)' : 'V = θ · R̄ · A  (Pappus)', label: 'Volume',
-        radius: _revRadius(o), angleDeg: o.angleDeg || 360, profileArea: _revProfile(o).area, cone: o.profile === 'triangle' };
+        formula: !rvOk.ok ? 'V = θ · R̄ · A  (Pappus — hypotheses not met)'
+          : o.profile === 'triangle' ? 'V = ⅓πr²h  (Pappus: θ·R̄·A)' : 'V = θ · R̄ · A  (Pappus)', label: 'Volume',
+        radius: _revRadius(o), angleDeg: o.angleDeg || 360, profileArea: _revProfile(o).area, cone: o.profile === 'triangle',
+        valid: rvOk.ok, invalidReason: rvOk.ok ? null : rvOk.reason };
     }
     return null;
   }
@@ -2123,6 +2175,8 @@ window.StemLab = window.StemLab || {
       taperRect: taperRect, taperCorners: taperCorners, geoPyramidSurfaceArea: geoPyramidSurfaceArea,
       geoEffectiveAxis: geoEffectiveAxis, geoVerbApplies: geoVerbApplies,
       revolveRect: revolveRect, revolutionVolume: revolutionVolume,
+      revolutionValidity: revolutionValidity, revolutionAxisOptions: revolutionAxisOptions,
+      revolutionTriangles: revolutionTriangles,
       resizeObject: resizeObject,
       geoStretchMeasure: geoStretchMeasure,
       geoDescribeScene: geoDescribeScene,
@@ -2432,6 +2486,24 @@ window.StemLab = window.StemLab || {
                ' ' + t('stem.geosandbox.sr_needs_rectangle', 'needs a rectangle — stretch up to one first'))
             : t('stem.geosandbox.sr_already_solid', 'That is already a solid — there is no fourth dimension to stretch into'));
           return;
+        }
+        // Pappus's theorem is what Revolve teaches, so its hypotheses are part of
+        // the lesson: refuse the spin and name the one that failed, rather than
+        // sweeping a shape whose volume the formula cannot honestly state.
+        if (buildVerb === 'revolve' && sel.type === 'rect') {
+          var rv = revolutionValidity(sel, ax, revolveProfile);
+          if (!rv.ok) {
+            var okAx = revolutionAxisOptions(sel, revolveProfile)
+              .map(function(a) { return a.toUpperCase(); }).join(' / ');
+            refuse((rv.reason === 'crosses_axis'
+              ? t('stem.geosandbox.spin_crosses_axis', 'The rectangle straddles the spin axis, so it would sweep through itself. Pappus’s theorem needs the whole face on one side of the axis.')
+              : t('stem.geosandbox.spin_axis_off_plane', 'That axis is not in the rectangle’s plane, so spinning around it sweeps no solid at all.'))
+              + (okAx
+                ? ' ' + t('stem.geosandbox.spin_try_axis', 'Try') + ' ' + okAx + '.'
+                : ' ' + t('stem.geosandbox.spin_no_axis', 'No X, Y or Z axis lies in this rectangle’s plane — build it against an axis first.')),
+              'error');
+            return;
+          }
         }
         var newObj = buildStretchObj(sel, ax, stretchLength, stretchSlant, buildVerb, topScale, revolveAngle);
         if (!newObj) { addToast('Cannot stretch this further in this dimension', 'info'); return; }
@@ -3874,7 +3946,21 @@ window.StemLab = window.StemLab || {
                     t('stem.geosandbox.axis_parallel_note', 'That axis runs along the segment, so stretching there would only make it longer. It will use') +
                     ' ' + String(eff.axis).toUpperCase() + ' ' + t('stem.geosandbox.axis_parallel_note_2', 'instead, to open out a rectangle.')),
                   isSpin && h('p', { className: 'text-[10px] text-teal-200/70 mt-0.5' },
-                    t('stem.geosandbox.axis_spin_note', 'This is the line the rectangle spins around, not a stretch direction.'))
+                    t('stem.geosandbox.axis_spin_note', 'This is the line the rectangle spins around, not a stretch direction.')),
+                  // Say it BEFORE the press, not only in the refusal afterwards.
+                  isSpin && (function() {
+                    var rv = revolutionValidity(axSel, stretchAxis, revolveProfile);
+                    if (rv.ok) return null;
+                    var okAx = revolutionAxisOptions(axSel, revolveProfile)
+                      .map(function(a) { return a.toUpperCase(); }).join(' / ');
+                    return h('p', { className: 'text-[10px] text-amber-300/90 mt-0.5', 'aria-live': 'polite' },
+                      (rv.reason === 'crosses_axis'
+                        ? t('stem.geosandbox.spin_crosses_axis', 'The rectangle straddles the spin axis, so it would sweep through itself. Pappus’s theorem needs the whole face on one side of the axis.')
+                        : t('stem.geosandbox.spin_axis_off_plane', 'That axis is not in the rectangle’s plane, so spinning around it sweeps no solid at all.'))
+                      + (okAx
+                        ? ' ' + t('stem.geosandbox.spin_try_axis', 'Try') + ' ' + okAx + '.'
+                        : ' ' + t('stem.geosandbox.spin_no_axis', 'No X, Y or Z axis lies in this rectangle’s plane — build it against an axis first.')));
+                  })()
                 );
               })(),
               // Stretch length — slider for quick feel + a precise number box so a
