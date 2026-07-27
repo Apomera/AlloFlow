@@ -25732,8 +25732,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         }
         return;
       }
-      if (_incDocKey && typeof window !== 'undefined') window.__alloLastIncompleteSaveKey = _incDocKey;
       const _saved = saveProjectToFile(false, _inc);
+      // Deep dive 2026-07-27: latch AFTER the save, and only on success. saveProjectToFile can
+      // return false without throwing — the incomplete-project branch catches its own Blob/download
+      // failure — and that payload carries the full base64 of the source PDF plus the extracted
+      // text, so an OOM or storage-quota failure is exactly the reachable case for the 40-page scan
+      // this feature exists for. Latching first meant attempt 1's FAILED download still suppressed
+      // every later attempt's save: the teacher was told their text was preserved in-session, and
+      // the recovery file that would have survived a tab close was never written.
+      if (_saved && _incDocKey && typeof window !== 'undefined') window.__alloLastIncompleteSaveKey = _incDocKey;
       const _why = _inc.failureReason === 'auth' ? 'the AI service rejected the request (an API key / permission problem)'
         : _inc.failureReason === 'quota' ? 'the AI service hit a usage or quota limit'
         : _inc.failureReason === 'network' ? 'the connection to the AI service dropped'

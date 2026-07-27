@@ -4778,6 +4778,14 @@ var createDocPipeline = function(deps) {
     _geminiCooldownUntil = 0;
     _geminiStormAnnounced = false;
     _geminiLastFailureProfile = null;
+    // Deep dive 2026-07-27: this field was added by L7 and never added to the reset, so a storm on
+    // document A leaked into document B for 120s — `recentlyThrottled` returned true on a
+    // completely calm gate, which is the flag the final-audit sites use to attribute a coverage
+    // shortfall to a rate limit. B could publish "the rest were throttled by a temporary Canvas
+    // rate-limit" having never been throttled. Same invariant the rest of this function documents:
+    // a storm signal must be EARNED by the current run, never inherited.
+    _geminiLastStormTripAt = 0;
+    _geminiOffRouteOkStreak = 0;
     if (_geminiCooldownTimer) { try { clearTimeout(_geminiCooldownTimer); } catch (_) {} _geminiCooldownTimer = null; }
     // Pacing is per-run too — clear any heavy-doc stagger from the previous document; the current run re-applies
     // it via _applyGeminiPacing once it knows whether THIS doc is heavy/scanned.
@@ -6022,6 +6030,15 @@ var createDocPipeline = function(deps) {
   // needsExpertReview, the distribution verdict's cautions, and the exported accessibility
   // statement. Both lanes now go through here.
   const _REFIX_RECOMPUTED_FIDELITY_KINDS = Object.assign({}, _RECOMPUTABLE_FIDELITY_KINDS, { 'reading-order': 1 });
+  // Deep dive 2026-07-27: the view's "Fix Remaining" lane recomputes a SMALLER set than the
+  // reducer does — it has no preserved-block orphan scan, so it never produces a `placement` note.
+  // Passing it the set above meant it FILTERED placement out of the carried-forward notes and then
+  // never regenerated one, silently deleting the "4 source passages could not be placed… gathered
+  // in the Preserved source content box" disclosure on the first re-fix.
+  //
+  // The rule this encodes: NEVER FILTER A KIND YOU DO NOT RECOMPUTE. Exported so the two lanes
+  // share one definition instead of each keeping a literal that can drift apart again.
+  const _REFIX_LANE_RECOMPUTED_FIDELITY_KINDS = { links: 1, tables: 1, refusal: 1, numeric: 1, 'reading-order': 1 };
   const _mergeFidelityNotes = function (prevNotes, freshNotes, recomputedKinds) {
     const kinds = recomputedKinds || _REFIX_RECOMPUTED_FIDELITY_KINDS;
     const prev = Array.isArray(prevNotes) ? prevNotes : [];
@@ -14903,7 +14920,15 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       });
       return _alloNormalizeStoredVerification(stored, derived);
     };
-    const fullyVerifiedItems = done.filter(q => _batchVerificationFor(q.result).verificationState === 'complete');
+    // Deep dive 2026-07-27: H3's rule applies to the BATCH lane too. verificationState is derived
+    // ONLY from engine statuses (ai/axe/EqualAccess) — _alloDeriveVerificationState never sees
+    // needsExpertReview or the fidelity notes — so a document that lost hyperlinks or a table, or
+    // whose alt text is information-free, comes back 'complete' and was counted as FULLY VERIFIED in
+    // the batch summary, the toast, the CSV and the report. That is the same false claim the
+    // single-file completion ladder was fixed for; a batch of 30 must not be graded more loosely
+    // than one file run by hand.
+    const _batchFullyVerified = (q) => _batchVerificationFor(q.result).verificationState === 'complete' && !(q.result && q.result.needsExpertReview);
+    const fullyVerifiedItems = done.filter(_batchFullyVerified);
     const reviewRequiredItems = done.filter(q => _batchVerificationFor(q.result).requiresManualReview);
     const totalElapsed = Math.round((Date.now() - startTime) / 1000);
     setPdfBatchSummary({
@@ -14983,7 +15008,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
     } else if (_batchHandoffStopped) {
       addToast(`Batch paused safely: a timed-out file is still shutting down. ${done.length}/${queue.length} processed${_failList}. ${_queuedTail || 'Remaining files stay queued for Resume.'}`, 'warning');
     } else {
-      const _verifiedDone = done.filter(q => _batchVerificationFor(q.result).verificationState === 'complete').length;
+      const _verifiedDone = done.filter(_batchFullyVerified).length; // deep dive 2026-07-27: same rule as the summary above
       const _reviewDone = done.length - _verifiedDone;
       addToast(`Batch complete: ${done.length}/${queue.length} PDFs processed · ${_verifiedDone} fully verified${_reviewDone > 0 ? ` · ${_reviewDone} require review` : ''} (avg +${(function(){ var _v = done.filter(q => q.result && q.result.afterScore != null && q.result.beforeScore != null); return _v.length ? Math.round(_v.reduce((s, q) => s + (q.result.afterScore - q.result.beforeScore), 0) / _v.length) : 0; })()} points)${_failList}`, (failed.length > 0 || _reviewDone > 0) ? 'warning' : 'success');
     }
@@ -38900,6 +38925,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     // gate each round on these instead of firing into an active Canvas rate-limit storm — the run
     // waits (bounded) and then proceeds at full strength; nothing is ever skipped or stopped.
     geminiThrottleInfo: _geminiThrottleInfo,
+    resetGeminiBreaker: _resetGeminiBreaker, // deep dive 2026-07-27: so a test can prove a storm signal is not inherited across runs
     waitForGeminiCalm: waitForGeminiCalm,
     clampPaletteContrast: clampPaletteContrast,
     buildPaletteCss: buildPaletteCss,
@@ -38924,6 +38950,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     // whole array — durable extraction-time disclosures are not theirs to drop.
     mergeFidelityNotes: _mergeFidelityNotes,
     refixRecomputedFidelityKinds: _REFIX_RECOMPUTED_FIDELITY_KINDS,
+    refixLaneRecomputedFidelityKinds: _REFIX_LANE_RECOMPUTED_FIDELITY_KINDS, // deep dive 2026-07-27: the view lane's SMALLER set — it has no placement scan
+    sourceLinkCount: () => { try { const n = (typeof window !== 'undefined') ? window.__alloSourceLinkCount : null; return (Number.isFinite(n) && n > 0) ? n : null; } catch (_) { return null; } }, // M12 baseline, so every recompute lane reads it the same way
     htmlToPlainText: htmlToPlainText,
     restyleBlock: restyleBlock,
     listifyTableCellBullets: listifyTableCellBullets,

@@ -142,7 +142,10 @@ describe('C1 — a re-fix pass may replace only what it recomputed', () => {
 
   it('the view routes its re-fix lane through the shared helper, not a flat assignment', () => {
     const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
-    expect(view).toContain('_docPipeline.mergeFidelityNotes(_fixRemainingSource.fidelityNotes, _notes)');
+    // The call gained a third argument on 2026-07-27 — the lane's OWN recomputed-kind set, because
+    // the default included `placement`, which this lane never regenerates and was therefore
+    // deleting. Match the call, not its arity.
+    expect(view).toContain('_docPipeline.mergeFidelityNotes(_fixRemainingSource.fidelityNotes, _notes');
     expect(view).not.toContain("_refixNotes = _notes; // THIS run's findings replace the prior run's");
   });
 

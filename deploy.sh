@@ -119,6 +119,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ Lumen wave markers intact (focusIds=7, dataHash=5 — blocks the stale-sweep revert that hit Lumen 5x; 2026-07-16)."
   node dev-tools/check_wrapper_contracts.cjs
   echo "  ✓ host↔module wrapper seams agree on arity (the playSequence deps-in-contentId class; 2026-07-20)."
+  node dev-tools/check_module_freshness.cjs
+  echo "  ✓ no NEW source/module drift — a *_source.jsx committed without rebuilding its hand-built module DOES NOT SHIP, and every test reads the source, so nothing else can see it (cost four remediation fixes; 2026-07-27)."
   node dev-tools/check_keyless_map.cjs --quiet
   echo "  ✓ no keyless list children in CDN modules / STEM tools."
   node dev-tools/check_stem_render.cjs --quiet

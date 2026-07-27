@@ -1188,6 +1188,24 @@ async function runAutoFixLoop(maxRounds, deps) {
     pdfAutoContinueAbortCtrlRef, pdfAutoContinueAbortRef, pdfFixResultRef, pdfHtmlRevisionRef, setPdfAutoContinueRunning, setPdfFixLoading, setPdfFixResult, setPdfFixStep, pdfFixLoading, pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, waitForGeminiCalm, runAxeAudit, runEqualAccessAudit, deriveVerificationState, createVerificationHtmlBinding, applyVerificationHtmlBinding, isLiveVerificationHtmlBound, enforceVerificationHtmlBinding, formatVerificationReason, auditOutputAccessibility, recomputeIssueResolution, recomputeContentFidelity, _docPipeline, sanitizeStyleForWCAG, attachVerificationHtmlProof, saveProjectToFile, addToast, pdfAutoSaveProject, t, warnLog,
   } = deps;
 
+  // L12 (audit 2026-07-26): the round's commit-or-revert and no-progress decisions now live in the
+  // pipeline's golden-tested _alloLoopPolicy, so the SHIPPED decision is what the tests call. The
+  // inline fallback is byte-for-byte the previous logic and exists for the module-older-than-host
+  // case — it must never be "improved" independently, or the drift this extraction removes comes
+  // straight back.
+  const _loopPolicy = (typeof window !== 'undefined'
+    && window.AlloModules && window.AlloModules.createDocPipeline
+    && window.AlloModules.createDocPipeline.loopPolicy) || {
+    roundRegressed: (p) => {
+      const detRegressed = (p.newDet !== null && p.newDet !== undefined) && (typeof p.prevDet === 'number') && p.newDet < (p.prevDet - 1);
+      const moreIssues = (p.violations === 0) && ((p.newIssues || 0) > (p.prevIssues || 0));
+      return !!(detRegressed || moreIssues);
+    },
+    roundProgressed: (p) => !!(p.violations < p.prevViolations
+      || (typeof p.newDet === 'number' && p.newDet > (p.prevDet + 1))
+      || (p.violations === 0 && (p.newIssues || 0) < (p.prevIssues || 0))),
+  };
+
   // Some focused tests load only this function body. Keep a local fail-safe so
   // redaction remains effective even when the module-level helper is absent.
   const _safeDiagnosticError = typeof _miscDiagnosticErrorSummary === 'function'
@@ -1201,7 +1219,12 @@ async function runAutoFixLoop(maxRounds, deps) {
     // Re-entry guard (sweep 2026-06-11 [5]): a second concurrent loop's
     // rounds would interleave with the first and its finally would clobber
     // the first loop's flags.
-    if (pdfAutoContinueAbortCtrlRef.current) { addToast(t('toasts.auto_continue_already_running') || 'Auto-continue is already running — use Stop first if you want to restart.', 'info'); return; }
+    // L11 (audit 2026-07-26): return a SENTINEL the caller can test. This resolved `undefined`, so
+    // the hands-off wrapper saw a settled promise, read an unchanged score, counted the iteration,
+    // toasted "retrying the loop (1/3, 72/100...)" and slept — then did it again. The teacher was
+    // shown progress rounds that never executed, and the wrapper's bounded retry budget was spent
+    // on no-ops.
+    if (pdfAutoContinueAbortCtrlRef.current) { addToast(t('toasts.auto_continue_already_running') || 'Auto-continue is already running — use Stop first if you want to restart.', 'info'); return { started: false, reason: 'already-running' }; }
     pdfAutoContinueAbortRef.current = false;
     const _abortCtrl = new AbortController();
     pdfAutoContinueAbortCtrlRef.current = _abortCtrl;
@@ -1229,6 +1252,36 @@ async function runAutoFixLoop(maxRounds, deps) {
     const _toastIfOwned = (...args) => {
       if (_canPublish() && typeof addToast === 'function') addToast(...args);
     };
+    // ── M20 (audit 2026-07-26): give this loop its OWN ownership identity ────────────────────
+    // window.__alloActivePdfRemediation and window.__alloRemediationProgress are written only by
+    // fixAndVerifyPdf. So when the loop is entered DIRECTLY — "Fix N Remaining" or the axe auto-fix
+    // button after a resume, i.e. the whole point of "Continue a previous session" — both were
+    // undefined, initialProgressOwner was null and watchdogRunId stayed null. The only heartbeats
+    // are _pipeLog events, and the loop passed no `owner` down, so _pipeLog fell back to the
+    // factory-initial _pipelineStats with no runId and no documentEpoch key: every event carried
+    // runId: null, onActivity bailed at `!detail.runId`, and fire() always returned on
+    // `!watchdogRunId`. The stuck-flag safety net was completely inert in this entry path, so
+    // pdfAutoContinueRunning (and pdfFixLoading) could never be reset — permanently disabling Start
+    // New Audit and the results-panel buttons.
+    //
+    // In the normal Fix&Verify → auto-continue flow the watchdog only worked at all because it
+    // adopted its "live owner" from a COMPLETED run's leftover progress snapshot. That is now
+    // cleared (the other half of M20), which makes publishing a real identity here necessary rather
+    // than merely tidy.
+    const _loopRunId = 'autocontinue-' + _myRunGen + '-' + (pdfHtmlRevisionRef.current || 0);
+    const _loopDocumentEpoch = (typeof window !== 'undefined' && window.__alloPdfDocumentEpoch !== undefined)
+      ? window.__alloPdfDocumentEpoch : null;
+    let _loopOwnsRemediationSlot = false;
+    try {
+      // Never clobber a LIVE fixAndVerifyPdf slot — that run's watchdog is watching it.
+      if (typeof window !== 'undefined' && !window.__alloActivePdfRemediation) {
+        window.__alloActivePdfRemediation = { runId: _loopRunId, documentEpoch: _loopDocumentEpoch, startedAt: Date.now() };
+        _loopOwnsRemediationSlot = true;
+      }
+    } catch (_) {}
+    // Threaded into every inner call so _pipeLog stamps heartbeats with this identity instead of
+    // the factory-initial stats — which is what onActivity needs to adopt a runId at all.
+    const _loopOwner = { runId: _loopRunId, documentEpoch: _loopDocumentEpoch, stats: { startTime: 0 } };
     if (_canPublish()) setPdfAutoContinueRunning(true);
     let cur = pdfFixResultRef.current;
     const _aiIssuesOf = (c) => (c && c.verificationAudit && Array.isArray(c.verificationAudit.issues)) ? c.verificationAudit.issues : [];
@@ -1279,7 +1332,12 @@ async function runAutoFixLoop(maxRounds, deps) {
           : ((_curAxe !== null) ? (_curEa !== null ? Math.min(_curAxe, _curEa) : _curAxe) : _curEa); // null when NEITHER engine scored — never a fabricated 100 (review #3)
         // det progress only when the baseline is a real number; gate the AI-issue term to the axe-CLEAN
         // branch so noisy AI enumeration in the violation branch can't reset the stall counter (review #2).
-        const _progressed = _vio < lastViolations || (typeof _curDet === 'number' && _curDet > (lastDet + 1)) || (_vio === 0 && _aiIssues.length < lastIssues);
+        // L12: same delegation for the no-progress check that ends the loop.
+        const _progressed = _loopPolicy.roundProgressed({
+          violations: _vio, prevViolations: lastViolations,
+          newDet: _curDet, prevDet: lastDet,
+          newIssues: _aiIssues.length, prevIssues: lastIssues,
+        });
         if (!_progressed) { stagnantRounds++; if (stagnantRounds >= 2) break; }
         else stagnantRounds = 0;
         lastViolations = _vio;
@@ -1334,6 +1392,7 @@ async function runAutoFixLoop(maxRounds, deps) {
           result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses, {
             signal: _abortCtrl.signal,
             shouldAbort: () => !_canContinue(),
+            owner: _loopOwner, // M20: heartbeats carry this loop's identity
           });
           if (!result || result.stale) { cur = pdfFixResultRef.current; break; }
         } else if (_auditOnlyRefresh) {
@@ -1348,7 +1407,13 @@ async function runAutoFixLoop(maxRounds, deps) {
           const _eaLines = ((cur.secondEngineAudit && Array.isArray(cur.secondEngineAudit.fails)) ? cur.secondEngineAudit.fails : []).slice(0, 15)
             .map((f) => 'EQUAL-ACCESS-CONFIRMED: ' + String((f && (f.message || f.ruleId || f.reasonId)) || JSON.stringify(f)).slice(0, 200));
           const _instr = _aiIssues.slice(0, 25).map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).concat(_eaLines).join('\n');
-          let _fixedHtml = await aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-' + (round + 1));
+          // M20: pass a _control so _pipeLog stamps this loop's runId/documentEpoch on every
+          // heartbeat — without it the watchdog can never adopt a runId and is permanently inert.
+          let _fixedHtml = await aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-' + (round + 1), null, {
+            signal: _abortCtrl.signal,
+            shouldAbort: () => !_canContinue(),
+            owner: _loopOwner,
+          });
           if (!_canContinue() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
             cur = pdfFixResultRef.current;
             break;
@@ -1428,11 +1493,15 @@ async function runAutoFixLoop(maxRounds, deps) {
         // DETERMINISTIC component (axe ∧ EqualAccess — reproducible) dropped, OR the AI flagged
         // strictly MORE issues than before. A blend dip with deterministic held and no new issues is
         // noise — keep the round. (Content loss is gated INSIDE aiFixChunked, not here.)
-        const _detRegressed = (_det !== null) && (typeof _curDet === 'number') && _det < (_curDet - 1);
+        // L12 (audit 2026-07-26): delegated to the golden-tested policy so the SHIPPED decision is
+        // what the tests call, instead of a hand-written mirror of it in the test file.
         // Gate AI-issue count ONLY in the axe-CLEAN (AI-fix) branch — in the axe-violation branch the
         // fix is deterministic, so AI-enumeration noise must not revert a legit axe fix (review F5).
-        const _moreIssues = (_vio === 0) && ((reVerify.issues ? reVerify.issues.length : 0) > _aiIssues.length);
-        if (!result._auditOnly && (_detRegressed || _moreIssues)) {
+        const _roundRegressed = _loopPolicy.roundRegressed({
+          newDet: _det, prevDet: _curDet, violations: _vio,
+          newIssues: reVerify.issues ? reVerify.issues.length : 0, prevIssues: _aiIssues.length,
+        });
+        if (!result._auditOnly && _roundRegressed) {
           warnLog('[AutoContinue] round ' + (round + 1) + ' REAL regression (det ' + _det + ' vs ' + _curDet + ', issues ' + (reVerify.issues ? reVerify.issues.length : 0) + ' vs ' + _aiIssues.length + ') — reverting this round.');
           // Do NOT increment stagnantRounds here — the revert leaves `cur` unchanged, so the next
           // round's top-of-loop no-progress check counts this stall exactly once (avoids the old
@@ -1514,11 +1583,40 @@ async function runAutoFixLoop(maxRounds, deps) {
         setPdfFixStep('');
       } else if (_staleAtExit) {
         warnLog('[AutoContinue] Stale loop exiting (gen bump) — leaving the fresh run\'s UI untouched.');
+      } else {
+        // H18/M7 (audit 2026-07-26): the third case, which used to fall through and clear nothing.
+        // The 12-min auto-continue watchdog NULLS pdfAutoContinueAbortCtrlRef, so _ownsExit becomes
+        // false — and unlike the 8-min switch it does not bump __alloPdfRunGen, so _staleAtExit is
+        // false too. This loop had written setPdfFixLoading(true) on every round, so it left the
+        // flag true with nobody to clear it: a permanent spinner over a finished result, with every
+        // control in the modal disabled.
+        //
+        // A vacant slot is not a newer owner. Clear only when nothing else has claimed it, so a run
+        // that started in the meantime keeps its own spinner.
+        const _slotVacant = !pdfAutoContinueAbortCtrlRef.current;
+        if (_slotVacant) {
+          warnLog('[AutoContinue] Loop exiting with a vacant controller slot (watchdog reset) — clearing the loading flag it would otherwise strand.');
+          setPdfFixLoading(false);
+          setPdfFixStep('');
+        } else {
+          warnLog('[AutoContinue] Loop exiting; a newer continuation owns the controller slot — leaving its UI untouched.');
+        }
       }
       if (_ownsExit) {
         setPdfAutoContinueRunning(false);
         pdfAutoContinueAbortCtrlRef.current = null;
       }
+      // M20: retire the ownership slot this loop published — and only if it is still ours, so a
+      // fixAndVerifyPdf run that started in the meantime keeps its own. Released on EVERY exit
+      // (including a superseded one), because a slot left behind is exactly the stale "live owner"
+      // the other half of M20 removed.
+      try {
+        if (_loopOwnsRemediationSlot && typeof window !== 'undefined'
+          && window.__alloActivePdfRemediation
+          && window.__alloActivePdfRemediation.runId === _loopRunId) {
+          window.__alloActivePdfRemediation = null;
+        }
+      } catch (_) {}
       if (typeof window !== 'undefined' && window.__alloPdfAbortSignal === _abortCtrl.signal) {
         window.__alloPdfAbortSignal = _prevAbortSlot || null; // M11: hand the slot back to the overlapping origin (an aborted prev correctly aborts its own remaining calls)
       }

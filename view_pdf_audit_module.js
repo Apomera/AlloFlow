@@ -8575,7 +8575,8 @@ Return ONLY JSON:
           const _outText = _docPipeline && typeof _docPipeline.htmlToPlainText === "function" ? _docPipeline.htmlToPlainText(bestHtml) : "";
           const _notes = [];
           if (_srcRaw && _docPipeline && typeof _docPipeline.computeStructuralFidelityNotes === "function") {
-            const _sf = _docPipeline.computeStructuralFidelityNotes(_srcRaw, bestHtml);
+            const _srcLinks = typeof _docPipeline.sourceLinkCount === "function" ? _docPipeline.sourceLinkCount() : null;
+            const _sf = _docPipeline.computeStructuralFidelityNotes(_srcRaw, bestHtml, _srcLinks ? { links: _srcLinks } : null);
             if (Array.isArray(_sf)) _sf.forEach((n) => _notes.push(n));
           }
           if (_srcRaw && _outText && _docPipeline && typeof _docPipeline.numericFidelityLosses === "function") {
@@ -8589,7 +8590,8 @@ Return ONLY JSON:
             const _ro = _docPipeline.checkReadingOrderPreserved(prevSnapshot.html, bestHtml);
             if (_ro && _ro.ok === false) _notes.push({ kind: "reading-order", msg: 'Reading order: content may have moved or been dropped vs the previous version (token "' + (_ro.droppedToken || "") + '"; ' + _ro.beforeCount + "\u2192" + _ro.afterCount + " tokens). Magnitude checks passed but order was not preserved \u2014 review the Diff before distributing." });
           }
-          _refixNotes = _docPipeline && typeof _docPipeline.mergeFidelityNotes === "function" ? _docPipeline.mergeFidelityNotes(_fixRemainingSource.fidelityNotes, _notes) : (Array.isArray(_fixRemainingSource.fidelityNotes) ? _fixRemainingSource.fidelityNotes : []).filter((n) => !(n && { links: 1, tables: 1, refusal: 1, placement: 1, numeric: 1, "reading-order": 1 }[n.kind])).concat(_notes);
+          const _laneKinds = _docPipeline && _docPipeline.refixLaneRecomputedFidelityKinds || { links: 1, tables: 1, refusal: 1, numeric: 1, "reading-order": 1 };
+          _refixNotes = _docPipeline && typeof _docPipeline.mergeFidelityNotes === "function" ? _docPipeline.mergeFidelityNotes(_fixRemainingSource.fidelityNotes, _notes, _laneKinds) : (Array.isArray(_fixRemainingSource.fidelityNotes) ? _fixRemainingSource.fidelityNotes : []).filter((n) => !(n && _laneKinds[n.kind])).concat(_notes);
           _notes.forEach((n) => warnLog("[Fix Remaining] fidelity: " + n.msg));
         } catch (_fidErr) {
           warnLog("[Fix Remaining] fidelity sweep failed (non-critical): " + (_fidErr && _fidErr.message));

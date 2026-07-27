@@ -9010,7 +9010,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const _outText = (_docPipeline && typeof _docPipeline.htmlToPlainText === 'function') ? _docPipeline.htmlToPlainText(bestHtml) : '';
                               const _notes = [];
                               if (_srcRaw && _docPipeline && typeof _docPipeline.computeStructuralFidelityNotes === 'function') {
-                                const _sf = _docPipeline.computeStructuralFidelityNotes(_srcRaw, bestHtml);
+                                // Deep dive 2026-07-27: pass the M12 measured link baseline. Without it this
+                                // lane counted markdown `[text](url)` in a pdf.js source text that never
+                                // contains any, read 0 source links, produced no links note — and then the
+                                // merge below FILTERED the primary pass's real "11 of 14 hyperlinks may have
+                                // been dropped" warning out. A re-fix silently deleted a content-loss
+                                // disclosure. Read through the pipeline so every lane uses one accessor.
+                                const _srcLinks = (typeof _docPipeline.sourceLinkCount === 'function') ? _docPipeline.sourceLinkCount() : null;
+                                const _sf = _docPipeline.computeStructuralFidelityNotes(_srcRaw, bestHtml, _srcLinks ? { links: _srcLinks } : null);
                                 if (Array.isArray(_sf)) _sf.forEach(n => _notes.push(n));
                               }
                               if (_srcRaw && _outText && _docPipeline && typeof _docPipeline.numericFidelityLosses === 'function') {
@@ -9034,10 +9041,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               // the disclosures from the exported accessibility statement — so a scanned doc
                               // with garbled OCR could present as clean. Merge through the pipeline's single
                               // rule; the inline fallback mirrors it for a host running an older module.
+                              // Deep dive 2026-07-27: pass THIS LANE's recomputed set explicitly. The default
+                              // is the reducer's, which includes `placement` — but this lane has no
+                              // preserved-block orphan scan and never produces a placement note, so it was
+                              // filtering that disclosure out and never putting one back. Never filter a kind
+                              // you do not recompute. The set is exported so the two lanes cannot drift apart.
+                              const _laneKinds = (_docPipeline && _docPipeline.refixLaneRecomputedFidelityKinds)
+                                || { links: 1, tables: 1, refusal: 1, numeric: 1, 'reading-order': 1 };
                               _refixNotes = (_docPipeline && typeof _docPipeline.mergeFidelityNotes === 'function')
-                                ? _docPipeline.mergeFidelityNotes(_fixRemainingSource.fidelityNotes, _notes)
+                                ? _docPipeline.mergeFidelityNotes(_fixRemainingSource.fidelityNotes, _notes, _laneKinds)
                                 : (Array.isArray(_fixRemainingSource.fidelityNotes) ? _fixRemainingSource.fidelityNotes : [])
-                                  .filter((n) => !(n && { links: 1, tables: 1, refusal: 1, placement: 1, numeric: 1, 'reading-order': 1 }[n.kind]))
+                                  .filter((n) => !(n && _laneKinds[n.kind]))
                                   .concat(_notes);
                               _notes.forEach(n => warnLog('[Fix Remaining] fidelity: ' + n.msg));
                             } catch (_fidErr) { warnLog('[Fix Remaining] fidelity sweep failed (non-critical): ' + (_fidErr && _fidErr.message)); }
