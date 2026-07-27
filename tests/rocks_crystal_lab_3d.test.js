@@ -117,9 +117,9 @@ describe('crystal lab — honesty about what is drawn', () => {
   });
 
   it('says so when it is showing the system cell, not the mineral structure', () => {
-    // Garnet, feldspar, magnetite and topaz have genuinely complex structures;
+    // Garnet, magnetite and topaz have genuinely complex structures;
     // drawing an invented one would look authoritative and be wrong.
-    ['garnet', 'feldspar', 'magnetite', 'topaz'].forEach((id) => {
+    ['garnet', 'magnetite', 'topaz'].forEach((id) => {
       const m = render(id);
       expect(m, id).toContain('Model limit');
       expect(m, id).toContain('not this mineral');
@@ -130,7 +130,7 @@ describe('crystal lab — honesty about what is drawn', () => {
   it('draws the real structure wherever one is simple and well known', () => {
     // These four moved off the generic unit cell once their real arrangements
     // turned out to be both drawable and diagnostic.
-    ['sulfur', 'olivine', 'corundum', 'hematite'].forEach((id) => {
+    ['sulfur', 'olivine', 'corundum', 'hematite', 'feldspar'].forEach((id) => {
       const m = render(id);
       expect(m, id).toContain('how the atoms are actually stacked');
       expect(m, id).not.toContain('Model limit');
@@ -149,6 +149,51 @@ describe('crystal lab — honesty about what is drawn', () => {
     expect(render('corundum')).toContain('Mohs 9');
     expect(render('hematite')).toContain('same close-packed architecture');
     expect(render('hematite')).toContain('Mohs 6');
+  });
+
+  it('draws the generic cell as a box, not a scribble', () => {
+    // Bonding every pair within a cutoff is right for an atomic structure and
+    // wrong for a unit cell: it drew the face and body diagonals too, which hid
+    // the one thing this fallback exists to show. A cubic cell and a sheared
+    // monoclinic one were indistinguishable. Corners now connect along the
+    // twelve EDGES only — neighbours differing in exactly one axis index.
+    PATHS.forEach((p) => {
+      const src = readFileSync(p, 'utf8');
+      expect(src).toContain('sp: \'X\', cell: true, i: i, j: j, k: k');
+      expect(src).toContain('if (steps !== 1) continue;');
+    });
+  });
+
+  it('makes the crystal systems visually distinguishable', () => {
+    // Real axis ratios differ by a few percent, which at this view's auto-fit
+    // scale renders every system as the same cube. The claim is equal-vs-unequal
+    // and right-angled-vs-inclined, so those are drawn legibly.
+    const src = readFileSync(PATHS[0], 'utf8');
+    const block = src.slice(src.indexOf('var RK_CELL_GEOMETRY = {'), src.indexOf('function rkCellGeometryFor'));
+    const row = (name) => {
+      const m = new RegExp("'" + name + "':\\s*\\{ ax: \\[([\\d.]+), ([\\d.]+), ([\\d.]+)\\],\\s*shear: ([\\d.]+)").exec(block);
+      expect(m, name).toBeTruthy();
+      return { ax: [+m[1], +m[2], +m[3]], shear: +m[4] };
+    };
+    const cubic = row('cubic');
+    const ortho = row('orthorhombic');
+    const mono = row('monoclinic');
+    const rhomb = row('rhombohedral');
+
+    // Cubic: equal axes, no shear.
+    expect(new Set(cubic.ax).size).toBe(1);
+    expect(cubic.shear).toBe(0);
+    // Orthorhombic: unequal axes, still square corners — and the spread has to
+    // be big enough to actually see.
+    expect(new Set(ortho.ax).size).toBe(3);
+    expect(ortho.shear).toBe(0);
+    expect(Math.max(...ortho.ax) / Math.min(...ortho.ax)).toBeGreaterThan(2);
+    // Monoclinic: unequal AND inclined.
+    expect(mono.shear).toBeGreaterThan(0.3);
+    // Rhombohedral: three EQUAL axes, none at right angles — that is its
+    // definition, so equal lengths with a shear.
+    expect(new Set(rhomb.ax).size).toBe(1);
+    expect(rhomb.shear).toBeGreaterThan(0.3);
   });
 
   it('keeps sulfur rings unbonded to each other', () => {
