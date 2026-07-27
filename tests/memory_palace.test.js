@@ -756,7 +756,8 @@ describe('MemoryPalace view — own image + recall order wiring', () => {
     expect(v).toContain('MP.applyOwnMnemonic(palaceRef.current, id, own)');
     // myMnemonics must stay OUT of dataKey or every save would rebuild the
     // scene and throw the walker back to the entrance.
-    const dataKey = v.slice(v.indexOf('const dataKey = JSON.stringify({'), v.indexOf('const nowISO'));
+    const mpv = v.slice(v.indexOf('const MemoryPalaceView = ('));
+    const dataKey = mpv.slice(mpv.indexOf('const dataKey = JSON.stringify({'), mpv.indexOf('const nowISO'));
     expect(dataKey).not.toContain('myMnemonics');
   });
 
@@ -916,7 +917,7 @@ describe('MemoryPalace view — build wiring', () => {
     expect(v).toContain('onFloorPlace: (spot) =>');
     expect(v).toContain('const saveNewSpot = () =>');
     expect(v).toContain('MP.nextExtraLocusId(mineLoci)');
-    expect(v).toContain("persist({ ...(mpRef.current || {}), extraLoci: next }, 'memoryPalace')");
+    expect(v).toContain('persistPalace({ ...(mpRef.current || {}), extraLoci: next })');
     expect(v).toContain("t('memory_palace.build_toggle')");
     // build mode must not survive into a quiz or the presentation view
     expect(v).toContain('const on = buildMode && !recall && !presenting;');
@@ -924,7 +925,8 @@ describe('MemoryPalace view — build wiring', () => {
 
   it('rebuilds the scene for structural additions (unlike a rewritten image)', () => {
     const v = view();
-    const dataKey = v.slice(v.indexOf('const dataKey = JSON.stringify({'), v.indexOf('const nowISO'));
+    const mpv = v.slice(v.indexOf('const MemoryPalaceView = ('));
+    const dataKey = mpv.slice(mpv.indexOf('const dataKey = JSON.stringify({'), mpv.indexOf('const nowISO'));
     expect(dataKey).toContain('extraRooms');
     expect(dataKey).toContain('extraLoci');
     expect(dataKey).not.toContain('myMnemonics');
@@ -1124,5 +1126,93 @@ describe('MemoryPalace view — assessment spine wiring', () => {
   it('marks a self-check result as self-reported for everything downstream', () => {
     const v = view();
     expect(v).toContain('selfChecked: true, selfRated: true');
+  });
+});
+
+// ── Content drift, answer leaks and announcements ─────────────────────────
+describe('MemoryPalace — student work never re-attaches to different content', () => {
+  const withWork = () => {
+    const d = sampleData();
+    d.memoryPalace = {
+      myMnemonics: { b1_i0: 'MY image for the ORIGINAL fact' },
+      mastery: { b1_i0: { reps: 5, strength: 1, dueAt: '2026-12-01T00:00:00.000Z' } },
+      locusFor: { b1_i0: MP.fingerprintLabel('Precipitation') },
+    };
+    return d;
+  };
+
+  it('fingerprints are language-neutral and stable', () => {
+    expect(MP.fingerprintLabel('Evaporation')).toBe(MP.fingerprintLabel('  evaporation  '));
+    expect(MP.fingerprintLabel('蒸発')).toBe(MP.fingerprintLabel('蒸発'));
+    expect(MP.fingerprintLabel('蒸発')).not.toBe(MP.fingerprintLabel('凝結'));
+    expect(MP.fingerprintLabel('')).toBe('');
+  });
+
+  it('withholds a self-authored image once its locus holds a different fact', () => {
+    const d = withWork();
+    expect(MP.buildPalace(d).loci.find((l) => l.id === 'b1_i0').mnemonicSource).toBe('self');
+    d.branches[1].items[0] = 'Something else entirely';        // the outline was edited
+    const l = MP.buildPalace(d).loci.find((x) => x.id === 'b1_i0');
+    expect(l.contentChanged).toBe(true);
+    expect(l.mnemonicSource).not.toBe('self');
+    expect(l.mnemonic).not.toContain('ORIGINAL');
+  });
+
+  it('reports drift when an id survives but now holds another fact', () => {
+    // three rooms, work filed against room 2 — delete room 1 and the id b1_i0
+    // still exists, but the fact standing there is a different one.
+    const d = sampleData();
+    d.branches.push({ title: 'Ocean Room', items: ['Runoff', 'Infiltration'], mnemonics: ['x', 'y'] });
+    d.memoryPalace = {
+      myMnemonics: { b1_i0: 'MY image for Precipitation' },
+      locusFor: { b1_i0: MP.fingerprintLabel('Precipitation') },
+    };
+    expect(MP.staleLocusIds(MP.buildPalace(d), d.memoryPalace)).toEqual([]);
+    d.branches.splice(0, 1);
+    const p = MP.buildPalace(d);
+    expect(p.loci.find((l) => l.id === 'b1_i0').label).toBe('Runoff');   // a DIFFERENT fact
+    expect(MP.staleLocusIds(p, d.memoryPalace)).toEqual(['b1_i0']);
+  });
+
+  it('reports work orphaned by a deleted locus, and leaves legacy stores alone', () => {
+    const d = withWork();
+    d.branches.splice(0, 1);                                   // b1_* no longer exists at all
+    const p = MP.buildPalace(d);
+    expect(p.loci.some((l) => l.id === 'b1_i0')).toBe(false);
+    expect(MP.staleLocusIds(p, d.memoryPalace)).toEqual(['b1_i0']);   // orphaned, not silently kept
+    expect(MP.staleLocusIds(p, { myMnemonics: { b1_i0: 'x' } })).toEqual([]);   // legacy store
+    expect(MP.staleLocusIds(p, {})).toEqual([]);
+  });
+
+  it('a matching fingerprint keeps the work attached', () => {
+    const d = withWork();
+    d.branches[1].title = 'Renamed room';                      // room name is not the locus content
+    const p = MP.buildPalace(d);
+    expect(MP.staleLocusIds(p, d.memoryPalace)).toEqual([]);
+    expect(p.loci.find((l) => l.id === 'b1_i0').mnemonicSource).toBe('self');
+  });
+});
+
+describe('MemoryPalace — recall answer leaks and announcements', () => {
+  const view = () => readFileSync(resolve(process.cwd(), 'view_renderers_source.jsx'), 'utf8');
+
+  it('an AI sculpture name is not spoken as the cue during a quiz', () => {
+    const v = view();
+    expect(v).toContain("out[id] = recall\n                    ? (t('memory_palace.decor_sculpture')");
+    // and the decor map recomputes when a quiz starts or ends
+    expect(v).toContain("q: !!recall });");
+  });
+
+  it('answers are announced, not only coloured and beeped', () => {
+    const v = view();
+    expect(v).toContain("t('memory_palace.answer_wrong')");
+    expect(v).toContain("t('memory_palace.answer_right')");
+    expect(v).toContain('aria-live="assertive"');
+  });
+
+  it('progress-rail numerals no longer sit at 1.49:1', () => {
+    const v = view();
+    expect(v).not.toContain('text-[11px] font-black text-white');
+    expect(v).toContain('text-[11px] font-black text-slate-900');
   });
 });

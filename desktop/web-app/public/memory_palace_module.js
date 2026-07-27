@@ -150,11 +150,27 @@
   // Where a menu-added (not floor-placed) locus stands: down the middle of the
   // room on a FIXED step, so it never collides with the wall frames and never
   // shifts when the next one is added. Clamped to stay inside the room.
+  // A grid of standing spots down the middle of the room: 5 across, 4 deep, all
+  // comfortably inside the walls. Past that capacity each lap is offset by half a
+  // cell so late spots interleave instead of stacking. The original version
+  // alternated between just two depths with period 10, so spot 11 landed exactly
+  // on spot 1; clamping deep rows to the back wall merely moved the collision.
+  var EXTRA_COLS = 5, EXTRA_ROWS = 4;
   function extraSpotFor(k) {
-    var step = ROOM_W / 6;
-    var lx = -ROOM_W / 2 + step * ((k % 5) + 1);
-    var lz = (Math.floor(k / 5) % 2 === 0) ? 0 : -ROOM_D / 6;
-    return { lx: Math.max(-ROOM_W / 2 + 10, Math.min(ROOM_W / 2 - 10, lx)), lz: lz };
+    var n = Math.max(0, Math.floor(isNum(k) ? k : 0));
+    var per = EXTRA_COLS * EXTRA_ROWS;
+    var lap = Math.floor(n / per);
+    var i = n % per;
+    var colStep = ROOM_W / (EXTRA_COLS + 1);
+    var usableD = ROOM_D - 120;                        // keep clear of both end walls
+    var rowStep = usableD / (EXTRA_ROWS - 1);
+    var jitter = (lap % 2) ? 0.5 : 0;                  // half-cell offset on alternate laps
+    var lx = -ROOM_W / 2 + colStep * ((i % EXTRA_COLS) + 1 + jitter);
+    var lz = usableD / 2 - rowStep * (Math.floor(i / EXTRA_COLS) + jitter);
+    return {
+      lx: Math.max(-ROOM_W / 2 + 20, Math.min(ROOM_W / 2 - 20, lx)),
+      lz: Math.max(-ROOM_D / 2 + 40, Math.min(ROOM_D / 2 - 40, lz))
+    };
   }
 
   // Inverse of the spoke rotation buildPalace applies: a world floor point back
@@ -181,6 +197,46 @@
       }
     });
     return found;
+  }
+
+  // ── Content fingerprints — student work must not silently change meaning ──
+  // Locus ids are positional (`b0_i2`), so editing the outline, deleting a room
+  // or reordering items re-points every per-locus store at DIFFERENT content:
+  // a self-authored image written for "Allele" ends up captioning "Biome", and a
+  // mastery record of five successful recalls certifies a fact never studied.
+  // Nothing errors, so neither student nor teacher gets a signal.
+  //
+  // The fix is a fingerprint of the label taken when the student's work was
+  // saved. If the label at that id no longer matches, the work is not applied —
+  // it is marked stale so the host can offer it back or clear it, rather than
+  // quietly attaching it to the wrong fact. Cheap, additive, and backward
+  // compatible: a store with no fingerprints behaves exactly as before.
+  function fingerprintLabel(label) {
+    var norm = _foldLoose(label);
+    if (!norm) return '';
+    var h = 2166136261;
+    for (var i = 0; i < norm.length; i++) { h ^= norm.charCodeAt(i); h = (h * 16777619) >>> 0; }
+    return (h >>> 0).toString(36);
+  }
+
+  // Which fingerprinted work no longer belongs where it is filed. Two cases, and
+  // both matter: the id still exists but now holds DIFFERENT content (an edit or
+  // a reorder), or the id is gone entirely (a room or item was deleted) and the
+  // work is orphaned — invisible in the walk and never cleaned up. PURE.
+  function staleLocusIds(palace, store) {
+    var marks = (store && store.locusFor && typeof store.locusFor === 'object') ? store.locusFor : null;
+    if (!marks) return [];
+    var present = {};
+    ((palace && palace.loci) || []).forEach(function (l) { if (l.id !== '__entry') present[l.id] = l; });
+    var out = [];
+    Object.keys(marks).forEach(function (id) {
+      var recorded = marks[id];
+      if (!recorded) return;                       // never fingerprinted ⇒ nothing to compare
+      var l = present[id];
+      if (!l) { out.push(id); return; }            // orphaned: the locus itself is gone
+      if (String(recorded) !== fingerprintLabel(l.label)) out.push(id);
+    });
+    return out;
   }
 
   // ── buildPalace — PURE: {main, branches[±mnemonics]} → rooms/loci/route ──
@@ -327,11 +383,19 @@
       ? opts.myMnemonics
       : ((data && data.memoryPalace && data.memoryPalace.myMnemonics && typeof data.memoryPalace.myMnemonics === 'object')
         ? data.memoryPalace.myMnemonics : null);
+    var locusMarks = (opts.locusFor && typeof opts.locusFor === 'object')
+      ? opts.locusFor
+      : ((mp && mp.locusFor && typeof mp.locusFor === 'object') ? mp.locusFor : null);
     loci.forEach(function (l) {
       l.aiMnemonic = l.mnemonic || '';
+      // The content at this id changed since the student's work was saved, so
+      // their image belongs to a different fact — show it as stale, never as if
+      // they had written it about this one.
+      var mark = locusMarks ? locusMarks[l.id] : null;
+      l.contentChanged = !!(mark && String(mark) !== fingerprintLabel(l.label));
       var own = ownMnemonics ? ownMnemonics[l.id] : null;
       var ownText = (typeof own === 'string') ? own.trim() : '';
-      if (ownText && l.id !== '__entry') { l.mnemonic = ownText; l.mnemonicSource = 'self'; }
+      if (ownText && l.id !== '__entry' && !l.contentChanged) { l.mnemonic = ownText; l.mnemonicSource = 'self'; }
       else l.mnemonicSource = l.mnemonic ? 'ai' : '';
     });
 
@@ -533,10 +597,21 @@
     return ids;
   }
 
+  // Answer matching has to work in the language the content is written in. The
+  // old final step was `replace(/[^a-z0-9]+/g,' ')`, which reduces ANY non-Latin
+  // string to '' — so an exactly correct answer in Japanese, Russian, Arabic,
+  // Hebrew, Devanagari, Greek or Thai was marked wrong, and each attempt fed the
+  // schedule a failure. Keep letters and digits from EVERY script; drop only
+  // punctuation and symbols.
+  var _PUNCT_ANY_SCRIPT = null;
+  try { _PUNCT_ANY_SCRIPT = new RegExp('[^\\p{L}\\p{N}]+', 'gu'); } catch (e) { _PUNCT_ANY_SCRIPT = null; }
   function _normAnswer(s) {
     s = String(s == null ? '' : s).toLowerCase().trim();
-    try { s = s.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (e) {}
-    return s.replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+    try { s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (e) {}   // fold accents
+    try { s = s.normalize('NFKC'); } catch (e) {}
+    if (_PUNCT_ANY_SCRIPT) s = s.replace(_PUNCT_ANY_SCRIPT, ' ');
+    else s = s.replace(/[^a-z0-9]+/g, ' ');                                       // ancient-engine fallback
+    return s.replace(/\s+/g, ' ').trim();
   }
   function _lev(a, b) {
     var m = a.length, n = b.length;
@@ -2572,6 +2647,8 @@
     applyOwnMnemonic: applyOwnMnemonic,
     worldToRoomLocal: worldToRoomLocal,
     roomAtPoint: roomAtPoint,
+    fingerprintLabel: fingerprintLabel,
+    staleLocusIds: staleLocusIds,
     nextExtraLocusId: nextExtraLocusId,
     nextExtraRoomId: nextExtraRoomId,
     extraSpotFor: extraSpotFor,

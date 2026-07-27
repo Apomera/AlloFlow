@@ -3695,6 +3695,34 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     // data, never a stale render snapshot (which would clobber other art or mastery).
     const mpRef = React.useRef(null);
     mpRef.current = data?.memoryPalace || {};
+
+    // ── Every palace save records WHICH FACT the work was about ──
+    // Locus ids are positional (`b0_i2`), so deleting a room or editing the
+    // outline silently re-points every per-locus store at different content — a
+    // self-authored image written for "Allele" ends up captioning "Biome", and a
+    // mastery record certifies a fact never studied. Stamping a fingerprint of the
+    // label at save time lets buildPalace refuse to apply work whose content has
+    // since changed, instead of quietly attaching it to the wrong thing.
+    // Existing palaces self-heal: they get fingerprinted on their next save.
+    const _PALACE_OWNED = ['images', 'depths', 'objects', 'stamps', 'myMnemonics', 'mastery'];
+
+    const persistPalace = (store) => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!persist) return;
+        if (!store || !MP || !MP.fingerprintLabel || !palaceRef.current) { if (persist) persist(store, 'memoryPalace'); return; }
+        const marks = { ...(store.locusFor || {}) };
+        (palaceRef.current.loci || []).forEach((l) => {
+            if (l.id === '__entry') return;
+            const hasWork = _PALACE_OWNED.some((k) => store[k] && store[k][l.id] !== undefined);
+            // Never re-stamp a locus already known to have drifted — that would
+            // bless the wrong attachment instead of flagging it.
+            if (hasWork && !l.contentChanged) marks[l.id] = MP.fingerprintLabel(l.label);
+            else if (!hasWork) delete marks[l.id];
+        });
+        const next = { ...store };
+        if (Object.keys(marks).length) next.locusFor = marks; else delete next.locusFor;
+        persist(next, 'memoryPalace');
+    };
     const aliveRef = React.useRef(true);           // false after unmount → skip late persists
     const finishedRef = React.useRef(false);       // synchronous double-finish guard for recall
     const recallTimersRef = React.useRef([]);      // pending auto-advance timers, cleared on exit/unmount
@@ -3732,6 +3760,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const [canReveal, setCanReveal] = React.useState(false);
     const [typedAnswer, setTypedAnswer] = React.useState('');
     const [wrongFlash, setWrongFlash] = React.useState(false);
+    const [recallSaid, setRecallSaid] = React.useState('');   // spoken result of the last answer
     const [selfRevealId, setSelfRevealId] = React.useState(null);
     // Quiz VISITING order (forward / backward / shuffled). The palace itself never
     // moves — only the sequence the check walks — so scoring, mastery and the
@@ -3755,6 +3784,23 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         mine: [(data?.memoryPalace?.extraRooms || []).length, (data?.memoryPalace?.extraLoci || []).length],
         mineIds: (data?.memoryPalace?.extraLoci || []).map((e) => e && e.id).join(','),
     });
+    // Work whose locus now holds DIFFERENT content. It is not deleted — it is
+    // withheld, so a picture drawn for one fact never illustrates another and a
+    // mastery record never certifies something the student has not seen.
+    const staleKey = JSON.stringify(data?.memoryPalace?.locusFor || {});
+    const staleIds = React.useMemo(() => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || !MP.staleLocusIds || !palaceRef.current) return [];
+        try { return MP.staleLocusIds(palaceRef.current, data?.memoryPalace || {}); } catch (e) { return []; }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dataKey, staleKey, nonce]);
+    const _withoutStale = React.useCallback((map) => {
+        if (!map || !staleIds.length) return map || {};
+        const out = { ...map };
+        staleIds.forEach((id) => { delete out[id]; });
+        return out;
+    }, [staleIds]);
+
     // Spaced review: which loci are due (dueAt <= now) vs never-walked. Stable
     // mount-time `now` so the banner doesn't flicker across renders.
     const nowISO = React.useMemo(() => new Date().toISOString(), []);
@@ -3765,7 +3811,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const dueInfo = React.useMemo(() => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (!MP || !MP.dueLoci || !hasContent) return null;
-        try { return MP.dueLoci(MP.buildPalace(data || {}), data?.memoryPalace?.mastery || {}, nowISO); } catch (e) { return null; }
+        try { return MP.dueLoci(MP.buildPalace(data || {}), _withoutStale(data?.memoryPalace?.mastery), nowISO); } catch (e) { return null; }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataKey, nowISO, masteryKey]);
 
@@ -3774,7 +3820,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     // same cue to screen-reader users, fed to the palace as opts.decor so it rides
     // the live-region announcement and the accessible route list. Localized where
     // possible: collectibles + presets + stamps by id, AI sculptures by recipe name.
-    const decorKey = JSON.stringify({ o: data?.memoryPalace?.objects || {}, s: data?.memoryPalace?.stamps || {} });
+    const decorKey = JSON.stringify({ o: data?.memoryPalace?.objects || {}, s: data?.memoryPalace?.stamps || {}, q: !!recall });
     const decorLabels = React.useMemo(() => {
         const out = {};
         const objs = data?.memoryPalace?.objects || {};
@@ -3790,7 +3836,12 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             } else if (rec.presetId) {
                 out[id] = t('memory_palace.preset_' + rec.presetId) || rec.name || (t('memory_palace.decor_sculpture') || '3D decoration');
             } else {
-                out[id] = rec.name || (t('memory_palace.decor_sculpture') || '3D decoration');
+                // Generated from the locus's own mnemonic/label, so during a quiz
+                // its name would hand over the answer. Sighted players see an
+                // abstract shape; everyone else must get the same information.
+                out[id] = recall
+                    ? (t('memory_palace.decor_sculpture') || '3D decoration')
+                    : (rec.name || (t('memory_palace.decor_sculpture') || '3D decoration'));
             }
         });
         Object.keys(stamps).forEach((id) => {
@@ -3825,9 +3876,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             t,
             routeOrder: activeRouteOrder,
             theme: data?.memoryPalace?.theme || 'gallery',
-            images: data?.memoryPalace?.images || {},
-            depths: data?.memoryPalace?.depths || {},
-            objects: data?.memoryPalace?.objects || {},
+            images: _withoutStale(data?.memoryPalace?.images),
+            depths: _withoutStale(data?.memoryPalace?.depths),
+            objects: _withoutStale(data?.memoryPalace?.objects),
             decor: decorLabels,   // screen-reader names for placed decorations (a11y parity)
             // Build mode: a click on a room floor comes back here as a room-local
             // spot; null means the click landed in the hub or outside the walls.
@@ -3839,7 +3890,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 setSpotLabel('');
                 setPendingSpot(spot);
             },
-            mastery: recall ? undefined : (data?.memoryPalace?.mastery || {}),   // recall-driven dimming (study mode only)
+            mastery: recall ? undefined : _withoutStale(data?.memoryPalace?.mastery),   // recall-driven dimming (study mode only)
             recall: !!recall,
             // In-VR recall bank: the palace spawns the remaining answers as ray-
             // selectable chips; a pick routes through the SAME submitRecallAnswer
@@ -3915,7 +3966,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const paletteTheme = data?.memoryPalace?.theme || 'gallery';
     const handleSetTheme = (thm) => {
         if (!persist || thm === paletteTheme) return;
-        persist({ ...(mpRef.current || {}), theme: thm }, 'memoryPalace');
+        persistPalace({ ...(mpRef.current || {}), theme: thm });
     };
 
     // Distraction-free presentation: use the browser's native fullscreen API when
@@ -3977,7 +4028,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });
         recallTimersRef.current = [];
         elapsedRef.current = 0; setElapsed(0);
-        setAnswered(0); setFinished(null); setRecallHint(null); setCanReveal(false); setTypedAnswer(''); setWrongFlash(false); setSelfRevealId(null);
+        setAnswered(0); setFinished(null); setRecallHint(null); setCanReveal(false); setTypedAnswer(''); setWrongFlash(false); setSelfRevealId(null); setRecallSaid('');
     };
 
     const startRecall = (mode, viaArm, direction, only) => {
@@ -4115,7 +4166,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         // Merge into the LIVE store (mpRef) so mastery can't clobber freshly-generated
         // images/objects; no generatedAt bump → no remount over the finished summary.
         if (persist && MP.updateMastery && aliveRef.current) {
-            try { persist({ ...(mpRef.current || {}), mastery: MP.updateMastery((mpRef.current && mpRef.current.mastery) || {}, res, new Date().toISOString()) }, 'memoryPalace'); } catch (e) {}
+            try { persistPalace({ ...(mpRef.current || {}), mastery: MP.updateMastery((mpRef.current && mpRef.current.mastery) || {}, res, new Date().toISOString()) }); } catch (e) {}
         }
     };
 
@@ -4130,6 +4181,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const ok = chipId ? (chipId === cur.id || MP.matchAnswer(cur.label, given)) : MP.matchAnswer(cur.label, given);
         if (ok) {
             r.correct = true;
+            setRecallSaid(t('memory_palace.answer_right') || 'Correct.');
             if (playSound) playSound('correct');
             if (handleRef.current) { handleRef.current.revealLocus(cur.id); handleRef.current.setLocusStatus(cur.id, 'correct'); }
             setRecallHint(null); setCanReveal(false); setTypedAnswer('');
@@ -4144,6 +4196,12 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 const rr = recallResultsRef.current[cur.id];
                 if (handleRef.current && rr && !rr.correct && !rr.revealed) handleRef.current.setLocusStatus(cur.id, null);
             }, 700);
+            // Colour + sound reaches neither a screen-reader user nor anyone who
+            // cannot distinguish the flash. Say it.
+            setRecallSaid(
+                (t('memory_palace.answer_wrong') || 'Not quite — try again.')
+                + (r.attempts >= 2 && cur.mnemonic ? ' ' + (t('memory_palace.picture_this') || 'Picture this:') + ' ' + cur.mnemonic : '')
+            );
             if (r.attempts >= 2 && cur.mnemonic) setRecallHint(cur.mnemonic);   // the mnemonic IS the hint
             if (r.attempts >= 3) setCanReveal(true);
         }
@@ -4224,6 +4282,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     // Walking on closes the editor: a draft written for the last locus must never
     // follow the student to the next one.
     const mnLocusId = current && current.id;
+    React.useEffect(() => { setRecallSaid(''); }, [mnLocusId]);
     React.useEffect(() => { setMnEditing(false); setMnDraft(''); }, [mnLocusId]);
     const mnFeedback = React.useMemo(() => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
@@ -4308,7 +4367,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (nx.depths && nx.depths[cur.id]) { const d = { ...nx.depths }; delete d[cur.id]; nx.depths = d; }
         // record the stamp id so screen readers can name it (the data-URL alone is opaque)
         nx.stamps = { ...((mpRef.current && mpRef.current.stamps) || {}), [cur.id]: stamp.id };
-        persist(nx, 'memoryPalace');
+        persistPalace(nx);
         if (addToast) addToast(t('memory_palace.decorate_placed') || '🎁 Placed! Saved with this palace.', 'success');
     };
     const handleDecorRemove = () => {
@@ -4318,7 +4377,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         ['images', 'depths', 'objects', 'stamps'].forEach((k) => {
             if (keep[k] && keep[k][cur.id] !== undefined) { const o = { ...keep[k] }; delete o[cur.id]; keep[k] = o; }
         });
-        persist(keep, 'memoryPalace');
+        persistPalace(keep);
         if (handleRef.current && handleRef.current.clearLocus) handleRef.current.clearLocus(cur.id);
         if (addToast) addToast(t('memory_palace.decorate_removed') || 'Removed — the locus is back to its numbered card.', 'info');
     };
@@ -4402,7 +4461,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     if (recipe) {
                         done += 1;
                         if (handleRef.current && handleRef.current.setLocusObject) handleRef.current.setLocusObject(l.id, recipe);
-                        persist({ ...(mpRef.current || {}), objects: { ...((mpRef.current && mpRef.current.objects) || {}), [l.id]: recipe } }, 'memoryPalace');
+                        persistPalace({ ...(mpRef.current || {}), objects: { ...((mpRef.current && mpRef.current.objects) || {}), [l.id]: recipe } });
                     } else failures += 1;
                 })
                 .catch(() => { failures += 1; })
@@ -4449,7 +4508,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 if (key === 'images' && depthVal) nx.depths = { ...((mpRef.current && mpRef.current.depths) || {}), [cur.id]: depthVal };
                 // an AI image supersedes any stamp here → drop its stale SR name
                 if (key === 'images' && nx.stamps && nx.stamps[cur.id]) { const s = { ...nx.stamps }; delete s[cur.id]; nx.stamps = s; }
-                persist(nx, 'memoryPalace');
+                persistPalace(nx);
                 if (addToast) addToast(t('memory_palace.direct_placed') || '✨ Placed at this locus! Walk on and direct the next.', 'success');
                 setDirectPrompt('');
             } else if (addToast) addToast(t('memory_palace.direct_gen_failed') || 'Generation failed — try a different prompt.', 'error');
@@ -4490,6 +4549,22 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (!on && pendingSpot) { setPendingSpot(null); setSpotLabel(''); }
     }, [buildMode, recall, presenting, ready, failed, dataKey]);   // eslint-disable-line react-hooks/exhaustive-deps
 
+    // Withheld work is the student's, so they decide: clearing it is explicit and
+    // removes only the entries whose content changed, never anything still valid.
+    const clearStaleWork = () => {
+        if (!persist || !staleIds.length) return;
+        const store = { ...(mpRef.current || {}) };
+        _PALACE_OWNED.concat(['locusFor']).forEach((k) => {
+            if (!store[k]) return;
+            const copy = { ...store[k] };
+            staleIds.forEach((id) => { delete copy[id]; });
+            if (Object.keys(copy).length) store[k] = copy; else delete store[k];
+        });
+        persist(Object.keys(store).length ? store : null, 'memoryPalace');
+        setNonce((n) => n + 1);
+        if (addToast) addToast(t('memory_palace.stale_cleared') || 'Cleared the work whose spots had changed.', 'info');
+    };
+
     const saveNewSpot = () => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (!MP || !persist || !pendingSpot) return;
@@ -4497,7 +4572,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (!label) return;
         const id = MP.nextExtraLocusId(mineLoci);
         const next = mineLoci.concat([{ id, room: pendingSpot.roomKey, label, lx: pendingSpot.lx, lz: pendingSpot.lz }]);
-        persist({ ...(mpRef.current || {}), extraLoci: next }, 'memoryPalace');
+        persistPalace({ ...(mpRef.current || {}), extraLoci: next });
         setPendingSpot(null); setSpotLabel('');
         if (addToast) addToast((t('memory_palace.build_added') || 'Added "{label}" to your palace.').replace('{label}', label), 'success');
     };
@@ -4508,7 +4583,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const title = String(roomName || '').trim();
         if (!title) return;
         const id = MP.nextExtraRoomId(mineRooms);
-        persist({ ...(mpRef.current || {}), extraRooms: mineRooms.concat([{ id, title }]) }, 'memoryPalace');
+        persistPalace({ ...(mpRef.current || {}), extraRooms: mineRooms.concat([{ id, title }]) });
         setRoomName(''); setAddingRoom(false);
         if (addToast) addToast((t('memory_palace.build_room_added') || 'Added the {title} to your palace.').replace('{title}', title), 'success');
     };
@@ -4522,7 +4597,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         ['images', 'depths', 'objects', 'stamps', 'myMnemonics', 'mastery'].forEach((k) => {
             if (store[k] && store[k][id]) { const c = { ...store[k] }; delete c[id]; store[k] = c; }
         });
-        persist(store, 'memoryPalace');
+        persistPalace(store);
         if (addToast) addToast(t('memory_palace.build_removed') || 'Spot removed from your palace.', 'info');
     };
 
@@ -4542,7 +4617,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (Object.keys(next).length) store.myMnemonics = next; else delete store.myMnemonics;
         try { if (MP && MP.applyOwnMnemonic && palaceRef.current) MP.applyOwnMnemonic(palaceRef.current, id, own); } catch (e) {}
         try { if (handleRef.current && handleRef.current.setLocusMnemonic) handleRef.current.setLocusMnemonic(id, own); } catch (e) {}
-        persist(Object.keys(store).length ? store : null, 'memoryPalace');
+        persistPalace(Object.keys(store).length ? store : null);
         const locus = (palaceRef.current && (palaceRef.current.loci || []).find((l) => l.id === id)) || null;
         if (locus && currentRef.current && currentRef.current.id === id) {
             setCurrent((c) => (c && c.id === id ? { ...c, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic } : c));
@@ -4556,7 +4631,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     // the recipe's parts. Both replace the sculpture live and persist.
     const _persistObject = (id, recipe) => {
         if (handleRef.current && handleRef.current.replaceLocusObject) handleRef.current.replaceLocusObject(id, recipe);
-        persist({ ...(mpRef.current || {}), objects: { ...((mpRef.current && mpRef.current.objects) || {}), [id]: recipe } }, 'memoryPalace');
+        persistPalace({ ...(mpRef.current || {}), objects: { ...((mpRef.current && mpRef.current.objects) || {}), [id]: recipe } });
     };
     const handleManualTweak = (kind) => {
         const cur = currentRef.current;
@@ -4634,7 +4709,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 if (depthB64) nx.depths = { ...((mpRef.current && mpRef.current.depths) || {}), [l.id]: depthB64 };
                 if (nx.stamps && nx.stamps[l.id]) { const s = { ...nx.stamps }; delete s[l.id]; nx.stamps = s; }   // AI image supersedes a stamp's SR name
 
-                persist(nx, 'memoryPalace');
+                persistPalace(nx);
             };
             const colorP = haveImg ? Promise.resolve(haveImg)
                 : callImagen('A vivid, memorable, slightly surreal illustration: ' + subject + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400);
@@ -4688,11 +4763,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 if (depthValue) nx.depths = { ...(mpRef.current?.depths || {}), [locus.id]: depthValue };
                 else if (nx.depths?.[locus.id]) { const d = { ...nx.depths }; delete d[locus.id]; nx.depths = d; }
                 if (nx.stamps?.[locus.id]) { const s = { ...nx.stamps }; delete s[locus.id]; nx.stamps = s; }
-                persist(nx, 'memoryPalace');
+                persistPalace(nx);
             } else {
                 if ((session.variants.length || mpRef.current?.objects?.[locus.id]) && live?.replaceLocusObject) live.replaceLocusObject(locus.id, value);
                 else if (live?.setLocusObject) live.setLocusObject(locus.id, value);
-                persist({ ...(mpRef.current || {}), objects: { ...(mpRef.current?.objects || {}), [locus.id]: value } }, 'memoryPalace');
+                persistPalace({ ...(mpRef.current || {}), objects: { ...(mpRef.current?.objects || {}), [locus.id]: value } });
             }
             if (live?.setLocusBusy) live.setLocusBusy(locus.id, false);
             const nextVariants = [...session.variants, { type, value, depth: depthValue || null }].slice(-3);
@@ -4735,7 +4810,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (prev.image && prev.depth && live?.setLocusRelief) live.setLocusRelief(session.id, prev.image, prev.depth);
         else if (prev.image && live?.setLocusImage) live.setLocusImage(session.id, prev.image);
         if (prev.object && live?.setLocusObject) live.setLocusObject(session.id, prev.object);
-        persist(nx, 'memoryPalace');
+        persistPalace(nx);
         setQuickCreate(null);
         if (!prev.image && !prev.object) setNearbyEmpty({ id: session.id, label: session.label, mnemonic: session.mnemonic, idx: session.idx, total: session.total });
         if (addToast) addToast(t('memory_palace.quick_undone') || 'Undo complete. The previous locus cue is restored.', 'info');
@@ -4751,10 +4826,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             const nx = { ...(mpRef.current || {}), images: { ...(mpRef.current?.images || {}), [session.id]: variant.value } };
             if (variant.depth) nx.depths = { ...(mpRef.current?.depths || {}), [session.id]: variant.depth };
             else if (nx.depths?.[session.id]) { const d = { ...nx.depths }; delete d[session.id]; nx.depths = d; }
-            persist(nx, 'memoryPalace');
+            persistPalace(nx);
         } else {
             if (live?.replaceLocusObject) live.replaceLocusObject(session.id, variant.value);
-            persist({ ...(mpRef.current || {}), objects: { ...(mpRef.current?.objects || {}), [session.id]: variant.value } }, 'memoryPalace');
+            persistPalace({ ...(mpRef.current || {}), objects: { ...(mpRef.current?.objects || {}), [session.id]: variant.value } });
         }
         setQuickCreate({ ...session, selected: index });
     };
@@ -4968,7 +5043,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const nextStore = { ...(mpRef.current || {}) };
         if (_sameRoute(routeDraft, routeDefaultOrder)) delete nextStore.routeOrder;
         else nextStore.routeOrder = routeDraft.slice();
-        persist(Object.keys(nextStore).length ? nextStore : null, 'memoryPalace');
+        persistPalace(Object.keys(nextStore).length ? nextStore : null);
         setRoutePreview(null); setRouteEditing(false); setRouteMasteryAck(false); setNonce((n) => n + 1);
         if (addToast) addToast(t('memory_palace.route_saved') || 'Walking route saved. Frame numbers now match the new order.', 'success');
     };
@@ -4977,7 +5052,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const nextStore = { ...(mpRef.current || {}) };
         if (routeUndo.hadOrder) nextStore.routeOrder = routeUndo.order.slice();
         else delete nextStore.routeOrder;
-        persist(Object.keys(nextStore).length ? nextStore : null, 'memoryPalace');
+        persistPalace(Object.keys(nextStore).length ? nextStore : null);
         setRouteUndo(null); setRoutePreview(null); setRouteEditing(false); setNonce((n) => n + 1);
         if (addToast) addToast(t('memory_palace.route_undone') || 'Previous walking route restored.', 'info');
     };
@@ -5196,7 +5271,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         // (which also lives in this store), so clearing images doesn't wipe review progress.
                                         const keep = { ...(mpRef.current || {}) };
                                         delete keep.images; delete keep.objects; delete keep.depths; delete keep.stamps; delete keep.generatedAt;
-                                        persist(Object.keys(keep).length ? keep : null, 'memoryPalace');
+                                        persistPalace(Object.keys(keep).length ? keep : null);
                                         setNonce((n) => n + 1);
                                     }}
                                     className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
@@ -5209,6 +5284,22 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     )}
                 </div>
             </div>
+            {!presenting && !recall && staleIds.length > 0 && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">
+                    <span>
+                        ⚠️ {(t('memory_palace.stale_notice') || '{count} spot(s) now hold different facts than when you worked on them, so that work is being held back rather than shown on the wrong locus.').replace('{count}', String(staleIds.length))}
+                    </span>
+                    {persist && (
+                        <button
+                            type="button"
+                            onClick={clearStaleWork}
+                            className="rounded-full border border-amber-400 bg-white px-3 py-1 text-xs font-bold text-amber-900 transition-colors hover:bg-amber-100"
+                        >
+                            {t('memory_palace.stale_clear') || 'Clear it'}
+                        </button>
+                    )}
+                </div>
+            )}
             {!presenting && !recall && dueInfo && dueInfo.dueCount > 0 && (
                 <div className="mb-3 flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5" role="status">
                     <div className="text-sm text-amber-900">
@@ -5364,7 +5455,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         aria-current={isCurrent ? 'step' : undefined}
                                         aria-label={(i + 1) + '. ' + locus.label + '; ' + statusLabel + (strengthLabel ? '; memory strength ' + strengthLabel : '')}
                                         title={(room?.label || '') + ': ' + locus.label + ' — ' + statusLabel + (strengthLabel ? ' · memory strength ' + strengthLabel : '')}
-                                        className={'relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 text-[11px] font-black text-white shadow-sm transition-transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 motion-reduce:transition-none ' + progressColors[status] + (isCurrent ? ' ring-2 ring-amber-400 ring-offset-2' : '')}
+                                        className={'relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 text-[11px] font-black text-slate-900 shadow-sm transition-transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 motion-reduce:transition-none ' + progressColors[status] + (isCurrent ? ' ring-2 ring-amber-400 ring-offset-2' : '')}
                                     >
                                         {i + 1}
                                         {status === 'generating' && <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-white border-2 border-indigo-600" aria-hidden="true" />}
@@ -5953,6 +6044,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         </button>
                     </div>
                 </div>
+            )}
+            {!presenting && recall && (
+                <div className="sr-only" role="status" aria-live="assertive" aria-atomic="true">{recallSaid}</div>
             )}
             {!presenting && recall && !finished && current && (
                 current.entry ? (

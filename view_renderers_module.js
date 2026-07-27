@@ -2875,6 +2875,26 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const currentRef = React.useRef(null);
   const mpRef = React.useRef(null);
   mpRef.current = data?.memoryPalace || {};
+  const _PALACE_OWNED = ["images", "depths", "objects", "stamps", "myMnemonics", "mastery"];
+  const persistPalace = (store) => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!persist) return;
+    if (!store || !MP || !MP.fingerprintLabel || !palaceRef.current) {
+      if (persist) persist(store, "memoryPalace");
+      return;
+    }
+    const marks = { ...store.locusFor || {} };
+    (palaceRef.current.loci || []).forEach((l) => {
+      if (l.id === "__entry") return;
+      const hasWork = _PALACE_OWNED.some((k) => store[k] && store[k][l.id] !== void 0);
+      if (hasWork && !l.contentChanged) marks[l.id] = MP.fingerprintLabel(l.label);
+      else if (!hasWork) delete marks[l.id];
+    });
+    const next = { ...store };
+    if (Object.keys(marks).length) next.locusFor = marks;
+    else delete next.locusFor;
+    persist(next, "memoryPalace");
+  };
   const aliveRef = React.useRef(true);
   const finishedRef = React.useRef(false);
   const recallTimersRef = React.useRef([]);
@@ -2930,6 +2950,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const [canReveal, setCanReveal] = React.useState(false);
   const [typedAnswer, setTypedAnswer] = React.useState("");
   const [wrongFlash, setWrongFlash] = React.useState(false);
+  const [recallSaid, setRecallSaid] = React.useState("");
   const [selfRevealId, setSelfRevealId] = React.useState(null);
   const recallOrderRef = React.useRef([]);
   const [finished, setFinished] = React.useState(null);
@@ -2949,18 +2970,36 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     mine: [(data?.memoryPalace?.extraRooms || []).length, (data?.memoryPalace?.extraLoci || []).length],
     mineIds: (data?.memoryPalace?.extraLoci || []).map((e) => e && e.id).join(",")
   });
+  const staleKey = JSON.stringify(data?.memoryPalace?.locusFor || {});
+  const staleIds = React.useMemo(() => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!MP || !MP.staleLocusIds || !palaceRef.current) return [];
+    try {
+      return MP.staleLocusIds(palaceRef.current, data?.memoryPalace || {});
+    } catch (e) {
+      return [];
+    }
+  }, [dataKey, staleKey, nonce]);
+  const _withoutStale = React.useCallback((map) => {
+    if (!map || !staleIds.length) return map || {};
+    const out = { ...map };
+    staleIds.forEach((id) => {
+      delete out[id];
+    });
+    return out;
+  }, [staleIds]);
   const nowISO = React.useMemo(() => (/* @__PURE__ */ new Date()).toISOString(), []);
   const masteryKey = JSON.stringify(data?.memoryPalace?.mastery || {});
   const dueInfo = React.useMemo(() => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     if (!MP || !MP.dueLoci || !hasContent) return null;
     try {
-      return MP.dueLoci(MP.buildPalace(data || {}), data?.memoryPalace?.mastery || {}, nowISO);
+      return MP.dueLoci(MP.buildPalace(data || {}), _withoutStale(data?.memoryPalace?.mastery), nowISO);
     } catch (e) {
       return null;
     }
   }, [dataKey, nowISO, masteryKey]);
-  const decorKey = JSON.stringify({ o: data?.memoryPalace?.objects || {}, s: data?.memoryPalace?.stamps || {} });
+  const decorKey = JSON.stringify({ o: data?.memoryPalace?.objects || {}, s: data?.memoryPalace?.stamps || {}, q: !!recall });
   const decorLabels = React.useMemo(() => {
     const out = {};
     const objs = data?.memoryPalace?.objects || {};
@@ -2980,7 +3019,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       } else if (rec.presetId) {
         out[id] = t("memory_palace.preset_" + rec.presetId) || rec.name || (t("memory_palace.decor_sculpture") || "3D decoration");
       } else {
-        out[id] = rec.name || (t("memory_palace.decor_sculpture") || "3D decoration");
+        out[id] = recall ? t("memory_palace.decor_sculpture") || "3D decoration" : rec.name || (t("memory_palace.decor_sculpture") || "3D decoration");
       }
     });
     Object.keys(stamps).forEach((id) => {
@@ -3021,9 +3060,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       t,
       routeOrder: activeRouteOrder,
       theme: data?.memoryPalace?.theme || "gallery",
-      images: data?.memoryPalace?.images || {},
-      depths: data?.memoryPalace?.depths || {},
-      objects: data?.memoryPalace?.objects || {},
+      images: _withoutStale(data?.memoryPalace?.images),
+      depths: _withoutStale(data?.memoryPalace?.depths),
+      objects: _withoutStale(data?.memoryPalace?.objects),
       decor: decorLabels,
       // screen-reader names for placed decorations (a11y parity)
       // Build mode: a click on a room floor comes back here as a room-local
@@ -3036,7 +3075,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         setSpotLabel("");
         setPendingSpot(spot);
       },
-      mastery: recall ? void 0 : data?.memoryPalace?.mastery || {},
+      mastery: recall ? void 0 : _withoutStale(data?.memoryPalace?.mastery),
       // recall-driven dimming (study mode only)
       recall: !!recall,
       // In-VR recall bank: the palace spawns the remaining answers as ray-
@@ -3111,7 +3150,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const paletteTheme = data?.memoryPalace?.theme || "gallery";
   const handleSetTheme = (thm) => {
     if (!persist || thm === paletteTheme) return;
-    persist({ ...mpRef.current || {}, theme: thm }, "memoryPalace");
+    persistPalace({ ...mpRef.current || {}, theme: thm });
   };
   React.useEffect(() => {
     const getFullscreenElement = () => document.fullscreenElement || document.webkitFullscreenElement;
@@ -3189,6 +3228,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     setTypedAnswer("");
     setWrongFlash(false);
     setSelfRevealId(null);
+    setRecallSaid("");
   };
   const startRecall = (mode, viaArm, direction, only) => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
@@ -3338,7 +3378,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     });
     if (persist && MP.updateMastery && aliveRef.current) {
       try {
-        persist({ ...mpRef.current || {}, mastery: MP.updateMastery(mpRef.current && mpRef.current.mastery || {}, res, (/* @__PURE__ */ new Date()).toISOString()) }, "memoryPalace");
+        persistPalace({ ...mpRef.current || {}, mastery: MP.updateMastery(mpRef.current && mpRef.current.mastery || {}, res, (/* @__PURE__ */ new Date()).toISOString()) });
       } catch (e) {
       }
     }
@@ -3355,6 +3395,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const ok = chipId ? chipId === cur.id || MP.matchAnswer(cur.label, given) : MP.matchAnswer(cur.label, given);
     if (ok) {
       r.correct = true;
+      setRecallSaid(t("memory_palace.answer_right") || "Correct.");
       if (playSound) playSound("correct");
       if (handleRef.current) {
         handleRef.current.revealLocus(cur.id);
@@ -3374,6 +3415,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const rr = recallResultsRef.current[cur.id];
         if (handleRef.current && rr && !rr.correct && !rr.revealed) handleRef.current.setLocusStatus(cur.id, null);
       }, 700);
+      setRecallSaid(
+        (t("memory_palace.answer_wrong") || "Not quite \u2014 try again.") + (r.attempts >= 2 && cur.mnemonic ? " " + (t("memory_palace.picture_this") || "Picture this:") + " " + cur.mnemonic : "")
+      );
       if (r.attempts >= 2 && cur.mnemonic) setRecallHint(cur.mnemonic);
       if (r.attempts >= 3) setCanReveal(true);
     }
@@ -3427,6 +3471,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const [mnEditing, setMnEditing] = React.useState(false);
   const [mnDraft, setMnDraft] = React.useState("");
   const mnLocusId = current && current.id;
+  React.useEffect(() => {
+    setRecallSaid("");
+  }, [mnLocusId]);
   React.useEffect(() => {
     setMnEditing(false);
     setMnDraft("");
@@ -3510,7 +3557,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       nx.depths = d;
     }
     nx.stamps = { ...mpRef.current && mpRef.current.stamps || {}, [cur.id]: stamp.id };
-    persist(nx, "memoryPalace");
+    persistPalace(nx);
     if (addToast) addToast(t("memory_palace.decorate_placed") || "\u{1F381} Placed! Saved with this palace.", "success");
   };
   const handleDecorRemove = () => {
@@ -3524,7 +3571,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         keep[k] = o;
       }
     });
-    persist(keep, "memoryPalace");
+    persistPalace(keep);
     if (handleRef.current && handleRef.current.clearLocus) handleRef.current.clearLocus(cur.id);
     if (addToast) addToast(t("memory_palace.decorate_removed") || "Removed \u2014 the locus is back to its numbered card.", "info");
   };
@@ -3633,7 +3680,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (recipe) {
           done += 1;
           if (handleRef.current && handleRef.current.setLocusObject) handleRef.current.setLocusObject(l.id, recipe);
-          persist({ ...mpRef.current || {}, objects: { ...mpRef.current && mpRef.current.objects || {}, [l.id]: recipe } }, "memoryPalace");
+          persistPalace({ ...mpRef.current || {}, objects: { ...mpRef.current && mpRef.current.objects || {}, [l.id]: recipe } });
         } else failures += 1;
       }).catch(() => {
         failures += 1;
@@ -3694,7 +3741,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
           delete s[cur.id];
           nx.stamps = s;
         }
-        persist(nx, "memoryPalace");
+        persistPalace(nx);
         if (addToast) addToast(t("memory_palace.direct_placed") || "\u2728 Placed at this locus! Walk on and direct the next.", "success");
         setDirectPrompt("");
       } else if (addToast) addToast(t("memory_palace.direct_gen_failed") || "Generation failed \u2014 try a different prompt.", "error");
@@ -3735,6 +3782,22 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       setSpotLabel("");
     }
   }, [buildMode, recall, presenting, ready, failed, dataKey]);
+  const clearStaleWork = () => {
+    if (!persist || !staleIds.length) return;
+    const store = { ...mpRef.current || {} };
+    _PALACE_OWNED.concat(["locusFor"]).forEach((k) => {
+      if (!store[k]) return;
+      const copy = { ...store[k] };
+      staleIds.forEach((id) => {
+        delete copy[id];
+      });
+      if (Object.keys(copy).length) store[k] = copy;
+      else delete store[k];
+    });
+    persist(Object.keys(store).length ? store : null, "memoryPalace");
+    setNonce((n) => n + 1);
+    if (addToast) addToast(t("memory_palace.stale_cleared") || "Cleared the work whose spots had changed.", "info");
+  };
   const saveNewSpot = () => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     if (!MP || !persist || !pendingSpot) return;
@@ -3742,7 +3805,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     if (!label) return;
     const id = MP.nextExtraLocusId(mineLoci);
     const next = mineLoci.concat([{ id, room: pendingSpot.roomKey, label, lx: pendingSpot.lx, lz: pendingSpot.lz }]);
-    persist({ ...mpRef.current || {}, extraLoci: next }, "memoryPalace");
+    persistPalace({ ...mpRef.current || {}, extraLoci: next });
     setPendingSpot(null);
     setSpotLabel("");
     if (addToast) addToast((t("memory_palace.build_added") || 'Added "{label}" to your palace.').replace("{label}", label), "success");
@@ -3753,7 +3816,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const title2 = String(roomName || "").trim();
     if (!title2) return;
     const id = MP.nextExtraRoomId(mineRooms);
-    persist({ ...mpRef.current || {}, extraRooms: mineRooms.concat([{ id, title: title2 }]) }, "memoryPalace");
+    persistPalace({ ...mpRef.current || {}, extraRooms: mineRooms.concat([{ id, title: title2 }]) });
     setRoomName("");
     setAddingRoom(false);
     if (addToast) addToast((t("memory_palace.build_room_added") || "Added the {title} to your palace.").replace("{title}", title2), "success");
@@ -3769,7 +3832,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         store[k] = c;
       }
     });
-    persist(store, "memoryPalace");
+    persistPalace(store);
     if (addToast) addToast(t("memory_palace.build_removed") || "Spot removed from your palace.", "info");
   };
   const saveOwnMnemonic = (id, text) => {
@@ -3790,7 +3853,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       if (handleRef.current && handleRef.current.setLocusMnemonic) handleRef.current.setLocusMnemonic(id, own);
     } catch (e) {
     }
-    persist(Object.keys(store).length ? store : null, "memoryPalace");
+    persistPalace(Object.keys(store).length ? store : null);
     const locus = palaceRef.current && (palaceRef.current.loci || []).find((l) => l.id === id) || null;
     if (locus && currentRef.current && currentRef.current.id === id) {
       setCurrent((c) => c && c.id === id ? { ...c, mnemonic: locus.mnemonic, source: locus.mnemonicSource, aiMnemonic: locus.aiMnemonic } : c);
@@ -3801,7 +3864,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   };
   const _persistObject = (id, recipe) => {
     if (handleRef.current && handleRef.current.replaceLocusObject) handleRef.current.replaceLocusObject(id, recipe);
-    persist({ ...mpRef.current || {}, objects: { ...mpRef.current && mpRef.current.objects || {}, [id]: recipe } }, "memoryPalace");
+    persistPalace({ ...mpRef.current || {}, objects: { ...mpRef.current && mpRef.current.objects || {}, [id]: recipe } });
   };
   const handleManualTweak = (kind) => {
     const cur = currentRef.current;
@@ -3886,7 +3949,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
           delete s[l.id];
           nx.stamps = s;
         }
-        persist(nx, "memoryPalace");
+        persistPalace(nx);
       };
       const colorP = haveImg ? Promise.resolve(haveImg) : callImagen("A vivid, memorable, slightly surreal illustration: " + subject + ". Single clear subject, bright colors, centered composition, storybook style, no text, no words.", 400);
       colorP.then((base64) => {
@@ -3954,11 +4017,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
           delete s[locus.id];
           nx.stamps = s;
         }
-        persist(nx, "memoryPalace");
+        persistPalace(nx);
       } else {
         if ((session.variants.length || mpRef.current?.objects?.[locus.id]) && live?.replaceLocusObject) live.replaceLocusObject(locus.id, value);
         else if (live?.setLocusObject) live.setLocusObject(locus.id, value);
-        persist({ ...mpRef.current || {}, objects: { ...mpRef.current?.objects || {}, [locus.id]: value } }, "memoryPalace");
+        persistPalace({ ...mpRef.current || {}, objects: { ...mpRef.current?.objects || {}, [locus.id]: value } });
       }
       if (live?.setLocusBusy) live.setLocusBusy(locus.id, false);
       const nextVariants = [...session.variants, { type, value, depth: depthValue || null }].slice(-3);
@@ -3996,7 +4059,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     if (prev.image && prev.depth && live?.setLocusRelief) live.setLocusRelief(session.id, prev.image, prev.depth);
     else if (prev.image && live?.setLocusImage) live.setLocusImage(session.id, prev.image);
     if (prev.object && live?.setLocusObject) live.setLocusObject(session.id, prev.object);
-    persist(nx, "memoryPalace");
+    persistPalace(nx);
     setQuickCreate(null);
     if (!prev.image && !prev.object) setNearbyEmpty({ id: session.id, label: session.label, mnemonic: session.mnemonic, idx: session.idx, total: session.total });
     if (addToast) addToast(t("memory_palace.quick_undone") || "Undo complete. The previous locus cue is restored.", "info");
@@ -4016,10 +4079,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         delete d[session.id];
         nx.depths = d;
       }
-      persist(nx, "memoryPalace");
+      persistPalace(nx);
     } else {
       if (live?.replaceLocusObject) live.replaceLocusObject(session.id, variant.value);
-      persist({ ...mpRef.current || {}, objects: { ...mpRef.current?.objects || {}, [session.id]: variant.value } }, "memoryPalace");
+      persistPalace({ ...mpRef.current || {}, objects: { ...mpRef.current?.objects || {}, [session.id]: variant.value } });
     }
     setQuickCreate({ ...session, selected: index });
   };
@@ -4237,7 +4300,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const nextStore = { ...mpRef.current || {} };
     if (_sameRoute(routeDraft, routeDefaultOrder)) delete nextStore.routeOrder;
     else nextStore.routeOrder = routeDraft.slice();
-    persist(Object.keys(nextStore).length ? nextStore : null, "memoryPalace");
+    persistPalace(Object.keys(nextStore).length ? nextStore : null);
     setRoutePreview(null);
     setRouteEditing(false);
     setRouteMasteryAck(false);
@@ -4249,7 +4312,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const nextStore = { ...mpRef.current || {} };
     if (routeUndo.hadOrder) nextStore.routeOrder = routeUndo.order.slice();
     else delete nextStore.routeOrder;
-    persist(Object.keys(nextStore).length ? nextStore : null, "memoryPalace");
+    persistPalace(Object.keys(nextStore).length ? nextStore : null);
     setRouteUndo(null);
     setRoutePreview(null);
     setRouteEditing(false);
@@ -4458,7 +4521,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         delete keep.depths;
         delete keep.stamps;
         delete keep.generatedAt;
-        persist(Object.keys(keep).length ? keep : null, "memoryPalace");
+        persistPalace(Object.keys(keep).length ? keep : null);
         setNonce((n) => n + 1);
       },
       className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors",
@@ -4466,7 +4529,15 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u21BA ",
     t("memory_palace.clear_generated") || "Clear generated art"
-  )))), !presenting && !recall && dueInfo && dueInfo.dueCount > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u{1F501} ", (t("memory_palace.review_due") || "{count} loci are ready for review").replace("{count}", String(dueInfo.dueCount))), " ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-800" }, t("memory_palace.review_due_why") || "\u2014 walk the palace again to strengthen the ones fading from memory.")), recallEligible && /* @__PURE__ */ React.createElement(
+  )))), !presenting && !recall && staleIds.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900", role: "status" }, /* @__PURE__ */ React.createElement("span", null, "\u26A0\uFE0F ", (t("memory_palace.stale_notice") || "{count} spot(s) now hold different facts than when you worked on them, so that work is being held back rather than shown on the wrong locus.").replace("{count}", String(staleIds.length))), persist && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: clearStaleWork,
+      className: "rounded-full border border-amber-400 bg-white px-3 py-1 text-xs font-bold text-amber-900 transition-colors hover:bg-amber-100"
+    },
+    t("memory_palace.stale_clear") || "Clear it"
+  )), !presenting && !recall && dueInfo && dueInfo.dueCount > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u{1F501} ", (t("memory_palace.review_due") || "{count} loci are ready for review").replace("{count}", String(dueInfo.dueCount))), " ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-800" }, t("memory_palace.review_due_why") || "\u2014 walk the palace again to strengthen the ones fading from memory.")), recallEligible && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => startRecall("bank", false, "forward", (dueInfo.due || []).concat(dueInfo.newIds || [])),
@@ -4612,7 +4683,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         "aria-current": isCurrent ? "step" : void 0,
         "aria-label": i + 1 + ". " + locus.label + "; " + statusLabel + (strengthLabel ? "; memory strength " + strengthLabel : ""),
         title: (room?.label || "") + ": " + locus.label + " \u2014 " + statusLabel + (strengthLabel ? " \xB7 memory strength " + strengthLabel : ""),
-        className: "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 text-[11px] font-black text-white shadow-sm transition-transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 motion-reduce:transition-none " + progressColors[status] + (isCurrent ? " ring-2 ring-amber-400 ring-offset-2" : "")
+        className: "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 text-[11px] font-black text-slate-900 shadow-sm transition-transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 motion-reduce:transition-none " + progressColors[status] + (isCurrent ? " ring-2 ring-amber-400 ring-offset-2" : "")
       },
       i + 1,
       status === "generating" && /* @__PURE__ */ React.createElement("span", { className: "absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-white border-2 border-indigo-600", "aria-hidden": "true" })
@@ -5026,7 +5097,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F500} ",
     t("memory_palace.order_shuffle") || "Shuffled"
-  ))), !presenting && recall && !finished && current && (current.entry ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600" }, t("memory_palace.recall_at_entry") || "Walk forward (\u25B6 or \u2192) to the first locus to begin recalling.") : /* @__PURE__ */ React.createElement("div", { className: `mt-3 rounded-xl px-4 py-3 border transition-colors ${wrongFlash ? "bg-red-50 border-red-300" : "bg-amber-50 border-amber-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800 mb-2" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", t("memory_palace.recall_q") || "What belongs at this locus?"), recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, t("memory_palace.recall_answered") || "Answered \u2014 walk on (\u25B6) or pick another frame.") : recall.mode === "self" ? selfRevealId === current.id ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-800", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, current.label), current.mnemonic ? /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-xs text-slate-600" }, "\u{1F4A1} ", current.mnemonic) : null), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2", "aria-label": t("memory_palace.self_check_result") || "How well did you remember this locus?" }, /* @__PURE__ */ React.createElement(
+  ))), !presenting && recall && /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "assertive", "aria-atomic": "true" }, recallSaid), !presenting && recall && !finished && current && (current.entry ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600" }, t("memory_palace.recall_at_entry") || "Walk forward (\u25B6 or \u2192) to the first locus to begin recalling.") : /* @__PURE__ */ React.createElement("div", { className: `mt-3 rounded-xl px-4 py-3 border transition-colors ${wrongFlash ? "bg-red-50 border-red-300" : "bg-amber-50 border-amber-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800 mb-2" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", t("memory_palace.recall_q") || "What belongs at this locus?"), recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, t("memory_palace.recall_answered") || "Answered \u2014 walk on (\u25B6) or pick another frame.") : recall.mode === "self" ? selfRevealId === current.id ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm text-slate-800", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, current.label), current.mnemonic ? /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-xs text-slate-600" }, "\u{1F4A1} ", current.mnemonic) : null), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2", "aria-label": t("memory_palace.self_check_result") || "How well did you remember this locus?" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => markSelfCheck(true),
