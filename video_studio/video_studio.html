@@ -1026,6 +1026,10 @@
             <button class="quiet" id="fillerScanBtn" title="Runs entirely on this computer using the same local engine as Auto-caption.">🔎 Find filler words (on-device)</button>
             <button class="quiet" id="aiSuggestBtn" title="Sends the transcript TEXT (never the video or audio) to Gemini through AlloFlow.">✨ Ask Gemini for suggestions</button>
           </div>
+          <!-- The transcript is the same class of data Localize gates behind
+               localizePrivacyAck, and a classroom transcript can name students
+               aloud. It was leaving with no consent step at all. -->
+          <label class="status" style="margin-top:0"><input type="checkbox" id="suggestPrivacyAck"> AI can receive this video's transcript text</label>
           <progress id="aiReviewProgress" max="100" value="0" hidden></progress>
           <div class="status" id="aiReviewStatus">Suggestions appear here as a checklist — nothing changes until you review them and press Apply.</div>
           <div id="suggestList" style="margin-top:8px"></div>
@@ -4571,6 +4575,37 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   var openerOrigin = originFromUrl(bridgeParams.get('allo_origin') || '') || originFromUrl(document.referrer || '');
   function openerTargetOrigin() { return openerOrigin || ''; }
+  // openerOrigin comes from ?allo_origin= (or the referrer), both of which the
+  // page that opened us controls. Any site can therefore open the genuine Studio
+  // and name ITSELF as the destination for the finished recording. We cannot
+  // simply allowlist — the primary surface is Gemini Canvas, whose sandbox
+  // origin is not fixed — so recognised hosts stay silent and anything else has
+  // to be confirmed by the teacher, once, with the destination spelled out
+  // before any recorded bytes leave.
+  function openerOriginRecognised(origin) {
+    try {
+      var u = new URL(origin);
+      var h = (u.hostname || '').toLowerCase();
+      if (h === 'localhost' || h === '127.0.0.1') return true;
+      if (u.protocol !== 'https:') return false;
+      return h === 'alloflow-cdn.pages.dev'
+        || /(^|\.)pages\.dev$/.test(h)
+        || /(^|\.)web\.app$/.test(h)
+        || /(^|\.)firebaseapp\.com$/.test(h)
+        || /(^|\.)googleusercontent\.com$/.test(h);
+    } catch (_) { return false; }
+  }
+  var unknownOriginSendApproved = false;
+  function confirmUnknownOriginSend() {
+    var target = openerTargetOrigin();
+    if (!target || openerOriginRecognised(target) || unknownOriginSendApproved) return true;
+    var ok = false;
+    try {
+      ok = window.confirm('This Studio window was opened by:\n\n  ' + target + '\n\nThat is not a recognised AlloFlow address. Sending will hand the finished video, its captions and transcript to that site.\n\nSend anyway?');
+    } catch (_) { ok = false; }
+    if (ok) unknownOriginSendApproved = true;
+    return ok;
+  }
   function withBridge(msg) {
     var payload = Object.assign({}, msg || {});
     if (bridgeToken) payload.bridge = bridgeToken;
@@ -4618,7 +4653,17 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     try { if (typeof demoState !== 'undefined' && demoState && demoState.running) postToOpener({ type: 'allostudio-demostop' }); } catch (_) {}
     postToOpener({ type: 'allostudio-closed' });
   });
-  $('linkState').textContent = opener ? 'Connected to AlloFlow' : 'Standalone mode (no AlloFlow window)';
+  // Name the destination. "Connected to AlloFlow" alone told the teacher nothing
+  // about WHERE a send would go, and the opener chooses that address itself.
+  (function () {
+    if (!opener) { $('linkState').textContent = 'Standalone mode (no AlloFlow window)'; return; }
+    var target = openerTargetOrigin();
+    if (!target) { $('linkState').textContent = 'Connected to AlloFlow'; return; }
+    var known = openerOriginRecognised(target);
+    $('linkState').textContent = (known ? 'Connected to AlloFlow · ' : '⚠ Unrecognised opener · ') + target;
+    if (!known) $('linkState').style.color = 'var(--warn, #f59e0b)';
+    $('linkState').title = 'Anything you send goes to ' + target;
+  })();
 
   // ── Tabs ──
   var tabs = [['tabRecord', 'panelRecord'], ['tabEdit', 'panelEdit'], ['tabExport', 'panelExport']];
@@ -7255,6 +7300,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (!t) { setStatus($('aiReviewStatus'), 'Record or import a video first.', 'warn'); return; }
     if (!opener || opener.closed) { setStatus($('aiReviewStatus'), 'Gemini suggestions need the AlloFlow window (they run through the app’s AI connection). Open the Studio from AlloFlow.', 'warn'); return; }
     if (!t.captions.length) { setStatus($('aiReviewStatus'), 'Run Auto-caption (or add captions) first — Gemini reads the transcript text, never the video itself.', 'warn'); return; }
+    // Same consent step Localize already required for the same text.
+    if (!framePrivacyOk('suggestPrivacyAck', $('aiReviewStatus'), 'this video’s transcript text')) return;
     var btn = $('aiSuggestBtn');
     btn.disabled = true;
     setStatus($('aiReviewStatus'), 'Asking Gemini (transcript text only)…');
@@ -7453,8 +7500,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       v.addEventListener('loadedmetadata', function () {
         var dur = t.duration || v.duration || 1;
         var n = Math.max(4, Math.min(16, count || 12));
+        // Sample only the KEPT window. Trim is an export-time parameter that is
+        // never applied to t.blob/t.url, so sampling the raw clip shipped frames
+        // the teacher had explicitly cut — e.g. a gradebook visible in the first
+        // 40s that she trimmed away, confirmed gone in the preview, and then
+        // sent to Gemini anyway because cell 1 landed at 15s.
+        var sheetSeg = null;
+        try { sheetSeg = vsComputeSegments(dur, Number($('trimStart').value), Number($('trimEnd').value)).segments[0]; } catch (_) { sheetSeg = null; }
+        var lo = sheetSeg ? Math.max(0, Number(sheetSeg.start) || 0) : 0;
+        var hi = sheetSeg ? Math.min(dur, Number(sheetSeg.end) || dur) : dur;
+        if (!(hi > lo)) { lo = 0; hi = dur; }
+        var span = hi - lo;
         var times = [];
-        for (var i = 0; i < n; i++) times.push(dur * (i + 0.5) / n);
+        for (var i = 0; i < n; i++) times.push(lo + span * (i + 0.5) / n);
         var cols = n > 12 ? 4 : 3, rows = Math.ceil(n / cols);
         var cellW = 320;
         var cellH = Math.max(60, Math.round(cellW * (v.videoHeight || 720) / (v.videoWidth || 1280)));
@@ -8874,6 +8932,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (switchingTake) {
       transcriptSelection = {};
       wordRippleSelection = {};
+      // The privacy acks read "I checked that no student faces or records are
+      // visible" — an affirmation about THIS footage. Nothing ever unticked
+      // them, so consent given for a clean whiteboard take silently carried over
+      // to the next recording, which might be a screencast of the gradebook.
+      ['insertsPrivacyAck', 'narratePrivacyAck', 'describePrivacyAck', 'localizePrivacyAck', 'suggestPrivacyAck'].forEach(function (ackId) {
+        if ($(ackId)) $(ackId).checked = false;
+      });
     }
     if (t.demoPolish) {
       var demoPolish = cleanDemoPolish(t.demoPolish);
@@ -12973,8 +13038,20 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         announce('Demo cancelled because the AlloFlow tab was not selected');
         return;
       }
-      setStatus($('demoStatus'), 'Verified tab capture: ' + ((demoState.captureValidation && demoState.captureValidation.label) || captureTrackLabel || 'AlloFlow tab') + '. Switch to that tab now; AlloFlow will wait until it is visible.', 'ok');
-      setDemoPrivacyIndicator('recording the verified AlloFlow tab only. Video stays local; completed narration text may be sent to the configured speech provider.', 'ok');
+      // vsValidateDemoCapture returns inferred:true when it could NOT read an
+      // AlloFlow tab label and only deduced the tab from a Canvas media-stream
+      // name plus a live bridge. That flag was computed and then never shown, so
+      // a deduction was presented to the teacher in the same words as a real
+      // match. Say which one it is — she is deciding what gets recorded.
+      var capVal = demoState.captureValidation || null;
+      var capLabel = (capVal && capVal.label) || captureTrackLabel || 'AlloFlow tab';
+      var capInferred = !!(capVal && capVal.inferred);
+      setStatus($('demoStatus'), (capInferred ? 'Probable tab capture: ' : 'Verified tab capture: ') + capLabel
+        + (capInferred ? ' (deduced from the Canvas stream name — the browser did not name the tab, so double-check the preview before you rely on it).' : '.')
+        + ' Switch to that tab now; AlloFlow will wait until it is visible.', capInferred ? 'warn' : 'ok');
+      setDemoPrivacyIndicator(capInferred
+        ? 'recording a tab that AlloFlow could not name directly — confirm the preview shows only AlloFlow. Video stays local; completed narration text may be sent to the configured speech provider.'
+        : 'recording the verified AlloFlow tab only. Video stays local; completed narration text may be sent to the configured speech provider.', capInferred ? 'warn' : 'ok');
       // Re-arm Stop for THIS run. The click handler disables the button, and the
       // only re-enable lives in the rehearsal branch — which never runs, because
       // demoState.rehearsing is never set true. Without this, the second demo of a
@@ -14334,6 +14411,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           announce('Video sent to AlloFlow');
         }
       };
+      // Last gate before recorded bytes leave this window. (onAck is defined but
+      // not yet registered, so there is nothing to unwind on the cancel path.)
+      if (!confirmUnknownOriginSend()) {
+        setStatus($('resultStatus'), 'Send cancelled — the video stays in this window. Use Download to keep it on this device.', 'warn');
+        return;
+      }
       window.addEventListener('message', onAck);
       var take = sceneTakeForExport(lastExport);
       var safeMusic = take && take.musicBed ? vsSanitizeMusicBed(take.musicBed, take.duration || 0) : null;

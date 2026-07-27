@@ -2359,7 +2359,12 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain("setTimeout(function () { demoRecoverLocal('AlloFlow did not confirm the stop'); }, 8000);");
     expect(html).toContain('vsValidateDemoCapture(captureSurface, captureTrackLabel, { openerConnected: !!(opener && !opener.closed) })');
     expect(html).toContain('demoState.captureValidation = validation');
-    expect(html).toContain('demoState.captureValidation && demoState.captureValidation.label');
+    // The capture label must reach the teacher AND distinguish a real AlloFlow
+    // tab match from vsValidateDemoCapture's inferred:true deduction, which was
+    // computed and then presented in the same words as a verified match.
+    expect(html).toContain('var capLabel = (capVal && capVal.label)');
+    expect(html).toContain('var capInferred = !!(capVal && capVal.inferred)');
+    expect(html).toContain("capInferred ? 'Probable tab capture: ' : 'Verified tab capture: '");
     expect(html).toContain("surface !== 'browser'");
     expect(html).toContain('canvasStreamLabel && hasAlloBridge');
     expect(html).toContain("displaySurface: 'browser'");
@@ -2385,6 +2390,28 @@ describe('take persistence + export hardening wiring', () => {
     // the teacher's transcript and captions into a search-grounded request.
     expect(m).not.toMatch(/callGemini\(\w+, false, true\)/);
     expect(m.match(/callGemini\(\w+, true, false\)/g) || []).toHaveLength(7);
+  });
+  it('consent and destination are honest about what leaves the device', () => {
+    const html = popup();
+    // The acks read "I checked that no student faces or records are visible" —
+    // an affirmation about THIS footage. Nothing unticked them, so consent given
+    // for a clean take carried into the next recording.
+    const selectTakeBody = html.slice(html.indexOf('  function selectTake(id) {'), html.indexOf('  function selectTake(id) {') + 1600);
+    ['insertsPrivacyAck', 'narratePrivacyAck', 'describePrivacyAck', 'localizePrivacyAck', 'suggestPrivacyAck']
+      .forEach((ack) => expect(selectTakeBody).toContain(ack));
+    // The transcript is the same class of data Localize already gated.
+    expect(html).toContain('id="suggestPrivacyAck"');
+    expect(html).toContain("framePrivacyOk('suggestPrivacyAck'");
+    // Contact sheets must sample only the KEPT window — trim is export-only and
+    // never applied to the blob, so raw sampling shipped frames already cut.
+    const sheet = html.slice(html.indexOf('function buildContactSheet'), html.indexOf('function buildContactSheet') + 1600);
+    expect(sheet).toContain("vsComputeSegments(dur, Number($('trimStart').value), Number($('trimEnd').value))");
+    expect(sheet).toContain('times.push(lo + span * (i + 0.5) / n)');
+    // The opener names its own origin, so recorded bytes need a gate for any
+    // address we do not recognise.
+    expect(html).toContain('function openerOriginRecognised(origin)');
+    expect(html).toContain('function confirmUnknownOriginSend()');
+    expect(html).toContain('if (!confirmUnknownOriginSend())');
   });
   it('keyboard activation is not swallowed by row containers', () => {
     const html = popup();
