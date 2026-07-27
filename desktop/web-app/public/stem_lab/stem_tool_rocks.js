@@ -849,6 +849,11 @@
     // K+ is a big, weakly-held ion sitting in the framework cavities — drawn
     // large to match, and distinct from Al so the substitution reads.
     K:  { color: 0x818cf8, r: 0.44, label: 'Potassium (K⁺)' },
+    // Magnetite holds iron in TWO oxidation states on two different site types,
+    // and that split is the entire reason it is magnetic — so they are drawn as
+    // separate species rather than one generic "iron".
+    Fe3: { color: 0xd97706, r: 0.34, label: 'Iron Fe³⁺ (tetrahedral site)' },
+    Fe2: { color: 0x0ea5e9, r: 0.40, label: 'Iron Fe²⁺ (octahedral site)' },
     X:  { color: 0x93c5fd, r: 0.30, label: 'Lattice point' }
   };
 
@@ -865,6 +870,7 @@
     talc:      { kind: 'sheet',     a: 'Mg', b: 'Si', exact: true,  why: 'Silicate sheets with almost nothing holding one sheet to the next, so they slide over each other. That is why talc is the softest mineral at Mohs 1 and feels slippery.' },
     quartz:    { kind: 'silica',    a: 'Si', b: 'O',  exact: true,  why: 'Every silicon sits at the centre of an oxygen tetrahedron, and every tetrahedron shares all four corners with its neighbours. The framework has no weak plane, so quartz fractures like glass instead of cleaving.' },
     gypsum:    { kind: 'sheet',     a: 'Ca', b: 'O',  exact: false, why: 'Layers of calcium sulfate separated by sheets of water molecules. The water layers are the weak planes gypsum splits along.' },
+    magnetite: { kind: 'spinel',    a: 'Fe3', b: 'O',  exact: true,  why: 'Oxygen is close-packed, and iron sits in TWO different kinds of gap between them: small tetrahedral sites and larger octahedral ones. The iron in those two site types is magnetically aligned in OPPOSITE directions — but there is more of it on one than the other, so the two do not cancel. That leftover is why magnetite is the only common mineral that is strongly magnetic on its own, and why a lodestone works as a compass.' },
     feldspar:  { kind: 'framework', a: 'K',  b: 'Si', exact: true,  why: 'A framework of corner-linked tetrahedra, like quartz — except aluminium substitutes for some of the silicon. Aluminium carries one less positive charge, so potassium, sodium or calcium sits in the cavities to balance it. That substitution is the entire difference from quartz, and it is why feldspar breaks along two clean planes while quartz has none.' },
     sulfur:    { kind: 'rings',     a: 'S',  b: 'S',  exact: true,  why: 'Sulfur is a MOLECULAR crystal: eight atoms bonded into a puckered S₈ crown, and only weak attractions holding one ring to the next. Strong bonds inside the ring, almost nothing between them — which is why sulfur is Mohs 2, crumbles easily, and melts at just 115 °C.' },
     olivine:   { kind: 'isolated',  a: 'Mg', b: 'Si', exact: true,  why: 'A nesosilicate: no SiO₄ tetrahedron shares an oxygen with another one. They are islands, and the magnesium and iron bonded between them are the only thing linking the structure. With no linked framework and no sheets, olivine has no good cleavage direction — and those exposed cation sites are why it weathers away faster than any other common silicate.' },
@@ -974,6 +980,27 @@
         push(B, cx, cy - 0.40, cz + 0.42);
         push(B, cx, cy - 0.40, cz - 0.42);
       }
+    } else if (kind === 'spinel') {
+      // Close-packed oxygen with iron in TWO different kinds of hole: small
+      // tetrahedral sites and larger octahedral ones. Drawing the two site
+      // types as distinct species is the point — magnetite's magnetism comes
+      // from the moments on those two sites not cancelling.
+      for (k = 0; k < 3; k++) {
+        var sOff = (k % 2) * 0.5;
+        for (i = 0; i < 3; i++) for (j = 0; j < 3; j++) {
+          push('O', i + sOff, k * 0.92, j + sOff * 0.6);
+        }
+      }
+      // Tetrahedral sites (smaller gaps, between layers).
+      for (k = 0; k < 2; k++) for (i = 0; i < 2; i++) for (j = 0; j < 2; j++) {
+        if ((i + j + k) % 2) continue;
+        push('Fe3', i + 0.75, k * 0.92 + 0.46, j + 0.75);
+      }
+      // Octahedral sites (larger gaps, within the layers).
+      for (k = 0; k < 2; k++) for (i = 0; i < 2; i++) for (j = 0; j < 2; j++) {
+        if ((i + j + k) % 2 === 0) continue;
+        push('Fe2', i + 0.25, k * 0.92 + 0.46, j + 0.25);
+      }
     } else if (kind === 'framework') {
       // Tectosilicate: the same corner-linked tetrahedra as quartz, but with
       // aluminium substituting for some of the silicon. Al carries one less
@@ -1078,6 +1105,7 @@
         : spec.kind === 'isolated' ? 1.10
         : spec.kind === 'closepacked' ? 1.05
         : spec.kind === 'framework' ? 0.95
+        : spec.kind === 'spinel' ? 1.05
         : 1.15;
     } else {
       atoms = rkCellAtoms(rkCellGeometryFor(m.crystal).geo);
@@ -4230,6 +4258,22 @@ const d = labToolData.rocks || {};
                       ),
                       d.scratchResult && React.createElement("p", { className: "text-xs font-bold text-slate-800 leading-relaxed animate-in fade-in" },
                         d.scratchResult
+                      ),
+
+                      // The tool measures hardness here and explains WHY that
+                      // hardness happens in the 3D panel below, but the two never
+                      // referred to each other — so the result read as a bare fact
+                      // rather than something the student can go and account for.
+                      // Only shown for minerals whose real structure is drawn;
+                      // pointing at a generic unit cell would promise an
+                      // explanation the panel does not actually contain.
+                      d.scratchResult && RK_LATTICE[selMineral.id] && React.createElement("p", { className: "text-[11px] text-slate-700 leading-snug mt-1.5" },
+                        __alloT('stem.rocks.scratch_see_structure', "Why is it this hard? Scroll to 3D crystal structure below — ") +
+                        (selMineral.hardness >= 7
+                          ? __alloT('stem.rocks.scratch_hard_hint', "strongly bonded in every direction leaves nothing to break along.")
+                          : selMineral.hardness <= 3
+                            ? __alloT('stem.rocks.scratch_soft_hint', "look for the weak gaps between the strongly bonded parts; that is what gives way.")
+                            : __alloT('stem.rocks.scratch_mid_hint', "the bond strength and how evenly it is spread set where this sits on the scale."))
                       )
                     );
                   })()
@@ -4248,9 +4292,16 @@ const d = labToolData.rocks || {};
                   var cs = d.crystal3d || {};
                   var setCS = function (patch) { upd('crystal3d', Object.assign({}, cs, patch)); };
 
+                  // Derived from the atoms the generator ACTUALLY emits, not from
+                  // spec.a/spec.b. Several structures push species directly —
+                  // olivine and feldspar their oxygens, feldspar its aluminium,
+                  // magnetite a second iron site — and a key built from a/b left
+                  // those spheres unlabelled, which is the one thing the key is
+                  // for. Deriving it means new structures label themselves.
                   var species = spec
-                    ? [spec.a, spec.b].filter(function (v, i, arr) { return arr.indexOf(v) === i; })
-                        .concat(spec.kind === 'carbonate' ? ['C'] : [])
+                    ? rkLatticeAtoms(spec.kind, spec.a, spec.b)
+                        .map(function (at) { return at.sp; })
+                        .filter(function (v, i, arr) { return arr.indexOf(v) === i; })
                     : ['X'];
 
                   return React.createElement("div", { className: "border-t border-violet-100 pt-3 mt-3" },

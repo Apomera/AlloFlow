@@ -117,9 +117,9 @@ describe('crystal lab — honesty about what is drawn', () => {
   });
 
   it('says so when it is showing the system cell, not the mineral structure', () => {
-    // Garnet, magnetite and topaz have genuinely complex structures;
+    // Garnet and topaz have genuinely complex structures;
     // drawing an invented one would look authoritative and be wrong.
-    ['garnet', 'magnetite', 'topaz'].forEach((id) => {
+    ['garnet', 'topaz'].forEach((id) => {
       const m = render(id);
       expect(m, id).toContain('Model limit');
       expect(m, id).toContain('not this mineral');
@@ -130,7 +130,7 @@ describe('crystal lab — honesty about what is drawn', () => {
   it('draws the real structure wherever one is simple and well known', () => {
     // These four moved off the generic unit cell once their real arrangements
     // turned out to be both drawable and diagnostic.
-    ['sulfur', 'olivine', 'corundum', 'hematite', 'feldspar'].forEach((id) => {
+    ['sulfur', 'olivine', 'corundum', 'hematite', 'feldspar', 'magnetite'].forEach((id) => {
       const m = render(id);
       expect(m, id).toContain('how the atoms are actually stacked');
       expect(m, id).not.toContain('Model limit');
@@ -149,6 +149,89 @@ describe('crystal lab — honesty about what is drawn', () => {
     expect(render('corundum')).toContain('Mohs 9');
     expect(render('hematite')).toContain('same close-packed architecture');
     expect(render('hematite')).toContain('Mohs 6');
+  });
+
+  it('shows magnetite as two iron sites, which is why it is magnetic', () => {
+    // The whole reason magnetite is the one common magnetic mineral is that its
+    // iron occupies two different site types whose magnetic moments do not
+    // cancel. Drawing them as one generic "iron" would lose the explanation.
+    const m = render('magnetite');
+    expect(m).toContain('Iron Fe³⁺ (tetrahedral site)');
+    expect(m).toContain('Iron Fe²⁺ (octahedral site)');
+    expect(m).toContain('OPPOSITE directions');
+    expect(m).toContain('do not cancel');
+    expect(m).toContain('lodestone');
+  });
+
+  it('labels every sphere it draws, for every structure', () => {
+    // The key was built from spec.a/spec.b, so any species a generator pushed
+    // directly went unlabelled — olivine's and feldspar's oxygen, feldspar's
+    // aluminium, magnetite's second iron site. Unlabelled spheres are exactly
+    // what the key exists to prevent, so it is now derived from the atoms
+    // actually emitted and new structures label themselves.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const latticeIds = [...src.slice(src.indexOf('var RK_LATTICE = {'), src.indexOf('var RK_CELL_GEOMETRY'))
+      .matchAll(/^\s{4}(\w+):/gm)].map((m) => m[1]);
+    expect(latticeIds.length).toBeGreaterThanOrEqual(16);
+
+    const KNOWN_LABELS = {
+      Na: 'Sodium', Cl: 'Chloride', Pb: 'Lead', S: 'Sulfur', Ca: 'Calcium',
+      F: 'Fluoride', C: 'Carbon', O: 'Oxygen', Si: 'Silicon', Fe: 'Iron',
+      Mg: 'Magnesium', Al: 'Aluminium', K: 'Potassium', Fe3: 'tetrahedral',
+      Fe2: 'octahedral',
+    };
+
+    latticeIds.forEach((id) => {
+      const m = render(id);
+      // Every colour swatch in the key carries a label; assert the key is not
+      // empty and that a couple of structure-specific species show up.
+      expect(m, `${id} key`).toMatch(/Why it matters/);
+    });
+
+    // The specific regressions.
+    expect(render('olivine')).toContain(KNOWN_LABELS.O);
+    expect(render('feldspar')).toContain(KNOWN_LABELS.Al);
+    expect(render('feldspar')).toContain(KNOWN_LABELS.O);
+    expect(render('magnetite')).toContain(KNOWN_LABELS.Fe2);
+  }, 20000);
+
+  it('sends the hardness result to the structure that explains it', () => {
+    // The tool measures hardness in one panel and explains why in another, and
+    // the two never referred to each other.
+    const store = {
+      rocks: {
+        mode: 'minerals', selectedMineral: 'diamond',
+        scratchTool: 'diamond_scribe', scratchAnimProgress: 100,
+        scratchResult: 'Result: Scratch created!',
+      },
+      rockCycle: {},
+    };
+    const ctx = makeCtx({ toolData: store, setToolData: () => {} });
+    const m = ReactDOMServer.renderToStaticMarkup(
+      React.createElement(() => window.StemLab._registry.rocks.render(ctx))
+    );
+    expect(m).toContain('Why is it this hard?');
+    // Diamond is Mohs 10 — it should get the hard-mineral framing.
+    expect(m).toContain('nothing to break along');
+  });
+
+  it('does not promise a structural explanation the panel cannot give', () => {
+    // Garnet falls back to a generic unit cell, so pointing at it for "why is it
+    // this hard" would promise an answer that is not there.
+    const store = {
+      rocks: {
+        mode: 'minerals', selectedMineral: 'garnet',
+        scratchTool: 'diamond_scribe', scratchAnimProgress: 100,
+        scratchResult: 'Result: Scratch created!',
+      },
+      rockCycle: {},
+    };
+    const ctx = makeCtx({ toolData: store, setToolData: () => {} });
+    const m = ReactDOMServer.renderToStaticMarkup(
+      React.createElement(() => window.StemLab._registry.rocks.render(ctx))
+    );
+    expect(m).toContain('Result: Scratch created!');
+    expect(m).not.toContain('Why is it this hard?');
   });
 
   it('draws the generic cell as a box, not a scribble', () => {
