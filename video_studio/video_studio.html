@@ -9449,8 +9449,45 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function sceneNextFrame() {
     return new Promise(function (resolve) { requestAnimationFrame(resolve); });
   }
-  function drawSceneVideo(ctx, video, w, hgt, mode) {
-    drawVideoIntoFrame(ctx, video, w, hgt, mode);
+  function drawSceneVideo(ctx, video, w, hgt, mode, zoomState) {
+    // zoomState is take-absolute, exactly as the single-take export uses it, so a
+    // clip trimmed out of the middle of a take keeps the teacher's aim points.
+    drawVideoIntoFrame(ctx, video, w, hgt, mode, zoomState);
+  }
+  // Per-frame scheduler for a scene clip's own audio tracks (generated narration
+  // and sound clips, recorded mic narration, music bed). Mirrors the single-take
+  // realtime path: sources are keyed to TAKE-absolute time, so they line up even
+  // when the clip starts partway into the take.
+  function sceneTickMix(scene, tSec, ac) {
+    var mix = scene && scene._mix;
+    if (!mix || !mix.length || !ac) return;
+    var speechNow = scene._take ? speechActiveAt(scene._take, tSec) : false;
+    for (var i = 0; i < mix.length; i++) {
+      var m = mix[i];
+      if (m.kind === 'music' && m._gain) {
+        var musicGain = vsMusicGainAt(m, tSec, speechNow);
+        try { m._gain.gain.setTargetAtTime(musicGain, ac.currentTime, 0.03); } catch (_) { m._gain.gain.value = musicGain; }
+      }
+      if (m._el && !m._started && tSec >= m.at && (m.kind !== 'music' || tSec <= m.end)) {
+        m._started = true;
+        try {
+          var rel = Math.max(0, tSec - m.at);
+          if (m.kind === 'music' && m.loop && isFinite(m._el.duration) && m._el.duration > 0.1) rel = rel % m._el.duration;
+          m._el.currentTime = rel; m._el.play();
+        } catch (_) {}
+      } else if (m._el && m.kind === 'music' && m._started) {
+        if (tSec > m.end || tSec < m.start) { try { m._el.pause(); } catch (_) {} }
+        else if (m.loop && isFinite(m._el.duration) && m._el.duration > 0.1) {
+          var wantMusic = Math.max(0, tSec - m.start) % m._el.duration;
+          if (Math.abs(m._el.currentTime - wantMusic) > 0.35) { try { m._el.currentTime = wantMusic; } catch (_) {} }
+        }
+      }
+    }
+  }
+  function sceneStopMix(scene) {
+    var mix = scene && scene._mix;
+    if (!mix) return;
+    mix.forEach(function (m) { try { if (m._el) m._el.pause(); } catch (_) {} });
   }
   function drawSceneCard(ctx, w, hgt, item, progress) {
     var title = String(item.text || (item.cardType === 'pause' ? 'Pause and think' : 'New section')).trim();
@@ -9624,6 +9661,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       localizations: [],
       mediaCredits: vsSanitizeMediaCredits(mediaCredits),
       finishReview: {},
+      // Deliberately empty, and NOT the old "scene export drops these" bug: the
+      // scene render now bakes zooms, mute spans, master volume, narration, sound
+      // clips and the music bed into the exported video itself. Re-declaring them
+      // on this pseudo-take would make downstream packaging apply them a second
+      // time. Captions are the exception — they are remapped onto the gap-closed
+      // timeline above, because a .vtt sidecar still needs them as data.
       zooms: [],
       audio: null,
       musicBed: null,
@@ -9702,43 +9745,22 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (pendingNarration.length) { setStatus($('sceneStatus'), 'Automatic narration is still being generated for a scene clip. Wait for it to finish before exporting.', 'warn'); return; }
     var missing = sceneItems.filter(function (item) { return item.type === 'clip' && !sceneItemTake(item); });
     if (missing.length) { setStatus($('sceneStatus'), 'Remove missing clips before exporting the scene.', 'warn'); return; }
-    // The scene renderer builds its audio graph from the clip <video> elements
-    // ALONE, and sceneTakeForExport() hard-codes zooms/audio/narration/audioClips
-    // to empty. Captions ARE remapped onto the gap-closed timeline, which made the
-    // loss of every other track look deliberate. It is not: a narrated demo run
-    // through a ripple cut used to export completely silent, with the status line
-    // still saying "Scene export ready." Name what will be dropped and let the
-    // teacher decide, rather than discovering it on playback.
-    var _sceneDrops = [];
+    // Narration, sound clips, music, mute spans, master volume and zooms ARE now
+    // rendered into scene exports (see the mix built per clip below). Teaching
+    // inserts are the one editor feature the scene compositor still cannot draw,
+    // so say so plainly instead of dropping them silently.
     var _seenTakes = [];
     sceneItems.forEach(function (item) {
       var st = item.type === 'clip' ? sceneItemTake(item) : null;
-      if (!st || _seenTakes.indexOf(st) >= 0) return;
-      _seenTakes.push(st);
+      if (st && _seenTakes.indexOf(st) < 0) _seenTakes.push(st);
     });
-    var _n = function (v) { return Array.isArray(v) ? v.length : 0; };
-    var _clips = 0, _mutes = 0, _zooms = 0, _music = 0, _narr = 0;
-    _seenTakes.forEach(function (st) {
-      _clips += _n(st.audioClips);
-      _mutes += _n(st.audio && st.audio.muteSpans);
-      _zooms += _n(st.zooms);
-      if (st.musicBed) _music++;
-      if (st.narration) _narr++;
-    });
-    if (_clips) _sceneDrops.push(_clips + ' generated narration/audio clip' + (_clips === 1 ? '' : 's'));
-    if (_narr) _sceneDrops.push(_narr + ' recorded narration track' + (_narr === 1 ? '' : 's'));
-    if (_music) _sceneDrops.push(_music + ' music bed' + (_music === 1 ? '' : 's'));
-    if (_mutes) _sceneDrops.push(_mutes + ' silenced span' + (_mutes === 1 ? '' : 's'));
-    if (_zooms) _sceneDrops.push(_zooms + ' zoom/spotlight keyframe' + (_zooms === 1 ? '' : 's'));
-    if (_sceneDrops.length) {
-      var _msg = 'Scene export keeps each clip’s own audio and its captions, but it does NOT include:\n\n  • '
-        + _sceneDrops.join('\n  • ')
-        + '\n\nThose survive a normal single-take export from the Export tab.\n\nExport the scene anyway?';
-      if (!confirm(_msg)) {
-        setStatus($('sceneStatus'), 'Scene export cancelled. Export the take from the Export tab to keep narration, music, silences and zooms.', 'warn');
+    var _insertCount = _seenTakes.reduce(function (n, st) { return n + (Array.isArray(st.inserts) ? st.inserts.length : 0); }, 0);
+    if (_insertCount) {
+      if (!confirm('Scene export cannot draw teaching inserts yet, so ' + _insertCount + ' insert' + (_insertCount === 1 ? '' : 's') + ' will not appear in this video.\n\nEverything else — narration, sound clips, music, silenced spans and zooms — is included.\n\nExport the scene anyway?')) {
+        setStatus($('sceneStatus'), 'Scene export cancelled. Export the take from the Export tab if you need its teaching inserts.', 'warn');
         return;
       }
-      setStatus($('sceneStatus'), 'Exporting scene without ' + _sceneDrops.join(', ') + '.', 'warn');
+      setStatus($('sceneStatus'), 'Exporting scene without ' + _insertCount + ' teaching insert' + (_insertCount === 1 ? '' : 's') + '.', 'warn');
     }
     var btn = $('sceneExportBtn');
     if (btn) btn.disabled = true;
@@ -9760,6 +9782,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var sceneAudioFade = !$('sceneAudioFade') || $('sceneAudioFade').checked;
     var sceneFraming = sceneFramingMode();
     var ac = null, dest = null;
+    var sceneMixUrls = []; // object URLs for the per-clip narration/music mix; revoked in finally
     try {
       ac = new (window.AudioContext || window.webkitAudioContext)();
       dest = ac.createMediaStreamDestination();
@@ -9796,6 +9819,44 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           v.muted = true;
         }
         item._video = v;
+        // Scene export used to build its audio graph from the clip <video> alone,
+        // so everything the teacher had layered onto the take — generated demo
+        // narration, TTS/interpreter clips, recorded mic narration, the music bed,
+        // silenced spans, master volume and zoom keyframes — was dropped. A
+        // narrated demo run through a ripple cut exported completely silent.
+        // Build the same mix the single-take export builds, keyed to take-absolute
+        // time so it lines up even when the clip starts mid-take.
+        item._mix = [];
+        item._audioCfg = sceneAudioMode !== 'mute' ? (take.audio || null) : null;
+        item._zooms = Array.isArray(take.zooms) ? take.zooms : [];
+        if (dest && ac && sceneAudioMode !== 'mute') {
+          var sceneMixSrc = [];
+          if (take.narration && take.narration.blob) sceneMixSrc.push({ kind: 'speech', blob: take.narration.blob, at: 0, vol: take.narration.volume });
+          (take.audioClips || []).forEach(function (c) { if (c && c.blob) sceneMixSrc.push({ kind: 'speech', blob: c.blob, at: Number(c.t) || 0, vol: c.volume }); });
+          var sceneMusic = take.musicBed && take.musicBed.blob ? vsSanitizeMusicBed(take.musicBed, take.duration || 0) : null;
+          if (sceneMusic && sceneMusic.blob) sceneMixSrc.push(Object.assign({ kind: 'music', blob: sceneMusic.blob, at: sceneMusic.start, vol: sceneMusic.volume }, sceneMusic));
+          sceneMixSrc.forEach(function (m) {
+            // Skip anything that cannot sound inside this clip's window.
+            if (m.kind === 'music' ? ((Number(m.end) || 0) <= item._start || Number(m.at) >= item._end) : (Number(m.at) || 0) >= item._end) return;
+            try {
+              var mel = document.createElement('audio');
+              mel.src = URL.createObjectURL(m.blob);
+              sceneMixUrls.push(mel.src);
+              mel.preload = 'auto';
+              var mgain = ac.createGain();
+              mgain.gain.value = Math.max(0, Math.min(2, Number(m.vol != null ? m.vol : 1)));
+              ac.createMediaElementSource(mel).connect(mgain);
+              mgain.connect(dest);
+              m._el = mel; m._gain = mgain; m._started = false;
+              item._mix.push(m);
+            } catch (_) {}
+          });
+          // Give the mix elements a moment to load, so currentTime seeks land
+          // (the single-take path waits the same way before rolling).
+          for (var mxi = 0; mxi < item._mix.length; mxi++) {
+            await sceneWaitForMetadata(item._mix[mxi]._el).catch(function () {});
+          }
+        }
       }
       if (sceneAudioMode !== 'mute' && dest && dest.stream.getAudioTracks().length) stream.addTrack(dest.stream.getAudioTracks()[0]);
       var totalDur = exportItems.reduce(function (sum, item) { return sum + Math.max(0.1, item._duration || sceneItemDuration(item)); }, 0);
@@ -9840,10 +9901,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           while (true) {
             var local = Math.max(0, Math.min(dur, (vid.currentTime || 0) - (scene._start || 0)));
             if (scene._gain && ac) {
+              // Scene crossfade AND the take's own mute spans / master volume.
               var gainNow = sceneAudioGainAt(sceneAudioMode, sceneAudioFade, local, dur);
+              // "Remove audio entirely" silences the CLIP's own track only — the
+              // narration/music mix still plays, which is the whole point of that
+              // replace-my-audio workflow.
+              if (scene._audioCfg) gainNow *= scene._audioCfg.removeAll ? 0 : vsGainAt(scene._audioCfg.muteSpans, scene._audioCfg.volume, vid.currentTime);
               try { scene._gain.gain.setTargetAtTime(gainNow, ac.currentTime, 0.025); } catch (_) { scene._gain.gain.value = gainNow; }
             }
-            drawSceneVideo(ctx, vid, cv.width, cv.height, sceneFraming);
+            sceneTickMix(scene, vid.currentTime || 0, ac);
+            drawSceneVideo(ctx, vid, cv.width, cv.height, sceneFraming, (scene._zooms && scene._zooms.length) ? vsZoomState(scene._zooms, vid.currentTime || 0) : null);
             drawSceneBoundaries(ctx, cv.width, cv.height, exportItems, si, local, dur);
             if (burnSceneCaptions) drawSceneCaption(ctx, cv.width, cv.height, sceneCues, done + local, captionStyle);
             try { if (canvasTrack && canvasTrack.requestFrame) canvasTrack.requestFrame(); } catch (_) {}
@@ -9853,6 +9920,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             await sceneNextFrame();
           }
           try { vid.pause(); } catch (_) {}
+          sceneStopMix(scene);
         } else {
           var start = performance.now();
           while (true) {
@@ -9927,6 +9995,15 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     } finally {
       if ($('exportProgress')) $('exportProgress').hidden = true;
       exportItems.forEach(function (item) { try { if (item._video) { item._video.pause(); item._video.removeAttribute('src'); item._video.load(); } } catch (_) {} });
+      // Tear the per-clip mix down on EVERY exit path, including cancel and error.
+      exportItems.forEach(function (item) {
+        (item._mix || []).forEach(function (m) {
+          try { if (m._el) { m._el.pause(); m._el.removeAttribute('src'); m._el.load(); } } catch (_) {}
+        });
+        item._mix = null;
+      });
+      sceneMixUrls.forEach(function (u) { try { URL.revokeObjectURL(u); } catch (_) {} });
+      sceneMixUrls = [];
       try { if (ac) ac.close(); } catch (_) {}
       try { stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
       if (btn) btn.disabled = false;

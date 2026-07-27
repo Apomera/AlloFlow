@@ -2386,6 +2386,52 @@ describe('take persistence + export hardening wiring', () => {
     expect(m).not.toMatch(/callGemini\(\w+, false, true\)/);
     expect(m.match(/callGemini\(\w+, true, false\)/g) || []).toHaveLength(7);
   });
+  it('scene export mixes each clip\'s narration, sound clips and music at take-absolute time', () => {
+    // Regression: the scene renderer built its audio graph from the clip <video>
+    // elements alone, so a narrated demo run through a ripple cut exported silent.
+    // The critical property is that sources are keyed to TAKE-absolute time, so a
+    // clip starting partway into a take still lines its narration up correctly.
+    const html = popup();
+    const start = html.indexOf('  function sceneTickMix(scene, tSec, ac) {');
+    const end = html.indexOf('  function sceneStopMix(scene) {');
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const sceneTickMix = new Function(
+      'vsMusicGainAt', 'speechActiveAt',
+      html.slice(start, end) + '\nreturn sceneTickMix;'
+    )(
+      (m, t, speech) => (speech ? 0.2 : 0.8),
+      () => false
+    );
+
+    const mkEl = (duration) => ({ currentTime: 0, duration, playCount: 0, paused: false, play() { this.playCount++; }, pause() { this.paused = true; } });
+    const mkGain = () => ({ gain: { value: -1, setTargetAtTime(v) { this.value = v; } } });
+    const ac = { currentTime: 0 };
+
+    const narration = { kind: 'speech', at: 0, _el: mkEl(120), _gain: mkGain(), _started: false };
+    const ttsClip = { kind: 'speech', at: 14, _el: mkEl(3), _gain: mkGain(), _started: false };
+    const music = { kind: 'music', at: 0, start: 0, end: 100, loop: true, _el: mkEl(10), _gain: mkGain(), _started: false };
+    const scene = { _take: {}, _mix: [narration, ttsClip, music] };
+
+    // Clip begins 12s into the take.
+    sceneTickMix(scene, 12, ac);
+    expect(narration._started).toBe(true);
+    expect(narration._el.currentTime).toBe(12); // seeks 12s in, not to 0
+    expect(ttsClip._started).toBe(false); // its cue has not arrived yet
+    expect(music._started).toBe(true);
+    expect(music._el.currentTime).toBe(2); // 12 % 10, looped
+    expect(music._gain.gain.value).toBe(0.8); // no speech ducking from our stub
+
+    // The TTS cue arrives.
+    sceneTickMix(scene, 14.05, ac);
+    expect(ttsClip._started).toBe(true);
+    expect(ttsClip._el.currentTime).toBeCloseTo(0.05, 5);
+    expect(narration._el.playCount).toBe(1); // not restarted every tick
+
+    // Past the music window it stops rather than running under the rest of the scene.
+    sceneTickMix(scene, 101, ac);
+    expect(music._el.paused).toBe(true);
+  });
   it('the AI bridge also lives at module scope, so the popup keeps working once the panel closes', () => {
     const m = moduleText();
     // The popup's own Cinematic Studio button posts 'allostudio-open-cinematic',
