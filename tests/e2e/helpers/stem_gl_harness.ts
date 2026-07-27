@@ -224,6 +224,9 @@ export class GlHarness {
     this.base = `http://127.0.0.1:${typeof addr === 'object' && addr ? addr.port : 0}`;
   }
 
+  /** Harness URL, for throwaway probes that drive the page directly. */
+  get url(): string { return this.base; }
+
   /** Call in test.afterAll. */
   async stop(): Promise<void> {
     if (this.server) await new Promise<void>((r) => this.server!.close(() => r()));
@@ -235,11 +238,20 @@ export class GlHarness {
    * `readyExpr` is an in-page boolean expression polled after the canvas appears —
    * use it to wait for the tool's own engine global.
    */
-  async mount(page: Page, toolData: Record<string, unknown> = {}, readyExpr?: string): Promise<void> {
+  async mount(
+    page: Page,
+    toolData: Record<string, unknown> = {},
+    readyExpr?: string,
+    // Some views legitimately have no 3D surface (a tool's first phase, a 2D tab).
+    // Waiting for a canvas there just times out and reads like a failure.
+    opts: { expectCanvas?: boolean } = {},
+  ): Promise<void> {
+    const expectCanvas = opts.expectCanvas !== false;
     await page.goto(`${this.base}/__harness`);
     await page.waitForFunction(
       (id) => !!(window as any).StemLab?._registry?.[id], this.opts.toolId, { timeout: 30000 });
     await page.evaluate((d) => (window as any).__mount(d), toolData);
+    if (!expectCanvas) { await page.waitForTimeout(900); return; }
     await page.waitForSelector('#wrap canvas', { timeout: 30000 });
     // Wait for a GL context that is actually usable. A canvas exists in the DOM
     // before three.js has finished with it, and probing too early reports the

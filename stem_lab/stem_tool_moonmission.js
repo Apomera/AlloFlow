@@ -2315,6 +2315,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               ) : h('canvas', {
                 'data-eva-canvas': 'true',
                 role: 'application',
+                // A <canvas> is NOT focusable without this, and every EVA key handler
+                // is bound to the canvas element — so without it `canvasEl.focus()`
+                // below was a silent no-op and a keyboard-only student could never
+                // walk, jump or collect a sample. Mouse users were unaffected because
+                // clicking requests pointer lock, which routes keystrokes to the
+                // locked element and hid the gap. The aria-label right below has been
+                // promising "Use WASD to walk" to exactly the students who could not.
+                tabIndex: 0,
                 'aria-label': t('stem.moonmission.interactive_3d_lunar_surface_eva_use_w', 'Interactive 3D lunar surface EVA. Use WASD to walk, Space to jump in one-sixth gravity, F to collect rock samples, mouse to look around. Collect geological samples and explore the Moon surface near the Lunar Module.'),
                 style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair' },
                 ref: function(canvasEl) {
