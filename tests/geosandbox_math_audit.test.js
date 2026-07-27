@@ -15,6 +15,8 @@
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { loadAlloModule } from './setup.js';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 let P;
 beforeAll(() => {
@@ -282,6 +284,49 @@ describe('geoShortcutAllowed — character keys act only on focus', () => {
     expect(P.geoShortcutAllowed(canvas, null)).toBe(false);
     expect(P.geoShortcutAllowed(canvas, {})).toBe(false);
     expect(P.geoShortcutAllowed(null, rootOf([]))).toBe(false);
+  });
+});
+
+// Every AI path (2 sculpt, 2 voice) ended in an empty catch, and the sculpt pair
+// also said nothing when the model's reply failed to parse — the spinner stopped
+// and that was the whole message. Voice is offered here as THE hands-free route to
+// making geometry, so silence after a student speaks is the least affordable
+// failure in the tool. This is a source-level guard because the promise paths sit
+// behind React effects the string renderer never runs; it fails the moment an AI
+// call regains an empty catch, which is exactly the regression worth catching.
+describe('no AI path fails silently', () => {
+  const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_geosandbox.js'), 'utf8');
+
+  it('has AI calls to check at all — guards against the scan silently matching nothing', () => {
+    expect(source.split('ctx.callGemini(').length - 1).toBeGreaterThanOrEqual(4);
+  });
+
+  it('gives every ctx.callGemini chain a catch that speaks up', () => {
+    // Each segment runs from one callGemini to the next, so it contains that
+    // call's own .then/.catch chain.
+    const segments = source.split('ctx.callGemini(').slice(1);
+    const silent = segments.filter((seg) => /\.catch\(function\s*\(\)\s*\{\s*\}\)/.test(seg.slice(0, 2600)));
+    expect(silent).toEqual([]);
+  });
+
+  it('routes failures through one helper that both toasts and announces', () => {
+    expect(source).toContain('var aiTrouble = function(msg)');
+    // Both channels: a toast alone leaves a screen-reader user with nothing.
+    const helper = source.slice(source.indexOf('var aiTrouble = function(msg)'), source.indexOf('var aiTrouble = function(msg)') + 240);
+    expect(helper).toContain('addToast');
+    expect(helper).toContain('announceToSR');
+  });
+
+  it('says something when the model replies with nothing buildable', () => {
+    // The null-parse branch, distinct from a network failure.
+    expect(source).toContain('stem.geosandbox.ai_unbuildable');
+    expect(source).toContain('stem.geosandbox.ai_refine_failed');
+  });
+
+  it('tells a student the hand-build route still works when AI is absent', () => {
+    const idx = source.indexOf('stem.geosandbox.ai_not_connected');
+    expect(idx).toBeGreaterThan(-1);
+    expect(source.slice(idx, idx + 260)).toMatch(/by hand/i);
   });
 });
 

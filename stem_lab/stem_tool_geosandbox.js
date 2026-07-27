@@ -2858,17 +2858,33 @@ window.StemLab = window.StemLab || {
       };
 
       // ── AI Sculpt handlers (reuse window.AlloModules.Prim3D) ──
+      // Every AI path here used to end in an empty catch, and the two sculpt paths
+      // also said nothing when the model's reply failed to parse: the spinner
+      // stopped and that was all. For the voice route — which this tool offers as
+      // THE accessible way to make geometry hands-free — that is total silence
+      // after a student has spoken, the one failure this tool can least afford.
+      // One helper, so a new AI path cannot quietly forget to speak up.
+      var aiTrouble = function(msg) {
+        if (addToast) addToast(msg, 'warning');
+        if (announceToSR) announceToSR(msg);
+      };
+      var AI_UNREACHABLE = t('stem.geosandbox.ai_unreachable', 'Could not reach the AI just now. Check the connection and try again.');
+      var AI_NOT_CONNECTED = t('stem.geosandbox.ai_not_connected', 'AI is not connected, so this needs building by hand — the part buttons below all work without it.');
+      var AI_STILL_LOADING = t('stem.geosandbox.ai_still_loading', 'The sculpting module is still loading. Try again in a moment.');
       var _updSculpt = function(recipe) { upd('sculptRecipe', recipe); };
       var doGenerateSculpt = function(subjOverride) {
         var P3D = window.AlloModules && window.AlloModules.Prim3D;
-        if (!P3D || sculptBusy || typeof ctx.callGemini !== 'function') return;
+        if (sculptBusy) return;   // already working — the spinner is the message
+        if (!P3D) { aiTrouble(AI_STILL_LOADING); return; }
+        if (typeof ctx.callGemini !== 'function') { aiTrouble(AI_NOT_CONNECTED); return; }
         var subj = (typeof subjOverride === 'string' && subjOverride.trim()) ? subjOverride.trim() : ((sculptPrompt || '').trim() || 'a friendly mascot');
         setSculptBusy(true);
         ctx.callGemini(P3D.buildRecipePrompt(subj), false, false, 0.85).then(function(resp) {
           var recipe = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
           if (recipe) { recipe.name = subj.slice(0, 80); _updSculpt(recipe); if (announceToSR) announceToSR('Sculpture created'); }
+          else aiTrouble(t('stem.geosandbox.ai_unbuildable', 'The AI did not send back a sculpture that could be built. Try describing it more simply, like “a snowman” or “a rocket”.'));
           setSculptBusy(false);
-        }).catch(function() { setSculptBusy(false); });
+        }).catch(function() { setSculptBusy(false); aiTrouble(AI_UNREACHABLE); });
       };
       var doManualTweak = function(kind) {
         if (!sculptRecipe) return;
@@ -2882,14 +2898,17 @@ window.StemLab = window.StemLab || {
       };
       var doRefineSculpt = function(instrOverride) {
         var P3D = window.AlloModules && window.AlloModules.Prim3D;
-        if (!P3D || !sculptRecipe || sculptBusy || typeof ctx.callGemini !== 'function') return;
+        if (!sculptRecipe || sculptBusy) return;
+        if (!P3D) { aiTrouble(AI_STILL_LOADING); return; }
+        if (typeof ctx.callGemini !== 'function') { aiTrouble(AI_NOT_CONNECTED); return; }
         var instr = (typeof instrOverride === 'string' && instrOverride.trim()) ? instrOverride.trim() : (sculptRefine || '').trim(); if (!instr) return;
         setSculptBusy(true);
         ctx.callGemini(P3D.buildRefinePrompt(sculptRecipe, instr), false, false, 0.7).then(function(resp) {
           var nr = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
           if (nr) { _updSculpt(Object.assign({}, nr, { scale: sculptRecipe.scale, rotY: sculptRecipe.rotY, tint: sculptRecipe.tint })); setSculptRefine(''); if (announceToSR) announceToSR('Sculpture refined'); }
+          else aiTrouble(t('stem.geosandbox.ai_refine_failed', 'The AI could not apply that change. Try one change at a time, like “make the head bigger”.'));
           setSculptBusy(false);
-        }).catch(function() { setSculptBusy(false); });
+        }).catch(function() { setSculptBusy(false); aiTrouble(AI_UNREACHABLE); });
       };
 
       // ── Manual sculpting: build from scratch OR hand-edit an AI sculpt ────────
@@ -2990,7 +3009,7 @@ window.StemLab = window.StemLab || {
           else if (cmd.action === 'refine') { if (sculptRecipe) doRefineSculpt(cmd.instruction || text); else doGenerateSculpt(cmd.subject || text); }
           else if (cmd.action === 'remove') { _updSculpt(null); if (announceToSR) announceToSR('Sculpture removed'); }
           else if (cmd.action === 'bigger' || cmd.action === 'smaller' || cmd.action === 'rotate' || cmd.action === 'recolor') { doManualTweak(cmd.action); if (announceToSR) announceToSR(cmd.action); }
-        }).catch(function() {});
+        }).catch(function() { aiTrouble(AI_UNREACHABLE); });   // silence after a student speaks is the worst answer
       };
       // Mirror voice status into the in-VR caption (a no-op outside a session).
       var _vrCap = function(txt) { try { if (window._geoScene && window._geoScene.setVrCaption) window._geoScene.setVrCaption(txt); } catch (e) {} };
@@ -3026,7 +3045,7 @@ window.StemLab = window.StemLab || {
           else if (cmd.action === 'stretch') { if (construction.selection) performStretch(cmd.axis); else addPoint([0, 0, 0]); }
           else if (cmd.action === 'undo') doStretchUndo();
           else if (cmd.action === 'reset') { pushHistory(); setLabToolData(function(p) { var g = p.geoSandbox || {}; return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: [], selection: null } }) }); }); if (announceToSR) announceToSR('Construction cleared'); }
-        }).catch(function() {});
+        }).catch(function() { aiTrouble(AI_UNREACHABLE); });
       };
       // Bridge the in-VR controller trigger to voice: while immersed there is no
       // 2D mic to tap, so the headset's trigger starts a voice capture that routes
