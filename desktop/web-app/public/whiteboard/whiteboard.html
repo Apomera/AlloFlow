@@ -109,6 +109,10 @@
 <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" crossorigin></script>
 <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://cdn.jsdelivr.net/npm/@excalidraw/excalidraw@0.17.6/dist/excalidraw.production.min.js"></script>
+<!-- Our own encoder, same origin (relative so it resolves on the CDN and in a
+     local checkout alike). Optional: if it fails to load, recording still
+     produces the .webm and only the GIF is skipped. -->
+<script src="../gif_encoder.js"></script>
 <script>
 (function () {
   'use strict';
@@ -393,6 +397,17 @@
   // imports by drag-and-drop — so this feeds straight into trimming, narration
   // and the normal export pipeline without needing a bridge of its own.
   var REC_W = 1280, REC_H = 720;
+  // GIF is a SECOND, deliberately small output for slides / LMS posts / newsletters
+  // where a video will not autoplay or embed. The caps are not arbitrary:
+  //   - 5 seconds, because a GIF cannot be paused and WCAG 2.2.2 (Pause, Stop,
+  //     Hide) wants a control for auto-playing motion that runs longer than that.
+  //   - 8 fps and 640px, because every GIF frame is a FULL frame (no inter-frame
+  //     diffing) so size scales linearly, and the fixed 216-colour cube palette
+  //     has no dithering.
+  // A longer build is sampled evenly across its whole length rather than
+  // truncated, so the GIF is a time-lapse of the same drawing.
+  var GIF_FPS = 8, GIF_SECONDS = 5, GIF_W = 640;
+  var GIF_FRAMES = GIF_FPS * GIF_SECONDS;
 
   function elementBounds(el) {
     var x1 = Number(el.x) || 0, y1 = Number(el.y) || 0;
@@ -571,6 +586,24 @@
     if (promptText) cues.push({ start: 0, end: Math.min(3.5, drawSec), text: String(promptText).slice(0, 120) });
     var lastCueFor = -1;
 
+    // GIF frames are sampled from the SAME pass, evenly across the whole build,
+    // so a long drawing becomes a time-lapse rather than a truncated clip.
+    var gifCanUse = !!(window.AlloGif && typeof window.AlloGif.encodeCanvasesToBlob === 'function');
+    var gifH = Math.round(GIF_W * REC_H / REC_W);
+    var gifFrames = [], gifTargets = [];
+    if (gifCanUse) {
+      for (var gi = 0; gi < GIF_FRAMES; gi++) gifTargets.push(totalSec * (gi + 0.5) / GIF_FRAMES);
+    }
+    function sampleGifFrames(elapsed) {
+      if (!gifCanUse) return;
+      while (gifFrames.length < GIF_FRAMES && elapsed >= gifTargets[gifFrames.length]) {
+        var gc = document.createElement('canvas');
+        gc.width = GIF_W; gc.height = gifH;
+        try { gc.getContext('2d').drawImage(cv, 0, 0, GIF_W, gifH); } catch (_) {}
+        gifFrames.push(gc);
+      }
+    }
+
     mr.start(500);
     aiStatus('Recording the drawing…', null);
 
@@ -592,6 +625,7 @@
       }
       return renderSceneToCanvas(frameEls.concat(anchors), files).then(function (src) {
         paintLetterboxed(ctx, src);
+        sampleGifFrames(elapsed);
         try { if (track && track.requestFrame) track.requestFrame(); } catch (_) {}
         if (elapsed >= totalSec) return null;
         return new Promise(function (r) { requestAnimationFrame(r); }).then(step);
@@ -617,8 +651,28 @@
       var base = 'alloflow-diagram-' + stamp;
       downloadBlob(blob, base + '.webm');
       if (cues.length) downloadBlob(new Blob([buildVtt(cues)], { type: 'text/vtt' }), base + '.vtt');
-      aiStatus('Recorded ✓ — drop the .webm and .vtt into Video Studio to narrate or trim.', true);
-      toOpener({ type: 'allocwb-recorded', seconds: Math.round(totalSec), elementCount: newEls.length, cues: cues.length });
+      // Bonus looping GIF for slides / LMS posts, where a video often will not
+      // autoplay or embed. Failure here must never lose the video the teacher
+      // actually asked for, so it is strictly additive and swallows its errors.
+      var gifNote = '';
+      if (gifCanUse && gifFrames.length) {
+        try {
+          var gifBlob = window.AlloGif.encodeCanvasesToBlob(gifFrames, GIF_W, gifH, GIF_FPS);
+          if (gifBlob && gifBlob.size) {
+            downloadBlob(gifBlob, base + '.gif');
+            gifNote = ' Also saved a ' + GIF_SECONDS + 's looping GIF (' + Math.round(gifBlob.size / 1024) + ' KB)'
+              + (totalSec > GIF_SECONDS + 0.5 ? ', time-lapsed from the full build' : '') + '.';
+          }
+        } catch (gifErr) {
+          console.warn('[Whiteboard] gif encode failed', gifErr);
+          gifNote = ' (The GIF could not be encoded — the video is fine.)';
+        }
+      } else if (!gifCanUse) {
+        gifNote = ' (GIF encoder unavailable — video only.)';
+      }
+      gifFrames.length = 0;
+      aiStatus('Recorded ✓ — drop the .webm and .vtt into Video Studio to narrate or trim.' + gifNote, true);
+      toOpener({ type: 'allocwb-recorded', seconds: Math.round(totalSec), elementCount: newEls.length, cues: cues.length, gif: !!gifNote });
     }).catch(function (e) {
       console.warn('[Whiteboard] record failed', e);
       try { if (mr.state !== 'inactive') mr.stop(); } catch (_) {}
