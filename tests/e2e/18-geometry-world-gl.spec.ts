@@ -149,6 +149,25 @@ const HARNESS = `<!doctype html>
     return true;
   };
 
+  // World-space bounds of the mesh at a grid cell, so a test can assert the block
+  // actually occupies the cell it was placed in.
+  window.__blockBounds = function (x, y, z) {
+    var en = window.__geoWorldEngine;
+    var m = en && en.blocks[x + ',' + y + ',' + z];
+    if (!m) return null;
+    var box = new THREE.Box3().setFromObject(m);
+    var r = function (v) { return Math.round(v * 1000) / 1000; };
+    return { min: [r(box.min.x), r(box.min.y), r(box.min.z)], max: [r(box.max.x), r(box.max.y), r(box.max.z)],
+             shape: m.userData.shape, rotation: m.userData.rotation };
+  };
+
+  window.__placeShaped = function (x, y, z, shape, rotation) {
+    var en = window.__geoWorldEngine;
+    if (!en) return false;
+    en.placeBlock(x, y, z, 'stone', shape, rotation);
+    return !!en.blocks[x + ',' + y + ',' + z];
+  };
+
   window.__liveRegion = function () {
     var el = document.getElementById('allo-live-geometryworld');
     return el ? el.textContent : null;
@@ -436,6 +455,59 @@ test.describe('Geometry World — real WebGL', () => {
     const firstClause = spoken.slice(spoken.indexOf(npcName));
     expect(firstClause).toMatch(/right/);
     expect(firstClause.slice(0, firstClause.indexOf('.'))).not.toMatch(/left/);
+  });
+
+  test('every block shape occupies the cell it was placed in', async ({ page }) => {
+    // cube and halfB use BoxGeometry (origin-centred); halfA and quarter use custom
+    // vertices authored 0..1. They share one placement position, so the un-centred
+    // pair sat in [x+0.5, x+1.5] — half a block off-grid diagonally, with Y-rotation
+    // pivoting about a corner. Invisible until the shape system was revived, because
+    // nothing could place a non-cube block.
+    await mount(page, { _introShownOnce: true });
+
+    const cells = [
+      { shape: 'cube', at: [14, 5, 14] },
+      { shape: 'halfB', at: [16, 5, 14] },
+      { shape: 'halfA', at: [18, 5, 14] },
+      { shape: 'quarter', at: [20, 5, 14] },
+    ];
+
+    for (const c of cells) {
+      const ok = await page.evaluate(([x, y, z, s]) => (window as any).__placeShaped(x, y, z, s, 0),
+        [...c.at, c.shape] as [number, number, number, string]);
+      expect(ok, c.shape + ' failed to place').toBe(true);
+
+      const b = await page.evaluate(([x, y, z]) => (window as any).__blockBounds(x, y, z),
+        c.at as [number, number, number]);
+      const [x, y, z] = c.at;
+
+      // Horizontal footprint must sit inside the cell, whatever the shape.
+      expect(b.min[0], c.shape + ' minX').toBeGreaterThanOrEqual(x - 0.001);
+      expect(b.max[0], c.shape + ' maxX').toBeLessThanOrEqual(x + 1.001);
+      expect(b.min[2], c.shape + ' minZ').toBeGreaterThanOrEqual(z - 0.001);
+      expect(b.max[2], c.shape + ' maxZ').toBeLessThanOrEqual(z + 1.001);
+      // And it rests on the cell floor rather than floating or sinking.
+      expect(b.min[1], c.shape + ' minY').toBeGreaterThanOrEqual(y - 0.001);
+      expect(b.max[1], c.shape + ' maxY').toBeLessThanOrEqual(y + 1.001);
+    }
+  });
+
+  test('rotating a wedge keeps it in its own cell', async ({ page }) => {
+    // Y-rotation about an un-centred origin swings the shape out of its cell
+    // entirely; about the centre it stays put.
+    await mount(page, { _introShownOnce: true });
+
+    for (const rot of [0, 1, 2, 3]) {
+      const at: [number, number, number] = [10 + rot * 2, 6, 10];
+      await page.evaluate(([x, y, z, r]) => (window as any).__placeShaped(x, y, z, 'halfA', r),
+        [...at, rot] as [number, number, number, number]);
+      const b = await page.evaluate(([x, y, z]) => (window as any).__blockBounds(x, y, z), at);
+      const [x, , z] = at;
+      expect(b.min[0], 'rot ' + rot + ' minX').toBeGreaterThanOrEqual(x - 0.001);
+      expect(b.max[0], 'rot ' + rot + ' maxX').toBeLessThanOrEqual(x + 1.001);
+      expect(b.min[2], 'rot ' + rot + ' minZ').toBeGreaterThanOrEqual(z - 0.001);
+      expect(b.max[2], 'rot ' + rot + ' maxZ').toBeLessThanOrEqual(z + 1.001);
+    }
   });
 
   test('tears the engine down cleanly on unmount', async ({ page }) => {

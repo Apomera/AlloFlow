@@ -253,6 +253,12 @@
           1,0,0,  1,1,1,  1,1,0
         ]);
         geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+        // Centre in X/Z. These vertices are authored 0..1, unlike the BoxGeometry the
+        // cube and halfB use (already origin-centred) — so sharing the placement
+        // position of (x+0.5, y, z+0.5) put the shape in [x+0.5, x+1.5]: half a block
+        // off-grid diagonally, with Y-rotation pivoting about a corner instead of the
+        // cell centre. Y stays 0-based so it still sits on the cell floor.
+        geo.translate(-0.5, 0, -0.5);
         geo.computeVertexNormals();
         return geo;
       }
@@ -279,6 +285,7 @@
           1,0,0,  1,0,1,  0.5,0.5,1
         ]);
         geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+        geo.translate(-0.5, 0, -0.5); // same off-grid fix as halfA
         geo.computeVertexNormals();
         return geo;
       }
