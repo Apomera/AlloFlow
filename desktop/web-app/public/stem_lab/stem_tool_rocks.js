@@ -602,6 +602,108 @@
     }, kids);
   }
 
+  // ══ Weathering outcrop illustration ══
+  // The weathering widget was three sliders and a coloured caption: a weathering
+  // simulator that never showed weathering. This draws the outcrop so the
+  // classification is something a student can SEE rather than only read.
+  //
+  // DELIBERATELY driven by the discrete 4-state marker ONLY, never by the raw
+  // slider values. The widget's design note pins "discrete 4-state weathering
+  // marker; no rate score; no reveal — by design", and scaling crack counts or
+  // pit sizes off the sliders would smuggle a continuous intensity readout back
+  // in through the artwork. Four states, four pictures.
+  function rkWeatheringSvg(h, state) {
+    var kids = [];
+    var i;
+    var seed = rkSeed('weathering-' + state);
+
+    var sky = state === 'physDom' ? '#dbeafe' : state === 'chemDom' ? '#e7e5e4' : state === 'mixed' ? '#e0f2fe' : '#e0f2fe';
+    kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: 200, height: 110, rx: 6, fill: sky }));
+
+    // Ground
+    kids.push(h('rect', { key: 'ground', x: 0, y: 84, width: 200, height: 26, fill: '#6b5b45' }));
+    kids.push(h('rect', { key: 'soil', x: 0, y: 84, width: 200, height: 4, fill: '#4d4133' }));
+
+    if (state === 'minimal') {
+      // Stable: sharp, intact, angular block. Sun, no precipitation.
+      kids.push(h('circle', { key: 'sun', cx: 168, cy: 24, r: 11, fill: '#fcd34d' }));
+      kids.push(h('polygon', { key: 'rock', points: '62,84 74,34 108,26 134,46 138,84', fill: '#8b8378', stroke: '#4b4640', strokeWidth: 2, strokeLinejoin: 'miter' }));
+      kids.push(h('polygon', { key: 'face', points: '74,34 108,26 112,58 80,62', fill: '#9c9488', opacity: 0.85 }));
+      kids.push(h('text', { key: 'lbl', x: 100, y: 102, textAnchor: 'middle', fontSize: '9', fontWeight: '700', fill: '#f8fafc' }, 'edges stay sharp'));
+
+    } else if (state === 'physDom') {
+      // Freeze–thaw: water in joints freezes, wedges the rock apart along
+      // straight fractures, and drops ANGULAR blocks as scree at the base.
+      for (i = 0; i < 7; i++) {
+        var fx = 14 + i * 27;
+        kids.push(h('path', { key: 'snow' + i, d: 'M' + fx + ',12 l0,8 M' + (fx - 4) + ',16 l8,0 M' + (fx - 3) + ',13 l6,6 M' + (fx + 3) + ',13 l-6,6', stroke: '#93c5fd', strokeWidth: 1.4, strokeLinecap: 'round' }));
+      }
+      kids.push(h('polygon', { key: 'rock', points: '62,84 74,34 108,26 134,46 138,84', fill: '#8b8378', stroke: '#4b4640', strokeWidth: 2 }));
+      // Ice-filled fractures, straight and angular.
+      kids.push(h('path', { key: 'cr1', d: 'M86,30 L92,84', stroke: '#bfdbfe', strokeWidth: 3.4, strokeLinecap: 'round' }));
+      kids.push(h('path', { key: 'cr1b', d: 'M86,30 L92,84', stroke: '#1e3a5f', strokeWidth: 1.2 }));
+      kids.push(h('path', { key: 'cr2', d: 'M108,27 L104,84', stroke: '#bfdbfe', strokeWidth: 2.8, strokeLinecap: 'round' }));
+      kids.push(h('path', { key: 'cr2b', d: 'M108,27 L104,84', stroke: '#1e3a5f', strokeWidth: 1 }));
+      kids.push(h('path', { key: 'cr3', d: 'M120,40 L126,84', stroke: '#bfdbfe', strokeWidth: 2.4, strokeLinecap: 'round' }));
+      // Angular scree — the diagnostic debris shape for physical weathering.
+      var scree = [[46, 88], [54, 92], [150, 89], [158, 93], [40, 95], [164, 87]];
+      for (i = 0; i < scree.length; i++) {
+        var s = seed();
+        kids.push(h('polygon', {
+          key: 'sc' + i,
+          points: [scree[i][0] + ',' + scree[i][1], (scree[i][0] + 7 + s * 3) + ',' + (scree[i][1] - 4), (scree[i][0] + 11) + ',' + (scree[i][1] + 3), (scree[i][0] + 3) + ',' + (scree[i][1] + 5)].join(' '),
+          fill: '#7d766c', stroke: '#4b4640', strokeWidth: 0.8
+        }));
+      }
+      kids.push(h('text', { key: 'lbl', x: 100, y: 104, textAnchor: 'middle', fontSize: '9', fontWeight: '700', fill: '#f8fafc' }, 'ice wedges split it into angular blocks'));
+
+    } else if (state === 'chemDom') {
+      // Dissolution: acid rain rounds the profile, pits the surface and opens a
+      // solution hollow — the karst signature.
+      for (i = 0; i < 9; i++) {
+        var dx = 12 + i * 21;
+        kids.push(h('line', { key: 'rain' + i, x1: dx, y1: 8 + (i % 3) * 6, x2: dx - 3, y2: 18 + (i % 3) * 6, stroke: '#84cc16', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.85 }));
+      }
+      // Rounded, slumped profile — no sharp corners left.
+      kids.push(h('path', { key: 'rock', d: 'M62,84 Q60,50 84,38 Q106,28 124,44 Q140,58 138,84 Z', fill: '#96907f', stroke: '#4b4640', strokeWidth: 2 }));
+      // Solution pits
+      var pits = [[84, 52], [104, 46], [118, 58], [92, 68], [124, 70], [76, 66]];
+      for (i = 0; i < pits.length; i++) {
+        kids.push(h('ellipse', { key: 'pit' + i, cx: pits[i][0], cy: pits[i][1], rx: 4.5 + seed() * 2.5, ry: 3 + seed() * 2, fill: '#6f6a5c', opacity: 0.8 }));
+      }
+      // Solution hollow / incipient cave at the base
+      kids.push(h('path', { key: 'cave', d: 'M96,84 Q102,68 116,84 Z', fill: '#332f28' }));
+      kids.push(h('text', { key: 'lbl', x: 100, y: 104, textAnchor: 'middle', fontSize: '9', fontWeight: '700', fill: '#f8fafc' }, 'acid dissolves it — rounded and pitted'));
+
+    } else {
+      // Mixed: both signatures present — some fracture, some rounding.
+      for (i = 0; i < 5; i++) {
+        var mx = 20 + i * 34;
+        kids.push(h('line', { key: 'r' + i, x1: mx, y1: 10, x2: mx - 3, y2: 19, stroke: '#38bdf8', strokeWidth: 1.5, strokeLinecap: 'round', opacity: 0.8 }));
+      }
+      kids.push(h('path', { key: 'rock', d: 'M62,84 L72,40 Q92,28 110,30 L132,48 Q138,64 138,84 Z', fill: '#8f8878', stroke: '#4b4640', strokeWidth: 2 }));
+      kids.push(h('path', { key: 'cr', d: 'M94,32 L98,84', stroke: '#5c574e', strokeWidth: 2.2, strokeLinecap: 'round' }));
+      kids.push(h('ellipse', { key: 'p1', cx: 114, cy: 56, rx: 4.5, ry: 3.2, fill: '#6f6a5c', opacity: 0.8 }));
+      kids.push(h('ellipse', { key: 'p2', cx: 80, cy: 62, rx: 4, ry: 2.8, fill: '#6f6a5c', opacity: 0.8 }));
+      kids.push(h('polygon', { key: 'sc1', points: '48,90 56,86 60,92 50,95', fill: '#7d766c', stroke: '#4b4640', strokeWidth: 0.8 }));
+      kids.push(h('polygon', { key: 'sc2', points: '146,89 154,86 158,92 148,95', fill: '#7d766c', stroke: '#4b4640', strokeWidth: 0.8 }));
+      kids.push(h('text', { key: 'lbl', x: 100, y: 104, textAnchor: 'middle', fontSize: '9', fontWeight: '700', fill: '#f8fafc' }, 'both signatures: cracks and rounding'));
+    }
+
+    var desc = {
+      minimal: 'A rock outcrop with sharp, intact edges under a clear sky. Stable conditions, so the surface persists.',
+      physDom: 'A rock outcrop split by straight ice-filled fractures, with angular blocks fallen as scree at its base. Freeze-thaw is breaking it apart mechanically.',
+      chemDom: 'A rock outcrop with a rounded, slumped profile, pitted surface and a solution hollow at the base, under acidic rain. Minerals are dissolving away.',
+      mixed: 'A rock outcrop showing both signatures at once: a fracture splitting it and rounded, pitted surfaces, with a little angular debris.'
+    }[state];
+
+    return h('svg', {
+      viewBox: '0 0 200 110', width: '100%', role: 'img',
+      style: { display: 'block', maxWidth: '420px', margin: '0 auto' },
+      'aria-label': desc
+    }, kids);
+  }
+
   var ROCKS_CHALLENGES = [
     { id: 'types_explored', name: 'Petrologist', desc: 'Examine all 3 rock types (Igneous, Sedimentary, Metamorphic)', icon: '⛰️', rp: 15, check: function(s) { var st = s || {}; return Object.keys(st.typesViewed || {}).length >= 3; } },
     { id: 'specimens_examined', name: 'Rock Collector', desc: 'Examine 5+ rock specimens', icon: '🔍', rp: 15, check: function(s) { var st = s || {}; return Object.keys(st.rocksViewed || {}).length >= 5; } },
@@ -4346,15 +4448,23 @@ const d = labToolData.rocks || {};
               else if (physical > chemical * 1.5 && physical > 0.4) state = 'physDom';
               else if (total > 0.5) state = 'mixed';
               else state = 'minimal';
-              var sm = {
-                chemDom: { label: '\ud83e\uddea ' + __alloT('stem.rocks.weath_chem_label', 'Chemical-dominated'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.rocks.weath_chem_desc', 'Acidic rain dissolves minerals. Karst landscapes form.') },
-                physDom: { label: '\ud83d\udd28 ' + __alloT('stem.rocks.weath_phys_label', 'Physical-dominated'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.rocks.weath_phys_desc', 'Freeze-thaw cycles fracture rock mechanically.') },
-                mixed:   { label: '\u2696\ufe0f ' + __alloT('stem.rocks.weath_mixed_label', 'Mixed weathering'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.rocks.weath_mixed_desc', 'Both processes active. Typical temperate climate.') },
-                minimal: { label: '\ud83d\udfe2 ' + __alloT('stem.rocks.weath_minimal_label', 'Minimal weathering'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.rocks.weath_minimal_desc', 'Stable conditions. Rock surfaces persist.') }
-              }[state];
+              // Extracted from an inline [state] index so the trial log below can
+              // look up any state's label and colour, not just the current one.
+              var SM_ALL = {
+                chemDom: { label: '\ud83e\uddea ' + __alloT('stem.rocks.weath_chem_label', 'Chemical-dominated'), color: '#6d28d9', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.rocks.weath_chem_desc', 'Acidic rain dissolves minerals. Karst landscapes form.') },
+                physDom: { label: '\ud83d\udd28 ' + __alloT('stem.rocks.weath_phys_label', 'Physical-dominated'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.rocks.weath_phys_desc', 'Freeze-thaw cycles fracture rock mechanically.') },
+                mixed:   { label: '\u2696\ufe0f ' + __alloT('stem.rocks.weath_mixed_label', 'Mixed weathering'), color: '#0e7490', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.rocks.weath_mixed_desc', 'Both processes active. Typical temperate climate.') },
+                minimal: { label: '\ud83d\udfe2 ' + __alloT('stem.rocks.weath_minimal_label', 'Minimal weathering'), color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.rocks.weath_minimal_desc', 'Stable conditions. Rock surfaces persist.') }
+              };
+              var sm = SM_ALL[state];
               return h('div', { className: 'p-4 rounded-xl bg-white border border-amber-300 space-y-3' },
                 h('h3', { className: 'text-sm font-black text-amber-800' }, '\u26cf\ufe0f ' + __alloT('stem.rocks.rock_weathering_discovery', 'Rock weathering discovery')),
                 h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.rocks.weathering_intro', 'Adjust temperature swings, rainfall, and rain pH. Widget classifies dominant weathering mode into 4 discrete categories. No score, no reveal.')),
+                // Draw the outcrop. A weathering simulator that never showed
+                // weathering was asking students to picture the whole thing.
+                h('div', { className: 'rounded-lg overflow-hidden border-2', style: { borderColor: sm.border } },
+                  rkWeatheringSvg(h, state)
+                ),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                   h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
@@ -4373,6 +4483,36 @@ const d = labToolData.rocks || {};
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
                   h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempSwing, r: iq.rainfall, p: iq.pH, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '\ud83d\udccb ' + __alloT('stem.rocks.weath_log', 'Log')),
                   h('button', { onClick: function() { setIQ({ tempSwing: 20, rainfall: 200, pH: 7, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21ba ' + __alloT('stem.rocks.weath_reset', 'Reset'))
+                ),
+                // The Log button has always written iq.log — and nothing has ever
+                // rendered it. Clicking it stored a trial and showed the student
+                // nothing, so the affordance read as broken. Comparing trials IS
+                // the inquiry skill this widget is for, so the record is now
+                // visible: conditions on the left, the state they produced on the
+                // right. No score and no ranking — it is a notebook, not a
+                // leaderboard, per the widget's design note.
+                (iq.log || []).length > 0 && h('div', { className: 'rounded-lg border border-slate-300 bg-slate-50 p-2' },
+                  h('div', { className: 'flex items-center justify-between mb-1.5' },
+                    h('span', { className: 'text-[11px] font-black text-slate-700' }, '📋 ' + __alloT('stem.rocks.weath_log_title', 'Logged trials') + ' (' + iq.log.length + ')'),
+                    h('button', {
+                      type: 'button',
+                      onClick: function() { setIQ({ log: [] }); },
+                      className: 'text-[10px] font-bold text-slate-700 underline hover:text-slate-900'
+                    }, __alloT('stem.rocks.weath_log_clear', 'Clear'))
+                  ),
+                  h('ul', { className: 'space-y-1' }, iq.log.map(function(entry, li) {
+                    var em = SM_ALL[entry.st] || SM_ALL.minimal;
+                    return h('li', { key: li, className: 'flex items-center gap-2 text-[11px]' },
+                      h('span', { className: 'font-mono text-slate-700 shrink-0' },
+                        (__alloT('stem.rocks.weath_log_temp', 'ΔT') + ' ' + entry.t + '°  ' +
+                         __alloT('stem.rocks.weath_log_rain', 'rain') + ' ' + entry.r + '  ' +
+                         __alloT('stem.rocks.weath_log_ph', 'pH') + ' ' + entry.p)),
+                      h('span', {
+                        className: 'ml-auto px-1.5 py-0.5 rounded font-bold shrink-0',
+                        style: { background: em.bg, color: em.color, border: '1px solid ' + em.border }
+                      }, em.label)
+                    );
+                  }))
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.rocks.weath_hypothesis_placeholder', 'Hypothesis: What climate produces chemical vs physical dominance?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
