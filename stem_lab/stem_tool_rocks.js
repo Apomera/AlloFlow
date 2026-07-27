@@ -487,6 +487,209 @@
     'banded': 'alternating light and dark mineral bands',
   };
 
+  // ══ Thin section under a polarizing microscope ══
+  // The tool had a hand-specimen view and an atomic-scale view and nothing in
+  // between — but the gap it skipped is where petrology actually happens. A
+  // 30 µm slice under a polarizing microscope at 40-400x is how a geologist
+  // identifies the minerals IN a rock, and it is the one instrument that ties
+  // this tool's two halves together: the rocks mode and the minerals mode are
+  // the same subject at two magnifications, and a thin section is where you see
+  // that. Granite stops being "speckled grey" and becomes quartz + feldspar +
+  // mica, each identifiable by how it behaves in polarized light.
+  //
+  // Two illumination modes, because that is how the instrument works:
+  //   PPL — plane-polarized light. Shows natural colour, relief and cleavage.
+  //   XPL — crossed polars: a second filter at 90 degrees to the first. Light
+  //         only reaches the eye if the grain rotated the plane of polarization,
+  //         so ISOTROPIC minerals stay black at every stage angle (diagnostic on
+  //         its own) and anisotropic ones show interference colours and go dark
+  //         four times per full rotation — extinction.
+  //
+  // Everything is deterministic (seeded per rock id), so a student can learn a
+  // section and it looks the same on every visit, the same discipline the
+  // specimen art follows.
+
+  // birefringence: peak interference colour class under crossed polars.
+  // isotropic: never passes light under XPL, whatever the stage angle.
+  var RK_OPTICS = {
+    quartz:     { ppl: '#f2f4f7', relief: 'low',  bire: ['#8d8f95', '#c9ccd2', '#e8eaee'], iso: false, note: 'colourless, no cleavage; grey to white interference colours' },
+    feldspar:   { ppl: '#efe7e2', relief: 'low',  bire: ['#8b8d93', '#bfc2c8', '#dcdfe4'], iso: false, twin: true, note: 'colourless with cleavage traces; grey, and plagioclase shows candy-stripe twins' },
+    mica:       { ppl: '#c9b380', relief: 'mid',  bire: ['#e0473a', '#f0a53a', '#63c4b0', '#7f6bd6'], iso: false, cleav: true, note: 'one perfect cleavage; vivid 2nd-order colours' },
+    biotite:    { ppl: '#6b4423', relief: 'mid',  bire: ['#7a4a2a', '#a9682f', '#c98a3c'], iso: false, cleav: true, note: 'brown and pleochroic; mottled dark extinction' },
+    calcite:    { ppl: '#f4efe4', relief: 'high', bire: ['#f5f0ff', '#ffe9f4', '#eafff4', '#fff6e0'], iso: false, twin: true, note: 'very high relief that changes as you rotate; pearly high-order colours' },
+    olivine:    { ppl: '#dbe7c8', relief: 'high', bire: ['#3f8fd6', '#d24f8c', '#4fc06a', '#e0b23a'], iso: false, frac: true, note: 'colourless to pale green, cracked; bright 2nd-3rd order colours' },
+    pyroxene:   { ppl: '#cfd9c6', relief: 'high', bire: ['#4f8fd0', '#d6a03f', '#59b98a'], iso: false, cleav: true, note: 'pale green, two cleavages at right angles' },
+    amphibole:  { ppl: '#9fb08c', relief: 'high', bire: ['#4e86c4', '#c9903c', '#67a97f'], iso: false, cleav: true, note: 'green and pleochroic, two cleavages at 60/120 degrees' },
+    garnet:     { ppl: '#e8b6a8', relief: 'high', bire: ['#000000'], iso: true,  note: 'high relief, no cleavage — and STAYS BLACK under crossed polars at every angle' },
+    magnetite:  { ppl: '#1c1c1c', relief: 'high', bire: ['#000000'], iso: true,  opaque: true, note: 'opaque — black in both modes because no light gets through at all' },
+    clay:       { ppl: '#d8cfc2', relief: 'low',  bire: ['#9a9a9a', '#c0bcb4'], iso: false, note: 'too fine to resolve individually; a dull mottled mass' },
+    glass:      { ppl: '#d9d5cc', relief: 'low',  bire: ['#000000'], iso: true,  note: 'volcanic glass is not crystalline, so it is isotropic and stays black' },
+    cement:     { ppl: '#efe9dd', relief: 'low',  bire: ['#a8a8a8', '#d2d2d2'], iso: false, note: 'the carbonate or silica cement holding the grains together' }
+  };
+
+  // What you would actually see in a slice of each rock. Fractions are rough
+  // modal proportions and only need to be right enough to read.
+  var RK_THIN_SECTION = {
+    granite:      { mag: 40,  parts: [['quartz', 0.32], ['feldspar', 0.45], ['mica', 0.13], ['biotite', 0.10]], look: 'Interlocking grains with no preferred direction and no space between them — that texture alone says it crystallised slowly from a melt.' },
+    diorite:      { mag: 40,  parts: [['feldspar', 0.55], ['amphibole', 0.30], ['biotite', 0.15]], look: 'Interlocking, and much darker overall than granite because there is almost no quartz.' },
+    basalt:       { mag: 100, parts: [['feldspar', 0.42], ['pyroxene', 0.34], ['olivine', 0.14], ['magnetite', 0.10]], look: 'Tiny lath-shaped feldspar crystals in a fine groundmass — chilled too fast for anything to grow large.' },
+    andesite:     { mag: 100, parts: [['feldspar', 0.52], ['amphibole', 0.24], ['pyroxene', 0.16], ['glass', 0.08]], look: 'A few larger crystals sitting in a much finer groundmass: two cooling rates recorded in one rock.' },
+    rhyolite:     { mag: 100, parts: [['quartz', 0.28], ['feldspar', 0.40], ['glass', 0.32]], look: 'Glassy groundmass with scattered quartz and feldspar — erupted, not intruded.' },
+    obsidian:     { mag: 100, parts: [['glass', 1.0]], look: 'No crystals at all. Under crossed polars the whole field stays black however far you rotate, because glass is not a crystal.' },
+    pumice:       { mag: 40,  parts: [['glass', 0.92], ['feldspar', 0.08]], look: 'Glass threaded with frozen gas bubbles — mostly holes.' },
+    tuff:         { mag: 40,  parts: [['glass', 0.55], ['feldspar', 0.20], ['quartz', 0.15], ['clay', 0.10]], look: 'Broken shards of volcanic glass welded together — an ash fall turned to rock.' },
+    sandstone:    { mag: 40,  parts: [['quartz', 0.70], ['feldspar', 0.12], ['cement', 0.18]], look: 'ROUNDED grains with cement between them — the rounding happened during transport, and the space between grains is the giveaway that this was once loose sand.' },
+    conglom:      { mag: 20,  parts: [['quartz', 0.45], ['feldspar', 0.18], ['clay', 0.15], ['cement', 0.22]], look: 'Large rounded clasts of several different rocks, set in a finer matrix.' },
+    shale:        { mag: 200, parts: [['clay', 0.78], ['quartz', 0.16], ['mica', 0.06]], look: 'Clay too fine to resolve even at this magnification, with the flakes weakly lined up.' },
+    limestone:    { mag: 40,  parts: [['calcite', 0.88], ['cement', 0.12]], look: 'Calcite everywhere, often with fossil fragments still recognisable. Watch the relief flicker as you rotate — that is calcite.' },
+    chalk:        { mag: 400, parts: [['calcite', 1.0]], look: 'At 400x the "mud" resolves into countless plates from single-celled plankton.' },
+    travertine:   { mag: 40,  parts: [['calcite', 1.0]], look: 'Banded calcite precipitated from water, often with open cavities.' },
+    marble:       { mag: 40,  parts: [['calcite', 1.0]], look: 'Calcite recrystallised into a tight interlocking mosaic — the fossils and bedding are gone.' },
+    quartzite:    { mag: 40,  parts: [['quartz', 0.95], ['mica', 0.05]], look: 'Quartz grains fused directly to each other with no cement left between them. Compare with sandstone.' },
+    slate:        { mag: 200, parts: [['clay', 0.62], ['mica', 0.28], ['quartz', 0.10]], look: 'Microscopic micas all rotated into the same plane — that alignment IS the cleavage.' },
+    phyllite:     { mag: 100, parts: [['mica', 0.55], ['quartz', 0.30], ['clay', 0.15]], look: 'The micas have grown just big enough to catch the light, which is the silky sheen you see in the hand specimen.' },
+    schist:       { mag: 40,  parts: [['mica', 0.48], ['quartz', 0.30], ['feldspar', 0.14], ['garnet', 0.08]], look: 'Mica flakes now large and strongly aligned, often wrapping around garnets.' },
+    gneiss:       { mag: 40,  parts: [['quartz', 0.32], ['feldspar', 0.38], ['biotite', 0.22], ['garnet', 0.08]], look: 'Light and dark minerals segregated into separate bands — the banding you see with the naked eye, at grain scale.' }
+  };
+
+  // Grain mosaic. A jittered grid, each cell drawn as an irregular polygon, so
+  // grains interlock the way they do in a real section. Deterministic per rock.
+  function rkThinSectionSvg(h, rock, xpl, stageDeg) {
+    var id = rock ? rock.id : 'x';
+    var sec = RK_THIN_SECTION[id];
+    var S = 260, R = 124, CX = 130, CY = 130;
+    var kids = [];
+    var i;
+    if (!sec) return null;
+
+    var clip = 'rkts-' + id;
+    kids.push(h('defs', { key: 'd' },
+      h('clipPath', { id: clip }, h('circle', { cx: CX, cy: CY, r: R }))));
+
+    // Field of view: black under crossed polars, warm white in plane light.
+    kids.push(h('circle', { key: 'fov', cx: CX, cy: CY, r: R, fill: xpl ? '#07070a' : '#fbfaf6' }));
+
+    // Weighted mineral picker.
+    var pool = [];
+    sec.parts.forEach(function (p) {
+      var n = Math.max(1, Math.round(p[1] * 100));
+      for (var q = 0; q < n; q++) pool.push(p[0]);
+    });
+
+    var rnd = rkSeed(id + '-section');
+    var grains = [];
+    var STEP = sec.mag >= 200 ? 13 : sec.mag >= 100 ? 19 : 27;
+    for (var gy = -R; gy < R + STEP; gy += STEP) {
+      for (var gx = -R; gx < R + STEP; gx += STEP) {
+        var jx = CX + gx + (rnd() - 0.5) * STEP * 0.7;
+        var jy = CY + gy + (rnd() - 0.5) * STEP * 0.7;
+        if (Math.sqrt((jx - CX) * (jx - CX) + (jy - CY) * (jy - CY)) > R + STEP) continue;
+        grains.push({
+          x: jx, y: jy,
+          m: pool[Math.floor(rnd() * pool.length)],
+          rot: rnd() * 180,                 // crystallographic orientation
+          r: STEP * (0.55 + rnd() * 0.35),
+          sides: 5 + Math.floor(rnd() * 3),
+          wob: rnd()
+        });
+      }
+    }
+
+    var g = [];
+    grains.forEach(function (gr, idx) {
+      var opt = RK_OPTICS[gr.m] || RK_OPTICS.clay;
+      var fill;
+      if (!xpl) {
+        fill = opt.ppl;
+      } else if (opt.iso || opt.opaque) {
+        // Isotropic and opaque grains never pass light under crossed polars —
+        // that is exactly how you identify them.
+        fill = '#07070a';
+      } else {
+        // Extinction: a grain goes dark four times per full stage rotation, and
+        // is brightest at 45 degrees to the polarizers.
+        var theta = (stageDeg + gr.rot) * Math.PI / 180;
+        var lightness = Math.abs(Math.sin(2 * theta));
+        var band = opt.bire[Math.floor(gr.wob * opt.bire.length) % opt.bire.length];
+        fill = lightness < 0.10 ? '#07070a' : band;
+        if (lightness < 0.45) {
+          // Dim toward extinction by overlaying black at low opacity.
+          g.push(h('circle', { key: 'dim' + idx, cx: gr.x, cy: gr.y, r: gr.r, fill: band, opacity: Math.max(0.08, lightness) }));
+          return;
+        }
+      }
+      var pts = [];
+      for (i = 0; i < gr.sides; i++) {
+        var a = (i / gr.sides) * Math.PI * 2 + gr.rot * 0.02;
+        var rr = gr.r * (0.78 + ((gr.wob * (i + 3)) % 1) * 0.42);
+        pts.push((gr.x + Math.cos(a) * rr).toFixed(1) + ',' + (gr.y + Math.sin(a) * rr).toFixed(1));
+      }
+      g.push(h('polygon', {
+        key: 'g' + idx, points: pts.join(' '), fill: fill,
+        stroke: xpl ? 'rgba(0,0,0,0.55)' : 'rgba(90,80,70,0.45)', strokeWidth: 0.6
+      }));
+
+      // Cleavage traces and fractures are PPL features — they are what you use
+      // to tell a colourless mineral from another colourless mineral.
+      if (!xpl && opt.cleav) {
+        for (i = 1; i < 3; i++) {
+          g.push(h('line', {
+            key: 'c' + idx + '_' + i,
+            x1: gr.x - gr.r * 0.8, y1: gr.y - gr.r + (i * gr.r * 0.66),
+            x2: gr.x + gr.r * 0.8, y2: gr.y - gr.r + (i * gr.r * 0.66),
+            stroke: 'rgba(60,50,40,0.55)', strokeWidth: 0.7,
+            transform: 'rotate(' + gr.rot.toFixed(0) + ' ' + gr.x.toFixed(1) + ' ' + gr.y.toFixed(1) + ')'
+          }));
+        }
+      }
+      if (!xpl && opt.frac) {
+        g.push(h('path', {
+          key: 'f' + idx,
+          d: 'M' + (gr.x - gr.r * 0.7) + ',' + (gr.y - gr.r * 0.3) + ' L' + (gr.x + gr.r * 0.2) + ',' + (gr.y + gr.r * 0.6),
+          stroke: 'rgba(40,35,30,0.5)', strokeWidth: 0.7, fill: 'none'
+        }));
+      }
+      // Polysynthetic twinning — the candy-stripe that identifies plagioclase.
+      if (xpl && opt.twin && (idx % 3 === 0)) {
+        for (i = 0; i < 4; i++) {
+          g.push(h('line', {
+            key: 't' + idx + '_' + i,
+            x1: gr.x - gr.r, y1: gr.y - gr.r * 0.7 + i * gr.r * 0.45,
+            x2: gr.x + gr.r, y2: gr.y - gr.r * 0.7 + i * gr.r * 0.45,
+            stroke: 'rgba(255,255,255,0.42)', strokeWidth: 1.1,
+            transform: 'rotate(' + gr.rot.toFixed(0) + ' ' + gr.x.toFixed(1) + ' ' + gr.y.toFixed(1) + ')'
+          }));
+        }
+      }
+    });
+
+    kids.push(h('g', { key: 'grains', clipPath: 'url(#' + clip + ')' }, g));
+
+    // Crosshairs + rim, so it reads as an eyepiece rather than a texture swatch.
+    kids.push(h('circle', { key: 'rim', cx: CX, cy: CY, r: R, fill: 'none', stroke: '#334155', strokeWidth: 5 }));
+    kids.push(h('circle', { key: 'rim2', cx: CX, cy: CY, r: R + 3, fill: 'none', stroke: '#0f172a', strokeWidth: 2 }));
+    kids.push(h('line', { key: 'chx', x1: CX - 14, y1: CY, x2: CX + 14, y2: CY, stroke: xpl ? 'rgba(255,255,255,0.30)' : 'rgba(0,0,0,0.30)', strokeWidth: 0.8 }));
+    kids.push(h('line', { key: 'chy', x1: CX, y1: CY - 14, x2: CX, y2: CY + 14, stroke: xpl ? 'rgba(255,255,255,0.30)' : 'rgba(0,0,0,0.30)', strokeWidth: 0.8 }));
+
+    // Scale bar. A real section is 30 µm thick and the field of view at these
+    // magnifications is a couple of millimetres across.
+    var fovMm = (sec.mag >= 400 ? 0.45 : sec.mag >= 200 ? 0.9 : sec.mag >= 100 ? 1.8 : sec.mag >= 40 ? 4.5 : 9);
+    kids.push(h('line', { key: 'sb', x1: CX - 46, y1: CY + R - 16, x2: CX + 46, y2: CY + R - 16, stroke: xpl ? '#e2e8f0' : '#1e293b', strokeWidth: 2.5 }));
+    // The bar is 92 units long across a field of view 2R units wide — divide by
+    // the FIELD diameter, not the viewBox width, or the labelled length is wrong.
+    kids.push(h('text', { key: 'sbt', x: CX, y: CY + R - 5, textAnchor: 'middle', fontSize: '10', fontWeight: '700', fill: xpl ? '#e2e8f0' : '#1e293b' },
+      (fovMm * 92 / (R * 2)).toFixed(2) + ' mm'));
+
+    return h('svg', {
+      viewBox: '0 0 ' + S + ' ' + S, width: '100%', role: 'img',
+      style: { display: 'block', maxWidth: '300px', margin: '0 auto' },
+      'aria-label': (rock ? rock.label : '') + ' in thin section at about ' + sec.mag + ' times magnification, '
+        + (xpl ? 'under crossed polars. ' : 'in plane-polarized light. ')
+        + sec.look + ' Minerals present: '
+        + sec.parts.map(function (p) { return p[0] + ' ' + Math.round(p[1] * 100) + '%'; }).join(', ') + '.'
+    }, kids);
+  }
+
   // ══ Mineral test-bench visuals ══
   // The three classic hands-on identification tests — streak, scratch, acid —
   // were each a button, a progress bar and a sentence of result text. The whole
@@ -3242,6 +3445,106 @@ const d = labToolData.rocks || {};
                     React.createElement("span", null, __alloT('stem.rocks.mohs_max_diamond', "10 (Diamond)")))
 
                 ),
+                // ── Thin section under the polarizing microscope ──
+                // Sits between the hand-specimen art above and the mineral tool's
+                // atomic view: the magnification where a rock stops being a
+                // texture and becomes a named list of minerals.
+                RK_THIN_SECTION[selRock.id] && (function () {
+                  var ts = d.thinSection || {};
+                  var xpl = !!ts.xpl;
+                  var stage = typeof ts.stage === 'number' ? ts.stage : 0;
+                  var sec = RK_THIN_SECTION[selRock.id];
+                  var setTS = function (patch) { upd('thinSection', Object.assign({}, ts, patch)); };
+
+                  return React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3" },
+                    React.createElement("p", { className: "text-xs font-black text-slate-800 mb-1 flex items-center gap-1.5" },
+                      React.createElement("span", { "aria-hidden": true }, "🔬"),
+                      React.createElement("span", null, __alloT('stem.rocks.thin_title', "Thin section — polarizing microscope")),
+                      React.createElement("span", { className: "ml-auto text-[10px] font-bold text-slate-600" }, "≈" + sec.mag + "×")
+                    ),
+                    React.createElement("p", { className: "text-[11px] text-slate-700 mb-2 leading-snug" },
+                      __alloT('stem.rocks.thin_intro', "A slice of the rock ground to 30 micrometres — thin enough for light to pass through. This is how the minerals in a rock are actually identified.")
+                    ),
+
+                    React.createElement("div", { className: "grid gap-3 sm:grid-cols-[auto_minmax(0,1fr)] items-start" },
+                      React.createElement("div", { className: "rounded-xl border border-slate-300 bg-slate-100 p-2" },
+                        rkThinSectionSvg(React.createElement, selRock, xpl, stage)
+                      ),
+
+                      React.createElement("div", null,
+                        // Illumination mode
+                        React.createElement("div", { className: "flex gap-1 mb-2", role: "group", "aria-label": __alloT('stem.rocks.thin_mode_aria', "Illumination mode") },
+                          [[false, __alloT('stem.rocks.thin_ppl', "Plane light"), 'PPL'], [true, __alloT('stem.rocks.thin_xpl', "Crossed polars"), 'XPL']].map(function (opt) {
+                            var on = xpl === opt[0];
+                            return React.createElement("button", {
+                              key: opt[2], type: "button",
+                              "aria-pressed": on,
+                              onClick: function () { setTS({ xpl: opt[0] }); sfxRockClick(); },
+                              className: "px-2.5 py-1 rounded-lg text-[11px] font-black border transition-colors " +
+                                (on ? "bg-slate-800 border-slate-900 text-white" : "bg-white border-slate-300 text-slate-800 hover:bg-slate-100")
+                            }, opt[1]);
+                          })
+                        ),
+
+                        // Rotating stage. Extinction is only observable if you can
+                        // turn the stage, so this is the instrument's core control
+                        // rather than decoration.
+                        React.createElement("label", { htmlFor: "rk-stage", className: "block text-[11px] font-bold text-slate-700" },
+                          __alloT('stem.rocks.thin_stage', "Rotate stage: "),
+                          React.createElement("span", { className: "font-mono text-slate-900" }, stage + "°")),
+                        React.createElement("input", {
+                          id: "rk-stage", type: "range", min: 0, max: 90, step: 1, value: stage,
+                          onChange: function (e) { setTS({ stage: parseInt(e.target.value, 10) }); },
+                          className: "w-full", "aria-label": __alloT('stem.rocks.thin_stage_aria', "Rotate microscope stage in degrees")
+                        }),
+
+                        xpl && React.createElement("p", { className: "text-[11px] text-slate-700 leading-snug mt-1" },
+                          __alloT('stem.rocks.thin_extinction', "Turn the stage and watch grains darken and brighten. Every crystal goes black four times in a full turn — that is extinction. Anything that stays black at EVERY angle is isotropic or opaque, which identifies it on its own.")
+                        ),
+                        !xpl && React.createElement("p", { className: "text-[11px] text-slate-700 leading-snug mt-1" },
+                          __alloT('stem.rocks.thin_ppl_hint', "Plane light shows natural colour, relief and cleavage traces. Switch to crossed polars to tell the colourless minerals apart.")
+                        ),
+
+                        React.createElement("p", { className: "text-[11px] text-slate-800 leading-snug mt-2 bg-slate-50 border border-slate-200 rounded-lg p-2" },
+                          React.createElement("span", { className: "font-black" }, __alloT('stem.rocks.thin_what_you_see', "What you're looking at: ")),
+                          sec.look)
+                      )
+                    ),
+
+                    // Mineral key — the payoff. This is the rock's composition, and
+                    // each entry is a mineral the Minerals tab covers in its own right.
+                    React.createElement("div", { className: "mt-2" },
+                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600 mb-1" },
+                        __alloT('stem.rocks.thin_assemblage', "Minerals in this section")),
+                      React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                        sec.parts.map(function (p) {
+                          var opt = RK_OPTICS[p[0]] || RK_OPTICS.clay;
+                          return React.createElement("span", {
+                            key: p[0],
+                            className: "inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-800 bg-white border border-slate-300 rounded-lg px-2 py-1",
+                            title: opt.note
+                          },
+                            React.createElement("span", {
+                              "aria-hidden": true,
+                              style: {
+                                width: '11px', height: '11px', borderRadius: '3px',
+                                background: xpl ? (opt.iso || opt.opaque ? '#07070a' : opt.bire[0]) : opt.ppl,
+                                border: '1px solid #64748b', display: 'inline-block'
+                              }
+                            }),
+                            p[0] + ' ' + Math.round(p[1] * 100) + '%');
+                        })
+                      ),
+                      React.createElement("ul", { className: "mt-1.5 space-y-0.5" },
+                        sec.parts.map(function (p) {
+                          var opt = RK_OPTICS[p[0]] || RK_OPTICS.clay;
+                          return React.createElement("li", { key: p[0], className: "text-[10px] text-slate-700 leading-snug" },
+                            React.createElement("span", { className: "font-bold text-slate-900" }, p[0] + ': '), opt.note);
+                        })
+                      )
+                    )
+                  );
+                })(),
 
                 // Igneous Cooling Rate Simulator
                 selRock && selRock.type === 'igneous' && (function() {
