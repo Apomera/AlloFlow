@@ -607,7 +607,10 @@ describe('RoadReady rules-of-road content', () => {
       expect(adultLimitBlock).toContain('Under 21/provisional: no alcohol level over 0.00');
 
       expect(under21Block).toBeTruthy();
-      expect(under21Block).toContain("a: ['0.08%', '0.05%', 'No alcohol level over 0.00', 'No limit']");
+      // Distractors were lengthened so the answer cannot be picked on length alone
+      // (see roadready_permit_bank_integrity); the correct option and its index are
+      // byte-identical, which is what the zero-tolerance wording needs pinned.
+      expect(under21Block).toContain("a: ['0.08%, the same as for adult drivers', '0.05%, a slightly lower adult limit', 'No alcohol level over 0.00', 'There is no limit for drivers under 21']");
       expect(under21Block).toContain('Maine §2472 sets zero tolerance');
       expect(under21Block).toContain('the first suspension is one year');
       expect(under21Block).toContain('refusal is 18 months for a first refusal');
@@ -717,7 +720,9 @@ describe('RoadReady rules-of-road content', () => {
       expect(src).toContain('§2081 age/weight/height rules');
 
       expect(childPassengerQuestion).toBeTruthy();
-      expect(childPassengerQuestion).toContain("a: ['Any child under 12', 'A child under 8 who is under 80 lb and under 57 inches tall', 'Any child under 100 lb', 'Only children under 2']");
+      // As above: distractors lengthened, §2081 correct option unchanged and still
+      // at index 1.
+      expect(childPassengerQuestion).toContain("a: ['Any child under 12, regardless of size or weight', 'A child under 8 who is under 80 lb and under 57 inches tall', 'Any child weighing under 100 lb, at any age', 'Only children under 2 years old']");
       expect(childPassengerQuestion).toContain('correct: 1');
       expect(childPassengerQuestion).toContain('Maine §2081 uses age, weight, and height');
       expect(childPassengerQuestion).toContain('Under 2: rear-facing unless seat limits are exceeded');

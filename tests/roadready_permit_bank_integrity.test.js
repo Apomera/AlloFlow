@@ -130,37 +130,50 @@ describe('the options should not give the answer away by shape', () => {
   // "When windshield wipers are in constant use". A student can score well on half
   // this bank by always choosing the longest option, having learned no road rule.
   //
-  // This is a RATCHET, not a pass mark. 98 -> 55: the signs, maintenance and
-  // emergency categories were rewritten so that distractors are comparable in
-  // length to the correct answer, with the correct options checked against federal
-  // sources (MUTCD 11th ed. for sign shape/colour, NHTSA TireWise for tread and
-  // placard pressure, NHTSA Move Over, FMCSA no-zones). Distractors are plausible
-  // but false, which needs no new legal claim; where a correct answer restates
-  // STATUTE it was left verbatim — roadready_rules pins Maine §2254's "conspicuous
-  // note ... vehicle registration number" wording, and shortening it broke that
-  // test, which is exactly the protection it exists to give.
-  // Still to do: general (14), winter (13), pedestrian (9), gdl (7), dui (7),
-  // emergency (5). Lower this as they are rewritten.
-  const LENGTH_TELL_CEILING = 55;
+  // Started as a ratchet at 98 and is now ZERO across all 193 questions, so it is
+  // a hard assertion rather than an allowance. Rewritten in four passes: signs,
+  // maintenance, emergency, then general/winter/pedestrian/gdl/dui.
+  //
+  // What made this safe to do without an educator authoring new law:
+  //   - a DISTRACTOR is false by construction, so lengthening one asserts nothing
+  //     new; it only has to stay plausible and stay wrong. Most length came from
+  //     there, and the last two passes changed distractors ONLY.
+  //   - correct answers that state a rule were checked against FEDERAL or
+  //     near-universal sources: MUTCD 11th ed. (sign shape/colour), NHTSA TireWise
+  //     (2/32" tread, door-placard not sidewall pressure), NHTSA Move Over (all 50
+  //     states), NHTSA zero-tolerance (<.02 under 21) and .08 per se, NHTSA/IIHS
+  //     GDL three-stage structure, FMCSA No-Zones.
+  //   - correct answers that restate STATUTE were left byte-identical. That rule
+  //     was earned: shortening the parked-car answer dropped Maine §2254's
+  //     "conspicuous note ... vehicle registration number" and instantly failed
+  //     roadready_rules. The applier for the last two passes preserved the correct
+  //     option in place so it could not be retyped at all.
+  const lensOf = (q) => (q.a || []).map((s) => String(s).length);
 
   const tells = () => BANK.filter((q) => {
-    const lens = (q.a || []).map((s) => String(s).length);
+    const lens = lensOf(q);
     if (lens.length < 3) return false;
     const others = lens.filter((_, k) => k !== q.correct);
     return lens[q.correct] > Math.max(...others) * 2;
   });
 
-  it('does not grow the number of length-tell questions', () => {
-    const n = tells().length;
+  it('has no question where the correct answer is twice every distractor', () => {
+    const n = tells();
     expect(
-      n,
-      `${n} of ${BANK.length} questions have a correct answer >2x longer than every distractor (ceiling ${LENGTH_TELL_CEILING}). Lower the ceiling when questions are rewritten.`
-    ).toBeLessThanOrEqual(LENGTH_TELL_CEILING);
+      n.map((q) => q.q.slice(0, 60)),
+      `${n.length} of ${BANK.length} questions can be answered on length alone`
+    ).toEqual([]);
   });
 
-  it('keeps the ceiling honest — lower it when the bank improves', () => {
-    // Fails if the ceiling has drifted far above reality, so it cannot quietly
-    // become a no-op that permits regressions back up to it.
-    expect(tells().length).toBeGreaterThan(LENGTH_TELL_CEILING - 15);
+  it('has not simply inverted the tell by making the answer the shortest', () => {
+    // The lazy way to satisfy the check above is to pad every distractor until the
+    // correct answer is conspicuously the SHORTEST — same giveaway, other sign.
+    const inverse = BANK.filter((q) => {
+      const lens = lensOf(q);
+      if (lens.length < 3) return false;
+      const others = lens.filter((_, k) => k !== q.correct);
+      return lens[q.correct] * 2 < Math.min(...others);
+    });
+    expect(inverse.map((q) => q.q.slice(0, 60))).toEqual([]);
   });
 });
