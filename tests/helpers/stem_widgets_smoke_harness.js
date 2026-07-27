@@ -45,6 +45,17 @@ export function resetStemLab() {
     // exactly what the old inline script tags did (they never load here).
     loadScriptResilient: function () { return new Promise(function () {}); },
     ensureThree: function () { return new Promise(function () {}); },
+    // The real shell lives in stem_lab_module.js. SSR never mounts a canvas
+    // (renderToStaticMarkup does not invoke refs), so tools only need a
+    // correctly-shaped viewer that reports "host present, 3D not loaded yet" —
+    // which is exactly the state the forever-pending ensureThree above models.
+    // The real implementation is exercised by the browser smoke, not here.
+    makeBayViewer: function () {
+      return {
+        attach: function () {}, sync: function () {}, nudge: function () {},
+        zoom: function () {}, reset: function () {}, status: function () { return 'idle'; }
+      };
+    },
     getRegisteredTools: function () {
       const self = this;
       return this._order.map(function (id) { return self._registry[id]; }).filter(Boolean);

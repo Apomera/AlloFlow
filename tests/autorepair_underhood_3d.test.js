@@ -183,7 +183,11 @@ describe('under-hood tour — honesty about generalization', () => {
 });
 
 describe('under-hood tour — runs on the hardware it targets', () => {
-  const SRC = readFileSync(resolve(process.cwd(), FILE), 'utf8');
+  // These are properties of the shared viewer SHELL, which lives on the host
+  // (stem_lab_module.js) beside ensureThree so every tool can use it — not in
+  // this tool. Assert against the host, or the checks pass vacuously the day
+  // the shell moves.
+  const SRC = readFileSync(resolve(process.cwd(), 'stem_lab/stem_lab_module.js'), 'utf8');
 
   it('does not trap vertical scrolling on touch devices', () => {
     // touch-action:none on a full-width canvas eats every vertical swipe, so a

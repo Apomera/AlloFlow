@@ -246,6 +246,9 @@ describe('tyre change — degrades without 3D', () => {
   });
 });
 
+// The viewer shell lives on the host so every tool can drive a 3D scene.
+const HOST = readFileSync(resolve(process.cwd(), 'stem_lab/stem_lab_module.js'), 'utf8');
+
 describe('tyre change — 3D scene tracks the procedure', () => {
   it('drives the scene from how many steps are done', () => {
     expect(SRC).toContain('phase: doneIds.length');
@@ -254,8 +257,8 @@ describe('tyre change — 3D scene tracks the procedure', () => {
 
   it('rebuilds the scene when the phase changes', () => {
     // Geometry is baked at build time, so an advancing procedure must rebuild
-    // or the car never actually lifts.
-    expect(SRC).toContain('S.builtPhase !== (props.phase || 0)');
+    // or the car never actually lifts. This lives in the shared shell.
+    expect(HOST).toContain('S.builtPhase !== (props.phase || 0)');
   });
 
   it('models the parts the procedure talks about', () => {
@@ -272,12 +275,16 @@ describe('tyre change — 3D scene tracks the procedure', () => {
 });
 
 describe('tyre change — shares one viewer with the other modules', () => {
-  it('uses the extracted viewer factory rather than a second copy', () => {
-    expect(SRC).toContain('function makeBayViewer(cfg)');
-    expect(SRC).toContain('var UH3D = makeBayViewer(');
-    expect(SRC).toContain('var TIRE3D = makeBayViewer(');
-    // exactly two instances, one shell
-    expect((SRC.match(/makeBayViewer\(/g) || []).length).toBe(3);
+  it('uses the shared host viewer rather than its own copy', () => {
+    // One shell, on the host, next to ensureThree — so any tool can use it.
+    expect(HOST).toContain('makeBayViewer: function (cfg)');
+    expect(SRC).not.toContain('function makeBayViewer(cfg)');
+    // Both scenes go through the same lookup, and it degrades if the host
+    // shell is missing rather than throwing on a null viewer.
+    expect(SRC).toContain('window.StemLab && window.StemLab.makeBayViewer');
+    expect(SRC).toContain('var UH3D = makeViewer(');
+    expect(SRC).toContain('var TIRE3D = makeViewer(');
+    expect(SRC).toContain('NULL_VIEWER');
   });
 
   it('keeps the scene builders free of DOM and React', () => {
