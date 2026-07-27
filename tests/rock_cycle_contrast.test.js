@@ -115,6 +115,17 @@ describe('rock cycle colour contrast', () => {
     });
   });
 
+  it('lets the mode tabs wrap instead of overflowing a phone', () => {
+    // Six mode tabs on one non-wrapping row measured 441px, so a 390px phone
+    // scrolled the whole tool sideways and the last tabs sat off-screen.
+    // Measured in a real browser; pinned here so it cannot regress silently.
+    PATHS.forEach((p) => {
+      const src = readFileSync(p, 'utf8');
+      expect(src).toContain('flex flex-wrap gap-1 sm:ml-auto');
+      expect(src).not.toContain('className: "flex gap-1 ml-auto"');
+    });
+  });
+
   it('does not ship an app-wide text-slate-600 override', () => {
     // A single tool file was repainting EVERY .text-slate-600 in AlloFlow down to
     // slate-500 with !important — 7.58:1 → 4.76:1 on white, 4.48:1 on orange-50.

@@ -192,9 +192,13 @@
     var id = rock ? rock.id : 'x';
     var rnd = rkSeed(id);
     var tex = rock ? rock.texture : 'fine-grained';
-    var clip = 'rkclip-' + id;
-    var shadeId = 'rkshade-' + id;
-    var glossId = 'rkgloss-' + id;
+    // Suffixed with the size: the same specimen can appear twice on one page
+    // (grid tile at 54px and hand-lens detail at 100px), and bare ids collided —
+    // duplicate DOM ids, with both instances resolving to the first definition.
+    var uid = id + '-' + S;
+    var clip = 'rkclip-' + uid;
+    var shadeId = 'rkshade-' + uid;
+    var glossId = 'rkgloss-' + uid;
     var silKind = RK_SILHOUETTE[tex] || 'blocky';
     var sil = rkSilhouettePath(silKind, S, rnd);
     var kids = [];
@@ -2610,273 +2614,10 @@ const d = labToolData.rocks || {};
 
 
 
-          // ── Rock texture canvas ref ──
-
-          const textureRef = function (canvasEl) {
-
-            if (!canvasEl || !selRock || canvasEl._lastRock === selRock.id) return;
-
-            canvasEl._lastRock = selRock.id;
-
-            const W = canvasEl.width = 200 * (window.devicePixelRatio || 1);
-
-            const H = canvasEl.height = 200 * (window.devicePixelRatio || 1);
-
-            const ctx = canvasEl.getContext('2d');
-            // jsdom (and any canvas-less host) returns null here; without this the
-            // very next line throws on ctx.fillStyle.
-            if (!ctx) { canvasEl._lastRock = null; return; }
-
-            const dpr = window.devicePixelRatio || 1;
-
-            // Seeded, NOT Math.random. This is the hand-lens view of a specimen a
-            // student is being asked to learn to recognise, and it was redrawing
-            // differently on every visit — the canvas unmounts when you deselect,
-            // so re-selecting the same rock produced a whole new random texture.
-            // Granite has to look like granite every time, and it has to match the
-            // grid swatch, which uses this same seed.
-            const rnd = rkSeed(selRock.id);
-
-
-
-            // Draw rock texture based on type
-
-            ctx.fillStyle = selRock.grainColors[0];
-
-            ctx.fillRect(0, 0, W, H);
-
-
-
-            if (selRock.texture === 'coarse-grained' || selRock.texture === 'clastic-coarse') {
-
-              // Large interlocking crystals/grains
-
-              for (let i = 0; i < 60; i++) {
-
-                ctx.beginPath();
-
-                const x = rnd() * W, y = rnd() * H;
-
-                const sz = (8 + rnd() * 16) * dpr;
-
-                ctx.moveTo(x, y - sz);
-
-                for (let a = 0; a < 6; a++) {
-
-                  const angle = (a / 6) * Math.PI * 2 - Math.PI / 2;
-
-                  ctx.lineTo(x + Math.cos(angle) * sz * (0.7 + rnd() * 0.3), y + Math.sin(angle) * sz * (0.7 + rnd() * 0.3));
-
-                }
-
-                ctx.closePath();
-
-                ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
-
-                ctx.fill();
-
-                ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-
-                ctx.lineWidth = 0.5 * dpr;
-
-                ctx.stroke();
-
-              }
-
-            } else if (selRock.texture === 'fine-grained' || selRock.texture === 'clastic') {
-
-              // Small speckled grains
-
-              for (let i = 0; i < 400; i++) {
-
-                ctx.beginPath();
-
-                ctx.arc(rnd() * W, rnd() * H, (1 + rnd() * 3) * dpr, 0, Math.PI * 2);
-
-                ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
-
-                ctx.fill();
-
-              }
-
-            } else if (selRock.texture === 'glassy') {
-
-              // Smooth dark with conchoidal fracture lines
-
-              const grad = ctx.createRadialGradient(W * 0.4, H * 0.4, 0, W * 0.5, H * 0.5, W * 0.6);
-
-              grad.addColorStop(0, '#2b2b52');
-              grad.addColorStop(0.3, '#1a1a2e');
-
-              grad.addColorStop(1, '#0a0a0a');
-
-              ctx.fillStyle = grad;
-
-              ctx.fillRect(0, 0, W, H);
-
-              for (let i = 0; i < 8; i++) {
-
-                ctx.beginPath();
-
-                ctx.arc(W * 0.3 + i * 8 * dpr, H * 0.5 + Math.sin(i) * 20 * dpr, (15 + i * 5) * dpr, -0.5, 0.5);
-
-                ctx.strokeStyle = 'rgba(100,130,180,0.15)';
-
-                ctx.lineWidth = 1 * dpr;
-
-                ctx.stroke();
-
-              }
-
-            } else if (selRock.texture === 'vesicular') {
-
-              // Light with holes/vesicles
-
-              ctx.fillStyle = '#d6d3d1';
-
-              ctx.fillRect(0, 0, W, H);
-
-              for (let i = 0; i < 50; i++) {
-
-                ctx.beginPath();
-
-                ctx.ellipse(rnd() * W, rnd() * H, (3 + rnd() * 8) * dpr, (2 + rnd() * 5) * dpr, rnd() * Math.PI, 0, Math.PI * 2);
-
-                ctx.fillStyle = 'rgba(120,113,108,0.3)';
-
-                ctx.fill();
-
-                ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-
-                ctx.lineWidth = 0.5 * dpr;
-
-                ctx.stroke();
-
-              }
-
-            } else if (selRock.texture === 'fine-layered' || selRock.texture === 'foliated') {
-
-              // Thin parallel layers
-
-              for (let y = 0; y < H; y += 4 * dpr) {
-
-                ctx.fillStyle = selRock.grainColors[Math.floor(y / (4 * dpr)) % selRock.grainColors.length];
-
-                ctx.fillRect(0, y, W, 3 * dpr);
-
-                ctx.fillStyle = 'rgba(0,0,0,0.08)';
-
-                ctx.fillRect(0, y + 3 * dpr, W, 1 * dpr);
-
-              }
-
-            } else if (selRock.texture === 'bioclastic') {
-
-              // Light with shell fragments
-
-              ctx.fillStyle = '#e5e7eb';
-
-              ctx.fillRect(0, 0, W, H);
-
-              for (let i = 0; i < 200; i++) {
-
-                ctx.beginPath();
-
-                ctx.arc(rnd() * W, rnd() * H, (0.5 + rnd() * 2) * dpr, 0, Math.PI * 2);
-
-                ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
-
-                ctx.fill();
-
-              }
-
-              // Shell imprints
-
-              for (let i = 0; i < 5; i++) {
-
-                ctx.beginPath();
-
-                ctx.arc(30 * dpr + rnd() * (W - 60 * dpr), 30 * dpr + rnd() * (H - 60 * dpr), (6 + rnd() * 4) * dpr, 0, Math.PI);
-
-                ctx.strokeStyle = 'rgba(161,161,170,0.4)';
-
-                ctx.lineWidth = 1 * dpr;
-
-                ctx.stroke();
-
-              }
-
-            } else if (selRock.texture === 'crystalline' || selRock.texture === 'non-foliated') {
-
-              // Interlocking crystals
-
-              for (let i = 0; i < 80; i++) {
-
-                ctx.beginPath();
-
-                const x = rnd() * W, y = rnd() * H;
-
-                const sz = (4 + rnd() * 10) * dpr;
-
-                ctx.rect(x - sz / 2, y - sz / 2, sz, sz);
-
-                ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
-
-                ctx.fill();
-
-                ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-
-                ctx.lineWidth = 0.5 * dpr;
-
-                ctx.stroke();
-
-              }
-
-            } else if (selRock.texture === 'banded') {
-
-              // Alternating light/dark bands (wavy)
-
-              for (let y = 0; y < H; y += 8 * dpr) {
-
-                ctx.beginPath();
-
-                ctx.moveTo(0, y);
-
-                for (let x = 0; x <= W; x += 5) {
-
-                  ctx.lineTo(x, y + Math.sin(x * 0.02 + y * 0.01) * 4 * dpr);
-
-                }
-
-                ctx.lineTo(W, y + 8 * dpr);
-
-                for (let x = W; x >= 0; x -= 5) {
-
-                  ctx.lineTo(x, y + 8 * dpr + Math.sin(x * 0.02 + y * 0.01) * 4 * dpr);
-
-                }
-
-                ctx.closePath();
-
-                ctx.fillStyle = Math.floor(y / (8 * dpr)) % 2 === 0 ? '#1e1e1e' : '#d4d4d8';
-
-                ctx.fill();
-
-              }
-
-            }
-
-
-
-            // Border
-
-            ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-
-            ctx.lineWidth = 2 * dpr;
-
-            ctx.strokeRect(0, 0, W, H);
-
-          };
+          // The rock texture canvas renderer was removed here: the detail view
+          // now uses rkRockSwatch at 100px, so the grid tile and the hand-lens
+          // view are the same drawing at two sizes instead of two different
+          // pictures of one specimen.
 
 
 
@@ -2901,7 +2642,11 @@ const d = labToolData.rocks || {};
 
               React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: __alloT('stem.rocks.open_3d_voxel_cross_section', 'Open the 3D voxel cross-section of the crust'), 'aria-label': __alloT('stem.rocks.open_geology_explorer_3d', 'Open Geology Explorer \u2014 3D voxel cross-section'), className: "transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100" }, "\u26F0\uFE0F " + __alloT('stem.rocks.explore_in_3d', "Explore in 3D") + " \u2192"),
 
-              React.createElement("div", { className: "flex gap-1 ml-auto" },
+              // flex-wrap: six mode tabs on one non-wrapping row measured 441px,
+              // so on a 390px phone the whole tool scrolled sideways and the last
+              // tabs sat off-screen. The header is the one row a student cannot
+              // work around, so it wraps rather than overflowing.
+              React.createElement("div", { className: "flex flex-wrap gap-1 sm:ml-auto" },
 
                 ['landscape', 'rocks', 'minerals', 'mystery', 'quiz', 'weathHunt'].map(function (m) {
 
@@ -3256,9 +3001,19 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "flex gap-4" },
 
-                  // Texture canvas
+                  // Hand-lens view. This was a separate canvas renderer with its
+                  // own crystal geometry, so the detail view and the grid tile
+                  // drew the SAME rock differently — granite was grey and fine in
+                  // the grid but pink with huge crystals here. Two pictures of one
+                  // specimen is worse than none when the task is learning to
+                  // recognise it, so both now come from rkRockSwatch: the tile is
+                  // simply this at a smaller size.
 
-                  React.createElement("canvas", { tabIndex: 0, ref: textureRef, role: "img", "aria-label": __alloT('stem.rocks.rock_texture_close_up', "Rock texture close-up"), style: { width: '100px', height: '100px', borderRadius: '12px', border: '2px solid #e5e7eb' } }),
+                  React.createElement("div", {
+                    className: "shrink-0 rounded-xl border-2 border-slate-300 bg-white p-1",
+                    role: "img",
+                    "aria-label": __alloT('stem.rocks.rock_texture_close_up', "Rock texture close-up") + ' — ' + selRock.label + ', ' + (RK_TEXTURE_GLOSS[selRock.texture] || selRock.texture)
+                  }, rkRockSwatch(React.createElement, selRock, 100)),
 
                   React.createElement("div", { className: "flex-1" },
 
@@ -3343,9 +3098,14 @@ const d = labToolData.rocks || {};
                   var animProgress = d.coolingProgress || 0;
                   var isAnimActive = d.coolingAnimActive || false;
 
+                  // Unlike the landscape and rock-cycle canvases, this one is
+                  // MEANT to redraw every render — it has no animation loop or
+                  // listeners, and the progress value is what drives the frame.
                   var coolingRef = function(canvasEl) {
                     if (!canvasEl) return;
                     var ctx = canvasEl.getContext('2d');
+                    // Null on any canvas-less host; the clearRect below would throw.
+                    if (!ctx) return;
                     var W = canvasEl.width = 160 * (window.devicePixelRatio || 1);
                     var H = canvasEl.height = 100 * (window.devicePixelRatio || 1);
                     var dpr = window.devicePixelRatio || 1;
