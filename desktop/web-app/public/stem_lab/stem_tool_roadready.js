@@ -4849,6 +4849,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // SECTION 9g: STRAIGHT BACKING DRILL (2D top-down)
   // ─────────────────────────────────────────────────────────
 
+  // Builds a flat sign texture from one or more text lines. Two callers (the
+  // cross-street name signs in residential/suburban/school-zone/night, and the
+  // "P" parking sign) already used this exact signature, but the function was
+  // never written — so those scenarios threw while assembling the 3D scene and
+  // the signs simply were not there. Signature is taken from those call sites:
+  // makeSignTexture(lines, background, foreground, width, height), where each
+  // line is { text, font, y }. Mirrors the inline canvas-texture idiom used
+  // elsewhere in this file.
+  function makeSignTexture(lines, bg, fg, width, height) {
+    var T = window.THREE;
+    if (!T) return null;
+    var cv = document.createElement('canvas');
+    cv.width = width || 256;
+    cv.height = height || 128;
+    var cx = cv.getContext('2d');
+    if (!cx) return null;
+    cx.fillStyle = bg || '#166534';
+    cx.fillRect(0, 0, cv.width, cv.height);
+    cx.strokeStyle = fg || '#ffffff';
+    cx.lineWidth = 4;
+    cx.strokeRect(3, 3, cv.width - 6, cv.height - 6);
+    cx.fillStyle = fg || '#ffffff';
+    cx.textAlign = 'center';
+    cx.textBaseline = 'middle';
+    (lines || []).forEach(function (ln) {
+      if (!ln || ln.text == null) return;
+      cx.font = ln.font || 'bold 22px Arial';
+      cx.fillText(String(ln.text), cv.width / 2, ln.y == null ? cv.height / 2 : ln.y);
+    });
+    return new T.CanvasTexture(cv);
+  }
+
   function BackingDrillMode(props) {
     var React = props.React;
     var h = props.h;
@@ -5126,6 +5158,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         window.addEventListener('alloflow-roadready-restored', onRestore);
         return function () { window.removeEventListener('alloflow-roadready-restored', onRestore); };
       }, []);
+      // typeof-guarded at its call site, so this never threw — it just meant the
+      // "landmark ahead" callout was never announced to screen readers at all.
+      var announceToSR = ctx.announceToSR || function () {};
       var addToast = ctx.addToast || function(msg) { console.log('[RoadReady]', msg); };
       // Surface localStorage write failures (private mode / quota / disabled storage)
       // with a one-shot toast so students aren't silently losing progress. Listens
@@ -12472,6 +12507,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // ── Street lamps (poles with point lights — key for night immersion) ──
           var lampMeshes = [];
           var lampPostMat = new T.MeshLambertMaterial({ color: 0x444444 });
+          // Referenced by the school-zone and parking sign posts below but never
+          // created, so both scenarios threw while building the scene. Grey
+          // galvanised post, matching the lamp posts above.
+          var signPostMat = new T.MeshLambertMaterial({ color: 0x8a8f98 });
           var lampBulbMat = new T.MeshBasicMaterial({ color: isNight ? 0xfff0cc : 0x999999 });
           for (var li = -MAP_SIZE; !_isRoundaboutRoad && li < MAP_SIZE; li += 8) {
             [-5.5, 5.5].forEach(function(xOff) {

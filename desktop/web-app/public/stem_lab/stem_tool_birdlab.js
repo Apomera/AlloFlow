@@ -16930,6 +16930,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // verify on real ID resources (eBird, All About Birds, Audubon, etc.).
       // ─────────────────────────────────────────────────────
       function BirdPhotoID() {
+        // The field notebook is React state inside a SIBLING view, so it was
+        // never visible here — yet the saved-confirmation below reads
+        // notebook.length to print an ordinal ("2nd entry"), which threw. Read
+        // the same persisted list this component actually shares with that view
+        // (lsGet is module scope; the sibling seeds its state from this key).
+        var notebook = lsGet('birdLab.fieldNotebook.v1', []) || [];
         var photo_state = useState(null);
         var photo = photo_state[0], setPhoto = photo_state[1];
         var loading_state = useState(false);

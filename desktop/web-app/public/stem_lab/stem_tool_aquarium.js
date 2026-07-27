@@ -17285,7 +17285,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                 algae: {
                   level: Math.round(newAlgae * 10) / 10,
                   grazed: Math.round(algaeGrazed * 1000) / 1000,
-                  grazerLoad: Math.round(herbivoreGrazingLoad * 100) / 100
+                  // herbivoreGrazingLoad does not exist. The grazing capacity
+                  // the herbivores exert is algaeGrazingRate (algaeGrazed above
+                  // is that rate clamped to the algae actually present), so
+                  // reading it threw while building this telemetry object.
+                  grazerLoad: Math.round(algaeGrazingRate * 100) / 100
                 },
                 bacteria: {
                   ammoniaToNitrite: Math.round(nitriteBact * 1000) / 1000,
@@ -17655,7 +17659,10 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             announceToSR(correct ? 'Correct!' : 'Incorrect');
 
-            if (correct) awardXP(3, 'Marine science quiz');
+            // awardXP is not bound in this file; the binding is awardStemXP
+            // (= ctx.awardXP) and it takes the tool id first. As written this
+            // threw on every CORRECT answer, so the quiz awarded nothing.
+            if (correct) awardStemXP('aquarium', 3, 'Marine science quiz');
 
             updMulti({
 

@@ -1817,6 +1817,11 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var callGemini = ctx.callGemini;
       var awardXP = ctx.awardXP;
+      // Never bound, yet used in 12 places as `if (celebrate) celebrate()`.
+      // That reads as defensive but is not: a bare reference to an undeclared
+      // name throws inside the if() itself — only typeof tolerates one. So the
+      // celebration paths threw instead of silently skipping.
+      var celebrate = ctx.celebrate;
 
       // State init
       // Seed defaults, but DO NOT early-return a Loading screen: this render calls

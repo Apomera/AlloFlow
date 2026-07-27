@@ -2131,6 +2131,30 @@
     + '- Make structures more interesting and varied\n'
     + 'Return ONLY the valid JSON.';
 
+  // Module scope, not inside the builder view where it used to live. It takes
+  // the engine as an argument and touches nothing but window.THREE, so it never
+  // needed that closure — and one caller (the NPC celebration confetti) sits
+  // outside it and was throwing. That call is inside a try/catch, so the effect
+  // simply never appeared rather than erroring visibly.
+  function spawnPlaceParticles(eng, px, py, pz) {
+    var THREE = window.THREE;
+    if (!THREE) return;
+    // Mix of gold sparks + white-hot flashes for a more reactive place feel.
+    for (var i = 0; i < 8; i++) {
+      var size = 0.03 + Math.random() * 0.06;
+      var geo = new THREE.BoxGeometry(size, size, size);
+      var sparkColor = Math.random() < 0.35 ? 0xffffff : 0xfbbf24;
+      var mat = new THREE.MeshBasicMaterial({ color: sparkColor, transparent: true });
+      var sp = new THREE.Mesh(geo, mat);
+      sp.position.set(px + (Math.random() - 0.5) * 0.6, py + (Math.random() - 0.5) * 0.6, pz + (Math.random() - 0.5) * 0.6);
+      sp.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 2.2, 0.6 + Math.random() * 2.2, (Math.random() - 0.5) * 2.2);
+      sp.userData._life = 0.3 + Math.random() * 0.25;
+      sp.userData._age = 0;
+      eng.scene.add(sp);
+      eng._particles.push(sp);
+    }
+  }
+
   var AI_FOLLOWUP_PROMPT = 'You are adding scaffolded follow-up questions to a geometry lesson. '
     + 'Each NPC with a question should get a "followUp" array that breaks the concept into steps.\n\n'
     + 'Current lesson JSON:\n{LESSON_JSON}\n\n'
@@ -3160,24 +3184,7 @@
         }
 
         // Place sparkle — small bright particles burst outward on block place
-        function spawnPlaceParticles(eng, px, py, pz) {
-          var THREE = window.THREE;
-          if (!THREE) return;
-          // Mix of gold sparks + white-hot flashes for a more reactive place feel.
-          for (var i = 0; i < 8; i++) {
-            var size = 0.03 + Math.random() * 0.06;
-            var geo = new THREE.BoxGeometry(size, size, size);
-            var sparkColor = Math.random() < 0.35 ? 0xffffff : 0xfbbf24;
-            var mat = new THREE.MeshBasicMaterial({ color: sparkColor, transparent: true });
-            var sp = new THREE.Mesh(geo, mat);
-            sp.position.set(px + (Math.random() - 0.5) * 0.6, py + (Math.random() - 0.5) * 0.6, pz + (Math.random() - 0.5) * 0.6);
-            sp.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 2.2, 0.6 + Math.random() * 2.2, (Math.random() - 0.5) * 2.2);
-            sp.userData._life = 0.3 + Math.random() * 0.25;
-            sp.userData._age = 0;
-            eng.scene.add(sp);
-            eng._particles.push(sp);
-          }
-        }
+        // spawnPlaceParticles moved to module scope — see above the render fn.
 
         // MAX_BLOCKS was enforced only on student placement, never here — yet this is
         // the path lesson loading uses. validateLesson's own coordinate clamps still

@@ -192,6 +192,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
       var d = (ctx.toolData && ctx.toolData['weldLab']) || {};
       var upd = function(key, val) { ctx.update('weldLab', key, val); };
+      // The heat-hunt inquiry widget reads toolData and calls setToolData
+      // directly rather than going through upd/ctx.update, but neither was ever
+      // bound here — so opening that view threw. Bound rather than rewritten,
+      // to leave the widget's own update shape alone.
+      var toolData = ctx.toolData;
+      var setToolData = ctx.setToolData;
       var addToast = ctx.addToast || function(msg) { console.log('[WeldLab]', msg); };
 
       // ── Persisted-state helper ──
@@ -2634,9 +2640,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 plateMat.dispose();
                 plateA.geometry.dispose();
                 plateB.geometry.dispose();
-                handleGeom.dispose(); handleMat.dispose();
-                nozzleGeom.dispose(); nozzleMat.dispose();
-                tipGeom.dispose(); tipMat.dispose();
+                // handleGeom / nozzleGeom / tipGeom never existed — the torch
+                // geometries are built inline inside `new THREE.Mesh(...)` and
+                // were never bound to a name. Reading them threw a
+                // ReferenceError which this block's "best-effort" catch
+                // swallowed, so disposal silently stopped HERE: everything
+                // below (bead, arc, every spark) leaked on each unmount. The
+                // materials below are real and do get disposed.
+                handleMat.dispose();
+                nozzleMat.dispose();
+                tipMat.dispose();
                 beadGeom.dispose(); beadMat.dispose();
                 arcMat.dispose(); arcSphere.geometry.dispose();
                 for (var di = 0; di < sparks.length; di++) {

@@ -34,6 +34,11 @@ const jsxToJs = (src) => execSync('npx esbuild --loader=jsx --format=cjs', { inp
 // Browser + JS built-in globals that legitimately appear unresolved (the runtime provides them).
 const KNOWN_GLOBALS = new Set([
   'window', 'document', 'navigator', 'location', 'history', 'console', 'globalThis', 'self',
+  // The three value globals are easy to miss because they are not constructors:
+  // isNaN/isFinite were already listed but NaN/Infinity/undefined were not, so
+  // every file that writes `x = NaN` reported a phantom dangler and had to be
+  // filtered by hand. escape/unescape are deprecated but still real globals.
+  'NaN', 'Infinity', 'undefined', 'escape', 'unescape',
   'Math', 'JSON', 'Object', 'Array', 'String', 'Number', 'Boolean', 'Date', 'RegExp', 'Map', 'Set',
   'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Proxy', 'Reflect', 'Error', 'TypeError', 'RangeError',
   'Function', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'encodeURIComponent', 'decodeURIComponent',

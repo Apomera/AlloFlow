@@ -100,6 +100,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       var X = ctx.icons.X;
       var GripVertical = ctx.icons.GripVertical;
       var announceToSR = ctx.announceToSR;
+      // Never bound here, though it is used to offer an AI hint after a wrong
+      // quiz answer — so answering incorrectly threw instead of showing help.
+      // Bound the way stem_tool_money.js does it; the host has since retired
+      // this component, so it is normally null and the call site now guards.
+      var StemAIHintButton = ctx.StemAIHintButton || null;
       var awardStemXP = ctx.awardXP;
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
@@ -8816,7 +8821,7 @@ var d = (labToolData.companionPlanting) || {};
 
               // AI hint for wrong answers
 
-              quizAnswer && quizAnswer !== currentQuiz.correct && StemAIHintButton('companionPlanting', currentQuiz.q, quizAnswer, currentQuiz.correct)
+              quizAnswer && quizAnswer !== currentQuiz.correct && StemAIHintButton && StemAIHintButton('companionPlanting', currentQuiz.q, quizAnswer, currentQuiz.correct)
 
             ),
 

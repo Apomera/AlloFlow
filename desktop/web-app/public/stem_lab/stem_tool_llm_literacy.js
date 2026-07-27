@@ -1189,6 +1189,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       var useMemo = React.useMemo;
       var callGemini = ctx.callGemini;
       var addToast = ctx.addToast || function(){};
+
+      // Declared at render scope, not inside a single view. These used to live
+      // in the Prompt Craft view, where two callers elsewhere could not reach
+      // them: the "copy your trap passage" button, and — worse — the fallback
+      // inside the session-report catch block, so a failed download threw a
+      // second time instead of recovering. They close over addToast, which is
+      // why module scope is not an option.
+      function copyToClipboard(text, label) {
+        try {
+          if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() {
+              addToast((label || 'Copied') + ' to clipboard', 'success');
+            }, function() { fallbackCopy(text, label); });
+          } else {
+            fallbackCopy(text, label);
+          }
+        } catch (e) { fallbackCopy(text, label); }
+      }
+      function fallbackCopy(text, label) {
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = text; ta.style.position = 'fixed'; ta.style.top = '-9999px';
+          document.body.appendChild(ta); ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          addToast((label || 'Copied') + ' to clipboard', 'success');
+        } catch (e) {
+          addToast('Copy failed — select and copy manually.', 'warn');
+        }
+      }
+
       var awardXP = function(points, reason) { if (ctx.awardXP) ctx.awardXP('llmLiteracy', points, reason); };
       var announceToSR = ctx.announceToSR || function(){};
       var gradeLevel = ctx.gradeLevel || '7th Grade';
@@ -4006,31 +4037,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           announceToSR('Prompt critique updated');
         }
 
-        // Copy a string to the clipboard. Falls back to a textarea hack for
-        // environments where navigator.clipboard is blocked (file://, old WebViews).
-        function copyToClipboard(text, label) {
-          try {
-            if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
-              navigator.clipboard.writeText(text).then(function() {
-                addToast((label || 'Copied') + ' to clipboard', 'success');
-              }, function() { fallbackCopy(text, label); });
-            } else {
-              fallbackCopy(text, label);
-            }
-          } catch (e) { fallbackCopy(text, label); }
-        }
-        function fallbackCopy(text, label) {
-          try {
-            var ta = document.createElement('textarea');
-            ta.value = text; ta.style.position = 'fixed'; ta.style.top = '-9999px';
-            document.body.appendChild(ta); ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            addToast((label || 'Copied') + ' to clipboard', 'success');
-          } catch (e) {
-            addToast('Copy failed — select and copy manually.', 'warn');
-          }
-        }
+        // copyToClipboard / fallbackCopy moved up to the render scope (they were
+        // declared here, inside this one view) — two callers outside this view
+        // could not see them. See the definitions near addToast.
 
         return h('div', { style: { padding: '20px', maxWidth: '960px', margin: '0 auto' } },
           topBar('3. Prompt Craft'),
