@@ -52,10 +52,13 @@ describe('crystal lab — offline / no-WebGL behaviour', () => {
       'diamond', 'magnetite', 'hematite', 'garnet', 'olivine', 'fluorite', 'galena',
       'gypsum', 'sulfur', 'corundum', 'topaz'];
     ids.forEach((id) => {
-      expect(() => render(id), id).not.toThrow();
-      expect(render(id), id).toContain('3D crystal structure');
+      // One render per mineral, not two — this rendered the whole tool 36 times
+      // and blew the default 5s timeout when the suite ran alongside others.
+      let markup;
+      expect(() => { markup = render(id); }, id).not.toThrow();
+      expect(markup, id).toContain('3D crystal structure');
     });
-  });
+  }, 20000);
 
   it('tells the student what to do if the view stays blank', () => {
     expect(render('halite')).toContain('served from a CDN your network may block');

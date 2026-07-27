@@ -643,7 +643,11 @@
     kids.push(h('text', { key: 'tTxt', x: tx, y: scaleY + 23, textAnchor: 'middle', fontSize: '7.5', fontWeight: '700', fill: '#115e59' }, 'tool ' + toolH));
 
     return h('svg', {
-      viewBox: '0 0 168 100', width: '100%', role: 'img',
+      // 112 tall, not 100: the tool marker's caption sits at y=107 and was being
+      // clipped clean off, so the strip showed the mineral's hardness with an
+      // unlabelled triangle opposite it — exactly the comparison the strip exists
+      // to make.
+      viewBox: '0 0 168 112', width: '100%', role: 'img',
       style: { maxWidth: '360px', display: 'block' },
       'aria-label': !done
         ? ('Scratch test in progress: ' + toolLabel + ', hardness ' + toolH + ', drawn across ' + (mineral ? mineral.label : '') + ', hardness ' + mh + '.')
@@ -1936,25 +1940,30 @@ const d = labToolData.rocks || {};
 
 
 
-              // Ground surface line
+              // Ground surface — a TURF BAND, not a fill to the canvas bottom.
+              // This path used to close at (W,H)/(0,H), so it painted the entire
+              // subsurface bright green and buried the underground gradient that
+              // had just been drawn. In a panel captioned "Cross-Section View"
+              // that left the sedimentary beds and the magma chamber apparently
+              // floating in a lawn. Now the turf is a thin skin over a soil
+              // horizon, and the rock beneath stays visible.
 
-              ctx.beginPath();
+              var turfH = H * 0.035;
+              var surfaceY = function (x) { return H * 0.5 + Math.sin(x * 0.01 + tick * 0.01) * 3 * dpr; };
 
-              ctx.moveTo(0, H * 0.5);
+              var band = function (topOffset, bottomOffset, fill) {
+                ctx.beginPath();
+                ctx.moveTo(0, surfaceY(0) + topOffset);
+                for (let x = 0; x <= W; x += 5) ctx.lineTo(x, surfaceY(x) + topOffset);
+                for (let x = W; x >= 0; x -= 5) ctx.lineTo(x, surfaceY(x) + bottomOffset);
+                ctx.closePath();
+                ctx.fillStyle = fill;
+                ctx.fill();
+              };
 
-              for (let x = 0; x <= W; x += 5) {
-
-                const wave = Math.sin(x * 0.01 + tick * 0.01) * 3 * dpr;
-
-                ctx.lineTo(x, H * 0.5 + wave);
-
-              }
-
-              ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
-
-              ctx.fillStyle = '#65a30d';
-
-              ctx.fill();
+              // Soil horizon first, then the turf sitting on top of it.
+              band(turfH * 0.9, turfH * 2.4, '#5b4426');
+              band(0, turfH, '#65a30d');
 
 
 
@@ -2041,21 +2050,54 @@ const d = labToolData.rocks || {};
 
               // Magma chamber underground
 
+              // Magma body. This was a smooth ellipse with a bright core, which
+              // read as a SUN sitting in the ground — and it had no visible
+              // connection to the volcano above it, so the melting pathway was
+              // implied only by a dashed arrow. Now an irregular chamber with a
+              // feeder conduit running up to the vent.
+
+              const mgX = W * 0.18, mgY = H * 0.75, mgRx = W * 0.085, mgRy = H * 0.11;
+
+              // Feeder conduit first, so the chamber overlaps its base.
               ctx.beginPath();
+              ctx.moveTo(mgX - 7 * dpr, mgY - mgRy * 0.8);
+              ctx.quadraticCurveTo(W * 0.172, H * 0.62, W * 0.176, H * 0.5);
+              ctx.lineTo(W * 0.191, H * 0.5);
+              ctx.quadraticCurveTo(W * 0.187, H * 0.62, mgX + 7 * dpr, mgY - mgRy * 0.8);
+              ctx.closePath();
+              const conduitGrad = ctx.createLinearGradient(0, H * 0.5, 0, mgY);
+              conduitGrad.addColorStop(0, '#b45309');
+              conduitGrad.addColorStop(1, '#ea580c');
+              ctx.fillStyle = conduitGrad;
+              ctx.fill();
 
-              ctx.ellipse(W * 0.18, H * 0.75, W * 0.08, H * 0.12, 0, 0, Math.PI * 2);
+              // Irregular chamber outline — deterministic wobble, no randomness,
+              // so the scene is identical frame to frame.
+              ctx.beginPath();
+              for (let mi = 0; mi <= 28; mi++) {
+                const ma = (mi / 28) * Math.PI * 2;
+                const wob = 1 + 0.15 * Math.sin(ma * 3 + 1.1) + 0.08 * Math.sin(ma * 5 + 2.3);
+                const mxp = mgX + Math.cos(ma) * mgRx * wob;
+                const myp = mgY + Math.sin(ma) * mgRy * wob;
+                if (mi === 0) ctx.moveTo(mxp, myp); else ctx.lineTo(mxp, myp);
+              }
+              ctx.closePath();
 
-              const magmaGrad = ctx.createRadialGradient(W * 0.18, H * 0.75, 0, W * 0.18, H * 0.75, W * 0.08);
+              const magmaGrad = ctx.createRadialGradient(mgX - mgRx * 0.2, mgY - mgRy * 0.2, 0, mgX, mgY, mgRx * 1.25);
 
-              magmaGrad.addColorStop(0, '#fbbf24');
-
-              magmaGrad.addColorStop(0.5, '#ea580c');
+              magmaGrad.addColorStop(0, '#fde047');
+              magmaGrad.addColorStop(0.42, '#ea580c');
 
               magmaGrad.addColorStop(1, '#7f1d1d');
 
               ctx.fillStyle = magmaGrad;
 
               ctx.fill();
+
+              // Chilled margin: real plutons have a cooler rim against the country rock.
+              ctx.strokeStyle = 'rgba(69,26,3,0.75)';
+              ctx.lineWidth = 2 * dpr;
+              ctx.stroke();
 
 
 
@@ -2329,21 +2371,46 @@ const d = labToolData.rocks || {};
 
               ctx.beginPath(); ctx.moveTo(W * 0.32, H * 0.45); ctx.quadraticCurveTo(W * 0.4, H * 0.38, W * 0.48, H * 0.45); ctx.stroke();
 
-              ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = (8 * dpr) + 'px sans-serif';
+              // Process captions used to be 8px white at 60% opacity painted straight
+              // onto whatever was behind them — legible against sky, nearly invisible
+              // where they cross the bright sedimentary beds. Each now sits on its own
+              // dark pill, so all three read the same regardless of what they overlap.
+              const cycleLabel = function (text, lx, ly) {
+                ctx.save();
+                ctx.setLineDash([]);
+                ctx.textAlign = 'left';
+                ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
+                var tw = ctx.measureText(text).width;
+                var padX = 5 * dpr, boxH = 14 * dpr, rr = 4 * dpr;
+                var bx = lx - padX, by = ly - 10 * dpr, bw = tw + padX * 2;
+                ctx.beginPath();
+                ctx.moveTo(bx + rr, by);
+                ctx.lineTo(bx + bw - rr, by); ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + rr);
+                ctx.lineTo(bx + bw, by + boxH - rr); ctx.quadraticCurveTo(bx + bw, by + boxH, bx + bw - rr, by + boxH);
+                ctx.lineTo(bx + rr, by + boxH); ctx.quadraticCurveTo(bx, by + boxH, bx, by + boxH - rr);
+                ctx.lineTo(bx, by + rr); ctx.quadraticCurveTo(bx, by, bx + rr, by);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(15,23,42,0.82)';
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(text, lx, ly);
+                ctx.restore();
+              };
 
-              ctx.fillText('Weathering', W * 0.36, H * 0.38);
+
+              cycleLabel('Weathering', W * 0.36, H * 0.38);
 
               // Sedimentary → (heat/pressure) → Metamorphic
 
               ctx.beginPath(); ctx.moveTo(W * 0.66, H * 0.7); ctx.quadraticCurveTo(W * 0.72, H * 0.65, W * 0.76, H * 0.62); ctx.stroke();
 
-              ctx.fillText(t('stem.rock_cycle.heat_pressure'), W * 0.66, H * 0.62);
+              cycleLabel(t('stem.rock_cycle.heat_pressure'), W * 0.66, H * 0.62);
 
               // Metamorphic → (melting) → Igneous (magma)
 
               ctx.beginPath(); ctx.moveTo(W * 0.65, H * 0.85); ctx.quadraticCurveTo(W * 0.45, H * 0.88, W * 0.28, H * 0.78); ctx.stroke();
 
-              ctx.fillText('Melting', W * 0.42, H * 0.9);
+              cycleLabel('Melting', W * 0.42, H * 0.9);
 
               ctx.setLineDash([]);
 
@@ -2903,7 +2970,11 @@ const d = labToolData.rocks || {};
                 rocks:     { accent: '#92400e', soft: 'rgba(146,64,14,0.10)',  icon: '🪨', title: __alloT('stem.rocks.hero_rocks_title', 'Rocks: igneous, sedimentary, metamorphic'),     hint: __alloT('stem.rocks.hero_rocks_hint', 'Igneous (cooled magma: granite, basalt), sedimentary (compressed layers: sandstone, limestone), metamorphic (heat + pressure: marble, slate). The rock cycle moves stones between all three over millions of years.') },
                 minerals:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '💎', title: __alloT('stem.rocks.hero_minerals_title', 'Minerals, the building blocks of rocks'),         hint: __alloT('stem.rocks.hero_minerals_hint', 'Mohs scale 1-10: talc soft, diamond hardest. Streak, luster, cleavage, hardness, color = the 5 ID tests. Quartz is 12% of Earth\u2019s crust; you carry it in every grain of sand.') },
                 mystery:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '🔍', title: __alloT('stem.rocks.hero_mystery_title', 'Mystery Rock, detective ID'),                  hint: __alloT('stem.rocks.hero_mystery_hint', 'Real geology workflow: observe (color, crystals, layers), test (hardness, streak, fizz with HCl for carbonate), classify. The fizz test alone separates limestone from a pile of look-alikes.') },
-                quiz:      { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '🧠', title: __alloT('stem.rocks.hero_quiz_title', 'Quiz, graded ID + classification'),              hint: __alloT('stem.rocks.hero_quiz_hint', 'NGSS MS-ESS2-1: rock cycle as material system. AP ES practice: matching rocks to environment of formation. Builds the visual library so you can ID a rock at the Grand Canyon by sight.') }
+                quiz:      { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '🧠', title: __alloT('stem.rocks.hero_quiz_title', 'Quiz, graded ID + classification'),              hint: __alloT('stem.rocks.hero_quiz_hint', 'NGSS MS-ESS2-1: rock cycle as material system. AP ES practice: matching rocks to environment of formation. Builds the visual library so you can ID a rock at the Grand Canyon by sight.') },
+                // weathHunt had no entry, so the fallback below quietly served the
+                // LANDSCAPE banner: the Weathering tab announced itself as
+                // "Landscape, the geology you can SEE".
+                weathHunt: { accent: '#7c2d12', soft: 'rgba(124,45,18,0.10)',  icon: '⛏️', title: __alloT('stem.rocks.hero_weath_title', 'Weathering, how rock comes apart'),          hint: __alloT('stem.rocks.hero_weath_hint', 'Physical weathering breaks rock without changing it — ice wedging prises blocks apart and leaves ANGULAR debris. Chemical weathering dissolves minerals instead, rounding and pitting the surface. Climate decides which one wins.') }
               };
               var meta = MODE_META[mode] || MODE_META.landscape;
               return React.createElement('div', {
@@ -5920,10 +5991,26 @@ const d = labToolData.rockCycle || {};
                 if (!shortcut) {
                   var labelX = (fromN.x + midX + toN.x) / 3;
                   var labelY = (fromN.y + midY + toN.y) / 3;
-                  ctx.font = 'bold ' + (6 * dpr) + 'px sans-serif';
-                  ctx.fillStyle = 'rgba(226,232,240,0.78)';
+                  // 6px at 78% opacity over a busy animated background was barely
+                  // readable — the same defect the landscape captions had. Set on
+                  // a dark pill at a legible size instead.
+                  ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
                   ctx.textAlign = 'center';
-                  ctx.fillText(proc.label, labelX * dpr, labelY * dpr);
+                  var plw = ctx.measureText(proc.label).width;
+                  var plx = labelX * dpr, ply = labelY * dpr;
+                  var ppadX = 5 * dpr, pboxH = 13 * dpr, prr = 3.5 * dpr;
+                  var pbx = plx - plw / 2 - ppadX, pby = ply - 9.5 * dpr, pbw = plw + ppadX * 2;
+                  ctx.beginPath();
+                  ctx.moveTo(pbx + prr, pby);
+                  ctx.lineTo(pbx + pbw - prr, pby); ctx.quadraticCurveTo(pbx + pbw, pby, pbx + pbw, pby + prr);
+                  ctx.lineTo(pbx + pbw, pby + pboxH - prr); ctx.quadraticCurveTo(pbx + pbw, pby + pboxH, pbx + pbw - prr, pby + pboxH);
+                  ctx.lineTo(pbx + prr, pby + pboxH); ctx.quadraticCurveTo(pbx, pby + pboxH, pbx, pby + pboxH - prr);
+                  ctx.lineTo(pbx, pby + prr); ctx.quadraticCurveTo(pbx, pby, pbx + prr, pby);
+                  ctx.closePath();
+                  ctx.fillStyle = 'rgba(2,6,23,0.80)';
+                  ctx.fill();
+                  ctx.fillStyle = '#f1f5f9';
+                  ctx.fillText(proc.label, plx, ply);
                 }
               });
 
