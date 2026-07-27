@@ -1613,14 +1613,97 @@ describe('coaster lab — the train is a length, not a point', () => {
     expect(src).toContain('for(let c = 0; c < TRAIN_CARS; c++) ySum += trackAt(sim.S - c * CAR_GAP).y;');
     expect(src).toContain('seats: freshSeats(TRAIN_CARS)');
     // the rendered card is honest about the boundary of the model
-    // the rigid-train energy statement, and the honest boundary of the model
-    expect(src).toContain('const vSeat2 = Math.max(0, sim.v * sim.v + 2 * G0 * (yRef - ySum / TRAIN_CARS));');
+    // the rigid-train energy statement, shared by the sim, the HUD and the camera
+    expect(src).toContain('function trainSpeed2(yRef){');
+    expect(src).toContain('return Math.max(0, sim.v * sim.v + 2 * G0 * (yRef - ySum / TRAIN_CARS));');
+    expect(src).toContain('const vSeat2 = trainSpeed2(yRef);');
     expect(src).toContain('Certification and the headline figures above use the point-mass physics your');
     expect(src).toContain('html += renderSeatCard(tele);');
     // the train mesh and the physics agree on how many cars there are
     expect(src).toContain('for(let c = 0; c < TRAIN_CARS; c++){');
     expect(src).toContain('if(c === TRAIN_CARS - 1){');
     expect(src).toContain('const Sc = sim.S - c * CAR_GAP;');
+  });
+});
+
+describe('coaster lab — you can ride any row, and shape hills to win rows', () => {
+  function loadSafety(p) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('/* @clab-safety-start');
+    const e = src.indexOf('/* @clab-safety-end');
+    return new Function(src.slice(s, e) + '\nreturn { freshSeats, seatStep, seatSummary };')();
+  }
+
+  it.each(TOOL_PATHS)('%s: the row you ride is a control, and it moves the camera and the HUD', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('id=\\"clab-seatSel\\"');
+    expect(src).toContain('>🚃 Back row</option>');
+    // the camera sits in the chosen row, and the HUD names it
+    expect(src).toContain('frameAt(sim.S + 1.4 - activeSeat() * CAR_GAP, _p, _t, _u);');
+    expect(src).toContain("hud.gvLabel.textContent = seat === 0 ? 'Seat g (vertical)' : 'Seat g · ' + seatLabel(seat, TRAIN_CARS)");
+    // the choice survives a reload, and can never point past the end of the train
+    expect(src).toContain("localStorage.setItem('coaster_lab_seat', String(rideSeat))");
+    expect(src).toContain('(v >= 0 && v < TRAIN_CARS) ? v : 0');
+    expect(src).toContain('Math.min(TRAIN_CARS - 1, parseInt(sel.value, 10) || 0)');
+  });
+
+  it.each(TOOL_PATHS)('%s: certification and Ride & Solve always read the front row', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    // otherwise the meter a student is told to watch would disagree with the
+    // prediction they just filed
+    expect(src).toContain('function activeSeat(){ return (sim.cert || sim.ride) ? 0 : Math.min(rideSeat, TRAIN_CARS - 1); }');
+    // and riding the front row leaves the reference physics untouched
+    const s = src.indexOf('function updateHUD(){');
+    const hud = src.slice(s, src.indexOf('\n}', src.indexOf('drawMiniMap();', s)));
+    expect(hud).toContain('// the reference point itself — left bit-for-bit as it always was');
+    expect(hud).toContain('gV = tr0.upY + sim.v * sim.v * tr0.kUp / G0;');
+  });
+
+  it.each(TOOL_PATHS)('%s: three missions are graded row by row', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const id of ['lapbar', 'ejector', 'evenkeel']) expect(src).toContain(`id: '${id}'`);
+    // the row summary actually reaches the mission checker
+    expect(src).toContain("missionEvent('run', { tele, sc, seats: seatSummary(tele.seats) });");
+  });
+
+  it('the row missions grade what they claim to', () => {
+    const src = readFileSync(resolve(process.cwd(), TOOL_PATHS[0]), 'utf8');
+    const s = src.indexOf('const MISSIONS = [');
+    const e = src.indexOf('\n];', s);
+    const defs = new Function('analysis', 'design',
+      src.slice(s, e + 3) + '\nreturn MISSIONS;')(null, { propulsion: { mode: 'chain' } });
+    const by = Object.fromEntries(defs.map((m) => [m.id, m]));
+    const { freshSeats, seatStep, seatSummary } = loadSafety(TOOL_PATHS[0]);
+    const build = (rows) => {
+      const seats = freshSeats(rows.length);
+      rows.forEach((r, i) => { seatStep(seats, i, r.g, 0, r.air || 0, 0); });
+      return seatSummary(seats);
+    };
+    const clean = { status: 'complete', violations: [], inversions: 0, airtime: 0 };
+
+    // lap-bar licence: nobody leaves the seat, in any row
+    const gentle = build([{ g: 0.4 }, { g: 0.2 }, { g: 0.05 }]);
+    expect(by.lapbar.check({ tele: clean, seats: gentle })).toBe(true);
+    const oneRowFloats = build([{ g: 0.4 }, { g: 0.2 }, { g: -0.1 }]);
+    expect(by.lapbar.check({ tele: clean, seats: oneRowFloats })).toBe(false);
+    // and a violation disqualifies it however gentle the rows are
+    expect(by.lapbar.check({ tele: { ...clean, violations: ['x'] }, seats: gentle })).toBe(false);
+
+    // ejector seat: the back row has to be pulled 0.6 g harder than the front
+    expect(by.ejector.check({ tele: clean, seats: build([{ g: 0.1 }, { g: -0.2 }, { g: -0.55 }]) })).toBe(true);
+    expect(by.ejector.check({ tele: clean, seats: build([{ g: 0.1 }, { g: 0.0 }, { g: -0.3 }]) })).toBe(false);
+
+    // even keel: every row gets real airtime AND the rows stay together
+    const even = build([{ g: -0.1, air: 1.4 }, { g: -0.2, air: 1.5 }, { g: -0.2, air: 1.3 }]);
+    expect(by.evenkeel.check({ tele: clean, seats: even })).toBe(true);
+    const lopsided = build([{ g: -0.1, air: 1.4 }, { g: -0.5, air: 1.5 }, { g: -0.9, air: 1.3 }]);
+    expect(by.evenkeel.check({ tele: clean, seats: lopsided })).toBe(false);   // spread too wide
+    const dry = build([{ g: 0.3, air: 0 }, { g: 0.3, air: 0 }, { g: 0.3, air: 0 }]);
+    expect(by.evenkeel.check({ tele: clean, seats: dry })).toBe(false);        // no airtime to share
+    // an old run with no row data never awards a row mission
+    for (const id of ['lapbar', 'ejector', 'evenkeel']) {
+      expect(by[id].check({ tele: clean, seats: null })).toBe(false);
+    }
   });
 });
 
