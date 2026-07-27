@@ -1845,8 +1845,19 @@ const d = labToolData.rocks || {};
             const H = canvasEl.height = 200 * (window.devicePixelRatio || 1);
 
             const ctx = canvasEl.getContext('2d');
+            // jsdom (and any canvas-less host) returns null here; without this the
+            // very next line throws on ctx.fillStyle.
+            if (!ctx) { canvasEl._lastRock = null; return; }
 
             const dpr = window.devicePixelRatio || 1;
+
+            // Seeded, NOT Math.random. This is the hand-lens view of a specimen a
+            // student is being asked to learn to recognise, and it was redrawing
+            // differently on every visit — the canvas unmounts when you deselect,
+            // so re-selecting the same rock produced a whole new random texture.
+            // Granite has to look like granite every time, and it has to match the
+            // grid swatch, which uses this same seed.
+            const rnd = rkSeed(selRock.id);
 
 
 
@@ -1866,9 +1877,9 @@ const d = labToolData.rocks || {};
 
                 ctx.beginPath();
 
-                const x = Math.random() * W, y = Math.random() * H;
+                const x = rnd() * W, y = rnd() * H;
 
-                const sz = (8 + Math.random() * 16) * dpr;
+                const sz = (8 + rnd() * 16) * dpr;
 
                 ctx.moveTo(x, y - sz);
 
@@ -1876,7 +1887,7 @@ const d = labToolData.rocks || {};
 
                   const angle = (a / 6) * Math.PI * 2 - Math.PI / 2;
 
-                  ctx.lineTo(x + Math.cos(angle) * sz * (0.7 + Math.random() * 0.3), y + Math.sin(angle) * sz * (0.7 + Math.random() * 0.3));
+                  ctx.lineTo(x + Math.cos(angle) * sz * (0.7 + rnd() * 0.3), y + Math.sin(angle) * sz * (0.7 + rnd() * 0.3));
 
                 }
 
@@ -1902,7 +1913,7 @@ const d = labToolData.rocks || {};
 
                 ctx.beginPath();
 
-                ctx.arc(Math.random() * W, Math.random() * H, (1 + Math.random() * 3) * dpr, 0, Math.PI * 2);
+                ctx.arc(rnd() * W, rnd() * H, (1 + rnd() * 3) * dpr, 0, Math.PI * 2);
 
                 ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
 
@@ -1951,7 +1962,7 @@ const d = labToolData.rocks || {};
 
                 ctx.beginPath();
 
-                ctx.ellipse(Math.random() * W, Math.random() * H, (3 + Math.random() * 8) * dpr, (2 + Math.random() * 5) * dpr, Math.random() * Math.PI, 0, Math.PI * 2);
+                ctx.ellipse(rnd() * W, rnd() * H, (3 + rnd() * 8) * dpr, (2 + rnd() * 5) * dpr, rnd() * Math.PI, 0, Math.PI * 2);
 
                 ctx.fillStyle = 'rgba(120,113,108,0.3)';
 
@@ -1993,7 +2004,7 @@ const d = labToolData.rocks || {};
 
                 ctx.beginPath();
 
-                ctx.arc(Math.random() * W, Math.random() * H, (0.5 + Math.random() * 2) * dpr, 0, Math.PI * 2);
+                ctx.arc(rnd() * W, rnd() * H, (0.5 + rnd() * 2) * dpr, 0, Math.PI * 2);
 
                 ctx.fillStyle = selRock.grainColors[i % selRock.grainColors.length];
 
@@ -2007,7 +2018,7 @@ const d = labToolData.rocks || {};
 
                 ctx.beginPath();
 
-                ctx.arc(30 * dpr + Math.random() * (W - 60 * dpr), 30 * dpr + Math.random() * (H - 60 * dpr), (6 + Math.random() * 4) * dpr, 0, Math.PI);
+                ctx.arc(30 * dpr + rnd() * (W - 60 * dpr), 30 * dpr + rnd() * (H - 60 * dpr), (6 + rnd() * 4) * dpr, 0, Math.PI);
 
                 ctx.strokeStyle = 'rgba(161,161,170,0.4)';
 
@@ -2025,9 +2036,9 @@ const d = labToolData.rocks || {};
 
                 ctx.beginPath();
 
-                const x = Math.random() * W, y = Math.random() * H;
+                const x = rnd() * W, y = rnd() * H;
 
-                const sz = (4 + Math.random() * 10) * dpr;
+                const sz = (4 + rnd() * 10) * dpr;
 
                 ctx.rect(x - sz / 2, y - sz / 2, sz, sz);
 
@@ -2794,6 +2805,8 @@ const d = labToolData.rocks || {};
                 var csH = canvasEl.height = 200 * (window.devicePixelRatio || 1);
 
                 var csCtx = canvasEl.getContext('2d');
+                // Null on any canvas-less host; the next fillStyle write would throw.
+                if (!csCtx) { canvasEl._lastMineral = null; return; }
 
                 var csDpr = window.devicePixelRatio || 1;
 
@@ -3185,13 +3198,18 @@ const d = labToolData.rocks || {};
 
                 csCtx.setLineDash([3 * csDpr, 4 * csDpr]);
 
+                // Seeded off the mineral id, not Math.random: these cleavage
+                // traces are part of what a student is learning to recognise, so
+                // they must not be redrawn differently on every visit.
+                var csRnd = rkSeed(selMineral.id + '-cleavage');
+
                 for (var cli = 0; cli < 4; cli++) {
 
                   csCtx.beginPath();
 
-                  csCtx.moveTo(crystalX + Math.random() * crystalW * 0.3, crystalY + cli * crystalH * 0.25);
+                  csCtx.moveTo(crystalX + csRnd() * crystalW * 0.3, crystalY + cli * crystalH * 0.25);
 
-                  csCtx.lineTo(crystalX + crystalW * 0.7 + Math.random() * crystalW * 0.3, crystalY + cli * crystalH * 0.25 + crystalH * 0.15);
+                  csCtx.lineTo(crystalX + crystalW * 0.7 + csRnd() * crystalW * 0.3, crystalY + cli * crystalH * 0.25 + crystalH * 0.15);
 
                   csCtx.stroke();
 

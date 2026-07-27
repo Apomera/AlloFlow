@@ -161,6 +161,55 @@ describe('landscape canvas persistence', () => {
   });
 });
 
+describe('specimen detail art is stable across visits', () => {
+  // The hand-lens canvas is what a student studies to learn a specimen. It used
+  // Math.random(), and the canvas unmounts on deselect — so re-selecting the
+  // same rock drew a completely new texture. "Learn what granite looks like"
+  // cannot work if granite looks different every time you open it.
+  function recordDrawCalls(rockId) {
+    const calls = [];
+    const ctx2d = new Proxy({}, {
+      get: (_t, prop) => {
+        if (prop === 'canvas') return null;
+        if (prop === 'measureText') return () => ({ width: 10 });
+        if (prop === 'createLinearGradient' || prop === 'createRadialGradient') {
+          return () => ({ addColorStop: () => {} });
+        }
+        if (typeof prop !== 'string') return undefined;
+        return (...args) => { calls.push(prop + ':' + args.map((a) => (typeof a === 'number' ? a.toFixed(3) : String(a))).join(',')); };
+      },
+      set: (_t, prop, value) => { calls.push('set ' + String(prop) + '=' + String(value)); return true; },
+    });
+    const orig = window.HTMLCanvasElement.prototype.getContext;
+    window.HTMLCanvasElement.prototype.getContext = () => ctx2d;
+    // A separate zone-highlight overlay pulses off Date.now(). That is a real
+    // animation, not part of the specimen art — freeze it so this assertion
+    // isolates the texture.
+    const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(1767225600000);
+
+    const { host, root } = mountTool('rocks', { mode: 'rocks', selectedRock: rockId }, 'rocks');
+    act(() => { root.unmount(); });
+    host.remove();
+
+    nowSpy.mockRestore();
+    window.HTMLCanvasElement.prototype.getContext = orig;
+    return calls;
+  }
+
+  it('draws the same rock texture on every visit', () => {
+    const first = recordDrawCalls('granite');
+    const second = recordDrawCalls('granite');
+    expect(first.length).toBeGreaterThan(20);
+    expect(second).toEqual(first);
+  });
+
+  it('still draws different textures for different rocks', () => {
+    const granite = recordDrawCalls('granite');
+    const shale = recordDrawCalls('shale');
+    expect(shale).not.toEqual(granite);
+  });
+});
+
 describe('rock cycle canvas persistence', () => {
   it('keeps the SAME canvas node across re-renders', () => {
     const { host, root, rerender } = mountTool('rockCycle', {}, 'rockCycle');
