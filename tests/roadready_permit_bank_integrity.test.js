@@ -130,12 +130,18 @@ describe('the options should not give the answer away by shape', () => {
   // "When windshield wipers are in constant use". A student can score well on half
   // this bank by always choosing the longest option, having learned no road rule.
   //
-  // This is a RATCHET, not a pass mark. Rewriting 98 sets of distractors means
-  // authoring new claims about Maine traffic law, which is Aaron's call and not
-  // something to auto-generate — the whole point of the rules suite next door is
-  // that wrong legal claims are the one thing this tool cannot afford. So: lock in
-  // today's number so it cannot get worse, and let any improvement land freely.
-  const LENGTH_TELL_CEILING = 98;
+  // This is a RATCHET, not a pass mark. 98 -> 55: the signs, maintenance and
+  // emergency categories were rewritten so that distractors are comparable in
+  // length to the correct answer, with the correct options checked against federal
+  // sources (MUTCD 11th ed. for sign shape/colour, NHTSA TireWise for tread and
+  // placard pressure, NHTSA Move Over, FMCSA no-zones). Distractors are plausible
+  // but false, which needs no new legal claim; where a correct answer restates
+  // STATUTE it was left verbatim — roadready_rules pins Maine §2254's "conspicuous
+  // note ... vehicle registration number" wording, and shortening it broke that
+  // test, which is exactly the protection it exists to give.
+  // Still to do: general (14), winter (13), pedestrian (9), gdl (7), dui (7),
+  // emergency (5). Lower this as they are rewritten.
+  const LENGTH_TELL_CEILING = 55;
 
   const tells = () => BANK.filter((q) => {
     const lens = (q.a || []).map((s) => String(s).length);
