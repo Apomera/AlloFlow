@@ -30,9 +30,21 @@ exactly that reason are green again and have left `tests/QUARANTINE.txt` (92 →
 - **M20** — the half that stands alone is done (a completed run can no longer be adopted as a live
   owner). Giving `runAutoFixLoop` its own ownership identity so its heartbeats carry a runId is a
   larger change and was not made.
-- **L1, L12** — the remaining test-quality findings ask for behavioural coverage where hand-written
-  mirrors stand in today. H2 and H3, the two that were load-bearing for user-facing honesty, were
-  done; L1 and L12 are follow-on test-writing work.
+**Follow-on work, since completed (2026-07-26, same day)**
+
+- **L1** — the merge is driven for real now. Doing so immediately exposed a defect the mirror could
+  not see: `pages` was dereferenced unguarded in four places, so one malformed record threw a
+  TypeError out of the LAST step of a multi-day workflow and cost the teacher every session. A
+  range with unusable page numbers now keeps its HTML and only loses its position.
+- **L12** — both auto-continue round decisions moved into `_alloLoopPolicy`; the tests call the
+  shipped functions.
+- **M20** — the remainder: `runAutoFixLoop` publishes its own ownership slot and threads that
+  identity into its inner calls, so the stuck-flag watchdog is no longer inert when the loop is
+  entered directly (the "Continue a previous session" path).
+
+Both L1 and L12 were verified by MUTATION, not by assumption: reintroducing the original
+blank-document bug turns six merge tests red, and dropping the axe-clean gate on the issue-count
+revert turns the F5 case red. Under the old mirrors, both stayed green.
 
 **Known unrelated red:** `tests/individual_remediation_polish.test.js` is quarantined at "4 failing"
 and now shows 3. Those are pre-existing and outside this audit's scope.
