@@ -4493,7 +4493,12 @@ const d = labToolData.rocks || {};
                 // leaderboard, per the widget's design note.
                 (iq.log || []).length > 0 && h('div', { className: 'rounded-lg border border-slate-300 bg-slate-50 p-2' },
                   h('div', { className: 'flex items-center justify-between mb-1.5' },
-                    h('span', { className: 'text-[11px] font-black text-slate-700' }, '📋 ' + __alloT('stem.rocks.weath_log_title', 'Logged trials') + ' (' + iq.log.length + ')'),
+                    // The log keeps the last 8 (see the Log button's slice). Say so
+                    // when it is full, rather than silently dropping the oldest
+                    // trial out from under a student who is comparing runs.
+                    h('span', { className: 'text-[11px] font-black text-slate-700' },
+                      '📋 ' + __alloT('stem.rocks.weath_log_title', 'Logged trials') + ' (' + iq.log.length + ')' +
+                      (iq.log.length >= 8 ? ' · ' + __alloT('stem.rocks.weath_log_capped', 'showing the last 8') : '')),
                     h('button', {
                       type: 'button',
                       onClick: function() { setIQ({ log: [] }); },
@@ -4626,7 +4631,7 @@ const d = labToolData.rockCycle || {};
 
             {
 
-              id: 'igneous', label: t('stem.rocks.igneous'), emoji: '\uD83C\uDF0B', color: '#ef4444', glow: '#fca5a5',
+              id: 'igneous', label: t('stem.rocks.igneous'), emoji: '\uD83C\uDF0B', color: '#ef4444', glow: '#fca5a5', ink: '#b91c1c',
 
               desc: 'Formed when magma or lava cools and solidifies. Intrusive igneous rocks (granite) cool slowly underground with large crystals. Extrusive rocks (basalt) cool quickly at the surface with fine grains.',
 
@@ -4642,7 +4647,7 @@ const d = labToolData.rockCycle || {};
 
             {
 
-              id: 'sedimentary', label: t('stem.rocks.sedimentary'), emoji: '\uD83C\uDFD6\uFE0F', color: '#eab308', glow: '#fde68a',
+              id: 'sedimentary', label: t('stem.rocks.sedimentary'), emoji: '\uD83C\uDFD6\uFE0F', color: '#eab308', glow: '#fde68a', ink: '#a16207',
 
               desc: 'Formed from layers of sediment (sand, mud, shells, organic matter) compressed and cemented over millions of years. The only rock type that commonly contains fossils, making it essential for paleontology.',
 
@@ -4658,7 +4663,7 @@ const d = labToolData.rockCycle || {};
 
             {
 
-              id: 'metamorphic', label: t('stem.rocks.metamorphic'), emoji: '\uD83D\uDC8E', color: '#8b5cf6', glow: '#c4b5fd',
+              id: 'metamorphic', label: t('stem.rocks.metamorphic'), emoji: '\uD83D\uDC8E', color: '#8b5cf6', glow: '#c4b5fd', ink: '#6d28d9',
 
               desc: 'Formed when existing rocks are transformed by extreme heat and/or pressure deep underground. The minerals recrystallize without melting, creating new textures and sometimes foliation (layered banding).',
 
@@ -4781,10 +4786,13 @@ const d = labToolData.rockCycle || {};
 
           // Family palette. Literal hex only — SVG presentation attributes do not
           // accept CSS var(), so a token here would silently render black.
+          // base/mid/detail only — an `ink` was defined here and never read, which
+          // is exactly the write-only-data smell this pass went looking for. Text
+          // colour comes from each ROCKS entry's own `ink`.
           const RC_FAMILY_COLORS = {
-            igneous:     { base: '#7f1d1d', mid: '#b91c1c', detail: '#fca5a5', ink: '#7f1d1d' },
-            sedimentary: { base: '#78350f', mid: '#b45309', detail: '#fde68a', ink: '#78350f' },
-            metamorphic: { base: '#4c1d95', mid: '#6d28d9', detail: '#c4b5fd', ink: '#4c1d95' }
+            igneous:     { base: '#7f1d1d', mid: '#b91c1c', detail: '#fca5a5' },
+            sedimentary: { base: '#78350f', mid: '#b45309', detail: '#fde68a' },
+            metamorphic: { base: '#4c1d95', mid: '#6d28d9', detail: '#c4b5fd' }
           };
 
           // Draws one rock specimen as a textured SVG swatch. Texture is the whole
@@ -5769,11 +5777,15 @@ const d = labToolData.rockCycle || {};
 
               React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-                React.createElement("span", { className: "text-3xl", style: { filter: 'drop-shadow(0 0 8px ' + sel.color + ')' } }, sel.emoji),
+                React.createElement("span", { className: "text-3xl", style: { filter: 'drop-shadow(0 0 8px ' + sel.color + ')' }, "aria-hidden": true }, sel.emoji),
+
+                // Show the family's texture, not only its emoji — same chip the
+                // process list and the transformation machine use.
+                React.createElement("div", { className: "rounded-lg border border-slate-400 bg-white p-0.5 shrink-0" }, rcFamilyChip('selFamily', sel.id, 36)),
 
                 React.createElement("div", null,
 
-                  React.createElement("h4", { className: "text-lg font-black tracking-tight", style: { color: sel.color } }, sel.label + " Rocks"),
+                  React.createElement("h4", { className: "text-lg font-black tracking-tight", style: { color: sel.ink } }, sel.label + " Rocks"),
 
                   React.createElement("p", { className: "text-[11px] text-slate-600" }, sel.examples)
 
@@ -5789,7 +5801,7 @@ const d = labToolData.rockCycle || {};
 
                   React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.hardness_word', "Hardness")),
 
-                  React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.hardness)
+                  React.createElement("p", { className: "text-xs font-bold", style: { color: sel.ink } }, sel.hardness)
 
                 ),
 
@@ -5797,7 +5809,7 @@ const d = labToolData.rockCycle || {};
 
                   React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.crystals_label', "Crystals")),
 
-                  React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.crystals)
+                  React.createElement("p", { className: "text-xs font-bold", style: { color: sel.ink } }, sel.crystals)
 
                 ),
 
@@ -5805,7 +5817,7 @@ const d = labToolData.rockCycle || {};
 
                   React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.rocks.real_uses_label', "Real Uses")),
 
-                  React.createElement("p", { className: "text-xs font-bold", style: { color: sel.color } }, sel.uses)
+                  React.createElement("p", { className: "text-xs font-bold", style: { color: sel.ink } }, sel.uses)
 
                 )
 

@@ -81,6 +81,39 @@ describe('rock cycle colour contrast', () => {
     });
   });
 
+  // ── Blind spot this suite used to have ──
+  // Everything above scans Tailwind `text-*` CLASSES. The rockCycle family panel
+  // colours its heading and property values from the DATA via inline
+  // style={{ color: ... }}, so those were invisible here — and all three were
+  // failing: igneous #ef4444 3.76:1, metamorphic #8b5cf6 4.23:1, and
+  // sedimentary #eab308 at 1.92:1, effectively illegible. The bright `color` is
+  // correct for the canvas (dark navy substrate) and for borders/glows, so the
+  // fix was a separate `ink` for text rather than changing `color`.
+  it('family colours used as TEXT clear AA on the light panel', () => {
+    PATHS.forEach((p) => {
+      const src = readFileSync(p, 'utf8');
+      const rc = src.slice(src.indexOf("registerTool('rockCycle'"));
+      // Scope to the ROCKS family table — the only place an ink is read from.
+      const rocksTable = rc.slice(rc.indexOf('const ROCKS = ['), rc.indexOf('const PROCESSES = ['));
+      const inks = [...rocksTable.matchAll(/ink:\s*'(#[0-9a-fA-F]{6})'/g)].map((m) => m[1]);
+      expect(inks, 'every rockCycle family needs a text-safe ink').toHaveLength(3);
+      inks.forEach((hex) => {
+        const r = contrast(hex, TW.white);
+        expect(r, `ink ${hex} = ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+      });
+    });
+  });
+
+  it('never renders text in the decorative family colour', () => {
+    PATHS.forEach((p) => {
+      const src = readFileSync(p, 'utf8');
+      // `color` stays for the canvas, borders, gradients and glows. Text takes
+      // `ink`. A `style: { color: sel.color }` is the regression to catch.
+      expect(src).not.toMatch(/style:\s*\{\s*color:\s*sel\.color\s*\}/);
+      expect(src).not.toMatch(/style:\s*\{\s*color:\s*rock\.color\s*\}/);
+    });
+  });
+
   it('does not ship an app-wide text-slate-600 override', () => {
     // A single tool file was repainting EVERY .text-slate-600 in AlloFlow down to
     // slate-500 with !important — 7.58:1 → 4.76:1 on white, 4.48:1 on orange-50.
