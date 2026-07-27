@@ -102,6 +102,79 @@
     }, []);
   }
 
+  function LitLabPromptDialog(props) {
+    var e = React.createElement;
+    var dialogRef = React.useRef(null);
+    var inputRef = React.useRef(null);
+    var onEscapeRef = React.useRef(props.onCancel);
+    var returnFocusRef = React.useRef(props.returnFocus || (typeof document !== 'undefined' ? document.activeElement : null));
+    var _value = React.useState(props.initialValue || ''); var value = _value[0]; var setValue = _value[1];
+    var _error = React.useState(''); var error = _error[0]; var setError = _error[1];
+    onEscapeRef.current = props.onCancel;
+    useLitLabDialogFocus(dialogRef, inputRef, onEscapeRef, returnFocusRef);
+
+    var descriptionIds = ['litlab-prompt-description'];
+    if (props.examples) descriptionIds.push('litlab-prompt-examples');
+    if (error) descriptionIds.push('litlab-prompt-error');
+
+    function submit(event) {
+      event.preventDefault();
+      var trimmed = value.trim();
+      if (!trimmed) {
+        setError(props.requiredMessage);
+        if (inputRef.current) inputRef.current.focus();
+        return;
+      }
+      setError('');
+      props.onSubmit(trimmed);
+    }
+
+    return e('div', {
+      role: 'presentation',
+      style: { position: 'fixed', inset: 0, zIndex: 71, background: 'rgba(15,23,42,0.68)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' },
+      onMouseDown: function (event) { if (event.target === event.currentTarget) props.onCancel(); }
+    },
+      e('div', {
+        ref: dialogRef,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'litlab-prompt-title',
+        'aria-describedby': 'litlab-prompt-description',
+        tabIndex: -1,
+        className: 'litlab-dialog',
+        style: { width: '100%', maxWidth: '520px', maxHeight: 'calc(100vh - 32px)', overflowY: 'auto', background: '#fff', color: '#172033', border: '2px solid #7c3aed', borderRadius: '16px', boxShadow: '0 24px 70px rgba(15,23,42,0.42)', padding: '20px' },
+        onMouseDown: function (event) { event.stopPropagation(); }
+      },
+        e('form', { onSubmit: submit, noValidate: true },
+          e('h2', { id: 'litlab-prompt-title', style: { margin: '0 0 8px', fontSize: '20px', lineHeight: 1.3, color: '#581c87' } }, props.title),
+          e('p', { id: 'litlab-prompt-description', style: { margin: '0 0 16px', color: '#475569', fontSize: '14px', lineHeight: 1.55 } }, props.description),
+          e('label', { htmlFor: 'litlab-prompt-input', style: { display: 'block', marginBottom: '6px', color: '#1e293b', fontSize: '14px', fontWeight: 800 } }, props.label),
+          e('input', {
+            ref: inputRef,
+            id: 'litlab-prompt-input',
+            type: props.inputType || 'text',
+            inputMode: props.inputType === 'url' ? 'url' : undefined,
+            autoComplete: props.inputType === 'url' ? 'url' : 'off',
+            required: true,
+            'aria-required': 'true',
+            'aria-invalid': error ? 'true' : undefined,
+            'aria-describedby': descriptionIds.join(' '),
+            value: value,
+            placeholder: props.placeholder || '',
+            onChange: function (event) { setValue(event.target.value); if (error) setError(''); },
+            style: { display: 'block', width: '100%', minHeight: '44px', boxSizing: 'border-box', padding: '10px 12px', color: '#0f172a', background: '#fff', border: '2px solid ' + (error ? '#b91c1c' : '#64748b'), borderRadius: '8px', fontSize: '16px' }
+          }),
+          props.examples && e('p', { id: 'litlab-prompt-examples', style: { margin: '8px 0 0', whiteSpace: 'pre-line', color: '#475569', fontSize: '13px', lineHeight: 1.5 } }, props.examples),
+          error && e('p', { id: 'litlab-prompt-error', role: 'alert', style: { margin: '8px 0 0', color: '#991b1b', fontSize: '14px', fontWeight: 700 } }, error),
+          e('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: '10px', flexWrap: 'wrap', marginTop: '20px' } },
+            e('button', { type: 'button', onClick: props.onCancel, style: { minWidth: '96px', minHeight: '44px', padding: '9px 16px', border: '2px solid #64748b', borderRadius: '9px', background: '#fff', color: '#1e293b', fontWeight: 800, cursor: 'pointer' } }, props.cancelLabel),
+            e('button', { type: 'submit', style: { minWidth: '112px', minHeight: '44px', padding: '9px 16px', border: '2px solid #6d28d9', borderRadius: '9px', background: '#7c3aed', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, props.submitLabel)
+          )
+        )
+      )
+    );
+  }
+
   var warnLog = function () { console.warn.apply(console, ['[LitLab]'].concat(Array.prototype.slice.call(arguments))); };
 
   // ── Constants ─────────────────────────────────────────────────────────
@@ -335,6 +408,7 @@
     // Scene illustration
     var _sceneImage = useState(null); var sceneImage = _sceneImage[0]; var setSceneImage = _sceneImage[1];
     var _sceneImageLoading = useState(false); var sceneImageLoading = _sceneImageLoading[0]; var setSceneImageLoading = _sceneImageLoading[1];
+    var _promptRequest = useState(null); var promptRequest = _promptRequest[0]; var setPromptRequest = _promptRequest[1];
 
     // Emotion tracking (per-line emoji reactions during performance)
     var _emotionLog = useState({}); var emotionLog = _emotionLog[0]; var setEmotionLog = _emotionLog[1];
@@ -947,12 +1021,10 @@
       } catch (err) { warnLog('Image refine failed:', err && err.message); return null; }
     }, [onCallGeminiImageEdit]);
 
-    var refineSceneImage = useCallback(async function () {
-      if (!sceneImage) return;
-      var instruction = window.prompt('How should we change the cover image?\n\nExamples:\n• "make it more colorful"\n• "show more detail in the trees"\n• "use a moodier palette"\n• "add a moon in the sky"');
-      if (!instruction || !instruction.trim()) return;
+    var refineSceneImage = useCallback(async function (instruction) {
+      if (!sceneImage || !instruction || !instruction.trim()) return;
       setSceneImageLoading(true);
-      announceLitLab('Refining cover image…');
+      announceLitLab(tr('Refining cover image…'));
       try {
         var refined = await refineImage(sceneImage, instruction.trim(), 600);
         if (refined) { setSceneImage(refined); addToast && addToast(tr('Cover refined.'), 'success'); announceLitLab(tr('Cover image refined.')); }
@@ -960,13 +1032,11 @@
       } finally { setSceneImageLoading(false); }
     }, [sceneImage, refineImage, addToast]);
 
-    var refinePageImage = useCallback(async function (pageIdx) {
+    var refinePageImage = useCallback(async function (pageIdx, instruction) {
       var current = pageImages[pageIdx];
-      if (!current) return;
-      var instruction = window.prompt('How should we change this page\'s illustration?\n\nExamples:\n• "make it warmer"\n• "show the character\'s face"\n• "add the sunset"\n• "remove the text"');
-      if (!instruction || !instruction.trim()) return;
+      if (!current || !instruction || !instruction.trim()) return;
       setPageImgLoading(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = true; return n; });
-      announceLitLab('Refining page ' + (pageIdx + 1) + ' illustration…');
+      announceLitLab(tr('Refining page {page} illustration…', { page: pageIdx + 1 }));
       try {
         var refined = await refineImage(current, instruction.trim(), 600);
         if (refined) {
@@ -976,6 +1046,79 @@
         } else { addToast && addToast(tr('Refine failed.'), 'error'); }
       } finally { setPageImgLoading(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = false; return n; }); }
     }, [pageImages, refineImage, addToast]);
+
+    var importStoryUrl = useCallback(async function (url) {
+      if (!url || !url.trim()) return;
+      setIsLoading(true); setLoadingMsg(tr('Fetching from URL...'));
+      try {
+        var text = await window.__alloUtils.fetchAndCleanUrl(url.trim(), onCallGemini, addToast);
+        if (text) {
+          setSourceText(function (prev) { return prev ? prev + '\n\n' + text : text; });
+          addToast && addToast(tr('Text imported from URL!'), 'success');
+          announceLitLab(tr('Text imported from URL.'));
+        }
+      } catch (err) {
+        addToast && addToast(tr('Import failed: ') + err.message, 'error');
+        announceLitLab(tr('URL import failed.'));
+      } finally {
+        setIsLoading(false); setLoadingMsg('');
+      }
+    }, [onCallGemini, addToast]);
+
+    function requestSceneImageRefinement(event) {
+      setPromptRequest({
+        key: uid(),
+        kind: 'refine-scene',
+        returnFocus: event.currentTarget,
+        title: tr('Refine cover image'),
+        label: tr('How should the cover image change?'),
+        description: tr('Describe the visual changes you want. The existing style and composition will be preserved.'),
+        examples: tr('Examples:\n• Make it more colorful\n• Show more detail in the trees\n• Use a moodier palette\n• Add a moon in the sky'),
+        placeholder: tr('Example: Add a moon in the sky'),
+        submitLabel: tr('Refine cover'),
+        requiredMessage: tr('Describe how the cover image should change.')
+      });
+    }
+
+    function requestPageImageRefinement(pageIdx, event) {
+      setPromptRequest({
+        key: uid(),
+        kind: 'refine-page',
+        pageIdx: pageIdx,
+        returnFocus: event.currentTarget,
+        title: tr('Refine page {page} illustration', { page: pageIdx + 1 }),
+        label: tr('How should this page illustration change?'),
+        description: tr('Describe the visual changes you want. The existing style and composition will be preserved.'),
+        examples: tr('Examples:\n• Make it warmer\n• Show the character’s face\n• Add the sunset\n• Remove any text'),
+        placeholder: tr('Example: Add the sunset'),
+        submitLabel: tr('Refine illustration'),
+        requiredMessage: tr('Describe how the page illustration should change.')
+      });
+    }
+
+    function requestUrlImport(event) {
+      setPromptRequest({
+        key: uid(),
+        kind: 'import-url',
+        returnFocus: event.currentTarget,
+        title: tr('Import story from URL'),
+        label: tr('Story webpage URL'),
+        description: tr('Enter the full web address of a page containing story text.'),
+        placeholder: 'https://example.org/story',
+        inputType: 'url',
+        submitLabel: tr('Import text'),
+        requiredMessage: tr('Enter a URL to continue.')
+      });
+    }
+
+    function submitPrompt(value) {
+      var request = promptRequest;
+      if (!request) return;
+      setPromptRequest(null);
+      if (request.kind === 'import-url') { importStoryUrl(value); return; }
+      if (request.kind === 'refine-scene') { refineSceneImage(value); return; }
+      if (request.kind === 'refine-page') refinePageImage(request.pageIdx, value);
+    }
 
     // ── Generate illustration for a specific page ──
     var generatePageImage = useCallback(async function (pageIdx) {
@@ -1274,6 +1417,8 @@
         'aria-modal': 'true',
         'aria-labelledby': 'litlab-dialog-title',
         'aria-describedby': 'litlab-dialog-description',
+        'aria-hidden': promptRequest ? 'true' : undefined,
+        inert: promptRequest ? '' : undefined,
         tabIndex: -1,
         className: 'litlab-dialog',
         style: S.container,
@@ -1406,16 +1551,7 @@
                   'aria-label': isLoading ? tr('Creating script, please wait') : tr('Create Script from text'),
                   style: S.btn(PURPLE, '#fff', !sourceText.trim() || isLoading) }, isLoading ? '⏳ ' + loadingMsg : tr('🎭 Create Script')),
                 // URL import
-                e('button', { onClick: async function () {
-                  var url = prompt(tr('Paste a URL to import text from:'));
-                  if (!url || !url.trim()) return;
-                  setIsLoading(true); setLoadingMsg(tr('Fetching from URL...'));
-                  try {
-                    var text = await window.__alloUtils.fetchAndCleanUrl(url.trim(), onCallGemini, addToast);
-                    if (text) { setSourceText(function (prev) { return prev ? prev + '\n\n' + text : text; }); addToast && addToast(tr('Text imported from URL!'), 'success'); }
-                  } catch (err) { addToast && addToast(tr('Import failed: ') + err.message, 'error'); }
-                  setIsLoading(false); setLoadingMsg('');
-                }, style: S.btn('#f1f5f9', '#374151', false) }, tr('🔗 Import URL')),
+                e('button', { type: 'button', onClick: requestUrlImport, style: S.btn('#f1f5f9', '#374151', false) }, tr('🔗 Import URL')),
                 // File upload
                 e('button', { onClick: function () {
                   var input = document.createElement('input');
@@ -1649,7 +1785,7 @@
               e('div', { style: { borderRadius: '50%', overflow: 'hidden', border: '3px solid #e5e7eb', width: '120px', height: '120px' } },
                 e('img', { src: sceneImage, alt: 'Story cover illustration', style: { width: '100%', height: '100%', objectFit: 'cover' } })
               ),
-              onCallGeminiImageEdit && e('button', { onClick: refineSceneImage, disabled: sceneImageLoading,
+              onCallGeminiImageEdit && e('button', { onClick: requestSceneImageRefinement, disabled: sceneImageLoading,
                 'aria-busy': sceneImageLoading ? 'true' : 'false',
                 'aria-label': sceneImageLoading ? 'Refining cover, please wait' : tr('Refine cover image with a custom instruction'),
                 style: { fontSize: '11px', color: '#475569', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '4px 10px', cursor: sceneImageLoading ? 'wait' : 'pointer' }
@@ -1658,7 +1794,7 @@
             // Page illustration
             pageImages[currentPage] && e('div', { style: { marginBottom: '10px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb', position: 'relative' } },
               e('img', { src: pageImages[currentPage], alt: 'Illustration for page ' + (currentPage + 1), style: { width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' } }),
-              onCallGeminiImageEdit && e('button', { onClick: function () { refinePageImage(currentPage); }, disabled: pageImgLoading[currentPage],
+              onCallGeminiImageEdit && e('button', { onClick: function (event) { requestPageImageRefinement(currentPage, event); }, disabled: pageImgLoading[currentPage],
                 'aria-busy': pageImgLoading[currentPage] ? 'true' : 'false',
                 'aria-label': pageImgLoading[currentPage] ? 'Refining illustration, please wait' : tr('Refine this page illustration with a custom instruction'),
                 style: { position: 'absolute', top: '6px', right: '6px', fontSize: '11px', color: '#374151', background: 'rgba(255,255,255,0.92)', border: '1px solid #94a3b8', borderRadius: '8px', padding: '4px 10px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', fontWeight: 700 }
@@ -1919,7 +2055,22 @@
             )
           )
         )
-      )
+      ),
+      promptRequest && e(LitLabPromptDialog, {
+        key: promptRequest.key,
+        title: promptRequest.title,
+        label: promptRequest.label,
+        description: promptRequest.description,
+        examples: promptRequest.examples,
+        placeholder: promptRequest.placeholder,
+        inputType: promptRequest.inputType,
+        submitLabel: promptRequest.submitLabel,
+        cancelLabel: tr('Cancel'),
+        requiredMessage: promptRequest.requiredMessage,
+        returnFocus: promptRequest.returnFocus,
+        onCancel: function () { setPromptRequest(null); },
+        onSubmit: submitPrompt
+      })
     );
   });
 
