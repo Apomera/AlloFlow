@@ -797,20 +797,27 @@ describe('Lingua Practice word-bank download', () => {
   it('downloads a complete backup and clears Lingua data after confirmation', async () => {
     localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [{ language: 'Spanish', term: 'hola', meaning: 'hello' }] }));
     const clicks = []; const toasts = [];
-    const originalClick = window.HTMLAnchorElement.prototype.click; const originalCreate = window.URL.createObjectURL; const originalRevoke = window.URL.revokeObjectURL; const originalConfirm = window.confirm;
+    const originalClick = window.HTMLAnchorElement.prototype.click; const originalCreate = window.URL.createObjectURL; const originalRevoke = window.URL.revokeObjectURL;
     window.HTMLAnchorElement.prototype.click = function () { clicks.push(this.getAttribute('download')); };
-    window.URL.createObjectURL = () => 'blob:lingua-backup'; window.URL.revokeObjectURL = () => {}; window.confirm = () => true;
+    window.URL.createObjectURL = () => 'blob:lingua-backup'; window.URL.revokeObjectURL = () => {};
     try {
       await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, addToast: (m, t) => toasts.push({ m, t }) }));
       await act(async () => { button('Saved words').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
       await act(async () => { button('Download backup').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
       expect(clicks).toContain('lingua-backup.json');
       await act(async () => { button('Clear Lingua data').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(localStorage.getItem('allo_lingua_progress_v1')).not.toBe(null);
+      const confirmation = host.querySelector('[role="alertdialog"]');
+      expect(confirmation).toBeTruthy();
+      const confirmClear = Array.from(confirmation.querySelectorAll('button'))
+        .find((node) => node.textContent === 'Clear Lingua data');
+      expect(confirmClear).toBeTruthy();
+      await act(async () => { confirmClear.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
       expect(localStorage.getItem('allo_lingua_progress_v1')).toBe(null);
       expect(host.textContent).not.toContain('hola');
       expect(toasts.some((item) => item.m.includes('cleared') && item.t === 'success')).toBe(true);
     } finally {
-      window.HTMLAnchorElement.prototype.click = originalClick; window.URL.createObjectURL = originalCreate; window.URL.revokeObjectURL = originalRevoke; window.confirm = originalConfirm;
+      window.HTMLAnchorElement.prototype.click = originalClick; window.URL.createObjectURL = originalCreate; window.URL.revokeObjectURL = originalRevoke;
     }
   });
 

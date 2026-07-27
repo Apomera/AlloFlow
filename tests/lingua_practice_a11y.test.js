@@ -4,7 +4,7 @@
 // independently from the production palette, while keyboard containment and
 // focus restoration are exercised against the live React component.
 
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
@@ -81,6 +81,7 @@ afterEach(() => {
   }
   localStorage.clear();
   document.body.style.overflow = '';
+  vi.restoreAllMocks();
 });
 
 async function mount(props = {}) {
@@ -811,6 +812,126 @@ describe('Lingua Practice RTL conversation layout', () => {
     expect(tryLabel.lang).toBe('en-US');
     expect(tryLabel.dir).toBe('ltr');
     await expectNoAxeViolations('Arabic conversation coaching');
+  });
+});
+
+
+
+describe('Lingua Practice destructive-action dialogs', () => {
+  it('deletes a practice set through a contained alert dialog without native confirm', async () => {
+    const nativeConfirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await mount();
+    await click('Build practice set');
+    await click('Practice sets');
+
+    const opener = findButton('Delete');
+    expect(opener).toBeTruthy();
+    opener.focus();
+    await act(async () => {
+      opener.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    let confirmation = host.querySelector('[role="alertdialog"]');
+    expect(confirmation).toBeTruthy();
+    expect(confirmation.getAttribute('aria-modal')).toBe('true');
+    expect(confirmation.getAttribute('aria-labelledby')).toBe('lingua-confirm-title');
+    expect(confirmation.getAttribute('aria-describedby')).toBe('lingua-confirm-message');
+    expect(confirmation.querySelector('#lingua-confirm-title').textContent).toBe('Delete');
+    expect(confirmation.querySelector('#lingua-confirm-message').textContent)
+      .toContain('This cannot be undone');
+
+    const background = host.querySelector('[role="dialog"]');
+    expect(background.getAttribute('aria-hidden')).toBe('true');
+    expect(background.hasAttribute('inert')).toBe(true);
+
+    let buttons = Array.from(confirmation.querySelectorAll('button'));
+    const cancel = buttons.find((node) => node.textContent === 'Cancel');
+    let confirmDelete = buttons.find((node) => node.textContent === 'Delete');
+    expect(document.activeElement).toBe(cancel);
+    await expectNoAxeViolations('practice-set delete confirmation');
+
+    confirmDelete.focus();
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true })));
+    expect(document.activeElement).toBe(cancel);
+    cancel.focus();
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true })));
+    expect(document.activeElement).toBe(confirmDelete);
+
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    expect(host.querySelector('[role="alertdialog"]')).toBeNull();
+    expect(document.activeElement).toBe(opener);
+    expect(findButton('Use set')).toBeTruthy();
+
+    await act(async () => {
+      opener.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    confirmation = host.querySelector('[role="alertdialog"]');
+    confirmDelete = Array.from(confirmation.querySelectorAll('button'))
+      .find((node) => node.textContent === 'Delete');
+    await act(async () => {
+      confirmDelete.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(host.querySelector('[role="alertdialog"]')).toBeNull();
+    expect(findButton('Use set')).toBeFalsy();
+    expect(document.activeElement.textContent).toContain('Practice Set Studio');
+    expect(nativeConfirm).not.toHaveBeenCalled();
+  });
+
+  it('clears local Lingua data only after explicit alert-dialog confirmation', async () => {
+    localStorage.setItem('allo_lingua_profile_v1', JSON.stringify({
+      known: 'English',
+      target: 'Spanish',
+      level: 'Beginner',
+      topic: 'Saved topic',
+    }));
+    const nativeConfirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await mount();
+    await click('Saved words');
+
+    const opener = findButton('Clear Lingua data');
+    expect(opener).toBeTruthy();
+    opener.focus();
+    await act(async () => {
+      opener.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    let confirmation = host.querySelector('[role="alertdialog"]');
+    expect(confirmation.querySelector('#lingua-confirm-title').textContent)
+      .toBe('Clear Lingua data');
+    expect(confirmation.querySelector('#lingua-confirm-message').textContent)
+      .toContain('Clear all Lingua data on this device');
+    let buttons = Array.from(confirmation.querySelectorAll('button'));
+    const cancel = buttons.find((node) => node.textContent === 'Cancel');
+    expect(document.activeElement).toBe(cancel);
+
+    await act(async () => {
+      cancel.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(document.activeElement).toBe(opener);
+    expect(localStorage.getItem('allo_lingua_profile_v1')).not.toBeNull();
+
+    await act(async () => {
+      opener.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    confirmation = host.querySelector('[role="alertdialog"]');
+    buttons = Array.from(confirmation.querySelectorAll('button'));
+    const confirmClear = buttons.find((node) => node.textContent === 'Clear Lingua data');
+    await act(async () => {
+      confirmClear.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(host.querySelector('[role="alertdialog"]')).toBeNull();
+    expect(localStorage.getItem('allo_lingua_profile_v1')).toBeNull();
+    expect(document.activeElement.textContent).toContain('Practice language from');
+    expect(nativeConfirm).not.toHaveBeenCalled();
   });
 });
 
