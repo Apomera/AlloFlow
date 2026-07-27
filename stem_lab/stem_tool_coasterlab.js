@@ -1100,10 +1100,10 @@ let riderSeed = 0;
       const shirt = new THREE.MeshStandardMaterial({ color: RIDER_SHIRT[who % RIDER_SHIRT.length], roughness: 0.8 });
       const torso = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.4, 0.22), shirt);
       torso.position.y = 0.2;
-      torso.castShadow = true;
       const head = new THREE.Mesh(new THREE.SphereGeometry(0.115, 10, 8), skin);
       head.position.y = 0.52;
-      head.castShadow = true;
+      // riders deliberately cast no shadow: they sit inside a car that already
+      // casts one, and at eight cars this would be 32 more shadow casters
       g.add(torso, head);
       const arms = [];
       for(const ax of [-0.19, 0.19]){
@@ -2412,7 +2412,9 @@ function stepSim(dtFrame){
           tele.markers[key] = { v: sim.v, gV, gLat };
           // a shot at each checkpoint — the launch marker is skipped because the
           // train has barely left the station and there is nothing to see yet
-          if(key !== 'L' && tele.photos.length + 1 < 5) sim.wantPhoto = key;
+          // each photo costs a whole extra scene render, so FX Lite keeps only
+          // the headline valley shot instead of one per checkpoint
+          if(key !== 'L' && tele.photos.length + 1 < 5 && (!fxLite || key === 'B')) sim.wantPhoto = key;
         }
       }
     }

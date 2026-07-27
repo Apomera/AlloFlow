@@ -1693,7 +1693,7 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
   it.each(TOOL_PATHS)('%s: a trackside photo is taken at every checkpoint, not just the valley', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     // queued per marker, launch skipped, capped so a long circuit cannot fill memory
-    expect(src).toContain("if(key !== 'L' && tele.photos.length + 1 < 5) sim.wantPhoto = key;");
+    expect(src).toContain("if(key !== 'L' && tele.photos.length + 1 < 5 && (!fxLite || key === 'B')) sim.wantPhoto = key;");
     expect(src).toContain('photos: [],');
     expect(src).toContain("const PHOTO_LABEL = { A: 'the first crest', B: 'the valley', C: 'the loop apex', D: 'the marked turn' };");
     // the crowd is posed for the instant being photographed, even in a headless run
@@ -1797,6 +1797,21 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
     // the mesh budget the train is built to has to cover the maximum
     expect(B.carsMax).toBeGreaterThan(B.carsDefault);
     expect(B.carsMin).toBeLessThan(B.carsDefault);
+  });
+
+  it.each(TOOL_PATHS)('%s: the extras this tool added stay affordable on a weak device', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    // riders cast no shadow — at eight cars that would be 32 more shadow casters
+    expect(src).toContain('// riders deliberately cast no shadow: they sit inside a car that already');
+    const rider = src.slice(src.indexOf('const rowRiders = [];'), src.indexOf('riderCars.push(rowRiders);'));
+    expect(rider).not.toContain('castShadow');
+    // every checkpoint photo is a whole extra scene render, so Lite keeps one
+    expect(src).toContain("(!fxLite || key === 'B')");
+    // and the one it keeps is the headline shot the ride card needs
+    expect(src).toContain("if(key === 'B' || !tele.photo) tele.photo = url;");
+    // riders are hidden outright in Lite, and the FPS watchdog still offers it
+    expect(src).toContain('const show = !fxLite;');
+    expect(src).toContain('if(!fpsSuggested && !fxLite && !xrOn && dt > 0 && dt < 1){');
   });
 
   it.each(TOOL_PATHS)('%s: three missions are graded row by row', (p) => {
