@@ -72,7 +72,8 @@ describe('thin section — coverage', () => {
   it('modal proportions add up', () => {
     const src = readFileSync(ROCKS_FILE, 'utf8');
     const block = src.slice(src.indexOf('var RK_THIN_SECTION = {'), src.indexOf('function rkThinSectionSvg'));
-    const rows = [...block.matchAll(/(\w+):\s*\{ mag: \d+,\s*parts: \[([\s\S]*?)\],\s*look:/g)];
+    // `fabric` sits between mag and parts, so do not assume they are adjacent.
+    const rows = [...block.matchAll(/(\w+):\s*\{ mag: \d+,[^[]*parts: \[([\s\S]*?)\],\s*look:/g)];
     expect(rows.length).toBe(20);
     rows.forEach((r) => {
       const fracs = [...r[2].matchAll(/,\s*([\d.]+)\]/g)].map((m) => parseFloat(m[1]));
@@ -144,6 +145,59 @@ describe('thin section — the optics have to be right', () => {
     const src = readFileSync(ROCKS_FILE, 'utf8');
     const fn = src.slice(src.indexOf('function rkThinSectionSvg'), src.indexOf('function rkThinSectionSvg') + 4200);
     expect(fn).not.toContain('Math.random');
+  });
+});
+
+describe('thin section — the texture has to match the caption', () => {
+  // Every rock originally got the same jittered interlocking mosaic, so
+  // sandstone rendered identically to granite while its own caption promised
+  // "rounded grains with cement between them", and slate's grains pointed every
+  // which way under a caption saying the micas are all rotated into one plane.
+  // Texture is half of what a thin section tells you.
+  it('tags every section with a fabric', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const block = src.slice(src.indexOf('var RK_THIN_SECTION = {'), src.indexOf('function rkThinSectionSvg'));
+    const rows = [...block.matchAll(/^\s{4}(\w+):\s*\{ mag: \d+, fabric: '(\w+)'/gm)];
+    expect(rows.length).toBe(20);
+    rows.forEach((r) => {
+      expect(['interlocking', 'clastic', 'foliated'], `${r[1]}`).toContain(r[2]);
+    });
+  });
+
+  it('gives clastic rocks a cement matrix their grains sit in', () => {
+    // The gaps between grains ARE the diagnostic that this was once loose sand.
+    // Assert on the rendered cement colour, not a React key — keys never reach
+    // the DOM, so keying off one silently passes nothing.
+    const CEMENT = '#efe9dd';
+    const sand = section(render('sandstone', { xpl: false, stage: 0 }));
+    expect(sand).toContain(CEMENT);
+    // An igneous rock has no cement at all — its grains interlock directly.
+    expect(section(render('granite', { xpl: false, stage: 0 }))).not.toContain(CEMENT);
+  });
+
+  it('rounds clastic grains and keeps crystallised ones angular', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    // Rounding is driven by side count: transport wears corners off.
+    expect(src).toContain("sides: fabric === 'clastic' ? 9 :");
+    expect(src).toContain('var rough = gr.sides > 8 ? 0.10 : 0.42;');
+  });
+
+  it('aligns foliated grains into one plane', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    // Grains scatter only slightly around a shared foliation direction, and are
+    // stretched along it — that alignment is what the cleavage IS.
+    expect(src).toContain("rot: fabric === 'foliated' ? FOLIATION + (rnd() - 0.5) * 26 : rnd() * 180");
+    expect(src).toContain("elong: fabric === 'foliated' ? 1.75 + rnd() * 0.6 : 1");
+  });
+
+  it('makes the three fabrics visibly different from each other', () => {
+    const gran = section(render('granite', { xpl: false, stage: 0 }));   // interlocking
+    const sand = section(render('sandstone', { xpl: false, stage: 0 })); // clastic
+    const slate = section(render('slate', { xpl: false, stage: 0 }));    // foliated
+    [gran, sand, slate].forEach((s) => expect(s.length).toBeGreaterThan(400));
+    expect(gran).not.toEqual(sand);
+    expect(sand).not.toEqual(slate);
+    expect(gran).not.toEqual(slate);
   });
 });
 

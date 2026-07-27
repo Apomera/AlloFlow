@@ -530,26 +530,26 @@
   // What you would actually see in a slice of each rock. Fractions are rough
   // modal proportions and only need to be right enough to read.
   var RK_THIN_SECTION = {
-    granite:      { mag: 40,  parts: [['quartz', 0.32], ['feldspar', 0.45], ['mica', 0.13], ['biotite', 0.10]], look: 'Interlocking grains with no preferred direction and no space between them — that texture alone says it crystallised slowly from a melt.' },
-    diorite:      { mag: 40,  parts: [['feldspar', 0.55], ['amphibole', 0.30], ['biotite', 0.15]], look: 'Interlocking, and much darker overall than granite because there is almost no quartz.' },
-    basalt:       { mag: 100, parts: [['feldspar', 0.42], ['pyroxene', 0.34], ['olivine', 0.14], ['magnetite', 0.10]], look: 'Tiny lath-shaped feldspar crystals in a fine groundmass — chilled too fast for anything to grow large.' },
-    andesite:     { mag: 100, parts: [['feldspar', 0.52], ['amphibole', 0.24], ['pyroxene', 0.16], ['glass', 0.08]], look: 'A few larger crystals sitting in a much finer groundmass: two cooling rates recorded in one rock.' },
-    rhyolite:     { mag: 100, parts: [['quartz', 0.28], ['feldspar', 0.40], ['glass', 0.32]], look: 'Glassy groundmass with scattered quartz and feldspar — erupted, not intruded.' },
-    obsidian:     { mag: 100, parts: [['glass', 1.0]], look: 'No crystals at all. Under crossed polars the whole field stays black however far you rotate, because glass is not a crystal.' },
-    pumice:       { mag: 40,  parts: [['glass', 0.92], ['feldspar', 0.08]], look: 'Glass threaded with frozen gas bubbles — mostly holes.' },
-    tuff:         { mag: 40,  parts: [['glass', 0.55], ['feldspar', 0.20], ['quartz', 0.15], ['clay', 0.10]], look: 'Broken shards of volcanic glass welded together — an ash fall turned to rock.' },
-    sandstone:    { mag: 40,  parts: [['quartz', 0.70], ['feldspar', 0.12], ['cement', 0.18]], look: 'ROUNDED grains with cement between them — the rounding happened during transport, and the space between grains is the giveaway that this was once loose sand.' },
-    conglom:      { mag: 20,  parts: [['quartz', 0.45], ['feldspar', 0.18], ['clay', 0.15], ['cement', 0.22]], look: 'Large rounded clasts of several different rocks, set in a finer matrix.' },
-    shale:        { mag: 200, parts: [['clay', 0.78], ['quartz', 0.16], ['mica', 0.06]], look: 'Clay too fine to resolve even at this magnification, with the flakes weakly lined up.' },
-    limestone:    { mag: 40,  parts: [['calcite', 0.88], ['cement', 0.12]], look: 'Calcite everywhere, often with fossil fragments still recognisable. Watch the relief flicker as you rotate — that is calcite.' },
-    chalk:        { mag: 400, parts: [['calcite', 1.0]], look: 'At 400x the "mud" resolves into countless plates from single-celled plankton.' },
-    travertine:   { mag: 40,  parts: [['calcite', 1.0]], look: 'Banded calcite precipitated from water, often with open cavities.' },
-    marble:       { mag: 40,  parts: [['calcite', 1.0]], look: 'Calcite recrystallised into a tight interlocking mosaic — the fossils and bedding are gone.' },
-    quartzite:    { mag: 40,  parts: [['quartz', 0.95], ['mica', 0.05]], look: 'Quartz grains fused directly to each other with no cement left between them. Compare with sandstone.' },
-    slate:        { mag: 200, parts: [['clay', 0.62], ['mica', 0.28], ['quartz', 0.10]], look: 'Microscopic micas all rotated into the same plane — that alignment IS the cleavage.' },
-    phyllite:     { mag: 100, parts: [['mica', 0.55], ['quartz', 0.30], ['clay', 0.15]], look: 'The micas have grown just big enough to catch the light, which is the silky sheen you see in the hand specimen.' },
-    schist:       { mag: 40,  parts: [['mica', 0.48], ['quartz', 0.30], ['feldspar', 0.14], ['garnet', 0.08]], look: 'Mica flakes now large and strongly aligned, often wrapping around garnets.' },
-    gneiss:       { mag: 40,  parts: [['quartz', 0.32], ['feldspar', 0.38], ['biotite', 0.22], ['garnet', 0.08]], look: 'Light and dark minerals segregated into separate bands — the banding you see with the naked eye, at grain scale.' }
+    granite:      { mag: 40, fabric: 'interlocking',  parts: [['quartz', 0.32], ['feldspar', 0.45], ['mica', 0.13], ['biotite', 0.10]], look: 'Interlocking grains with no preferred direction and no space between them — that texture alone says it crystallised slowly from a melt.' },
+    diorite:      { mag: 40, fabric: 'interlocking',  parts: [['feldspar', 0.55], ['amphibole', 0.30], ['biotite', 0.15]], look: 'Interlocking, and much darker overall than granite because there is almost no quartz.' },
+    basalt:       { mag: 100, fabric: 'interlocking', parts: [['feldspar', 0.42], ['pyroxene', 0.34], ['olivine', 0.14], ['magnetite', 0.10]], look: 'Tiny lath-shaped feldspar crystals in a fine groundmass — chilled too fast for anything to grow large.' },
+    andesite:     { mag: 100, fabric: 'interlocking', parts: [['feldspar', 0.52], ['amphibole', 0.24], ['pyroxene', 0.16], ['glass', 0.08]], look: 'A few larger crystals sitting in a much finer groundmass: two cooling rates recorded in one rock.' },
+    rhyolite:     { mag: 100, fabric: 'interlocking', parts: [['quartz', 0.28], ['feldspar', 0.40], ['glass', 0.32]], look: 'Glassy groundmass with scattered quartz and feldspar — erupted, not intruded.' },
+    obsidian:     { mag: 100, fabric: 'interlocking', parts: [['glass', 1.0]], look: 'No crystals at all. Under crossed polars the whole field stays black however far you rotate, because glass is not a crystal.' },
+    pumice:       { mag: 40, fabric: 'interlocking',  parts: [['glass', 0.92], ['feldspar', 0.08]], look: 'Glass threaded with frozen gas bubbles — mostly holes.' },
+    tuff:         { mag: 40, fabric: 'clastic',  parts: [['glass', 0.55], ['feldspar', 0.20], ['quartz', 0.15], ['clay', 0.10]], look: 'Broken shards of volcanic glass welded together — an ash fall turned to rock.' },
+    sandstone:    { mag: 40, fabric: 'clastic',  parts: [['quartz', 0.70], ['feldspar', 0.12], ['cement', 0.18]], look: 'ROUNDED grains with cement between them — the rounding happened during transport, and the space between grains is the giveaway that this was once loose sand.' },
+    conglom:      { mag: 20, fabric: 'clastic',  parts: [['quartz', 0.45], ['feldspar', 0.18], ['clay', 0.15], ['cement', 0.22]], look: 'Large rounded clasts of several different rocks, set in a finer matrix.' },
+    shale:        { mag: 200, fabric: 'foliated', parts: [['clay', 0.78], ['quartz', 0.16], ['mica', 0.06]], look: 'Clay too fine to resolve even at this magnification, with the flakes weakly lined up.' },
+    limestone:    { mag: 40, fabric: 'interlocking',  parts: [['calcite', 0.88], ['cement', 0.12]], look: 'Calcite everywhere, often with fossil fragments still recognisable. Watch the relief flicker as you rotate — that is calcite.' },
+    chalk:        { mag: 400, fabric: 'interlocking', parts: [['calcite', 1.0]], look: 'At 400x the "mud" resolves into countless plates from single-celled plankton.' },
+    travertine:   { mag: 40, fabric: 'interlocking',  parts: [['calcite', 1.0]], look: 'Banded calcite precipitated from water, often with open cavities.' },
+    marble:       { mag: 40, fabric: 'interlocking',  parts: [['calcite', 1.0]], look: 'Calcite recrystallised into a tight interlocking mosaic — the fossils and bedding are gone.' },
+    quartzite:    { mag: 40, fabric: 'interlocking',  parts: [['quartz', 0.95], ['mica', 0.05]], look: 'Quartz grains fused directly to each other with no cement left between them. Compare with sandstone.' },
+    slate:        { mag: 200, fabric: 'foliated', parts: [['clay', 0.62], ['mica', 0.28], ['quartz', 0.10]], look: 'Microscopic micas all rotated into the same plane — that alignment IS the cleavage.' },
+    phyllite:     { mag: 100, fabric: 'foliated', parts: [['mica', 0.55], ['quartz', 0.30], ['clay', 0.15]], look: 'The micas have grown just big enough to catch the light, which is the silky sheen you see in the hand specimen.' },
+    schist:       { mag: 40, fabric: 'foliated',  parts: [['mica', 0.48], ['quartz', 0.30], ['feldspar', 0.14], ['garnet', 0.08]], look: 'Mica flakes now large and strongly aligned, often wrapping around garnets.' },
+    gneiss:       { mag: 40, fabric: 'foliated',  parts: [['quartz', 0.32], ['feldspar', 0.38], ['biotite', 0.22], ['garnet', 0.08]], look: 'Light and dark minerals segregated into separate bands — the banding you see with the naked eye, at grain scale.' }
   };
 
   // Grain mosaic. A jittered grid, each cell drawn as an irregular polygon, so
@@ -579,17 +579,45 @@
     var rnd = rkSeed(id + '-section');
     var grains = [];
     var STEP = sec.mag >= 200 ? 13 : sec.mag >= 100 ? 19 : 27;
+
+    // FABRIC — how the grains are arranged. Every rock used to get the same
+    // jittered interlocking mosaic, so sandstone rendered identically to granite
+    // while its own caption promised "rounded grains with cement between them",
+    // and slate's grains pointed every which way under a caption saying the
+    // micas are all rotated into one plane. The texture is half of what a thin
+    // section tells you, so it is now drawn rather than only described.
+    var fabric = sec.fabric || 'interlocking';
+    var FOLIATION = -18;   // degrees; one shared direction for aligned fabrics
+
+    // Clastic rocks sit in a cement matrix, so paint that first and leave the
+    // grains smaller than their cell — the gaps ARE the diagnostic.
+    if (fabric === 'clastic') {
+      kids.push(h('circle', {
+        key: 'matrix', cx: CX, cy: CY, r: R,
+        fill: xpl ? '#15151b' : (RK_OPTICS.cement.ppl)
+      }));
+    }
+
     for (var gy = -R; gy < R + STEP; gy += STEP) {
       for (var gx = -R; gx < R + STEP; gx += STEP) {
-        var jx = CX + gx + (rnd() - 0.5) * STEP * 0.7;
-        var jy = CY + gy + (rnd() - 0.5) * STEP * 0.7;
+        var jitter = fabric === 'clastic' ? 0.5 : 0.7;
+        var jx = CX + gx + (rnd() - 0.5) * STEP * jitter;
+        var jy = CY + gy + (rnd() - 0.5) * STEP * jitter;
         if (Math.sqrt((jx - CX) * (jx - CX) + (jy - CY) * (jy - CY)) > R + STEP) continue;
+        var mineral = pool[Math.floor(rnd() * pool.length)];
+        // In a clastic rock the cement is the matrix, not a grain.
+        if (fabric === 'clastic' && mineral === 'cement') continue;
         grains.push({
           x: jx, y: jy,
-          m: pool[Math.floor(rnd() * pool.length)],
-          rot: rnd() * 180,                 // crystallographic orientation
-          r: STEP * (0.55 + rnd() * 0.35),
-          sides: 5 + Math.floor(rnd() * 3),
+          m: mineral,
+          // Crystallographic orientation. In a foliated rock the grains grew or
+          // rotated into one plane, so they scatter only slightly around it.
+          rot: fabric === 'foliated' ? FOLIATION + (rnd() - 0.5) * 26 : rnd() * 180,
+          // Clastic grains are separated by cement; interlocking ones fill the cell.
+          r: STEP * (fabric === 'clastic' ? (0.34 + rnd() * 0.20) : (0.55 + rnd() * 0.35)),
+          // Rounded by transport, angular when crystallised, platy when foliated.
+          sides: fabric === 'clastic' ? 9 : 5 + Math.floor(rnd() * 3),
+          elong: fabric === 'foliated' ? 1.75 + rnd() * 0.6 : 1,
           wob: rnd()
         });
       }
@@ -621,8 +649,18 @@
       var pts = [];
       for (i = 0; i < gr.sides; i++) {
         var a = (i / gr.sides) * Math.PI * 2 + gr.rot * 0.02;
-        var rr = gr.r * (0.78 + ((gr.wob * (i + 3)) % 1) * 0.42);
-        pts.push((gr.x + Math.cos(a) * rr).toFixed(1) + ',' + (gr.y + Math.sin(a) * rr).toFixed(1));
+        // Clastic grains are smooth and rounded — transport wore the corners off.
+        // Crystallised ones keep their irregular interlocking outline.
+        var rough = gr.sides > 8 ? 0.10 : 0.42;
+        var rr = gr.r * ((1 - rough / 2) + ((gr.wob * (i + 3)) % 1) * rough);
+        // Foliated grains are platy and lie in the foliation plane, so stretch
+        // along it and squash across it.
+        var ex = Math.cos(a) * rr * gr.elong;
+        var ey = Math.sin(a) * rr / (gr.elong > 1 ? gr.elong * 0.72 : 1);
+        var fr = gr.elong > 1 ? FOLIATION * Math.PI / 180 : 0;
+        var px = gr.x + ex * Math.cos(fr) - ey * Math.sin(fr);
+        var py = gr.y + ex * Math.sin(fr) + ey * Math.cos(fr);
+        pts.push(px.toFixed(1) + ',' + py.toFixed(1));
       }
       g.push(h('polygon', {
         key: 'g' + idx, points: pts.join(' '), fill: fill,
