@@ -4861,6 +4861,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var T = window.THREE;
     if (!T) return null;
     var cv = document.createElement('canvas');
+    cv.setAttribute('aria-hidden', 'true'); // aria-hidden: true; internal rendering buffer
     cv.width = width || 256;
     cv.height = height || 128;
     var cx = cv.getContext('2d');

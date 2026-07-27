@@ -111,26 +111,39 @@ describe('RoadReady canvas alternatives', () => {
     );
   });
 
-  it('explicitly excludes all 22 internal canvas buffers from the accessibility tree', () => {
-    const source = readFileSync(SOURCE, 'utf8');
-    const lines = source.split(/\r?\n/);
+  // Inventory tripwire: every offscreen canvas must be marked out of the a11y tree,
+  // and the count must be deliberate so adding one forces a human to look.
+  //
+  // Both halves collect ALL violations before asserting. The original threw inside
+  // the loop, so the FIRST unmarked canvas aborted the test before the count was
+  // ever checked — and that masked a real drift for months. History: 22 at
+  // 1ea58b53c when this was written, two removed in 08df4edd2 (→20), one added back
+  // in f3c63b90c (makeSignTexture, and it arrived without the marking). The test was
+  // red across all of it, reporting only the symptom it happened to reach first.
+  const EXPECTED_INTERNAL_CANVASES = 21;
+
+  it('explicitly excludes every internal canvas buffer from the accessibility tree', () => {
+    const lines = readFileSync(SOURCE, 'utf8').split(/\r?\n/);
     const creationLines = [];
+    const unmarked = [];
 
     for (let index = 0; index < lines.length; index += 1) {
       if (!/document\.createElement\(\s*['"]canvas['"]\s*\)/.test(lines[index])) {
         continue;
       }
-      creationLines.push(index);
+      creationLines.push(index + 1);
       const context = lines.slice(index, index + 3).join(' ');
-      expect(
-        /\.setAttribute\(\s*['"]aria-hidden['"]\s*,\s*['"]true['"]\s*\)/.test(
-          context
-        ),
-        `internal canvas at source line ${index + 1} is not excluded`
-      ).toBe(true);
+      if (!/\.setAttribute\(\s*['"]aria-hidden['"]\s*,\s*['"]true['"]\s*\)/.test(context)) {
+        unmarked.push(index + 1);
+      }
     }
 
-    expect(creationLines).toHaveLength(22);
+    // Report every offender at once, not just the first.
+    expect(unmarked, `internal canvases missing aria-hidden at source line(s): ${unmarked.join(', ')}`).toEqual([]);
+    expect(
+      creationLines.length,
+      `internal canvas count changed (lines: ${creationLines.join(', ')}) — if this is intended, update EXPECTED_INTERNAL_CANVASES and confirm each new canvas is aria-hidden`
+    ).toBe(EXPECTED_INTERNAL_CANVASES);
   });
 
   it('classifies every source canvas declaration and preserves deploy parity', () => {
