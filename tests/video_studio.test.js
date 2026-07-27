@@ -2386,6 +2386,33 @@ describe('take persistence + export hardening wiring', () => {
     expect(m).not.toMatch(/callGemini\(\w+, false, true\)/);
     expect(m.match(/callGemini\(\w+, true, false\)/g) || []).toHaveLength(7);
   });
+  it('the AI bridge also lives at module scope, so the popup keeps working once the panel closes', () => {
+    const m = moduleText();
+    // The popup's own Cinematic Studio button posts 'allostudio-open-cinematic',
+    // and ANTI answers it with setIsVideoStudioOpen(false) — so while these
+    // handlers sat in the component's useEffect, one click silently timed out
+    // every AI feature in the popup for the rest of the session. A demo step that
+    // opens a panel did the same, and the teacher must close the panel anyway to
+    // record the app cleanly (it is a full-screen overlay on the recorded tab).
+    expect(m).toContain('function vsAiBridgeReceiver(ev)');
+    expect(m).toContain("window.addEventListener('message', vsAiBridgeReceiver);");
+    const reg = m.indexOf("window.addEventListener('message', vsAiBridgeReceiver);");
+    [
+      'allostudio-ai-request', 'allostudio-narrate-request', 'allostudio-describe-request',
+      'allostudio-lesson-request', 'allostudio-localize-request', 'allostudio-imagen-request',
+      'allostudio-teaching-inserts-request', 'allostudio-frame-image-request',
+      'allostudio-resource-cues-request', 'allostudio-transcript', 'allostudio-tts-request',
+      'allostudio-script-line-request', 'allostudio-script-generate-request',
+      'allostudio-open-cinematic',
+    ].forEach((type) => {
+      const needle = "ev.data.type === '" + type + "'";
+      expect(m.split(needle)).toHaveLength(2); // exactly one handler for each
+      expect(m.indexOf(needle)).toBeLessThan(reg); // and it is inside the module-scope receiver
+    });
+    // Toast/translate must read LIVE props, not a captured render's.
+    expect(m).toContain('function vsHostToast(msg, kind)');
+    expect(m).toContain('vsDemoHost.current && vsDemoHost.current.addToast');
+  });
   it('the demo bridge halts a run with no panel mounted', async () => {
     // Regression: these handlers used to live in the panel's useEffect. A demo
     // step that opens any other panel makes ANTI's closeOtherPanels() close Video

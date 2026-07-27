@@ -3840,6 +3840,18 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     add('opening', 'Opening pacing', firstStart <= 3 ? 'pass' : 'warn', firstStart <= 3 ? 'The first instruction appears promptly.' : 'The first instruction begins after ' + Math.round(firstStart) + ' seconds.');
     add('ending', 'Ending margin', !duration || !lastEnd || duration - lastEnd >= 0.5 ? 'pass' : 'warn', !duration || !lastEnd || duration - lastEnd >= 0.5 ? 'The ending has reviewable breathing room.' : 'The final caption ends very close to the recording cutoff.');
     add('pending', 'Background processing', t.demoNarrationPending ? 'warn' : 'pass', t.demoNarrationPending ? 'Automatic narration is still being generated.' : 'No demo processing is pending.');
+    // demoNarrationCue is frozen when the audio is generated. Editing the caption
+    // afterwards leaves the voice-over saying the old wording, and burned-in text
+    // then contradicts the audio. Flag it so it is caught before export.
+    if (clips.length) {
+      var driftedClips = clips.filter(function (clip) {
+        var cue = clip.demoNarrationCue || {};
+        var match = captions.filter(function (c) { return c && Math.abs((Number(c.start) || 0) - (Number(cue.start) || 0)) < 0.35; })[0];
+        var live = match ? String(match.text || '').trim() : '';
+        return !!(live && live !== String(cue.text || '').trim());
+      }).length;
+      add('narration_text', 'Narration matches captions', driftedClips ? 'warn' : 'pass', driftedClips ? driftedClips + ' caption(s) changed after the narration was generated; press Regenerate on those clips so the voice-over matches the words on screen.' : 'Every narration line still matches its caption.');
+    }
     var failCount = checks.filter(function (check) { return check.status === 'fail'; }).length;
     var warnCount = checks.filter(function (check) { return check.status === 'warn'; }).length;
     var score = Math.max(0, 100 - failCount * 30 - warnCount * 10);
@@ -4913,6 +4925,17 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     micOn = !!next;
     $('micBtn').setAttribute('aria-pressed', String(micOn));
     $('micBtn').textContent = micOn ? '🎙️ Microphone on' : '🎙️ Microphone off';
+    // micOn used to be read ONLY when the stream was built, so toggling this
+    // during a recording changed the label and nothing else: audio kept being
+    // captured and Web Speech kept listening while the button said "off". Act on
+    // the live track and the recogniser so the control tells the truth.
+    if (activeMicStream) {
+      try { activeMicStream.getAudioTracks().forEach(function (tr) { tr.enabled = micOn; }); } catch (_) {}
+    }
+    if (rec && rec.state !== 'inactive') {
+      if (!micOn) stopCaptions();
+      else if (capOn && !paused) startCaptions();
+    }
     if (!micOn && capOn) setStatus($('capNote'), 'Live captions pause while the microphone is off (they listen through the mic). You can still auto-caption afterwards in the Edit tab.');
     else if (SR && capOn) setStatus($('capNote'), 'Heads-up: live captions use the browser’s speech service (audio is processed by Google while recording).');
   }
@@ -4941,6 +4964,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var sceneItems = [];       // ordered clips/cards for Scene builder exports
   var rec = null, recChunks = [], recBytes = 0;
   var recStreams = [];       // raw streams to stop on teardown
+  var activeMicStream = null; // live mic, so the Microphone toggle can act on it mid-recording
   var captureSurface = '', captureTrackLabel = '';
   var audioCtx = null;
   var pipRaf = 0;
@@ -5031,6 +5055,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         var mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
         recStreams.push(mic);
         parts.push(mic);
+        activeMicStream = mic;
       } catch (micErr) {
         setStatus($('recStatus'), 'Microphone unavailable (' + (micErr && micErr.name || 'error') + ') — recording without narration.', 'warn');
       }
@@ -5201,6 +5226,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     cancelAnimationFrame(pipRaf); pipRaf = 0;
     recStreams.forEach(function (s) { try { s.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} });
     recStreams = [];
+    activeMicStream = null;
     try { if (audioCtx) audioCtx.close(); } catch (_) {}
     audioCtx = null;
     $('previewVideo').hidden = true; $('previewVideo').srcObject = null;
@@ -5248,7 +5274,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var demoCuesForVoice = [], autoNarrationVoice = '';
       if (demoState.active) {
         var demoCues = vsBuildDemoCaptionCues(demoState.events, dur);
-        if (demoCues.length) take.captions = demoCues;
+        // take.captions starts as cuesLive — anything the teacher SPOKE while the
+        // demo drove the app. Assigning demoCues over it silently threw that away.
+        // Merge in time order instead, so both the step labels and the teacher's
+        // own narration land in the cue table where they can be edited or deleted.
+        var spokenCues = (take.captions || []).slice();
+        if (demoCues.length) {
+          take.captions = spokenCues.length
+            ? demoCues.concat(spokenCues).sort(function (a, b) { return (a.start || 0) - (b.start || 0); })
+            : demoCues;
+          if (spokenCues.length) {
+            setStatus($('demoStatus'), 'Demo captions added alongside the ' + spokenCues.length + ' caption' + (spokenCues.length === 1 ? '' : 's') + ' you spoke — both are in the Edit tab’s cue table.', 'ok');
+          }
+        }
         take.name = 'Demo · ' + take.name;
         demoCuesForVoice = demoCues.slice();
         autoNarrationVoice = demoState.voice || '';
@@ -9093,6 +9131,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       host.innerHTML = '<p class="status">No scenes yet. Add the selected take or add a card to begin.</p>';
       setStatus($('sceneStatus'), takes.length ? 'Build a sequence from selected takes and cards.' : 'Record or import a take before building a sequence.');
       if ($('sceneUseBundledPlanBtn')) $('sceneUseBundledPlanBtn').disabled = !(currentTake() && currentTake().scenePlan);
+      // Every mutator persists via renderSceneBuilder's trailing saveSceneDraftSoon(),
+      // so returning early here left the PREVIOUS non-empty draft in localStorage:
+      // emptying the sequence (or deleting the take behind its only clip) came back
+      // on the next popup load as a stale clip with a missing take.
+      saveSceneDraftSoon();
       return;
     }
     if ($('sceneUseBundledPlanBtn')) $('sceneUseBundledPlanBtn').disabled = !(currentTake() && currentTake().scenePlan);
@@ -9659,6 +9702,44 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (pendingNarration.length) { setStatus($('sceneStatus'), 'Automatic narration is still being generated for a scene clip. Wait for it to finish before exporting.', 'warn'); return; }
     var missing = sceneItems.filter(function (item) { return item.type === 'clip' && !sceneItemTake(item); });
     if (missing.length) { setStatus($('sceneStatus'), 'Remove missing clips before exporting the scene.', 'warn'); return; }
+    // The scene renderer builds its audio graph from the clip <video> elements
+    // ALONE, and sceneTakeForExport() hard-codes zooms/audio/narration/audioClips
+    // to empty. Captions ARE remapped onto the gap-closed timeline, which made the
+    // loss of every other track look deliberate. It is not: a narrated demo run
+    // through a ripple cut used to export completely silent, with the status line
+    // still saying "Scene export ready." Name what will be dropped and let the
+    // teacher decide, rather than discovering it on playback.
+    var _sceneDrops = [];
+    var _seenTakes = [];
+    sceneItems.forEach(function (item) {
+      var st = item.type === 'clip' ? sceneItemTake(item) : null;
+      if (!st || _seenTakes.indexOf(st) >= 0) return;
+      _seenTakes.push(st);
+    });
+    var _n = function (v) { return Array.isArray(v) ? v.length : 0; };
+    var _clips = 0, _mutes = 0, _zooms = 0, _music = 0, _narr = 0;
+    _seenTakes.forEach(function (st) {
+      _clips += _n(st.audioClips);
+      _mutes += _n(st.audio && st.audio.muteSpans);
+      _zooms += _n(st.zooms);
+      if (st.musicBed) _music++;
+      if (st.narration) _narr++;
+    });
+    if (_clips) _sceneDrops.push(_clips + ' generated narration/audio clip' + (_clips === 1 ? '' : 's'));
+    if (_narr) _sceneDrops.push(_narr + ' recorded narration track' + (_narr === 1 ? '' : 's'));
+    if (_music) _sceneDrops.push(_music + ' music bed' + (_music === 1 ? '' : 's'));
+    if (_mutes) _sceneDrops.push(_mutes + ' silenced span' + (_mutes === 1 ? '' : 's'));
+    if (_zooms) _sceneDrops.push(_zooms + ' zoom/spotlight keyframe' + (_zooms === 1 ? '' : 's'));
+    if (_sceneDrops.length) {
+      var _msg = 'Scene export keeps each clip’s own audio and its captions, but it does NOT include:\n\n  • '
+        + _sceneDrops.join('\n  • ')
+        + '\n\nThose survive a normal single-take export from the Export tab.\n\nExport the scene anyway?';
+      if (!confirm(_msg)) {
+        setStatus($('sceneStatus'), 'Scene export cancelled. Export the take from the Export tab to keep narration, music, silences and zooms.', 'warn');
+        return;
+      }
+      setStatus($('sceneStatus'), 'Exporting scene without ' + _sceneDrops.join(', ') + '.', 'warn');
+    }
     var btn = $('sceneExportBtn');
     if (btn) btn.disabled = true;
     var exportItems = sceneItems.map(function (item, idx) {
@@ -10492,6 +10573,15 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     renderWordCleanupPanel();
     setStatus($('transcriptStatus'), 'Cleanup queue cleared.');
   }
+  // Shared guard for the operations that REPLACE the whole Scene Builder
+  // storyboard. They persist within ~180ms via saveSceneDraftSoon(), so there is
+  // no undo and a reload restores the replacement, not the teacher's sequence.
+  function confirmReplaceSceneSequence(what) {
+    if (!sceneItems.length) return true;
+    try {
+      return window.confirm('Building the ' + what + ' replaces your current Scene Builder sequence (' + sceneItems.length + ' item' + (sceneItems.length === 1 ? '' : 's') + ').\n\nThis cannot be undone. Continue?');
+    } catch (_) { return true; }
+  }
   function buildWordCleanupScene() {
     var t = currentTake();
     var words = wordCleanupWords(t);
@@ -10502,6 +10592,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (!selection || !selection.ranges.length) { setStatus($('transcriptStatus'), 'The approved cleanup words do not have usable timing.', 'warn'); return; }
     var keep = vsBuildRippleKeepSegments(t.duration || 0, selection.ranges, 0.18);
     if (!keep.length) { setStatus($('transcriptStatus'), 'That cleanup would remove the whole take. Approve fewer candidates.', 'warn'); return; }
+    // This REPLACES the whole storyboard and immediately persists it, so an
+    // assembled sequence used to vanish with no prompt and no undo. The sibling
+    // stitchDemoContinuationTakes already confirms; match it.
+    if (!confirmReplaceSceneSequence('cleanup scene')) return;
     sceneItems = keep.slice(0, 120).map(function (seg) {
       return { id: sceneNewId('clip'), type: 'clip', takeId: t.id, start: seg.start, end: seg.end, source: 'word_cleanup', removedText: selection.text.slice(0, 180), transition: 'cut' };
     });
@@ -10549,6 +10643,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (!selection || !selection.ranges.length) { setStatus($('transcriptStatus'), 'The selected words do not have usable timing.', 'warn'); return; }
     var keep = vsBuildRippleKeepSegments(t.duration || 0, selection.ranges, 0.18);
     if (!keep.length) { setStatus($('transcriptStatus'), 'That ripple cut would remove the whole take. Select fewer words.', 'warn'); return; }
+    if (!confirmReplaceSceneSequence('ripple cut scene')) return;
     sceneItems = keep.slice(0, 80).map(function (seg) {
       return {
         id: sceneNewId('clip'),
@@ -11856,8 +11951,21 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     refreshExportDecisionPreview();
     setDemoNarrationStatus('Regenerating one narration line...');
     try {
+      // demoNarrationCue is a snapshot frozen when the narration was first
+      // generated, and nothing ever writes back to it — so Regenerate used to
+      // re-speak the ORIGINAL wording even after the teacher had corrected the
+      // caption, shipping a video whose burned-in text and voice-over disagree.
+      // Prefer the take's CURRENT caption for this cue's time range.
       var cue = clip.demoNarrationCue;
-      var resp = await bridgeRequest('allostudio-tts-request', { text: cue.text, voice: clip.demoNarrationVoice || 'Kore' }, 60000);
+      var liveCue = (take.captions || []).filter(function (c) {
+        return c && Math.abs((Number(c.start) || 0) - (Number(cue.start) || 0)) < 0.35;
+      })[0];
+      var speakText = (liveCue && String(liveCue.text || '').trim()) || cue.text;
+      if (liveCue && speakText !== cue.text) {
+        cue = { start: cue.start, end: (Number(liveCue.end) || cue.end), text: speakText };
+        clip.demoNarrationCue = { start: cue.start, end: cue.end, text: speakText };
+      }
+      var resp = await bridgeRequest('allostudio-tts-request', { text: speakText, voice: clip.demoNarrationVoice || 'Kore' }, 60000);
       if (resp.error || !resp.pcm) throw new Error(resp.error || 'No audio returned.');
       if (takes.indexOf(take) < 0 || (take.audioClips || []).indexOf(clip) < 0) return;
       var pcm = resp.pcm instanceof Uint8Array ? resp.pcm : new Uint8Array(resp.pcm);
@@ -12918,7 +13026,18 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         setStatus($('exportStatus'), 'Re-encoding for ' + (VIDEO_EXPORT_FORMATS[exportFormatKey] || VIDEO_EXPORT_FORMATS.original).label + '... keep this window visible.', 'warn');
         var res = null;
         var renderOptions = { format: exportFormatKey, framing: exportFraming, container: exportContainer, closingCard: wantClosingCard ? closingCardText : null, demoTransition: demoTransition };
-        if (fastExportSupported && $('fastExportChk') && $('fastExportChk').checked) {
+        // The fast path always writes WebM (VP8/Opus through vsMuxWebm), so it
+        // cannot honour an MP4 request. It used to run anyway and then blame the
+        // browser — "Requested MP4 was not available in this browser" — even
+        // where the real-time encoder would have produced a genuine MP4. Stand
+        // down for an explicit MP4 request, and say plainly why.
+        var _fastWanted = fastExportSupported && $('fastExportChk') && $('fastExportChk').checked;
+        var _mp4Requested = exportContainer === 'mp4' || exportContainer === 'mp4_convert';
+        if (_fastWanted && _mp4Requested) {
+          _fastWanted = false;
+          setStatus($('exportStatus'), 'Fast export writes WebM only, and you asked for MP4 — using the standard encoder so you get a real MP4. Untick “Fast export” if you would rather have the quicker WebM.', 'warn');
+        }
+        if (_fastWanted) {
           try {
             res = await reencodeFast(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey, renderOptions);
           } catch (fastErr) {
