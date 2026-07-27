@@ -5023,12 +5023,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
       h('button', { onClick: props.onExit, style: { marginBottom: '10px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
       h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '10px', border: '1px solid #a3a3a3' } },
-        h('canvas', { ref: canvasRef, role: 'img', 'aria-label': 'Top-down 2D straight backing drill scene: your car, a lane marked by cones on the left and right, and a target line 100 feet behind. The scene updates as you reverse in a straight line between the cones.', style: { width: '100%', height: '480px', display: 'block', borderRadius: '8px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))' } })
+        h('canvas', { ref: canvasRef, role: 'img', 'aria-label': 'Top-down 2D straight backing drill scene: your car, a lane marked by cones on the left and right, and a target line 100 feet behind. The scene updates as you reverse in a straight line between the cones with WASD or arrow keys.', style: { width: '100%', height: '480px', display: 'block', borderRadius: '8px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))' } })
       ),
       h('div', { style: { marginTop: '10px', padding: '12px', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
         h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #a3a3a3))', textTransform: 'uppercase', marginBottom: '6px' } }, '👨‍🏫 Instructor'),
         h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.5' } }, fbText),
-        h('div', { style: { marginTop: '6px', fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, 'Tip: Look over your RIGHT shoulder, not in the mirrors. Use small steering corrections. Press R to reset.')
+        h('div', { style: { marginTop: '6px', fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, // Name the controls, as the parking drills do. This tip mentioned only R, so a
+        // student had no way to learn the drill accepts arrows as well as WASD.
+        'WASD or arrows to drive. SHIFT or down arrow = reverse. R = reset. Tip: look over your RIGHT shoulder, not in the mirrors, and use small steering corrections.')
       )
     );
   }
