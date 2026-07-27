@@ -545,14 +545,14 @@
     conglom:      { mag: 20, fabric: 'clastic',  parts: [['quartz', 0.45], ['feldspar', 0.18], ['clay', 0.15], ['cement', 0.22]], look: 'Large rounded clasts of several different rocks, set in a finer matrix.' },
     shale:        { mag: 200, fabric: 'foliated', parts: [['clay', 0.78], ['quartz', 0.16], ['mica', 0.06]], look: 'Clay too fine to resolve even at this magnification, with the flakes weakly lined up.' },
     limestone:    { mag: 40, fabric: 'interlocking',  parts: [['calcite', 0.88], ['cement', 0.12]], look: 'Calcite everywhere, often with fossil fragments still recognisable. Watch the relief flicker as you rotate — that is calcite.' },
-    chalk:        { mag: 400, fabric: 'interlocking', parts: [['calcite', 1.0]], look: 'At 400x the "mud" resolves into countless plates from single-celled plankton.' },
-    travertine:   { mag: 40, fabric: 'interlocking',  parts: [['calcite', 1.0]], look: 'Banded calcite precipitated from water, often with open cavities.' },
+    chalk:        { mag: 400, fabric: 'plates', parts: [['calcite', 1.0]], look: 'At 400x the "mud" resolves into countless plates from single-celled plankton.' },
+    travertine:   { mag: 40, fabric: 'interlocking', banded: 38, vesicles: 0.16, parts: [['calcite', 1.0]], look: 'Banded calcite precipitated from water, often with open cavities.' },
     marble:       { mag: 40, fabric: 'interlocking',  parts: [['calcite', 1.0]], look: 'Calcite recrystallised into a tight interlocking mosaic — the fossils and bedding are gone.' },
     quartzite:    { mag: 40, fabric: 'interlocking',  parts: [['quartz', 0.95], ['mica', 0.05]], look: 'Quartz grains fused directly to each other with no cement left between them. Compare with sandstone.' },
     slate:        { mag: 200, fabric: 'foliated', parts: [['clay', 0.62], ['mica', 0.28], ['quartz', 0.10]], look: 'Microscopic micas all rotated into the same plane — that alignment IS the cleavage.' },
     phyllite:     { mag: 100, fabric: 'foliated', parts: [['mica', 0.55], ['quartz', 0.30], ['clay', 0.15]], look: 'The micas have grown just big enough to catch the light, which is the silky sheen you see in the hand specimen.' },
     schist:       { mag: 40, fabric: 'foliated',  parts: [['mica', 0.48], ['quartz', 0.30], ['feldspar', 0.14], ['garnet', 0.08]], look: 'Mica flakes now large and strongly aligned, often wrapping around garnets.' },
-    gneiss:       { mag: 40, fabric: 'foliated',  parts: [['quartz', 0.32], ['feldspar', 0.38], ['biotite', 0.22], ['garnet', 0.08]], look: 'Light and dark minerals segregated into separate bands — the banding you see with the naked eye, at grain scale.' }
+    gneiss:       { mag: 40, fabric: 'foliated', banded: 58, parts: [['quartz', 0.32], ['feldspar', 0.38], ['biotite', 0.22], ['garnet', 0.08]], look: 'Light and dark minerals segregated into separate bands — the banding you see with the naked eye, at grain scale.' }
   };
 
   // Grain mosaic. A jittered grid, each cell drawn as an irregular polygon, so
@@ -592,11 +592,36 @@
     var fabric = sec.fabric || 'interlocking';
     var FOLIATION = -18;   // degrees; one shared direction for aligned fabrics
 
+    // BANDING — a few rocks are defined by layers rather than by grains, and
+    // those two rendered as a uniform mosaic. Gneiss's caption says the light
+    // and dark minerals are "segregated into separate bands" and travertine's
+    // says it is "banded calcite ... often with open cavities", yet gneiss came
+    // out indistinguishable from schist and travertine from marble. The layering
+    // IS the diagnostic, so it is drawn.
+    var bandW = sec.banded || 0;
+    // Metamorphic banding follows the foliation. A layer precipitated out of
+    // water was laid down flat, so it runs horizontally instead.
+    var bandRad = (fabric === 'foliated' ? FOLIATION : 0) * Math.PI / 180;
+    var RK_DARK_BAND = { biotite: 1, amphibole: 1, pyroxene: 1, magnetite: 1, garnet: 1, olivine: 1 };
+    var lightPool = [], darkPool = [];
+    if (bandW) pool.forEach(function (m) { (RK_DARK_BAND[m] ? darkPool : lightPool).push(m); });
+    // Compositional segregation only means anything if the rock actually has
+    // both a light and a dark mineral. Travertine is calcite all the way through,
+    // so its layers show up as a coarse/fine alternation instead.
+    var segregates = !!(bandW && lightPool.length && darkPool.length);
+    function bandIndexAt(px, py) {
+      var u = -(px - CX) * Math.sin(bandRad) + (py - CY) * Math.cos(bandRad);
+      return Math.floor((u + R * 4) / bandW);
+    }
+
     // Clastic rocks sit in a cement matrix, so paint that first and leave the
     // grains smaller than their cell — the gaps ARE the diagnostic.
     // 'shards' is fragmental like clastic — matrix plus separate fragments — but
-    // the fragments keep their angular edges.
-    var fragmental = fabric === 'clastic' || fabric === 'shards';
+    // the fragments keep their angular edges. 'plates' is fragmental too: chalk
+    // is not a mosaic of interlocking crystals, it is countless separate
+    // coccolith plates sitting in lime mud, which is what its caption already
+    // claimed while the render showed a fine-grained marble.
+    var fragmental = fabric === 'clastic' || fabric === 'shards' || fabric === 'plates';
     if (fragmental) {
       kids.push(h('circle', {
         key: 'matrix', cx: CX, cy: CY, r: R,
@@ -610,9 +635,14 @@
         var jx = CX + gx + (rnd() - 0.5) * STEP * jitter;
         var jy = CY + gy + (rnd() - 0.5) * STEP * jitter;
         if (Math.sqrt((jx - CX) * (jx - CX) + (jy - CY) * (jy - CY)) > R + STEP) continue;
-        var mineral = pool[Math.floor(rnd() * pool.length)];
+        var bandI = bandW ? bandIndexAt(jx, jy) : 0;
+        var bandSrc = segregates ? (bandI % 2 === 0 ? lightPool : darkPool) : pool;
+        var mineral = bandSrc[Math.floor(rnd() * bandSrc.length)];
         // In a clastic rock the cement is the matrix, not a grain.
         if (fragmental && mineral === 'cement') continue;
+        // Layers differ in grain size as well as composition — the coarse band
+        // is the one you can see individual crystals in.
+        var bandScale = bandW ? (bandI % 2 === 0 ? 1.10 : 0.78) : 1;
         grains.push({
           x: jx, y: jy,
           m: mineral,
@@ -620,10 +650,13 @@
           // rotated into one plane, so they scatter only slightly around it.
           rot: fabric === 'foliated' ? FOLIATION + (rnd() - 0.5) * 26 : rnd() * 180,
           // Clastic grains are separated by cement; interlocking ones fill the cell.
-          r: STEP * (fragmental ? (0.34 + rnd() * 0.20) : (0.55 + rnd() * 0.35)),
-          // Rounded ONLY where transport did the rounding. Ash shards were never
-          // carried anywhere, so they stay sharp; crystallised grains interlock.
-          sides: fabric === 'clastic' ? 9 : fabric === 'shards' ? 4 : 5 + Math.floor(rnd() * 3),
+          r: STEP * (fabric === 'plates' ? (0.40 + rnd() * 0.22)
+            : fragmental ? (0.34 + rnd() * 0.20) : (0.55 + rnd() * 0.35)) * bandScale,
+          // Round ONLY where something made it round. Transport wore the corners
+          // off clastic grains; a coccolith plate simply grew as a disc. Ash
+          // shards were never carried anywhere, so they stay sharp, and
+          // crystallised grains interlock.
+          sides: (fabric === 'clastic' || fabric === 'plates') ? 9 : fabric === 'shards' ? 4 : 5 + Math.floor(rnd() * 3),
           elong: fabric === 'foliated' ? 1.75 + rnd() * 0.6 : 1,
           wob: rnd()
         });
@@ -707,6 +740,24 @@
         }
       }
     });
+
+    // Band boundaries. Without them the layering has to be inferred from a
+    // statistical drift in colour, which is exactly the thing a beginner cannot
+    // yet see. The line is the same thing a lecturer draws on the board.
+    if (bandW) {
+      var bnx = -Math.sin(bandRad), bny = Math.cos(bandRad);   // across the bands
+      var bdx = Math.cos(bandRad), bdy = Math.sin(bandRad);    // along them
+      for (var bu = -R; bu <= R; bu += bandW) {
+        var bcx = CX + bnx * bu, bcy = CY + bny * bu;
+        g.push(h('line', {
+          key: 'bnd' + bu.toFixed(0),
+          x1: (bcx - bdx * R * 1.6).toFixed(1), y1: (bcy - bdy * R * 1.6).toFixed(1),
+          x2: (bcx + bdx * R * 1.6).toFixed(1), y2: (bcy + bdy * R * 1.6).toFixed(1),
+          stroke: xpl ? 'rgba(255,255,255,0.20)' : 'rgba(120,95,60,0.34)',
+          strokeWidth: 1.3
+        }));
+      }
+    }
 
     // Vesicles — frozen gas bubbles. Pumice's caption already said "mostly
     // holes" while the render showed a solid mass indistinguishable from

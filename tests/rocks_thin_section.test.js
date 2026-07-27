@@ -161,8 +161,9 @@ describe('thin section — the texture has to match the caption', () => {
     expect(rows.length).toBe(20);
     rows.forEach((r) => {
       // 'shards' is fragmental like clastic but keeps angular edges — ash was
-      // never transported, so nothing rounded it.
-      expect(['interlocking', 'clastic', 'shards', 'foliated'], `${r[1]}`).toContain(r[2]);
+      // never transported, so nothing rounded it. 'plates' is fragmental and
+      // ROUNDED, but rounded by growth rather than by transport.
+      expect(['interlocking', 'clastic', 'shards', 'plates', 'foliated'], `${r[1]}`).toContain(r[2]);
     });
   });
 
@@ -180,7 +181,7 @@ describe('thin section — the texture has to match the caption', () => {
   it('rounds clastic grains and keeps crystallised ones angular', () => {
     const src = readFileSync(ROCKS_FILE, 'utf8');
     // Rounding is driven by side count: transport wears corners off.
-    expect(src).toContain("sides: fabric === 'clastic' ? 9 :");
+    expect(src).toContain("(fabric === 'clastic' || fabric === 'plates') ? 9 :");
     expect(src).toContain('var rough = gr.sides > 8 ? 0.10 : 0.42;');
   });
 
@@ -210,7 +211,7 @@ describe('thin section — the texture has to match the caption', () => {
     // blown out of a vent and welded where they fell.
     const src = readFileSync(ROCKS_FILE, 'utf8');
     expect(src).toContain("fabric: 'shards'");
-    expect(src).toContain("sides: fabric === 'clastic' ? 9 : fabric === 'shards' ? 4 :");
+    expect(src).toContain("? 9 : fabric === 'shards' ? 4 :");
     // Both are fragmental, so both get a matrix...
     const CEMENT = '#efe9dd';
     expect(section(render('tuff', { xpl: false, stage: 0 }))).toContain(CEMENT);
@@ -260,5 +261,102 @@ describe('thin section — what the student is told', () => {
   it('tells the student what the stage control is for', () => {
     expect(render('granite', { xpl: true, stage: 0 })).toContain('extinction');
     expect(render('granite', { xpl: false, stage: 0 })).toContain('relief and cleavage');
+  });
+});
+
+// A rock whose caption promises a feature the drawing does not show teaches the
+// student to stop trusting the drawing. Three rocks were doing exactly that,
+// and in each case the missing feature was the single thing that identifies it.
+describe('thin section — the layered rocks are drawn layered', () => {
+  it('travertine no longer renders as marble', () => {
+    // Both are 100% calcite at the same magnification, so they came out
+    // pixel-identical while travertine's caption said "banded ... often with
+    // open cavities". Neither the bands nor the cavities existed.
+    const trav = section(render('travertine', { xpl: false, stage: 0 }));
+    const marb = section(render('marble', { xpl: false, stage: 0 }));
+    expect(trav).not.toBe(marb);
+
+    // Cavities: empty space, so it reads bright white in plane light.
+    const cavity = /<ellipse[^>]*fill="#ffffff"/;
+    expect(cavity.test(trav)).toBe(true);
+    expect(cavity.test(marb)).toBe(false);
+
+    // Layers: precipitated flat, so they run horizontally, NOT along a
+    // metamorphic foliation.
+    const bandLine = /<line[^>]*stroke="rgba\(120,95,60,0\.34\)"/;
+    expect(bandLine.test(trav)).toBe(true);
+    expect(bandLine.test(marb)).toBe(false);
+  });
+
+  it('gneiss segregates light and dark minerals into separate bands', () => {
+    // This is the whole difference between gneiss and schist. Without it the
+    // two sections were the same picture under different captions.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const row = src.slice(src.indexOf('    gneiss:'), src.indexOf('\n', src.indexOf('    gneiss:')));
+    expect(row).toMatch(/banded:\s*\d+/);
+    expect(row).toContain("fabric: 'foliated'");
+
+    const gneiss = section(render('gneiss', { xpl: false, stage: 0 }));
+    const schist = section(render('schist', { xpl: false, stage: 0 }));
+    expect(gneiss).not.toBe(schist);
+    const bandLine = /<line[^>]*stroke="rgba\(120,95,60,0\.34\)"/;
+    expect(bandLine.test(gneiss)).toBe(true);
+    expect(bandLine.test(schist)).toBe(false);
+  });
+
+  it('bands follow the foliation in a metamorphic rock and lie flat in a precipitate', () => {
+    // A horizontal band line has equal y at both ends; a foliated one does not.
+    // Pull each band <line> out whole and read its own attributes, rather than
+    // assuming an attribute order the renderer never promised.
+    const drops = (svg) => [...svg.matchAll(/<line\b[^>]*>/g)]
+      .map((m) => m[0])
+      .filter((tag) => tag.includes('stroke="rgba(120,95,60,0.34)"'))
+      .map((tag) => {
+        const y1 = /\by1="([-\d.]+)"/.exec(tag);
+        const y2 = /\by2="([-\d.]+)"/.exec(tag);
+        return Math.abs(parseFloat(y1[1]) - parseFloat(y2[1]));
+      });
+
+    const trav = drops(section(render('travertine', { xpl: false, stage: 0 })));
+    const gneiss = drops(section(render('gneiss', { xpl: false, stage: 0 })));
+    expect(trav.length).toBeGreaterThan(0);
+    expect(gneiss.length).toBeGreaterThan(0);
+    // Travertine's layers were laid down flat out of water — every one of them.
+    expect(trav.every((d) => d < 0.5)).toBe(true);
+    // Gneiss's bands were tilted into the foliation, so none of them are flat.
+    expect(gneiss.every((d) => d > 0.5)).toBe(true);
+  });
+
+  it('chalk resolves into separate plates, not an interlocking mosaic', () => {
+    // At 400x the caption promises "countless plates from single-celled
+    // plankton". It was drawing a fine-grained marble — an interlocking mosaic,
+    // which is the one texture chalk definitely is not.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const row = src.slice(src.indexOf('    chalk:'), src.indexOf('\n', src.indexOf('    chalk:')));
+    expect(row).toContain("fabric: 'plates'");
+
+    // Fragmental fabrics paint a matrix first; a mosaic has nothing between the
+    // grains because the grains meet.
+    const chalk = section(render('chalk', { xpl: false, stage: 0 }));
+    const marble = section(render('marble', { xpl: false, stage: 0 }));
+    const matrix = /<circle[^>]*r="124"[^>]*fill="#efe9dd"/;
+    expect(matrix.test(chalk)).toBe(true);
+    expect(matrix.test(marble)).toBe(false);
+
+    // Plates grew as discs, so they are rounded — 9-sided, like the rounded
+    // clastic grains and unlike the 5-to-7-sided interlocking crystals.
+    const sides = [...chalk.matchAll(/<polygon points="([^"]+)"/g)]
+      .map((m) => m[1].trim().split(/\s+/).length);
+    expect(sides.length).toBeGreaterThan(20);
+    expect(sides.every((n) => n === 9)).toBe(true);
+  });
+
+  it('a plate is rounded because it GREW round, not because it was transported', () => {
+    // The rounding comment used to say transport did it, which would have been
+    // a false history for a coccolith. Chalk is not a clastic rock.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    expect(src).toContain('a coccolith plate simply grew as a disc');
+    const row = src.slice(src.indexOf('    chalk:'), src.indexOf('\n', src.indexOf('    chalk:')));
+    expect(row).not.toContain("fabric: 'clastic'");
   });
 });
