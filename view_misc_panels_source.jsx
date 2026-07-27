@@ -1125,8 +1125,8 @@ function GroupSessionModal(props) {
                                                     </div>
                                                 )}
                                                 <div role="group" aria-label={`Reorder ${res.title || 'Untitled'}`} className="mt-2 grid grid-cols-2 gap-1">
-                                                    <button type="button" onClick={() => moveResourceBy(res.id, -1)} disabled={index === 0} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={`Move ${res.title || 'resource'} earlier`}>â† Earlier</button>
-                                                    <button type="button" onClick={() => moveResourceBy(res.id, 1)} disabled={index === sessionData.resources.length - 1} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={`Move ${res.title || 'resource'} later`}>Later â†’</button>
+                                                    <button type="button" onClick={() => moveResourceBy(res.id, -1)} disabled={index === 0} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={`Move ${res.title || 'resource'} earlier`}>← Earlier</button>
+                                                    <button type="button" onClick={() => moveResourceBy(res.id, 1)} disabled={index === sessionData.resources.length - 1} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={`Move ${res.title || 'resource'} later`}>Later →</button>
                                                 </div>
                                             </div>
                                         );

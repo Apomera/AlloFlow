@@ -1,5 +1,5 @@
 /* ============================================================
-   PasstheEPPP â€” Textbook Ch 46: EPPP Anatomy & Test-Taking Strategy
+   PasstheEPPP — Textbook Ch 46: EPPP Anatomy & Test-Taking Strategy
    Domain: Integrative / General (0% explicit, 100% implicit)
    ============================================================ */
 

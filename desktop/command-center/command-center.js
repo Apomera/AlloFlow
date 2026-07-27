@@ -651,7 +651,7 @@
     return state.config;
   }
 
-  // â”€â”€ Classroom join tools (QR / PIN / presenter / diagnostics) â”€â”€â”€â”€â”€â”€
+  // ── Classroom join tools (QR / PIN / presenter / diagnostics) ──────
   function classroomJoinBase() {
     const diag = state.lanDiagnostics || {};
     const bases = diag.joinBaseUrls || state.liveSession?.lanBridge?.joinBaseUrls || [];
@@ -721,7 +721,7 @@
     if (!$('#join-qr')?.hidden) renderJoinQr();
   }
 
-  // â”€â”€ Classroom setup wizard (local-first mode) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Classroom setup wizard (local-first mode) ───────────────────────
   function renderClassroomWizard() {
     const node = $('#classroom-wizard');
     if (!node) return;
@@ -746,7 +746,7 @@
       {
         done: false,
         title: 'Put the class code on the projector',
-        detail: 'Type your class code above, then open Presenter view â€” students scan the QR or type the link. Run â€œclassroom checkâ€ below to confirm the network path.',
+        detail: 'Type your class code above, then open Presenter view — students scan the QR or type the link. Run “classroom check” below to confirm the network path.',
       },
     ];
     node.innerHTML = '';
@@ -771,15 +771,15 @@
       state.lanDiagnostics = diag;
       lines.push((diag.addresses || []).length
         ? `Network: OK (${diag.addresses.join(', ')})`
-        : 'Network: NO LAN address found â€” connect to the school network.');
+        : 'Network: NO LAN address found — connect to the school network.');
       lines.push(diag.share?.active
         ? `LAN Share: ACTIVE on port ${diag.share.port}${diag.pinActive ? ' with join PIN' : ' (no PIN)'}`
-        : 'LAN Share: OFF â€” students cannot join from other devices yet.');
+        : 'LAN Share: OFF — students cannot join from other devices yet.');
       const joinUrl = classroomJoinUrl();
       if (joinUrl) {
         lines.push('Join link: ' + joinUrl);
       } else if (classroomCode()) {
-        lines.push('Join link: unavailable â€” start LAN Share first.');
+        lines.push('Join link: unavailable — start LAN Share first.');
       } else {
         lines.push('Type a class code above to get a join link and QR.');
       }
@@ -1173,14 +1173,14 @@
     }
   }
 
-  // â”€â”€ Built-in AI Engine (managed llama-server) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Built-in AI Engine (managed llama-server) ──────────────────────────────
   let enginePollTimer = null;
   function renderEngineStatus(status) {
     if (!status) return;
     let phase = status.phase || 'stopped';
     if (status.download && status.download.totalBytes) {
       const pct = Math.round((status.download.receivedBytes / status.download.totalBytes) * 100);
-      phase += ' â€” ' + status.download.file + ' ' + pct + '%';
+      phase += ' — ' + status.download.file + ' ' + pct + '%';
     }
     setText('#engine-phase', phase);
     setText('#engine-model', status.model
@@ -1224,7 +1224,7 @@
     const result = $('#engine-result');
     let modelUrl = event.target.value;
     if (modelUrl === '__custom') {
-      // window.prompt() throws in Electron renderers â€” use the inline row.
+      // window.prompt() throws in Electron renderers — use the inline row.
       const row = $('#engine-custom-row');
       if (row) { row.hidden = false; const input = $('#engine-custom-input'); if (input) input.focus(); }
       return;
@@ -1234,7 +1234,7 @@
       if (result) {
         result.textContent = /^https?:\/\//i.test(modelUrl)
           ? 'Model choice saved. It downloads on the next engine start (stop + start to switch now). Earlier models stay on disk until you delete them from the engine folder.'
-          : 'Local model file saved: ' + modelUrl + ' â€” used in place, nothing downloads. Keep the drive connected while the engine runs.';
+          : 'Local model file saved: ' + modelUrl + ' — used in place, nothing downloads. Keep the drive connected while the engine runs.';
       }
       await refreshEngineStatus();
     } catch (error) {
@@ -1253,7 +1253,7 @@
       if (result) {
         result.textContent = /^https?:\/\//i.test(modelUrl)
           ? 'Custom model saved. It downloads on the next engine start.'
-          : 'Local model file saved: ' + modelUrl + ' â€” used in place, nothing downloads. Keep the drive connected while the engine runs.';
+          : 'Local model file saved: ' + modelUrl + ' — used in place, nothing downloads. Keep the drive connected while the engine runs.';
       }
       await refreshEngineStatus();
     } catch (error) {
@@ -1301,7 +1301,7 @@
           clearInterval(enginePollTimer);
           enginePollTimer = null;
         }
-      } catch (_) { /* runtime briefly busy â€” keep polling */ }
+      } catch (_) { /* runtime briefly busy — keep polling */ }
     }, 2000);
   }
   async function startBuiltInEngine() {
@@ -1822,7 +1822,7 @@
     }, 2000);
   }
 
-  // â”€â”€ Local Images (SD-Turbo) panel â€” AI tab twin of the Voice panel â”€â”€
+  // ── Local Images (SD-Turbo) panel — AI tab twin of the Voice panel ──
   async function _webGpuAdapterOk() {
     try {
       if (!(navigator.gpu && typeof navigator.gpu.requestAdapter === 'function')) return false;
@@ -1865,7 +1865,7 @@
       return;
     }
     if (appWindow && appWindow._sdTurbo && appWindow._sdTurbo.ready) {
-      $('#sd-result').textContent = 'SD-Turbo is loaded â€” images generate on this device.';
+      $('#sd-result').textContent = 'SD-Turbo is loaded — images generate on this device.';
       return;
     }
     let entries = 0;
@@ -1909,22 +1909,22 @@
       return;
     }
     if (!(await _webGpuAdapterOk())) {
-      $('#sd-result').textContent = 'This computer has no WebGPU graphics adapter â€” local image generation is not available here.';
+      $('#sd-result').textContent = 'This computer has no WebGPU graphics adapter — local image generation is not available here.';
       return;
     }
     if (typeof appWindow.__loadSdTurbo !== 'function') {
-      $('#sd-result').textContent = 'The app view has not finished loading yet â€” wait a few seconds and try again.';
+      $('#sd-result').textContent = 'The app view has not finished loading yet — wait a few seconds and try again.';
       return;
     }
-    $('#sd-result').textContent = 'Downloading SD-Turbo (~2 GB, one time)â€¦';
+    $('#sd-result').textContent = 'Downloading SD-Turbo (~2 GB, one time)…';
     try {
       const done = await appWindow.__loadSdTurbo((p) => {
         const pct = p && p.pct != null ? Math.round(p.pct * 100) + '%' : '';
-        $('#sd-result').textContent = 'Downloading SD-Turbo (~2 GB, one time)â€¦ ' + pct;
+        $('#sd-result').textContent = 'Downloading SD-Turbo (~2 GB, one time)… ' + pct;
       });
       $('#sd-result').textContent = done
-        ? 'SD-Turbo ready â€” images generate on this device.'
-        : 'The download did not complete â€” check the connection and try again.';
+        ? 'SD-Turbo ready — images generate on this device.'
+        : 'The download did not complete — check the connection and try again.';
     } catch (error) {
       $('#sd-result').textContent = 'Download failed: ' + (error && error.message ? error.message : error);
     }
@@ -1932,7 +1932,7 @@
     refreshSetupHealth().catch(() => {});
   }
 
-  // Speak a fixed sentence through the REAL local engine and play it here â€”
+  // Speak a fixed sentence through the REAL local engine and play it here —
   // separates "engine can synthesize" from "the app routed elsewhere" in one
   // click, with the router's own breadcrumb shown for the app half.
   async function testKokoroVoice() {
@@ -1965,21 +1965,21 @@
     }
     let voicePref = 'af_heart';
     try { voicePref = localStorage.getItem('allo_voice_preference') || 'af_heart'; } catch (_) {}
-    $('#voice-result').textContent = 'Synthesizing a test sentence with voice "' + voicePref + '"â€¦';
+    $('#voice-result').textContent = 'Synthesizing a test sentence with voice "' + voicePref + '"…';
     try {
       const url = await appWindow._kokoroTTS.speakStreaming('Hello! This is the local Kokoro voice speaking on this computer.', voicePref, 1);
-      if (!url) { $('#voice-result').textContent = 'Engine returned no audio â€” send this to the developer with the app console lines.'; return; }
+      if (!url) { $('#voice-result').textContent = 'Engine returned no audio — send this to the developer with the app console lines.'; return; }
       const audio = new Audio(url);
       await audio.play();
       const lastRoute = appWindow.__ttsLastRoute;
       $('#voice-result').textContent = 'You should be hearing the Kokoro voice now (engine OK). Last in-app read-aloud route: '
-        + (lastRoute ? lastRoute.route + ' (voice ' + lastRoute.voice + ', ' + (lastRoute.detail || 'no detail') + ')' : 'none recorded yet â€” read something aloud in the app first.');
+        + (lastRoute ? lastRoute.route + ' (voice ' + lastRoute.voice + ', ' + (lastRoute.detail || 'no detail') + ')' : 'none recorded yet — read something aloud in the app first.');
     } catch (error) {
       $('#voice-result').textContent = 'Playback failed: ' + (error && error.message ? error.message : error);
     }
   }
 
-  // â”€â”€ Setup Health card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Setup Health card ──────────────────────────────────────────
   // One glance = live truth for the five capabilities field testing kept
   // tripping over. Rows only show an action button when the runtime can
   // actually do something about the state from here.
@@ -2018,11 +2018,11 @@
       const eng = await api('/api/engine/status');
       if (eng.running) {
         const model = eng.model && eng.model.name ? eng.model.name.replace(/\.gguf$/i, '') : 'local model';
-        setHealthRow('#health-engine', 'ok', 'Running â€” ' + model);
+        setHealthRow('#health-engine', 'ok', 'Running — ' + model);
       } else if (eng.download && eng.download.totalBytes) {
-        setHealthRow('#health-engine', 'busy', 'Downloading model â€” ' + Math.round((eng.download.receivedBytes / eng.download.totalBytes) * 100) + '%');
+        setHealthRow('#health-engine', 'busy', 'Downloading model — ' + Math.round((eng.download.receivedBytes / eng.download.totalBytes) * 100) + '%');
       } else if (eng.phase && eng.phase !== 'stopped') {
-        setHealthRow('#health-engine', 'busy', eng.phase.replace(/-/g, ' ') + 'â€¦');
+        setHealthRow('#health-engine', 'busy', eng.phase.replace(/-/g, ' ') + '…');
       } else {
         setHealthRow('#health-engine', 'warn', 'Not running', 'Start', () => api('/api/engine/start', { method: 'POST' }));
       }
@@ -2030,7 +2030,7 @@
       setHealthRow('#health-engine', 'err', 'Runtime unreachable');
     }
 
-    // 2. Reading voice (Kokoro) â€” live in-app truth when the bundled app is
+    // 2. Reading voice (Kokoro) — live in-app truth when the bundled app is
     // loaded; otherwise the shared same-origin cache tells us if the model
     // is on disk.
     try {
@@ -2054,7 +2054,7 @@
           setHealthRow('#health-voice', 'warn', 'Voice loader is still starting');
         }
       } else if (w && w._kokoroTTS && w._kokoroTTS.ready) {
-        // Engine READY is necessary but not sufficient â€” show what the last
+        // Engine READY is necessary but not sufficient — show what the last
         // read-aloud actually did (window.__ttsLastRoute breadcrumb from the
         // TTS router) so "ready but I hear the robot voice" is diagnosable
         // at a glance instead of via DevTools.
@@ -2064,10 +2064,10 @@
         if (lastRoute && lastRoute.route && lastRoute.route !== 'kokoro' && lastRoute.route !== 'provider') {
           setHealthRow('#health-voice', 'warn', 'Ready, but last read-aloud fell back (' + lastRoute.route + (lastRoute.voice ? ', voice ' + lastRoute.voice : '') + ')');
         } else {
-          setHealthRow('#health-voice', 'ok', 'Ready â€” reads aloud on this device' + (voicePref ? ' (' + voicePref + ')' : ''));
+          setHealthRow('#health-voice', 'ok', 'Ready — reads aloud on this device' + (voicePref ? ' (' + voicePref + ')' : ''));
         }
       } else if (w && w.__kokoroTTSDownloading) {
-        setHealthRow('#health-voice', 'busy', 'Preparing voice modelâ€¦');
+        setHealthRow('#health-voice', 'busy', 'Preparing voice model…');
       } else {
         let cached = false;
         try {
@@ -2076,7 +2076,7 @@
           cached = keys.some((r) => String(r.url).includes('Kokoro-82M') && String(r.url).includes('model_quantized'));
         } catch (_) {}
         if (cached) {
-          setHealthRow('#health-voice', 'ok', 'Downloaded â€” loads shortly after the app opens');
+          setHealthRow('#health-voice', 'ok', 'Downloaded — loads shortly after the app opens');
         } else if (w && typeof w.__loadKokoroTTS === 'function') {
           setHealthRow('#health-voice', 'warn', 'Not downloaded yet (~88 MB, one time)', 'Download', () => downloadKokoroVoice());
         } else {
@@ -2087,7 +2087,7 @@
       setHealthRow('#health-voice', 'warn', 'Downloads on first app launch (~88 MB)');
     }
 
-    // 3. Local images (SD-Turbo) â€” needs a REAL WebGPU adapter, not just the API.
+    // 3. Local images (SD-Turbo) — needs a REAL WebGPU adapter, not just the API.
     try {
       let adapter = null;
       if (navigator.gpu && typeof navigator.gpu.requestAdapter === 'function') {
@@ -2116,9 +2116,9 @@
           entries = (await cache.keys()).length;
         } catch (_) {}
         if (entries > 0) {
-          setHealthRow('#health-images', 'ok', 'Downloaded â€” images generate on this device');
+          setHealthRow('#health-images', 'ok', 'Downloaded — images generate on this device');
         } else {
-          setHealthRow('#health-images', 'warn', 'Available â€” enable in the appâ€™s AI Settings (~2 GB once)');
+          setHealthRow('#health-images', 'warn', 'Available — enable in the app’s AI Settings (~2 GB once)');
         }
       }
       }
@@ -2126,22 +2126,22 @@
       setHealthRow('#health-images', 'warn', 'Could not check');
     }
 
-    // 4. Speech-to-text (whisper.cpp) â€” the one-click opt-in lives HERE.
+    // 4. Speech-to-text (whisper.cpp) — the one-click opt-in lives HERE.
     try {
       const asr = await api('/api/asr/status');
       if (asr.running) {
-        setHealthRow('#health-asr', 'ok', 'On â€” student audio stays on this device', 'Turn off', () => api('/api/asr/stop', { method: 'POST' }));
+        setHealthRow('#health-asr', 'ok', 'On — student audio stays on this device', 'Turn off', () => api('/api/asr/stop', { method: 'POST' }));
       } else if (asr.phase && /download|starting|extract/i.test(asr.phase)) {
         const pct = asr.download && asr.download.totalBytes
-          ? ' â€” ' + Math.round((asr.download.receivedBytes / asr.download.totalBytes) * 100) + '%'
-          : 'â€¦';
+          ? ' — ' + Math.round((asr.download.receivedBytes / asr.download.totalBytes) * 100) + '%'
+          : '…';
         setHealthRow('#health-asr', 'busy', asr.phase.replace(/-/g, ' ') + pct);
       } else if (asr.lastError) {
         setHealthRow('#health-asr', 'err', String(asr.lastError).slice(0, 80), 'Retry', () => api('/api/asr/start', { method: 'POST' }));
       } else if (asr.model && asr.model.present) {
         setHealthRow('#health-asr', 'warn', 'Downloaded but off', 'Start', () => api('/api/asr/start', { method: 'POST' }));
       } else {
-        setHealthRow('#health-asr', 'warn', 'Off â€” reading practice uses the cloud', 'Enable (~148 MB once)', () => api('/api/asr/start', { method: 'POST' }));
+        setHealthRow('#health-asr', 'warn', 'Off — reading practice uses the cloud', 'Enable (~148 MB once)', () => api('/api/asr/start', { method: 'POST' }));
       }
     } catch (_) {
       setHealthRow('#health-asr', 'err', 'Runtime unreachable');
@@ -2152,7 +2152,7 @@
       if (navigator.permissions && navigator.permissions.query) {
         const st = await navigator.permissions.query({ name: 'microphone' });
         if (st.state === 'granted') setHealthRow('#health-mic', 'ok', 'Allowed');
-        else if (st.state === 'denied') setHealthRow('#health-mic', 'err', 'Blocked â€” allow the app in Windows microphone settings');
+        else if (st.state === 'denied') setHealthRow('#health-mic', 'err', 'Blocked — allow the app in Windows microphone settings');
         else setHealthRow('#health-mic', 'warn', 'Will ask the first time a lesson records');
       } else {
         setHealthRow('#health-mic', 'warn', 'Will ask the first time a lesson records');
@@ -2387,7 +2387,7 @@
       const hint = $('#lan-pin-hint');
       if (hint) {
         hint.textContent = pin
-          ? 'PIN saved. It applies when LAN sharing (re)starts â€” stop and start sharing to use it now.'
+          ? 'PIN saved. It applies when LAN sharing (re)starts — stop and start sharing to use it now.'
           : 'Custom PIN cleared. A fresh six-digit PIN will be generated the next time LAN sharing starts.';
       }
       await refresh();

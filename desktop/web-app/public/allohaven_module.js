@@ -16054,7 +16054,7 @@
     // student-uploaded so the badge + achievement differ.
     function placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags, isDrawing) {
       if (state.tokens < DECORATION_COST) {
-        addToast('Need ' + DECORATION_COST + ' ðŸª™ tokens. Currently you have ' + state.tokens + '.');
+        addToast('Need ' + DECORATION_COST + ' 🪙 tokens. Currently you have ' + state.tokens + '.');
         return;
       }
       var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };

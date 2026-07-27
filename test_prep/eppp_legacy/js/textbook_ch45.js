@@ -1,5 +1,5 @@
 /* ============================================================
-   PasstheEPPP â€” Textbook Ch 45: Sampling, Scales & Special Topics
+   PasstheEPPP — Textbook Ch 45: Sampling, Scales & Special Topics
    Domain: Research Methods & Statistics (7% of EPPP)
    Structure: 80% evidence-based + 20% AI-reflective coda
    ============================================================ */

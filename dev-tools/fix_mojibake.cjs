@@ -62,27 +62,70 @@ const CONTROLS = new RegExp('[\u0000-\u001F\u007F-\u009F]');
 const RUN_RE = new RegExp('[^\u0000-\u007F]+', 'g');
 
 function repairRun(run) {
-  // A run must not START with a character that is ALSO a legitimate standalone
-  // symbol in this corpus. The multiplication and division signs are UTF-8 lead
-  // bytes (0xD7 / 0xF7) as well as real operators, so "5x-25x" written with a
-  // real multiplication sign and an en dash round-trips into Hebrew. Genuine
-  // mojibake of those operators leads with A-tilde instead (0xC3), which is
-  // unaffected by this guard.
-  const lead = run.codePointAt(0);
-  if (lead === 0x00D7 || lead === 0x00F7) return null;
+  // Lead-character whitelist, evidence-based for THIS corpus.
+  //
+  // Every CP1252 rendering of a UTF-8 lead byte is also an ordinary letter somewhere
+  // in Europe, so structure alone cannot separate mojibake from real prose. Grouping
+  // every proposed repair by its lead settled it. These five produced 511 genuine
+  // repairs; six others produced 42 that were all real text:
+  //   sharp-s + no-break space -> NKO      German "sass auf", "Spass haben"
+  //   AE + acute               -> Latin-B  Bulfinch pronunciation guide
+  //   e-acute + guillemet      -> CJK      French prose
+  //   times + en dash          -> Hebrew   "5x-25x" magnification ranges
+  // Adding a lead means re-running the dry run and reading every decode it produces.
+  // Narrowing is safe; widening is not.
+  const LEAD_OK = { 0x00C2: 1, 0x00C3: 1, 0x00CE: 1, 0x00E2: 1, 0x00F0: 1 };
+  if (!LEAD_OK[run.codePointAt(0)]) return null;
   const bytes = toCp1252Bytes(run);
   if (!bytes) return null;
   const decoded = decoder.decode(bytes);
   if (decoded.indexOf(REPLACEMENT) >= 0) return null;
   if ([...decoded].length >= [...run].length) return null;
-  if (CONTROLS.test(decoded)) return null;
+  if (CONTROLS.test(decoded) && !onlyPassthroughControls(decoded)) return null;
   return decoded;
+}
+
+
+// The five CP1252-UNDEFINED slots, as a lenient decoder passes them through. They may
+// appear in an INTERMEDIATE peel of multi-encoded text, so the control check cannot
+// run on every layer - doing so stranded 179 fully recoverable triple-encoded runs in
+// studio_module.js. The FIXED POINT still has to be clean text.
+const PASSTHROUGH_SET = { 0x81: 1, 0x8D: 1, 0x8F: 1, 0x90: 1, 0x9D: 1 };
+function onlyPassthroughControls(text) {
+  for (const ch of text) {
+    const cp = ch.codePointAt(0);
+    const isControl = cp <= 0x1F || (cp >= 0x7F && cp <= 0x9F);
+    if (isControl && !PASSTHROUGH_SET[cp]) return false;
+  }
+  return true;
+}
+
+// Some files went through the CP1252 mangle MORE THAN ONCE - studio_module.js was
+// triple-encoded, so one pass returns text that is still mojibake. Peel until the
+// result stops changing. Each peel independently satisfies every guard above, and
+// correct text cannot satisfy them even once, so iterating cannot over-peel content.
+const MAX_PEELS = 6;
+function repairToFixedPoint(run) {
+  let cur = run, peels = 0;
+  for (;;) {
+    const next = repairRun(cur);
+    if (next == null || next === cur || peels >= MAX_PEELS) break;
+    cur = next;
+    peels += 1;
+  }
+  if (!peels) return null;
+  if (!onlyPassthroughControls(cur)) return null;   // end state must be real text
+  for (const ch of cur) {
+    const cp = ch.codePointAt(0);
+    if (cp <= 0x1F || (cp >= 0x7F && cp <= 0x9F)) return null;
+  }
+  return cur;
 }
 
 function repairText(text) {
   const changes = [];
   const out = text.replace(RUN_RE, (run) => {
-    const fixed = repairRun(run);
+    const fixed = repairToFixedPoint(run);
     if (fixed == null) return run;
     changes.push({ from: run, to: fixed });
     return fixed;
@@ -90,7 +133,7 @@ function repairText(text) {
   return { out: out, changes: changes };
 }
 
-module.exports = { repairRun: repairRun, repairText: repairText };
+module.exports = { repairRun: repairRun, repairToFixedPoint: repairToFixedPoint, repairText: repairText };
 
 if (require.main === module) {
 const apply = process.argv.includes('--apply');
@@ -113,7 +156,7 @@ for (const file of files) {
 console.log('\ndistinct mojibake sequences and what they decode to:');
 [...tally.entries()].sort((a, b) => b[1] - a[1]).forEach((entry) => {
   const from = entry[0];
-  const to = repairRun(from);
+  const to = repairToFixedPoint(from);
   const cps = [...to].map((c) => 'U+' + c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')).join(' ');
   console.log('  x' + String(entry[1]).padStart(3) + '  ' + JSON.stringify(from) + '  ->  ' + JSON.stringify(to) + '  ' + cps);
 });

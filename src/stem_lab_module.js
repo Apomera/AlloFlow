@@ -6229,16 +6229,16 @@
               )
             );
           })(), stemLabTab === 'explore' && stemLabTool === 'lifeSkills' && (function () {
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-            //  ðŸ§­ L I F E   S K I L L S   L A B
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            // ═══════════════════════════════════════════
+            //  🧭 L I F E   S K I L L S   L A B
+            // ═══════════════════════════════════════════
 
             var upd = function (k, v) { setStemState(function (p) { var n = Object.assign({}, p); n[k] = v; return n; }); };
 
-            // â”€â”€ Sub-tab nav â”€â”€
+            // ── Sub-tab nav ──
             var tab = stemState.lsTab || 'paycheck';
 
-            // â”€â”€â”€â”€â”€â”€ TAB 1: PAYCHECK & TAX â”€â”€â”€â”€â”€â”€
+            // ────── TAB 1: PAYCHECK & TAX ──────
             var payRate = stemState.payRate || 15;
             var payHours = stemState.payHours || 30;
             var payFreq = stemState.payFreq || 'biweekly';
@@ -6279,7 +6279,7 @@
             var netPer = netAnnual / freqMult;
             var effectiveRate = grossAnnual > 0 ? (totalTax / grossAnnual * 100) : 0;
 
-            // â”€â”€â”€â”€â”€â”€ TAB 2: DATA LITERACY â”€â”€â”€â”€â”€â”€
+            // ────── TAB 2: DATA LITERACY ──────
             var dlScenario = stemState.dlScenario || 0;
             var dlAnswer = stemState.dlAnswer || null;
             var dlRevealed = stemState.dlRevealed || false;
@@ -6337,7 +6337,7 @@
             ];
             var dlCurrent = dlScenarios[dlScenario % dlScenarios.length];
 
-            // â”€â”€â”€â”€â”€â”€ TAB 3: DECISION MATRIX â”€â”€â”€â”€â”€â”€
+            // ────── TAB 3: DECISION MATRIX ──────
             var dmOptions = stemState.dmOptions || ['Option A', 'Option B', 'Option C'];
             var dmCriteria = stemState.dmCriteria || [
               { name: 'Cost', weight: 3 },
@@ -6359,7 +6359,7 @@
             var dmMaxTotal = Math.max.apply(null, dmTotals.map(function (d) { return d.total; }));
             dmTotals.sort(function (a, b) { return b.total - a.total; });
 
-            // â”€â”€â”€â”€â”€â”€ TAB 4: CONTRACT READER â”€â”€â”€â”€â”€â”€
+            // ────── TAB 4: CONTRACT READER ──────
             var crLevel = stemState.crLevel || 0;
             var crFound = stemState.crFound || [];
             var crRevealed = stemState.crRevealed || false;
@@ -6398,7 +6398,7 @@
             ];
             var crCurrent = crContracts[crLevel % crContracts.length];
 
-            // â”€â”€â”€â”€â”€â”€ TAB 5: HEALTH INSURANCE â”€â”€â”€â”€â”€â”€
+            // ────── TAB 5: HEALTH INSURANCE ──────
             var hiPlanA = stemState.hiPlanA || { premium: 250, deductible: 1500, copay: 30, coinsurance: 20, oop: 6000 };
             var hiPlanB = stemState.hiPlanB || { premium: 450, deductible: 500, copay: 15, coinsurance: 10, oop: 3000 };
             var hiUsage = stemState.hiUsage || 'low'; // low, medium, high
@@ -6419,19 +6419,19 @@
             var hiCostB = calcPlanCost(hiPlanB, hiScene);
             var hiBetter = hiCostA.total < hiCostB.total ? 'A' : 'B';
 
-            // â”€â”€â”€â”€â”€â”€ TAB 6: APPLIED SCIENCE â”€â”€â”€â”€â”€â”€
+            // ────── TAB 6: APPLIED SCIENCE ──────
             var asTab = stemState.asTab || 'tire';
 
             // Tire pressure: PV = nRT (Gay-Lussac's Law for constant volume: P1/T1 = P2/T2)
             var asTireP1 = stemState.asTireP1 || 35; // PSI at fill
-            var asTireT1 = stemState.asTireT1 || 70; // Fill temp Â°F
-            var asTireT2 = stemState.asTireT2 || 20; // Current temp Â°F
+            var asTireT1 = stemState.asTireT1 || 70; // Fill temp °F
+            var asTireT2 = stemState.asTireT2 || 20; // Current temp °F
             var t1K = (asTireT1 - 32) * 5 / 9 + 273.15;
             var t2K = (asTireT2 - 32) * 5 / 9 + 273.15;
             var asTireP2 = asTireP1 * t2K / t1K;
             var tireDrop = asTireP1 - asTireP2;
 
-            // Insulation: R-value & heat loss Q = A * Î”T / R
+            // Insulation: R-value & heat loss Q = A * ΔT / R
             var asWallArea = stemState.asWallArea || 200; // sq ft
             var asRValue = stemState.asRValue || 13; // R-value
             var asTempIn = stemState.asTempIn || 70;
@@ -6460,7 +6460,7 @@
             ];
             var activeReactions = cookReactions.filter(function (r) { return asCookTemp >= r.tempF; });
 
-            // â”€â”€ Electrical: Ohm's law â”€â”€
+            // ── Electrical: Ohm's law ──
             var asVolts = stemState.asVolts || 120;
             var asAmps = stemState.asAmps || 15;
             var asWatts = asVolts * asAmps;
@@ -6885,7 +6885,7 @@
             ];
             var panelCurrentQ = panelQuizzes[hsPanelQ % panelQuizzes.length];
 
-            // â•â•â•â•â•â•â•â•â•â•â•â•â•â• RENDER â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            // ══════════════ RENDER ══════════════
             return React.createElement("div", { className: "max-w-4xl mx-auto space-y-4" },
               // Header
               React.createElement("div", { className: "bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 rounded-2xl p-5 text-white shadow-lg" },
@@ -6901,7 +6901,7 @@
                 })
               ),
 
-              // â•â•â• TAB 1: PAYCHECK â•â•â•
+              // ═══ TAB 1: PAYCHECK ═══
               tab === 'paycheck' && React.createElement("div", { className: "bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200" },
                 React.createElement("h3", { className: "text-base font-bold text-green-800 mb-1" }, "\uD83E\uDDFE Paycheck & Tax Calculator"),
                 React.createElement("p", { className: "text-xs text-green-600 mb-4" }, "See what happens between your gross pay and your bank account"),
@@ -7005,7 +7005,7 @@
                 React.createElement("p", { className: "text-[10px] text-center text-slate-400 mt-2" }, "\uD83D\uDCA1 This is a simplified estimate. Real paychecks also deduct health insurance, 401(k), etc.")
               ),
 
-              // â•â•â• TAB 2: DATA LITERACY â•â•â•
+              // ═══ TAB 2: DATA LITERACY ═══
               tab === 'data' && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-5 border border-indigo-200" },
                 React.createElement("h3", { className: "text-base font-bold text-indigo-800 mb-1" }, "\uD83D\uDCCA Data Literacy & Media Analysis"),
                 React.createElement("p", { className: "text-xs text-indigo-500 mb-4" }, "Can you spot the deception? " + (dlScore > 0 ? '\uD83C\uDFC6 Score: ' + dlScore + '/' + dlScenarios.length : '')),
@@ -7055,7 +7055,7 @@
               ),
 
 
-              // â•â•â• TAB 3: DECISION MATRIX â•â•â•
+              // ═══ TAB 3: DECISION MATRIX ═══
               tab === 'decision' && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-5 border border-amber-200" },
                 React.createElement("h3", { className: "text-base font-bold text-amber-800 mb-1" }, "\uD83E\uDDE0 Decision Matrix"),
                 React.createElement("p", { className: "text-xs text-amber-600 mb-4" }, "Make better decisions by scoring options against weighted criteria"),
@@ -7145,7 +7145,7 @@
                 )
               ),
 
-              // â•â•â• TAB 4: CONTRACT READER â•â•â•
+              // ═══ TAB 4: CONTRACT READER ═══
               tab === 'contract' && React.createElement("div", { className: "bg-gradient-to-br from-orange-50 to-rose-50 rounded-xl p-5 border border-orange-200" },
                 React.createElement("h3", { className: "text-base font-bold text-orange-800 mb-1" }, "\uD83D\uDCDD Contract & Fine Print Reader"),
                 React.createElement("p", { className: "text-xs text-orange-600 mb-1" }, "Can you spot ALL the traps? Find " + crCurrent.traps.length + " hidden fees/gotchas."),
@@ -7187,7 +7187,7 @@
                 )
               ),
 
-              // â•â•â• TAB 5: HEALTH INSURANCE â•â•â•
+              // ═══ TAB 5: HEALTH INSURANCE ═══
               tab === 'health' && React.createElement("div", { className: "bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl p-5 border border-sky-200" },
                 React.createElement("h3", { className: "text-base font-bold text-sky-800 mb-1" }, "\uD83C\uDFE5 Health Insurance Navigator"),
                 React.createElement("p", { className: "text-xs text-sky-600 mb-4" }, "Compare two plans \u2014 the cheapest premium isn't always the best deal"),
@@ -7239,7 +7239,7 @@
                 )
               ),
 
-              // â•â•â• TAB 6: APPLIED SCIENCE â•â•â•
+              // ═══ TAB 6: APPLIED SCIENCE ═══
               tab === 'science' && React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-5 border border-teal-200" },
                 React.createElement("h3", { className: "text-base font-bold text-teal-800 mb-1" }, "\uD83D\uDD2C Applied Science for Daily Life"),
                 React.createElement("p", { className: "text-xs text-teal-600 mb-4" }, "The physics and chemistry hiding in everyday activities"),
@@ -7252,7 +7252,7 @@
                   })
                 ),
 
-                // â”€â”€ Tire / Gas Laws â”€â”€
+                // ── Tire / Gas Laws ──
                 asTab === 'tire' && React.createElement("div", { className: "space-y-4" },
                   React.createElement("div", { className: "bg-teal-100 rounded-xl p-3 border border-teal-200 text-xs text-teal-700" },
                     React.createElement("strong", null, "Gay-Lussac's Law:"), " At constant volume, P\u2081/T\u2081 = P\u2082/T\u2082. Temperature MUST be in Kelvin!"
@@ -7291,7 +7291,7 @@
                   )
                 ),
 
-                // â”€â”€ Insulation â”€â”€
+                // ── Insulation ──
                 asTab === 'insulation' && React.createElement("div", { className: "space-y-4" },
                   React.createElement("div", { className: "bg-teal-100 rounded-xl p-3 border border-teal-200 text-xs text-teal-700" },
                     React.createElement("strong", null, "Heat Transfer:"), " Q = Area \u00D7 \u0394T / R-value (BTU/hr). Higher R-value = less heat loss = lower bills."
@@ -7341,7 +7341,7 @@
                   )
                 ),
 
-                // â”€â”€ Cooking Chemistry â”€â”€
+                // ── Cooking Chemistry ──
                 asTab === 'cook' && React.createElement("div", { className: "space-y-4" },
                   React.createElement("div", { className: "bg-teal-100 rounded-xl p-3 border border-teal-200 text-xs text-teal-700" },
                     React.createElement("strong", null, "Kitchen = Chemistry Lab!"), " Drag the temperature to see which chemical reactions are happening in your food."
@@ -7369,7 +7369,7 @@
                   )
                 ),
 
-                // â”€â”€ Electrical Circuits â”€â”€
+                // ── Electrical Circuits ──
                 asTab === 'circuit' && React.createElement("div", { className: "space-y-4" },
                   React.createElement("div", { className: "bg-teal-100 rounded-xl p-3 border border-teal-200 text-xs text-teal-700" },
                     React.createElement("strong", null, "Ohm's Law:"), " Power (W) = Voltage (V) \u00D7 Current (A). A 15A breaker at 120V = 1,800W max per circuit."
@@ -8628,7 +8628,7 @@
                 )
               ),
 
-              // â”€â”€ Footer â”€â”€
+              // ── Footer ──
               React.createElement("div", { className: "bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl p-3 border border-cyan-200 text-center" },
                 React.createElement("p", { className: "text-[10px] text-cyan-600" }, "\uD83E\uDDED ", React.createElement("strong", null, "Life skills"), " aren't just \u201Cadulting\u201D \u2014 they're applied science, critical thinking, and informed decision-making!"),
                 React.createElement("p", { className: "text-[10px] text-slate-400 mt-1" }, "Tax calculations are simplified estimates for educational purposes.")
@@ -42437,7 +42437,7 @@
                   )
                 ),
 
-                // â”€â”€ Plant Management Panel â”€â”€
+                // ── Plant Management Panel ──
                 React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 via-green-50 to-lime-50 rounded-2xl p-4 border border-emerald-200/60 shadow-sm" },
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("h4", { className: "text-xs font-bold text-emerald-700" }, "\uD83C\uDF31 Aquatic Plants (" + tankPlants.length + "/8)"),

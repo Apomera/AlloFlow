@@ -1,5 +1,5 @@
 /* ============================================================
-   PasstheEPPP â€” Textbook Ch 44: Ethics in Research
+   PasstheEPPP — Textbook Ch 44: Ethics in Research
    Domain: Research Methods & Statistics (7% of EPPP)
    Structure: 80% evidence-based + 20% AI-reflective coda
    ============================================================ */

@@ -1,19 +1,19 @@
 // studio_module.js
-// AlloStudio for AlloFlow ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â a Canva-style flyer / worksheet / poster studio whose
+// AlloStudio for AlloFlow — a Canva-style flyer / worksheet / poster studio whose
 // exports are BORN ACCESSIBLE. Design doc: docs/studio_design.md (v0.2). This file
 // is Milestone A: pure scene core + ledger + templates + accessible exports + the
 // Tier-2 object editor (text / shape / image). No AI, no raster painting yet.
 //
-// Design laws implemented here (doc ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§4):
-//   1. READING ORDER IS THE OBJECT ARRAY ORDER ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the export emits objects in array
+// Design laws implemented here (doc §4):
+//   1. READING ORDER IS THE OBJECT ARRAY ORDER — the export emits objects in array
 //      order, so what the author arranges in the "Reading order" panel IS the
 //      screen-reader order and the PDF tag order. Never inferred at export time.
-//   2. TEXT IS TEXT ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â no rasterized words. Exports emit real <h1>/<h2>/<p>.
-//   3. ALT OR DECORATIVE ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â export is hard-gated until every image has alt text or
+//   2. TEXT IS TEXT — no rasterized words. Exports emit real <h1>/<h2>/<p>.
+//   3. ALT OR DECORATIVE — export is hard-gated until every image has alt text or
 //      is explicitly marked decorative.
 //
-// Provenance ledger (doc ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§5): the document is EVENT-SOURCED. Every mutation is an
-// op {seq, ts, actor, type, ...} where actor ÃƒÆ’Ã‚Â¢Ãƒâ€¹Ã¢â‚¬Â Ãƒâ€¹Ã¢â‚¬Â  {user, ai, import} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â a CLOSED set.
+// Provenance ledger (doc §5): the document is EVENT-SOURCED. Every mutation is an
+// op {seq, ts, actor, type, ...} where actor ∈ {user, ai, import} — a CLOSED set.
 // AI ops enter only through our own API seams, so "student did X / AI did Y" is
 // ground truth BY CONSTRUCTION, never detection. The honesty line below ships in
 // the UI verbatim (scientific-integrity rule): this timeline shows what happened
@@ -34,7 +34,7 @@
 //            onDesignFeedback(pngDataUrl, context) -> Promise<string> } // optional (vision critique; teacher-only)
 //   The two AI props are optional: their buttons only render when wired, and
 //   every AI result enters the ledger as actor 'ai' (provenance by construction).
-//   Pure helpers attached for tests (the [ST_PURE_BEGIN]ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦[ST_PURE_END] block):
+//   Pure helpers attached for tests (the [ST_PURE_BEGIN]…[ST_PURE_END] block):
 //   stCreateDoc, stApplyOp, stAppend, stUndo, stRedo, stReplay, stActorSummary,
 //   stAltGate, stValidateDoc, stTemplates, stExportHtml, stEscapeHtml,
 //   ST_HONESTY_LINE, ST_CANVAS_PRESETS, ST_CHECKPOINT_EVERY.
@@ -67,8 +67,8 @@
     try { var el = document.getElementById('allo-live-allostudio'); if (el) el.textContent = msg; } catch (_) {}
   };
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚Â [ST_PURE_BEGIN] ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚Â
-  // Pure core ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â no DOM access, no randomness, fully unit-testable. Object ids
+  // ═══════════════════════════ [ST_PURE_BEGIN] ═══════════════════════════
+  // Pure core — no DOM access, no randomness, fully unit-testable. Object ids
   // derive from the op seq, so replay is deterministic by construction.
 
   var ST_FORMAT = 'allostudio';
@@ -82,7 +82,7 @@
   var ST_MAX_OBJECTS = 2000;
   var ST_MAX_LEDGER_OPS = 50000;
   var ST_ACTORS = { user: true, ai: true, import: true };
-  // Verbatim UI honesty line (doc ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§5) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â pinned by tests; do not soften or reword
+  // Verbatim UI honesty line (doc §5) — pinned by tests; do not soften or reword
   // into an "AI detection" claim.
   var ST_HONESTY_LINE = 'This timeline shows what happened inside this editor. It does not detect AI content in imported images.';
   var ST_CANVAS_PRESETS = {
@@ -132,7 +132,7 @@
   function stSafeTextRole(value) {
     return value === 'heading1' || value === 'heading2' || value === 'heading3' || value === 'body' ? value : 'body';
   }
-  // Curated font stacks ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â picked by KEY in the UI/agent; raw strings (brand
+  // Curated font stacks — picked by KEY in the UI/agent; raw strings (brand
   // fonts) pass a charset allowlist so nothing can smuggle CSS declarations
   // through font-family into exports.
   var ST_FONT_STACKS = {
@@ -220,7 +220,7 @@
 
   // Plan preview: apply ops to a DETACHED scene (no ledger, no real ids) so
   // the review panel can render before/after without touching the document.
-  // image.request ops are skipped ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â their pixels don't exist until apply.
+  // image.request ops are skipped — their pixels don't exist until apply.
   function stPreviewScene(doc, ops) {
     var scene = { title: doc.title, canvas: stClone(doc.canvas), objects: stClone(doc.objects) };
     var minted = 0;
@@ -246,7 +246,7 @@
       '.st-page { margin: 0 !important; box-shadow: none !important; }';
   }
 
-  // Autosave payload (pure half ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â storage lives with the other localStorage
+  // Autosave payload (pure half — storage lives with the other localStorage
   // helpers). Restore only ever loads a payload that validates as a real doc.
   function stDurableDoc(doc) {
     var out = stClone(doc);
@@ -312,7 +312,7 @@
     }
     return true;
   }
-  // Effective background(s) under a text box, sampled at a 3ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â3 grid ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â NOT just
+  // Effective background(s) under a text box, sampled at a 3×3 grid — NOT just
   // the center. A caption that straddles a dark shape and the white page yields
   // BOTH colors, so the preflight can score the worst-case contrast instead of
   // passing a box that is only legible in the middle. Returns distinct colors.
@@ -328,7 +328,7 @@
       for (var j = 0; j < frac.length; j++) {
         var px = f.x + f.w * frac[i], py = f.y + f.h * frac[j];
         var bg = pageBg;
-        // ordered ascending by z then array index ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ last match is the topmost
+        // ordered ascending by z then array index → last match is the topmost
         shapes.forEach(function (o) { if (stFrameContainsPoint(stClampFrame(o.frame, doc.canvas), px, py)) bg = stSafeCssColor(o.fill, bg); });
         if (!seen[bg]) { seen[bg] = true; out.push(bg); }
       }
@@ -365,12 +365,12 @@
       title: title || 'Untitled',
       _baseTitle: title || 'Untitled', // replay-to-seq-0 anchor (title changes are ops; creation is not)
       // replay-to-seq-0 canvas-size anchor (a canvas.resize is an op; creation is
-      // not). Older saves without this fall back to doc.canvas in stReplay ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â they
+      // not). Older saves without this fall back to doc.canvas in stReplay — they
       // have no resize ops, so base == current == correct.
       _baseCanvas: { preset: ST_CANVAS_PRESETS[preset] ? preset : 'letter-portrait', w: p.w, h: p.h },
       createdAt: now || 0,
       canvas: { preset: ST_CANVAS_PRESETS[preset] ? preset : 'letter-portrait', w: p.w, h: p.h, background: { fill: '#ffffff' } },
-      objects: [],            // current scene cache ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â array order IS the reading order
+      objects: [],            // current scene cache — array order IS the reading order
       ledger: { version: 1, ops: [], checkpoints: [] },
       _redo: [],              // undone ops (session bookkeeping; harmless if saved)
     };
@@ -388,7 +388,7 @@
     return { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h), rotation: stFiniteNumber(frame.rotation, 0) };
   }
 
-  // Apply ONE op to a scene ({title, canvas, objects}) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â pure; unknown op types
+  // Apply ONE op to a scene ({title, canvas, objects}) — pure; unknown op types
   // leave the scene unchanged (forward compatibility: an old build replaying a
   // newer save must not corrupt what it does understand).
   function stApplyOp(scene, op) {
@@ -437,20 +437,20 @@
     } else if (t === 'canvas.resize') {
       // A known preset drives both dims + label; otherwise take explicit w/h.
       // Background is preserved (stClone). Objects re-clamp into the new page so
-      // nothing is stranded off-canvas ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â undo restores originals via replay.
+      // nothing is stranded off-canvas — undo restores originals via replay.
       var rc = stClone(scene.canvas);
       if (ST_CANVAS_PRESETS[op.preset]) { rc.preset = op.preset; rc.w = ST_CANVAS_PRESETS[op.preset].w; rc.h = ST_CANVAS_PRESETS[op.preset].h; }
       else { rc.w = Math.max(ST_MIN_SIZE, Math.round(stFiniteNumber(op.w, rc.w))); rc.h = Math.max(ST_MIN_SIZE, Math.round(stFiniteNumber(op.h, rc.h))); rc.preset = 'custom'; }
       var reclamped = objects.map(function (ob) { var c2 = stClone(ob); c2.frame = stClampFrame(c2.frame, rc); return c2; });
       return { title: scene.title, canvas: rc, objects: reclamped };
     } else if (t === 'doc.template') {
-      // marker op (records which template seeded the doc) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â no scene change
+      // marker op (records which template seeded the doc) — no scene change
     }
     return { title: scene.title, canvas: scene.canvas, objects: objects };
   }
 
   // Append an op to the doc's ledger and apply it. `actor` must be in the closed
-  // set ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â anything else throws, so a future caller can't invent a fourth actor
+  // set — anything else throws, so a future caller can't invent a fourth actor
   // and silently break the provenance story.
   function stAppend(doc, opBody, actor, now) {
     if (!ST_ACTORS[actor]) throw new Error('AlloStudio: unknown actor "' + actor + '" (must be user | ai | import)');
@@ -459,7 +459,7 @@
     op.seq = last + 1;
     op.ts = now || 0;
     op.actor = actor;
-    // object.add ops mint their object's id from the seq ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ deterministic replay
+    // object.add ops mint their object's id from the seq → deterministic replay
     if (op.type === 'object.add' && op.object && !op.object.id) op.object.id = 'o' + op.seq;
     doc.ledger.ops.push(op);
     var next = stApplyOp({ title: doc.title, canvas: doc.canvas, objects: doc.objects }, op);
@@ -489,7 +489,7 @@
   }
   // Undo/redo = ledger navigation. Undo pops the last op onto the redo stack and
   // recomputes the scene by replay; redo re-appends the SAME op object (its seq
-  // and ts are preserved ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the op happened once; navigation doesn't re-stamp it).
+  // and ts are preserved — the op happened once; navigation doesn't re-stamp it).
   function stUndo(doc) {
     if (!doc.ledger.ops.length) return false;
     if (!Array.isArray(doc._redo)) doc._redo = [];
@@ -573,7 +573,7 @@
     out.objects = scene.objects;
     return out;
   }
-  // Per-actor summary for the Process tab. activeMs sums gaps under 5 minutes ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â
+  // Per-actor summary for the Process tab. activeMs sums gaps under 5 minutes —
   // an honest "time in editor" floor, not surveillance-grade timing.
   function stActorSummary(ops) {
     var out = { user: 0, ai: 0, import: 0, total: ops.length, firstTs: null, lastTs: null, activeMs: 0 };
@@ -592,7 +592,7 @@
   // Design law 3: every content image needs alt text; decorative is an explicit
   // choice. Returns the offenders (empty array = gate open). Images without src
   // are exempt: an empty frame emits nothing in the export, so there is nothing
-  // to announce ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â and template placeholder frames must not pre-block export.
+  // to announce — and template placeholder frames must not pre-block export.
   function stAltGate(objects) {
     var missing = [];
     for (var i = 0; i < objects.length; i++) {
@@ -700,11 +700,11 @@
     return errs;
   }
   // Process-tab step label. Ops applied from an agent plan carry the teacher's
-  // request (op.agent.prompt on the batch's first op) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â surfacing it here keeps
+  // request (op.agent.prompt on the batch's first op) — surfacing it here keeps
   // the timeline honest about WHY the AI changed something, not just that it did.
   function stDescribeOp(op) {
     var base = stDescribeOpBase(op);
-    if (op && op.agent && op.agent.prompt) return base + ' ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â AI request: "' + stCleanText(op.agent.prompt, 80) + '"';
+    if (op && op.agent && op.agent.prompt) return base + ' — AI request: "' + stCleanText(op.agent.prompt, 80) + '"';
     return base;
   }
   function stDescribeOpBase(op) {
@@ -780,7 +780,7 @@
       }
     });
     // Heading hierarchy (WCAG 1.3.1 / 2.4.6): exported tags come straight from
-    // the role field, so a skipped level (H1ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢H3) or a missing H1 ships as a real
+    // the role field, so a skipped level (H1→H3) or a missing H1 ships as a real
     // structural defect in the tagged PDF. Evaluated in reading (array) order.
     var headings = doc.objects.filter(function (o) {
       return o && o.type === 'text' && /^heading[123]$/.test(o.role) && String((o.runs && o.runs[0] && o.runs[0].text) || '').trim();
@@ -823,9 +823,9 @@
     return out;
   }
 
-  // Worksheet BRIDGE (doc ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§11): turn the VISUAL worksheet into a LINEAR,
-  // semantically-structured worksheet document ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â real <ol>/<li> questions with
-  // labeled answer regions ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â so it flows through the same accessible export
+  // Worksheet BRIDGE (doc §11): turn the VISUAL worksheet into a LINEAR,
+  // semantically-structured worksheet document — real <ol>/<li> questions with
+  // labeled answer regions — so it flows through the same accessible export
   // pipeline (tagged PDF / HTML) as a proper worksheet, not just a page picture.
   // Distinct from stExportHtml (the pixel-faithful design snapshot).
   function stExportWorksheetHtml(doc, opts) {
@@ -1489,7 +1489,7 @@
         if (!runs[0]) runs[0] = { text: '', style: {} };
         var isHeading = /^heading/.test(o.role || '');
         runs[0].style = Object.assign({}, runs[0].style, { color: isHeading ? kit.heading : kit.body });
-        // Only the brand kit carries fonts ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â stock kits leave fonts alone.
+        // Only the brand kit carries fonts — stock kits leave fonts alone.
         if (kit.bodyFont) runs[0].style.font = isHeading ? (kit.headingFont || kit.bodyFont) : kit.bodyFont;
         patches.push({ id: o.id, patch: { runs: runs } });
       } else if (o.type === 'shape') {
@@ -1738,7 +1738,7 @@
       bold: Object.prototype.hasOwnProperty.call(sourceStyle, 'bold') ? !!sourceStyle.bold : !!baseStyle.bold,
       align: stSafeAlign(sourceStyle.align || baseStyle.align)
     };
-    // The model may only pick font KEYS ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â a raw stack from the model is
+    // The model may only pick font KEYS — a raw stack from the model is
     // ignored (the teacher's existing font, if any, is kept instead).
     var fontPick = ST_FONT_STACKS[sourceStyle.font] || (typeof baseStyle.font === 'string' ? baseStyle.font : null);
     if (fontPick) styleOut.font = fontPick;
@@ -1772,9 +1772,9 @@
   var ST_AGENT_MAX_ADDS = 12;
 
   // The model may propose NEW objects, but only text and shapes, and only
-  // through the same constructors user insertion uses ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â never raw objects.
+  // through the same constructors user insertion uses — never raw objects.
   // No ids (stAppend mints them at apply), no src (pixels enter only via
-  // image.request ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ the host's Imagen seam), no unknown fields survive.
+  // image.request → the host's Imagen seam), no unknown fields survive.
   function stSanitizeAgentAdd(op, canvas) {
     var raw = (op && op.object && typeof op.object === 'object') ? op.object : {};
     var frame = stClampFrame(raw.frame || { x: 60, y: 60, w: 380, h: 60 }, canvas);
@@ -1925,7 +1925,7 @@
       info.after = addKind === 'text'
         ? stCleanText(op.object && op.object.runs && op.object.runs[0] && op.object.runs[0].text, 220)
         : stFrameSummary(op.object && op.object.frame);
-      info.safety = 'Added at the end of the reading order ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â reorder after applying if needed';
+      info.safety = 'Added at the end of the reading order — reorder after applying if needed';
       return info;
     }
     if (op.type === 'image.request') {
@@ -2006,10 +2006,10 @@
     return info;
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Agent plan batching: ops applied from one AI proposal share a batch tag
+  // ── Agent plan batching: ops applied from one AI proposal share a batch tag
   // (stAppend clones extra opBody fields, so the tag + the teacher's request
-  // live in the ledger itself ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â attribution by construction, and the whole
-  // batch reverts in one gesture instead of N undo presses). ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+  // live in the ledger itself — attribution by construction, and the whole
+  // batch reverts in one gesture instead of N undo presses). ──
   function stLastAgentBatch(doc) {
     var ops = doc && doc.ledger && Array.isArray(doc.ledger.ops) ? doc.ledger.ops : [];
     if (!ops.length) return null;
@@ -2241,7 +2241,7 @@
   // PRIVACY invariant (mirrors the Document Builder crop): cropping REMOVES
   // content, so the pre-crop pixels must not survive where the file is saved.
   // Rewrite the object's src in every ledger op, every checkpoint, AND the live
-  // scene to the cropped data ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the removed pixels become unrecoverable from the
+  // scene to the cropped data — the removed pixels become unrecoverable from the
   // .allostudio.json. A deliberate, documented exception to op-immutability,
   // scoped to image src (so "crop to remove a face/name" actually removes it).
   function stScrubObjectSrc(doc, objId, newSrc) {
@@ -2266,7 +2266,7 @@
     return lines.join('\n');
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Object factories (frames are template/editor concerns; ids minted at append) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+  // ── Object factories (frames are template/editor concerns; ids minted at append) ──
   function stMakeText(role, text, frame, style) {
     return { type: 'text', role: role, frame: frame, z: 10,
       runs: [{ text: text, style: { size: (style && style.size) || (role === 'heading1' ? 44 : role === 'heading2' ? 28 : 16), color: (style && style.color) || '#111827', bold: role !== 'body', align: (style && style.align) || 'left' } }] };
@@ -2279,12 +2279,12 @@
       provenance: { origin: origin || 'upload' } };
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Templates (doc ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§11): every seeded object goes through the LEDGER (actor
-  // 'user' ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the user chose the template), so replay-from-zero always holds and
-  // the Process tab shows the seeding honestly ("doc.template" marker first). ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+  // ── Templates (doc §11): every seeded object goes through the LEDGER (actor
+  // 'user' — the user chose the template), so replay-from-zero always holds and
+  // the Process tab shows the seeding honestly ("doc.template" marker first). ──
   function stTemplates() {
     return [
-      { key: 'flyer', emoji: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â£', name: 'Event flyer', desc: 'Hero heading, image, details block ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the classic classroom flyer.',
+      { key: 'flyer', emoji: '📣', name: 'Event flyer', desc: 'Hero heading, image, details block — the classic classroom flyer.',
         make: function (now) {
           var d = stCreateDoc('letter-portrait', 'Event flyer', now);
           stAppend(d, { type: 'doc.template', template: 'flyer' }, 'user', now);
@@ -2295,7 +2295,7 @@
           stAppend(d, { type: 'object.add', object: stMakeText('body', 'Date, time, location, and what to bring. Replace this with your details.', { x: 48, y: 640, w: 720, h: 120 }) }, 'user', now);
           return d;
         } },
-      { key: 'worksheet', emoji: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â', name: 'Worksheet', desc: 'Title, instructions, numbered question blocks with answer space.',
+      { key: 'worksheet', emoji: '📝', name: 'Worksheet', desc: 'Title, instructions, numbered question blocks with answer space.',
         make: function (now) {
           var d = stCreateDoc('letter-portrait', 'Worksheet', now);
           stAppend(d, { type: 'doc.template', template: 'worksheet' }, 'user', now);
@@ -2310,7 +2310,7 @@
           }
           return d;
         } },
-      { key: 'poster', emoji: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¹', name: 'Student poster ("About Me")', desc: 'Big title, image frames, caption text ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â first-week classic.',
+      { key: 'poster', emoji: '🙋', name: 'Student poster ("About Me")', desc: 'Big title, image frames, caption text — first-week classic.',
         make: function (now) {
           var d = stCreateDoc('letter-portrait', 'About Me', now);
           stAppend(d, { type: 'doc.template', template: 'poster' }, 'user', now);
@@ -2319,7 +2319,7 @@
           stAppend(d, { type: 'object.add', object: stMakeImage('', '', { x: 88, y: 180, w: 300, h: 300 }, 'upload') }, 'user', now);
           stAppend(d, { type: 'object.add', object: stMakeImage('', '', { x: 428, y: 180, w: 300, h: 300 }, 'upload') }, 'user', now);
           stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Three things about me', { x: 48, y: 540, w: 720, h: 44 }) }, 'user', now);
-          stAppend(d, { type: 'object.add', object: stMakeText('body', '1. ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦\n2. ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦\n3. ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦', { x: 48, y: 600, w: 720, h: 160 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', '1. …\n2. …\n3. …', { x: 48, y: 600, w: 720, h: 160 }) }, 'user', now);
           return d;
         } },
       { key: 'exitTicket', emoji: 'OK', name: 'Exit ticket', desc: 'One prompt with quick reflection spaces for the end of class.',
@@ -2594,10 +2594,10 @@
           stAppend(d, { type: 'object.add', object: stMakeText('body', 'What should someone remember after reading this?', { x: 64, y: 780, w: 688, h: 70 }, { size: 18 }) }, 'user', now);
           return d;
         } },
-      { key: 'blank', emoji: 'ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬Ãƒâ€¦Ã¢â‚¬Å“', name: 'Blank canvas', desc: 'Start from nothing (portrait, landscape, or square).', orientations: true,
+      { key: 'blank', emoji: '⬜', name: 'Blank canvas', desc: 'Start from nothing (portrait, landscape, or square).', orientations: true,
         make: function (now, preset) {
-          // orientation chosen AT CREATION ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the base canvas, so replay/scrub is
-          // unaffected (no mid-document resize op). Unknown preset ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ portrait.
+          // orientation chosen AT CREATION — the base canvas, so replay/scrub is
+          // unaffected (no mid-document resize op). Unknown preset → portrait.
           var d = stCreateDoc(ST_CANVAS_PRESETS[preset] ? preset : 'letter-portrait', 'Untitled', now);
           stAppend(d, { type: 'doc.template', template: 'blank' }, 'user', now);
           return d;
@@ -2605,7 +2605,7 @@
     ];
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Accessible HTML export (the moat, doc ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§6) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+  // ── Accessible HTML export (the moat, doc §6) ──
   // DOM order = object array order = reading order. Positioning is pure CSS on
   // top of the semantic element, so screen readers and the tagged-PDF typesetter
   // both see real structure. Decorative objects are aria-hidden. No scripts, no
@@ -2750,8 +2750,8 @@
     return '<!DOCTYPE html>\n<html lang="' + stEscapeHtml(lang) + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + stEscapeHtml(doc.title) + '</title>\n<style>\n  body { margin: 0; background: #f1f5f9; font-family: system-ui, sans-serif; }\n  .st-page { position: relative; width: ' + canvas.w + 'px; height: ' + canvas.h + 'px; background: ' + canvas.background.fill + '; margin: 24px auto; box-shadow: 0 2px 12px rgba(15,23,42,0.15); overflow: hidden; }\n  @media print { body { background: none; } .st-page { margin: 0; box-shadow: none; page-break-after: always; } }\n</style>\n</head>\n<body>\n<main class="st-page">\n' + parts.join('\n') + '\n</main>\n</body>\n</html>';
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Keyboard shortcut reference (pure data; the editor renders + binds it) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
-  // `mod` = the platform command key (Ctrl on Windows/Linux, ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬â„¢Ãƒâ€¹Ã…â€œ on Mac); the
+  // ── Keyboard shortcut reference (pure data; the editor renders + binds it) ──
+  // `mod` = the platform command key (Ctrl on Windows/Linux, ⌘ on Mac); the
   // editor prefixes it and localizes each label by id (studio.sc_<id>). Kept as
   // ONE source of truth so the bound handlers and the help overlay never drift.
   function stShortcutList() {
@@ -2774,7 +2774,7 @@
     ];
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Color swatch palette (the Canva-style quick picker) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+  // ── Color swatch palette (the Canva-style quick picker) ──
   // PURE: gathers three ordered, de-duplicated swatch groups so a teacher clicks
   // a color instead of hunting in the OS picker: (1) BRAND colors from the active
   // school profile, (2) a curated STANDARD palette, (3) DOCUMENT colors already
@@ -2814,7 +2814,7 @@
     return { brand: brand, standard: standard, document: docColors };
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚Â [ST_PURE_END] ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚Â
+  // ═══════════════════════════ [ST_PURE_END] ═══════════════════════════
 
   function stReadRecentProjects() {
     try {
@@ -2843,8 +2843,8 @@
     }
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Autosave (crash recovery): one debounced full-doc snapshot per device.
-  // Same localStorage idiom as recents; restore only after stValidateDoc. ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+  // ── Autosave (crash recovery): one debounced full-doc snapshot per device.
+  // Same localStorage idiom as recents; restore only after stValidateDoc. ──
   var ST_AUTOSAVE_KEY = 'alloStudioAutosave_v1';
   var ST_AUTOSAVE_MAX_CHARS = 3800000; // stay clear of the ~5MB localStorage cap
   function stReadAutosave() {
@@ -2939,8 +2939,8 @@
     }
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Image crop (DOM canvas) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â draw the crop box to a new canvas and return a
-  // data URL. JPEG in ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ JPEG out (no alpha); everything else ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ PNG (alpha-safe).
+  // ── Image crop (DOM canvas) — draw the crop box to a new canvas and return a
+  // data URL. JPEG in → JPEG out (no alpha); everything else → PNG (alpha-safe).
   function stCropImageToDataUrl(src, box) {
     return new Promise(function (resolve, reject) {
       try {
@@ -2961,10 +2961,10 @@
     });
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ PNG rasterizer (DOM canvas; approximate visual fidelity for MVP) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+  // ── PNG rasterizer (DOM canvas; approximate visual fidelity for MVP) ──
   // Downscale imported images before they enter the ledger (keeps saves and
-  // exports light; privacy-neutral ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â all in-memory). JPEG stays JPEG (photos),
-  // everything else becomes PNG so alpha survives ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the crop-tool format rule.
+  // exports light; privacy-neutral — all in-memory). JPEG stays JPEG (photos),
+  // everything else becomes PNG so alpha survives — the crop-tool format rule.
   function stImportImageDataUrl(dataUrl, maxDim) {
     return new Promise(function (resolve) {
       try {
@@ -3105,7 +3105,7 @@
     g.drawImage(im, (iw - sw) / 2, (ih - sh) / 2, sw, sh, f.x, f.y, f.w, f.h);
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚Â Editor component ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢Ãƒâ€šÃ‚Â
+  // ════════════════════════════ Editor component ════════════════════════════
   function AlloStudio(props) {
     var h = React.createElement;
     var t = props.t || function () { return ''; };
@@ -3187,7 +3187,7 @@
     };
     var trapTab = function (ev) {
       trapTabWithin(_shellRef.current, ev);
-    };    // AI (Milestone B) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â optional capabilities. The buttons only appear when the
+    };    // AI (Milestone B) — optional capabilities. The buttons only appear when the
     // host app wires the callbacks, so older wiring degrades cleanly. Every AI
     // result enters the ledger as actor 'ai' (provenance by construction).
     var canGenerateImage = typeof props.onGenerateImage === 'function';
@@ -3213,7 +3213,7 @@
     var _imgEditOpen = React.useState(false); var imgEditOpen = _imgEditOpen[0], setImgEditOpen = _imgEditOpen[1];
     var _imgEditPrompt = React.useState(''); var imgEditPrompt = _imgEditPrompt[0], setImgEditPrompt = _imgEditPrompt[1];
     var _designFeedback = React.useState(null); var designFeedback = _designFeedback[0], setDesignFeedback = _designFeedback[1];
-    // Active school brand (BrandProfile module) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â read once per open via the
+    // Active school brand (BrandProfile module) — read once per open via the
     // lazy useState initializer; degrades to the stock kits when absent.
     var _brandProfile = React.useState(function () {
       try {
@@ -3326,7 +3326,7 @@
       stAnnounce(TT('studio.a11y_selected_all', 'Selected all objects'));
     };
     // Bring the selected object one step earlier/later in READING ORDER (the same
-    // move as the navigator ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“/ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ buttons; Ctrl+[ / Ctrl+]). Single-selection only.
+    // move as the navigator ↑/↓ buttons; Ctrl+[ / Ctrl+]). Single-selection only.
     var reorderSelected = function (dir) {
       if (!doc || !selectedId) return;
       var idx = -1;
@@ -3387,10 +3387,10 @@
       stAnnounce(TT('studio.a11y_started', 'Started a new document from template') + ': ' + tpl.name);
     };
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ object insertion ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+    // ── object insertion ──
     var selectFromOp = function (op) { if (op && op.object && op.object.id) selectOnly(op.object.id); return op; };
     var insertText = function (roleKind) {
-      var obj = stMakeText(roleKind, roleKind === 'body' ? TT('studio.new_text', 'New text ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â double-click to edit') : TT('studio.new_heading', 'New heading'), { x: 60, y: 60, w: 400, h: roleKind === 'heading1' ? 70 : 50 });
+      var obj = stMakeText(roleKind, roleKind === 'body' ? TT('studio.new_text', 'New text — double-click to edit') : TT('studio.new_heading', 'New heading'), { x: 60, y: 60, w: 400, h: roleKind === 'heading1' ? 70 : 50 });
       selectFromOp(dispatch({ type: 'object.add', object: obj }, 'user'));
     };
     var insertShape = function (kind) {
@@ -3402,13 +3402,13 @@
       if (!f) return;
       var r = new FileReader();
       r.onload = function (e) {
-        // actor 'import': the asset came from outside the editor ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the ledger
+        // actor 'import': the asset came from outside the editor — the ledger
         // labels it honestly (we cannot see inside an uploaded image).
         // Downscaled first so a camera photo doesn't bloat the save file.
         stImportImageDataUrl(e.target.result, 1600).then(function (src) {
           if (!src) { addToast(TT('studio.image_import_failed', 'That file could not be imported as an image.'), 'error'); return; }
           selectFromOp(dispatch({ type: 'object.add', object: stMakeImage(src, '', { x: 100, y: 100, w: 320, h: 240 }, 'upload') }, 'import'));
-          addToast(TT('studio.image_added', 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¼ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â Image added ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â give it alt text (or mark it decorative) before exporting.'), 'info');
+          addToast(TT('studio.image_added', '🖼️ Image added — give it alt text (or mark it decorative) before exporting.'), 'info');
         });
       };
       r.readAsDataURL(f);
@@ -3494,7 +3494,7 @@
       }
       if (action.type === 'add-alt' && action.targetId) {
         focusAltTextFor(action.targetId);
-        stAnnounce(TT('studio.a11y_alt_jump', 'Selected image missing alt text ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the alt text field is in the right panel.'));
+        stAnnounce(TT('studio.a11y_alt_jump', 'Selected image missing alt text — the alt text field is in the right panel.'));
         return;
       }
       if (action.type === 'mark-decorative' && action.targetId) {
@@ -3556,7 +3556,7 @@
           dispatch({ type: 'object.update', target: live.id, patch: stOptimizedImagePatch(live, optimized, beforeInfo, afterInfo) }, 'user');
           advancePreflightGuideAfter(action, beforeOptimizeFix);
           stAnnounce(TT('studio.a11y_image_optimized', 'Image optimized'));
-          addToast(TT('studio.optimize_done', 'Image optimized.') + ' ' + beforeInfo.approxKb + ' KB ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ ' + afterInfo.approxKb + ' KB', 'success');
+          addToast(TT('studio.optimize_done', 'Image optimized.') + ' ' + beforeInfo.approxKb + ' KB → ' + afterInfo.approxKb + ' KB', 'success');
         }).catch(function () {
           setAiBusy(null);
           addToast(TT('studio.optimize_failed', 'Could not optimize the image.'), 'error');
@@ -3572,7 +3572,7 @@
       stAnnounce(action.title || TT('studio.a11y_ready_action', 'Ready to share action selected'));
     };
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ AI (Milestone B): generate image + suggest alt text ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+    // ── AI (Milestone B): generate image + suggest alt text ──
     var applyA11yAutoFix = function () {
       if (!doc) return;
       var plan = stBuildA11yAutoFixPlan(doc);
@@ -3594,15 +3594,15 @@
         setAiBusy(null);
         if (!stIsSafeDataImage(dataUrl, ST_MAX_IMAGE_SRC_LENGTH)) { addToast(TT('studio.ai_gen_failed', 'Could not generate an image.'), 'error'); return; }
         // actor 'ai': the pixels came from a model through our own API seam. The
-        // prompt lives in provenance. Alt stays EMPTY ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â a generation prompt is
+        // prompt lives in provenance. Alt stays EMPTY — a generation prompt is
         // not screen-reader alt text, so the gate still makes the teacher (or
         // "Suggest alt text") describe it honestly.
         var obj = stMakeImage(dataUrl, '', { x: 120, y: 120, w: 360, h: 270 }, 'ai-generated');
         obj.provenance = { origin: 'ai-generated', prompt: prompt };
         selectFromOp(dispatch({ type: 'object.add', object: obj }, 'ai'));
         setAiGenOpen(false); setAiGenPrompt('');
-        stAnnounce(TT('studio.a11y_ai_generated', 'AI image added ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â remember to add alt text'));
-        addToast(TT('studio.ai_gen_ok', 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ Image generated (logged as AI in your process). Add alt text before exporting.'), 'success');
+        stAnnounce(TT('studio.a11y_ai_generated', 'AI image added — remember to add alt text'));
+        addToast(TT('studio.ai_gen_ok', '✨ Image generated (logged as AI in your process). Add alt text before exporting.'), 'success');
       }).catch(function (err) { setAiBusy(null); addToast(TT('studio.ai_gen_failed', 'Could not generate an image.') + ' ' + (err && err.message || ''), 'error'); });
     };
     var runSuggestAlt = function () {
@@ -3617,13 +3617,13 @@
         // any edit lands as a 'user' op, so the ledger stays truthful.
         dispatch({ type: 'object.update', target: id, patch: { alt: alt } }, 'ai');
         setAltNonce(function (n) { return n + 1; }); // remount the alt field to show the draft
-        stAnnounce(TT('studio.a11y_ai_alt', 'Draft alt text added ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â review it'));
-        addToast(TT('studio.ai_alt_ok', 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ Draft alt text added (logged as AI). Please review and edit it.'), 'info');
+        stAnnounce(TT('studio.a11y_ai_alt', 'Draft alt text added — review it'));
+        addToast(TT('studio.ai_alt_ok', '✨ Draft alt text added (logged as AI). Please review and edit it.'), 'info');
       }).catch(function (err) { setAiBusy(null); addToast(TT('studio.ai_alt_failed', 'Could not draft alt text.') + ' ' + (err && err.message || ''), 'error'); });
     };
 
-    // One agent request ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ one reviewable plan. `refineOf` carries the previous
-    // proposal back to the model so "adjust it" keeps context ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â conversational
+    // One agent request → one reviewable plan. `refineOf` carries the previous
+    // proposal back to the model so "adjust it" keeps context — conversational
     // iteration with zero hidden chat state (everything shown in the panel).
     var mintBatchId = function () { return 'p' + Date.now().toString(36) + Math.floor(Math.random() * 46656).toString(36); };
     var requestAgentPlan = function (promptText, refineOf, scopeOverride) {
@@ -3665,7 +3665,7 @@
     var runAgentRefine = function () {
       var follow = String(agentFollowUp || '').trim();
       if (!follow || !agentPlan) return;
-      requestAgentPlan((agentPlan.prompt ? agentPlan.prompt + ' ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â adjustment: ' : '') + follow, agentPlan);
+      requestAgentPlan((agentPlan.prompt ? agentPlan.prompt + ' — adjustment: ' : '') + follow, agentPlan);
     };
     var applyAgentPlan = function () {
       if (!agentPlan || !agentPlan.ops || !agentPlan.ops.length || aiBusy) return;
@@ -3677,7 +3677,7 @@
       var promptText = agentPlan.prompt || '';
       var stamped = false;
       var touched = [];
-      // Batch tag on every op; the teacher's request once (first applied op) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â
+      // Batch tag on every op; the teacher's request once (first applied op) —
       // the ledger stays light but the batch is attributable + undoable as one.
       var dispatchAgent = function (op) {
         var body = stClone(op);
@@ -3699,9 +3699,9 @@
         clearAgentPreview();
         var delta = stPreflightDelta(beforeCounts, stAnalyzeDoc(_docRef.current).counts);
         var msg = TT('studio.agent_applied', 'Applied AI changes and logged them in the process history.') + ' ' + delta.text;
-        if (failedImages) msg += ' ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ' + failedImages + ' ' + TT('studio.agent_images_failed', 'image(s) could not be generated');
+        if (failedImages) msg += ' — ' + failedImages + ' ' + TT('studio.agent_images_failed', 'image(s) could not be generated');
         if (delta.direction === 'worse') {
-          addToast(msg + '. ' + TT('studio.agent_worse_hint', 'The accessibility check got worse ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â "Undo AI changes" reverts this in one step.'), 'error');
+          addToast(msg + '. ' + TT('studio.agent_worse_hint', 'The accessibility check got worse — "Undo AI changes" reverts this in one step.'), 'error');
         } else {
           addToast(msg, failedImages ? 'info' : 'success');
         }
@@ -3711,7 +3711,7 @@
       if (!imageReqs.length) { finish(0); return; }
       // image.request resolves through the SAME Imagen seam as the manual
       // button, sequentially (the queue is rate-limit-aware but order keeps
-      // provenance readable). Alt stays EMPTY ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the gate still applies.
+      // provenance readable). Alt stays EMPTY — the gate still applies.
       if (!canGenerateImage) { finish(imageReqs.length); return; }
       setAiBusy('agent-apply');
       var queue = imageReqs.slice();
@@ -3744,7 +3744,7 @@
 
     // Whole-image AI edit (the app-wide Gemini image-edit seam anchor charts +
     // concept maps already use). NOT a crop: the original stays recoverable
-    // through undo/process history, so this is for improving pictures ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the
+    // through undo/process history, so this is for improving pictures — the
     // crop tool + its scrub invariant own removing sensitive content.
     var runEditImage = function () {
       if (!selected || selected.type !== 'image' || !selected.src || !canEditImage || aiBusy) return;
@@ -3759,8 +3759,8 @@
         dispatch({ type: 'object.update', target: id, patch: { src: dataUrl, provenance: { origin: 'ai-edited', prompt: instruction, prior: priorOrigin } } }, 'ai');
         setImgEditPrompt('');
         setImgEditOpen(false);
-        stAnnounce(TT('studio.a11y_ai_edited', 'AI edited the image ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â review the alt text'));
-        addToast(TT('studio.ai_edit_ok', 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ Image edited (logged as AI). Review the alt text ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the picture may have changed.'), 'info');
+        stAnnounce(TT('studio.a11y_ai_edited', 'AI edited the image — review the alt text'));
+        addToast(TT('studio.ai_edit_ok', '✨ Image edited (logged as AI). Review the alt text — the picture may have changed.'), 'info');
       }).catch(function (err) { setAiBusy(null); addToast(TT('studio.ai_edit_failed', 'Could not edit the image.') + ' ' + (err && err.message || ''), 'error'); });
     };
 
@@ -3790,7 +3790,7 @@
             batch: mintBatchId()
           });
           setAgentSelectedOps(ops.map(function (_, idx) { return idx; }));
-          stAnnounce(TT('studio.a11y_alt_all_ready', 'Alt text drafts ready ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â review before applying'));
+          stAnnounce(TT('studio.a11y_alt_all_ready', 'Alt text drafts ready — review before applying'));
           addToast(TT('studio.ai_alt_all_ready', 'Alt text drafts ready. Review each one before applying.'), 'info');
           return;
         }
@@ -3804,8 +3804,8 @@
       step();
     };
 
-    // Design feedback: render the page ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ vision critique ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ text suggestions.
-    // Advisory only ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â no ops, nothing enters the ledger (the document did not
+    // Design feedback: render the page → vision critique → text suggestions.
+    // Advisory only — no ops, nothing enters the ledger (the document did not
     // change). stRenderPng is the same rasterizer the PNG export uses.
     var runDesignFeedback = function () {
       if (!doc || !canDesignFeedback || aiBusy) return;
@@ -3817,7 +3817,7 @@
       stRenderPng(doc, 0.6).then(function (blob) {
         var reader = new FileReader();
         reader.onload = function (e) {
-          var context = (doc.title || 'Untitled') + ' ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ' + doc.objects.length + ' object(s), ' + preflightTotal + ' open accessibility item(s)';
+          var context = (doc.title || 'Untitled') + ' — ' + doc.objects.length + ' object(s), ' + preflightTotal + ' open accessibility item(s)';
           Promise.resolve(props.onDesignFeedback(String(e.target.result || ''), context)).then(function (text) {
             setAiBusy(null);
             var body = String(text || '').trim().slice(0, 1600);
@@ -3832,7 +3832,7 @@
       }).catch(feedbackFailed);
     };
 
-    // Rendered before/after of the SELECTED plan ops on a detached scene ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â
+    // Rendered before/after of the SELECTED plan ops on a detached scene —
     // nothing touches the document or the ledger until Apply.
     var runPlanPreview = function () {
       if (!agentPlan || !agentPlan.ops || aiBusy) return;
@@ -3851,7 +3851,7 @@
     };
 
     // Compose-from-prompt: blank canvas + one agent request, landing in the
-    // SAME review panel ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the flagship "start with AI" flow (teacher-only).
+    // SAME review panel — the flagship "start with AI" flow (teacher-only).
     var startWithAi = function () {
       var text = String(composePrompt || '').trim();
       if (!text) { addToast(TT('studio.compose_need_prompt', 'Describe the page you want first.'), 'info'); return; }
@@ -3867,7 +3867,7 @@
     };
 
     // One-click accessibility pass: deterministic fixes apply immediately (as
-    // 'user' ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â they are rules, not model output); alt drafts land in the
+    // 'user' — they are rules, not model output); alt drafts land in the
     // review panel; structural issues pre-fill a focused agent request.
     var runMakeAccessible = function () {
       if (!doc || aiBusy) return;
@@ -3889,9 +3889,9 @@
         runDraftAllAlt();
         acted = true;
       } else if (needsStructure && canAgentEdit) {
-        addToast(TT('studio.a11y_structure_ready', 'A structure-fix request is ready in the AI panel ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â press "Preview changes".'), 'info');
+        addToast(TT('studio.a11y_structure_ready', 'A structure-fix request is ready in the AI panel — press "Preview changes".'), 'info');
       }
-      if (!acted) addToast(TT('studio.a11y_nothing', 'Nothing to fix automatically ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â review the remaining items.'), 'info');
+      if (!acted) addToast(TT('studio.a11y_nothing', 'Nothing to fix automatically — review the remaining items.'), 'info');
     };
 
     var restoreAutosave = function () {
@@ -3901,10 +3901,10 @@
       if (!Array.isArray(_docRef.current._redo)) _docRef.current._redo = [];
       setView('edit'); clearSelection();
       stAnnounce(TT('studio.a11y_restored', 'Restored unsaved work'));
-      addToast(TT('studio.autosave_restored', 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â¾ Restored your unsaved work, including its process history.'), 'success');
+      addToast(TT('studio.autosave_restored', '💾 Restored your unsaved work, including its process history.'), 'success');
     };
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ in-editor crop ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+    // ── in-editor crop ──
     var _cropXY = function (ev) {
       var el = _cropImgRef.current; if (!el) return null;
       var r = el.getBoundingClientRect(); if (!r.width || !r.height) return null;
@@ -3939,7 +3939,7 @@
           stScrubObjectSrc(_docRef.current, id, cropped);
           setCropId(null); setCropRect(null); bump();
           stAnnounce(TT('studio.a11y_cropped', 'Image cropped'));
-          addToast(TT('studio.cropped_ok', 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ Image cropped ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the trimmed pixels are removed, including from your saved file.'), 'success');
+          addToast(TT('studio.cropped_ok', '✂ Image cropped — the trimmed pixels are removed, including from your saved file.'), 'success');
         }).catch(function () { addToast(TT('studio.crop_failed', 'Could not crop the image.'), 'error'); });
       };
       im.onerror = function () { addToast(TT('studio.crop_failed', 'Could not crop the image.'), 'error'); };
@@ -3958,7 +3958,7 @@
       return TT('studio.crop_region', 'Crop region') + ': X ' + Math.round(rect.x * 100) + '%, Y ' + Math.round(rect.y * 100) + '%, W ' + Math.round(rect.w * 100) + '%, H ' + Math.round(rect.h * 100) + '%';
     };
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ selection + drag ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+    // ── selection + drag ──
     var onObjectPointerDown = function (o, mode) {
       return function (ev) {
         ev.preventDefault(); ev.stopPropagation();
@@ -4004,8 +4004,8 @@
       setSnapGuides([]);
     };
 
-    // Keyboard object manipulation (a11y law, doc ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§7): same grammar as the
-    // builder crop modal ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â arrows move 4px, Shift+arrows resize, Delete removes.
+    // Keyboard object manipulation (a11y law, doc §7): same grammar as the
+    // builder crop modal — arrows move 4px, Shift+arrows resize, Delete removes.
     var onObjectKeyDown = function (o) {
       return function (ev) {
         var f = o.frame;
@@ -4035,13 +4035,13 @@
           clearSelection();
           stAnnounce(TT('studio.a11y_removed', 'Object removed'));
         } else if (ev.key === 'Escape') {
-          ev.stopPropagation(); // handled here ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â don't let the shell close the modal
+          ev.stopPropagation(); // handled here — don't let the shell close the modal
           clearSelection();
         }
       };
     };
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ inline text editing ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+    // ── inline text editing ──
     var _editingText = React.useState(null); var editingText = _editingText[0], setEditingText = _editingText[1];
     var commitTextEdit = function (o, value) {
       setEditingText(null);
@@ -4051,7 +4051,7 @@
       dispatch({ type: 'object.update', target: o.id, patch: { runs: runs } }, 'user');
     };
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ exports ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+    // ── exports ──
     var alignSelected = function (mode) {
       if (!selected) return;
       dispatch({ type: 'object.update', target: selected.id, patch: { frame: stAlignFrame(selected.frame, doc.canvas, mode) } }, 'user');
@@ -4124,7 +4124,7 @@
     var gateOr = function (fn) {
       return function () {
         if (altFailures.length) {
-          addToast(TT('studio.alt_gate_toast', 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢Ãƒâ€šÃ‚Â¿ Export blocked: every image needs alt text or an explicit "decorative" mark. The offenders are listed in the export panel.'), 'error');
+          addToast(TT('studio.alt_gate_toast', '♿ Export blocked: every image needs alt text or an explicit "decorative" mark. The offenders are listed in the export panel.'), 'error');
           setExportOpen(true);
           setPreflightIssueFilter('fix');
           setPreflightGuideIndex(0);
@@ -4139,24 +4139,24 @@
     };
     var exportHtml = gateOr(function () {
       download(new Blob([stExportHtml(doc, { lang: 'en' })], { type: 'text/html' }), safeName() + '.html');
-      addToast(TT('studio.exported_html', 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾ Accessible HTML downloaded ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â reading order and alt text ride along.'), 'success');
+      addToast(TT('studio.exported_html', '📄 Accessible HTML downloaded — reading order and alt text ride along.'), 'success');
     });
     var exportPng = gateOr(function () {
       stRenderPng(doc, 1.5).then(function (blob) {
         download(blob, safeName() + '.png');
-        addToast(TT('studio.exported_png', 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¼ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â PNG downloaded. Note: PNG is pixels-only ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â share the HTML or tagged PDF when accessibility matters.'), 'info');
+        addToast(TT('studio.exported_png', '🖼️ PNG downloaded. Note: PNG is pixels-only — share the HTML or tagged PDF when accessibility matters.'), 'info');
       }).catch(function () { addToast(TT('studio.export_png_failed', 'PNG export failed.'), 'error'); });
     });
     var exportTagged = gateOr(function () {
-      if (typeof props.onExportTaggedPdf !== 'function') { addToast(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â open AlloStudio from the main app.'), 'error'); return; }
-      addToast(TT('studio.tagged_building', 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾ Building the tagged PDF from your reading orderÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦'), 'info');
+      if (typeof props.onExportTaggedPdf !== 'function') { addToast(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline — open AlloStudio from the main app.'), 'error'); return; }
+      addToast(TT('studio.tagged_building', '📄 Building the tagged PDF from your reading order…'), 'info');
       Promise.resolve(props.onExportTaggedPdf(stExportHtml(doc, { lang: 'en' }), doc.title || 'AlloStudio document'))
-        .then(function (ok) { if (ok !== false) addToast(TT('studio.tagged_done', 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Tagged PDF downloaded ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â structure comes from your reading-order panel.'), 'success'); })
+        .then(function (ok) { if (ok !== false) addToast(TT('studio.tagged_done', '✅ Tagged PDF downloaded — structure comes from your reading-order panel.'), 'success'); })
         .catch(function (err) { addToast(TT('studio.tagged_failed', 'Tagged PDF failed: ') + (err && err.message || 'unknown'), 'error'); });
     });
     // Visual print/PDF: the positioned page, pixel-faithful, via a hidden
     // iframe (window.open is unreliable inside the Canvas iframe sandbox).
-    // The TAGGED PDF remains the accessible artifact ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the toast says so.
+    // The TAGGED PDF remains the accessible artifact — the toast says so.
     var exportPrint = gateOr(function () {
       var html = stExportHtml(doc, { lang: 'en' }).replace('</head>', '<style>' + stPrintCss(doc.canvas) + '</style>\n</head>');
       var frame = document.createElement('iframe');
@@ -4166,12 +4166,12 @@
       frame.style.position = 'fixed'; frame.style.right = '-9999px'; frame.style.bottom = '0'; frame.style.width = '1px'; frame.style.height = '1px'; frame.style.border = '0';
       frame.onload = function () {
         try { frame.contentWindow.focus(); frame.contentWindow.print(); }
-        catch (_) { addToast(TT('studio.print_failed', 'Print was blocked in this environment ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â download the PNG or HTML instead.'), 'error'); }
+        catch (_) { addToast(TT('studio.print_failed', 'Print was blocked in this environment — download the PNG or HTML instead.'), 'error'); }
         setTimeout(function () { try { frame.remove(); } catch (_) {} }, 60000);
       };
       document.body.appendChild(frame);
       frame.srcdoc = html;
-      addToast(TT('studio.print_opening', 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â Opening the print dialog ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â choose "Save as PDF" for a pixel-faithful copy. For accessibility, share the Tagged PDF.'), 'info');
+      addToast(TT('studio.print_opening', '🖨️ Opening the print dialog — choose "Save as PDF" for a pixel-faithful copy. For accessibility, share the Tagged PDF.'), 'info');
     });
     var exportWorksheet = function () {
       download(new Blob([JSON.stringify(stExportWorksheetData(doc), null, 2)], { type: 'application/json' }), safeName() + '.worksheet.json');
@@ -4179,13 +4179,13 @@
     };
     var exportWorksheetHtml = function () {
       download(new Blob([stExportWorksheetHtml(doc, { lang: 'en' })], { type: 'text/html' }), safeName() + '.worksheet.html');
-      addToast(TT('studio.exported_worksheet_html', 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â Structured worksheet HTML downloaded ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â real questions and answer spaces.'), 'success');
+      addToast(TT('studio.exported_worksheet_html', '📝 Structured worksheet HTML downloaded — real questions and answer spaces.'), 'success');
     };
     var exportWorksheetPdf = function () {
-      if (typeof props.onExportTaggedPdf !== 'function') { addToast(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â open AlloStudio from the main app.'), 'error'); return; }
-      addToast(TT('studio.ws_building', 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â Building a structured, tagged worksheetÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦'), 'info');
+      if (typeof props.onExportTaggedPdf !== 'function') { addToast(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline — open AlloStudio from the main app.'), 'error'); return; }
+      addToast(TT('studio.ws_building', '📝 Building a structured, tagged worksheet…'), 'info');
       Promise.resolve(props.onExportTaggedPdf(stExportWorksheetHtml(doc, { lang: 'en' }), (doc.title || 'Worksheet') + ' (worksheet)'))
-        .then(function (ok) { if (ok !== false) addToast(TT('studio.ws_done', 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Structured worksheet PDF downloaded (real questions + answer spaces).'), 'success'); })
+        .then(function (ok) { if (ok !== false) addToast(TT('studio.ws_done', '✅ Structured worksheet PDF downloaded (real questions + answer spaces).'), 'success'); })
         .catch(function (err) { addToast(TT('studio.tagged_failed', 'Tagged PDF failed: ') + (err && err.message || 'unknown'), 'error'); });
     };
     var exportProcess = function () {
@@ -4196,8 +4196,8 @@
       download(new Blob([JSON.stringify(stDurableDoc(doc), null, 1)], { type: 'application/json' }), safeName() + '.allostudio.json');
       var recent = stSaveRecentProject(doc);
       setRecentTick(function (n) { return n + 1; });
-      stClearAutosave(); // the work is saved ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â don't offer a stale "unsaved work" restore
-      addToast(TT('studio.saved', 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â¾ Saved. The file includes your full process history ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â it stays on this device.'), 'success');
+      stClearAutosave(); // the work is saved — don't offer a stale "unsaved work" restore
+      addToast(TT('studio.saved', '💾 Saved. The file includes your full process history — it stays on this device.'), 'success');
       if (!recent.ok) addToast(TT('studio.recent_save_failed', 'Recent-project shelf could not update, but your file downloaded.'), 'info');
     };
     var saveToPortfolio = function () {
@@ -4229,13 +4229,13 @@
           if (errs.length) { addToast(TT('studio.load_failed', 'Could not open: ') + errs[0], 'error'); return; }
           _docRef.current = stCanonicalizeDoc(parsed);
           setView('edit'); clearSelection(); bump();
-          addToast(TT('studio.loaded', 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ Opened ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â process history intact.'), 'success');
+          addToast(TT('studio.loaded', '📂 Opened — process history intact.'), 'success');
         } catch (_) { addToast(TT('studio.load_failed', 'Could not open: ') + 'not valid JSON', 'error'); }
       };
       r.readAsText(f);
     };
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ styles ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+    // ── styles ──
     var S = {
       overlay: { position: 'fixed', inset: 0, zIndex: 9000, background: C.overlay, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: layout.overlayPadding },
       shell: { background: C.shell, color: C.text, border: '1px solid ' + C.border, borderRadius: layout.shellRadius + 'px', width: layout.shellWidth, height: layout.shellHeight, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: themeName === 'contrast' ? '0 0 0 3px #ffff00' : '0 8px 40px rgba(15,23,42,0.4)', fontFamily: 'system-ui, sans-serif' },
@@ -4307,7 +4307,7 @@
     };
 
     if (!doc || view === 'templates') {
-      // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ template picker ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+      // ── template picker ──
       var recentProjects = recentTick >= 0 ? stReadRecentProjects() : [];
       var allTemplates = stTemplates();
       var templateFavorites = templateFavoritesTick >= 0 ? stReadTemplateFavorites() : [];
@@ -4316,16 +4316,16 @@
         onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); if (typeof props.onClose === 'function') props.onClose(); } } },
         h('div', { ref: _shellRef, style: fullscreen ? S.shell : Object.assign({}, S.shell, { width: layout.stacked ? layout.shellWidth : 'min(860px, 96vw)', height: 'auto', maxHeight: layout.stacked ? layout.shellHeight : '92vh' }) },
           h('div', { style: S.header },
-            h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â½Ãƒâ€šÃ‚Â¨'),
+            h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
             h('strong', { style: { fontSize: '15px' } }, TT('studio.title', 'AlloStudio')),
-            h('span', { style: { fontSize: '11px', color: C.soft } }, TT('studio.tagline', 'Flyers, worksheets & posters ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â accessible by construction')),
-            h('button', { style: Object.assign({}, S.hBtn, { marginLeft: 'auto' }), onClick: function () { if (loadRef.current) loadRef.current.click(); } }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ ' + TT('studio.open_file', 'Open .allostudio.json')),
-            h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: props.onClose }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢')),
+            h('span', { style: { fontSize: '11px', color: C.soft } }, TT('studio.tagline', 'Flyers, worksheets & posters — accessible by construction')),
+            h('button', { style: Object.assign({}, S.hBtn, { marginLeft: 'auto' }), onClick: function () { if (loadRef.current) loadRef.current.click(); } }, '📂 ' + TT('studio.open_file', 'Open .allostudio.json')),
+            h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: props.onClose }, '✕')),
           (function () {
             var saved = stReadAutosave();
             if (!saved) return null;
             return h('div', { style: { margin: '12px 18px 0', padding: '10px 12px', borderRadius: '10px', border: '1px solid ' + C.exportBorder, background: C.exportBg, color: C.text, display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' } },
-              h('span', { 'aria-hidden': true }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â¾'),
+              h('span', { 'aria-hidden': true }, '💾'),
               h('span', { style: { flex: 1, minWidth: '160px' } },
                 h('strong', { style: { display: 'block', fontSize: '12px' } }, TT('studio.autosave_found', 'Unsaved work found') + ': ' + (saved.title || 'Untitled')),
                 h('span', { style: { fontSize: '10px', color: C.muted } }, TT('studio.autosave_hint', 'Autosaved on this device. Restore it or discard it.'))),
@@ -4338,11 +4338,11 @@
             if (seen) return null;
             return h('div', { style: { margin: '12px 18px 0', padding: '10px 12px', borderRadius: '10px', border: '1px solid ' + C.border, background: C.panelAlt, fontSize: '11px', color: C.text } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'baseline' } },
-                h('strong', null, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¹ ' + TT('studio.welcome_title', 'Welcome to AlloStudio')),
+                h('strong', null, '👋 ' + TT('studio.welcome_title', 'Welcome to AlloStudio')),
                 h('button', { style: Object.assign({}, S.tool, { padding: '2px 8px', minHeight: '22px', fontSize: '10px' }), onClick: function () { try { localStorage.setItem('alloStudioWelcome_v1', '1'); } catch (_) {} bump(); } }, TT('studio.welcome_got_it', 'Got it'))),
               h('ul', { style: { margin: '6px 0 0 16px', padding: 0, lineHeight: 1.5 } },
-                h('li', null, TT('studio.welcome_order', 'The reading-order list (right panel in the editor) is what screen readers and the tagged PDF follow ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â arrange it like you would read aloud.')),
-                h('li', null, TT('studio.welcome_alt', 'Every image needs alt text or a decorative mark before export ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the A11y button shows what is left.')),
+                h('li', null, TT('studio.welcome_order', 'The reading-order list (right panel in the editor) is what screen readers and the tagged PDF follow — arrange it like you would read aloud.')),
+                h('li', null, TT('studio.welcome_alt', 'Every image needs alt text or a decorative mark before export — the A11y button shows what is left.')),
                 h('li', null, TT('studio.welcome_process', 'The Process tab shows the document history, with AI steps labeled honestly.'))));
           })(),
           recentProjects.length ? h('div', { style: { padding: '12px 18px 0', borderBottom: '1px solid ' + C.border } },
@@ -4371,7 +4371,7 @@
           h('div', { style: { padding: '6px 18px 0', fontSize: '10px', color: C.soft }, role: 'status', 'aria-live': 'polite' },
             shownTemplates.length + ' ' + TT('studio.templates_count', 'templates shown')),
           canAgentEdit ? h('div', { style: { margin: '12px 18px 0', padding: '12px', borderRadius: '12px', border: '1px solid ' + C.accent, background: C.panelAlt, display: 'flex', flexDirection: 'column', gap: '6px' } },
-            h('strong', { style: { fontSize: '13px', color: C.text } }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ ' + TT('studio.compose_title', 'Start with AI')),
+            h('strong', { style: { fontSize: '13px', color: C.text } }, '✨ ' + TT('studio.compose_title', 'Start with AI')),
             h('span', { style: { fontSize: '11px', color: C.muted } }, TT('studio.compose_hint', 'Describe the page; the AI drafts it on a blank canvas as reviewable changes. Nothing applies until you approve each one.')),
             h('textarea', { value: composePrompt, rows: 2, placeholder: TT('studio.compose_placeholder', 'e.g. a lab safety poster for 7th grade with four short rules'), 'aria-label': TT('studio.compose_label', 'Describe the page to draft'), style: Object.assign({}, S.input, { resize: 'vertical' }), disabled: aiBusy === 'agent',
               onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setComposePrompt(e.target.value); } }),
@@ -4381,7 +4381,7 @@
                 h('option', { value: 'letter-portrait' }, TT('studio.orient_portrait', 'Portrait')),
                 h('option', { value: 'letter-landscape' }, TT('studio.orient_landscape', 'Landscape')),
                 h('option', { value: 'square' }, TT('studio.orient_square', 'Square'))),
-              h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', flex: 1, textAlign: 'center', opacity: (aiBusy === 'agent' || !String(composePrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'agent' || !String(composePrompt).trim(), onClick: startWithAi }, aiBusy === 'agent' ? TT('studio.agent_thinking', 'PreparingÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦') : 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ ' + TT('studio.compose_go', 'Draft my page')))) : null,
+              h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', flex: 1, textAlign: 'center', opacity: (aiBusy === 'agent' || !String(composePrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'agent' || !String(composePrompt).trim(), onClick: startWithAi }, aiBusy === 'agent' ? TT('studio.agent_thinking', 'Preparing…') : '✨ ' + TT('studio.compose_go', 'Draft my page')))) : null,
           h('div', { style: { padding: '14px 18px 18px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '12px', overflowY: 'auto' } },
             shownTemplates.length ? shownTemplates.map(function (tpl) {
               var category = templateFilters.filter(function (opt) { return opt[0] === templateCategoryFor(tpl); })[0];
@@ -4422,7 +4422,7 @@
               h('strong', { style: { display: 'block', fontSize: '13px' } }, TT('studio.no_templates_match', 'No templates match')),
               h('span', { style: { display: 'block', marginTop: '4px', fontSize: '11px', color: C.muted } }, TT('studio.no_templates_match_hint', 'Try clearing the search or changing the use case.')))),
           h('p', { style: { margin: '0 18px 14px', fontSize: '11px', color: C.muted } },
-            TT('studio.privacy_note', 'Everything stays on this device. Your document ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â including its full process history ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â lives in a local save file.')),
+            TT('studio.privacy_note', 'Everything stays on this device. Your document — including its full process history — lives in a local save file.')),
           h('input', { ref: loadRef, type: 'file', accept: '.json,application/json', style: { display: 'none' }, onChange: onLoadFile })));
     }
 
@@ -4430,7 +4430,7 @@
     var maxSeq = ops.length ? ops[ops.length - 1].seq : 0;
 
     if (view === 'process') {
-      // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Process tab (student-visible per doc ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§11 ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â portfolio framing) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+      // ── Process tab (student-visible per doc §11 — portfolio framing) ──
       var at = scrubSeq === null ? maxSeq : scrubSeq;
       var scene = stReplay(doc, at);
       var summary = stActorSummary(ops);
@@ -4444,22 +4444,22 @@
         onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); setScrubSeq(null); setView('edit'); } } },
         h('div', { ref: _shellRef, style: S.shell },
           h('div', { style: S.header },
-            h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â½Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â'),
+            h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎞️'),
             h('strong', null, student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline')),
             h('span', { style: S.headerSpacer }),
             h('button', { style: S.hBtn, onClick: exportProcess }, 'Process notes'),
-            h('button', { style: S.hBtn, onClick: function () { setScrubSeq(null); setView('edit'); } }, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Ãƒâ€šÃ‚Â ' + TT('studio.back_to_editing', 'Back to editing'))),
+            h('button', { style: S.hBtn, onClick: function () { setScrubSeq(null); setView('edit'); } }, '← ' + TT('studio.back_to_editing', 'Back to editing'))),
           h('div', { style: { display: 'flex', flexDirection: layout.stacked ? 'column' : 'row', flex: 1, minHeight: 0, overflow: layout.stacked ? 'auto' : 'hidden' } },
             h('div', { style: { flex: 1, minHeight: layout.stacked ? '260px' : 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: layout.canvasPadding + 'px', overflow: 'auto' } },
               h('div', { style: { position: 'relative', width: doc.canvas.w * processScale + 'px', height: doc.canvas.h * processScale + 'px', background: (scene.canvas.background && scene.canvas.background.fill) || '#fff', boxShadow: '0 2px 10px rgba(15,23,42,0.2)', overflow: 'hidden', flexShrink: 0 } },
                 scene.objects.map(function (o) { return renderObject(o, processScale, null, {}, h); })),
               h('label', { style: { width: '90%', marginTop: '12px', fontSize: '12px', color: C.text, fontWeight: 700 } },
-                TT('studio.scrub_label', 'Scrub the timeline') + ' ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ' + at + ' / ' + maxSeq,
+                TT('studio.scrub_label', 'Scrub the timeline') + ' — ' + at + ' / ' + maxSeq,
                 h('input', { type: 'range', min: 0, max: maxSeq, value: at, style: { width: '100%' }, 'aria-valuetext': TT('studio.scrub_step', 'step') + ' ' + at + ' ' + TT('studio.of', 'of') + ' ' + maxSeq, onChange: function (e) { setScrubSeq(parseInt(e.target.value, 10)); } }))),
             h('div', { style: Object.assign({}, S.rpanel, { width: layout.stacked ? 'auto' : '300px' }) },
               h('div', { style: { padding: '10px', background: C.exportBg, border: '1px solid ' + C.exportBorder, borderRadius: '10px', fontSize: '12px', color: C.text, fontWeight: 700 } },
-                summary.user + ' ' + TT('studio.ops_you', 'edits by ' + (student ? 'you' : 'the student')) + ' ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ' + summary.ai + ' ' + TT('studio.ops_ai', 'AI actions') + ' ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ' + summary.import + ' ' + TT('studio.ops_import', 'imported items'),
-                h('div', { style: { fontWeight: 400, marginTop: '4px', color: C.muted } }, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â°Ãƒâ€¹Ã¢â‚¬Â ' + mins + ' ' + TT('studio.active_minutes', 'active minutes in the editor'))),
+                summary.user + ' ' + TT('studio.ops_you', 'edits by ' + (student ? 'you' : 'the student')) + ' · ' + summary.ai + ' ' + TT('studio.ops_ai', 'AI actions') + ' · ' + summary.import + ' ' + TT('studio.ops_import', 'imported items'),
+                h('div', { style: { fontWeight: 400, marginTop: '4px', color: C.muted } }, '≈' + mins + ' ' + TT('studio.active_minutes', 'active minutes in the editor'))),
               h('p', { style: { fontSize: '11px', color: C.muted, margin: '2px 0 6px' } }, TT('studio.honesty_line', ST_HONESTY_LINE)),
               h('div', { role: 'group', 'aria-label': TT('studio.process_filter', 'Process filter'), style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' } },
                 [
@@ -4485,7 +4485,7 @@
                 }) : h('div', { style: { fontSize: '11px', color: C.muted, padding: '6px' } }, TT('studio.process_filter_empty', 'No steps in this filter.')))))));
     }
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ editor view ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+    // ── editor view ──
     var liveFrameFor = function (o) { return (dragLive && dragLive.id === o.id) ? dragLive.frame : o.frame; };
     var agentSelectedSet = {};
     (Array.isArray(agentSelectedOps) ? agentSelectedOps : []).forEach(function (idx) { agentSelectedSet[idx] = true; });
@@ -4503,7 +4503,7 @@
     }
     var agentPendingColor = themeName === 'contrast' ? C.accent : '#f59e0b';
     var snapGuideColor = themeName === 'contrast' ? '#ffff00' : '#f59e0b';
-    // One-gesture rollback offer ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â only while the ledger tail IS an agent batch
+    // One-gesture rollback offer — only while the ledger tail IS an agent batch
     // (any manual op in between means the batch is no longer the tail).
     var lastAgentBatch = doc && canAgentEdit ? stLastAgentBatch(doc) : null;
     var issueByObject = stObjectIssueSummary(preflight);
@@ -4620,10 +4620,10 @@
           style: Object.assign({ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '2px', padding: '3px', background: C.headerBg, border: '1px solid ' + C.hBtnBorder, borderRadius: '9px', boxShadow: '0 3px 12px rgba(15,23,42,0.4)', zIndex: 60, whiteSpace: 'nowrap' }, (f.y * scale > 42) ? { bottom: '100%', marginBottom: '6px' } : { top: '100%', marginTop: '6px' }) },
           hh('button', { type: 'button', title: TT('studio.duplicate', 'Duplicate'), 'aria-label': TT('studio.duplicate', 'Duplicate'),
             onPointerDown: function (e) { e.stopPropagation(); }, onClick: function (e) { e.stopPropagation(); duplicateSelected(); },
-            style: { border: 'none', background: 'transparent', color: C.headerText, cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: '4px 7px', borderRadius: '6px' } }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â§ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â°'),
+            style: { border: 'none', background: 'transparent', color: C.headerText, cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: '4px 7px', borderRadius: '6px' } }, '⧉'),
           hh('button', { type: 'button', title: TT('studio.delete', 'Delete'), 'aria-label': TT('studio.delete', 'Delete'),
             onPointerDown: function (e) { e.stopPropagation(); }, onClick: function (e) { e.stopPropagation(); removeSelectedObjects(); },
-            style: { border: 'none', background: 'transparent', color: C.headerText, cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: '4px 7px', borderRadius: '6px' } }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ÂÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“')
+            style: { border: 'none', background: 'transparent', color: C.headerText, cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: '4px 7px', borderRadius: '6px' } }, '🗑')
         ) : null,
         (editingText && editingText.id === o.id) ? hh('textarea', {
           autoFocus: true,
@@ -4632,7 +4632,7 @@
           style: { position: 'absolute', inset: 0, fontSize: (((o.runs && o.runs[0] && o.runs[0].style && o.runs[0].style.size) || 16) * scale) + 'px', border: '2px solid ' + C.accent, borderRadius: '4px', resize: 'none', padding: '2px', background: C.inputBg, color: C.inputText },
           onBlur: function (e) { commitTextEdit(o, e.target.value); },
           // Stop ALL keys from bubbling to the object's move/resize/delete
-          // handler ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â typing an arrow key must edit the text, not move the box.
+          // handler — typing an arrow key must edit the text, not move the box.
           onKeyDown: function (e) { e.stopPropagation(); if (e.key === 'Escape') { commitTextEdit(o, e.target.value); } },
           onPointerDown: function (e) { e.stopPropagation(); },
         }) : null);
@@ -4666,13 +4666,13 @@
       var text = objectSummary(o, 28);
       var issueSummary = issueByObject[o.id];
       var issueTone = issueToneFor(issueSummary);
-      var icon = o.type === 'text' ? (o.role === 'body' ? 'ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¶' : 'H') : o.type === 'image' ? 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¼ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â' : 'ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Âº';
+      var icon = o.type === 'text' ? (o.role === 'body' ? '¶' : 'H') : o.type === 'image' ? '🖼️' : '⬛';
       return h('div', { key: o.id, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 4px', borderRadius: '6px', background: selectionIds.indexOf(o.id) >= 0 ? C.selectedBg : C.panelAlt, border: '1px solid ' + (issueTone ? issueTone.border : C.border) } },
         h('button', { onClick: function () { selectOnly(o.id); }, style: { flex: 1, minWidth: 0, textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', fontSize: '11px', color: C.text, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }, 'aria-label': TT('studio.select_object', 'Select') + ' ' + o.type + ' ' + text },
           h('span', { 'aria-hidden': true }, icon + ' '), (i + 1) + '. ' + text),
         issueSummary ? h('button', { type: 'button', onClick: function () { openIssueForObject(o.id, issueSummary.title, issueSummary.severity); }, title: issueSummary.title + (issueSummary.message ? ': ' + issueSummary.message : ''), 'aria-label': issueSummary.label + ' accessibility item for ' + text, style: { border: '1px solid ' + issueTone.border, background: issueTone.bg, color: issueTone.fg, borderRadius: '999px', cursor: 'pointer', fontSize: '9px', fontWeight: 900, padding: '2px 5px', flex: '0 0 auto' } }, issueSummary.label + (issueSummary.count > 1 ? ' ' + issueSummary.count : '')) : null,
-        h('button', { disabled: i === 0, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i - 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_earlier', 'Moved earlier in reading order')); }, title: TT('studio.reading_earlier', 'Read earlier'), 'aria-label': TT('studio.reading_earlier', 'Read earlier') + ' ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === 0 ? 'default' : 'pointer', fontSize: '10px', opacity: i === 0 ? 0.4 : 1 } }, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“'),
-        h('button', { disabled: i === doc.objects.length - 1, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i + 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_later', 'Moved later in reading order')); }, title: TT('studio.reading_later', 'Read later'), 'aria-label': TT('studio.reading_later', 'Read later') + ' ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === doc.objects.length - 1 ? 'default' : 'pointer', fontSize: '10px', opacity: i === doc.objects.length - 1 ? 0.4 : 1 } }, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ'));
+        h('button', { disabled: i === 0, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i - 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_earlier', 'Moved earlier in reading order')); }, title: TT('studio.reading_earlier', 'Read earlier'), 'aria-label': TT('studio.reading_earlier', 'Read earlier') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === 0 ? 'default' : 'pointer', fontSize: '10px', opacity: i === 0 ? 0.4 : 1 } }, '↑'),
+        h('button', { disabled: i === doc.objects.length - 1, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i + 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_later', 'Moved later in reading order')); }, title: TT('studio.reading_later', 'Read later'), 'aria-label': TT('studio.reading_later', 'Read later') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === doc.objects.length - 1 ? 'default' : 'pointer', fontSize: '10px', opacity: i === doc.objects.length - 1 ? 0.4 : 1 } }, '↓'));
     });
 
     var layerList = stLayerItems(doc.objects).map(function (item) {
@@ -4823,8 +4823,8 @@
             h('option', { value: 'serif' }, TT('studio.font_serif', 'Serif')),
             h('option', { value: 'friendly' }, TT('studio.font_friendly', 'Friendly')),
             h('option', { value: 'mono' }, TT('studio.font_mono', 'Monospace')),
-            (function () { var bk3 = stBrandStyleKit(brandProfile); return (bk3 && bk3.bodyFont) ? h('option', { value: 'brand-body' }, TT('studio.font_brand_body', 'School brand ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â body')) : null; })(),
-            (function () { var bk4 = stBrandStyleKit(brandProfile); return (bk4 && bk4.headingFont && bk4.headingFont !== bk4.bodyFont) ? h('option', { value: 'brand-heading' }, TT('studio.font_brand_heading', 'School brand ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â heading')) : null; })(),
+            (function () { var bk3 = stBrandStyleKit(brandProfile); return (bk3 && bk3.bodyFont) ? h('option', { value: 'brand-body' }, TT('studio.font_brand_body', 'School brand — body')) : null; })(),
+            (function () { var bk4 = stBrandStyleKit(brandProfile); return (bk4 && bk4.headingFont && bk4.headingFont !== bk4.bodyFont) ? h('option', { value: 'brand-heading' }, TT('studio.font_brand_heading', 'School brand — heading')) : null; })(),
             h('option', { value: '__custom', disabled: true }, TT('studio.font_custom', 'Custom')))) : null,
         selected.type === 'text' ? h('div', null,
           h('div', { style: S.label }, TT('studio.text_align', 'Text alignment & weight')),
@@ -4862,7 +4862,7 @@
                   advancePreflightGuideAfter({ type: 'add-alt', targetId: selected.id, issueType: 'alt' }, beforeAltEdit);
                 }
               } })),
-          (canSuggestAlt && selected.src) ? h('button', { style: Object.assign({}, S.tool, { marginTop: '4px', opacity: aiBusy === 'alt' ? 0.6 : 1 }), disabled: aiBusy === 'alt', onClick: runSuggestAlt, title: TT('studio.ai_suggest_alt_hint', 'Draft alt text with AI, then review it ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â logged as AI in your process') }, aiBusy === 'alt' ? 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ ' + TT('studio.ai_drafting', 'DraftingÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦') : 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ ' + TT('studio.ai_suggest_alt', 'Suggest alt text')) : null,
+          (canSuggestAlt && selected.src) ? h('button', { style: Object.assign({}, S.tool, { marginTop: '4px', opacity: aiBusy === 'alt' ? 0.6 : 1 }), disabled: aiBusy === 'alt', onClick: runSuggestAlt, title: TT('studio.ai_suggest_alt_hint', 'Draft alt text with AI, then review it — logged as AI in your process') }, aiBusy === 'alt' ? '… ' + TT('studio.ai_drafting', 'Drafting…') : '✨ ' + TT('studio.ai_suggest_alt', 'Suggest alt text')) : null,
           h('label', { style: { fontSize: '11px', color: C.text, display: 'flex', gap: '6px', alignItems: 'center', marginTop: '4px' } },
             h('input', { type: 'checkbox', checked: !!selected.decorative, onChange: function (e) { var decorativeChecked = !!e.target.checked; var beforeDecorativeEdit = stAnalyzeDoc(_docRef.current); dispatch({ type: 'object.update', target: selected.id, patch: { decorative: decorativeChecked } }, 'user'); advancePreflightGuideAfter({ type: decorativeChecked ? 'mark-decorative' : 'add-alt', targetId: selected.id, issueType: 'alt' }, beforeDecorativeEdit); } }),
             TT('studio.decorative', 'Decorative (skip in screen readers)')),
@@ -4870,21 +4870,21 @@
             h('button', { style: Object.assign({}, S.tool, selected.fit !== 'contain' ? { borderColor: C.accent } : null), onClick: function () { dispatch({ type: 'object.update', target: selected.id, patch: { fit: 'cover' } }, 'user'); }, 'aria-pressed': selected.fit !== 'contain' }, 'Fill'),
             h('button', { style: Object.assign({}, S.tool, selected.fit === 'contain' ? { borderColor: C.accent } : null), onClick: function () { dispatch({ type: 'object.update', target: selected.id, patch: { fit: 'contain' } }, 'user'); }, 'aria-pressed': selected.fit === 'contain' }, 'Fit')),
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '4px' } },
-            h('button', { style: S.tool, onClick: function () { if (fileRef.current) { fileRef.current.setAttribute('data-st-replace', selected.id); fileRef.current.click(); } } }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â ' + TT('studio.replace_image', 'ReplaceÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦')),
-            selected.src ? h('button', { style: S.tool, onClick: function () { setCropRect(null); setCropId(selected.id); }, title: TT('studio.crop_hint', 'Trim the image ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â removed pixels are permanently deleted, including from your saved file') }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ ' + TT('studio.crop', 'CropÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦')) : null),
-          (canEditImage && selected.src) ? h('button', { style: Object.assign({}, S.tool, { marginTop: '4px' }, imgEditOpen ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-expanded': imgEditOpen, onClick: function () { setImgEditOpen(!imgEditOpen); } }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ ' + TT('studio.ai_edit_image', 'Edit image with AIÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦')) : null,
+            h('button', { style: S.tool, onClick: function () { if (fileRef.current) { fileRef.current.setAttribute('data-st-replace', selected.id); fileRef.current.click(); } } }, '🔁 ' + TT('studio.replace_image', 'Replace…')),
+            selected.src ? h('button', { style: S.tool, onClick: function () { setCropRect(null); setCropId(selected.id); }, title: TT('studio.crop_hint', 'Trim the image — removed pixels are permanently deleted, including from your saved file') }, '✂ ' + TT('studio.crop', 'Crop…')) : null),
+          (canEditImage && selected.src) ? h('button', { style: Object.assign({}, S.tool, { marginTop: '4px' }, imgEditOpen ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-expanded': imgEditOpen, onClick: function () { setImgEditOpen(!imgEditOpen); } }, '✨ ' + TT('studio.ai_edit_image', 'Edit image with AI…')) : null,
           (canEditImage && selected.src && imgEditOpen) ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', padding: '6px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt, marginTop: '4px' } },
             h('textarea', { value: imgEditPrompt, rows: 2, placeholder: TT('studio.ai_edit_placeholder', 'e.g. brighten the colors and simplify the background'), 'aria-label': TT('studio.ai_edit_label', 'Describe how the image should change'), style: Object.assign({}, S.input, { resize: 'vertical' }), disabled: aiBusy === 'img-edit',
               onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setImgEditPrompt(e.target.value); } }),
-            h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', opacity: (aiBusy === 'img-edit' || !String(imgEditPrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'img-edit' || !String(imgEditPrompt).trim(), onClick: runEditImage }, aiBusy === 'img-edit' ? 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ ' + TT('studio.ai_editing', 'EditingÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦') : 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ ' + TT('studio.ai_edit_apply', 'Edit image')),
-            h('p', { style: { fontSize: '9px', color: C.soft, margin: 0 } }, TT('studio.ai_edit_note', 'Whole-image edit, logged as AI. The original stays in your process history ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â use Crop to permanently remove content.'))) : null) : null,
+            h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', opacity: (aiBusy === 'img-edit' || !String(imgEditPrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'img-edit' || !String(imgEditPrompt).trim(), onClick: runEditImage }, aiBusy === 'img-edit' ? '… ' + TT('studio.ai_editing', 'Editing…') : '✨ ' + TT('studio.ai_edit_apply', 'Edit image')),
+            h('p', { style: { fontSize: '9px', color: C.soft, margin: 0 } }, TT('studio.ai_edit_note', 'Whole-image edit, logged as AI. The original stays in your process history — use Crop to permanently remove content.'))) : null) : null,
         h('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } },
           h('button', { style: Object.assign({}, S.tool, selectedLocked ? { opacity: 0.45, cursor: 'default' } : null), disabled: selectedLocked, onClick: function () { dispatch({ type: 'object.z', target: selected.id, z: (selected.z || 1) + 1 }, 'user'); }, title: TT('studio.bring_forward', 'Bring forward (visual stacking only - reading order is the list)') }, TT('studio.forward', 'Forward')),
           h('button', { style: Object.assign({}, S.tool, selectedLocked ? { opacity: 0.45, cursor: 'default' } : null), disabled: selectedLocked, onClick: function () { dispatch({ type: 'object.z', target: selected.id, z: Math.max(0, (selected.z || 1) - 1) }, 'user'); }, title: TT('studio.send_back', 'Send backward') }, TT('studio.backward', 'Back')),
           h('button', { style: Object.assign({}, S.tool, { color: '#b91c1c', borderColor: '#fca5a5' }, selectedLocked ? { opacity: 0.45, cursor: 'default' } : null), disabled: selectedLocked, onClick: selectedLocked ? undefined : function () { dispatch({ type: 'object.remove', target: selected.id }, 'user'); clearSelection(); } }, TT('studio.delete', 'Delete'))));
     }
 
-    // Ctrl+Z / Ctrl+Y (and Ctrl+Shift+Z) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â skipped while typing in a field so
+    // Ctrl+Z / Ctrl+Y (and Ctrl+Shift+Z) — skipped while typing in a field so
     // the browser's native text undo keeps working inside inputs/textareas
     // (the object-level keyboard grammar stays on the objects themselves).
     var onShellKeyDown = function (ev) {
@@ -4902,8 +4902,8 @@
         if (typeof props.onClose === 'function') props.onClose();
         return;
       }
-      // '?' (Shift+/) toggles the shortcut reference ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â no modifier, so handle it
-      // before the Ctrl/ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬â„¢Ãƒâ€¹Ã…â€œ gate below. Never steals a keystroke from a text field.
+      // '?' (Shift+/) toggles the shortcut reference — no modifier, so handle it
+      // before the Ctrl/⌘ gate below. Never steals a keystroke from a text field.
       if (ev.key === '?' && !inField && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
         ev.preventDefault(); setShortcutsOpen(function (v) { return !v; }); return;
       }
@@ -4942,7 +4942,7 @@
       setPreflightOpen(true);
       stAnnounce(filter === 'fix' ? TT('studio.export_show_fixes', 'Showing required accessibility fixes') : TT('studio.export_show_review', 'Showing accessibility review items'));
     };
-    var modLabel = (function () { try { return /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '') ? 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬â„¢Ãƒâ€¹Ã…â€œ' : 'Ctrl'; } catch (_) { return 'Ctrl'; } })();
+    var modLabel = (function () { try { return /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '') ? '⌘' : 'Ctrl'; } catch (_) { return 'Ctrl'; } })();
     // Canva-style quick color picker: brand swatches + a curated palette + the
     // colors already used in this design, with the OS picker kept as "Custom".
     // One reusable field for text color, shape fill, and page background.
@@ -4954,7 +4954,7 @@
         var active = cur === hex;
         return h('button', { key: hex, type: 'button', title: hex, 'aria-label': hex, 'aria-pressed': active, onClick: function () { onPick(hex); },
           style: { width: '22px', height: '22px', borderRadius: '5px', cursor: 'pointer', padding: 0, background: hex, border: 'none', boxShadow: active ? ('0 0 0 2px ' + C.accent + ', 0 0 0 3px ' + C.panel) : 'inset 0 0 0 1px rgba(0,0,0,0.18)' } },
-          active ? h('span', { 'aria-hidden': true, style: { color: ink(hex), fontSize: '12px', fontWeight: 900, lineHeight: '22px' } }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ') : null);
+          active ? h('span', { 'aria-hidden': true, style: { color: ink(hex), fontSize: '12px', fontWeight: 900, lineHeight: '22px' } }, '✓') : null);
       };
       var groups = [
         { key: 'brand', label: TT('studio.swatch_brand', 'School brand'), colors: swatchGroups.brand },
@@ -4980,8 +4980,8 @@
         onClick: function (e) { if (e.target === e.currentTarget) setShortcutsOpen(false); } },
       h('div', { style: { background: C.panel, color: C.text, border: '1px solid ' + C.border, borderRadius: '14px', boxShadow: '0 12px 40px rgba(0,0,0,0.4)', maxWidth: '460px', width: '100%', maxHeight: '82%', overflow: 'auto', padding: '18px 20px' } },
         h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' } },
-          h('h2', { style: { margin: 0, fontSize: '15px', fontWeight: 800 } }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬â„¢Ãƒâ€šÃ‚Â¨ ' + TT('studio.shortcuts', 'Keyboard shortcuts')),
-          h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close'), onClick: function () { setShortcutsOpen(false); } }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢')),
+          h('h2', { style: { margin: 0, fontSize: '15px', fontWeight: 800 } }, '⌨ ' + TT('studio.shortcuts', 'Keyboard shortcuts')),
+          h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close'), onClick: function () { setShortcutsOpen(false); } }, '✕')),
         h('div', { style: { display: 'grid', gap: '6px' } },
           stShortcutList().map(function (sc) {
             var keys = sc.mod ? (modLabel + '+' + sc.keys) : sc.keys;
@@ -4996,32 +4996,32 @@
       h('div', { ref: _shellRef, style: S.shell },
         // header
         h('div', { style: S.header },
-          h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â½Ãƒâ€šÃ‚Â¨'),
+          h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
           // Uncontrolled + commit-on-blur: one clean doc.retitle op instead of
           // an op per keystroke polluting the process timeline.
           h('input', { key: 'title-' + ((doc && doc.createdAt) || 0) + '-' + doc.title, defaultValue: doc.title, 'aria-label': TT('studio.doc_title', 'Document title'), style: S.titleInput,
             onBlur: function (e) { if (e.target.value !== doc.title) dispatch({ type: 'doc.retitle', title: e.target.value }, 'user'); },
             onKeyDown: function (e) { if (e.key === 'Enter') e.target.blur(); } }),
-          h('button', { style: Object.assign({}, S.hBtn, ops.length ? null : { opacity: 0.45, cursor: 'default' }), disabled: !ops.length, onClick: function () { if (stUndo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.undo', 'Undo') }, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Ãƒâ€šÃ‚Â© ' + TT('studio.undo', 'Undo')),
-          h('button', { style: Object.assign({}, S.hBtn, (doc._redo && doc._redo.length) ? null : { opacity: 0.45, cursor: 'default' }), disabled: !(doc._redo && doc._redo.length), onClick: function () { if (stRedo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.redo', 'Redo') }, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Ãƒâ€šÃ‚Âª ' + TT('studio.redo', 'Redo')),
-          h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â½Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))),
-          h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â½ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ ' + TT('studio.role_student', 'Student mode') : 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€šÃ‚Â§ÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€šÃ‚ÂÃƒâ€šÃ‚Â« ' + TT('studio.role_teacher', 'Teacher mode')),
+          h('button', { style: Object.assign({}, S.hBtn, ops.length ? null : { opacity: 0.45, cursor: 'default' }), disabled: !ops.length, onClick: function () { if (stUndo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.undo', 'Undo') }, '↩ ' + TT('studio.undo', 'Undo')),
+          h('button', { style: Object.assign({}, S.hBtn, (doc._redo && doc._redo.length) ? null : { opacity: 0.45, cursor: 'default' }), disabled: !(doc._redo && doc._redo.length), onClick: function () { if (stRedo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.redo', 'Redo') }, '↪ ' + TT('studio.redo', 'Redo')),
+          h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))),
+          h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')),
           h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { borderColor: '#fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal),
-          h('button', { style: Object.assign({}, S.hBtn, shortcutsOpen ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setShortcutsOpen(!shortcutsOpen); }, 'aria-expanded': shortcutsOpen, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'), title: TT('studio.shortcuts_hint', 'Keyboard shortcuts (press ?)') }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬â„¢Ãƒâ€šÃ‚Â¨'),
-          h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂºÃƒâ€šÃ‚Â¶'),
+          h('button', { style: Object.assign({}, S.hBtn, shortcutsOpen ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setShortcutsOpen(!shortcutsOpen); }, 'aria-expanded': shortcutsOpen, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'), title: TT('studio.shortcuts_hint', 'Keyboard shortcuts (press ?)') }, '⌨'),
+          h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, '⛶'),
           h('span', { style: S.headerSpacer }),
-          h('button', { style: S.hBtn, onClick: saveDoc }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â¾ ' + TT('studio.save', 'Save')),
+          h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.save', 'Save')),
           h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.portfolio', 'Portfolio')),
-          h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', borderColor: '#1e3a8a' }), onClick: function () { setExportOpen(!exportOpen); }, 'aria-expanded': exportOpen }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â¤ ' + TT('studio.export', 'Export')),
-          h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: props.onClose }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢')),
+          h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', borderColor: '#1e3a8a' }), onClick: function () { setExportOpen(!exportOpen); }, 'aria-expanded': exportOpen }, '📤 ' + TT('studio.export', 'Export')),
+          h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: props.onClose }, '✕')),
         preflightOpen ? h('div', { style: { padding: '10px 14px', background: C.panelAlt, color: C.text, borderBottom: '1px solid ' + C.border, display: 'flex', gap: '10px', alignItems: 'flex-start', flexWrap: 'wrap' } },
           h('div', { style: { fontSize: '12px', fontWeight: 800, color: C.text, minWidth: '170px' } }, ready ? ready.title : TT('studio.ready_to_share', 'Ready to share'),
             h('div', { style: { fontSize: '11px', fontWeight: 600, color: C.muted, marginTop: '2px' } }, preflight.counts.error + ' errors - ' + preflight.counts.warning + ' warnings - ' + preflight.counts.review + ' review'),
             h('div', { style: { fontSize: '10.5px', fontWeight: 500, color: C.soft, marginTop: '3px', lineHeight: 1.35 } }, ready ? ready.message : ''),
             h('button', { style: Object.assign({}, S.hBtn, { marginTop: '6px', width: '100%', opacity: a11yAutoFix.ops.length ? 1 : 0.5 }), disabled: !a11yAutoFix.ops.length, onClick: applyA11yAutoFix, title: TT('studio.a11y_quick_fix_hint', 'Automatically fixes simple contrast, tiny text, and off-page object issues') }, TT('studio.a11y_quick_fix', 'Fix simple issues') + (a11yAutoFix.ops.length ? ' (' + a11yAutoFix.ops.length + ')' : '')),
-            ((canAgentEdit || canBulkAlt) && preflightTotal) ? h('button', { style: Object.assign({}, S.hBtn, { marginTop: '4px', width: '100%', opacity: aiBusy ? 0.6 : 1 }), disabled: !!aiBusy, onClick: runMakeAccessible, title: TT('studio.a11y_guided_hint', 'Applies the simple rule-based fixes, drafts missing alt text for review, and prepares a structure-fix request ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â you approve every AI change') }, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢Ãƒâ€šÃ‚Â¿ ' + TT('studio.a11y_guided', 'Fix accessibility (guided)')) : null,
-            (canBulkAlt && altFailures.length) ? h('button', { style: Object.assign({}, S.hBtn, { marginTop: '4px', width: '100%', opacity: aiBusy ? 0.6 : 1 }), disabled: !!aiBusy, onClick: runDraftAllAlt, title: TT('studio.ai_alt_all_hint', 'AI drafts alt text for every unlabeled image ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â you review each draft before it applies, and edits are logged honestly') }, aiBusy === 'alt-all' ? 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ ' + TT('studio.ai_drafting', 'DraftingÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦') : 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ ' + TT('studio.ai_alt_all', 'Draft missing alt text') + ' (' + Math.min(altFailures.length, 12) + ')') : null,
-            canDesignFeedback ? h('button', { style: Object.assign({}, S.hBtn, { marginTop: '4px', width: '100%', opacity: aiBusy ? 0.6 : 1 }), disabled: !!aiBusy, onClick: runDesignFeedback, title: TT('studio.feedback_hint', 'AI looks at the rendered page and suggests design improvements ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â advisory only, nothing is changed') }, aiBusy === 'feedback' ? 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ ' + TT('studio.feedback_busy', 'ReviewingÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦') : 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â½Ãƒâ€šÃ‚Â¨ ' + TT('studio.feedback', 'Get design feedback')) : null),
+            ((canAgentEdit || canBulkAlt) && preflightTotal) ? h('button', { style: Object.assign({}, S.hBtn, { marginTop: '4px', width: '100%', opacity: aiBusy ? 0.6 : 1 }), disabled: !!aiBusy, onClick: runMakeAccessible, title: TT('studio.a11y_guided_hint', 'Applies the simple rule-based fixes, drafts missing alt text for review, and prepares a structure-fix request — you approve every AI change') }, '♿ ' + TT('studio.a11y_guided', 'Fix accessibility (guided)')) : null,
+            (canBulkAlt && altFailures.length) ? h('button', { style: Object.assign({}, S.hBtn, { marginTop: '4px', width: '100%', opacity: aiBusy ? 0.6 : 1 }), disabled: !!aiBusy, onClick: runDraftAllAlt, title: TT('studio.ai_alt_all_hint', 'AI drafts alt text for every unlabeled image — you review each draft before it applies, and edits are logged honestly') }, aiBusy === 'alt-all' ? '… ' + TT('studio.ai_drafting', 'Drafting…') : '✨ ' + TT('studio.ai_alt_all', 'Draft missing alt text') + ' (' + Math.min(altFailures.length, 12) + ')') : null,
+            canDesignFeedback ? h('button', { style: Object.assign({}, S.hBtn, { marginTop: '4px', width: '100%', opacity: aiBusy ? 0.6 : 1 }), disabled: !!aiBusy, onClick: runDesignFeedback, title: TT('studio.feedback_hint', 'AI looks at the rendered page and suggests design improvements — advisory only, nothing is changed') }, aiBusy === 'feedback' ? '… ' + TT('studio.feedback_busy', 'Reviewing…') : '🎨 ' + TT('studio.feedback', 'Get design feedback')) : null),
           preflightGuide.total ? h('div', { style: { flex: '1 1 250px', border: '1px solid ' + preflightGuideTone.border, background: preflightGuideTone.bg, color: preflightGuideTone.fg, borderRadius: '8px', padding: '8px', fontSize: '11px', lineHeight: 1.35 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'baseline' } },
               h('strong', { style: { fontSize: '11.5px' } }, TT('studio.preflight_guide', 'Guided review')),
@@ -5057,10 +5057,10 @@
               preflight.issues.length && preflightIssueFilter !== 'all' ? h('button', { type: 'button', style: Object.assign({}, S.tool, { padding: '3px 7px', minHeight: '22px', fontSize: '10px' }), onClick: resetPreflightIssueFilter }, TT('studio.show_all_issues', 'Show all issues')) : null)),
           designFeedback ? h('div', { style: { flex: '1 1 100%', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panel, padding: '8px', color: C.text } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' } },
-              h('strong', { style: { fontSize: '11.5px' } }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â½Ãƒâ€šÃ‚Â¨ ' + TT('studio.feedback_title', 'Design feedback (AI)')),
+              h('strong', { style: { fontSize: '11.5px' } }, '🎨 ' + TT('studio.feedback_title', 'Design feedback (AI)')),
               h('button', { style: Object.assign({}, S.tool, { padding: '2px 8px', minHeight: '22px', fontSize: '10px' }), onClick: function () { setDesignFeedback(null); } }, TT('studio.dismiss', 'Dismiss'))),
             h('p', { style: { margin: '6px 0 4px', fontSize: '11px', lineHeight: 1.45, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, designFeedback.text),
-            h('p', { style: { margin: 0, fontSize: '9.5px', color: C.soft } }, TT('studio.feedback_note', 'Suggestions only ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â nothing in your document was changed.'))) : null,
+            h('p', { style: { margin: 0, fontSize: '9.5px', color: C.soft } }, TT('studio.feedback_note', 'Suggestions only — nothing in your document was changed.'))) : null,
           preflight.issues.length ? h('div', { role: 'group', 'aria-label': TT('studio.issue_filter', 'Issue filter'), style: { display: 'flex', gap: '4px', flexWrap: 'wrap', flex: '1 1 100%' } },
             [
               ['all', TT('studio.issue_filter_all', 'All'), preflight.issues.length],
@@ -5104,21 +5104,21 @@
                 h('div', { style: { fontSize: '10px', lineHeight: 1.25, marginTop: '5px' } }, card.message),
                 issueFilter ? h('div', { style: { fontSize: '9.5px', fontWeight: 900, marginTop: '7px', textTransform: 'uppercase' } }, actionLabel) : null);
             })),
-          h('button', { style: S.tool, onClick: exportTagged }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾ ' + TT('studio.export_tagged', 'Tagged PDF (accessible)')),
-          h('button', { style: S.tool, onClick: exportHtml }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã¢â‚¬â„¢Ãƒâ€šÃ‚Â ' + TT('studio.export_html', 'Accessible HTML')),
-          h('button', { style: S.tool, onClick: exportPng }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¼ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â PNG'),
-          h('button', { style: S.tool, onClick: exportPrint, title: TT('studio.print_hint', 'Pixel-faithful print or save-as-PDF of the page as it looks. The Tagged PDF stays the accessible version.') }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â ' + TT('studio.export_print', 'Print / PDF (visual)')),
-          h('button', { style: Object.assign({}, S.tool, { borderColor: C.accent }), onClick: exportWorksheetPdf, title: TT('studio.ws_pdf_hint', 'Rebuild as a linear worksheet ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â real questions + answer spaces ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â and export a tagged PDF') }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â ' + TT('studio.export_worksheet_pdf', 'Worksheet ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Tagged PDF')),
-          h('button', { style: S.tool, onClick: exportWorksheetHtml }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â ' + TT('studio.export_worksheet_html', 'Worksheet ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ HTML')),
+          h('button', { style: S.tool, onClick: exportTagged }, '📄 ' + TT('studio.export_tagged', 'Tagged PDF (accessible)')),
+          h('button', { style: S.tool, onClick: exportHtml }, '🌐 ' + TT('studio.export_html', 'Accessible HTML')),
+          h('button', { style: S.tool, onClick: exportPng }, '🖼️ PNG'),
+          h('button', { style: S.tool, onClick: exportPrint, title: TT('studio.print_hint', 'Pixel-faithful print or save-as-PDF of the page as it looks. The Tagged PDF stays the accessible version.') }, '🖨️ ' + TT('studio.export_print', 'Print / PDF (visual)')),
+          h('button', { style: Object.assign({}, S.tool, { borderColor: C.accent }), onClick: exportWorksheetPdf, title: TT('studio.ws_pdf_hint', 'Rebuild as a linear worksheet — real questions + answer spaces — and export a tagged PDF') }, '📝 ' + TT('studio.export_worksheet_pdf', 'Worksheet → Tagged PDF')),
+          h('button', { style: S.tool, onClick: exportWorksheetHtml }, '📝 ' + TT('studio.export_worksheet_html', 'Worksheet → HTML')),
           h('button', { style: S.tool, onClick: exportWorksheet }, TT('studio.export_worksheet_json', 'Worksheet JSON')),
           h('button', { style: S.tool, onClick: exportProcess }, 'Process notes'),
           h('button', { style: S.tool, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.save_portfolio', 'Save to Portfolio')),
           altFailures.length ? h('span', { style: { fontSize: '11px', color: errorTone.fg, background: errorTone.bg, border: '1px solid ' + errorTone.border, borderRadius: '8px', padding: '4px 6px', fontWeight: 700 } },
-            'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢Ãƒâ€šÃ‚Â¿ ' + altFailures.length + ' ' + TT('studio.alt_gate_msg', 'image(s) need alt text or a decorative mark:'),
+            '♿ ' + altFailures.length + ' ' + TT('studio.alt_gate_msg', 'image(s) need alt text or a decorative mark:'),
             altFailures.map(function (m) {
               return h('button', { key: m.id, style: { marginLeft: '6px', border: '1px solid ' + errorTone.border, background: errorTone.bg, color: errorTone.fg, borderRadius: '6px', fontSize: '10px', cursor: 'pointer', padding: '2px 6px' },
-                onClick: function () { openIssueForObject(m.id, TT('studio.a11y_alt_jump', 'Selected image missing alt text ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the alt text field is in the right panel.'), 'error'); } }, TT('studio.fix', 'Fix') + ' #' + (m.index + 1));
-            })) : h('span', { style: { fontSize: '11px', color: successTone.fg, background: successTone.bg, border: '1px solid ' + successTone.border, borderRadius: '8px', padding: '4px 6px', fontWeight: 700 } }, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢Ãƒâ€šÃ‚Â¿ ' + TT('studio.alt_gate_ok', 'All images have alt text or are marked decorative ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â exports are unblocked.'))) : null,
+                onClick: function () { openIssueForObject(m.id, TT('studio.a11y_alt_jump', 'Selected image missing alt text — the alt text field is in the right panel.'), 'error'); } }, TT('studio.fix', 'Fix') + ' #' + (m.index + 1));
+            })) : h('span', { style: { fontSize: '11px', color: successTone.fg, background: successTone.bg, border: '1px solid ' + successTone.border, borderRadius: '8px', padding: '4px 6px', fontWeight: 700 } }, '♿ ' + TT('studio.alt_gate_ok', 'All images have alt text or are marked decorative — exports are unblocked.'))) : null,
         // body
         h('div', { style: S.body },
           // left: insert tools
@@ -5126,15 +5126,15 @@
             h('div', { style: S.label }, TT('studio.insert', 'Insert')),
             h('button', { style: S.tool, onClick: function () { insertText('heading1'); } }, 'H1 ' + TT('studio.insert_heading', 'Heading')),
             h('button', { style: S.tool, onClick: function () { insertText('heading2'); } }, 'H2 ' + TT('studio.insert_subheading', 'Subheading')),
-            h('button', { style: S.tool, onClick: function () { insertText('body'); } }, 'ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¶ ' + TT('studio.insert_text', 'Text block')),
-            h('button', { style: S.tool, onClick: function () { insertShape('rect'); } }, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“Ãƒâ€šÃ‚Â­ ' + TT('studio.insert_rect', 'Rectangle')),
-            h('button', { style: S.tool, onClick: function () { insertShape('ellipse'); } }, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ÂÃƒâ€šÃ‚Â¯ ' + TT('studio.insert_ellipse', 'Ellipse')),
-            h('button', { style: S.tool, onClick: function () { if (fileRef.current) { fileRef.current.removeAttribute('data-st-replace'); fileRef.current.click(); } } }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¼ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â ' + TT('studio.insert_image', 'ImageÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦')),
-            canGenerateImage ? h('button', { style: Object.assign({}, S.tool, aiGenOpen ? { borderColor: C.accent } : null), 'aria-expanded': aiGenOpen, onClick: function () { setAiGenOpen(!aiGenOpen); } }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ ' + TT('studio.ai_generate_image', 'Generate imageÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦')) : null,
+            h('button', { style: S.tool, onClick: function () { insertText('body'); } }, '¶ ' + TT('studio.insert_text', 'Text block')),
+            h('button', { style: S.tool, onClick: function () { insertShape('rect'); } }, '▭ ' + TT('studio.insert_rect', 'Rectangle')),
+            h('button', { style: S.tool, onClick: function () { insertShape('ellipse'); } }, '◯ ' + TT('studio.insert_ellipse', 'Ellipse')),
+            h('button', { style: S.tool, onClick: function () { if (fileRef.current) { fileRef.current.removeAttribute('data-st-replace'); fileRef.current.click(); } } }, '🖼️ ' + TT('studio.insert_image', 'Image…')),
+            canGenerateImage ? h('button', { style: Object.assign({}, S.tool, aiGenOpen ? { borderColor: C.accent } : null), 'aria-expanded': aiGenOpen, onClick: function () { setAiGenOpen(!aiGenOpen); } }, '✨ ' + TT('studio.ai_generate_image', 'Generate image…')) : null,
             (canGenerateImage && aiGenOpen) ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', padding: '6px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt } },
               h('textarea', { value: aiGenPrompt, rows: 2, placeholder: TT('studio.ai_prompt_placeholder', 'e.g. a friendly cartoon water droplet'), 'aria-label': TT('studio.ai_prompt_label', 'Describe the image to generate'), style: Object.assign({}, S.input, { resize: 'vertical' }), disabled: aiBusy === 'generate',
                 onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setAiGenPrompt(e.target.value); } }),
-              h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', opacity: (aiBusy === 'generate' || !String(aiGenPrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'generate' || !String(aiGenPrompt).trim(), onClick: runGenerateImage }, aiBusy === 'generate' ? 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ ' + TT('studio.ai_generating', 'GeneratingÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦') : 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¨ ' + TT('studio.ai_generate', 'Generate')),
+              h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', opacity: (aiBusy === 'generate' || !String(aiGenPrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'generate' || !String(aiGenPrompt).trim(), onClick: runGenerateImage }, aiBusy === 'generate' ? '… ' + TT('studio.ai_generating', 'Generating…') : '✨ ' + TT('studio.ai_generate', 'Generate')),
               h('p', { style: { fontSize: '9px', color: C.soft, margin: 0 } }, TT('studio.ai_gen_note', 'Logged as AI in your process. You still add alt text.'))) : null,
             canAgentEdit ? h('button', { style: Object.assign({}, S.tool, agentOpen ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-expanded': agentOpen, onClick: function () { setAgentOpen(!agentOpen); } }, TT('studio.agent_edit', 'Ask AI to edit')) : null,
             (canAgentEdit && agentOpen) ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', padding: '6px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt } },
@@ -5145,7 +5145,7 @@
                   h('option', { value: 'document' }, TT('studio.agent_scope_document', 'Whole document')))),
               h('textarea', { value: agentPrompt, rows: 3, placeholder: TT('studio.agent_prompt_placeholder', 'e.g. make this section clearer and easier to read'), 'aria-label': TT('studio.agent_prompt_label', 'Describe the edit to preview'), style: Object.assign({}, S.input, { resize: 'vertical' }), disabled: aiBusy === 'agent',
                 onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setAgentPrompt(e.target.value); setAgentPlan(null); setAgentSelectedOps([]); } }),
-              h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', opacity: (aiBusy === 'agent' || !String(agentPrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'agent' || !String(agentPrompt).trim(), onClick: runAgentEdit }, aiBusy === 'agent' ? TT('studio.agent_thinking', 'PreparingÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦') : TT('studio.agent_preview', 'Preview changes')),
+              h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', opacity: (aiBusy === 'agent' || !String(agentPrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'agent' || !String(agentPrompt).trim(), onClick: runAgentEdit }, aiBusy === 'agent' ? TT('studio.agent_thinking', 'Preparing…') : TT('studio.agent_preview', 'Preview changes')),
               agentPlan ? h('div', { style: { border: '1px solid ' + C.border, borderRadius: '8px', background: C.panel, padding: '7px', color: C.text, fontSize: '11px', lineHeight: 1.35 } },
                 h('strong', { style: { display: 'block', marginBottom: '4px' } }, agentPlan.summary),
                 h('div', { style: { color: C.muted } }, selectedAgentCount + ' / ' + agentPlan.ops.length + ' ' + TT('studio.agent_safe_changes', 'safe change(s)') + (agentPlan.rejected.length ? ' - ' + agentPlan.rejected.length + ' ' + TT('studio.agent_skipped_changes', 'skipped') : '')),
@@ -5188,7 +5188,7 @@
                 agentPlan.rejected && agentPlan.rejected.length ? h('details', { style: { marginTop: '6px', color: C.muted } },
                   h('summary', { style: { cursor: 'pointer', fontWeight: 800 } }, TT('studio.agent_skipped_changes', 'Skipped') + ' ' + agentPlan.rejected.length),
                   h('ul', { style: { margin: '4px 0 0 16px', padding: 0 } }, agentPlan.rejected.slice(0, 8).map(function (msg, idx) { return h('li', { key: idx }, msg); }))) : null,
-                h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', width: '100%', marginTop: '6px', opacity: (!selectedAgentCount || aiBusy) ? 0.6 : 1 }), disabled: !selectedAgentCount || !!aiBusy, onClick: runPlanPreview, title: TT('studio.preview_hint', 'Renders the page before and after the selected changes ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â nothing is applied yet') }, aiBusy === 'plan-preview' ? 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ ' + TT('studio.previewing', 'RenderingÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦') : 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¼ ' + TT('studio.preview_result', 'Preview result')),
+                h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', width: '100%', marginTop: '6px', opacity: (!selectedAgentCount || aiBusy) ? 0.6 : 1 }), disabled: !selectedAgentCount || !!aiBusy, onClick: runPlanPreview, title: TT('studio.preview_hint', 'Renders the page before and after the selected changes — nothing is applied yet') }, aiBusy === 'plan-preview' ? '… ' + TT('studio.previewing', 'Rendering…') : '🖼 ' + TT('studio.preview_result', 'Preview result')),
                 agentPreview ? h('div', null,
                   h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '6px' } },
                     h('figure', { style: { margin: 0 } },
@@ -5197,15 +5197,15 @@
                     h('figure', { style: { margin: 0 } },
                       h('figcaption', { style: { fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', color: C.muted } }, TT('studio.after', 'After')),
                       h('img', { src: agentPreview.after, alt: TT('studio.preview_after_alt', 'Rendered page after the AI changes'), style: { width: '100%', border: '1px solid ' + C.border, borderRadius: '6px', background: '#ffffff' } }))),
-                  agentPlan.ops.some(function (op) { return op && op.type === 'image.request'; }) ? h('p', { style: { margin: '3px 0 0', fontSize: '9px', color: C.soft } }, TT('studio.preview_images_note', 'Requested images are not in the preview ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â they generate when you apply.')) : null) : null,
+                  agentPlan.ops.some(function (op) { return op && op.type === 'image.request'; }) ? h('p', { style: { margin: '3px 0 0', fontSize: '9px', color: C.soft } }, TT('studio.preview_images_note', 'Requested images are not in the preview — they generate when you apply.')) : null) : null,
                 h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '7px' } },
-                  h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', opacity: (!selectedAgentCount || aiBusy) ? 0.6 : 1 }), disabled: !selectedAgentCount || !!aiBusy, onClick: applyAgentPlan }, aiBusy === 'agent-apply' ? 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ ' + TT('studio.agent_applying', 'ApplyingÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦') : TT('studio.apply_selected', 'Apply selected')),
+                  h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', opacity: (!selectedAgentCount || aiBusy) ? 0.6 : 1 }), disabled: !selectedAgentCount || !!aiBusy, onClick: applyAgentPlan }, aiBusy === 'agent-apply' ? '… ' + TT('studio.agent_applying', 'Applying…') : TT('studio.apply_selected', 'Apply selected')),
                   h('button', { style: Object.assign({}, S.tool, { textAlign: 'center' }), disabled: aiBusy === 'agent-apply', onClick: function () { setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); clearAgentPreview(); } }, TT('studio.discard', 'Discard'))),
                 h('div', { style: { marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' } },
                   h('textarea', { value: agentFollowUp, rows: 2, placeholder: TT('studio.agent_refine_placeholder', 'Adjust this proposal, e.g. keep the heading where it is'), 'aria-label': TT('studio.agent_refine_label', 'Describe an adjustment to the proposal'), style: Object.assign({}, S.input, { resize: 'vertical' }), disabled: !!aiBusy,
                     onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setAgentFollowUp(e.target.value); } }),
-                  h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', opacity: (aiBusy || !String(agentFollowUp).trim()) ? 0.6 : 1 }), disabled: !!aiBusy || !String(agentFollowUp).trim(), onClick: runAgentRefine, title: TT('studio.agent_refine_hint', 'Asks the AI again with your adjustment and the current proposal as context') }, aiBusy === 'agent' ? TT('studio.agent_thinking', 'PreparingÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦') : 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Ãƒâ€šÃ‚Â» ' + TT('studio.agent_refine', 'Refine proposal')))) : null,
-              lastAgentBatch ? h('button', { style: Object.assign({}, S.tool, { width: '100%' }), onClick: undoAgentBatch, title: TT('studio.agent_undo_batch_hint', 'Reverts every change from the last applied AI batch in one step') }, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Ãƒâ€šÃ‚Â© ' + TT('studio.agent_undo_batch', 'Undo AI changes') + ' (' + lastAgentBatch.count + ')') : null,
+                  h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', opacity: (aiBusy || !String(agentFollowUp).trim()) ? 0.6 : 1 }), disabled: !!aiBusy || !String(agentFollowUp).trim(), onClick: runAgentRefine, title: TT('studio.agent_refine_hint', 'Asks the AI again with your adjustment and the current proposal as context') }, aiBusy === 'agent' ? TT('studio.agent_thinking', 'Preparing…') : '↻ ' + TT('studio.agent_refine', 'Refine proposal')))) : null,
+              lastAgentBatch ? h('button', { style: Object.assign({}, S.tool, { width: '100%' }), onClick: undoAgentBatch, title: TT('studio.agent_undo_batch_hint', 'Reverts every change from the last applied AI batch in one step') }, '↩ ' + TT('studio.agent_undo_batch', 'Undo AI changes') + ' (' + lastAgentBatch.count + ')') : null,
               h('p', { style: { fontSize: '9px', color: C.soft, margin: 0 } }, TT('studio.agent_note', 'Preview first. Applied changes are logged as AI.'))) : null,
             h('button', { style: Object.assign({}, S.tool, resourceOpen ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-expanded': resourceOpen, onClick: function () { setResourceOpen(!resourceOpen); } },
               TT('studio.resource_shelf', 'Source shelf') + ' ' + resourceCues.length),
@@ -5243,9 +5243,9 @@
             h('div', { style: S.label }, TT('studio.page', 'Page')),
             h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.canvas_size', 'Page size'),
               h('select', { value: ST_CANVAS_PRESETS[doc.canvas.preset] ? doc.canvas.preset : 'custom', style: S.input, 'aria-label': TT('studio.canvas_size', 'Page size'),
-                onChange: function (e) { var pk = e.target.value; if (!ST_CANVAS_PRESETS[pk]) return; dispatch({ type: 'canvas.resize', preset: pk }, 'user'); stAnnounce(TT('studio.a11y_resized', 'Page size changed ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â objects re-fit to the page')); } },
-                h('option', { value: 'letter-portrait' }, TT('studio.orient_portrait', 'Portrait') + ' (8.5ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â11)'),
-                h('option', { value: 'letter-landscape' }, TT('studio.orient_landscape', 'Landscape') + ' (11ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â8.5)'),
+                onChange: function (e) { var pk = e.target.value; if (!ST_CANVAS_PRESETS[pk]) return; dispatch({ type: 'canvas.resize', preset: pk }, 'user'); stAnnounce(TT('studio.a11y_resized', 'Page size changed — objects re-fit to the page')); } },
+                h('option', { value: 'letter-portrait' }, TT('studio.orient_portrait', 'Portrait') + ' (8.5×11)'),
+                h('option', { value: 'letter-landscape' }, TT('studio.orient_landscape', 'Landscape') + ' (11×8.5)'),
                 h('option', { value: 'square' }, TT('studio.orient_square', 'Square')),
                 ST_CANVAS_PRESETS[doc.canvas.preset] ? null : h('option', { value: 'custom', disabled: true }, TT('studio.orient_custom', 'Custom')))),
             colorField(TT('studio.background', 'Background'), (doc.canvas.background && doc.canvas.background.fill) || '#ffffff', function (hex) { dispatch({ type: 'canvas.background', fill: hex }, 'user'); }),
@@ -5271,7 +5271,7 @@
                 doc.objects.map(function (o) { return renderObject(o, SCALE, true, {}, h); })))),
           // right: reading order + properties
           h('div', { style: S.rpanel },
-            h('div', { style: S.label }, 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€¦Ã‚Â  ' + TT('studio.reading_order', 'Reading order (what screen readers follow)')),
+            h('div', { style: S.label }, '🔊 ' + TT('studio.reading_order', 'Reading order (what screen readers follow)')),
             h('div', { role: 'group', 'aria-label': TT('studio.object_navigator', 'Object navigator'), style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } },
               h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 4px', fontSize: '10.5px' }, navigatorMode === 'reading' ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-pressed': navigatorMode === 'reading', onClick: function () { setNavigatorMode('reading'); } }, TT('studio.reading_order_short', 'Reading order')),
               h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 4px', fontSize: '10.5px' }, navigatorMode === 'layers' ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-pressed': navigatorMode === 'layers', onClick: function () { setNavigatorMode('layers'); } }, TT('studio.layers', 'Layers'))),
@@ -5299,15 +5299,15 @@
             r2.readAsDataURL(f2);
           } }),
         h('input', { ref: loadRef, type: 'file', accept: '.json,application/json', style: { display: 'none' }, onChange: onLoadFile }),
-        // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ crop modal (position:fixed, overlays the studio) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+        // ── crop modal (position:fixed, overlays the studio) ──
         cropId ? (function () {
           var co = doc.objects.filter(function (x) { return x.id === cropId; })[0];
           if (!co || !co.src) return null;
           var r = cropRect || { x: 0, y: 0, w: 0, h: 0 };
           return h('div', { ref: _cropDialogRef, tabIndex: -1, style: { position: 'fixed', inset: 0, zIndex: 9500, background: 'rgba(2,6,23,0.82)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px' }, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.crop_title', 'Crop image'),
             onKeyDown: function (e) { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); setCropId(null); setCropRect(null); return; } trapTabWithin(_cropDialogRef.current, e); } },
-            h('div', { style: { color: '#fff', fontSize: '13px', fontWeight: 700, marginBottom: '8px', maxWidth: '80vw', textAlign: 'center' } }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ ' + TT('studio.crop_drag', 'Drag on the image to choose the area to keep.'),
-              h('div', { style: { fontSize: '11px', fontWeight: 400, color: '#fca5a5', marginTop: '2px' } }, TT('studio.crop_permanent', 'The trimmed-away pixels are permanently removed ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â including from your saved file.'))),
+            h('div', { style: { color: '#fff', fontSize: '13px', fontWeight: 700, marginBottom: '8px', maxWidth: '80vw', textAlign: 'center' } }, '✂ ' + TT('studio.crop_drag', 'Drag on the image to choose the area to keep.'),
+              h('div', { style: { fontSize: '11px', fontWeight: 400, color: '#fca5a5', marginTop: '2px' } }, TT('studio.crop_permanent', 'The trimmed-away pixels are permanently removed — including from your saved file.'))),
             h('div', { style: { position: 'relative', maxWidth: '80vw', maxHeight: '68vh', touchAction: 'none' }, onPointerMove: cropPointerMove, onPointerUp: cropPointerUp },
               h('img', { ref: _cropImgRef, src: co.src, alt: co.alt || TT('studio.crop_preview_alt', 'Image being cropped'), draggable: false, style: { display: 'block', maxWidth: '80vw', maxHeight: '68vh', userSelect: 'none', cursor: 'crosshair' }, onPointerDown: cropPointerDown }),
               (r.w > 0 && r.h > 0) ? h('div', { style: { position: 'absolute', left: (r.x * 100) + '%', top: (r.y * 100) + '%', width: (r.w * 100) + '%', height: (r.h * 100) + '%', border: '2px solid #6366f1', boxShadow: '0 0 0 9999px rgba(2,6,23,0.55)', pointerEvents: 'none' } }) : null),
@@ -5321,12 +5321,12 @@
                 return h('button', { key: 'adjust-' + opt[0], style: Object.assign({}, S.hBtn, { padding: '5px 8px' }), onClick: function () { adjustCrop(opt[0]); }, 'aria-label': TT('studio.crop_adjust', 'Adjust crop') + ': ' + opt[1] }, opt[1]);
               })),
             h('div', { style: { display: 'flex', gap: '8px', marginTop: '12px' } },
-              h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', borderColor: '#1e3a8a', color: '#fff' }), onClick: applyCrop }, 'ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ ' + TT('studio.crop_apply', 'Apply crop')),
+              h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', borderColor: '#1e3a8a', color: '#fff' }), onClick: applyCrop }, '✂ ' + TT('studio.crop_apply', 'Apply crop')),
               h('button', { style: S.hBtn, onClick: function () { setCropId(null); setCropRect(null); } }, TT('studio.cancel', 'Cancel'))));
         })() : null));
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ registration + pure helpers for tests ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
+  // ── registration + pure helpers for tests ──
   window.AlloModules = window.AlloModules || {};
   AlloStudio.stCreateDoc = stCreateDoc;
   AlloStudio.stApplyOp = stApplyOp;

@@ -348,7 +348,7 @@
         "https://www.ncbi.nlm.nih.gov/books/NBK557744/",
         "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=0a2787f9-0166-4fa7-9f02-7d355609dabf&type=display"
       ],
-      "reviewNote": "Corrected the synapse model and broken SVG marker, qualified SSRI mechanism, defined elimination half-life and the 4â€“5-half-life approximation with assumptions, removed generic washout advice, corrected fluoxetine label context, rejected AI/pharmacology equivalence, and added an explicit first-order calculation check.",
+      "reviewNote": "Corrected the synapse model and broken SVG marker, qualified SSRI mechanism, defined elimination half-life and the 4–5-half-life approximation with assumptions, removed generic washout advice, corrected fluoxetine label context, rejected AI/pharmacology equivalence, and added an explicit first-order calculation check.",
       "checks": {
         "source-support": "editorial-pass-official-label-and-open-texts",
         "accuracy-and-currency": "editorial-pass-2026-07-11",

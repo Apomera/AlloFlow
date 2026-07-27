@@ -1,5 +1,5 @@
 /* ============================================================
-   PasstheEPPP â€” Textbook Ch 43: Advanced Statistics & Program Evaluation
+   PasstheEPPP — Textbook Ch 43: Advanced Statistics & Program Evaluation
    Domain: Research Methods & Statistics (7% of EPPP)
    Structure: 80% evidence-based + 20% AI-reflective coda
    ============================================================ */

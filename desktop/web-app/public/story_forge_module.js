@@ -586,7 +586,7 @@ const useAudioRecorder = () => {
   const startRecording = async () => {
     if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === "function") {
       const ctrl = window.AlloFlowVoice.recordAudioBlob({
-        // No maxDurationMs â€” caller drives stop. The shared default
+        // No maxDurationMs — caller drives stop. The shared default
         // (60s) would change behavior for callers that expect arbitrary
         // length recording. Use a generous 10-minute cap as a safety net.
         maxDurationMs: 10 * 60 * 1e3,
@@ -1042,7 +1042,7 @@ const StoryForge = React.memo(({
   t: tFunc,
   isCanvasEnv,
   liveSession,
-  // â”€â”€ Resource integration props â”€â”€
+  // ── Resource integration props ──
   initialConfig,
   // Pre-loaded storyforge-config from teacher assignment
   onSaveConfig,
@@ -1052,9 +1052,9 @@ const StoryForge = React.memo(({
   lessonResources,
   // Array of available lesson resources for "Import from Lesson"
   codename,
-  // Student codename (e.g., "Bright Tiger") â€” used instead of real name
+  // Student codename (e.g., "Bright Tiger") — used instead of real name
   onAnalyzeFluency
-  // Optional: (audioBase64, mimeType, referenceText) => Promise<result> â€” ORF analysis
+  // Optional: (audioBase64, mimeType, referenceText) => Promise<result> — ORF analysis
 }) => {
   const t = tFunc || ((k) => k);
   const [phase, setPhase] = useState("configure");
@@ -4868,7 +4868,7 @@ show();
     if (!await requestExportConsent({ title: "Export full draft?", message: "This de-identified file uses the student codename, but it contains complete writing, AI feedback or grades, and progress analytics. Save it only to a school-approved location and follow district student-records policy.", confirmLabel: "Export full draft" })) return;
     const draft = {
       _storyForgeVersion: 2,
-      // â”€â”€ Story content â”€â”€
+      // ── Story content ──
       storyTitle,
       codename: authorName,
       genre,
@@ -4898,7 +4898,7 @@ show();
         Object.entries(illustrations).filter(([, v]) => v?.imageUrl).map(([k, v]) => [k, { imageUrl: v.imageUrl, prompt: v.prompt }])
       ),
       coverArt,
-      // â”€â”€ Progress & analytics data (for teacher review) â”€â”€
+      // ── Progress & analytics data (for teacher review) ──
       gradingResult,
       analytics: {
         totalWords,
@@ -4913,18 +4913,18 @@ show();
         characterIssues: characterIssues.length > 0 ? characterIssues : null,
         characters: characters.length > 0 ? characters : null
       },
-      // â”€â”€ Achievement & XP data â”€â”€
+      // ── Achievement & XP data ──
       achievements: achievements.map((a2) => ({ id: a2.id, name: a2.name, earned: a2.earned })),
       xp: { totalXP: xpData.totalXP, level: currentLevel.name, streak: xpData.streak },
-      // â”€â”€ Narration status â”€â”€
+      // ── Narration status ──
       narration: {
         aiNarratedCount: Object.values(audioSegments).filter((s) => s?.aiAudioUrl).length,
         studentRecordedCount: Object.values(audioSegments).filter((s) => s?.studentAudioUrl).length,
         narratorVoice
       },
-      // â”€â”€ Grammar check results (if any) â”€â”€
+      // ── Grammar check results (if any) ──
       grammarResults: Object.keys(grammarResults).length > 1 ? grammarResults : null,
-      // â”€â”€ Export metadata â”€â”€
+      // ── Export metadata ──
       exportedAt: (/* @__PURE__ */ new Date()).toISOString(),
       exportedBy: authorName || "Student"
     };
@@ -5643,7 +5643,7 @@ show();
     setHelpMeParagraphIdx(-1);
     setHelpMeResult(null);
   }, className: "mt-2 text-[11px] text-amber-500 hover:text-amber-700 font-bold" }, t("ui_common.dismiss"))), layoutMode === "comic" ? (
-    /* â”€â”€ Comic Panel Writing Mode â€” dialogue, thought, narration fields â”€â”€ */
+    /* ── Comic Panel Writing Mode — dialogue, thought, narration fields ── */
     /* @__PURE__ */ React.createElement("div", { className: "p-3 space-y-2 bg-gradient-to-b from-slate-50 to-white" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-700 uppercase tracking-widest" }, "Panel ", idx + 1, " Bubbles"), onCallGemini && /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -5796,7 +5796,7 @@ show();
       ), /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-black ${textColor}` }, lettering.words, "/", lettering.limit, " words \xC2\xB7 ", lettering.label)), /* @__PURE__ */ React.createElement("div", { className: "h-2 rounded-full bg-slate-100 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full rounded-full ${color}`, style: { width: `${pct}%` } })), lettering.words > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] text-slate-500 leading-snug" }, lettering.detail));
     })())
   ) : (
-    /* â”€â”€ Prose / Journal / Dark Writing Mode â€” styled textarea â”€â”€ */
+    /* ── Prose / Journal / Dark Writing Mode — styled textarea ── */
     /* @__PURE__ */ React.createElement(
       "textarea",
       {
@@ -6526,7 +6526,7 @@ show();
       return /* @__PURE__ */ React.createElement("section", { key: `comic-page-${page.page}`, className: "rounded-xl overflow-hidden border border-slate-700 bg-slate-950/75 shadow-lg", "aria-label": `Comic page ${page.page}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-3 py-2 bg-slate-950 text-white border-b border-slate-700" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black uppercase tracking-widest" }, "Page ", page.page, " \xB7 ", getComicPageLayoutLabel(page.layout)), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-300 font-bold" }, "Panels ", page.startPanel, "-", page.endPanel, " \xB7 ", getComicReadingOrderLabel(page.layout))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 text-[10px] font-black uppercase tracking-widest" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-1 ${previewPageStats.status === "Review" ? "border-rose-300/50 bg-rose-400/20 text-rose-100" : previewPageStats.status === "Ready" ? "border-emerald-300/50 bg-emerald-400/20 text-emerald-100" : "border-white/20 bg-white/10 text-white"}` }, previewPageStats.status), /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-white/20 bg-white/10 px-2 py-1" }, "Art ", previewPageStats.artPanels, "/", previewPageStats.total), /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-white/20 bg-white/10 px-2 py-1" }, "Lettering ", previewPageStats.placedBubbles, "/", previewPageStats.bubblePanels), /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-white/20 bg-white/10 px-2 py-1" }, getComicPrintFormatLabel(printSafety.format)), gutterSide && /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-rose-300/40 bg-rose-400/20 px-2 py-1" }, gutterSide, " gutter"))), /* @__PURE__ */ React.createElement("div", { className: `p-3 grid gap-3 ${page.layout === "strip" ? "grid-cols-1" : "grid-cols-2"}`, style: { direction: page.layout === "manga" ? "rtl" : "ltr" } }, page.panels.map(({ paragraph, idx: panelIdx }, pageIndex) => renderComicPreviewPanel(paragraph, panelIdx, page.layout, pageIndex, page))), previewPageStats.attention > 0 && /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 bg-rose-950/40 text-rose-100 border-t border-rose-900/60 text-[11px] font-bold flex flex-wrap gap-x-3 gap-y-1" }, previewPageStats.unplacedBubbles > 0 && /* @__PURE__ */ React.createElement("span", null, previewPageStats.unplacedBubbles, " lettering anchor", previewPageStats.unplacedBubbles === 1 ? "" : "s", " needed"), previewPageStats.gutterRiskPanels > 0 && /* @__PURE__ */ React.createElement("span", null, previewPageStats.gutterRiskPanels, " gutter conflict", previewPageStats.gutterRiskPanels === 1 ? "" : "s"), previewPageStats.crowdedBubbles > 0 && /* @__PURE__ */ React.createElement("span", null, previewPageStats.crowdedBubbles, " crowded bubble panel", previewPageStats.crowdedBubbles === 1 ? "" : "s"), previewPageStats.emptyPanels > 0 && /* @__PURE__ */ React.createElement("span", null, previewPageStats.emptyPanels, " empty panel", previewPageStats.emptyPanels === 1 ? "" : "s")), (turnLabel || page.note) && /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 bg-slate-900 text-slate-200 border-t border-slate-700 text-[11px] font-bold" }, turnLabel && /* @__PURE__ */ React.createElement("span", null, "Page turn: ", turnLabel), page.note && /* @__PURE__ */ React.createElement("span", null, turnLabel ? " \xB7 " : "", page.note)));
     })))
   ) : (
-    /* â”€â”€ Prose Layout â”€â”€ */
+    /* ── Prose Layout ── */
     /* @__PURE__ */ React.createElement("div", { className: "p-6 space-y-6" }, paragraphs.map((p, idx) => /* @__PURE__ */ React.createElement("div", { key: p.id, className: "flex flex-col items-center gap-4" }, illustrations[p.id]?.imageUrl && /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: `Scene ${idx + 1}`, className: "max-w-md rounded-xl shadow-md" }), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-800 leading-relaxed max-w-lg text-center", style: { textIndent: "2em", textAlign: "left" } }, p.text), idx < paragraphs.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "text-amber-400 text-lg" }, "\xE2\u20AC\u201D"))))
   )), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-amber-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-amber-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 16 }), " Achievements (", earnedCount, "/", achievements.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-2" }, achievements.map((a) => /* @__PURE__ */ React.createElement("div", { key: a.id, className: `text-center p-2.5 rounded-xl border-2 transition-all ${a.earned ? "bg-amber-50 border-amber-300 shadow-sm" : "bg-slate-50 border-slate-200 opacity-50"}`, title: a.desc }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl" }, a.icon), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-700 mt-1" }, a.name))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-3 items-center justify-center" }, /* @__PURE__ */ React.createElement(
     "button",

@@ -10960,7 +10960,7 @@
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch49.js",
       "reviewStatus": "source-reviewed-editorial-pass",
-      "reviewNote": "Corrected the synapse model and broken SVG marker, qualified SSRI mechanism, defined elimination half-life and the 4â€“5-half-life approximation with assumptions, removed generic washout advice, corrected fluoxetine label context, rejected AI/pharmacology equivalence, and added an explicit first-order calculation check.",
+      "reviewNote": "Corrected the synapse model and broken SVG marker, qualified SSRI mechanism, defined elimination half-life and the 4–5-half-life approximation with assumptions, removed generic washout advice, corrected fluoxetine label context, rejected AI/pharmacology equivalence, and added an explicit first-order calculation check.",
       "reviewReferences": [
         "https://openstax.org/books/introduction-behavioral-neuroscience/pages/3-1-general-neurochemistry-principles",
         "https://openstax.org/books/biology/pages/35-2-how-neurons-communicate",

@@ -1,5 +1,5 @@
 /* ============================================================
-   PasstheEPPP â€” Textbook Ch 48: Advanced Statistical Design & IRT
+   PasstheEPPP — Textbook Ch 48: Advanced Statistical Design & IRT
    Domain: Integrative Seminars
    Features: SVG Diagrams, Knowledge Checks, Expandable Cases
    ============================================================ */
