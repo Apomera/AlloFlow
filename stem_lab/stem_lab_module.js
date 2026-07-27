@@ -981,25 +981,59 @@
           // e.g., printable artifact tools).
           if (tool.lightBackground === true) return rendered;
           if (!ctx || !ctx.React) return rendered;
+
+          var shellTheme = (ctx.theme === 'contrast' || ctx.theme === 'dark' || ctx.theme === 'light')
+            ? ctx.theme
+            : (ctx.isContrast ? 'contrast' : (ctx.isDark ? 'dark' : 'light'));
+
+          // ── Why the tool content sits on its own light card ──
+          // The themed canvas above is the page BACKDROP. It must not be the
+          // surface tool content is painted on, because tools are authored for a
+          // light substrate: they use Tailwind's dark text utilities and paint
+          // their own white/50-tint panels. Text that happens NOT to sit on one of
+          // those panels inherits the backdrop, and in .theme-dark / .theme-contrast
+          // that made it dark-on-dark. Measured across a sample of eight tools,
+          // 32 elements failed that way — the worst were tool titles at 1.0-1.2:1,
+          // i.e. literally invisible, and it extrapolates to 400+ across the ~132
+          // registered tools.
+          //
+          // Fixing it per tool would mean ~400 edits across 132 files, several of
+          // which are actively being worked on elsewhere. Fixing it here is one
+          // change that covers every tool, including ones added later, and keeps
+          // the dark chrome a dark-theme user expects: a lit page on a dark desk.
+          //
+          // `contrast` deliberately keeps its pure-black surface — that theme's
+          // whole point is maximum separation, its own palette is built for it,
+          // and a light card would fight it.
+          var isDarkBackdrop = shellTheme === 'dark';
+
           return ctx.React.createElement('div', {
             style: {
-              // Theme-aware: --allo-stem-canvas resolves to the existing
-              // #0f172a in .theme-dark (Aaron's original design preserved)
-              // and to light/contrast equivalents in the other themes.
-              // Variables defined in AlloFlowANTI.txt near .theme-dark.
               background: 'var(--allo-stem-canvas, #0f172a)',
               color: 'var(--allo-stem-text, #e2e8f0)',
               borderRadius: 12,
-              minHeight: 'calc(100vh - 32px)'
+              minHeight: 'calc(100vh - 32px)',
+              padding: isDarkBackdrop ? 10 : 0
             },
             'data-stem-tool-shell': id,
-            'data-stem-theme': (ctx.theme === 'contrast' || ctx.theme === 'dark' || ctx.theme === 'light') ? ctx.theme : (ctx.isContrast ? 'contrast' : (ctx.isDark ? 'dark' : 'light'))
+            'data-stem-theme': shellTheme
           },
             // sr-only tool-name heading — gives every tool a semantic H1 landmark
             // for screen readers (many tools' visible titles are non-heading text
             // or sit behind a tab). Visual layout is unchanged.
             ctx.React.createElement('h1', { style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, (tool.label || id)),
-            rendered);
+            isDarkBackdrop
+              ? ctx.React.createElement('div', {
+                  'data-stem-tool-surface': id,
+                  style: {
+                    background: '#ffffff',
+                    color: '#0f172a',
+                    borderRadius: 10,
+                    padding: 10,
+                    minHeight: 'calc(100vh - 56px)'
+                  }
+                }, rendered)
+              : rendered);
         },
         // Shared HiDPI canvas setup. Resizes the internal pixel buffer
         // to match the device pixel ratio while keeping CSS dims at the
