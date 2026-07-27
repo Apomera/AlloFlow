@@ -602,6 +602,89 @@
     return result;
   }
 
+  // ── Offline schematic projection ────────────────────────────────────────────
+  // Every map view in this tool needs Leaflet from unpkg plus raster tiles from
+  // OpenStreetMap or Esri, so the map only exists if the network allows three
+  // third-party origins — and each pan/zoom tells those origins WHERE the class is
+  // looking, which for imported classroom points is approximately where the points
+  // are. This projection lets the same data be drawn locally, with no request of any
+  // kind: it powers both the new "no basemap" choice and the already-handled case
+  // where the CDN is blocked, which until now offered only a table.
+  //
+  // Equirectangular with a cos(lat) correction on longitude, so shapes are not
+  // stretched at Maine latitudes. It is a schematic, not a navigation projection,
+  // and the UI says so — the same honesty the printed evidence report already uses.
+  function schematicProjection(lonLatPoints, width, height, padding) {
+    var w = Number(width) || 640, hgt = Number(height) || 390;
+    var pad = padding == null ? 26 : padding;
+    var pts = (lonLatPoints || []).map(mapPoint).filter(function (p) {
+      return Number.isFinite(p.lat) && Number.isFinite(p.lon);
+    });
+    if (!pts.length) return null;
+    var minLat = Math.min.apply(Math, pts.map(function (p) { return p.lat; }));
+    var maxLat = Math.max.apply(Math, pts.map(function (p) { return p.lat; }));
+    var minLon = Math.min.apply(Math, pts.map(function (p) { return p.lon; }));
+    var maxLon = Math.max.apply(Math, pts.map(function (p) { return p.lon; }));
+    // A single point (or a perfectly straight row of them) has zero extent in at
+    // least one axis; give it a small window so it lands mid-canvas instead of
+    // dividing by zero.
+    if (maxLat - minLat < 1e-9) { minLat -= 0.05; maxLat += 0.05; }
+    if (maxLon - minLon < 1e-9) { minLon -= 0.05; maxLon += 0.05; }
+    var midLatRad = (minLat + maxLat) / 2 * Math.PI / 180;
+    var lonScale = Math.max(0.15, Math.cos(midLatRad)); // guard the poles
+    var spanX = (maxLon - minLon) * lonScale, spanY = maxLat - minLat;
+    var usableW = Math.max(1, w - pad * 2), usableH = Math.max(1, hgt - pad * 2);
+    // One scale for both axes keeps the aspect honest — an independently stretched
+    // axis would misrepresent shape, which is the whole point of drawing a map.
+    var scale = Math.min(usableW / spanX, usableH / spanY);
+    var offsetX = pad + (usableW - spanX * scale) / 2;
+    var offsetY = pad + (usableH - spanY * scale) / 2;
+    return {
+      width: w, height: hgt,
+      bounds: { minLat: minLat, maxLat: maxLat, minLon: minLon, maxLon: maxLon },
+      project: function (lon, lat) {
+        return {
+          x: offsetX + (Number(lon) - minLon) * lonScale * scale,
+          y: offsetY + (maxLat - Number(lat)) * scale   // screen y grows downward
+        };
+      }
+    };
+  }
+
+  // "Nice" round graticule steps, so the grid reads 0.5° / 1° / 2° rather than
+  // whatever an even division of the data extent happens to produce.
+  function graticuleStep(span) {
+    var candidates = [0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 30];
+    for (var i = 0; i < candidates.length; i += 1) {
+      if (span / candidates[i] <= 6) return candidates[i];
+    }
+    return candidates[candidates.length - 1];
+  }
+
+  function graticuleLines(bounds) {
+    if (!bounds) return { lats: [], lons: [] };
+    var latStep = graticuleStep(bounds.maxLat - bounds.minLat);
+    var lonStep = graticuleStep(bounds.maxLon - bounds.minLon);
+    var lats = [], lons = [], v;
+    for (v = Math.ceil(bounds.minLat / latStep) * latStep; v <= bounds.maxLat + 1e-9; v += latStep) lats.push(Number(v.toFixed(6)));
+    for (v = Math.ceil(bounds.minLon / lonStep) * lonStep; v <= bounds.maxLon + 1e-9; v += lonStep) lons.push(Number(v.toFixed(6)));
+    return { lats: lats, lons: lons, latStep: latStep, lonStep: lonStep };
+  }
+
+  // Outer rings only — holes are not filled separately in the schematic, and the
+  // measurement functions above remain the authority on area.
+  function featureOuterRings(feature) {
+    var geometry = feature && feature.geometry;
+    if (!geometry) return [];
+    if (geometry.type === 'Polygon') return (geometry.coordinates || []).slice(0, 1);
+    if (geometry.type === 'MultiPolygon') {
+      return (geometry.coordinates || []).map(function (polygon) { return polygon[0]; }).filter(Boolean);
+    }
+    if (geometry.type === 'LineString') return [geometry.coordinates || []];
+    if (geometry.type === 'MultiLineString') return geometry.coordinates || [];
+    return [];
+  }
+
   function escapeHTML(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, function (character) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character];
@@ -854,14 +937,16 @@
     aliases: ['GIS', 'mapping', 'spatial data', 'GIS project file', 'autosave', 'data provenance', 'coordinate privacy', 'time series map', 'change over time', 'Maine inquiry', 'guided mission', 'spatial analysis', 'map comparison', 'evidence report', 'buffer', 'choropleth', 'coordinates', 'map projections'],
     testing: {
       parseCSV: parseCSV, parseGeoJSON: parseGeoJSON, parseTableCSV: parseTableCSV,
-      joinTableToGeoJSON: joinTableToGeoJSON, calculateBreaks: calculateBreaks,
+      joinTableToGeoJSON: joinTableToGeoJSON, calculateBreaks: calculateBreaks, classColor: classColor,
       haversineKm: haversineKm, pathLengthKm: pathLengthKm, polygonAreaSquareKm: polygonAreaSquareKm,
       pointInFeature: pointInFeature, selectPointsInFeature: selectPointsInFeature,
       selectWithinRadius: selectWithinRadius, nearestRecord: nearestRecord, featureMeasurements: featureMeasurements,
       buildEvidenceReport: buildEvidenceReport, missionCompletion: missionCompletion, missions: GIS_MISSIONS,
       parseTimeCSV: parseTimeCSV, timelineSnapshot: timelineSnapshot, calculateTemporalChange: calculateTemporalChange,
       createGISProject: createGISProject, validateGISProject: validateGISProject,
-      assessCoordinatePrivacy: assessCoordinatePrivacy, roundPointCoordinates: roundPointCoordinates
+      assessCoordinatePrivacy: assessCoordinatePrivacy, roundPointCoordinates: roundPointCoordinates,
+      schematicProjection: schematicProjection, graticuleStep: graticuleStep,
+      graticuleLines: graticuleLines, featureOuterRings: featureOuterRings
     },
     questHooks: [
       { id: 'import_data', label: 'Map your own coordinate data', icon: '\uD83D\uDCE5', check: function (d) { return !!d.gisImported; }, progress: function (d) { return d.gisImported ? 'Mapped' : 'Not yet'; } },
@@ -941,6 +1026,10 @@
         var s57 = React.useState(normalizeProvenance({ source: 'Classroom learning data', limitations: 'Verify illustrative data with authoritative sources before making decisions.' })), provenance = s57[0], setProvenance = s57[1];
         var s58 = React.useState(3), privacyDigits = s58[0], setPrivacyDigits = s58[1];
         var s59 = React.useState('Autosave is preparing.'), autosaveStatus = s59[0], setAutosaveStatus = s59[1];
+        // Set when Leaflet resolves null (blocked CDN, offline, or the 6.5s timeout).
+        // Declared with the other useState calls, never conditionally, so hook order
+        // is fixed on every render.
+        var s60 = React.useState(false), leafletBlocked = s60[0], setLeafletBlocked = s60[1];
         var s60 = React.useState(null), recoveryDraft = s60[0], setRecoveryDraft = s60[1];
         var s61 = React.useState(''), projectError = s61[0], setProjectError = s61[1];
         var s62 = React.useState(false), autosaveReady = s62[0], setAutosaveReady = s62[1];
@@ -969,6 +1058,9 @@
           Object.keys(feature.properties || {}).forEach(function (key) { if (geoPropertyKeys.indexOf(key) < 0) geoPropertyKeys.push(key); });
         });
         var geoBreaks = calculateBreaks(geoValues, classification, classCount, customBreaks);
+        // Draw locally when the learner asked for no basemap, or when Leaflet could
+        // not be fetched. Declared here, above every consumer.
+        var offlineMap = basemap === 'none' || leafletBlocked;
         var legendBounds = geoValues.length ? [geoMin].concat(geoBreaks).concat([geoMax]) : [];
         var geoSummary = geoFeatures.length ? ' Polygon layer: ' + geoFeatures.length + ' features mapped by ' + geoMetric +
           ' using ' + classification + ' classes, ranging from ' + geoMin + ' to ' + geoMax + '.' : '';
@@ -1115,12 +1207,24 @@
 
         React.useEffect(function () {
           if (tab !== 'map' || !mapNode.current) return undefined;
+          // "No basemap" must make NO request — returning before getLeaflet() is what
+          // makes that true, since getLeaflet injects the unpkg <script>/<link> as a
+          // side effect the moment it is called. The schematic renders in place of
+          // this node, so there is nothing to tear down.
+          if (basemap === 'none') {
+            setMapStatus('Offline schematic map. Drawn on this device — no map tiles or map libraries were requested.');
+            return undefined;
+          }
           var active = true, map = null;
           getLeaflet().then(function (L) {
             if (!active || !L || !mapNode.current) {
-              if (active) setMapStatus('The online base map is unavailable. The synchronized data table remains available.');
+              if (active) {
+                setLeafletBlocked(!L);
+                setMapStatus('The online base map is unavailable, so the offline schematic is shown instead. The synchronized data table remains available.');
+              }
               return;
             }
+            if (active) setLeafletBlocked(false);
             mapNode.current.innerHTML = '';
             var center = imported && records.length ? [
               records.reduce(function (sum, record) { return sum + record.lat; }, 0) / records.length,
@@ -1649,6 +1753,82 @@
                 })))));
         }
 
+        // ── Offline schematic map ───────────────────────────────────────────────
+        // Shown when the learner chooses "no basemap", or when Leaflet could not be
+        // fetched. Same data, same choropleth classes, same colours as the Leaflet
+        // path (classColor is shared), drawn with zero network requests. It is
+        // labelled a schematic everywhere it appears — it preserves relative position
+        // but is not a projected navigation map, exactly as the printed report says
+        // of its own coordinate plot.
+        function schematicMap() {
+          var SW = 640, SH = 390;
+          var polyRings = [];
+          if (layers.polygons) {
+            geoFeatures.forEach(function (feature, featureIndex) {
+              featureOuterRings(feature).forEach(function (ring, ringIndex) {
+                polyRings.push({ key: 'f' + featureIndex + '-' + ringIndex, ring: ring, feature: feature });
+              });
+            });
+          }
+          var pointRows = layers.points ? records : [];
+          var allPoints = [];
+          polyRings.forEach(function (item) { allPoints = allPoints.concat(item.ring); });
+          pointRows.forEach(function (record) { allPoints.push({ lat: record.lat, lon: record.lon }); });
+          var proj = schematicProjection(allPoints, SW, SH);
+          if (!proj) {
+            return h('div', {
+              role: 'status',
+              style: { height: SH, borderRadius: 14, border: '1px solid #28516a', background: '#071827', color: '#a7c7d8', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 20, fontSize: 12 }
+            }, 'No mappable coordinates yet. Import points or a GeoJSON layer, or use the data table below.');
+          }
+          var grat = graticuleLines(proj.bounds);
+          var kids = [];
+          if (layers.grid) {
+            grat.lats.forEach(function (lat) {
+              var a = proj.project(proj.bounds.minLon, lat), b = proj.project(proj.bounds.maxLon, lat);
+              kids.push(h('line', { key: 'glat' + lat, x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.55 }));
+              kids.push(h('text', { key: 'glatT' + lat, x: 4, y: a.y - 3, fill: '#9fb6c5', fontSize: 9 }, lat.toFixed(2) + '°'));
+            });
+            grat.lons.forEach(function (lon) {
+              var a = proj.project(lon, proj.bounds.minLat), b = proj.project(lon, proj.bounds.maxLat);
+              kids.push(h('line', { key: 'glon' + lon, x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.55 }));
+              kids.push(h('text', { key: 'glonT' + lon, x: a.x + 3, y: SH - 5, fill: '#9fb6c5', fontSize: 9 }, lon.toFixed(2) + '°'));
+            });
+          }
+          polyRings.forEach(function (item) {
+            var d = item.ring.map(function (coordinate, index) {
+              var p = proj.project(coordinate[0], coordinate[1]);
+              return (index === 0 ? 'M' : 'L') + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
+            }).join(' ') + ' Z';
+            var value = (item.feature.properties || {})[geoMetric];
+            kids.push(h('path', {
+              key: 'poly' + item.key, d: d,
+              fill: geoMetric ? classColor(value, geoBreaks) : 'rgba(34,211,238,0.15)',
+              fillOpacity: 0.68, stroke: '#e2e8f0', strokeWidth: 1.2
+            }));
+          });
+          pointRows.forEach(function (record, index) {
+            var p = proj.project(record.lon, record.lat);
+            var value = valueOf(record, metric, imported);
+            kids.push(h('circle', {
+              key: 'pt' + index, cx: p.x, cy: p.y, r: 7,
+              fill: color(value, min, max), stroke: '#ffffff', strokeWidth: 2, fillOpacity: 0.85
+            }));
+          });
+          // North arrow + the honesty label, both decorative; the aria-label below
+          // carries the same facts, and the table twin carries the numbers.
+          kids.push(h('text', { key: 'north', x: SW - 14, y: 20, textAnchor: 'end', fill: '#cbd5e1', fontSize: 12, fontWeight: 800 }, 'N ↑'));
+          kids.push(h('text', { key: 'schem', x: 8, y: 16, fill: '#7dd3fc', fontSize: 10, fontWeight: 700 }, 'Schematic — not a projected navigation map'));
+          var summary = pointRows.length + ' points and ' + polyRings.length + ' boundaries drawn from latitude ' +
+            proj.bounds.minLat.toFixed(2) + ' to ' + proj.bounds.maxLat.toFixed(2) + ' and longitude ' +
+            proj.bounds.minLon.toFixed(2) + ' to ' + proj.bounds.maxLon.toFixed(2) +
+            '. Schematic view drawn on this device with no map-tile requests. Exact values are in the data table below.';
+          return h('svg', {
+            viewBox: '0 0 ' + SW + ' ' + SH, width: '100%', role: 'img', 'aria-label': summary,
+            style: { display: 'block', height: SH, borderRadius: 14, border: '1px solid #28516a', background: '#071827' }
+          }, kids);
+        }
+
         function analysisControls() {
           return h('section', { 'aria-labelledby': 'gis-analysis-controls-heading', style: { marginTop: 15, paddingTop: 14, borderTop: '1px solid #28516a' } },
             h('h3', { id: 'gis-analysis-controls-heading', style: { margin: '0 0 8px', color: '#fde68a', fontSize: 13 } }, 'Spatial analysis workbench'),
@@ -1733,7 +1913,12 @@
                   h('span', { style: { fontWeight: 700 } }, 'Basemap'),
                   h('select', { value: basemap, onChange: function (event) { setBasemap(event.target.value); persist('gisBasemap', event.target.value); }, style: control },
                     h('option', { value: 'street' }, 'Street map'),
-                    h('option', { value: 'satellite' }, 'Satellite imagery'))),
+                    h('option', { value: 'satellite' }, 'Satellite imagery'),
+                    h('option', { value: 'none' }, 'No basemap — offline schematic')),
+                  h('span', { style: { color: '#9fb6c5', fontSize: 10, lineHeight: 1.45 } },
+                    basemap === 'none'
+                      ? 'Drawn on this device. No map-tile or map-library requests are made.'
+                      : 'Street and satellite basemaps load Leaflet from unpkg.com and tiles from ' + (basemap === 'satellite' ? 'Esri' : 'OpenStreetMap') + '. Each pan or zoom tells that service which area you are viewing.')),
                 !imported && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
                   h('span', { style: { fontWeight: 700 } }, 'Thematic attribute'),
                   h('select', { value: metric, onChange: function (event) { setMetric(event.target.value); persist('gisMetric', event.target.value); }, style: control },
@@ -1763,7 +1948,9 @@
                 h('p', { style: { color: '#9fb6c5', fontSize: 10, lineHeight: 1.4 } }, 'Low values use lower pitches. The table is the equivalent non-audio view.'),
                 analysisControls()),
               h('div', null,
-                h('div', { ref: mapNode, tabIndex: 0, role: 'application', 'aria-label': 'Interactive GIS map. Use keyboard controls to pan and zoom. An equivalent table follows.', style: { height: 390, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#071827' } }),
+                offlineMap
+                  ? schematicMap()
+                  : h('div', { ref: mapNode, tabIndex: 0, role: 'application', 'aria-label': 'Interactive GIS map. Use keyboard controls to pan and zoom. An equivalent table follows.', style: { height: 390, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#071827' } }),
                 h('p', { role: 'status', style: { margin: '7px 2px 0', color: '#a7c7d8', fontSize: 11 } }, mapStatus),
                 geoValues.length > 0 ? h('div', { role: 'list', 'aria-label': classification + ' choropleth legend for ' + geoMetric, style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', color: '#b7d2df', fontSize: 10 } },
                   legendBounds.slice(0, -1).map(function (lower, index) {
@@ -2396,7 +2583,17 @@
                     h('option', { value: 3 }, '3 decimal places (about 100 m)'),
                     h('option', { value: 4 }, '4 decimal places (about 10 m)'))),
                 h('button', { type: 'button', onClick: roundPrivateCoordinates, disabled: !importedRows.length && !timeDataset.rows.length, style: Object.assign({}, primary, { marginTop: 10, opacity: importedRows.length || timeDataset.rows.length ? 1 : 0.55 }) }, 'Round imported + timeline points'),
-                h('p', { style: { margin: '10px 0 0', color: '#fcd34d', fontSize: 10, lineHeight: 1.45 } }, 'Rounding is applied to the current in-memory point datasets and will be reflected in future autosaves and downloads. GeoJSON boundaries are not changed. Review names and attributes separately.'))),
+                h('p', { style: { margin: '10px 0 0', color: '#fcd34d', fontSize: 10, lineHeight: 1.45 } }, 'Rounding is applied to the current in-memory point datasets and will be reflected in future autosaves and downloads. GeoJSON boundaries are not changed. Review names and attributes separately.'),
+                // This review used to cover only what leaves in the FILE. The basemap
+                // leaves the device too: every pan or zoom tells the tile service which
+                // area is being viewed, which for a class dataset is roughly where the
+                // points are. Named plainly, with the setting that avoids it.
+                h('div', { style: { marginTop: 12, paddingTop: 10, borderTop: '1px solid #2c5468' } },
+                  h('h3', { style: { margin: '0 0 5px', color: '#f0fdfa', fontSize: 13 } }, 'What leaves this device'),
+                  h('p', { role: 'status', style: { margin: 0, color: offlineMap ? '#86efac' : '#fde68a', fontSize: 11, lineHeight: 1.5 } },
+                    offlineMap
+                      ? 'Basemap: none. The schematic map is drawn here, so no map-tile or map-library requests are made. Your coordinates stay on this device unless you download or share a file.'
+                      : 'Basemap: ' + (basemap === 'satellite' ? 'Esri World Imagery' : 'OpenStreetMap') + '. Your coordinates are never uploaded, but the map library is fetched from unpkg.com and each pan or zoom tells the tile service which area you are viewing — for classroom points, that is approximately where they are. Choose "No basemap — offline schematic" on the Map tab to make no requests at all.')))),
             h('aside', { style: { padding: 12, borderLeft: '4px solid #f59e0b', background: '#2b2617', color: '#fde68a', borderRadius: 8, fontSize: 11, lineHeight: 1.5 } },
               h('strong', null, 'Before sharing: '), 'Project files may contain precise locations, names, notes, and joined attributes. Confirm consent, remove identifiers, aggregate where possible, and open the saved file once to verify its contents.'));
         }
