@@ -308,7 +308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         'Posted limit is a MAXIMUM under ideal conditions. Rain, fog, snow, night, traffic, and road damage all require reducing from that maximum.',
         'Basic speed law: drive at a speed that is reasonable and prudent for current conditions, regardless of the posted limit.',
         '3-second following rule: pick a fixed point ahead; after the car ahead passes it, you should reach it in 3+ seconds. 4+ in rain. 6+ in snow/ice.',
-        'Double your speed = quadruple your braking distance (v² physics). 60→120 mph = 4× the stopping distance, not 2×.',
+        'Double your speed = quadruple your BRAKING distance (v² physics). Total stopping distance grows a little less than 4×, because reaction distance only doubles — 60→120 mph is about 3× the total, and 4× the braking part.',
         'Reaction distance alone: ~1.5 seconds × speed. At 60 mph that\'s 132 ft before your brake even engages.',
         'Uphill: gravity helps you slow. Downhill: gravity adds to your stopping distance. Use engine braking (lower gear) on long descents.',
         'Posted special speed zones are enforced aggressively. Work-zone penalties may be doubled where signs or state law say so.'
@@ -717,7 +717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         return ice
           ? { title: 'Hard brake on ICE', advice: 'On ice, hard braking locks wheels and you lose steering. Pump or trust ABS, look 12-15 sec ahead, and increase following distance to 6+ seconds. The earlier you start braking, the gentler it can be.' }
           : wet
-          ? { title: 'Hard brake on WET pavement', advice: 'Wet roads need 4× normal stopping distance. Engine-brake on downgrades and start braking earlier. Hard brakes also waste fuel — every kinetic-energy hit becomes brake heat.' }
+          ? { title: 'Hard brake on WET pavement', advice: 'Wet roads need roughly 40% more total stopping distance — and about 70% more once the brakes are actually on. Engine-brake on downgrades and start braking earlier. Hard brakes also waste fuel — every kinetic-energy hit becomes brake heat.' }
           : { title: 'Hard brake', advice: 'Hard brakes mean you reacted late. Look 12-15 seconds ahead, follow at 3+ seconds, and cover the brake when approaching stale greens. Smooth braking saves fuel and brake wear.' };
       case 'tailgate':
         return wet
@@ -850,7 +850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     stopping: {
       title: 'Stopping Distance: Reaction + Braking',
       icon: '🛑',
-      content: "When you need to stop, two things happen. First, REACTION TIME (typically 1.5 seconds for an alert driver). During that time the car keeps moving at full speed — at 60 mph, that is 132 feet before the brakes even touch. Second, BRAKING DISTANCE — the tires slowing you down. Braking distance grows with v² (speed squared). The physics: KE = ½mv². Kinetic energy scales with the square of speed. At double the speed, you have 4× the energy to dissipate into heat through the brakes. This is why 'just a little faster' is so dangerous. At 30 mph total stopping distance is ≈75 ft. At 60 mph it is ≈240 ft. At 80 mph it is ≈380 ft — longer than a football field.",
+      content: "When you need to stop, two things happen. First, REACTION TIME (typically 1.5 seconds for an alert driver). During that time the car keeps moving at full speed — at 60 mph, that is 132 feet before the brakes even touch. Second, BRAKING DISTANCE — the tires slowing you down. Braking distance grows with v² (speed squared). The physics: KE = ½mv². Kinetic energy scales with the square of speed. At double the speed, you have 4× the energy to dissipate into heat through the brakes. This is why 'just a little faster' is so dangerous. At 30 mph total stopping distance is ≈110 ft. At 60 mph it is ≈300 ft. At 80 mph it is ≈475 ft — longer than a football field, end zones included.",
       formula: 'd_total = v·t_reaction + v² / (2·μ·g)',
       variables: 't_reaction ≈ 1.5 s, μ (friction coefficient) ≈ 0.7 dry / 0.4 wet / 0.1 ice, g = 9.81 m/s²',
       practice: 'Use the simulator Stopping Distance Lab — watch how friction changes when you switch weather from dry to rain to snow.'
