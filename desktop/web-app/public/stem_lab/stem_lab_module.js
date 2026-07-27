@@ -4052,6 +4052,14 @@
               { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', color: 'orange', ready: true },
               { id: 'geologyExplorer', icon: '⛰️', label: 'Geology Explorer', desc: 'Dig a 3D voxel cross-section of the crust — identify rocks, read the layers, and find the pluton that cuts them.', color: 'amber', ready: true },
               { id: 'astronomy', icon: '🔭', label: 'Night Sky & Astronomy', desc: 'Earth & Space Science: constellations (with Wabanaki + cross-cultural sky traditions), moon phases, planets, seasons, stars, galaxies, eclipses, observing practice, light-pollution awareness. NGSS MS-ESS1 + HS-ESS1. Place-based for Maine. Printable observing checklists.', color: 'indigo', ready: true },
+              // gisStudio registers itself in stem_tool_gisstudio.js but had NO tile here,
+              // so a finished, tested, mirrored tool was unreachable from the picker —
+              // check_stem_tile_catalog and stem_plugin_fallback_allowlist were both red
+              // on exactly this. Icon written as escapes (matching how the tool declares
+              // its own icon) so it cannot be re-encoded into mojibake.
+              // NB: no apostrophes in comments inside this array — the catalog gate
+              // tracks quote state as it scans and an unpaired one blinds it.
+              { id: 'gisStudio', icon: '🗺️', label: 'GIS Studio', desc: 'Build, compare, animate, save, and privacy-review accessible GIS projects: import CSV/GeoJSON, join attributes, choropleth breaks, buffers, change-over-time, and an accessible data-table twin.', color: 'teal', ready: true },
 
               { id: '_cat_AdvancedMathLogic', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', category: true },
               { id: 'geometryProver', icon: '\uD83D\uDCD0', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
@@ -5503,6 +5511,10 @@
             behaviorLab: true, schoolBehaviorToolkit: true, dataStudio: true, economicsLab: true, logicLab: true, timelineStudio: true,
             // Geography
             geoQuiz: true, geometryProver: true, geometryWorld: true,
+            // gisStudio: without this the new catalog tile would open a BLANK content
+            // area — the same failure the arccity note above records. A tile and a
+            // fallback entry are both required for a plugin-only tool to be reachable.
+            gisStudio: true,
             // Applied
             a11yAuditor: true, lifeSkills: true, physics: true, wave: true,
             worldBuilder: true,
