@@ -243,6 +243,48 @@ describe('sculpt measurements describe what is actually on the grid', () => {
   });
 });
 
+// WCAG 2.1.4 Character Key Shortcuts (Level A). The C/W/E/B/U/M and "/" shortcuts
+// were bound to `window` and guarded on tag name alone, so they acted from anywhere
+// on the page. The criterion allows a character-key shortcut only if it can be
+// turned off, remapped, or is active on focus — focus-scoping keeps the shortcuts.
+describe('geoShortcutAllowed — character keys act only on focus', () => {
+  // A stand-in for the tool root: contains() answers for a small tree.
+  const rootOf = (owned) => ({ contains: (n) => owned.indexOf(n) >= 0 });
+  const el = (tagName, extra) => Object.assign({ tagName, isContentEditable: false }, extra || {});
+
+  it('allows a keystroke on an element inside the sandbox', () => {
+    const canvas = el('CANVAS');
+    expect(P.geoShortcutAllowed(canvas, rootOf([canvas]))).toBe(true);
+  });
+
+  it('refuses a keystroke aimed anywhere outside the sandbox', () => {
+    // document.body is the target when nothing is focused — the old code acted.
+    const body = el('BODY');
+    const canvas = el('CANVAS');
+    expect(P.geoShortcutAllowed(body, rootOf([canvas]))).toBe(false);
+    expect(P.geoShortcutAllowed(el('BUTTON'), rootOf([canvas]))).toBe(false);
+  });
+
+  it('still refuses text-entry targets even inside the sandbox', () => {
+    ['INPUT', 'TEXTAREA', 'SELECT'].forEach((tag) => {
+      const node = el(tag);
+      expect(P.geoShortcutAllowed(node, rootOf([node]))).toBe(false);
+    });
+  });
+
+  it('refuses a contenteditable target, which the tag-name guard let through', () => {
+    const node = el('DIV', { isContentEditable: true });
+    expect(P.geoShortcutAllowed(node, rootOf([node]))).toBe(false);
+  });
+
+  it('refuses safely when the root is missing or malformed', () => {
+    const canvas = el('CANVAS');
+    expect(P.geoShortcutAllowed(canvas, null)).toBe(false);
+    expect(P.geoShortcutAllowed(canvas, {})).toBe(false);
+    expect(P.geoShortcutAllowed(null, rootOf([]))).toBe(false);
+  });
+});
+
 // The pure verdict is worth nothing if the student never sees it. These render the
 // real panel, the way geosandbox_panel_render does, and check the warning is on
 // screen BEFORE the press — a refusal that only arrives after the click teaches
@@ -282,6 +324,30 @@ describe('the panel warns before the press', () => {
     const html = spin([RECT_STRADDLE], 2, 'y');
     expect(html).toContain('straddles the spin axis');
     expect(html).toContain('X');   // spinning about X, the face is wholly on one side
+  });
+
+  it('advertises only the shortcuts that work in the current mode', () => {
+    const overlay = (m) => {
+      resetStemLab();
+      loadTool('stem_lab/stem_tool_geosandbox.js', 'geoSandbox');
+      return renderTool('geoSandbox', {
+        _threeLoaded: true,
+        geoSandbox: { mode: m, construction: { objects: [RECT_FLAT], selection: 1 } },
+      });
+    };
+    // "U: undo" was shown in sculpt mode while U was bound for stretch alone.
+    // U is now bound there, so the claim is true rather than the claim removed.
+    expect(overlay('sculpt')).toContain('U: undo');
+    expect(overlay('stretch')).toContain('U: undo');
+    // Stretch owns [ ] and Delete; the old shared string never mentioned them.
+    expect(overlay('stretch')).toContain('Delete: remove');
+    // Single mode has no undo shortcut, and must not claim one.
+    expect(overlay('single')).not.toContain('U: undo');
+    expect(overlay('single')).toContain('1-7: shapes');
+    // And every mode says the shortcuts are focus-scoped.
+    ['single', 'stretch', 'sculpt'].forEach((m) => {
+      expect(overlay(m)).toContain('has focus');
+    });
   });
 
   it('does not warn when Revolve is not the active verb', () => {

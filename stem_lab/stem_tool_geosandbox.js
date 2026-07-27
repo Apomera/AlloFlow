@@ -1217,6 +1217,21 @@ window.StemLab = window.StemLab || {
   // already greyed out for taper/revolve on a non-rectangle; the keyboard and VR
   // paths call performStretch() directly and used to silently do a plain stretch
   // instead, so the same rule has to live somewhere both can read.
+  // ── May a bare-letter shortcut act on this keystroke? (PURE) ──
+  // WCAG 2.1.4 Character Key Shortcuts (Level A): a shortcut using only a
+  // character key must be switchable off, remappable, or ACTIVE ONLY ON FOCUS.
+  // These were bound to `window` and guarded on nothing but the tag name, so C, W,
+  // E, B, U, M and / acted from anywhere on the page — including while a speech-
+  // recognition user was dictating into other chrome, which is the exact scenario
+  // the criterion exists for. Focus-scoping is the third option, and the one that
+  // keeps the shortcuts. Kept pure so the rule is testable without a live DOM.
+  function geoShortcutAllowed(target, root) {
+    if (!target) return false;
+    var tag = target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return false;
+    if (target.isContentEditable) return false;
+    return !!(root && typeof root.contains === 'function' && root.contains(target));
+  }
   function geoVerbApplies(sel, verb) {
     if (!sel) return false;
     if (verb === 'taper' || verb === 'revolve') return sel.type === 'rect';
@@ -2185,6 +2200,7 @@ window.StemLab = window.StemLab || {
       stretchPoint: stretchPoint, stretchSegment: stretchSegment, stretchRect: stretchRect,
       taperRect: taperRect, taperCorners: taperCorners, geoPyramidSurfaceArea: geoPyramidSurfaceArea,
       geoEffectiveAxis: geoEffectiveAxis, geoVerbApplies: geoVerbApplies,
+      geoShortcutAllowed: geoShortcutAllowed,
       revolveRect: revolveRect, revolutionVolume: revolutionVolume,
       revolutionValidity: revolutionValidity, revolutionAxisOptions: revolutionAxisOptions,
       revolutionTriangles: revolutionTriangles,
@@ -3181,7 +3197,7 @@ window.StemLab = window.StemLab || {
       // the handler when the tool unmounts.
       React.useEffect(function() {
         var handler = function(e) {
-          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+          if (!geoShortcutAllowed(e.target, document.getElementById('allo-geo-sandbox'))) return;
           var key = e.key;
           if (mode === 'stretch' && (key === '[' || key === ']')) {
             e.preventDefault(); cycleSelection(key === '[' ? -1 : 1); return;
@@ -3199,7 +3215,9 @@ window.StemLab = window.StemLab || {
             case 'w': toggleWireframe(); break;
             case 'e': doExportSTL(); break;
             case 'b': updExt({ showBadges: !showBadges }); break;
-            case 'u': if (mode === 'stretch') doStretchUndo(); break;
+            // The overlay advertised "U: undo" in sculpt mode too, where it did
+            // nothing — undoSculptEdit existed but was never bound to a key.
+            case 'u': if (mode === 'stretch') doStretchUndo(); else if (mode === 'sculpt') undoSculptEdit(); break;
             case 'm':
               upd('mode', mode === 'single' ? 'stretch' : 'single');
               if (announceToSR) announceToSR((mode === 'single' ? 'Stretch' : 'Single shape') + ' mode');
@@ -3209,7 +3227,9 @@ window.StemLab = window.StemLab || {
         };
         window.addEventListener('keydown', handler);
         return function() { window.removeEventListener('keydown', handler); };
-      }, [mode, shape, dims, shapeColor, wireframe, showBadges, construction, history.length]);
+        // sculptUndo/selPart added with the sculpt undo binding: the handler reads
+        // them, and setSculptUndo always makes a new array, so identity tracks it.
+      }, [mode, shape, dims, shapeColor, wireframe, showBadges, construction, history.length, sculptUndo, selPart]);
 
       // ── Three.js scene update effect ──
       React.useEffect(function() {
@@ -5000,9 +5020,15 @@ window.StemLab = window.StemLab || {
             })(),
             // Keyboard shortcuts overlay
             h('div', { className: 'absolute top-2 right-2 text-[11px] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-md leading-relaxed' },
+              // Only what actually works in THIS mode: sculpt advertised "U: undo"
+              // while U was bound for stretch alone, and stretch owns [ ] / Delete.
               mode === 'single'
                 ? '1-7: shapes \u2022 C: challenge \u2022 W: wireframe \u2022 E: export \u2022 B: badges \u2022 M: mode \u2022 /: AI'
-                : 'M: mode \u2022 U: undo \u2022 B: badges \u2022 /: AI'
+                : mode === 'stretch'
+                  ? '[ ]: select \u2022 Delete: remove \u2022 U: undo \u2022 C: challenge \u2022 B: badges \u2022 M: mode \u2022 /: AI'
+                  : 'U: undo \u2022 C: challenge \u2022 B: badges \u2022 /: AI',
+              h('span', { className: 'block text-slate-400' },
+                t('stem.geosandbox.shortcut_focus_note', '(these act while the sandbox has focus)'))
             )
           )
         ),
