@@ -1639,7 +1639,7 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
     expect(src).toContain('id=\\"clab-seatSel\\"');
     expect(src).toContain('>🚃 Back row</option>');
     // the camera sits in the chosen row, and the HUD names it
-    expect(src).toContain('frameAt(sim.S + 1.4 - activeSeat() * CAR_GAP, _p, _t, _u);');
+    expect(src).toContain('frameAt(sim.S + (camSeat ? -0.2 : 1.4) - camSeat * CAR_GAP, _p, _t, _u);');
     expect(src).toContain("hud.gvLabel.textContent = seat === 0 ? 'Seat g (vertical)' : 'Seat g · ' + seatLabel(seat, TRAIN_CARS)");
     // the choice survives a reload, and can never point past the end of the train
     expect(src).toContain("localStorage.setItem('coaster_lab_seat', String(rideSeat))");
@@ -1657,6 +1657,36 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
     const hud = src.slice(s, src.indexOf('\n}', src.indexOf('drawMiniMap();', s)));
     expect(hud).toContain('// the reference point itself — left bit-for-bit as it always was');
     expect(hud).toContain('gV = tr0.upY + sim.v * sim.v * tr0.kUp / G0;');
+  });
+
+  it.each(TOOL_PATHS)('%s: the riders are posed by their own row, and stand down when told to', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('function updateRiders(){');
+    const e = src.indexOf('\n}', src.indexOf('r.arms[1].rotation.x = -armUp;', s));
+    expect(s).toBeGreaterThan(-1);
+    const body = src.slice(s, e);
+    // each car reads ITS OWN place on the track, at the shared rigid-train speed
+    expect(body).toContain('const trc = trackAt(sim.S - c * CAR_GAP);');
+    expect(body).toContain('trainSpeed2(trackAt(sim.S).y)');
+    // lift out of the seat, pressed into it, arms up, lean — all from the forces
+    expect(body).toContain('(0.35 - gV)');
+    expect(body).toContain('(gV - 1.6)');
+    expect(body).toContain('(0.75 - gV)');
+    expect(body).toContain('-gLat * 0.17');
+    // reduced motion and a stationary train both relax the pose; FX Lite hides them
+    expect(body).toContain("const still = reducedMotion() || !track || Math.abs(sim.v) < 0.5;");
+    expect(body).toContain('const show = !fxLite;');
+    // a rear row sits at its own seat and higher, or it stares into the car ahead
+    expect(src).toContain('const camSeat = activeSeat();');
+    expect(src).toContain('frameAt(sim.S + (camSeat ? -0.2 : 1.4) - camSeat * CAR_GAP, _p, _t, _u);');
+    // the train shows the restraint the measured forces demand
+    expect(src).toContain('function syncRestraintStyle(){');
+    expect(src).toContain("restraintSpec(lastTele).key === 'harness'");
+    expect(src).toContain('for(const b of restraintBars) b.visible = !wantsHarness;');
+    // a classroom rides it, so the crowd is not one person repeated
+    expect(src).toContain('const RIDER_SKIN = [');
+    expect(src).toContain('const RIDER_SHIRT = [');
+    expect(src).not.toContain('debugScene');   // no debug scaffolding shipped
   });
 
   it.each(TOOL_PATHS)('%s: three missions are graded row by row', (p) => {

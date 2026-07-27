@@ -1019,7 +1019,11 @@ scene.add(trackGroup, supportGroup, markerGroup, sectionGroup, safetyGroup, hand
 /* train: shaped cars, wheels, headlights on the lead car, brake light aft */
 const trainGroup = new THREE.Group();
 const cars = [];
-const trainWheels = [], restraintBars = [];
+const trainWheels = [], restraintBars = [], harnessRigs = [], riderCars = [], allRiders = [];
+/* A classroom rides this thing, so the crowd looks like one. */
+const RIDER_SKIN = [0xf0c8a0, 0x9c6b45, 0x5d3a24, 0xe8b48c, 0x7a4b2e, 0xc98f63];
+const RIDER_SHIRT = [0x3f8fd2, 0xe5484d, 0x59c98d, 0xc05fa0, 0xf2c14e, 0x8b6ce8];
+let riderSeed = 0;
 {
   const wheelGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.12, 10).rotateZ(Math.PI / 2);
   const wheelMat = new THREE.MeshStandardMaterial({ color: 0x161d26, metalness: 0.4, roughness: 0.6 });
@@ -1062,6 +1066,55 @@ const trainWheels = [], restraintBars = [];
       tail.position.set(0, 0.42, -1.05);
       car.add(tail);
     }
+    /* An over-the-shoulder harness, built alongside the lap bar and shown only
+       when the ride's own forces call for one. Same pivot, same swing. */
+    const harness = new THREE.Group();
+    harness.position.set(0, 0.84, -0.6);
+    for(const hx of [-0.24, 0.24]){
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.62, 0.1), restraintMat);
+      post.position.set(hx, 0.31, 0.12);
+      post.rotation.x = 0.22;
+      harness.add(post);
+    }
+    const yoke = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.1, 0.1), restraintMat);
+    yoke.position.set(0, 0.6, 0.26);
+    harness.add(yoke);
+    harness.visible = false;
+    car.add(harness);
+    harnessRigs.push(harness);
+
+    /* Two riders per car. They are the readout: in airtime they come off the
+       seat with their arms up, under heavy g they are pressed down into it, and
+       in a hard turn they lean. Each row answers to its OWN seat force. */
+    const rowRiders = [];
+    for(const rx of [-0.29, 0.29]){
+      const who = riderSeed++;
+      const g = new THREE.Group();
+      g.position.set(rx, 0.86, -0.18);
+      const skin = new THREE.MeshStandardMaterial({ color: RIDER_SKIN[who % RIDER_SKIN.length], roughness: 0.85 });
+      const shirt = new THREE.MeshStandardMaterial({ color: RIDER_SHIRT[who % RIDER_SHIRT.length], roughness: 0.8 });
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.4, 0.22), shirt);
+      torso.position.y = 0.2;
+      torso.castShadow = true;
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.115, 10, 8), skin);
+      head.position.y = 0.52;
+      head.castShadow = true;
+      g.add(torso, head);
+      const arms = [];
+      for(const ax of [-0.19, 0.19]){
+        // pivot at the shoulder so the arm swings from hanging down to overhead
+        const armGeo = new THREE.BoxGeometry(0.075, 0.34, 0.075).translate(0, -0.17, 0);
+        const arm = new THREE.Mesh(armGeo, skin);
+        arm.position.set(ax, 0.36, 0);
+        g.add(arm);
+        arms.push(arm);
+      }
+      car.add(g);
+      rowRiders.push({ g, arms, baseY: g.position.y });
+      allRiders.push(g);
+    }
+    riderCars.push(rowRiders);
+
     for(const dz of [-0.68, 0.68]) for(const dx of [-0.62, 0.62]){
       const w = new THREE.Mesh(wheelGeo, wheelMat);
       w.position.set(dx, 0.05, dz);
@@ -2713,6 +2766,7 @@ function renderReport(tele){
   html += rating('Intensity',  intensity,  adj(intensity,  ['mild', 'moderate', 'strong', 'extreme', 'brutal']));
   html += rating('Nausea',     nausea,     adj(nausea,     ['calm', 'queasy', 'spinny', 'rough', 'lawsuit']));
   html += '</div>';
+  syncRestraintStyle();
   html += renderRiderSafety(tele);
   html += renderSeatCard(tele);
   const insights = buildRideInsights(tele, sc);
@@ -5421,6 +5475,50 @@ function updateTrainPresentation(){
   for(const restraint of restraintBars){
     restraint.rotation.x += (restraintTarget - restraint.rotation.x) * blend;
   }
+  for(const harness of harnessRigs){
+    harness.rotation.x += ((sim.running ? 0.1 : -0.5) - harness.rotation.x) * blend;
+  }
+  updateRiders();
+}
+/* Show the restraint the ride's own measured forces demand: a lap bar until the
+   design earns a harness. The Report explains why; the train just shows it. */
+function syncRestraintStyle(){
+  const wantsHarness = !!(lastTele && restraintSpec(lastTele).key === 'harness');
+  for(const h of harnessRigs) h.visible = wantsHarness;
+  for(const b of restraintBars) b.visible = !wantsHarness;
+}
+/* Riders that answer to the physics. Each car reads ITS OWN seat force, so the
+   row-by-row model is visible in the 3-D view and not only in the report: the
+   back row's arms fly up over a lopsided crest while the front row is already
+   being pressed back down into the seat. */
+function updateRiders(){
+  const show = !fxLite;
+  for(const r of allRiders) if(r.visible !== show) r.visible = show;
+  if(!show || !riderCars.length) return;
+  // Posed whenever the train is actually moving through the track — which keeps
+  // the pose held during a Ride & Solve freeze and while scrubbing the telemetry
+  // replay, and relaxes it in the station.
+  const still = reducedMotion() || !track || Math.abs(sim.v) < 0.5;
+  const v2 = still ? 0 : trainSpeed2(trackAt(sim.S).y);
+  for(let c = 0; c < riderCars.length; c++){
+    let gV = 1, gLat = 0;
+    if(!still){
+      const trc = trackAt(sim.S - c * CAR_GAP);
+      gV = trc.upY + v2 * trc.kUp / G0;
+      gLat = trc.sideY + v2 * trc.kSide / G0;
+    }
+    const clamp01 = (x, hi) => Math.max(0, Math.min(hi, x));
+    const lift = clamp01((0.35 - gV) * 0.10, 0.13);          // out of the seat
+    const press = clamp01((gV - 1.6) * 0.020, 0.05);         // squashed into it
+    const armUp = clamp01((0.75 - gV) * 1.5, 2.3);           // hands up!
+    const lean = Math.max(-0.24, Math.min(0.24, -gLat * 0.17));
+    for(const r of riderCars[c]){
+      r.g.position.y = r.baseY + lift - press;
+      r.g.rotation.z = lean;
+      r.arms[0].rotation.x = -armUp;
+      r.arms[1].rotation.x = -armUp;
+    }
+  }
 }
 function updateSpeedStreaks(){
   const v = Math.abs(sim.v);
@@ -5457,8 +5555,12 @@ function updateParkAtmosphere(dt){
 }
 function placeCamera(){
   if(camMode === 'onboard'){
-    frameAt(sim.S + 1.4 - activeSeat() * CAR_GAP, _p, _t, _u);
-    camera.position.copy(_p).addScaledVector(_u, 1.25).addScaledVector(_t, 0.2);
+    // The front row rides on the nose. Any other row sits back at its own seat
+    // and a little higher, so it looks OVER the car ahead instead of into the
+    // back of it — the cars are 2 m long in a 2.6 m gap.
+    const camSeat = activeSeat();
+    frameAt(sim.S + (camSeat ? -0.2 : 1.4) - camSeat * CAR_GAP, _p, _t, _u);
+    camera.position.copy(_p).addScaledVector(_u, camSeat ? 1.78 : 1.25).addScaledVector(_t, 0.2);
     if(sim.running && !sim.paused && !reducedMotion()){
       const live = trackAt(sim.S), force = Math.abs(live.upY + sim.v * sim.v * live.kUp / G0 - 1);
       const shake = Math.min(0.12, Math.abs(sim.v) * 0.0018 + force * 0.012);
@@ -5749,6 +5851,7 @@ rootEl._lab = {
   /* park the train at arc length s for deterministic screenshots */
   place: (s, v) => { sim.S = s; if(v != null) sim.v = v; placeTrain(); updateHUD(); },
   setCam: mode => { camMode = mode; },
+  settleCam: (n = 60) => { for(let i = 0; i < n; i++) placeCamera(); },
   setProp: (mode, accel) => {
     design.propulsion.mode = mode;
     if(accel != null) design.propulsion.accel = accel;
