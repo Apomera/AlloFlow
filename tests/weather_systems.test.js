@@ -2590,6 +2590,54 @@ describe('Weather Systems concept diagrams', () => {
     expect(html).toContain('Air sinks and spreads outward.');
   });
 
+  it('teaches the same hazard-to-action pairing the forecast is scored against', () => {
+    const { readinessActionForHazard } = window.WeatherSystemsKernel;
+    const html = render({ tab: 'forecast', scenario: 'coldFront', simHour: 4 });
+    const guide = (html.match(/data-weather-readiness-guide[\s\S]*?National Weather\s*Service warnings/) || [''])[0];
+    expect(guide).toBeTruthy();
+    // Pin the pairing itself. Asserting only that the guide agrees with the function is
+    // vacuous — the guide is rendered FROM the function, so both move together and the
+    // check can never fail. (Confirmed by mutating lightning to 'shelter': it still passed.)
+    const expected = {
+      none: ['normal', 'Continue normal activities'],
+      lightning: ['indoors', 'Move activities indoors'],
+      flood: ['avoidTravel', 'Avoid flooded routes and low crossings'],
+      ice: ['delayTravel', 'Delay travel for icy conditions'],
+      highWind: ['shelter', 'Shelter away from windows'],
+    };
+    Object.keys(expected).forEach((hazard) => {
+      const [actionId, actionText] = expected[hazard];
+      expect(readinessActionForHazard(hazard), hazard).toBe(actionId);
+      expect(guide, hazard + ' -> ' + actionId).toContain(actionText);
+    });
+    // And pin the wiring, so the guide keeps deriving from the scorer rather than
+    // hardcoding a second copy that could later disagree with it.
+    const { readFileSync } = require('node:fs');
+    const { resolve } = require('node:path');
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weathersystems.js'), 'utf8');
+    expect(source).toContain('var actionId = readinessActionForHazard(row.hazard);');
+  });
+
+  it('explains why each action follows, without revealing this scenario’s hazard', () => {
+    const html = render({ tab: 'forecast', scenario: 'summerStorm', simHour: 3 });
+    const guide = (html.match(/data-weather-readiness-guide[\s\S]*?National Weather\s*Service warnings/) || [''])[0];
+    // Reasoning, not just a lookup table.
+    expect(guide).toContain('Flying debris and glass are the risk');
+    expect(guide).toContain('hazardous at surprisingly shallow depths');
+    // Identifying the hazard from evidence is the task, so no row is pre-marked as current.
+    expect(guide).not.toContain('this scenario');
+    // Real safety decisions are not this lab's call, and it says so.
+    expect(guide).toContain('district emergency plan');
+  });
+
+  it('drops the reasoning column for the youngest band but keeps the pairing', () => {
+    const young = render({ tab: 'forecast', scenario: 'coldFront' }, 'Kindergarten');
+    const guide = (young.match(/data-weather-readiness-guide[\s\S]*?National Weather\s*Service warnings/) || [''])[0];
+    expect(guide).toContain('Move activities indoors');
+    expect(guide).not.toContain('Flying debris and glass are the risk');
+    expect(guide).toContain('Different weather needs a different safe choice.');
+  });
+
   it('picks a cloud family that matches the weather the scenario produces', () => {
     const { likelyCloudFamily, resolvedState, projectConditions, cloudFamilyById } = window.WeatherSystemsKernel;
     const pick = (scenario, simHour) => {

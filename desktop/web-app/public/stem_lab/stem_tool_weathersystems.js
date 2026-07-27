@@ -4998,6 +4998,57 @@ var geographyGroup = new THREE.Group();
       // The map draws H and L and the station model asks learners to read a wind shift, but
       // nothing in the tool ever said why wind and pressure are related at all. This is the
       // plan view: air spirals into a low and rises, and sinks out of a high.
+      // The hazard-to-action pairing was a bare lookup with no explanation anywhere, so the
+      // readiness question read as a guess. This shows every pairing and, more importantly,
+      // why each one follows from what that hazard actually does to people outdoors. It
+      // deliberately does not mark which hazard is present: identifying that from the
+      // evidence is the task.
+      function readinessDecisionGuide() {
+        // The pairing is read from the same function the scorer uses, so the guide cannot
+        // teach one answer while the forecast is marked against another.
+        var actionText = {
+          normal: 'Continue normal activities',
+          monitor: 'Monitor conditions and updates',
+          indoors: 'Move activities indoors',
+          avoidTravel: 'Avoid flooded routes and low crossings',
+          delayTravel: 'Delay travel for icy conditions',
+          shelter: 'Shelter away from windows'
+        };
+        var rows = [
+          { hazard: 'none', icon: '☀️', label: 'No major hazard', why: 'Nothing in the evidence threatens people outdoors.', tint: seriesColor.windSpeed },
+          { hazard: 'lightning', icon: '⚡', label: 'Lightning', why: 'Open ground and tall objects are the danger, so the response is shelter in a building.', tint: '#f59e0b' },
+          { hazard: 'flood', icon: '🌊', label: 'Flooding', why: 'Moving water is hazardous at surprisingly shallow depths, so the response is about routes rather than buildings.', tint: seriesColor.precipPotential },
+          { hazard: 'ice', icon: '🧊', label: 'Ice or slippery travel', why: 'Surfaces stay dangerous until treatment or warming, so timing is the lever.', tint: seriesColor.dewPoint },
+          { hazard: 'highWind', icon: '💨', label: 'Strong wind', why: 'Flying debris and glass are the risk, so indoors alone is not enough.', tint: seriesColor.seaLevelPressure }
+        ].map(function (row) {
+          var actionId = readinessActionForHazard(row.hazard);
+          return Object.assign({}, row, { actionId: actionId, action: actionText[actionId] || actionId });
+        });
+        return h('div', { className: 'mt-3 rounded-xl border p-3 ' + (dark ? 'border-slate-700 bg-slate-950/60' : 'border-sky-200 bg-sky-50'), 'data-weather-readiness-guide': true },
+          h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + skyAccentClass }, band === 'K-2' ? 'What should we do?' : 'Matching a hazard to an action'),
+          h('p', { className: 'mt-1 text-xs ' + mutedClass }, band === 'K-2' ? 'Different weather needs a different safe choice.' : 'Each hazard calls for a different response because each one puts people at risk in a different way. Decide which hazard the evidence supports, then match it.'),
+          h('ul', { className: 'mt-2 space-y-1.5' }, rows.map(function (row) {
+            // The arrow rides with the action text rather than living in its own column, so
+            // the hazard-to-action link survives when the row stacks on a narrow screen.
+            return h('li', { key: row.hazard, className: 'grid items-start gap-x-3 gap-y-1 rounded-lg p-2 sm:grid-cols-[180px_minmax(0,1fr)] ' + (dark ? 'bg-slate-900/70' : 'bg-white') },
+              h('span', { className: 'flex items-center gap-1.5 text-xs font-black' },
+                h('span', { 'aria-hidden': 'true' }, row.icon),
+                h('span', { className: 'inline-block h-2.5 w-2.5 shrink-0 rounded-full', style: { backgroundColor: row.tint }, 'aria-hidden': 'true' }),
+                row.label
+              ),
+              h('span', null,
+                h('span', { className: 'block text-xs font-bold' },
+                  h('span', { className: 'mr-1 ' + mutedClass, 'aria-hidden': 'true' }, '→'),
+                  row.action
+                ),
+                band !== 'K-2' && h('span', { className: 'mt-0.5 block text-[11px] leading-relaxed ' + mutedClass }, row.why)
+              )
+            );
+          })),
+          h('p', { className: 'mt-2 text-[11px] leading-relaxed ' + mutedClass }, 'These are classroom reasoning pairings for this lab. Real school decisions follow your district emergency plan and official National Weather Service warnings.')
+        );
+      }
+
       function pressureWindDiagram() {
         var activeCentre = scenario.id === 'fair' ? 'high' : 'low';
         var centres = [
@@ -7166,7 +7217,8 @@ var geographyGroup = new THREE.Group();
                   { value: 'avoidTravel', label: 'Avoid flooded routes and low crossings' },
                   { value: 'delayTravel', label: 'Delay travel for icy conditions' },
                   { value: 'shelter', label: 'Shelter away from windows' }
-                ], function (event) { update({ readinessAction: event.target.value, forecastResult: null }); })
+                ], function (event) { update({ readinessAction: event.target.value, forecastResult: null }); }),
+                readinessDecisionGuide()
               ),
               h('div', { className: 'mt-4' },
                 selectField('forecast-confidence', '4. How confident are you?', d.forecastConfidence, [
