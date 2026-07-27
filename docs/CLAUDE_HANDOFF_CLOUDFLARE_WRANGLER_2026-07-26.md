@@ -1,9 +1,87 @@
 # Claude handoff: deploying AlloFlow to Cloudflare Pages with Wrangler
 
 Date: 2026-07-26
+Last verified on this computer: 2026-07-27
 Repository: `C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated`
 Cloudflare Pages project: `alloflow-cdn`
 Production URL: <https://alloflow-cdn.pages.dev/app/>
+
+## Read this first: there are three different release paths
+
+Do not use “Cloudflare deploy” as if it were one interchangeable command:
+
+| Goal | Correct path | What it changes |
+| --- | --- | --- |
+| Normal full AlloFlow release | `.\deploy.ps1 "message"` from PowerShell, which runs `deploy.sh` through Git Bash | Commits only the files already staged at Step 1, pushes GitHub, builds/mirrors the app, may deploy an explicitly configured school Firebase target, creates a post-build commit, pushes GitHub, and mirrors Codeberg. Cloudflare Pages normally rebuilds from the GitHub push. |
+| Direct static-site recovery/fallback | x64 Node plus `wrangler pages deploy` against a commit-derived artifact | Publishes one complete immutable deployment to the existing `alloflow-cdn` Pages project. It does not build, test, commit, push, mirror, or deploy the catalog Worker. |
+| Catalog/search submission Worker | Wrangler from `catalog/cloudflare-worker/` | Updates the separate `alloflow-catalog-submit` Worker and its bindings. This is not an app/Pages deployment. |
+
+`deploy.sh` does **not** call Wrangler. Its Cloudflare path is the GitHub
+integration: push `main`, then Cloudflare builds asynchronously. The direct
+Wrangler Pages command documented below was the recovery path used when that
+Cloudflare build was failing.
+
+The direct command is currently a fallback, not the first choice. A read-only
+Wrangler check on 2026-07-27 showed a newer successful production deployment
+for Git source `01300ac`, which means the Git-integrated path had resumed
+working after the 2026-07-26 incident.
+
+## Current shared-worktree stop sign
+
+This is a time-stamped diagnostic, not a deploy instruction. At the
+2026-07-27 verification:
+
+```text
+local HEAD:  9f81bf0e87461be7491914e4cefca7af1ca5c06f
+origin/main: 01300aca1e2bbee02b843ff6e04832ad4d390cfb
+backup/main: 9f4f58962ec3a6690ce48d1074bbb5dec5198223
+tracked edits: present
+untracked files: present
+```
+
+Therefore the shared checkout was **not ready to deploy** at that moment.
+Always rerun the checks below; do not assume these hashes or the dirty/clean
+state are still current.
+
+This matters even if `git diff --cached` is empty. `deploy.sh` builds from the
+working tree and Step 6 deliberately stages broad generated areas, including
+`desktop/web-app/public/` and `app/`. Running it while agents are editing can
+accidentally absorb unfinished work into its post-build commit.
+
+Never try to “make the tree clean” with another agent's files. In this shared
+checkout, do not use:
+
+```text
+git add .
+git add -A
+git commit -a
+git stash
+git reset --hard
+git clean
+git checkout -- <path>
+```
+
+Wait until every active agent has finished its section. Review ownership, then
+stage and commit exact paths for one coherent section at a time:
+
+```powershell
+git status --short
+git diff --cached --name-status
+git diff --name-status
+git ls-files --others --exclude-standard
+
+git add -- path/to/exact-file.js path/to/exact-test.js
+git diff --cached --check
+git diff --cached --stat
+git diff --cached
+git commit -m "scope: precise description"
+```
+
+Repeat for each finished section. Only start the release when
+`git status --porcelain=v1 --untracked-files=no` prints nothing and the
+remaining untracked files have been explicitly reviewed as non-release
+artifacts. Do not broadly commit logs, caches, editor lock files, or unknown
+files merely to make `git status` shorter.
 
 ## Outcome of the 2026-07-26 deployment
 
@@ -30,6 +108,53 @@ Local `HEAD`, GitHub `origin/main`, and Codeberg `backup/main` all matched the
 full commit above. There were no staged or unstaged tracked changes. Existing
 untracked logs, caches, editor files, and historical duplicates were preserved
 and were not included in the deployment.
+
+## Do not split a Pages site into sequential uploads
+
+Wrangler's Pages upload accepts one folder of prebuilt assets and creates one
+deployment from that folder. Do not try to deploy “part 1” and then “part 2”:
+the second command is another deployment, not an append to the first. Omitting
+files from its folder risks producing an incomplete site.
+
+Wrangler already hashes, batches, and deduplicates assets during one upload.
+Let it handle the transfer. If the foreground process is too long for the
+calling terminal, use the single background-process procedure in section 6;
+do not launch duplicate or partial uploaders.
+
+On 2026-07-27, both local `HEAD` and `origin/main` contained 7,930 tracked files
+under `desktop/web-app/public`, so the actual commit-derived Pages artifact was
+not an 11,022-file working-tree dump. Always count the exact selected commit:
+
+```powershell
+$Repo = 'C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated'
+$Commit = (git -C $Repo rev-parse HEAD).Trim()
+git -C $Repo ls-tree -r --name-only $Commit -- desktop/web-app/public |
+  Measure-Object
+```
+
+Cloudflare's current documented Wrangler limit is 20,000 files and 25 MiB per
+file on the Free plan; qualifying paid plans can allow 100,000 files. Verify
+the current limits before a future large upload:
+
+- [Cloudflare Pages limits](https://developers.cloudflare.com/pages/platform/limits/)
+- [Cloudflare Pages Direct Upload](https://developers.cloudflare.com/pages/get-started/direct-upload/)
+
+If the commit-derived artifact exceeds a limit, stop and redesign the asset
+layout or move appropriate large assets to R2. Do not “solve” the limit by
+publishing an incomplete sequence of directories.
+
+## Local helper-script status
+
+At the 2026-07-27 snapshot, `dev-tools/wrangler.cjs` and
+`dev-tools/cf_worker.cjs` existed only as untracked files in the shared
+checkout. They may belong to another agent's unfinished Worker work. Do not
+stage, commit, or rely on either helper for production until its owner has
+finished it and it has been reviewed and committed.
+
+The Pages procedure in this handoff intentionally calls the known x64 Node and
+Wrangler installations directly, so it does not depend on those helpers. If a
+later commit adopts a wrapper, inspect that committed version and its history
+before substituting it for the commands here.
 
 ## The Windows ARM64 issue
 
