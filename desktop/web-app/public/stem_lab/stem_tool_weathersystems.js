@@ -4995,6 +4995,102 @@ var geographyGroup = new THREE.Group();
         );
       }
 
+      // The map draws H and L and the station model asks learners to read a wind shift, but
+      // nothing in the tool ever said why wind and pressure are related at all. This is the
+      // plan view: air spirals into a low and rises, and sinks out of a high.
+      function pressureWindDiagram() {
+        var activeCentre = scenario.id === 'fair' ? 'high' : 'low';
+        var centres = [
+          {
+            id: 'low', letter: 'L', cx: 186, tint: seriesColor.precipPotential,
+            title: 'Low pressure', spin: 'counterclockwise', flow: 'inward',
+            vertical: 'Air converges and rises.', weather: 'Rising air cools, water vapour condenses: cloud and precipitation are favoured.'
+          },
+          {
+            id: 'high', letter: 'H', cx: 534, tint: seriesColor.temperature,
+            title: 'High pressure', spin: 'clockwise', flow: 'outward',
+            vertical: 'Air sinks and spreads outward.', weather: 'Sinking air warms and dries, which suppresses cloud growth: skies tend to clear.'
+          }
+        ];
+        var cy = 128;
+        function spiralArrows(centre) {
+          var inward = centre.id === 'low';
+          return [0, 1, 2, 3].map(function (i) {
+            var angle = -Math.PI / 2 + i * Math.PI / 2 + (inward ? 0.5 : -0.5);
+            var outer = 104;
+            var inner = 58;
+            var startR = inward ? outer : inner;
+            var endR = inward ? inner : outer;
+            // Tangential offset is what turns a straight in/outflow into a spiral. SVG y
+            // points down, so increasing angle sweeps CLOCKWISE on screen: a Northern
+            // Hemisphere low (counterclockwise from above) therefore needs a negative
+            // offset, and a high a positive one. Getting this sign backwards draws
+            // anticyclonic flow around a low, which is the opposite of the physics.
+            var swirl = inward ? -0.62 : 0.62;
+            var x1 = centre.cx + Math.cos(angle) * startR;
+            var y1 = cy + Math.sin(angle) * startR * 0.72;
+            var x2 = centre.cx + Math.cos(angle + swirl) * endR;
+            var y2 = cy + Math.sin(angle + swirl) * endR * 0.72;
+            return h('line', {
+              key: i, x1: x1, y1: y1, x2: x2, y2: y2,
+              stroke: centre.tint, strokeWidth: 3, strokeLinecap: 'round',
+              markerEnd: 'url(#weather-pressure-arrow-' + centre.id + ')'
+            });
+          });
+        }
+        return h('section', { className: panelClass + ' p-4', 'data-weather-pressure-wind': true, 'aria-labelledby': 'weather-pressure-wind-title' },
+          h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+            h('div', null,
+              h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'Why the wind turns'),
+              h('h3', { id: 'weather-pressure-wind-title', className: 'text-base font-black' }, 'Pressure centres and wind'),
+              h('p', { className: 'mt-1 text-xs ' + mutedClass }, band === 'K-2' ? 'Air moves toward low pressure and away from high pressure. That is what makes wind.' : 'Wind does not blow straight from high to low. Earth’s rotation bends it, so air spirals — and that spiral is why the wind shifts as a system passes.')
+            ),
+            h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (dark ? 'bg-sky-950 text-sky-300' : 'bg-sky-100 text-sky-800') }, 'This scenario: ' + (activeCentre === 'high' ? 'high pressure' : 'low pressure'))
+          ),
+          h('svg', {
+            viewBox: '0 0 720 250', className: 'mt-3 h-auto w-full', role: 'img',
+            'aria-label': 'Plan view of two pressure centres in the Northern Hemisphere. Around a low, air spirals counterclockwise and inward, then rises, favouring cloud and precipitation. Around a high, air sinks and spirals clockwise and outward, which suppresses cloud. This scenario is centred on ' + (activeCentre === 'high' ? 'high pressure' : 'low pressure') + '.'
+          },
+            h('defs', null, centres.map(function (centre) {
+              return h('marker', { key: centre.id, id: 'weather-pressure-arrow-' + centre.id, markerWidth: 8, markerHeight: 8, refX: 6, refY: 3, orient: 'auto' },
+                h('path', { d: 'M0,0 L0,6 L7,3 z', fill: centre.tint })
+              );
+            })),
+            centres.map(function (centre) {
+              var active = centre.id === activeCentre;
+              return h('g', { key: centre.id, opacity: active ? 1 : 0.5 },
+                active && h('rect', { x: centre.cx - 168, y: 12, width: 336, height: 224, rx: 14, fill: centre.tint, fillOpacity: 0.07 }),
+                [1, 2, 3].map(function (ring) {
+                  return h('ellipse', { key: ring, cx: centre.cx, cy: cy, rx: 34 + ring * 34, ry: (34 + ring * 34) * 0.72, fill: 'none', stroke: chartBaseline, strokeWidth: 1.5 });
+                }),
+                spiralArrows(centre),
+                h('circle', { cx: centre.cx, cy: cy, r: 26, fill: centre.tint, fillOpacity: 0.16 }),
+                h('text', { x: centre.cx, y: cy + 11, textAnchor: 'middle', fill: chartInk, fontSize: 30, fontWeight: 800 }, centre.letter),
+                h('text', { x: centre.cx, y: 38, textAnchor: 'middle', fill: chartInk, fontSize: 13, fontWeight: 800 }, centre.title),
+                h('text', { x: centre.cx, y: 224, textAnchor: 'middle', fill: chartMutedInk, fontSize: 11, fontWeight: 700 }, 'wind spirals ' + centre.spin + ' and ' + centre.flow)
+              );
+            })
+          ),
+          h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2' }, centres.map(function (centre) {
+            var active = centre.id === activeCentre;
+            return h('div', {
+              key: centre.id,
+              className: 'rounded-lg border p-3 ' + (active
+                ? (dark ? 'border-sky-500/40 bg-sky-950/40' : 'border-sky-300 bg-sky-50')
+                : (dark ? 'border-slate-700 bg-slate-950/50' : 'border-slate-200 bg-white'))
+            },
+              h('p', { className: 'flex items-center gap-1.5 text-xs font-black' },
+                h('span', { className: 'inline-block h-2.5 w-2.5 shrink-0 rounded-full', style: { backgroundColor: centre.tint }, 'aria-hidden': 'true' }),
+                centre.title + (active ? ' — this scenario' : '')
+              ),
+              h('p', { className: 'mt-1 text-xs font-bold' }, centre.vertical),
+              h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, centre.weather)
+            );
+          })),
+          h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, 'These spiral directions are for the Northern Hemisphere. South of the equator the Coriolis deflection reverses, so a low spirals clockwise instead.')
+        );
+      }
+
       function cloudTypeGuide() {
         var likelyId = likelyCloudFamily(state, current);
         var likely = cloudFamilyById(likelyId);
@@ -6084,6 +6180,7 @@ var geographyGroup = new THREE.Group();
             patternCompareStudio(),
             atmosphereStoryline(),
             frontCrossSectionPanel(),
+            pressureWindDiagram(),
             cloudTypeGuide(),
             stationPanel(),
             stationNetworkPanel(),

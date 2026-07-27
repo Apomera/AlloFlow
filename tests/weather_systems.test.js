@@ -2556,6 +2556,40 @@ describe('Weather Systems concept diagrams', () => {
     expect(anchorOf(wide, 'air')).toBe('middle');
   });
 
+  it('spirals a low counterclockwise and a high clockwise', () => {
+    // Pinned from the drawn geometry, not from prose: SVG y points down, so a sign slip
+    // silently draws anticyclonic flow around a low. Reading the arrow nearest the top of
+    // each centre, a Northern Hemisphere low must be heading west and a high east.
+    const html = render({ tab: 'map', scenario: 'coldFront', simHour: 4 });
+    const block = (html.match(/data-weather-pressure-wind[\s\S]*?<\/svg>/) || [''])[0];
+    const arrowsFor = (centre) => {
+      const re = new RegExp('<line[^>]*marker-end="url\\(#weather-pressure-arrow-' + centre + '\\)"[^>]*>', 'g');
+      return (block.match(re) || []).map((tag) => ({
+        x1: Number((tag.match(/ x1="([-\d.]+)"/) || [])[1]),
+        y1: Number((tag.match(/ y1="([-\d.]+)"/) || [])[1]),
+        x2: Number((tag.match(/ x2="([-\d.]+)"/) || [])[1]),
+      }));
+    };
+    const low = arrowsFor('low');
+    const high = arrowsFor('high');
+    expect(low.length).toBe(4);
+    expect(high.length).toBe(4);
+    const topmost = (arrows) => arrows.slice().sort((a, b) => a.y1 - b.y1)[0];
+    // North side of a low: flow runs westward (x decreases) — counterclockwise.
+    expect(topmost(low).x2).toBeLessThan(topmost(low).x1);
+    // North side of a high: flow runs eastward (x increases) — clockwise.
+    expect(topmost(high).x2).toBeGreaterThan(topmost(high).x1);
+  });
+
+  it('names the hemisphere its spiral directions apply to', () => {
+    const html = render({ tab: 'map', scenario: 'coldFront', simHour: 4 });
+    expect(html).toContain('Northern Hemisphere');
+    expect(html).toContain('South of the equator the Coriolis deflection reverses');
+    // Vertical motion is the link to the weather, so both directions are stated.
+    expect(html).toContain('Air converges and rises.');
+    expect(html).toContain('Air sinks and spreads outward.');
+  });
+
   it('picks a cloud family that matches the weather the scenario produces', () => {
     const { likelyCloudFamily, resolvedState, projectConditions, cloudFamilyById } = window.WeatherSystemsKernel;
     const pick = (scenario, simHour) => {
