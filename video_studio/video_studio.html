@@ -4563,7 +4563,22 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
   });
   postToOpener({ type: 'allostudio-ready' });
-  window.addEventListener('beforeunload', function () {
+  // A recording in progress exists ONLY as in-memory chunks until MediaRecorder's
+  // onstop builds the take, so closing or reloading this window threw it away with
+  // no warning. Ask the browser to confirm first.
+  window.addEventListener('beforeunload', function (ev) {
+    try {
+      if (typeof rec !== 'undefined' && rec && rec.state !== 'inactive') {
+        ev.preventDefault();
+        ev.returnValue = '';
+        return '';
+      }
+    } catch (_) {}
+  });
+  // Teardown lives in pagehide, not beforeunload: beforeunload also fires when the
+  // teacher CANCELS the prompt above, and announcing 'allostudio-closed' there
+  // would tear the bridge down under a window that is still alive.
+  window.addEventListener('pagehide', function () {
     try { if (typeof demoState !== 'undefined' && demoState && demoState.running) postToOpener({ type: 'allostudio-demostop' }); } catch (_) {}
     postToOpener({ type: 'allostudio-closed' });
   });
@@ -5146,6 +5161,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
 
   function pauseResume() {
     if (!rec || rec.state === 'inactive') return;
+    // Pause has no counterpart in the demo runner — ANTI's onRunDemoPlan only
+    // exposes shouldStop — so pausing mid-demo froze the recorder while AlloFlow
+    // carried on driving itself, and the steps that ran never made it to video.
+    if (demoState && demoState.running) {
+      setStatus($('recStatus'), 'Pause is unavailable during a Demo Autopilot run — AlloFlow would keep driving itself while the recording was frozen. Use “Stop demo” instead.', 'warn');
+      announce('Pause is unavailable during a demo run');
+      return;
+    }
     if (!paused) {
       rec.pause(); paused = true; stopCaptions();
       $('pauseBtn').textContent = '▶ Resume';
@@ -5690,7 +5713,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             actions.style.justifyContent = 'flex-end';
             var open = document.createElement('button'); open.className = 'quiet'; open.textContent = 'Open'; open.addEventListener('click', function () { openDraftRow(r); });
             var save = document.createElement('button'); save.className = 'quiet'; save.textContent = 'Save .allopack'; save.addEventListener('click', function () { downloadProjectFromBlob(r.blob, r.name, r.duration, (r.captions || []).length ? vsBuildVtt(r.captions) : null, null, r.visualDescriptions || [], r.chapters || [], r.inserts || [], r.visualPrompts || [], r.musicBed || null, r.localizations || [], null, r.mediaCredits || [], r.transcriptEdits || [], r.transcriptWords || [], r.audio || null, true, r.narration || null, r.audioClips || []); });
-            var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Delete'; del.addEventListener('click', function () { deleteDraft(r.id); refreshProjectShelfSoon(); });
+            // Deleting a saved draft is permanent — the blob only lives in this
+            // popup's IndexedDB — so confirm before destroying the teacher's work.
+            var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Delete'; del.addEventListener('click', function () {
+              if (!confirm('Delete the saved draft "' + (r.name || 'Untitled take') + '" (' + fmtClock(r.duration || 0) + ')?\n\nThis cannot be undone.')) return;
+              deleteDraft(r.id); refreshProjectShelfSoon();
+            });
             actions.appendChild(open); actions.appendChild(save); actions.appendChild(del);
             row.appendChild(info); row.appendChild(actions); shelf.appendChild(row);
           });
@@ -12447,6 +12475,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('demoStartBtn').disabled = locked || !hasPlan;
     $('demoRehearseBtn').disabled = locked || !hasPlan;
     $('demoPreflightBtn').disabled = locked || !hasPlan;
+    // See pauseResume(): there is no way to pause the app's self-driving, so the
+    // control is disabled rather than left to produce a misleading recording.
+    if ($('pauseBtn')) {
+      $('pauseBtn').disabled = !!demoState.running;
+      $('pauseBtn').title = demoState.running
+        ? 'Unavailable during a Demo Autopilot run — AlloFlow would keep driving itself while the recording was frozen. Use “Stop demo”.'
+        : '';
+    }
     syncDemoPlanEditorControls();
   }
   function setDemoPlanningBusy(busy, kind) {
@@ -12723,7 +12759,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         }
         setStatus($('demoStatus'), 'Demo stopped early' + (resp.reason ? ': ' + resp.reason : '') + '. Captions cover the steps that ran.' + continuationNote, 'warn');
       }
-      setTimeout(function () { if (rec && rec.state !== 'inactive') stopRecording(); }, 1600);
+      // Pin the recorder this demo was driving. startRecording() builds a NEW
+      // MediaRecorder each time, so without this identity check a teacher who
+      // started a fresh recording within the 1.6s wrap-up window had it stopped
+      // out from under them by the finished demo's timer.
+      var demoRecorder = rec;
+      setTimeout(function () {
+        if (rec && rec === demoRecorder && rec.state !== 'inactive') stopRecording();
+      }, 1600);
     } catch (e) {
       setStatus($('demoStatus'), 'Demo problem: ' + String((e && e.message) || e).slice(0, 140) + ' — stop the recording manually if it is still running.', 'warn');
     } finally {
@@ -14163,6 +14206,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             $('recoverBanner').hidden = true;
           };
           $('discardBtn').onclick = function () {
+            // One click here used to permanently destroy EVERY recording recovered
+            // from a previous session, with no warning and no undo.
+            if (!confirm('Discard ' + rows.length + ' recovered draft take' + (rows.length === 1 ? '' : 's') + ' from a previous session?\n\nThey are deleted permanently. Choose "Recover" instead if you want to keep them.')) return;
             rows.forEach(function (r) { deleteDraft(r.id); });
             $('recoverBanner').hidden = true;
           };

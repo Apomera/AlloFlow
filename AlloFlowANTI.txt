@@ -41845,7 +41845,19 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         for (let i = 0; i < list.length; i++) {
                             if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
                             let completionEvent = null;
-                            const r = await AC.runPlan(() => _alloCmdCtx(), [list[i]], {
+                            // Read the ctx through the REF, like the voice loop does.
+                            // _alloCmdCtx is a plain render-body closure over state
+                            // (generatedContent, inputText, hasSourceOrAnalysis...), and
+                            // this async loop holds the closure from the render that was
+                            // current when Record was pressed. Every step after the first
+                            // therefore saw pre-demo app state, so a plan whose later step
+                            // is unlocked by an earlier one ("make a glossary, then open
+                            // flashcards") passed preflight and then failed mid-recording:
+                            // runPlan rebuilds the menu from ctx and drops commands whose
+                            // when-guard still reads false. The palette re-invokes
+                            // _alloCmdCtx() every render and that assigns _alloCmdCtxRef,
+                            // so the ref tracks live state.
+                            const r = await AC.runPlan(() => (_alloCmdCtxRef.current || _alloCmdCtx()), [list[i]], {
                                 shouldStop: stopWanted,
                                 onStep: (j, phase, cmd, narr) => {
                                     const label = (cmd && cmd.label) || list[i].commandId;

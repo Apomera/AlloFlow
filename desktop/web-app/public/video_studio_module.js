@@ -2991,7 +2991,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       this.takes = next.slice(0, VS_MAX_STORED_TAKES);
       vsTakeDb('put', rec);
       dropped.forEach(function (d) { vsTakeDb('delete', d.id); });
-      this.notify('takes', { added: rec.id });
+      // Report evictions: the gallery promises takes stay until removed, so
+      // silently dropping the oldest past the cap was a lie the teacher could
+      // only discover by noticing a video had vanished.
+      this.notify('takes', { added: rec.id, dropped: dropped.length, droppedNames: dropped.map(function (d) { return d.name || ''; }) });
     },
     patchTake: function (id, patch, extra) {
       var found = null;
@@ -3990,6 +3993,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             addToast(T('video_studio.received', 'Video received from the Studio — it stays on this device until you download it.'), 'success');
             announce(T('video_studio.received_sr', 'Video received from the Studio.'));
           }
+          if (extra && extra.dropped) {
+            // Honest eviction notice rather than a video quietly disappearing.
+            var _names = (extra.droppedNames || []).filter(Boolean).join(', ');
+            addToast(T('video_studio.evicted',
+              'Storage is full at ' + VS_MAX_STORED_TAKES + ' videos, so the oldest ' +
+              (extra.dropped === 1 ? 'one was' : extra.dropped + ' were') + ' removed to make room' +
+              (_names ? ' (' + _names + ')' : '') + '. Download videos you want to keep.'), 'error');
+          }
         } else if (kind === 'studio') {
           studioWinRef.current = vsTakeStore.studioWin;
           bridgeTokenRef.current = vsTakeStore.token;
@@ -4017,8 +4028,17 @@ function vsPcmToWav(pcmBytes, sampleRate) {
 
 
     var openStudio = useCallback(function () {
-      var existing = studioWinRef.current;
+      // Prefer the module-scope handle as well as this mount's: window.open()
+      // reuses the 'alloflow-video-studio' NAME, so re-opening while a studio
+      // window is alive would NAVIGATE it — destroying an in-progress recording
+      // and any running export. Focus the existing window instead. (If the app
+      // reloaded and no handle survived, the popup's own beforeunload guard is
+      // the backstop and asks the teacher before the recording is lost.)
+      var existing = studioWinRef.current || vsTakeStore.studioWin;
       if (existing && !existing.closed) {
+        studioWinRef.current = existing;
+        vsTakeStore.studioWin = existing;
+        if (!bridgeTokenRef.current && vsTakeStore.token) bridgeTokenRef.current = vsTakeStore.token;
         try { existing.focus(); } catch (_) {}
         return;
       }
@@ -4371,7 +4391,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           // Gallery
           h('h3', { className: 'font-semibold text-slate-700 text-sm mb-2' }, T('video_studio.gallery', 'Videos from this session')),
           videos.length > 0 && h('p', { className: 'text-xs text-slate-500 mb-2' },
-            T('video_studio.gallery_note', 'Kept on this device — they stay here (even if you close this panel) until you remove them.') +
+            T('video_studio.gallery_note', 'Kept on this device — they stay here (even if you close this panel) until you remove them. The ' + VS_MAX_STORED_TAKES + ' most recent are kept; download anything you need to keep for good.') +
             ' ' + videos.length + ' · ' + fmtBytes(videos.reduce(function (s, v) { return s + (Number(v.size) || 0); }, 0))),
           videos.length === 0
             ? h('p', { className: 'text-sm text-slate-400 italic' }, T('video_studio.gallery_empty', 'No videos yet. Record one in the Studio window and press “Send to AlloFlow”.'))

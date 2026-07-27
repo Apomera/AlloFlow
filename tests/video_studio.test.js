@@ -2336,7 +2336,12 @@ describe('take persistence + export hardening wiring', () => {
     expect(anti).toContain('signal: options.signal || null');
     expect(anti).toContain('onRunDemoPlan: async (steps, hooks, options) => {');
     expect(anti).toContain('AC.planUtterance(_alloCmdCtx()');
-    expect(anti).toContain('AC.runPlan(() => _alloCmdCtx(), [list[i]]');
+    // Per-step ctx must come from the REF, not the render-body closure captured
+    // when the demo started — otherwise steps 2+ evaluate their when-guards
+    // against pre-demo state and a plan whose later step is unlocked by an
+    // earlier one passes preflight then fails mid-recording.
+    expect(anti).toContain('AC.runPlan(() => (_alloCmdCtxRef.current || _alloCmdCtx()), [list[i]]');
+    expect(anti).not.toContain('AC.runPlan(() => _alloCmdCtx(), [list[i]]');
     expect(anti).toContain("throw new Error('AlloBot is already running a plan — stop it first.');");
     expect(anti).toContain("document.visibilityState !== 'visible'");
     expect(anti).toContain('The AlloFlow tab never became visible, so no automatic actions were run.');

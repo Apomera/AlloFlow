@@ -308,6 +308,46 @@ describe('command contracts and plan validation', () => {
     expect(pr.ok).toBe(false);
   });
 
+  // Regression (2026-07-26): the Video Studio demo runner passed a ctx factory that
+  // closed over the render snapshot taken when recording started, so steps after the
+  // first evaluated their when-guards against pre-demo state. "Make a glossary, then
+  // open flashcards" passed preflight and then died mid-recording, because
+  // launch_flashcards (when: contentIsGlossary) was filtered out of the rebuilt menu.
+  it('re-reads ctx from the factory between steps, so a capability step 1 unlocks is visible to step 2', async () => {
+    const log = [];
+    let contentIsGlossary = false; // flips when step 1 runs, as React state would
+    const getCtx = () => mkCtx({
+      contentIsGlossary,
+      generateGlossary: () => { log.push('glossary'); contentIsGlossary = true; },
+      launchFlashcards: () => log.push('flashcards'),
+    }).ctx; // a NEW ctx object on every call
+
+    const pr = await AC.runPlan(getCtx, [
+      { commandId: 'generate_glossary', params: {} },
+      { commandId: 'launch_flashcards', params: {} },
+    ]);
+    expect(pr.ok).toBe(true);
+    expect(log).toEqual(['glossary', 'flashcards']);
+  });
+
+  it('the same plan fails when the factory is pinned to a stale ctx (the bug this guards)', async () => {
+    const log = [];
+    let contentIsGlossary = false;
+    const stale = mkCtx({
+      contentIsGlossary: false, // never updated on this object, like a captured closure
+      generateGlossary: () => { log.push('glossary'); contentIsGlossary = true; },
+      launchFlashcards: () => log.push('flashcards'),
+    }).ctx;
+
+    const pr = await AC.runPlan(() => stale, [
+      { commandId: 'generate_glossary', params: {} },
+      { commandId: 'launch_flashcards', params: {} },
+    ]);
+    expect(pr.ok).toBe(false);
+    expect(log).toEqual(['glossary']); // step 2 never ran
+    expect(contentIsGlossary).toBe(true); // the capability really was unlocked
+  });
+
   // Regression (2026-07-10): a timed-out step is still running — the plan
   // must HOLD the remaining steps, not start the next one alongside it.
   it('holds the remainder when a step times out instead of racing it', async () => {
