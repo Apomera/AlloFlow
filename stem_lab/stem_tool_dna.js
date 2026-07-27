@@ -370,6 +370,258 @@ window.StemLab = window.StemLab || {
   // Tool Registration
   // ═══════════════════════════════════════════════════════
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // B-DNA IN 3D — progressive enhancement over the 2D ladder
+  // ───────────────────────────────────────────────────────────────────────
+  // The 2D view draws two sine waves with rungs between them. That reads as
+  // a twisted ladder, but it cannot show the two things this tool's own
+  // 9-12 text asserts:
+  //
+  //   "a right-handed B-form double helix with major and minor grooves"
+  //
+  //   - HANDEDNESS is invisible in 2D. The projection of a right-handed
+  //     helix and a left-handed one onto a plane is the same sine wave, so a
+  //     student cannot tell which they are looking at, and "right-handed" is
+  //     a fact they must take on faith.
+  //   - The GROOVES come from the two backbones NOT being on opposite sides
+  //     of the axis. A symmetric sine wave puts them exactly antiphase, which
+  //     makes both gaps identical — the very asymmetry that names them major
+  //     and minor is what the 2D geometry averages away.
+  //
+  // Geometry here is B-DNA as the tool's own text describes it: ~10.5 base
+  // pairs per turn, ~3.4 A rise per pair, ~10 A helix radius, and the two
+  // strands offset by ~140 deg rather than 180, which is what opens a 220 deg
+  // major groove and a 140 deg minor groove. Right-handed by construction:
+  // theta increases with height, so the strand climbs anticlockwise seen from
+  // +y, following the right-hand rule about the helix axis.
+  //
+  // Same contract as the other 3D views: the 2D canvas always renders and is
+  // the guaranteed floor, hidden rather than unmounted while GL is live, and
+  // any failure flips back to it. Module singleton + one stable ref callback.
+  var DNA_BP_PER_TURN = 10.5;
+  var DNA_RISE = 3.4;          // angstrom per base pair
+  var DNA_RADIUS = 10;         // angstrom, backbone from axis
+  var DNA_MINOR_DEG = 140;     // strand-to-strand offset that opens the grooves
+
+  var DnaGL = (function () {
+    var DEG = Math.PI / 180;
+    var T = null;
+    var state = 'idle';
+    var canvasEl = null, renderer = null, scene = null, camera = null;
+    var backbone = null, rungGroup = null;
+    var rafId = 0, capacity = 0, resizeObs = null;
+    var pending = null, appliedSig = '', appliedCamSig = '', dirty = true;
+    var seqLen = 0;
+
+    function fail(reason) {
+      state = 'failed';
+      if (pending && typeof pending.onFail === 'function') { try { pending.onFail(reason); } catch (e) {} }
+    }
+
+    function build() {
+      scene = new T.Scene();
+      camera = new T.PerspectiveCamera(45, 1, 0.1, 4000);
+      scene.add(new T.HemisphereLight(0xdbeafe, 0x1e293b, 0.95));
+      var key = new T.DirectionalLight(0xffffff, 0.65);
+      key.position.set(40, 60, 80);
+      scene.add(key);
+      rungGroup = new T.Group();
+      scene.add(rungGroup);
+    }
+
+    function clearRungs() {
+      for (var i = rungGroup.children.length - 1; i >= 0; i--) {
+        var c = rungGroup.children[i];
+        rungGroup.remove(c);
+        if (c.geometry) c.geometry.dispose();
+        if (c.material) c.material.dispose();
+      }
+    }
+
+    // Angle of strand 1 at base i. Increasing theta with height is what makes
+    // this right-handed; negate it and you get the Z-DNA-ish mirror image that
+    // the 2D view cannot distinguish from this one.
+    function theta1(i) { return (360 / DNA_BP_PER_TURN) * i * DEG; }
+
+    function strandPoint(i, which) {
+      var th = theta1(i) + (which === 1 ? DNA_MINOR_DEG * DEG : 0);
+      return {
+        x: DNA_RADIUS * Math.cos(th),
+        y: i * DNA_RISE,
+        z: DNA_RADIUS * Math.sin(th)
+      };
+    }
+
+    function apply(m) {
+      var seq = m.seq || '';
+      var comp = m.comp || '';
+      seqLen = seq.length;
+      var n = seqLen * 2;
+
+      if (!backbone || capacity < n) {
+        if (backbone) backbone.dispose(scene);
+        capacity = Math.max(64, n);
+        backbone = window.StemLab.makeVoxelBatch(T, {
+          capacity: capacity,
+          geometry: new T.SphereGeometry(1.6, 12, 10),
+          edges: false
+        });
+        backbone.addTo(scene);
+      }
+
+      // Sugar-phosphate backbone beads, one per base on each strand.
+      for (var i = 0; i < seqLen; i++) {
+        var a = strandPoint(i, 0), b = strandPoint(i, 1);
+        backbone.set(i, a.x, a.y, a.z, 1, 0xcbd5e1);
+        backbone.set(seqLen + i, b.x, b.y, b.z, 1, 0x94a3b8);
+      }
+      backbone.commit(n);
+
+      // Base pairs. Drawn as two half-rods meeting near the axis so each base
+      // keeps its own colour and A-T versus G-C stays readable, and so the
+      // pair visibly spans the helix off-centre rather than through the middle
+      // — which is the reason the grooves are unequal.
+      clearRungs();
+      for (var j = 0; j < seqLen; j++) {
+        var p0 = strandPoint(j, 0), p1 = strandPoint(j, 1);
+        var mid = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2, z: (p0.z + p1.z) / 2 };
+        [[p0, seq[j]], [p1, comp[j]]].forEach(function (pair) {
+          var p = pair[0], baseChar = pair[1];
+          var dx = mid.x - p.x, dy = mid.y - p.y, dz = mid.z - p.z;
+          var len = Math.sqrt(dx * dx + dy * dy + dz * dz) || 0.001;
+          var geo = new T.CylinderGeometry(0.9, 0.9, len, 8);
+          var mat = new T.MeshLambertMaterial({ color: new T.Color(BASE_COLORS[baseChar] || '#888888') });
+          var rod = new T.Mesh(geo, mat);
+          rod.position.set((p.x + mid.x) / 2, (p.y + mid.y) / 2, (p.z + mid.z) / 2);
+          // CylinderGeometry runs along +y; rotate that onto the rod direction.
+          rod.quaternion.setFromUnitVectors(
+            new T.Vector3(0, 1, 0),
+            new T.Vector3(dx / len, dy / len, dz / len)
+          );
+          rungGroup.add(rod);
+        });
+      }
+    }
+
+    function applyCam(m) {
+      var el = Math.max(-88, Math.min(88, -m.rotX)) * DEG;
+      var az = -m.rotY * DEG;
+      var height = Math.max(1, seqLen) * DNA_RISE;
+      var halfV = Math.tan(22.5 * DEG);
+      var halfH = halfV * (camera.aspect || 1.6);
+      // The molecule is a tall thin column, so height almost always governs.
+      var dist = Math.max((DNA_RADIUS * 2.4 / 2) / halfH, (height * 0.62) / halfV)
+                 * 1.1 / Math.max(0.25, m.scale);
+      var ty = height / 2;
+      camera.position.set(
+        dist * Math.cos(el) * Math.sin(az),
+        ty + dist * Math.sin(el),
+        dist * Math.cos(el) * Math.cos(az)
+      );
+      camera.lookAt(0, ty, 0);
+      camera.updateProjectionMatrix();
+    }
+
+    function resize() {
+      if (!renderer || !canvasEl) return;
+      var w = canvasEl.clientWidth || 1, hh = canvasEl.clientHeight || 1;
+      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+      renderer.setSize(w, hh, false);
+      camera.aspect = w / hh;
+      camera.updateProjectionMatrix();
+      dirty = true;
+    }
+
+    function frame() {
+      rafId = requestAnimationFrame(frame);
+      if (state !== 'ready' || !pending) return;
+      var m = pending;
+      try {
+        if (m.sig !== appliedSig) { apply(m); appliedSig = m.sig; dirty = true; appliedCamSig = ''; }
+        var cs = m.rotX + ',' + m.rotY + ',' + m.scale;
+        if (cs !== appliedCamSig) { applyCam(m); appliedCamSig = cs; dirty = true; }
+        if (!dirty) return;
+        dirty = false;
+        renderer.render(scene, camera);
+      } catch (err) {
+        console.error('[dna] WebGL frame failed, falling back to the 2D ladder', err);
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        fail('frame');
+      }
+    }
+
+    return {
+      isReady: function () { return state === 'ready'; },
+      submit: function (m) { pending = m; },
+      debug: function () {
+        if (state !== 'ready' || !renderer) return { state: state };
+        var gl = renderer.getContext();
+        // Sample the strand so a test can check chirality and groove widths
+        // directly, rather than trusting this file's own description of them.
+        var pts = [];
+        for (var i = 0; i < Math.min(seqLen, 24); i++) {
+          var p = strandPoint(i, 0);
+          pts.push({ i: i, x: +p.x.toFixed(4), y: +p.y.toFixed(4), z: +p.z.toFixed(4) });
+        }
+        return {
+          state: state,
+          beadCount: backbone ? backbone.drawnCount() : 0,
+          rungCount: rungGroup ? rungGroup.children.length : 0,
+          bpPerTurn: DNA_BP_PER_TURN,
+          risePerBp: DNA_RISE,
+          strandOffsetDeg: DNA_MINOR_DEG,
+          strandSample: pts,
+          canvas: canvasEl ? { w: canvasEl.clientWidth, h: canvasEl.clientHeight } : null,
+          contextLost: gl ? gl.isContextLost() : null
+        };
+      },
+      mount: function (el) {
+        if (canvasEl === el) return;
+        canvasEl = el;
+        if (state === 'ready' || state === 'loading') return;
+        state = 'loading';
+        var loader = (window.StemLab && window.StemLab.ensureThree)
+          ? window.StemLab.ensureThree({ failMessage: 'The 3D engine could not load. The 2D helix still works.' })
+          : Promise.reject(new Error('no-loader'));
+        loader.then(function (three) {
+          if (!canvasEl) return;
+          T = three;
+          try {
+            renderer = new T.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+          } catch (e) { fail('no-webgl'); return; }
+          renderer.setClearColor(0x000000, 0);
+          build();
+          resize();
+          if (typeof ResizeObserver === 'function') {
+            resizeObs = new ResizeObserver(resize);
+            resizeObs.observe(canvasEl);
+          } else { window.addEventListener('resize', resize); }
+          state = 'ready';
+          appliedSig = ''; appliedCamSig = ''; dirty = true;
+          if (!rafId) rafId = requestAnimationFrame(frame);
+          if (pending && typeof pending.onReady === 'function') { try { pending.onReady(); } catch (e2) {} }
+        }).catch(function () { fail('cdn'); });
+      },
+      unmount: function () {
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
+        else window.removeEventListener('resize', resize);
+        if (scene) {
+          if (backbone) backbone.dispose(scene);
+          if (rungGroup) { clearRungs(); scene.remove(rungGroup); }
+        }
+        if (renderer) { try { renderer.dispose(); } catch (e) {} }
+        backbone = null; rungGroup = null;
+        renderer = scene = camera = null; canvasEl = null; pending = null;
+        capacity = 0; seqLen = 0; appliedSig = ''; appliedCamSig = '';
+        if (state !== 'failed') state = 'idle';
+      }
+    };
+  })();
+
+  function dnaGlRef(el) { if (el) DnaGL.mount(el); else DnaGL.unmount(); }
+  try { window.__alloDnaGL = DnaGL; } catch (e) {}
+
   window.StemLab.registerTool('dnaLab', {
     icon: '\uD83E\uDDEC',
     label: 'DNA Lab',
@@ -514,6 +766,14 @@ window.StemLab = window.StemLab || {
       // ═══ STATE EXTRACTION ═══
       var tab = d.tab || 'build';
       var dnaSeq = d.dnaSequence || 'ATGCGTACCTGAAACTGA';
+
+      // ── 3D helix (opt-in; the 2D ladder stays the floor) ──
+      var dnaShowGl = d.showHelix3d === true;
+      var dnaRot = d.helix3dRot || { rotX: -6, rotY: -28, scale: 1 };
+      var dnaGlAlt = 'Right-handed B-form DNA double helix, '
+        + dnaSeq.length + ' base pairs, about ' + DNA_BP_PER_TURN
+        + ' pairs per turn, with a wide major groove and a narrow minor groove.';
+
       var mRNA = d.mRNA || '';
       var protein = d.protein || [];
       var animStep = d.animStep || 0;
@@ -526,6 +786,22 @@ window.StemLab = window.StemLab || {
 
       // ═══ DERIVED VALUES ═══
       var complementStrand = dnaSeq.split('').map(function(b) { return BASE_COMPLEMENT[b] || 'N'; }).join('');
+
+      // Hand the 3D helix this frame's model. Plain data only; the rAF loop
+      // inside DnaGL rebuilds when the sequence signature changes.
+      if (dnaShowGl) {
+        DnaGL.submit({
+          seq: dnaSeq, comp: complementStrand,
+          rotX: dnaRot.rotX, rotY: dnaRot.rotY, scale: dnaRot.scale || 1,
+          onReady: function() { upd('helix3dReadyAt', Date.now()); },
+          onFail: function() {
+            upd('showHelix3d', false);
+            addToast('The 3D helix could not load. Showing the flat view.', 'info');
+          },
+          sig: dnaSeq
+        });
+      }
+      var dnaGlLive = dnaShowGl && DnaGL.isReady();
       var fullMRNA = dnaSeq.split('').map(function(b) { return CODING_TO_RNA[b] || 'N'; }).join('');
 
       function translateMRNA(mrna) {
@@ -620,7 +896,11 @@ window.StemLab = window.StemLab || {
           var mX = (e.clientX - rect.left) * scaleX;
           var mY = (e.clientY - rect.top) * scaleY;
 
-          var baseW = Math.min(32, (w - 80) / dnaSeq.length);
+          // Clamped: a canvas that is momentarily zero-width (hidden tab, a
+          // layout pass before first paint) makes (w - 80) negative, and a
+          // negative base width reaches createRadialGradient as r0 < 0, which
+          // throws and takes the whole DNA Lab render down with it.
+          var baseW = Math.max(1, Math.min(32, (w - 80) / dnaSeq.length));
           var startX = (w - dnaSeq.length * baseW) / 2;
           var midY = hh / 2;
 
@@ -669,7 +949,11 @@ window.StemLab = window.StemLab || {
           canvasSize = sizeDnaCanvas(cv, ctx2d);
           w = canvasSize.width; hh = canvasSize.height;
           ctx2d.clearRect(0, 0, w, hh);
-          var baseW = Math.min(32, (w - 80) / dnaSeq.length);
+          // Clamped: a canvas that is momentarily zero-width (hidden tab, a
+          // layout pass before first paint) makes (w - 80) negative, and a
+          // negative base width reaches createRadialGradient as r0 < 0, which
+          // throws and takes the whole DNA Lab render down with it.
+          var baseW = Math.max(1, Math.min(32, (w - 80) / dnaSeq.length));
           var startX = (w - dnaSeq.length * baseW) / 2;
           var midY = hh / 2;
           var helixAmp = 18;
@@ -2242,7 +2526,55 @@ window.StemLab = window.StemLab || {
               { label: "GC", value: gcPercent + "%", tone: "#22c55e" },
               { label: "Protein", value: fullProtein.length + " aa", tone: "#06b6d4" }
             ],
-            h("canvas", { ref: _dnaCanvasRef, className: "block w-full", style: { width: '100%', height: 240 }, tabIndex: 0, role: "img", 'aria-label': 'DNA helix: ' + dnaSeq }),
+            h(React.Fragment, null,
+            h("div", { className: "flex items-center gap-1.5 px-3 pt-2" },
+              h("button", {
+                type: 'button',
+                'data-dna-view': dnaShowGl ? '3d' : '2d',
+                'aria-pressed': dnaShowGl,
+                onClick: function() {
+                  upd('showHelix3d', !dnaShowGl);
+                  announceToSR(dnaShowGl
+                    ? 'Switched to the flat ladder view.'
+                    : 'Switched to the 3D double helix. Turn it to see the major and minor grooves.');
+                },
+                className: "px-3 py-1 text-[11px] font-bold rounded-lg border transition-colors " + (dnaShowGl ? "border-violet-400 bg-violet-600 text-white" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50")
+              }, dnaShowGl ? '\u{1F9EC} 3D helix' : '≡ Flat ladder'),
+              dnaShowGl && [['Turn left', { rotY: dnaRot.rotY - 25 }], ['Turn right', { rotY: dnaRot.rotY + 25 }],
+                            ['Tilt up', { rotX: Math.max(-88, dnaRot.rotX - 12) }], ['Tilt down', { rotX: Math.min(88, dnaRot.rotX + 12) }]]
+                .map(function(b, i) {
+                  return h("button", {
+                    key: i, type: 'button', 'aria-label': b[0],
+                    onClick: function() { upd('helix3dRot', Object.assign({}, dnaRot, b[1])); },
+                    className: "w-7 h-7 text-[11px] rounded border border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                  }, ['◀', '▶', '▲', '▼'][i]);
+                })
+            ),
+            // 2D ladder — always rendered, and the guaranteed floor. Hidden
+            // (not unmounted) while GL is live so its rAF loop, hover/mutate
+            // hit-testing and aria-label survive a round trip through 3D.
+            // Both views share one 240px box: the 2D ladder in normal flow, the
+            // GL canvas absolutely over it. visibility, never display:none —
+            // a display:none canvas reports clientWidth 0, and the 2D draw
+            // sizes its bases from (width - 80) / seqLen, which goes negative
+            // and throws out of createRadialGradient, taking the whole tool
+            // down with it.
+            h("div", { className: "relative w-full", style: { height: 240 } },
+              h("canvas", { ref: _dnaCanvasRef, className: "block w-full", style: { width: '100%', height: 240, display: 'block', visibility: dnaGlLive ? 'hidden' : 'visible' }, tabIndex: 0, role: "img", 'aria-label': 'DNA helix: ' + dnaSeq }),
+              dnaShowGl && h("canvas", {
+                ref: dnaGlRef,
+                'data-dna-gl': 'true',
+                role: 'img',
+                'data-a11y-static': 'true',
+                'aria-describedby': 'dna-gl-description',
+                'aria-label': dnaGlAlt,
+                style: { position: 'absolute', inset: 0, width: '100%', height: '100%', visibility: dnaGlLive ? 'visible' : 'hidden' }
+              }),
+              dnaShowGl && !dnaGlLive && h("div", { className: "absolute inset-0 flex items-center justify-center text-xs font-bold text-violet-300" }, 'Loading 3D helix…')
+            ),
+            h("p", { id: 'dna-gl-description', className: 'sr-only' },
+              'A right-handed B-form double helix, about 10.5 base pairs per turn. Use the turn buttons to rotate it. Because the two backbones sit about 140 degrees apart rather than opposite each other, the gap between them is wide on one side (the major groove) and narrow on the other (the minor groove) — an asymmetry the flat ladder view cannot show.')
+            ),
             t('stem.dna.dna_helix_visualization', 'DNA helix visualization')
           ),
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4 space-y-3" },
