@@ -1372,3 +1372,51 @@ describe('M4 — batch files are recorded', () => {
     expect(view).toContain("_csv(r.source || 'single')");
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M20 (remainder) — runAutoFixLoop has an ownership identity of its own.
+//
+// __alloActivePdfRemediation and __alloRemediationProgress are written only by fixAndVerifyPdf, so
+// when the loop is entered DIRECTLY — "Fix N Remaining" or the axe auto-fix button after a resume,
+// i.e. the whole point of "Continue a previous session" — both were undefined, watchdogRunId stayed
+// null, and the loop passed no owner down, so _pipeLog fell back to the factory-initial
+// _pipelineStats: every heartbeat carried runId: null, onActivity bailed at !detail.runId, and
+// fire() always returned on !watchdogRunId. The stuck-flag safety net was completely inert in that
+// entry path, so pdfAutoContinueRunning and pdfFixLoading could never be reset.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('M20 — the auto-continue loop owns an identity the watchdog can see', () => {
+  const misc = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
+
+  it('the loop publishes a slot with a real runId and epoch', () => {
+    expect(misc).toContain("const _loopRunId = 'autocontinue-' + _myRunGen");
+    expect(misc).toContain('window.__alloActivePdfRemediation = { runId: _loopRunId, documentEpoch: _loopDocumentEpoch, startedAt: Date.now() };');
+  });
+
+  it('it never clobbers a LIVE fixAndVerifyPdf slot', () => {
+    // That run's own watchdog is watching that slot.
+    expect(misc).toContain("if (typeof window !== 'undefined' && !window.__alloActivePdfRemediation) {");
+  });
+
+  it('the identity is threaded into the calls that heartbeat', () => {
+    expect(misc).toContain('const _loopOwner = { runId: _loopRunId, documentEpoch: _loopDocumentEpoch, stats: { startTime: 0 } };');
+    expect(misc).toContain('owner: _loopOwner, // M20: heartbeats carry this loop\'s identity');
+    // the AI round now passes a _control at all — it used to pass none
+    expect(misc).toContain("aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-' + (round + 1), null, {");
+  });
+
+  it('the slot is released on EVERY exit, and only by its owner', () => {
+    // A slot left behind is exactly the stale "live owner" the other half of M20 removed.
+    expect(misc).toContain('window.__alloActivePdfRemediation.runId === _loopRunId');
+    expect(misc).toContain('_loopOwnsRemediationSlot && ');
+  });
+
+  it('the release sits outside the _ownsExit branch', () => {
+    // A superseded loop must still clean up after itself.
+    const fin = misc.slice(misc.indexOf('const _staleAtExit = _genStale();'));
+    const iOwns = fin.indexOf('if (_ownsExit) {');
+    const iRelease = fin.indexOf('_loopOwnsRemediationSlot && ');
+    const iOwnsClose = fin.indexOf('}', fin.indexOf('pdfAutoContinueAbortCtrlRef.current = null;'));
+    expect(iRelease).toBeGreaterThan(iOwns);
+    expect(iRelease).toBeGreaterThan(iOwnsClose);
+  });
+});

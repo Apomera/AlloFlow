@@ -1231,6 +1231,36 @@ async function runAutoFixLoop(maxRounds, deps) {
     const _toastIfOwned = (...args) => {
       if (_canPublish() && typeof addToast === 'function') addToast(...args);
     };
+    // ── M20 (audit 2026-07-26): give this loop its OWN ownership identity ────────────────────
+    // window.__alloActivePdfRemediation and window.__alloRemediationProgress are written only by
+    // fixAndVerifyPdf. So when the loop is entered DIRECTLY — "Fix N Remaining" or the axe auto-fix
+    // button after a resume, i.e. the whole point of "Continue a previous session" — both were
+    // undefined, initialProgressOwner was null and watchdogRunId stayed null. The only heartbeats
+    // are _pipeLog events, and the loop passed no `owner` down, so _pipeLog fell back to the
+    // factory-initial _pipelineStats with no runId and no documentEpoch key: every event carried
+    // runId: null, onActivity bailed at `!detail.runId`, and fire() always returned on
+    // `!watchdogRunId`. The stuck-flag safety net was completely inert in this entry path, so
+    // pdfAutoContinueRunning (and pdfFixLoading) could never be reset — permanently disabling Start
+    // New Audit and the results-panel buttons.
+    //
+    // In the normal Fix&Verify → auto-continue flow the watchdog only worked at all because it
+    // adopted its "live owner" from a COMPLETED run's leftover progress snapshot. That is now
+    // cleared (the other half of M20), which makes publishing a real identity here necessary rather
+    // than merely tidy.
+    const _loopRunId = 'autocontinue-' + _myRunGen + '-' + (pdfHtmlRevisionRef.current || 0);
+    const _loopDocumentEpoch = (typeof window !== 'undefined' && window.__alloPdfDocumentEpoch !== undefined)
+      ? window.__alloPdfDocumentEpoch : null;
+    let _loopOwnsRemediationSlot = false;
+    try {
+      // Never clobber a LIVE fixAndVerifyPdf slot — that run's watchdog is watching it.
+      if (typeof window !== 'undefined' && !window.__alloActivePdfRemediation) {
+        window.__alloActivePdfRemediation = { runId: _loopRunId, documentEpoch: _loopDocumentEpoch, startedAt: Date.now() };
+        _loopOwnsRemediationSlot = true;
+      }
+    } catch (_) {}
+    // Threaded into every inner call so _pipeLog stamps heartbeats with this identity instead of
+    // the factory-initial stats — which is what onActivity needs to adopt a runId at all.
+    const _loopOwner = { runId: _loopRunId, documentEpoch: _loopDocumentEpoch, stats: { startTime: 0 } };
     if (_canPublish()) setPdfAutoContinueRunning(true);
     let cur = pdfFixResultRef.current;
     const _aiIssuesOf = (c) => (c && c.verificationAudit && Array.isArray(c.verificationAudit.issues)) ? c.verificationAudit.issues : [];
@@ -1336,6 +1366,7 @@ async function runAutoFixLoop(maxRounds, deps) {
           result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses, {
             signal: _abortCtrl.signal,
             shouldAbort: () => !_canContinue(),
+            owner: _loopOwner, // M20: heartbeats carry this loop's identity
           });
           if (!result || result.stale) { cur = pdfFixResultRef.current; break; }
         } else if (_auditOnlyRefresh) {
@@ -1350,7 +1381,13 @@ async function runAutoFixLoop(maxRounds, deps) {
           const _eaLines = ((cur.secondEngineAudit && Array.isArray(cur.secondEngineAudit.fails)) ? cur.secondEngineAudit.fails : []).slice(0, 15)
             .map((f) => 'EQUAL-ACCESS-CONFIRMED: ' + String((f && (f.message || f.ruleId || f.reasonId)) || JSON.stringify(f)).slice(0, 200));
           const _instr = _aiIssues.slice(0, 25).map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).concat(_eaLines).join('\n');
-          let _fixedHtml = await aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-' + (round + 1));
+          // M20: pass a _control so _pipeLog stamps this loop's runId/documentEpoch on every
+          // heartbeat — without it the watchdog can never adopt a runId and is permanently inert.
+          let _fixedHtml = await aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-' + (round + 1), null, {
+            signal: _abortCtrl.signal,
+            shouldAbort: () => !_canContinue(),
+            owner: _loopOwner,
+          });
           if (!_canContinue() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
             cur = pdfFixResultRef.current;
             break;
@@ -1539,6 +1576,17 @@ async function runAutoFixLoop(maxRounds, deps) {
         setPdfAutoContinueRunning(false);
         pdfAutoContinueAbortCtrlRef.current = null;
       }
+      // M20: retire the ownership slot this loop published — and only if it is still ours, so a
+      // fixAndVerifyPdf run that started in the meantime keeps its own. Released on EVERY exit
+      // (including a superseded one), because a slot left behind is exactly the stale "live owner"
+      // the other half of M20 removed.
+      try {
+        if (_loopOwnsRemediationSlot && typeof window !== 'undefined'
+          && window.__alloActivePdfRemediation
+          && window.__alloActivePdfRemediation.runId === _loopRunId) {
+          window.__alloActivePdfRemediation = null;
+        }
+      } catch (_) {}
       if (typeof window !== 'undefined' && window.__alloPdfAbortSignal === _abortCtrl.signal) {
         window.__alloPdfAbortSignal = _prevAbortSlot || null; // M11: hand the slot back to the overlapping origin (an aborted prev correctly aborts its own remaining calls)
       }

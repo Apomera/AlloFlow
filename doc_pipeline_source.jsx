@@ -18419,7 +18419,7 @@ HTML section ${chunkNum}/${chunks.length}:
         && _sharedEpoch === _chunkDocumentEpoch);
       let _invocationChunkState = _stateMatchesInvocation ? _cloneChunkStateForInvocation(_sharedChunkState) : null;
       if (_sharedChunkState && !_stateMatchesInvocation) {
-        _pipeLog('AutoFix', 'Discarding prior shared chunk state for this invocation; document identity or epoch changed.');
+        _pipeLog('AutoFix', 'Discarding prior shared chunk state for this invocation; document identity or epoch changed.', null, _sessMeta.owner || null); // M20: stamp the caller's identity when it supplies one
         _autoFixChunkStateCoordinator.publish(_chunkStateOwner, null);
       }
       let currentHtml = htmlContent;
