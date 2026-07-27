@@ -194,3 +194,165 @@ describe('the recovery-save latch is earned by a successful save', () => {
     expect(j, 'the latch must come AFTER the save it reports').toBeGreaterThan(i);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// H16 — the batch lock, driven rather than described.
+//
+// H16 shipped with six pins, all structural: the claim ordering, the error shape, the managed flag,
+// the release, the handover, the stale-lock release. Delete `_activeSingleFixPromise = token;` from
+// _claimRemediationLockForBatch and every one of them stays green while the batch holds nothing —
+// which is exactly the state H16 exists to prevent, because two runs then share _pipelineStats and
+// cross-stamp each other's runId onto every log line and watchdog heartbeat.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('H16 — a batch actually holds the lock', () => {
+  let pipeline;
+  const noop = () => {};
+  beforeAll(() => {
+    loadAlloModule('doc_pipeline_module.js');
+    window.__alloPdfDocumentEpoch = 0;
+    window.__alloPdfRunGen = 0;
+    // Every CDN-loaded global needs a TRUTHY stub: _loadCdnScript short-circuits on its readiness
+    // predicate, but a falsy global sends it through three URLs at a 12s timeout each. Without
+    // these the batch sits for a minute instead of failing fast on a fake PDF.
+    window.pdfjsLib = { getDocument: () => ({ promise: Promise.reject(new Error('stub: no pdf.js in jsdom')) }), GlobalWorkerOptions: {} };
+    window.Tesseract = { createWorker: async () => { throw new Error('stub'); } };
+    window.PDFLib = { PDFDocument: { load: async () => { throw new Error('stub'); } } };
+    window.pako = {}; window.fontkit = {}; window.axe = { run: async () => { throw new Error('stub'); } };
+    pipeline = window.AlloModules.createDocPipeline({
+      callGemini: async () => 'OK', callGeminiVision: async () => '', callImagen: async () => null,
+      addToast: noop, t: (k) => k, isRtlLang: () => false,
+      updateExportPreview: noop, getDefaultTitle: () => 'Document',
+      state: {
+        pdfDocumentEpoch: 0, pendingPdfBase64: null, pendingPdfFile: null,
+        pdfAuditResult: { score: 40, issues: [], pageCount: 1 }, pdfTargetScore: 90,
+        pdfAutoFixPasses: 1, pdfPolishPasses: 0, pdfAuditorCount: 1, currentUiLanguage: 'English',
+        setPdfFixLoading: noop, setPdfFixStep: noop, setPdfFixResult: noop,
+        setPdfAuditResult: noop, setPdfAuditLoading: noop, setPendingPdfBase64: noop,
+        setPendingPdfFile: noop, setPdfBatchQueue: noop, setPdfBatchProcessing: noop,
+        setPdfBatchCurrentIndex: noop, setPdfBatchStep: noop, setPdfBatchSummary: noop,
+        setIsGeneratingStyle: noop, setCustomExportCSS: noop, setInputText: noop,
+        setGenerationStep: noop, setIsExtracting: noop, setExportAuditLoading: noop,
+        setExportAuditResult: noop, setError: noop,
+      },
+    });
+  });
+
+  it('a live batch REFUSES a concurrent single-file start', async () => {
+    // The batch itself will fail fast (no real files); what matters is that while it is in flight
+    // the lock is held, so the second start is rejected rather than running alongside it.
+    const batch = pipeline.runPdfBatchRemediation({ queue: [{ fileName: 'a.pdf', base64: 'JVBERi0=' }] }).catch(() => null);
+    const err = await pipeline.fixAndVerifyPdf({
+      documentEpoch: 0, base64: 'JVBERi0=', fileName: 'b.pdf', auditResult: { score: 40, issues: [] },
+    }).then(() => null, (e) => e);
+    expect(err, 'a single-file start over a live batch was NOT refused — both runs would share _pipelineStats').toBeTruthy();
+    expect(err.name).toBe('RemediationAlreadyRunningError');
+    await batch;
+  }, 60000);
+
+  it('the claim is MANAGED, so the busy probe stays quiet and the single-file controls stay live', async () => {
+    const batch = pipeline.runPdfBatchRemediation({ queue: [{ fileName: 'a.pdf', base64: 'JVBERi0=' }] }).catch(() => null);
+    // A batch owns its own progress UI. If this ever reported true, every single-file control would
+    // grey out for the length of an overnight batch.
+    expect(pipeline.isRemediationRunning()).toBe(false);
+    expect(pipeline.getActiveRemediationRun()).toBeNull();
+    await batch;
+  }, 60000);
+
+  it('the lock is released when the batch ends, so the next single-file run can start', async () => {
+    await pipeline.runPdfBatchRemediation({ queue: [{ fileName: 'a.pdf', base64: 'JVBERi0=' }] }).catch(() => null);
+    const err = await pipeline.fixAndVerifyPdf({
+      documentEpoch: 0, base64: 'JVBERi0=', fileName: 'b.pdf', auditResult: { score: 40, issues: [] },
+    }).then(() => null, (e) => e);
+    // It will fail for its own reasons (not a real PDF) — but NOT because the lock is still held.
+    expect(err && err.name, 'the batch stranded the lock — no further remediation is possible').not.toBe('RemediationAlreadyRunningError');
+  }, 60000);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A disclosure that cries wolf is worse than none — it teaches the teacher to
+// ignore the amber banner. These are the false-positive guards on the M12 net.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('the link baseline does not cry wolf', () => {
+  it('counts DISTINCT EXTERNAL urls, not annotation objects', () => {
+    // Three over-counts, all systematic: internal dest/action navigation (TOC, cross-references,
+    // and every footnote reference/back-reference PAIR), one hyperlink spanning two rendered lines
+    // as two rects, and the same footer URL repeated on every page.
+    expect(dp).toContain("if (!_a || _a.subtype !== 'Link') continue;");
+    expect(dp).toContain('const _srcLinkUrls = new Set();');
+    expect(dp).toContain('const _srcLinkAnnotations = _srcLinkUrls.size;');
+  });
+
+  it('a page-range run refuses the whole-document baseline in BOTH lanes', () => {
+    // 30 source links compared against a 10-page output is a guaranteed false warning.
+    expect(dp).toContain('const _sliceRun = !!(_pageRange && (_pageRange[0] || _pageRange[1]));');
+    expect(dp).toContain('if (!_sliceRun && Number.isFinite(_lc) && _lc > 0) _srcStructCounts = { links: _lc };');
+    const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+    expect(view).toContain('const _sliceRun = !!(pdfPageRange && (pdfPageRange.start || pdfPageRange.end));');
+    expect(view).toContain('const _srcLinks = (!_sliceRun && typeof _docPipeline.sourceLinkCount === \'function\')');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FERPA — a fidelity note is for the teacher; the copyable log is not.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('FERPA: raw document values never reach the diagnostics log', () => {
+  let redact;
+  beforeAll(() => {
+    loadAlloModule('doc_pipeline_module.js');
+    redact = window.AlloModules.createDocPipeline.logSafeFidelityMsg;
+  });
+
+  it('strips the numeric VALUE SAMPLE but keeps the count', () => {
+    // On a psychoeducational report those tokens are standard scores, percentiles and dates of
+    // testing — and warnLog feeds the panel a teacher copies into a bug report.
+    const msg = '8 source numeric value(s) not found unchanged in the output (76, 112, 04/17/2019, 98). A remediation should never change numbers — review the Diff.';
+    const out = redact(msg);
+    expect(out).toContain('8 source numeric value(s)');
+    expect(out).not.toContain('04/17/2019');
+    expect(out).not.toContain('112');
+    expect(out).toContain('FERPA');
+  });
+
+  it('strips leaked folio page numbers', () => {
+    const out = redact('Page number(s) 194, 195 from the scanned pages appear inline in the output text.');
+    expect(out).not.toContain('194');
+    expect(out).toContain('FERPA');
+  });
+
+  it('leaves a value-free message alone', () => {
+    const msg = 'Links: some hyperlinks from the source may have been dropped. Check the Diff.';
+    expect(redact(msg)).toBe(msg);
+  });
+
+  it('every fidelity log site routes through it', () => {
+    expect(dp).toContain("warnLog('[Integrity] VALUE-FIDELITY — ' + _alloLogSafeFidelityMsg(_valWarn))");
+    expect(dp).toContain("warnLog('[Fidelity] ' + _alloLogSafeFidelityMsg(n.msg))");
+    expect(dp).toContain("warnLog('[Integrity] FOLIO-LEAK — ' + _alloLogSafeFidelityMsg(_folioLeakWarn))");
+    const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+    expect(view).toContain("warnLog('[Fix Remaining] fidelity: ' + _logSafe(n.msg))");
+  });
+
+  it('the teacher-facing note is NOT redacted — the values are what make it actionable', () => {
+    // The toast, the fidelity panel and the exported statement all keep the values; only warnLog
+    // is redacted. Pin the toast so a future "consistent" change does not blind the teacher.
+    expect(dp).toContain("addToast('⚠ ' + _valWarn, 'warning')");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// H15 — the drain's own reserve, not the calm default's.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('H15 — the drain does not spend its budget on nothing', () => {
+  it('the calm wait inside the drain reserves the DRAIN reserve', () => {
+    // The guard trips at deadline-60s while the wait was clamped to deadline-30s, so the drain
+    // could pause for its whole clamped budget and then revisit ZERO chunks.
+    expect(dp).toContain('_alloCalmBudgetMs(90000, _control && _control.perFileDeadlineTs, _DRAIN_RESERVE_MS)');
+  });
+
+  it('probe telemetry actually reaches the snapshots', () => {
+    // L6 claimed probe traffic was "counted in run telemetry", but the snapshot builders enumerate
+    // a fixed field list and the three probe fields were not in it.
+    expect((dp.match(/probeCalls: /g) || []).length).toBeGreaterThanOrEqual(3);
+    expect((dp.match(/probeMs: /g) || []).length).toBeGreaterThanOrEqual(3);
+  });
+});

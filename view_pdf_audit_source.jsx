@@ -9016,7 +9016,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 // merge below FILTERED the primary pass's real "11 of 14 hyperlinks may have
                                 // been dropped" warning out. A re-fix silently deleted a content-loss
                                 // disclosure. Read through the pipeline so every lane uses one accessor.
-                                const _srcLinks = (typeof _docPipeline.sourceLinkCount === 'function') ? _docPipeline.sourceLinkCount() : null;
+                                // …and refused on a page-range run: the baseline is whole-document, so
+                                // comparing it against a slice's output is a guaranteed false warning.
+                                const _sliceRun = !!(pdfPageRange && (pdfPageRange.start || pdfPageRange.end));
+                                const _srcLinks = (!_sliceRun && typeof _docPipeline.sourceLinkCount === 'function') ? _docPipeline.sourceLinkCount() : null;
                                 const _sf = _docPipeline.computeStructuralFidelityNotes(_srcRaw, bestHtml, _srcLinks ? { links: _srcLinks } : null);
                                 if (Array.isArray(_sf)) _sf.forEach(n => _notes.push(n));
                               }
@@ -9053,7 +9056,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 : (Array.isArray(_fixRemainingSource.fidelityNotes) ? _fixRemainingSource.fidelityNotes : [])
                                   .filter((n) => !(n && _laneKinds[n.kind]))
                                   .concat(_notes);
-                              _notes.forEach(n => warnLog('[Fix Remaining] fidelity: ' + n.msg));
+                              // FERPA (deep dive 2026-07-27): the numeric note quotes up to eight raw
+                              // values from the document — standard scores, percentiles, dates of
+                              // testing on an IEP. They belong in the teacher's fidelity panel, not in
+                              // window.__alloDiagLog, which is the panel a teacher copies into a bug
+                              // report. Same redactor the pipeline's own log sites use.
+                              const _logSafe = (m) => ((_docPipeline && typeof _docPipeline.logSafeFidelityMsg === 'function') ? _docPipeline.logSafeFidelityMsg(m) : String(m || '').replace(/\(([^()]*\d[^()]*)\)/g, '(sample withheld from the log — FERPA)'));
+                              _notes.forEach(n => warnLog('[Fix Remaining] fidelity: ' + _logSafe(n.msg)));
                             } catch (_fidErr) { warnLog('[Fix Remaining] fidelity sweep failed (non-critical): ' + (_fidErr && _fidErr.message)); }
                             const finalMetadataToken = _captureAsyncHtmlToken();
                             const committed = finalMetadataToken && finalMetadataToken.html === bestHtml && _commitAsyncHtmlIfCurrent(finalMetadataToken, (prev) => {

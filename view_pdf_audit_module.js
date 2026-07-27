@@ -8575,7 +8575,8 @@ Return ONLY JSON:
           const _outText = _docPipeline && typeof _docPipeline.htmlToPlainText === "function" ? _docPipeline.htmlToPlainText(bestHtml) : "";
           const _notes = [];
           if (_srcRaw && _docPipeline && typeof _docPipeline.computeStructuralFidelityNotes === "function") {
-            const _srcLinks = typeof _docPipeline.sourceLinkCount === "function" ? _docPipeline.sourceLinkCount() : null;
+            const _sliceRun = !!(pdfPageRange && (pdfPageRange.start || pdfPageRange.end));
+            const _srcLinks = !_sliceRun && typeof _docPipeline.sourceLinkCount === "function" ? _docPipeline.sourceLinkCount() : null;
             const _sf = _docPipeline.computeStructuralFidelityNotes(_srcRaw, bestHtml, _srcLinks ? { links: _srcLinks } : null);
             if (Array.isArray(_sf)) _sf.forEach((n) => _notes.push(n));
           }
@@ -8592,7 +8593,8 @@ Return ONLY JSON:
           }
           const _laneKinds = _docPipeline && _docPipeline.refixLaneRecomputedFidelityKinds || { links: 1, tables: 1, refusal: 1, numeric: 1, "reading-order": 1 };
           _refixNotes = _docPipeline && typeof _docPipeline.mergeFidelityNotes === "function" ? _docPipeline.mergeFidelityNotes(_fixRemainingSource.fidelityNotes, _notes, _laneKinds) : (Array.isArray(_fixRemainingSource.fidelityNotes) ? _fixRemainingSource.fidelityNotes : []).filter((n) => !(n && _laneKinds[n.kind])).concat(_notes);
-          _notes.forEach((n) => warnLog("[Fix Remaining] fidelity: " + n.msg));
+          const _logSafe = (m) => _docPipeline && typeof _docPipeline.logSafeFidelityMsg === "function" ? _docPipeline.logSafeFidelityMsg(m) : String(m || "").replace(/\(([^()]*\d[^()]*)\)/g, "(sample withheld from the log \u2014 FERPA)");
+          _notes.forEach((n) => warnLog("[Fix Remaining] fidelity: " + _logSafe(n.msg)));
         } catch (_fidErr) {
           warnLog("[Fix Remaining] fidelity sweep failed (non-critical): " + (_fidErr && _fidErr.message));
         }

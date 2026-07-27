@@ -678,7 +678,14 @@ describe('M12 — the link net measures a baseline that exists for the input', (
   });
 
   it('the extractor really does collect Link annotations, and resets the count per run', () => {
-    expect(dp).toContain("if (_a && _a.subtype === 'Link' && (_a.url || _a.unsafeUrl || _a.dest || _a.action)) _srcLinkAnnotations++;");
+    // Narrowed 2026-07-27 (deep dive): the baseline now counts DISTINCT EXTERNAL URLs only.
+    // Counting dest/action-only annotations swept in internal navigation — a Word table of
+    // contents, "see page 12" cross-references, and every footnote reference/back-reference PAIR —
+    // so a 20-page report with 18 footnotes reported ~37 "source links" the output can never carry,
+    // firing a false dropped-hyperlink warning on a document that lost nothing.
+    expect(dp).toContain("if (!_a || _a.subtype !== 'Link') continue;");
+    expect(dp).toContain('const _u = String(_a.url || _a.unsafeUrl || \'\').trim();');
+    expect(dp).toContain('_srcLinkUrls.add(_u);');
     expect(dp).toContain('window.__alloSourceLinkCount = _srcLinkAnnotations;');
     expect(dp).toContain('window.__alloSourceLinkCount = 0;');
   });
@@ -870,9 +877,14 @@ describe('M16 — a failure wave expires instead of pinning the gate for the who
 
   it('the staleness bound is longer than the longest escalated cooldown', () => {
     // Otherwise a wave could be declared stale while its own cooldown was still running.
-    const cooldownCap = 25000; // Math.min(25000, …) at both trip sites
-    expect(50000).toBeGreaterThan(cooldownCap);
-    expect(dp).toContain('Math.min(25000, _GEMINI_COOLDOWN_MS');
+    // Both numbers are READ FROM THE SOURCE. The first version of this compared two literals
+    // hard-coded in the test file (50000 > 25000) and could never fail for any change to the
+    // pipeline — a tautology wearing the shape of an invariant.
+    const bound = Number((dp.match(/var _GEMINI_WAVE_STALE_MS = (\d+);/) || [])[1]);
+    const caps = Array.from(dp.matchAll(/Math\.min\((\d+), _GEMINI_COOLDOWN_MS/g)).map((m) => Number(m[1]));
+    expect(Number.isFinite(bound), 'could not read _GEMINI_WAVE_STALE_MS from the source').toBe(true);
+    expect(caps.length, 'could not read the escalated-cooldown caps from the source').toBeGreaterThan(0);
+    expect(bound).toBeGreaterThan(Math.max(...caps));
   });
 
   it('enough off-route successes clear the wave on their own', () => {

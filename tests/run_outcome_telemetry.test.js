@@ -1,64 +1,99 @@
+// @vitest-environment jsdom
 // Regression guard for the honest run-outcome telemetry (A1, 2026-06-14).
 //
-// The run-history effect (AlloFlowANTI.txt, the success effect ~L10465) used to
-// hard-code outcome:'success' for ANY completed run — so a doc that finished at
-// afterScore=35 with residual axe violations landed in the SUCCESS numerator of
-// the reliability rate Aaron defends to UMaine/Garry. A1 made the outcome a
-// derived tri-state. This test mirrors that derivation + the honest-rate
-// computation (view_pdf_audit_source.jsx run-history badge ~L2640) so the metric
-// can't silently regress to "every run that didn't crash = success". (Mirror
-// pattern, like fixHeadingHierarchy in doc_pipeline_wcag.test.js — keep the two
-// derivations in sync with the inline source.)
+// The run-history effect used to hard-code outcome:'success' for ANY completed run — so a doc that
+// finished at afterScore=35 with residual axe violations landed in the SUCCESS numerator of the
+// reliability rate Aaron defends to UMaine. A1 made the outcome a derived tri-state.
+//
+// REWRITTEN 2026-07-27 (deep dive). This file used to test two hand-written MIRRORS of the shipped
+// derivations. Both had drifted, and one had drifted into asserting the OPPOSITE of shipped
+// behaviour: 'cancelled runs are excluded from the reliability denominator' was green while audit
+// finding M6 had deliberately put them IN the denominator — stalls and aborts vanishing from both
+// sides of the ratio was exactly what made that rate unable to show the failure mode a pilot most
+// needs to see. A green test asserting the opposite of the product is worse than no test: the next
+// person to read it "fixes" the code back.
+//
+// Now: the outcome derivation drives the REAL exported remediationOutcome, and the rate rule is
+// asserted against the SHIPPED expression in the view rather than a copy of it.
+import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
 
-import { describe, it, expect } from 'vitest';
+const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 
-// Mirror: outcome derivation — `_outcome` in the success effect.
-// success = reached the teacher's target with no KNOWN residual violations.
-// CONSERVATIVE: a null axe audit (checker didn't run) is NOT downgraded.
-function deriveOutcome(afterScore, residualViolations, target) {
-  return (afterScore >= target && (residualViolations === 0 || residualViolations == null)) ? 'success' : 'incomplete';
-}
+let outcome;
+beforeAll(() => {
+  loadAlloModule('doc_pipeline_module.js');
+  outcome = window.AlloModules.createDocPipeline({
+    callGemini: async () => 'OK', callGeminiVision: async () => '', callImagen: async () => null,
+    addToast: () => {}, t: (k) => k, isRtlLang: () => false,
+    updateExportPreview: () => {}, getDefaultTitle: () => 'D', state: {},
+  }).remediationOutcome;
+});
 
-// Mirror: honest success rate (run-history badge) — numerator is 'success' ONLY;
-// 'incomplete' and 'failed' sit in the denominator; rows with no outcome
-// (pre-telemetry / loaded snapshots) are excluded entirely.
-function successRate(rows) {
-  const outcomed = rows.filter((r) => r.outcome === 'success' || r.outcome === 'incomplete' || r.outcome === 'failed');
-  const succeeded = outcomed.filter((r) => r.outcome === 'success');
-  return outcomed.length ? Math.round(succeeded.length / outcomed.length * 100) : null;
-}
+// A result shaped the way the run-history effect really passes one.
+// A COMPLETE AI audit means: a real score, not degraded, not synthesized, and every requested
+// section actually read (chunksAudited === chunksRequested, _partialAudit !== true). Anything less
+// is 'incomplete' by design — an unverified run must never enter the success numerator.
+const result = (over) => Object.assign({
+  afterScore: 96,
+  axeAudit: { totalViolations: 0, score: 100 },
+  equalAccessAudit: { failViolations: 0, score: 100 },
+  verificationAudit: { score: 96, issues: [], chunksRequested: 3, chunksAudited: 3 },
+  verificationState: 'complete',
+  afterScoreVerified: true,
+  requiresManualReview: false,
+  _aiVerificationIncomplete: false,
+}, over || {});
 
-describe('run-outcome telemetry — honest tri-state (regression for A1)', () => {
-  const T = 90; // pdfTargetScore default
-  it('a high-score, zero-violation run is success', () => {
-    expect(deriveOutcome(95, 0, T)).toBe('success');
-  });
-  it('THE BUG CASE: a completed run at afterScore=35 with violations is incomplete, NOT success', () => {
-    expect(deriveOutcome(35, 5, T)).toBe('incomplete');
-  });
-  it('a high score with residual violations is still incomplete (no free pass)', () => {
-    expect(deriveOutcome(95, 3, T)).toBe('incomplete');
-  });
-  it('completing below target is incomplete', () => {
-    expect(deriveOutcome(85, 0, T)).toBe('incomplete');
-  });
-  it('CONSERVATIVE: a null axe audit (checker did not run) is NOT downgraded', () => {
-    expect(deriveOutcome(95, null, T)).toBe('success');
-  });
-  it('exactly at target counts as success', () => {
-    expect(deriveOutcome(90, 0, T)).toBe('success');
-  });
-  it('honest rate counts ONLY success in the numerator (incomplete + failed in the denominator)', () => {
-    const rows = [{ outcome: 'success' }, { outcome: 'success' }, { outcome: 'incomplete' }, { outcome: 'failed' }];
-    // 2 of 4 outcomed → 50%. The OLD code (numerator = outcomed − failed) said 75%.
-    expect(successRate(rows)).toBe(50);
-  });
-  it('cancelled runs are excluded from the reliability denominator', () => {
-    expect(successRate([{ outcome: 'success' }, { outcome: 'cancelled' }])).toBe(100);
+describe('the REAL outcome derivation (regression for A1)', () => {
+  it('a run that reached target with a known-clean checker is a success', () => {
+    expect(outcome(result(), { targetScore: 95 }).state).toBe('success');
   });
 
-  it('rows with no outcome (pre-telemetry / loaded snapshots) are excluded from the rate', () => {
-    const rows = [{ outcome: 'success' }, {}, { foo: 1 }];
-    expect(successRate(rows)).toBe(100); // only the 1 outcomed row counts
+  it('THE BUG CASE: a completed run at afterScore=35 with violations is NOT success', () => {
+    expect(outcome(result({ afterScore: 35, axeAudit: { totalViolations: 5, score: 40 } }), { targetScore: 95 }).state).not.toBe('success');
+  });
+
+  it('a high score with residual violations is still not a success (no free pass)', () => {
+    expect(outcome(result({ axeAudit: { totalViolations: 3, score: 80 } }), { targetScore: 95 }).state).not.toBe('success');
+  });
+
+  it('completing below target is not a success', () => {
+    expect(outcome(result({ afterScore: 72 }), { targetScore: 95 }).state).not.toBe('success');
+  });
+
+  it('an UNKNOWN checker state is not a success — unverified must never enter the numerator', () => {
+    // Finding 15 (2026-07-10) reversed the original "conservative" rule, which counted a null axe
+    // audit as SATISFYING "no violations". The old mirror in this file still encoded the pre-2026-07-10
+    // behaviour and asserted it as correct.
+    expect(outcome(result({ axeAudit: null }), { targetScore: 95 }).state).not.toBe('success');
+  });
+
+  it('a throttle-degraded AI verification is not a success', () => {
+    expect(outcome(result({ _aiVerificationIncomplete: true }), { targetScore: 95 }).state).not.toBe('success');
+  });
+});
+
+describe('the SHIPPED reliability-rate rule', () => {
+  // Pinned against the view's own expression rather than a mirror of it — the mirror is what went
+  // stale and started asserting the opposite of the product.
+  const block = view.slice(view.indexOf('const _outcomed = _hist.filter('), view.indexOf('const _successRate'));
+
+  it('the numerator is success ONLY', () => {
+    expect(view).toContain("const _succeeded = _outcomed.filter((r) => r.outcome === 'success');");
+    expect(view).toContain('_successRate = _outcomed.length ? Math.round(_succeeded.length / _outcomed.length * 100) : null;');
+  });
+
+  it('incomplete, failed AND cancelled all sit in the denominator (M6)', () => {
+    expect(block.length).toBeGreaterThan(0);
+    for (const o of ['success', 'incomplete', 'failed', 'cancelled']) {
+      expect(block, `outcome '${o}' must be counted in the denominator`).toContain(`r.outcome === '${o}'`);
+    }
+  });
+
+  it('a run with cancellations does not render as all-green', () => {
+    expect(view).toContain('(_failed.length === 0 && _incomplete.length === 0 && _cancelled.length === 0)');
   });
 });

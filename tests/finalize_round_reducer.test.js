@@ -135,8 +135,13 @@ async function referenceMerge(P, cur, { html, reVerify, rawAxe, rawEa, auditOnly
 // DELIBERATE DIVERGENCE (audit finding M9, 2026-07-26). The reducer now RESETS three stale-estimate
 // fields that the frozen reference carried forward untouched, so a superseded round's "estimated
 // minimum score" could be displayed against the current document. That is an intentional behaviour
-// change, not a refactor slip, so it is excluded from the parity comparison and pinned separately
-// in the dedicated test below — parity still covers every other field.
+// change, not a refactor slip, so it is excluded from the parity comparison and pinned separately —
+// parity still covers every other field.
+//
+// Corrected 2026-07-27: "the dedicated test below" was wrong — the replacement lives in ANOTHER
+// FILE, tests/remediation_pipeline_audit_fixes.test.js ("M9 — a new round never inherits the
+// previous round's score estimate"), which drives the real reducer. A pointer to a test that is not
+// where it says it is reads, to the next person, exactly like a test that was never written.
 const M9_DIVERGENT_KEYS = ['_estimatedMinimumScore', '_estimatedScoreBasis', '_finalAuditRetryAvailable'];
 
 // DELIBERATE DIVERGENCE (audit finding H6, 2026-07-26; two-way clearing authorised by Aaron the
