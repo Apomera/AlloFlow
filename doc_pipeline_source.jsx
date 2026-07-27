@@ -9384,7 +9384,31 @@ var createDocPipeline = function(deps) {
   // for partial/malformed records — the user can still download what's there.
   const mergeRangesToFullHtml = (ranges, totalPages) => {
     if (!Array.isArray(ranges) || ranges.length === 0) return '';
-    const sorted = ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0));
+    // L1 (audit 2026-07-26): `pages` was dereferenced unguarded in four places — the sort
+    // comparator, the section attribute, the boundary call and the trailing-gap check. A stored
+    // record missing it (a legacy save, a hand-edited project file, a half-written range) threw a
+    // TypeError out of the merge, and this is the LAST step of a multi-day workflow: the teacher
+    // loses every session's work to one malformed record. Nothing is worth less than the content
+    // here, so a range with unusable page numbers keeps its HTML and simply loses its position —
+    // sorted last, and emitted without a page-range attribute rather than with "undefined-undefined".
+    const _num = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? Math.floor(n) : null; };
+    const _pagesOf = (rg) => {
+      const p = rg && rg.pages;
+      if (!Array.isArray(p)) return { start: null, end: null };
+      const start = _num(p[0]);
+      let end = _num(p[1]);
+      if (start !== null && end !== null && end < start) end = start; // a reversed record is not a reason to lose it
+      return { start, end };
+    };
+    const _positioned = ranges.filter((r) => _pagesOf(r).start !== null);
+    const _unpositioned = ranges.filter((r) => _pagesOf(r).start === null);
+    if (_unpositioned.length) {
+      warnLog('[MultiSession] ' + _unpositioned.length + ' saved range(s) carry no usable page numbers — their content is kept and appended at the end rather than dropped.');
+    }
+    const sorted = _positioned.slice()
+      .sort((a, b) => (_pagesOf(a).start || 0) - (_pagesOf(b).start || 0))
+      .concat(_unpositioned);
+    if (sorted.length === 0) return '';
     // Helper: extract body inner content from a single remediated range's HTML.
     // Tries <main>...</main> first (the preferred landmark), falls back to
     // <body>...</body>, then to the raw string if neither is present.
@@ -9445,21 +9469,30 @@ var createDocPipeline = function(deps) {
     const bodies = [];
     for (let i = 0; i < sorted.length; i++) {
       const r = sorted[i];
+      const _rp = _pagesOf(r);
+      // L1: no page numbers → no page-range attribute, rather than "undefined-undefined".
+      const _rangeAttr = (_rp.start !== null)
+        ? ' data-page-range="' + _rp.start + '-' + (_rp.end === null ? _rp.start : _rp.end) + '"'
+        : ' data-page-range-unknown="true"';
       bodies.push(
-        '<section data-page-range="' + r.pages[0] + '-' + r.pages[1] + '"' +
+        '<section' + _rangeAttr +
         (r.completedAt ? ' data-completed-at="' + new Date(r.completedAt).toISOString() + '"' : '') +
         '>\n' +
         _extractBodyContent(_rangeHtml(r)) +
         '\n</section>'
       );
       if (i < sorted.length - 1) {
-        bodies.push(_boundary(r.pages[1], sorted[i + 1].pages[0]));
+        const _next = _pagesOf(sorted[i + 1]);
+        // A boundary can only describe a GAP when both sides know where they are.
+        if (_rp.end !== null && _next.start !== null) bodies.push(_boundary(_rp.end, _next.start));
+        else bodies.push('\n<hr data-multi-session-boundary="section" aria-label="Section break — resumed remediation session">\n');
       }
     }
     // Optional final gap notice if the last range doesn't reach totalPages.
     let trailingNotice = '';
-    if (totalPages && lastRange.pages[1] < totalPages) {
-      const remStart = lastRange.pages[1] + 1;
+    const _lastPages = _pagesOf(lastRange);
+    if (totalPages && _lastPages.end !== null && _lastPages.end < totalPages) {
+      const remStart = _lastPages.end + 1;
       trailingNotice = '\n<hr data-multi-session-boundary="end-of-completed" ' +
         'aria-label="End of completed pages">\n' +
         '<p data-multi-session-gap="' + remStart + '-' + totalPages + '" role="note" ' +
