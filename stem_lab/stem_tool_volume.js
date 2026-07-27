@@ -372,6 +372,17 @@ window.StemLab = window.StemLab || {
       // buys nothing anyway.
       solidMesh.frustumCulled = false;
       solidMesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
+      // Allocate instanceColor NOW, before the first render. r128 compiles
+      // USE_INSTANCING_COLOR based on whether instanceColor is null at compile
+      // time and then caches the program. Freeform mode opens with zero blocks,
+      // so deferring this to the first setColorAt would cache a colourless
+      // program and every layer colour placed afterwards would be dropped —
+      // blocks render white and the layer-colour teaching cue is lost.
+      if (typeof solidMesh.setColorAt === 'function') {
+        var seedColor = new T.Color(0xffffff);
+        for (var si = 0; si < capacity; si++) solidMesh.setColorAt(si, seedColor);
+        if (solidMesh.instanceColor) solidMesh.instanceColor.needsUpdate = true;
+      }
       scene.add(solidMesh);
 
       // Real box edges, not `wireframe: true` — a wireframe material draws the
