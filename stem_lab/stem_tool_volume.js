@@ -3,10 +3,19 @@
 //
 // ARCHITECTURE NOTES (for contributors)
 // ─────────────────────────────────────
-// Rendering: pure CSS 3D transforms (translate3d + rotateX/Y, preserve-3d,
-//   perspective). No Three.js, no WebGL, no canvas. Trade-off: zero deps and
-//   works in any browser, but perf ceiling ~50-60 visible cubes on low-end
-//   Chromebooks. For VR or higher fidelity see ARCHITECTURE.md (TODO).
+// Rendering: TWO layers over one model.
+//   1. CSS 3D transforms (translate3d + rotateX/Y, preserve-3d, perspective).
+//      Zero deps, works anywhere, but ~50-60 visible cubes on a low-end
+//      Chromebook and no way to show a cut face or a smooth solid.
+//   2. WebGL via the shared window.StemLab.ensureThree loader (Three.js r128),
+//      instanced so freeform's 640-block ceiling is no longer a perf problem.
+//      Adds the analytic-solid overlay, a real cross-section clip plane, and
+//      lighting. See the WEBGL RENDERER section for the full rationale.
+//   Layer 1 always renders and is the guaranteed floor; layer 2 is the default
+//   when it can run and falls back automatically when it cannot. Both are
+//   driven by the same `rotation`/`scale` state, so the drag handler, arrow
+//   keys, camera presets and pinch-zoom are shared — there is deliberately no
+//   second (OrbitControls) interaction system.
 //
 // Coordinate system (cube positions stored as "x-y-z" strings in `positions`):
 //   x = column (left/right), runs 0..L-1 in slider mode, 0..7 in freeform
@@ -246,6 +255,422 @@ window.StemLab = window.StemLab || {
       right: 'hsl(' + ((tone.h + 8) % 360) + ',' + Math.max(30, tone.s - 12) + '%,' + rightLight + '%)'
     };
   }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // WEBGL RENDERER — progressive enhancement over the CSS 3D layer
+  // ───────────────────────────────────────────────────────────────────────
+  // Why: the CSS path tops out around 50-60 cubes (see header note) and
+  // structurally cannot express the three things this tool most needs —
+  //   (a) the smooth analytic solid shown NEXT TO its own cube approximation,
+  //       which is the only way students see WHY π·r²·h and "count the blocks"
+  //       disagree for cylinder/cone/pyramid;
+  //   (b) a true cross-section THROUGH the interior (the CSS path just deletes
+  //       every cube above the cut, so you never see the cut face);
+  //   (c) real lighting and a contact shadow, which are the depth cues a
+  //       learner actually reads a 3D stack with.
+  //
+  // Contract with the CSS layer: the DOM cubes ALWAYS render. When GL is live
+  // the CSS container is `visibility:hidden` — still in the DOM (so
+  // [data-volume-cube] selectors, PNG export and the layer-colour plumbing all
+  // keep working) but out of the hit-test and accessibility trees, so nothing
+  // is ever clickable-but-invisible. Every failure path flips glMode off, which
+  // simply reveals the CSS view again. There is no state in here that the CSS
+  // path depends on.
+  //
+  // Mount pattern: module singleton + ONE stable ref callback (volGlRef below).
+  // An inline `ref={el => ...}` would re-run on every render and tear the
+  // canvas down mid-drag — that exact bug has bitten DNA and Ecosystem.
+  // render() never touches the GPU: it stashes a plain model object on
+  // VolGL.pending and the rAF loop picks it up on the next frame.
+  // ═══════════════════════════════════════════════════════════════════════
+  var VolGL = (function () {
+    var DEG = Math.PI / 180;
+    var T = null;                    // window.THREE once loaded
+    var state = 'idle';              // 'idle' | 'loading' | 'ready' | 'failed'
+    var canvasEl = null, renderer = null, scene = null, camera = null;
+    var solidMesh = null, edgeMesh = null, analyticMesh = null, shadowPlane = null, gridHelper = null;
+    var clipPlane = null, dirLight = null;
+    var rafId = 0, capacity = 0, resizeObs = null;
+    var dummy = null, colorTmp = null, raycaster = null, ndc = null;
+    var pending = null;              // model stashed by render()
+    var appliedSig = '', appliedCamSig = '', appliedViewSig = '';
+    var dirty = true;
+    var downPt = null;               // for click-vs-drag discrimination
+
+    function reportFailure(reason) {
+      state = 'failed';
+      var mdl = pending;
+      if (mdl && typeof mdl.onFail === 'function') {
+        try { mdl.onFail(reason); } catch (e) {}
+      }
+    }
+
+    // ── Scene construction ───────────────────────────────────────────────
+    function buildScene() {
+      scene = new T.Scene();
+      scene.background = null;
+
+      camera = new T.PerspectiveCamera(45, 1, 0.1, 500);
+
+      // Hemisphere fill keeps the underside of a stack readable when the
+      // student rotates below the horizon; the directional key gives the
+      // face-to-face contrast that makes individual cubes countable.
+      scene.add(new T.HemisphereLight(0xdbeafe, 0x1e293b, 0.85));
+      dirLight = new T.DirectionalLight(0xffffff, 0.75);
+      dirLight.position.set(6, 12, 8);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 1024;
+      dirLight.shadow.mapSize.height = 1024;
+      var sc = dirLight.shadow.camera;
+      sc.left = -14; sc.right = 14; sc.top = 14; sc.bottom = -14; sc.near = 0.5; sc.far = 60;
+      scene.add(dirLight);
+      scene.add(dirLight.target);
+
+      // depthWrite:false is load-bearing — a ShadowMaterial that writes depth
+      // occludes the whole model the moment the camera drops below the ground
+      // plane (rotation.x can reach ±180 here).
+      shadowPlane = new T.Mesh(
+        new T.PlaneGeometry(80, 80),
+        new T.ShadowMaterial({ opacity: 0.3, depthWrite: false })
+      );
+      shadowPlane.rotation.x = -Math.PI / 2;
+      shadowPlane.receiveShadow = true;
+      scene.add(shadowPlane);
+
+      clipPlane = new T.Plane(new T.Vector3(0, -1, 0), 1e6);
+      dummy = new T.Object3D();
+      colorTmp = new T.Color();
+      raycaster = new T.Raycaster();
+      ndc = new T.Vector2();
+    }
+
+    function disposeMesh(m) {
+      if (!m) return;
+      scene.remove(m);
+      if (m.geometry) m.geometry.dispose();
+      if (m.material) m.material.dispose();
+    }
+
+    // Voxel body + a coincident wireframe cage. The cage is what keeps the
+    // stack *countable* — without it a lit voxel blob reads as one solid lump
+    // and the whole "volume = how many unit cubes" idea is lost.
+    function ensureCapacity(n) {
+      if (solidMesh && capacity >= n) return;
+      disposeMesh(solidMesh); disposeMesh(edgeMesh);
+      capacity = Math.max(16, n);
+
+      var body = new T.BoxGeometry(0.94, 0.94, 0.94);
+      var bodyMat = new T.MeshLambertMaterial({
+        color: 0xffffff, side: T.DoubleSide, clippingPlanes: [clipPlane]
+      });
+      solidMesh = new T.InstancedMesh(body, bodyMat, capacity);
+      solidMesh.castShadow = true;
+      solidMesh.receiveShadow = true;
+      // r128's InstancedMesh has no per-instance bounding volume, so frustum
+      // culling would test the whole stack against ONE unit-cube sphere at the
+      // origin and pop the model out of view. Culling a <=640 instance draw
+      // buys nothing anyway.
+      solidMesh.frustumCulled = false;
+      solidMesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
+      scene.add(solidMesh);
+
+      // Real box edges, not `wireframe: true` — a wireframe material draws the
+      // TRIANGLE edges, so every face gets an X through it and the stack stops
+      // reading as unit cubes. 12 edges per cube, batched into one LineSegments.
+      var edgeGeo = new T.BufferGeometry();
+      edgeGeo.setAttribute('position', new T.BufferAttribute(new Float32Array(capacity * 24 * 3), 3));
+      var edgeMat = new T.LineBasicMaterial({
+        color: 0x0f172a, transparent: true, opacity: 0.3, clippingPlanes: [clipPlane]
+      });
+      edgeMesh = new T.LineSegments(edgeGeo, edgeMat);
+      edgeMesh.frustumCulled = false;
+      scene.add(edgeMesh);
+    }
+
+    // The 12 edges of a unit cube as 24 endpoints, reused for every voxel.
+    var EDGE_TEMPLATE = (function () {
+      var c = [[-0.5, -0.5, -0.5], [0.5, -0.5, -0.5], [0.5, -0.5, 0.5], [-0.5, -0.5, 0.5],
+               [-0.5, 0.5, -0.5], [0.5, 0.5, -0.5], [0.5, 0.5, 0.5], [-0.5, 0.5, 0.5]];
+      var pairs = [[0,1],[1,2],[2,3],[3,0], [4,5],[5,6],[6,7],[7,4], [0,4],[1,5],[2,6],[3,7]];
+      var out = [];
+      pairs.forEach(function (p) { out.push(c[p[0]], c[p[1]]); });
+      return out;
+    })();
+
+    // The smooth mathematical solid the formula actually describes. Rendered
+    // translucent around the voxel stack so the overshoot/undershoot of the
+    // cube approximation is directly visible.
+    function buildAnalytic(mdl) {
+      disposeMesh(analyticMesh);
+      analyticMesh = null;
+      if (!mdl.showAnalytic || mdl.shape === 'prism') return;
+
+      var l = mdl.dl, w = mdl.dw, hh = mdl.dh, geo;
+      if (mdl.shape === 'cylinder') {
+        geo = new T.CylinderGeometry(1, 1, hh, 48, 1, true);
+        geo.scale(l / 2, 1, w / 2);
+      } else if (mdl.shape === 'cone') {
+        geo = new T.CylinderGeometry(0, 1, hh, 48, 1, true);
+        geo.scale(l / 2, 1, w / 2);
+      } else if (mdl.shape === 'pyramid') {
+        // A 4-gon cone has its base vertices on the unit circle, so after the
+        // 45° spin the square spans ±cos(45°). Scale up by √2 to hit l×w.
+        geo = new T.CylinderGeometry(0, 1, hh, 4, 1, true);
+        geo.rotateY(Math.PI / 4);
+        geo.scale((l / 2) * Math.SQRT2, 1, (w / 2) * Math.SQRT2);
+      } else {
+        return;
+      }
+      var mat = new T.MeshLambertMaterial({
+        color: 0x38bdf8, transparent: true, opacity: 0.24,
+        side: T.DoubleSide, depthWrite: false, clippingPlanes: [clipPlane]
+      });
+      analyticMesh = new T.Mesh(geo, mat);
+      analyticMesh.position.set(0, hh / 2, 0);
+      scene.add(analyticMesh);
+    }
+
+    function applyModel(mdl) {
+      var vox = mdl.voxels, n = vox.length;
+      ensureCapacity(n);
+      var ox = (mdl.gl - 1) / 2, oz = (mdl.gw - 1) / 2;
+      var epos = edgeMesh.geometry.attributes.position;
+      for (var i = 0; i < n; i++) {
+        var v = vox[i];
+        var px = v.x - ox, py = v.z + 0.5, pz = v.y - oz;
+        dummy.position.set(px, py, pz);
+        dummy.rotation.set(0, 0, 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        solidMesh.setMatrixAt(i, dummy.matrix);
+        if (typeof solidMesh.setColorAt === 'function') {
+          colorTmp.setStyle(v.color);
+          solidMesh.setColorAt(i, colorTmp);
+        }
+        for (var k = 0; k < 24; k++) {
+          var e = EDGE_TEMPLATE[k];
+          epos.array[(i * 24 + k) * 3]     = px + e[0];
+          epos.array[(i * 24 + k) * 3 + 1] = py + e[1];
+          epos.array[(i * 24 + k) * 3 + 2] = pz + e[2];
+        }
+      }
+      solidMesh.count = n;
+      solidMesh.instanceMatrix.needsUpdate = true;
+      epos.needsUpdate = true;
+      edgeMesh.geometry.setDrawRange(0, n * 24);
+      if (solidMesh.instanceColor) solidMesh.instanceColor.needsUpdate = true;
+
+      buildAnalytic(mdl);
+
+      if (gridHelper) { scene.remove(gridHelper); gridHelper.geometry.dispose(); gridHelper.material.dispose(); gridHelper = null; }
+      if (mdl.isFreeform) {
+        gridHelper = new T.GridHelper(mdl.gl, mdl.gl, 0x64748b, 0x475569);
+        gridHelper.material.transparent = true;
+        gridHelper.material.opacity = 0.45;
+        gridHelper.position.y = 0.002;
+        scene.add(gridHelper);
+      }
+
+      // Cut through the MIDDLE of the chosen layer, not between layers, so the
+      // cross-section face is actually visible. DoubleSide on the body material
+      // keeps the sliced cubes reading as solid rather than hollow shells.
+      clipPlane.constant = mdl.crossSection != null ? (mdl.crossSection + 0.5) : 1e6;
+
+      var span = Math.max(mdl.gl, mdl.gw, mdl.gh, 1);
+      dirLight.position.set(span * 0.9, span * 1.9, span * 1.2);
+      dirLight.target.position.set(0, mdl.gh / 2, 0);
+      dirLight.target.updateMatrixWorld();
+      var sc = dirLight.shadow.camera;
+      var pad = span * 1.4 + 4;
+      sc.left = -pad; sc.right = pad; sc.top = pad; sc.bottom = -pad; sc.far = pad * 6;
+      sc.updateProjectionMatrix();
+    }
+
+    // CSS `rotateX(a) rotateY(b)` on a y-down stage == this camera on a y-up
+    // stage with elevation −a / azimuth −b. Keeping the mapping here (rather
+    // than adding OrbitControls) means the drag handler, the arrow keys, the
+    // camera preset buttons and pinch-zoom all keep driving the one shared
+    // rotation/scale state — two competing interaction systems would fight.
+    function applyCamera(mdl) {
+      var el = Math.max(-89.5, Math.min(89.5, -mdl.rotX)) * DEG;
+      var az = -mdl.rotY * DEG;
+      var radius = 0.5 * Math.sqrt(mdl.gl * mdl.gl + mdl.gw * mdl.gw + mdl.gh * mdl.gh);
+      var dist = (radius / Math.sin(22.5 * DEG)) * 1.05 / Math.max(0.2, mdl.scale);
+      var ty = mdl.gh / 2;
+      camera.position.set(
+        dist * Math.cos(el) * Math.sin(az),
+        ty + dist * Math.sin(el),
+        dist * Math.cos(el) * Math.cos(az)
+      );
+      camera.lookAt(0, ty, 0);
+      camera.near = Math.max(0.05, dist * 0.02);
+      camera.far = dist * 6 + 50;
+      camera.updateProjectionMatrix();
+    }
+
+    function resize() {
+      if (!renderer || !canvasEl) return;
+      var w = canvasEl.clientWidth || 1, hgt = canvasEl.clientHeight || 1;
+      var dpr = Math.min(2, window.devicePixelRatio || 1);
+      renderer.setPixelRatio(dpr);
+      renderer.setSize(w, hgt, false);
+      camera.aspect = w / hgt;
+      camera.updateProjectionMatrix();
+      dirty = true;
+    }
+
+    // ── Picking (freeform parity with the CSS layer) ─────────────────────
+    // Click a cube's top face -> stack on it. Any other face -> remove it.
+    // Click the ground grid -> place at layer 0. Superset of the CSS path,
+    // which needs separate "+" targets for the same three actions.
+    function pick(ev) {
+      var mdl = pending;
+      if (!mdl || !mdl.isFreeform || state !== 'ready' || !solidMesh) return;
+      var rect = canvasEl.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      ndc.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+      ndc.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(ndc, camera);
+
+      var ox = (mdl.gl - 1) / 2, oz = (mdl.gw - 1) / 2;
+      var hits = raycaster.intersectObject(solidMesh, false);
+      if (hits.length && hits[0].instanceId != null) {
+        var v = mdl.voxels[hits[0].instanceId];
+        if (!v) return;
+        var nrm = hits[0].face ? hits[0].face.normal : null;
+        if (nrm && nrm.y > 0.5 && v.z < 9) mdl.onToggle(v.x, v.y, v.z + 1);
+        else mdl.onToggle(v.x, v.y, v.z);
+        return;
+      }
+      var ground = new T.Plane(new T.Vector3(0, 1, 0), 0);
+      var at = new T.Vector3();
+      if (!raycaster.ray.intersectPlane(ground, at)) return;
+      var gx = Math.round(at.x + ox), gy = Math.round(at.z + oz);
+      if (gx < 0 || gy < 0 || gx >= mdl.gl || gy >= mdl.gw) return;
+      mdl.onToggle(gx, gy, 0);
+    }
+
+    // A second pointer means a pinch-zoom, never a placement.
+    function onPointerDown(ev) {
+      if (downPt) { downPt.multi = true; return; }
+      downPt = { x: ev.clientX, y: ev.clientY, t: Date.now(), multi: false };
+    }
+    function onPointerUp(ev) {
+      if (!downPt) return;
+      var moved = Math.abs(ev.clientX - downPt.x) + Math.abs(ev.clientY - downPt.y);
+      var quick = Date.now() - downPt.t < 500;
+      var multi = downPt.multi;
+      downPt = null;
+      if (!multi && moved < 6 && quick) pick(ev);   // a drag is a rotate, not a click
+    }
+    function onPointerCancel() { downPt = null; }
+    function onContextLost(ev) { ev.preventDefault(); reportFailure('context-lost'); }
+
+    function frame() {
+      rafId = requestAnimationFrame(frame);
+      if (state !== 'ready' || !pending) return;
+      var mdl = pending;
+      // An uncaught throw in here would repeat every frame forever and leave a
+      // frozen canvas covering the working CSS view — the "tool silently
+      // blanks" failure mode. Fail once, loudly, and fall back to blocks.
+      try {
+        if (mdl.sig !== appliedSig) { applyModel(mdl); appliedSig = mdl.sig; dirty = true; }
+        var camSig = mdl.rotX + ',' + mdl.rotY + ',' + mdl.scale;
+        if (camSig !== appliedCamSig) { applyCamera(mdl); appliedCamSig = camSig; dirty = true; }
+        if (!dirty) return;               // idle stacks cost nothing on a Chromebook
+        dirty = false;
+        renderer.render(scene, camera);
+      } catch (err) {
+        console.error('[volume] WebGL frame failed, falling back to blocks', err);
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        reportFailure('frame');
+      }
+    }
+
+    return {
+      isReady: function () { return state === 'ready'; },
+      getState: function () { return state; },
+      // Test seam. jsdom has no WebGL, so everything above is only reachable
+      // from a real browser — see tests/e2e/21-volume-gl.spec.ts. Mirrors the
+      // window.__geoWorldEngine convention used by the other GL tools.
+      debug: function () {
+        if (state !== 'ready' || !renderer) return { state: state };
+        var gl = renderer.getContext();
+        return {
+          state: state,
+          instanceCount: solidMesh ? solidMesh.count : 0,
+          edgeCount: edgeMesh ? edgeMesh.geometry.drawRange.count / 24 : 0,
+          hasAnalytic: !!analyticMesh,
+          analyticShape: analyticMesh ? analyticMesh.geometry.type : null,
+          clipConstant: clipPlane ? clipPlane.constant : null,
+          clippingOn: !!renderer.localClippingEnabled,
+          camera: camera ? { x: camera.position.x, y: camera.position.y, z: camera.position.z } : null,
+          canvas: canvasEl ? { w: canvasEl.clientWidth, h: canvasEl.clientHeight } : null,
+          contextLost: gl ? gl.isContextLost() : null
+        };
+      },
+      // Called by render() only. Pure data in, no GPU work on the render path.
+      submit: function (model) { pending = model; },
+      onPointerDown: onPointerDown,
+      onPointerUp: onPointerUp,
+      onPointerCancel: onPointerCancel,
+
+      mount: function (el) {
+        if (canvasEl === el) return;
+        canvasEl = el;
+        el.addEventListener('webglcontextlost', onContextLost, false);
+        if (state === 'ready' || state === 'loading') return;
+        state = 'loading';
+        var loader = (window.StemLab && window.StemLab.ensureThree)
+          ? window.StemLab.ensureThree({ failMessage: 'The 3D engine could not load. School networks sometimes block CDNs — the block view still works.' })
+          : Promise.reject(new Error('no-loader'));
+        loader.then(function (three) {
+          if (!canvasEl) return;         // unmounted while the CDN was in flight
+          T = three;
+          try {
+            renderer = new T.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+          } catch (e) { reportFailure('no-webgl'); return; }
+          renderer.setClearColor(0x000000, 0);
+          renderer.shadowMap.enabled = true;
+          renderer.shadowMap.type = T.PCFSoftShadowMap;
+          renderer.localClippingEnabled = true;
+          buildScene();
+          resize();
+          if (typeof ResizeObserver === 'function') {
+            resizeObs = new ResizeObserver(resize);
+            resizeObs.observe(canvasEl);
+          } else {
+            window.addEventListener('resize', resize);
+          }
+          state = 'ready';
+          appliedSig = ''; appliedCamSig = ''; dirty = true;
+          if (!rafId) rafId = requestAnimationFrame(frame);
+          if (pending && typeof pending.onReady === 'function') {
+            try { pending.onReady(); } catch (e2) {}
+          }
+        }).catch(function () { reportFailure('cdn'); });
+      },
+
+      unmount: function () {
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
+        else window.removeEventListener('resize', resize);
+        if (canvasEl) canvasEl.removeEventListener('webglcontextlost', onContextLost, false);
+        if (scene) { disposeMesh(solidMesh); disposeMesh(edgeMesh); disposeMesh(analyticMesh); disposeMesh(shadowPlane); disposeMesh(gridHelper); }
+        if (renderer) { try { renderer.dispose(); } catch (e) {} }
+        solidMesh = edgeMesh = analyticMesh = shadowPlane = gridHelper = null;
+        renderer = scene = camera = null; canvasEl = null; pending = null;
+        capacity = 0; appliedSig = ''; appliedCamSig = ''; appliedViewSig = '';
+        if (state !== 'failed') state = 'idle';
+      }
+    };
+  })();
+
+  // ONE stable ref callback for the whole module. Passing an inline arrow here
+  // would remount the canvas on every render — see the mount note above.
+  function volGlRef(el) { if (el) VolGL.mount(el); else VolGL.unmount(); }
+
+  try { window.__alloVolGL = VolGL; } catch (e) {}
 
   var WORD_CONTEXTS = [
     { id: 'lunchbox',  label: 'Lunchbox',  icon: '🍱', story: 'A lunchbox is {l} units long, {w} units wide, and {h} units tall. How many unit cubes of food can fit inside?', unit: 'sandwich cubes', defaults: { l: 4, w: 3, h: 2 } },
@@ -717,6 +1142,14 @@ window.StemLab = window.StemLab || {
       var crossSectionLayer = _v.crossSectionLayer != null ? _v.crossSectionLayer : Math.floor(dims.h / 2);
       var showShapeMenu = _v.showShapeMenu || false;
 
+      // WebGL layer. Defaults ON — it is the better view wherever it can run —
+      // and any load/context failure flips it back off (see the GL failure
+      // path below), so the CSS blocks stay the guaranteed floor.
+      var glMode = _v.glMode !== false;
+      // The smooth analytic solid only teaches something where it DISAGREES
+      // with the cube stack, so it is pointless (and just haze) on a prism.
+      var showAnalytic = _v.showAnalytic !== false;
+
       function voxelizeShape(s, l, w, h) {
         var out = [];
         var rx = (l - 1) / 2, ry = (w - 1) / 2;
@@ -971,6 +1404,10 @@ window.StemLab = window.StemLab || {
 
       // Build cube grid
       var cubes = [];
+      // Parallel voxel list for the WebGL layer. Same source of truth as the
+      // CSS cubes, but it keeps the cubes above a cross-section cut (the clip
+      // plane removes them geometrically, which is what exposes the cut face).
+      var glVoxels = [];
       if (isSlider) {
         var maxLayer = showLayers != null ? Math.min(showLayers, dims.h) : dims.h;
         // Voxelize the active shape. For 'prism' this is equivalent to the
@@ -978,6 +1415,12 @@ window.StemLab = window.StemLab || {
         var voxels = voxelizeShape(shape, dims.l, dims.w, dims.h);
         voxels.forEach(function(vox) {
           if (vox.z >= maxLayer) return;
+          glVoxels.push({
+            x: vox.x, y: vox.y, z: vox.z,
+            color: paintSurfaceArea
+              ? 'hsl(25,90%,58%)'
+              : 'hsl(' + (140 + vox.z * 12) + ',70%,' + Math.min(80, 55 + vox.z * 4) + '%)'
+          });
           // Cross-section: when showCrossSection is on, dim/cut cubes at the
           // chosen layer so the interior is visible.
           var isCutLayer = showCrossSection && vox.z === Math.min(crossSectionLayer, dims.h - 1);
@@ -991,6 +1434,7 @@ window.StemLab = window.StemLab || {
         positions.forEach(function(pos) {
           var p = pos.split('-').map(Number);
           var layerTone = volumeLayerColorToHsl(getLayerColor(p[2]), p[2]);
+          glVoxels.push({ x: p[0], y: p[1], z: p[2], color: paintSurfaceArea ? 'hsl(25,90%,58%)' : layerTone.hex });
           cubes.push(renderCube(p[0], p[1], p[2], layerTone.h, layerTone.l, cubeUnit, true, function() {
             toggleFreeformCube(p[0], p[1], p[2]);
           }, false, layerTone.s, layerTone.hex));
@@ -1074,6 +1518,52 @@ window.StemLab = window.StemLab || {
       var fw = isSlider ? dims.l * cubeUnit : 8 * cubeUnit;
       var fh = isSlider ? dims.h * cubeUnit : 5 * cubeUnit;
 
+      // ── Hand the WebGL layer this frame's model ──────────────────────────
+      // Plain data only. No GPU calls happen on the render path; the rAF loop
+      // inside VolGL diffs `sig` and uploads on the next frame.
+      var glStackH = isSlider
+        ? (showLayers != null ? Math.min(showLayers, dims.h) : dims.h)
+        : Math.max(1, glVoxels.reduce(function(m, v) { return Math.max(m, v.z + 1); }, 0));
+      var glCrossSection = (isSlider && showCrossSection)
+        ? Math.min(crossSectionLayer, dims.h - 1)
+        : null;
+      var glModel = {
+        voxels: glVoxels,
+        gl: isSlider ? dims.l : 8,
+        gw: isSlider ? dims.w : 8,
+        gh: glStackH,
+        dl: dims.l, dw: dims.w, dh: dims.h,
+        shape: isSlider ? shape : 'prism',
+        showAnalytic: isSlider && showAnalytic,
+        crossSection: glCrossSection,
+        isFreeform: isFreeform,
+        rotX: rotation.x, rotY: rotation.y, scale: scale,
+        onToggle: toggleFreeformCube,
+        // ensureThree resolves asynchronously, long after this render. Bump
+        // state so the tree re-renders and `glLive` actually flips true —
+        // otherwise the canvas would stay hidden behind the CSS blocks.
+        onReady: function() {
+          upd({ glReadyAt: Date.now() });
+          announceToSR(__alloT('stem.volume.gl_ready', 'Solid 3D view ready.'));
+        },
+        // Never leave the learner staring at a blank canvas: drop back to the
+        // CSS blocks and say why.
+        onFail: function(reason) {
+          upd({ glMode: false });
+          addToast(reason === 'no-webgl'
+            ? __alloT('stem.volume.gl_no_webgl', 'This device cannot run the solid 3D view. Showing blocks instead.')
+            : __alloT('stem.volume.gl_failed', 'The 3D engine could not load. Showing blocks instead.'), 'info');
+        },
+        sig: [
+          isSlider ? 's' : 'f', shape, dims.l, dims.w, dims.h, glStackH,
+          glCrossSection, showAnalytic, paintSurfaceArea, glVoxels.length,
+          glVoxels.length ? glVoxels[glVoxels.length - 1].color : '',
+          isFreeform ? positions.join(',') : ''
+        ].join('|')
+      };
+      if (glMode && !isDisplacement) VolGL.submit(glModel);
+      var glLive = glMode && !isDisplacement && VolGL.isReady();
+
       // ══════════════════════════════════════════════════════════
       // VIEWPORT INTERACTION (rotation, zoom, keyboard)
       // ──────────────────────────────────────────────────────────
@@ -1099,6 +1589,10 @@ window.StemLab = window.StemLab || {
       }
 
       var handlePointerDown = function(e) {
+        // The WebGL picker rides the SAME pointer stream as the rotate-drag —
+        // deliberately, so the canvas needs no handlers of its own and stays a
+        // presentational child of the one focusable, interactive viewport.
+        VolGL.onPointerDown(e);
         // Capture this pointer so we keep receiving moves even off-element
         try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
         _activePointers[e.pointerId] = { x: e.clientX, y: e.clientY };
@@ -1136,6 +1630,7 @@ window.StemLab = window.StemLab || {
       };
 
       var handlePointerUp = function(e) {
+        VolGL.onPointerUp(e);   // no-ops unless this was a still, quick press
         try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
         delete _activePointers[e.pointerId];
         var remaining = Object.keys(_activePointers).length;
@@ -2849,6 +3344,13 @@ window.StemLab = window.StemLab || {
           );
         })(),
 
+        // Describes the WebGL surface for screen readers, and says plainly where
+        // the keyboard equivalents live — the canvas itself is a picture; every
+        // control is on the viewport around it or the layer grid above it.
+        !isDisplacement && glMode && h('p', { id: 'volume-gl-description', className: 'sr-only' },
+          __alloT('stem.volume.gl_description',
+            'A lit, rotatable picture of the model. To rotate it, move focus to the 3D viewport and use the arrow keys; press R to reset the view. To add or remove blocks in build mode, use the layer placement grid above the viewport.')),
+
         // 3D viewport — pointer events (mouse + touch + pen), pinch-to-zoom,
         // keyboard rotation. tabIndex=0 makes it focusable for keyboard users.
         !isDisplacement && h('div', {
@@ -2857,11 +3359,15 @@ window.StemLab = window.StemLab || {
           style: { minHeight: '350px', perspective: '900px', touchAction: 'none' },
           tabIndex: 0,
           role: 'application',
-          'aria-label': isFreeform ? '3D construction preview. Add or remove blocks with the layer placement grid above. Drag or use arrow keys to rotate.' : __alloT('stem.volume.interactive_3d_viewport_drag_swipe_or_', 'Interactive 3D viewport. Drag, swipe, or use arrow keys to rotate. Pinch or +/- to zoom. R to reset view.'),
+          'aria-label': isFreeform
+            ? (glLive
+                ? '3D construction preview. Add or remove blocks with the layer placement grid above, or click the ground to place a block, a block top to stack, and a block side to remove it. Drag or use arrow keys to rotate.'
+                : '3D construction preview. Add or remove blocks with the layer placement grid above. Drag or use arrow keys to rotate.')
+            : __alloT('stem.volume.interactive_3d_viewport_drag_swipe_or_', 'Interactive 3D viewport. Drag, swipe, or use arrow keys to rotate. Pinch or +/- to zoom. R to reset view.'),
           onPointerDown: handlePointerDown,
           onPointerMove: handlePointerMove,
           onPointerUp: handlePointerUp,
-          onPointerCancel: handlePointerUp,
+          onPointerCancel: function(e) { VolGL.onPointerCancel(); handlePointerUp(e); },
           onKeyDown: handleViewportKeyDown,
           onWheel: function(e) { upd({ scale: Math.max(0.4, Math.min(2.5, scale + (e.deltaY > 0 ? -0.08 : 0.08))) }); }
         },
@@ -2892,6 +3398,33 @@ window.StemLab = window.StemLab || {
             }),
             h('button', {
               type: 'button',
+              'data-volume-gl-toggle': 'true',
+              'aria-pressed': glMode,
+              onClick: function() {
+                upd({ glMode: !glMode });
+                announceToSR(glMode
+                  ? __alloT('stem.volume.gl_off', 'Switched to block view.')
+                  : __alloT('stem.volume.gl_on', 'Switched to solid 3D view.'));
+              },
+              className: 'min-h-8 rounded-lg border px-2.5 py-1 text-[11px] font-bold transition-colors ' + (glMode ? 'border-sky-300 bg-sky-600 text-white' : 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700')
+            }, glMode ? __alloT('stem.volume.view_solid', 'Solid 3D') : __alloT('stem.volume.view_blocks', 'Blocks')),
+            // Only offered where it teaches: on a prism the smooth solid and
+            // the cube stack are the same object.
+            glLive && isSlider && shape !== 'prism' && h('button', {
+              type: 'button',
+              'data-volume-analytic-toggle': 'true',
+              'aria-pressed': showAnalytic,
+              title: __alloT('stem.volume.analytic_hint', 'Show the smooth shape the formula describes, over the cubes that approximate it'),
+              onClick: function() {
+                upd({ showAnalytic: !showAnalytic });
+                announceToSR(showAnalytic
+                  ? __alloT('stem.volume.analytic_off', 'Smooth formula shape hidden.')
+                  : __alloT('stem.volume.analytic_on', 'Smooth formula shape shown over the cubes.'));
+              },
+              className: 'min-h-8 rounded-lg border px-2.5 py-1 text-[11px] font-bold transition-colors ' + (showAnalytic ? 'border-cyan-300 bg-cyan-600 text-white' : 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700')
+            }, __alloT('stem.volume.formula_shape', 'Formula shape')),
+            h('button', {
+              type: 'button',
               'data-volume-fullscreen': 'true',
               'aria-label': 'Toggle fullscreen for the 3D volume preview',
               onClick: function() {
@@ -2905,12 +3438,53 @@ window.StemLab = window.StemLab || {
               className: 'min-h-8 rounded-lg border border-emerald-400/60 bg-emerald-700 px-3 py-1 text-[11px] font-black text-white transition-colors hover:bg-emerald-800'
             }, 'Fullscreen')
           ),
+          // WebGL surface. Sits under the control bar and over the CSS stage.
+          // pointerEvents stay ON so freeform picking works; the rotate-drag
+          // handler on the viewport still gets the same events by bubbling.
+          glMode && h('canvas', {
+            ref: volGlRef,
+            'data-volume-gl': 'true',
+            // Named rather than aria-hidden: the surrounding role="application"
+            // carries the *instructions*, but a screen-reader user still needs
+            // to know what is currently drawn. Kept in sync with the model.
+            // data-a11y-static is accurate — the canvas carries no handlers of
+            // its own; rotation and picking both live on the focusable viewport.
+            role: 'img',
+            'data-a11y-static': 'true',
+            'aria-describedby': 'volume-gl-description',
+            'aria-label': (function() {
+              if (isFreeform) {
+                return __alloT('stem.volume.gl_alt_freeform', 'Solid 3D view of your construction: ')
+                  + glVoxels.length + ' ' + (glVoxels.length === 1 ? 'block' : 'blocks') + '.';
+              }
+              var sm = SHAPES_META.find(function(m) { return m.id === shape; });
+              return __alloT('stem.volume.gl_alt_shape', 'Solid 3D view: ')
+                + (sm ? sm.label : shape) + ', '
+                + dims.l + ' by ' + dims.w + ' by ' + dims.h + ', '
+                + glVoxels.length + ' unit cubes shown'
+                + (showAnalytic && shape !== 'prism'
+                    ? ', with the smooth formula shape drawn over them.' : '.');
+            })(),
+            style: {
+              position: 'absolute', inset: '0', width: '100%', height: '100%',
+              // visibility, not display — a display:none canvas has no layout,
+              // so the renderer would size itself 1x1 on first mount.
+              zIndex: 5, visibility: glLive ? 'visible' : 'hidden'
+            }
+          }),
+          glMode && !glLive && h('div', {
+            className: 'pointer-events-none absolute inset-0 z-10 flex items-center justify-center text-xs font-bold text-emerald-200/70'
+          }, __alloT('stem.volume.gl_loading', 'Loading solid 3D view…')),
+          // The CSS block stage always renders. Once WebGL is live it goes
+          // `visibility:hidden` — out of the hit-test and a11y trees, but still
+          // in the DOM so [data-volume-cube] queries and PNG export keep working.
           h('div', {
           style: {
             transformStyle: 'preserve-3d',
             transform: 'rotateX('+rotation.x+'deg) rotateY('+rotation.y+'deg) scale3d('+scale+','+scale+','+scale+')',
             transition: 'transform 0.15s ease-out',
-            position: 'relative', width: fw+'px', height: fh+'px'
+            position: 'relative', width: fw+'px', height: fh+'px',
+            visibility: glLive ? 'hidden' : 'visible'
           }
           }, cubes)),
 
