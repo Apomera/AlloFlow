@@ -217,6 +217,206 @@
   }
 
   // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
+  // THE BUILDING, IN 3D
+  // ───────────────────────────────────────────────────────────────────────
+  // Architecture Studio stores every block as (x, y, z) with a shape, a
+  // material and a rotation — a genuinely three-dimensional model — and then
+  // shows it as a stack of flat floor plans, one grid per Y layer. So a
+  // student places blocks in space and never sees the thing they built. Of
+  // all the flat tools this is the widest gap between what the data knows and
+  // what the picture shows.
+  //
+  // Blocks render through StemLab.makeVoxelBatch, the same host helper the
+  // Volume explorer and the base-ten blocks use.
+  //
+  // Materials are keyed to their own palette, but several of those colours
+  // are CSS custom properties with fallbacks ("var(--allo-stem-text, #f1f5f9)")
+  // for theming, and THREE.Color cannot parse those — it throws. Hence the
+  // plain-hex table here rather than reusing matColorLookup directly.
+  var ARCH_MAT_HEX = {
+    stone: 0x94a3b8, brick: 0xb45309, wood: 0x92400e,
+    glass: 0x38bdf8, marble: 0xf1f5f9, metal: 0xcbd5e1
+  };
+
+  var ArchGL = (function () {
+    var DEG = Math.PI / 180;
+    var T = null;
+    var state = 'idle';
+    var canvasEl = null, renderer = null, scene = null, camera = null;
+    var batch = null, groundMesh = null;
+    var rafId = 0, capacity = 0, resizeObs = null;
+    var pending = null, appliedSig = '', appliedCamSig = '', dirty = true;
+    var extent = { w: 1, d: 1, h: 1 }, centre = { x: 0, z: 0 };
+
+    function fail(reason) {
+      state = 'failed';
+      if (pending && typeof pending.onFail === 'function') { try { pending.onFail(reason); } catch (e) {} }
+    }
+
+    function build() {
+      scene = new T.Scene();
+      camera = new T.PerspectiveCamera(45, 1, 0.1, 3000);
+      scene.add(new T.HemisphereLight(0xe2e8f0, 0x1e293b, 0.9));
+      var sun = new T.DirectionalLight(0xffffff, 0.62);
+      sun.position.set(24, 40, 30);
+      scene.add(sun);
+      groundMesh = new T.Mesh(
+        new T.PlaneGeometry(400, 400),
+        new T.MeshBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.16, depthWrite: false })
+      );
+      groundMesh.rotation.x = -Math.PI / 2;
+      groundMesh.position.y = -0.02;
+      scene.add(groundMesh);
+    }
+
+    function apply(m) {
+      var bs = m.blocks || [];
+      var n = bs.length;
+      if (!batch || capacity < n) {
+        if (batch) batch.dispose(scene);
+        capacity = Math.max(64, n);
+        batch = window.StemLab.makeVoxelBatch(T, {
+          capacity: capacity, size: 0.94, edges: true, edgeOpacity: 0.26
+        });
+        batch.addTo(scene);
+      }
+
+      var minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity, maxY = 0;
+      bs.forEach(function (b) {
+        if (b.x < minX) minX = b.x; if (b.x > maxX) maxX = b.x;
+        if (b.z < minZ) minZ = b.z; if (b.z > maxZ) maxZ = b.z;
+        if (b.y > maxY) maxY = b.y;
+      });
+      if (!n) { minX = maxX = minZ = maxZ = 0; }
+      centre = { x: (minX + maxX) / 2, z: (minZ + maxZ) / 2 };
+      extent = { w: maxX - minX + 1, d: maxZ - minZ + 1, h: maxY + 1 };
+
+      for (var i = 0; i < n; i++) {
+        var b = bs[i];
+        // A block's own colour wins when the student has painted it; otherwise
+        // the material decides. Both arrive as hex from the caller.
+        batch.set(i, b.x - centre.x, b.y + 0.5, b.z - centre.z, 1, b.hex);
+      }
+      batch.commit(n);
+
+      var span = Math.max(extent.w, extent.d) * 1.8 + 6;
+      groundMesh.scale.set(span / 400, span / 400, 1);
+    }
+
+    function applyCam(m) {
+      var el = Math.max(-88, Math.min(88, -m.rotX)) * DEG;
+      var az = -m.rotY * DEG;
+      // Fit the projected box: a long low building and a narrow tower need
+      // very different distances, and a bounding sphere over-pads both.
+      var ca = Math.abs(Math.cos(az)), sa = Math.abs(Math.sin(az));
+      var projW = extent.w * ca + extent.d * sa;
+      var projH = extent.h * Math.abs(Math.cos(el))
+                + (extent.w * sa + extent.d * ca) * Math.abs(Math.sin(el));
+      var halfV = Math.tan(22.5 * DEG);
+      var halfH = halfV * (camera.aspect || 1.6);
+      var dist = Math.max((projW / 2) / halfH, (projH / 2) / halfV, 3) * 1.25
+                 / Math.max(0.25, m.scale);
+      var ty = extent.h / 2;
+      camera.position.set(
+        dist * Math.cos(el) * Math.sin(az),
+        ty + dist * Math.sin(el),
+        dist * Math.cos(el) * Math.cos(az)
+      );
+      camera.lookAt(0, ty, 0);
+      camera.updateProjectionMatrix();
+    }
+
+    function resize() {
+      if (!renderer || !canvasEl) return;
+      var w = canvasEl.clientWidth || 1, hh = canvasEl.clientHeight || 1;
+      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+      renderer.setSize(w, hh, false);
+      camera.aspect = w / hh;
+      camera.updateProjectionMatrix();
+      dirty = true;
+    }
+
+    function frame() {
+      rafId = requestAnimationFrame(frame);
+      if (state !== 'ready' || !pending) return;
+      var m = pending;
+      try {
+        if (m.sig !== appliedSig) { apply(m); appliedSig = m.sig; dirty = true; appliedCamSig = ''; }
+        var cs = m.rotX + ',' + m.rotY + ',' + m.scale;
+        if (cs !== appliedCamSig) { applyCam(m); appliedCamSig = cs; dirty = true; }
+        if (!dirty) return;
+        dirty = false;
+        renderer.render(scene, camera);
+      } catch (err) {
+        console.error('[archStudio] WebGL frame failed, falling back to floor plans', err);
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        fail('frame');
+      }
+    }
+
+    return {
+      isReady: function () { return state === 'ready'; },
+      submit: function (m) { pending = m; },
+      debug: function () {
+        if (state !== 'ready' || !renderer) return { state: state };
+        var gl = renderer.getContext();
+        return {
+          state: state,
+          blockCount: batch ? batch.drawnCount() : 0,
+          outlineCount: batch ? batch.outlinedCount() : 0,
+          extent: extent,
+          canvas: canvasEl ? { w: canvasEl.clientWidth, h: canvasEl.clientHeight } : null,
+          contextLost: gl ? gl.isContextLost() : null
+        };
+      },
+      mount: function (el) {
+        if (canvasEl === el) return;
+        canvasEl = el;
+        if (state === 'ready' || state === 'loading') return;
+        state = 'loading';
+        var loader = (window.StemLab && window.StemLab.ensureThree)
+          ? window.StemLab.ensureThree({ failMessage: 'The 3D engine could not load. The floor plans still work.' })
+          : Promise.reject(new Error('no-loader'));
+        loader.then(function (three) {
+          if (!canvasEl) return;
+          T = three;
+          try {
+            renderer = new T.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+          } catch (e) { fail('no-webgl'); return; }
+          renderer.setClearColor(0x000000, 0);
+          build();
+          resize();
+          if (typeof ResizeObserver === 'function') {
+            resizeObs = new ResizeObserver(resize);
+            resizeObs.observe(canvasEl);
+          } else { window.addEventListener('resize', resize); }
+          state = 'ready';
+          appliedSig = ''; appliedCamSig = ''; dirty = true;
+          if (!rafId) rafId = requestAnimationFrame(frame);
+          if (pending && typeof pending.onReady === 'function') { try { pending.onReady(); } catch (e2) {} }
+        }).catch(function () { fail('cdn'); });
+      },
+      unmount: function () {
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
+        else window.removeEventListener('resize', resize);
+        if (scene) {
+          if (batch) batch.dispose(scene);
+          if (groundMesh) { scene.remove(groundMesh); groundMesh.geometry.dispose(); groundMesh.material.dispose(); }
+        }
+        if (renderer) { try { renderer.dispose(); } catch (e) {} }
+        batch = null; groundMesh = null;
+        renderer = scene = camera = null; canvasEl = null; pending = null;
+        capacity = 0; appliedSig = ''; appliedCamSig = '';
+        if (state !== 'failed') state = 'idle';
+      }
+    };
+  })();
+
+  function archGlRef(el) { if (el) ArchGL.mount(el); else ArchGL.unmount(); }
+  try { window.__alloArchGL = ArchGL; } catch (e) {}
+
   // ── REGISTER TOOL ──
   // ══════════════════════════════════════════════════════════════
   window.StemLab.registerTool('archStudio', {
@@ -240,6 +440,10 @@
     };
     var callGemini = ctx.callGemini || window.callGemini;
     var announceToSR = ctx.announceToSR;
+    // typeof-guarded at both call sites, so it never threw — it just meant the
+    // "3D view could not load, showing floor plans" notice never appeared, which
+    // is the one moment a student most needs telling.
+    var addToast = ctx.addToast;
     var a11yClick = ctx.a11yClick;
 
     // ── State ──
@@ -320,6 +524,36 @@
     var matWeightLookup = {};
     var matCostLookup = {};
     materials.forEach(function (m) { matColorLookup[m.id] = m.color; matWeightLookup[m.id] = m.weight; matCostLookup[m.id] = m.cost; });
+
+    // ── 3D building view (opt-in; the floor plans stay the floor) ──
+    var archShow3d = d.show3d === true;
+    var archRot = d.rot3d || { rotX: -24, rotY: -38, scale: 1 };
+    function archHexFor(b) {
+      var own = String(b.color || '').trim();
+      if (/^#[0-9a-f]{6}$/i.test(own)) return parseInt(own.slice(1), 16);
+      var m = ARCH_MAT_HEX[b.material || 'stone'];
+      return m == null ? 0x94a3b8 : m;
+    }
+    var archGlAlt = 'Three-dimensional view of your build: ' + blocks.length
+      + (blocks.length === 1 ? ' block' : ' blocks')
+      + '. Use the turn and tilt buttons to look around it.';
+    if (archShow3d) {
+      ArchGL.submit({
+        blocks: blocks.map(function (b) {
+          return { x: b.x || 0, y: b.y || 0, z: b.z || 0, hex: archHexFor(b) };
+        }),
+        rotX: archRot.rotX, rotY: archRot.rotY, scale: archRot.scale || 1,
+        onReady: function () { upd('gl3dReadyAt', Date.now()); },
+        onFail: function () {
+          upd('show3d', false);
+          if (typeof addToast === 'function') addToast('The 3D view could not load. Showing floor plans.', 'info');
+        },
+        sig: blocks.map(function (b) {
+          return (b.x || 0) + ',' + (b.y || 0) + ',' + (b.z || 0) + ',' + (b.material || '') + ',' + (b.color || '');
+        }).join('|')
+      });
+    }
+    var archGlLive = archShow3d && ArchGL.isReady();
 
     // ── Basic Stats ──
     var totalBlocks = blocks.length;
@@ -2039,6 +2273,52 @@
                 parseFloat(windAnalysis.dragCoeff) > 0.5 ? '\uD83D\uDCA1 Good mix of aerodynamic shapes!' :
                 '\u2705 Very aerodynamic design!')
             )
+          ),
+
+          // ── The building itself, in 3D ──
+          // Sits above the floor plans rather than replacing them: a plan view
+          // is genuinely useful for placing blocks, it just never showed the
+          // result. The plans remain the guaranteed floor and are untouched.
+          el('div', null,
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+              el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1.2, flex: 1 } }, '🏗️ 3D View'),
+              el('button', {
+                type: 'button',
+                'data-arch-view': archShow3d ? '3d' : 'plans',
+                'aria-pressed': archShow3d,
+                onClick: function () {
+                  upd('show3d', !archShow3d);
+                  if (typeof announceToSR === 'function') {
+                    announceToSR(archShow3d ? 'Hid the 3D view.' : 'Showing your build in 3D. Use the turn and tilt buttons to look around it.');
+                  }
+                },
+                style: { fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, cursor: 'pointer', border: '1px solid ' + (archShow3d ? '#fbbf24' : '#334155'), background: archShow3d ? '#b45309' : 'rgba(30,41,59,.6)', color: '#f8fafc' }
+              }, archShow3d ? 'Hide' : 'Show'),
+              archShow3d && [['Turn left', { rotY: archRot.rotY - 25 }], ['Turn right', { rotY: archRot.rotY + 25 }],
+                             ['Tilt up', { rotX: Math.max(-88, archRot.rotX - 15) }], ['Tilt down', { rotX: Math.min(88, archRot.rotX + 15) }]]
+                .map(function (b, i) {
+                  return el('button', {
+                    key: i, type: 'button', 'aria-label': b[0],
+                    onClick: function () { upd('rot3d', Object.assign({}, archRot, b[1])); },
+                    style: { width: 22, height: 22, fontSize: 9, borderRadius: 5, cursor: 'pointer', border: '1px solid #334155', background: 'rgba(30,41,59,.6)', color: '#cbd5e1' }
+                  }, ['◀', '▶', '▲', '▼'][i]);
+                })
+            ),
+            archShow3d && el('div', { style: { position: 'relative', width: '100%', height: 220, borderRadius: 8, overflow: 'hidden', border: '1px solid #334155', background: 'rgba(15,23,42,.6)' } },
+              el('canvas', {
+                ref: archGlRef,
+                'data-arch-gl': 'true',
+                role: 'img',
+                'data-a11y-static': 'true',
+                'aria-describedby': 'arch-gl-description',
+                'aria-label': archGlAlt,
+                style: { position: 'absolute', inset: 0, width: '100%', height: '100%', visibility: archGlLive ? 'visible' : 'hidden' }
+              }),
+              !archGlLive && el('div', { style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fcd34d' } }, 'Loading 3D view…'),
+              archShow3d && blocks.length === 0 && archGlLive && el('div', { style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#94a3b8' } }, 'Place a block to see it here.')
+            ),
+            el('p', { id: 'arch-gl-description', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' } },
+              'A three-dimensional view of the structure you have built, coloured by material. The floor plans below show the same blocks one storey at a time; this shows them assembled.')
           ),
 
           // ── Multi-Floor Plan View ──
