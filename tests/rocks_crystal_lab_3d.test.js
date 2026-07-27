@@ -64,6 +64,37 @@ describe('crystal lab — offline / no-WebGL behaviour', () => {
     expect(render('halite')).toContain('served from a CDN your network may block');
   });
 
+  it('names the right cause when the HOST is too old, not the network', () => {
+    // Two failures need two answers. A blocked CDN is something a school can
+    // fix; a host module older than the tool — its deploy mirror can lag the
+    // root, which is exactly the situation in the current build — is a deploy
+    // problem no amount of network access helps with. Simulate the stale host
+    // by removing makeBayViewer BEFORE the tool module evaluates, since that is
+    // when the tool decides.
+    resetStemLab();
+    delete window.StemLab.makeBayViewer;
+    loadTool(ROCKS_FILE, 'rocks');
+
+    const store = { rocks: { mode: 'minerals', selectedMineral: 'halite' }, rockCycle: {} };
+    const ctx = makeCtx({ toolData: store, setToolData: () => {} });
+    const m = ReactDOMServer.renderToStaticMarkup(
+      React.createElement(() => window.StemLab._registry.rocks.render(ctx))
+    );
+
+    expect(m).toContain('3D unavailable');
+    expect(m).toContain('host is older than this tool');
+    // ...and it must NOT blame the network in that case.
+    expect(m).not.toContain('a CDN your network may block');
+  });
+
+  it('still blames the network when the host is fine', () => {
+    // The harness provides makeBayViewer, so this is the healthy-host path:
+    // 3D may still fail because the engine itself is CDN-served.
+    const m = render('halite');
+    expect(m).toContain('a CDN your network may block');
+    expect(m).not.toContain('3D unavailable');
+  });
+
   it('degrades through the host shell rather than its own loader', () => {
     PATHS.forEach((p) => {
       const src = readFileSync(p, 'utf8');
@@ -86,13 +117,48 @@ describe('crystal lab — honesty about what is drawn', () => {
   });
 
   it('says so when it is showing the system cell, not the mineral structure', () => {
-    // Garnet and olivine have genuinely complex structures; drawing an invented
-    // one would look authoritative and be wrong.
-    ['garnet', 'olivine', 'corundum'].forEach((id) => {
+    // Garnet, feldspar, magnetite and topaz have genuinely complex structures;
+    // drawing an invented one would look authoritative and be wrong.
+    ['garnet', 'feldspar', 'magnetite', 'topaz'].forEach((id) => {
       const m = render(id);
       expect(m, id).toContain('Model limit');
       expect(m, id).toContain('not this mineral');
       expect(m, id).toContain('unit cell');
+    });
+  });
+
+  it('draws the real structure wherever one is simple and well known', () => {
+    // These four moved off the generic unit cell once their real arrangements
+    // turned out to be both drawable and diagnostic.
+    ['sulfur', 'olivine', 'corundum', 'hematite'].forEach((id) => {
+      const m = render(id);
+      expect(m, id).toContain('how the atoms are actually stacked');
+      expect(m, id).not.toContain('Model limit');
+    });
+  });
+
+  it('ties each new structure to the property it explains', () => {
+    // Sulfur: strong bonds inside an S8 crown, almost nothing between crowns.
+    expect(render('sulfur')).toContain('Mohs 2');
+    expect(render('sulfur')).toContain('115');
+    // Olivine: island tetrahedra, so no cleavage plane and fast weathering.
+    expect(render('olivine')).toContain('no good cleavage');
+    expect(render('olivine')).toContain('weathers away faster');
+    // Corundum and hematite share an architecture but differ in bond strength —
+    // the instructive pair, like halite/galena.
+    expect(render('corundum')).toContain('Mohs 9');
+    expect(render('hematite')).toContain('same close-packed architecture');
+    expect(render('hematite')).toContain('Mohs 6');
+  });
+
+  it('keeps sulfur rings unbonded to each other', () => {
+    // The bond cutoff has to sit above the S-S distance inside a crown and below
+    // the gap between crowns. If rings bond to each other the picture says the
+    // opposite of the caption, which is the entire molecular-crystal lesson.
+    PATHS.forEach((p) => {
+      const src = readFileSync(p, 'utf8');
+      expect(src).toContain("spec.kind === 'rings' ? 1.15");
+      expect(src).toContain('these offsets keep the closest inter-ring pair near 1.9');
     });
   });
 

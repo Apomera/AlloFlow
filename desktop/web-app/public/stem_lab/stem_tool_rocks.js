@@ -861,7 +861,11 @@
     mica:      { kind: 'sheet',     a: 'Al', b: 'Si', exact: true,  why: 'Strongly bonded silicate sheets held together only weakly between layers. That contrast is the whole story: mica peels into transparent flakes but is tough within a sheet.' },
     talc:      { kind: 'sheet',     a: 'Mg', b: 'Si', exact: true,  why: 'Silicate sheets with almost nothing holding one sheet to the next, so they slide over each other. That is why talc is the softest mineral at Mohs 1 and feels slippery.' },
     quartz:    { kind: 'silica',    a: 'Si', b: 'O',  exact: true,  why: 'Every silicon sits at the centre of an oxygen tetrahedron, and every tetrahedron shares all four corners with its neighbours. The framework has no weak plane, so quartz fractures like glass instead of cleaving.' },
-    gypsum:    { kind: 'sheet',     a: 'Ca', b: 'O',  exact: false, why: 'Layers of calcium sulfate separated by sheets of water molecules. The water layers are the weak planes gypsum splits along.' }
+    gypsum:    { kind: 'sheet',     a: 'Ca', b: 'O',  exact: false, why: 'Layers of calcium sulfate separated by sheets of water molecules. The water layers are the weak planes gypsum splits along.' },
+    sulfur:    { kind: 'rings',     a: 'S',  b: 'S',  exact: true,  why: 'Sulfur is a MOLECULAR crystal: eight atoms bonded into a puckered S₈ crown, and only weak attractions holding one ring to the next. Strong bonds inside the ring, almost nothing between them — which is why sulfur is Mohs 2, crumbles easily, and melts at just 115 °C.' },
+    olivine:   { kind: 'isolated',  a: 'Mg', b: 'Si', exact: true,  why: 'A nesosilicate: no SiO₄ tetrahedron shares an oxygen with another one. They are islands, and the magnesium and iron bonded between them are the only thing linking the structure. With no linked framework and no sheets, olivine has no good cleavage direction — and those exposed cation sites are why it weathers away faster than any other common silicate.' },
+    corundum:  { kind: 'closepacked', a: 'Al', b: 'O', exact: true, why: 'Oxygen packed as tightly as spheres can be, with aluminium filling two thirds of the gaps between them. Dense packing plus short, strong Al–O bonds in every direction is what makes corundum Mohs 9 — ruby and sapphire are this structure with a trace of chromium or iron for colour.' },
+    hematite:  { kind: 'closepacked', a: 'Fe', b: 'O', exact: true, why: 'The same close-packed architecture as corundum, with iron in place of aluminium. Identical geometry, different cation — and because Fe–O bonds are weaker than Al–O, hematite is around Mohs 6 rather than 9. The iron is also what gives it that red-brown streak.' }
   };
 
   // Cell geometry per crystal system, for minerals whose real structure is not
@@ -960,6 +964,48 @@
         push(B, cx, cy - 0.40, cz + 0.42);
         push(B, cx, cy - 0.40, cz - 0.42);
       }
+    } else if (kind === 'rings') {
+      // Native sulfur is a MOLECULAR crystal: puckered S8 crowns stacked with
+      // only weak forces holding one ring to the next. Drawing the gap between
+      // rings is the whole explanation for Mohs 2 and a 115 °C melting point.
+      // Ring separation has to exceed the bond cutoff by more than a ring
+      // diameter, or neighbouring rings bond to each other and the picture says
+      // the opposite of the caption. Adjacent S-S inside a crown is ~1.05;
+      // these offsets keep the closest inter-ring pair near 1.9.
+      for (var rI = 0; rI < 3; rI++) {
+        var ox = (rI % 2) * 2.8, oy = rI * 2.5, oz = (rI % 2) * 1.5;
+        for (i = 0; i < 8; i++) {
+          var ra = (i / 8) * Math.PI * 2;
+          push(A, ox + Math.cos(ra) * 1.05, oy + (i % 2 ? 0.34 : -0.34), oz + Math.sin(ra) * 1.05);
+        }
+      }
+    } else if (kind === 'isolated') {
+      // Nesosilicate: SiO4 tetrahedra that share NO corners with each other.
+      // The cations sitting between them are what hold the structure together.
+      for (i = 0; i < 2; i++) for (j = 0; j < 2; j++) for (k = 0; k < 2; k++) {
+        var bx = i * 2.5, by = j * 2.5, bz = k * 2.5;
+        push(B, bx, by, bz);
+        push('O', bx + 0.55, by + 0.55, bz + 0.55);
+        push('O', bx - 0.55, by - 0.55, bz + 0.55);
+        push('O', bx + 0.55, by - 0.55, bz - 0.55);
+        push('O', bx - 0.55, by + 0.55, bz - 0.55);
+        if (i === 0) push(A, bx + 1.25, by, bz);
+      }
+    } else if (kind === 'closepacked') {
+      // Corundum structure: oxygen in hexagonal close packing with the metal
+      // filling two thirds of the octahedral holes. Al2O3 and Fe2O3 share it.
+      for (k = 0; k < 3; k++) {
+        var off = (k % 2) * 0.5;
+        for (i = 0; i < 3; i++) for (j = 0; j < 3; j++) {
+          push(B, i + off, k * 0.88, j + off * 0.6);
+        }
+        if (k < 2) {
+          for (i = 0; i < 2; i++) for (j = 0; j < 2; j++) {
+            if ((i + j) % 3 === 2) continue;  // two thirds occupancy
+            push(A, i + 0.5 + off, k * 0.88 + 0.44, j + 0.5);
+          }
+        }
+      }
     }
     return out;
   }
@@ -987,7 +1033,16 @@
     var atoms, bondLen;
     if (spec) {
       atoms = rkLatticeAtoms(spec.kind, spec.a, spec.b);
-      bondLen = spec.kind === 'sheet' ? 1.15 : spec.kind === 'silica' ? 0.95 : 1.15;
+      // Bond cutoff per structure. Chosen so bonds form WITHIN the unit that
+      // matters and never across the gap that carries the lesson: inside an S8
+      // ring but not between rings, inside a tetrahedron but not between
+      // isolated ones, inside a silicate sheet but not across the weak plane.
+      bondLen = spec.kind === 'sheet' ? 1.15
+        : spec.kind === 'silica' ? 0.95
+        : spec.kind === 'rings' ? 1.15
+        : spec.kind === 'isolated' ? 1.10
+        : spec.kind === 'closepacked' ? 1.05
+        : 1.15;
     } else {
       atoms = rkCellAtoms(rkCellGeometryFor(m.crystal).geo);
       bondLen = 1.45;
@@ -1086,9 +1141,21 @@
     attach: function () {}, sync: function () {}, nudge: function () {},
     zoom: function () {}, reset: function () {}, status: function () { return 'failed'; }
   };
+  // Why the 3D view is unavailable, when it is. The panel used to offer a single
+  // explanation — "a CDN your network may block" — which is only one of the two
+  // ways this fails, and it sent anyone debugging the other one down the wrong
+  // path. If the HOST is missing makeBayViewer (its deploy mirror can lag the
+  // root module), no amount of network access will help.
+  var RK_CRYSTAL_UNAVAILABLE = null;
+
   var RK_CRYSTAL_VIEWER = (function () {
     var mk = window.StemLab && window.StemLab.makeBayViewer;
-    if (!mk) return RK_CRYSTAL_NULL;
+    if (!mk) {
+      RK_CRYSTAL_UNAVAILABLE = 'host';
+      console.warn('[rocks] 3D crystal lab disabled: window.StemLab.makeBayViewer is missing. ' +
+        'The host module (stem_lab_module.js) is older than the tool expects.');
+      return RK_CRYSTAL_NULL;
+    }
     return mk({
       parts: Object.keys(RK_ATOM).map(function (sp) {
         return { id: 'atom-' + sp, label: RK_ATOM[sp].label, color: RK_ATOM[sp].color };
@@ -4217,12 +4284,19 @@ const d = labToolData.rocks || {};
                       __alloT('stem.rocks.crystal3d_model_limit_b', " system, not this mineral's full atomic arrangement — that structure is more complex than this view is built to show.")
                     ),
 
-                    // Rendered only when the 3D engine could not start, so the
-                    // panel degrades to something useful instead of a black box.
-                    React.createElement("p", { className: "text-[11px] text-slate-700 mt-1.5" },
-                      React.createElement("noscript", null),
-                      __alloT('stem.rocks.crystal3d_offline_note', "If the 3D view stays blank, the engine is served from a CDN your network may block — every other panel on this page still works offline.")
-                    )
+                    // There are TWO ways this view fails and they need different
+                    // answers. A blocked CDN is a network problem a school can fix;
+                    // a host module older than the tool is a deploy problem no
+                    // amount of network access will help. Offering only the first
+                    // explanation sends anyone hitting the second down the wrong path.
+                    RK_CRYSTAL_UNAVAILABLE === 'host'
+                      ? React.createElement("p", { className: "text-[11px] text-slate-800 mt-1.5 bg-amber-50 border border-amber-300 rounded-lg p-2" },
+                          React.createElement("span", { className: "font-black" }, __alloT('stem.rocks.crystal3d_host_stale_label', "3D unavailable: ")),
+                          __alloT('stem.rocks.crystal3d_host_stale', "this build's STEM Lab host is older than this tool and does not provide the 3D viewer. Everything else on this page works normally; the structure is described in full above.")
+                        )
+                      : React.createElement("p", { className: "text-[11px] text-slate-700 mt-1.5" },
+                          __alloT('stem.rocks.crystal3d_offline_note', "If the 3D view stays blank, the engine is served from a CDN your network may block — every other panel on this page still works offline.")
+                        )
                   );
                 })(),
                 // Streak Test Lab
