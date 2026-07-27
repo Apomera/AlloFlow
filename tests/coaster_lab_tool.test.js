@@ -1393,6 +1393,149 @@ describe('coaster lab — procedural coaster generator', () => {
   });
 });
 
+describe('coaster lab — rider safety, restraints, and the height explainer', () => {
+  function loadSafety(p) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('/* @clab-safety-start');
+    const e = src.indexOf('/* @clab-safety-end');
+    expect(s).toBeGreaterThan(-1);
+    expect(e).toBeGreaterThan(s);
+    return new Function(src.slice(s, e) +
+      '\nreturn { sustainLimit, SUSTAIN_CURVES, freshSustain, sustainStep, restraintSpec, RESTRAINT_CLASSES, RIDER_KG };')();
+  }
+  const run = (api, axis, mag, seconds, floor, sus) => {
+    const s = sus || api.freshSustain();
+    for (let t = 0; t < seconds - 1e-9; t += 0.02) api.sustainStep(s, axis, mag, 0.02, floor);
+    return s;
+  };
+
+  it.each(TOOL_PATHS)('%s: the force a rider can take falls as it is held longer', (p) => {
+    const { sustainLimit, SUSTAIN_CURVES } = loadSafety(p);
+    for (const axis of Object.keys(SUSTAIN_CURVES)) {
+      let prev = Infinity;
+      for (let d = 0; d <= 6; d += 0.1) {
+        const lim = sustainLimit(axis, d);
+        expect(lim).toBeLessThanOrEqual(prev + 1e-9);   // never rises with time
+        expect(lim).toBeGreaterThan(0);
+        prev = lim;
+      }
+      // clamped flat outside the curve at both ends
+      expect(sustainLimit(axis, 0)).toBe(SUSTAIN_CURVES[axis][0][1]);
+      expect(sustainLimit(axis, 999)).toBe(SUSTAIN_CURVES[axis][SUSTAIN_CURVES[axis].length - 1][1]);
+    }
+    expect(sustainLimit('nonsense', 1)).toBe(Infinity);
+  });
+
+  it('a brief spike is allowed; the same force held for seconds is not', () => {
+    const api = loadSafety(TOOL_PATHS[0]);
+    // 5 g for a tenth of a second — a snap, inside the short-duration allowance
+    expect(run(api, 'pos', 5, 0.1, 2).worst.pos.ratio).toBeLessThan(1);
+    // 4 g held for two seconds — smaller force, over the line
+    const long = run(api, 'pos', 4, 2, 2).worst.pos;
+    expect(long.ratio).toBeGreaterThan(1);
+    expect(long.dur).toBeGreaterThan(1.9);
+    expect(long.level).toBeCloseTo(4, 5);
+    // same story sideways and upward
+    expect(run(api, 'lat', 1.0, 0.15, 0.6).worst.lat.ratio).toBeLessThan(1);
+    expect(run(api, 'lat', 1.1, 3, 0.6).worst.lat.ratio).toBeGreaterThan(1);
+    expect(run(api, 'neg', 1.1, 2.5, 0.3).worst.neg.ratio).toBeGreaterThan(1);
+  });
+
+  it('an episode tracks the force actually SUSTAINED, and resets when the force lets go', () => {
+    const api = loadSafety(TOOL_PATHS[0]);
+    // a 6 g flick inside a long mild pull must not be graded as 6 g held for 3 s
+    const s = api.freshSustain();
+    api.sustainStep(s, 'pos', 6, 0.02, 2);
+    run(api, 'pos', 2.1, 3, 2, s);
+    // the spike is never credited with the long duration that followed it, and
+    // three seconds of 2.1 g is genuinely inside the allowance, so nothing trips
+    expect(s.worst.pos.ratio).toBeLessThanOrEqual(1.01);
+    expect(s.worst.pos.level > 3 && s.worst.pos.dur > 1).toBe(false);
+    expect(s.pos.level).toBeCloseTo(2.1, 5);            // the level actually sustained
+    // dropping below the floor ends the episode, so the clock restarts
+    const s2 = run(api, 'pos', 4, 1.5, 2);
+    api.sustainStep(s2, 'pos', 0.9, 0.02, 2);
+    expect(s2.pos).toBe(null);
+    api.sustainStep(s2, 'pos', 4, 0.02, 2);
+    expect(s2.pos.dur).toBeCloseTo(0.02, 5);
+    // a zero-length step is ignored rather than corrupting the episode
+    expect(() => api.sustainStep(s2, 'pos', 4, 0, 2)).not.toThrow();
+  });
+
+  it('the forces choose the restraint, and the restraint load is real newtons', () => {
+    const { restraintSpec, RIDER_KG } = loadSafety(TOOL_PATHS[0]);
+    const gentle = restraintSpec({ minGV: 0.6, maxLat: 0.4, inversions: 0, airtime: 0 });
+    expect(gentle.key).toBe('simple');
+    expect(gentle.holdN).toBe(0);          // never pulled off the seat, never loaded
+    const airtime = restraintSpec({ minGV: -0.5, maxLat: 0.8, inversions: 0, airtime: 2.1 });
+    expect(airtime.key).toBe('ratchet');
+    expect(airtime.holdN).toBeCloseTo(0.5 * RIDER_KG * 9.81, 0);
+    const inverted = restraintSpec({ minGV: -0.2, maxLat: 0.9, inversions: 1, airtime: 1 });
+    expect(inverted.key).toBe('harness');  // upside down always means shoulders
+    const ejector = restraintSpec({ minGV: -1.3, maxLat: 0.5, inversions: 0, airtime: 3 });
+    expect(ejector.key).toBe('harness');   // so does being pulled hard off the seat
+    expect(ejector.holdKg).toBe(Math.round(1.3 * RIDER_KG));
+    // a run that produced no telemetry at all must not throw or invent a load
+    for (const t of [undefined, {}, { minGV: Infinity }]) {
+      const r = restraintSpec(t);
+      expect(r.key).toBe('simple');
+      expect(r.holdN).toBe(0);
+      expect(r.band.inLo).toBeGreaterThan(0);
+    }
+  });
+
+  it('every restraint class carries a height band, and heavier restraints post taller', () => {
+    const { RESTRAINT_CLASSES } = loadSafety(TOOL_PATHS[0]);
+    const order = ['simple', 'ratchet', 'harness'];
+    let prev = 0;
+    for (const key of order) {
+      const c = RESTRAINT_CLASSES[key];
+      expect(c.name.length).toBeGreaterThan(3);
+      expect(c.why.length).toBeGreaterThan(20);           // the reasoning always travels with it
+      expect(c.band.inLo).toBeGreaterThan(prev);          // a bigger restraint posts a taller sign
+      expect(c.band.inHi).toBeGreaterThan(c.band.inLo);
+      expect(c.band.cmLo).toBeGreaterThan(0);             // metric too
+      expect(c.band.cmHi).toBeGreaterThan(c.band.cmLo);
+      prev = c.band.inLo;
+    }
+  });
+
+  it.each(TOOL_PATHS)('%s: the height is presented as a band with its limits stated, never as a computed number', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('function renderRiderSafety(tele){');
+    const e = src.indexOf('\nfunction computeScores(tele){', s);
+    expect(s).toBeGreaterThan(-1);
+    const card = src.slice(s, e);
+    // the chain is taught, and the disclaimer is in the rendered card, not just a comment
+    expect(card).toContain('A height sign is really a <b>restraint</b> sign');
+    expect(card).toContain('it is not calculated from your');
+    expect(card).toContain("comes from the train manufacturer's restraint");
+    expect(card).toContain('${b.inLo}–${b.inHi} in (${b.cmLo}–${b.cmHi} cm)');
+    // sustained findings are labelled advisory, because certification still uses peak force
+    expect(card).toContain('certification still grades on peak force');
+    // and the card is actually rendered into the report
+    expect(src).toContain('html += renderRiderSafety(tele);');
+  });
+
+  it.each(TOOL_PATHS)('%s: the sim feeds all three axes into the duration tracker', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain("sustainStep(tele.sus, 'pos', gV, h, 2.0);");
+    expect(src).toContain("sustainStep(tele.sus, 'neg', -gV, h, 0.3);");
+    expect(src).toContain("sustainStep(tele.sus, 'lat', Math.abs(gLat), h, 0.6);");
+    expect(src).toContain('sus: freshSustain()');
+  });
+
+  it.each(TOOL_PATHS)('%s: the tool no longer claims a real train can leave the rail', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    // upstop wheels mean the TRAIN stays on; below the weightless limit it is the
+    // RIDER who is held by the restraint, and the copy has to say so
+    expect(src).not.toContain('keeps the wheels on the rail');
+    expect(src).not.toContain('riders leave the rails');
+    expect(src).toContain('upstop wheels grip the underside of the rail');
+    expect(src).toContain('you hang in the restraint, while the upstop wheels hold the train on');
+  });
+});
+
 describe('coaster lab — wired into every load site', () => {
   it.each([
     'AlloFlowANTI.txt',
