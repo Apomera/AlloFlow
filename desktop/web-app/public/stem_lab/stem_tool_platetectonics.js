@@ -697,7 +697,7 @@
     var T = null;
     var state = 'idle';              // idle | loading | ready | failed
     var canvasEl = null, renderer = null, scene = null, camera = null;
-    var plateGroup = null, slabMesh = null, quakeMesh = null, arcGroup = null;
+    var plateGroup = null, slabMesh = null, quakeMesh = null, arcGroup = null, scaleGroup = null;
     var clipPlane = null, dirLight = null;
     var rafId = 0, capacity = 0, resizeObs = null;
     var dummy = null, colorTmp = null;
@@ -730,8 +730,10 @@
 
       plateGroup = new T.Group();
       arcGroup = new T.Group();
+      scaleGroup = new T.Group();
       scene.add(plateGroup);
       scene.add(arcGroup);
+      scene.add(scaleGroup);
 
       dummy = new T.Object3D();
       colorTmp = new T.Color();
@@ -743,7 +745,12 @@
         var c = g.children[i];
         g.remove(c);
         if (c.geometry) c.geometry.dispose();
-        if (c.material) c.material.dispose();
+        // Label sprites own a CanvasTexture; disposing only the material leaks
+        // the GPU texture, and the scale is rebuilt on every mode change.
+        if (c.material) {
+          if (c.material.map) c.material.map.dispose();
+          c.material.dispose();
+        }
       }
     }
 
@@ -858,6 +865,96 @@
       }
     }
 
+    // Text via canvas texture — r128 has no text geometry, and a sprite always
+    // faces the camera, which is what a depth label needs while the block turns.
+    function makeLabel(text, hex, scaleUnits) {
+      var pad = 8, fs = 40;
+      var cv = document.createElement('canvas');
+      var c2 = cv.getContext('2d');
+      c2.font = 'bold ' + fs + 'px sans-serif';
+      cv.width = Math.ceil(c2.measureText(text).width) + pad * 2;
+      cv.height = fs + pad * 2;
+      c2 = cv.getContext('2d');
+      c2.font = 'bold ' + fs + 'px sans-serif';
+      c2.fillStyle = 'rgba(15,23,42,0.72)';
+      c2.fillRect(0, 0, cv.width, cv.height);
+      c2.fillStyle = hex;
+      c2.textBaseline = 'middle';
+      c2.fillText(text, pad, cv.height / 2);
+      var tex = new T.CanvasTexture(cv);
+      tex.needsUpdate = true;
+      var sp = new T.Sprite(new T.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+      var s = scaleUnits || 7;
+      sp.scale.set(s * (cv.width / cv.height), s, 1);
+      return sp;
+    }
+
+    // Depth scale. Without it the block shows a tilted line of dots and the
+    // student cannot say how deep anything is — the marker colours encode
+    // depth CLASSES (shallow / intermediate / deep, split at 70 and 300 km,
+    // the standard seismological bands the 2D legend also uses), so the two
+    // band boundaries are drawn as faint planes. That turns "the deep ones are
+    // further down-dip" from a claim into something readable off the model.
+    var DEPTH_TICKS = [
+      { km: 0,   label: 'surface',  hex: '#e2e8f0' },
+      { km: 70,  label: '70 km',    hex: '#fb923c' },
+      { km: 300, label: '300 km',   hex: '#a78bfa' },
+      { km: 700, label: '700 km',   hex: '#94a3b8' }
+    ];
+
+    function buildScale(m) {
+      clearGroup(scaleGroup);
+      if (!m.showScale) return;
+      var axisX = -TECT_HALF_X - 4;
+
+      DEPTH_TICKS.forEach(function (t) {
+        var y = -t.km * TECT_KM;
+        // Tick line across the block face.
+        var g = new T.BufferGeometry();
+        g.setAttribute('position', new T.BufferAttribute(new Float32Array([
+          axisX, y, TECT_HALF_Z, TECT_HALF_X, y, TECT_HALF_Z
+        ]), 3));
+        var line = new T.LineSegments(g, new T.LineBasicMaterial({
+          color: new T.Color(t.hex), transparent: true, opacity: 0.5
+        }));
+        scaleGroup.add(line);
+
+        // Inside the block's x-range and in front of its face. Hanging them off
+        // the left edge put them outside the camera frustum, which fits to the
+        // block, so only the last letter of each was on screen.
+        var lab = makeLabel(t.label, t.hex, 5.5);
+        lab.position.set(axisX + 12, y, TECT_HALF_Z + 4);
+        scaleGroup.add(lab);
+
+        // The 70 and 300 km band boundaries, as faint planes, so a violet
+        // focus is visibly BELOW the 300 km plane rather than just violet.
+        if (t.km === 70 || t.km === 300) {
+          var plane = new T.Mesh(
+            new T.PlaneGeometry(TECT_HALF_X * 2, TECT_HALF_Z * 2),
+            new T.MeshBasicMaterial({
+              color: new T.Color(t.hex), transparent: true, opacity: 0.07,
+              side: T.DoubleSide, depthWrite: false, clippingPlanes: [clipPlane]
+            })
+          );
+          plane.rotation.x = -Math.PI / 2;
+          plane.position.set(0, y, 0);
+          scaleGroup.add(plane);
+        }
+      });
+
+      // Trench marker: the origin every horizontal distance is measured from.
+      if (m.mode === 'convergent') {
+        // Stacked well apart: these sprites are ~30 units wide and the arc sits
+        // only 10 units from the trench, so at equal heights they collided.
+        var tl = makeLabel('trench', '#f8fafc', 5.5);
+        tl.position.set(-6, 7, TECT_HALF_Z + 4);
+        scaleGroup.add(tl);
+        var al = makeLabel('volcanic arc', '#fca5a5', 5.5);
+        al.position.set(tectSlabDistKm(100) * TECT_KM + 14, 20, TECT_HALF_Z + 4);
+        scaleGroup.add(al);
+      }
+    }
+
     function ensureQuakes(n) {
       if (quakeMesh && capacity >= n) return;
       if (quakeMesh) { scene.remove(quakeMesh); quakeMesh.geometry.dispose(); quakeMesh.material.dispose(); }
@@ -891,6 +988,7 @@
 
     function apply(m) {
       buildPlates(m);
+      buildScale(m);
       var qs = m.quakes || [];
       ensureQuakes(qs.length);
       for (var i = 0; i < qs.length; i++) {
@@ -925,7 +1023,9 @@
     function applyCam(m) {
       var el = Math.max(-88, Math.min(88, -m.rotX)) * DEG;
       var az = -m.rotY * DEG;
-      var dist = 210 / Math.max(0.25, m.scale);
+      // Pulled back enough that the depth labels and the arc label, which sit
+      // just outside the block proper, stay inside the frustum.
+      var dist = 250 / Math.max(0.25, m.scale);
       var ty = -TECT_DEPTH * 0.32;
       camera.position.set(
         dist * Math.cos(el) * Math.sin(az),
@@ -988,6 +1088,7 @@
           // carries the sign that points it down-dip (+x).
           slabDipDeg: slabMesh ? Math.round(Math.abs(slabMesh.rotation.z / DEG)) : null,
           arcCount: arcGroup ? arcGroup.children.length : 0,
+          scaleCount: scaleGroup ? scaleGroup.children.length : 0,
           clipConstant: clipPlane ? clipPlane.constant : null,
           camera: camera ? { x: camera.position.x, y: camera.position.y, z: camera.position.z } : null,
           canvas: canvasEl ? { w: canvasEl.clientWidth, h: canvasEl.clientHeight } : null,
@@ -1027,9 +1128,9 @@
         if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
         if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
         else window.removeEventListener('resize', resize);
-        if (scene) { clearGroup(plateGroup); clearGroup(arcGroup); }
+        if (scene) { clearGroup(plateGroup); clearGroup(arcGroup); clearGroup(scaleGroup); }
         if (renderer) { try { renderer.dispose(); } catch (e) {} }
-        plateGroup = arcGroup = slabMesh = quakeMesh = null;
+        plateGroup = arcGroup = scaleGroup = slabMesh = quakeMesh = null;
         renderer = scene = camera = null; canvasEl = null; pending = null;
         capacity = 0; appliedSig = ''; appliedCamSig = '';
         if (state !== 'failed') state = 'idle';
@@ -1521,6 +1622,7 @@
     mountainHeight: s.mountainHeight, rift: s.rift, offset: s.offset,
     quakes: s.quakes || [],
     rotX: view3d.rotX, rotY: view3d.rotY, scale: view3d.scale, cut: view3d.cut,
+    showScale: view3d.showScale !== false,
     onReady: function() {
       updView({ readyAt: Date.now() });   // flips tectGlLive on the next render
       if (typeof announceToSR === 'function') announceToSR('3D block view ready.');
@@ -1530,7 +1632,7 @@
       if (typeof announceToSR === 'function') announceToSR('The 3D block could not load. Showing the 2D cross-section.');
     },
     sig: [s.mode, Math.round(s.mountainHeight), Math.round(s.rift), Math.round(s.offset),
-          (s.quakes || []).length, view3d.cut,
+          (s.quakes || []).length, view3d.cut, view3d.showScale !== false,
           (s.quakes || []).length ? Math.round((s.quakes[s.quakes.length - 1].depthKm || 0)) : ''].join('|')
   };
   if (view3d.on) TectGL.submit(tectGlModel);
@@ -1643,6 +1745,19 @@
               className: 'focus:ring-2 focus:ring-yellow-500 focus:outline-none',
               style: { width: '100%', accentColor: '#ea580c' }
             }),
+            h('button', {
+              type: 'button',
+              'data-tect-scale-toggle': 'true',
+              'aria-pressed': view3d.showScale !== false,
+              onClick: function() {
+                var next = view3d.showScale === false;
+                updView({ showScale: next });
+                if (typeof announceToSR === 'function') {
+                  announceToSR(next ? 'Depth scale shown.' : 'Depth scale hidden.');
+                }
+              },
+              className: 'w-full mt-1 px-2 py-1 text-[10px] rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (view3d.showScale !== false ? 'border-orange-400 bg-orange-600 text-white font-bold' : (isDark ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-orange-300 bg-orange-50 text-orange-800 hover:bg-orange-100'))
+            }, 'Depth scale (70 / 300 / 700 km)'),
             h('button', {
               type: 'button',
               onClick: function() { updView({ rotX: -22, rotY: -38, scale: 1, cut: null }); },

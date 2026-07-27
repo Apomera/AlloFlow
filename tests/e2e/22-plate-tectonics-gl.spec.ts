@@ -316,6 +316,43 @@ test.describe('Plate Boundary Simulator — real WebGL', () => {
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
+  test('the depth scale is built and can be turned off', async ({ page }) => {
+    // Without it the block is a tilted line of dots with no way to say how
+    // deep anything is, so the depth colours stay a legend lookup instead of
+    // something readable off the model.
+    await mount(page);
+    await show3d(page);
+
+    // 4 ticks (surface / 70 / 300 / 700) = 4 lines + 4 labels, plus the two
+    // band planes at the 70 and 300 km class boundaries, plus trench and arc.
+    const on = await page.evaluate(() => (window as any).__gl());
+    expect(on.scaleCount).toBe(12);
+
+    await page.evaluate(() => (window as any).__click('[data-tect-scale-toggle]'));
+    await page.waitForTimeout(500);
+    expect((await page.evaluate(() => (window as any).__gl())).scaleCount).toBe(0);
+
+    // Toggling it away must not disturb the geology.
+    const off = await page.evaluate(() => (window as any).__gl());
+    expect(off.hasSlab).toBe(true);
+    expect(off.plateCount).toBe(2);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('the depth scale drops its labels when the mode changes', async ({ page }) => {
+    // Label sprites own a CanvasTexture each and the scale is rebuilt on every
+    // mode change, so a leak here compounds over a lesson.
+    await mount(page);
+    await show3d(page);
+    expect((await page.evaluate(() => (window as any).__gl())).scaleCount).toBe(12);
+
+    // Divergent and transform have no trench or arc, so only the 4 ticks and
+    // 2 band planes remain.
+    await page.evaluate(() => (window as any).__setMode('Divergent'));
+    await page.waitForTimeout(600);
+    expect((await page.evaluate(() => (window as any).__gl())).scaleCount).toBe(10);
+  });
+
   test('tears the renderer down on unmount', async ({ page }) => {
     await mount(page);
     await show3d(page);
