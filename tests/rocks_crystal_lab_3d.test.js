@@ -116,21 +116,42 @@ describe('crystal lab — honesty about what is drawn', () => {
     expect(halite).toContain('cleaves into perfect cubes');
   });
 
-  it('says so when it is showing the system cell, not the mineral structure', () => {
-    // Garnet and topaz have genuinely complex structures;
-    // drawing an invented one would look authoritative and be wrong.
-    ['garnet', 'topaz'].forEach((id) => {
-      const m = render(id);
-      expect(m, id).toContain('Model limit');
-      expect(m, id).toContain('not this mineral');
-      expect(m, id).toContain('unit cell');
+  it('every mineral in the tool now has its real structure drawn', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const drawn = [...src.slice(src.indexOf('var RK_LATTICE = {'), src.indexOf('var RK_CELL_GEOMETRY'))
+      .matchAll(/^\s{4}(\w+):/gm)].map((m) => m[1]);
+    const minerals = [...src.slice(src.indexOf('const MINERALS = ['), src.indexOf('const QUIZ_BANK'))
+      .matchAll(/\{ id: '(\w+)'/g)].map((m) => m[1]);
+    expect(minerals.length).toBe(18);
+    minerals.forEach((id) => {
+      expect(drawn, `${id} has no real structure`).toContain(id);
+    });
+  });
+
+  it('keeps the honest fallback intact for any mineral added later', () => {
+    // Nothing routes to the generic unit cell now that all 18 are drawn, but the
+    // path is the thing that keeps a FUTURE mineral honest rather than getting
+    // an invented structure. It must stay wired and cover every crystal system
+    // the data uses.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    expect(src).toContain('Model limit');
+    expect(src).toContain('rkCellAtoms');
+    expect(src).toContain('exact: false');
+
+    const geo = src.slice(src.indexOf('var RK_CELL_GEOMETRY = {'), src.indexOf('function rkCellGeometryFor'));
+    const systems = [...new Set([...src.slice(src.indexOf('const MINERALS = ['), src.indexOf('const QUIZ_BANK'))
+      .matchAll(/crystal:\s*'([^']+)'/g)].map((m) => m[1]))];
+    systems.forEach((sys) => {
+      const hit = sys.toLowerCase().split(/[^a-z]+/).filter(Boolean)
+        .some((w) => geo.indexOf("'" + w + "'") !== -1);
+      expect(hit, `no cell geometry for "${sys}"`).toBe(true);
     });
   });
 
   it('draws the real structure wherever one is simple and well known', () => {
     // These four moved off the generic unit cell once their real arrangements
     // turned out to be both drawable and diagnostic.
-    ['sulfur', 'olivine', 'corundum', 'hematite', 'feldspar', 'magnetite'].forEach((id) => {
+    ['sulfur', 'olivine', 'corundum', 'hematite', 'feldspar', 'magnetite', 'garnet', 'topaz'].forEach((id) => {
       const m = render(id);
       expect(m, id).toContain('how the atoms are actually stacked');
       expect(m, id).not.toContain('Model limit');
@@ -215,13 +236,20 @@ describe('crystal lab — honesty about what is drawn', () => {
     expect(m).toContain('nothing to break along');
   });
 
-  it('does not promise a structural explanation the panel cannot give', () => {
-    // Garnet falls back to a generic unit cell, so pointing at it for "why is it
-    // this hard" would promise an answer that is not there.
+  it('gates the hardness pointer on a real structure existing', () => {
+    // Every mineral now has a real structure, so there is no longer a mineral
+    // that would get a false pointer — but the guard is what keeps that true if
+    // one is added later. Pointing at a generic unit cell would promise an
+    // explanation the panel does not contain.
+    PATHS.forEach((p2) => {
+      const src = readFileSync(p2, 'utf8');
+      expect(src).toContain('d.scratchResult && RK_LATTICE[selMineral.id] &&');
+    });
+    // And it does fire for a mineral that has one.
     const store = {
       rocks: {
-        mode: 'minerals', selectedMineral: 'garnet',
-        scratchTool: 'diamond_scribe', scratchAnimProgress: 100,
+        mode: 'minerals', selectedMineral: 'talc',
+        scratchTool: 'fingernail', scratchAnimProgress: 100,
         scratchResult: 'Result: Scratch created!',
       },
       rockCycle: {},
@@ -230,8 +258,9 @@ describe('crystal lab — honesty about what is drawn', () => {
     const m = ReactDOMServer.renderToStaticMarkup(
       React.createElement(() => window.StemLab._registry.rocks.render(ctx))
     );
-    expect(m).toContain('Result: Scratch created!');
-    expect(m).not.toContain('Why is it this hard?');
+    expect(m).toContain('Why is it this hard?');
+    // Talc is Mohs 1, so it gets the soft-mineral framing.
+    expect(m).toContain('weak gaps');
   });
 
   it('draws the generic cell as a box, not a scribble', () => {
@@ -317,7 +346,7 @@ describe('crystal lab — interaction and labelling', () => {
 
   it('describes the structure for screen readers', () => {
     expect(render('halite')).toContain('atomic structure');
-    expect(render('garnet')).toContain('unit cell');
+    expect(render('garnet')).toContain('atomic structure');
   });
 
   it('rebuilds when the mineral changes', () => {

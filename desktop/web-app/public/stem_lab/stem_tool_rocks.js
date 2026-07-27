@@ -870,6 +870,8 @@
     talc:      { kind: 'sheet',     a: 'Mg', b: 'Si', exact: true,  why: 'Silicate sheets with almost nothing holding one sheet to the next, so they slide over each other. That is why talc is the softest mineral at Mohs 1 and feels slippery.' },
     quartz:    { kind: 'silica',    a: 'Si', b: 'O',  exact: true,  why: 'Every silicon sits at the centre of an oxygen tetrahedron, and every tetrahedron shares all four corners with its neighbours. The framework has no weak plane, so quartz fractures like glass instead of cleaving.' },
     gypsum:    { kind: 'sheet',     a: 'Ca', b: 'O',  exact: false, why: 'Layers of calcium sulfate separated by sheets of water molecules. The water layers are the weak planes gypsum splits along.' },
+    garnet:    { kind: 'isolated',  a: 'Fe', b: 'Si', c: 'Al', exact: true, why: 'A nesosilicate like olivine — isolated SiO₄ tetrahedra — but held together by TWO different cation sites, a larger one and a smaller one, packed tightly in three dimensions. No chains, no sheets, no framework means no plane of weakness anywhere: garnet has no cleavage at all and fractures instead, and that even packing is why it reaches Mohs 7 and grows those equant twelve-sided crystals.' },
+    topaz:     { kind: 'isolated',  a: 'Al', b: 'Si', c: 'F',  exact: true, why: 'Isolated SiO₄ tetrahedra linked by aluminium, with fluorine completing the aluminium’s coordination. Strong bonding in every direction gives Mohs 8 — but the fluorine and hydroxyl sit in layers, and that single plane of weaker bonds is why topaz has one perfect cleavage. Gem cutters have to orient around it.' },
     magnetite: { kind: 'spinel',    a: 'Fe3', b: 'O',  exact: true,  why: 'Oxygen is close-packed, and iron sits in TWO different kinds of gap between them: small tetrahedral sites and larger octahedral ones. The iron in those two site types is magnetically aligned in OPPOSITE directions — but there is more of it on one than the other, so the two do not cancel. That leftover is why magnetite is the only common mineral that is strongly magnetic on its own, and why a lodestone works as a compass.' },
     feldspar:  { kind: 'framework', a: 'K',  b: 'Si', exact: true,  why: 'A framework of corner-linked tetrahedra, like quartz — except aluminium substitutes for some of the silicon. Aluminium carries one less positive charge, so potassium, sodium or calcium sits in the cavities to balance it. That substitution is the entire difference from quartz, and it is why feldspar breaks along two clean planes while quartz has none.' },
     sulfur:    { kind: 'rings',     a: 'S',  b: 'S',  exact: true,  why: 'Sulfur is a MOLECULAR crystal: eight atoms bonded into a puckered S₈ crown, and only weak attractions holding one ring to the next. Strong bonds inside the ring, almost nothing between them — which is why sulfur is Mohs 2, crumbles easily, and melts at just 115 °C.' },
@@ -912,7 +914,7 @@
 
   // Build the atom list for a structure. All positions are in unit-cell space,
   // recentred on the origin by the caller.
-  function rkLatticeAtoms(kind, A, B) {
+  function rkLatticeAtoms(kind, A, B, C) {
     var out = [];
     var i, j, k;
     var push = function (sp, x, y, z) { out.push({ sp: sp, x: x, y: y, z: z }); };
@@ -1044,6 +1046,11 @@
         push('O', bx + 0.55, by - 0.55, bz - 0.55);
         push('O', bx - 0.55, by + 0.55, bz - 0.55);
         if (i === 0) push(A, bx + 1.25, by, bz);
+        // Optional SECOND cation site. Garnet and topaz are nesosilicates like
+        // olivine, but their islands are held by two different cation
+        // environments rather than one, and that pair is what distinguishes
+        // them — so it is drawn rather than averaged into a single species.
+        if (C && j === 0) push(C, bx, by + 1.25, bz);
       }
     } else if (kind === 'closepacked') {
       // Corundum structure: oxygen in hexagonal close packing with the metal
@@ -1094,7 +1101,7 @@
     var spec = RK_LATTICE[m.id];
     var atoms, bondLen;
     if (spec) {
-      atoms = rkLatticeAtoms(spec.kind, spec.a, spec.b);
+      atoms = rkLatticeAtoms(spec.kind, spec.a, spec.b, spec.c);
       // Bond cutoff per structure. Chosen so bonds form WITHIN the unit that
       // matters and never across the gap that carries the lesson: inside an S8
       // ring but not between rings, inside a tetrahedron but not between
@@ -4299,7 +4306,7 @@ const d = labToolData.rocks || {};
                   // those spheres unlabelled, which is the one thing the key is
                   // for. Deriving it means new structures label themselves.
                   var species = spec
-                    ? rkLatticeAtoms(spec.kind, spec.a, spec.b)
+                    ? rkLatticeAtoms(spec.kind, spec.a, spec.b, spec.c)
                         .map(function (at) { return at.sp; })
                         .filter(function (v, i, arr) { return arr.indexOf(v) === i; })
                     : ['X'];
