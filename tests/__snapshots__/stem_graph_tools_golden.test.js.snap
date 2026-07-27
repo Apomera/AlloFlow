@@ -2,12 +2,12 @@
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for algebraCAS 1`] = `
 {
-  "buttons": 14,
+  "buttons": 15,
   "circles": 0,
   "inputs": 1,
-  "lengthBucket": 32,
+  "lengthBucket": 34,
   "paths": 0,
-  "sha": "5e1316d90ffcba19",
+  "sha": "046408a4bb26208d",
   "svgs": 0,
 }
 `;
@@ -19,7 +19,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 9,
   "lengthBucket": 122,
   "paths": 0,
-  "sha": "46d636da8910f480",
+  "sha": "66185cf71b7cecf8",
   "svgs": 2,
 }
 `;
@@ -31,19 +31,19 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 9,
   "lengthBucket": 58,
   "paths": 0,
-  "sha": "2f1a17e63b06283e",
+  "sha": "1c1b0e262ca89b5a",
   "svgs": 1,
 }
 `;
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for dataStudio 1`] = `
 {
-  "buttons": 24,
+  "buttons": 33,
   "circles": 0,
-  "inputs": 5,
-  "lengthBucket": 55,
+  "inputs": 21,
+  "lengthBucket": 89,
   "paths": 0,
-  "sha": "833e1c2ac6cacb67",
+  "sha": "b42c35555531202f",
   "svgs": 1,
 }
 `;
@@ -67,7 +67,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 0,
   "lengthBucket": 34,
   "paths": 0,
-  "sha": "94f12affa8c3ee81",
+  "sha": "e233d6becff88948",
   "svgs": 0,
 }
 `;
@@ -79,7 +79,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 0,
   "lengthBucket": 39,
   "paths": 0,
-  "sha": "2dbea9268fba8d6a",
+  "sha": "12fafa212925b7b2",
   "svgs": 1,
 }
 `;
@@ -103,7 +103,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 7,
   "lengthBucket": 92,
   "paths": 0,
-  "sha": "99f58d4dbcabbc75",
+  "sha": "e317d5777b03ffe7",
   "svgs": 1,
 }
 `;
@@ -115,19 +115,19 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 1,
   "lengthBucket": 124,
   "paths": 1,
-  "sha": "09efa68587a1bd5b",
+  "sha": "e95e0eee42374e8b",
   "svgs": 1,
 }
 `;
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for probability 1`] = `
 {
-  "buttons": 37,
+  "buttons": 39,
   "circles": 6,
   "inputs": 4,
-  "lengthBucket": 102,
+  "lengthBucket": 148,
   "paths": 1,
-  "sha": "faa4e75318c60472",
+  "sha": "27cfdfb53f19f701",
   "svgs": 2,
 }
 `;
