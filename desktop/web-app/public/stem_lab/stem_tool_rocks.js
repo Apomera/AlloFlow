@@ -1164,10 +1164,14 @@
   }
 
   // ═══ 🔬 rocks (rocks) ═══
+  // Catalog identity. These were `label: 'rocks'` with an empty desc, so the
+  // tool browser listed a lowercase id and no blurb \u2014 87 of the other 90 STEM
+  // tools carry a proper name and description, and the a11y audit flags the gap
+  // as a catalog/context notice.
   window.StemLab.registerTool('rocks', {
     icon: '\uD83E\uDEA8',
-    label: 'rocks',
-    desc: '',
+    label: 'Rocks & Minerals Explorer',
+    desc: 'Earth Science: identify 20 rock specimens and 18 minerals by what you can actually see. Interactive landscape cross-section, textured specimen art, a no-AI Visual ID drill, AI Mystery Rock clues, and the real hand-sample tests \u2014 Mohs scratch, streak plate, acid fizz \u2014 plus a rotatable 3D view of each mineral\u2019s crystal structure and a weathering-climate investigation.',
     color: 'slate',
     category: 'science',
     questHooks: [
@@ -4889,9 +4893,12 @@ const d = labToolData.rocks || {};
 
   // ═══ 🔬 rockCycle (rockCycle) ═══
   window.StemLab.registerTool('rockCycle', {
-    icon: '🔬',
-    label: 'rockCycle',
-    desc: '',
+    // 🔬 (microscope) said nothing about a rock cycle and collided with the
+    // sibling tool in the catalog; 🔄 matches the animated cycle and the
+    // transformation machine this tool is built around.
+    icon: '🔄',
+    label: 'Rock Cycle',
+    desc: 'Earth Science: the rock cycle as a branching network, not a one-way circle. Animated cross-section diagram with all six pathways clickable, and a transformation machine that takes a named specimen and an agent of change and returns the specific named product with its real temperatures, depths, timescale and field evidence — shale to slate, limestone to marble, granite to gneiss.',
     color: 'slate',
     category: 'science',
     questHooks: [

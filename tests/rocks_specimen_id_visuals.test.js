@@ -67,6 +67,36 @@ beforeEach(() => {
 });
 afterEach(() => { vi.useRealTimers(); });
 
+describe('catalog identity', () => {
+  // Both tools registered with `label` set to the raw id and an empty `desc`,
+  // so the STEM Lab tool browser listed them as "rocks" and "rockCycle" with no
+  // blurb — 87 of the other 90 tools carry a proper name and description, and
+  // the repo's own a11y audit raised it as a catalog/context notice on each.
+  it('gives both tools a human name and a real description', () => {
+    resetStemLab();
+    loadTool(ROCKS_FILE, 'rocks');
+    const reg = window.StemLab._registry;
+
+    [['rocks', 'Rocks & Minerals Explorer'], ['rockCycle', 'Rock Cycle']].forEach(([id, label]) => {
+      const cfg = reg[id];
+      expect(cfg, id).toBeTruthy();
+      expect(cfg.label, `${id} label`).toBe(label);
+      expect(cfg.label, `${id} label must not be the raw id`).not.toBe(id);
+      // The audit's threshold for a usable catalog blurb.
+      expect((cfg.desc || '').length, `${id} desc`).toBeGreaterThan(20);
+    });
+  });
+
+  it('does not give the two sibling tools the same catalog icon', () => {
+    resetStemLab();
+    loadTool(ROCKS_FILE, 'rocks');
+    const reg = window.StemLab._registry;
+    expect(reg.rocks.icon).toBeTruthy();
+    expect(reg.rockCycle.icon).toBeTruthy();
+    expect(reg.rockCycle.icon).not.toBe(reg.rocks.icon);
+  });
+});
+
 describe('rock specimen ID visuals', () => {
   it('draws a distinct swatch per specimen in the rocks grid, not a shared type emoji', () => {
     const { markup } = renderRocks({ mode: 'rocks' });
