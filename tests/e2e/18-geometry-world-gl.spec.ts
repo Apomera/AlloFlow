@@ -216,6 +216,19 @@ const HARNESS = `<!doctype html>
 
   window.__destroy = function () {
     try { if (window.__root) window.__root.unmount(); } catch (err) {}
+    // Hand the GL context back explicitly — Chromium caps live contexts per PROCESS
+    // and kills the oldest silently, so without this the earliest suite in a
+    // multi-spec run starts failing for reasons unrelated to itself.
+    try {
+      var cs = document.querySelectorAll('canvas');
+      for (var i = 0; i < cs.length; i++) {
+        var g = null;
+        try { g = cs[i].getContext('webgl2') || cs[i].getContext('webgl'); } catch (e) {}
+        if (!g || g.isContextLost()) continue;
+        var ext = g.getExtension('WEBGL_lose_context');
+        if (ext) ext.loseContext();
+      }
+    } catch (err) {}
   };
 </script></body></html>`;
 

@@ -89,12 +89,24 @@ ${extra}
     var data = Object.assign({ _threeLoaded: true }, toolData || {});
     window.__toolData = data;
     var bump = null;
+    // Two state channels exist across these tools and a harness has to serve both:
+    // most read ctx.toolData + ctx.update/updateMulti, but some (galaxy) read
+    // ctx.labToolData + ctx.setLabToolData. Backing them with the SAME object means
+    // a spec can seed or read state without caring which the tool happens to use.
+    var applyFn = function (fnOrVal) {
+      var next = typeof fnOrVal === 'function' ? fnOrVal(data) : fnOrVal;
+      if (next && next !== data) { Object.keys(next).forEach(function (k) { data[k] = next[k]; }); }
+      if (bump) bump();
+    };
     var ctx = {
       React: React,
       toolData: data,
+      labToolData: data,
       update: function (b, k, v) { data[b] = Object.assign({}, data[b]); data[b][k] = v; if (bump) bump(); },
       updateMulti: function (b, patch) { data[b] = Object.assign({}, data[b], patch); if (bump) bump(); },
-      setToolData: function () {}, setStemLabTool: function () {}, setStemLabTab: function () {},
+      setToolData: applyFn,
+      setLabToolData: applyFn,
+      setStemLabTool: function () {}, setStemLabTab: function () {},
       addToast: function (m, k) { window.__events.toasts.push({ message: String(m), kind: k }); },
       awardXP: function () {}, getXP: function () { return 0; },
       announceToSR: function () {}, celebrate: function () {}, beep: function () {},
@@ -123,7 +135,24 @@ ${extra}
     return true;
   };
 
-  window.__destroy = function () { try { if (window.__root) window.__root.unmount(); } catch (err) {} };
+  window.__destroy = function () {
+    try { if (window.__root) window.__root.unmount(); } catch (err) {}
+    // Unmounting disposes the renderer, but three.js does not reliably hand the GL
+    // context back straight away. Chromium caps live contexts per PROCESS and
+    // silently kills the oldest past the limit, so across several GL specs in one
+    // run the earliest suite starts failing for reasons that have nothing to do with
+    // it. Releasing explicitly makes multi-suite runs deterministic.
+    try {
+      var cs = document.querySelectorAll('canvas');
+      for (var i = 0; i < cs.length; i++) {
+        var g = null;
+        try { g = cs[i].getContext('webgl2') || cs[i].getContext('webgl'); } catch (e) {}
+        if (!g || g.isContextLost()) continue;
+        var ext = g.getExtension('WEBGL_lose_context');
+        if (ext) ext.loseContext();
+      }
+    } catch (err) {}
+  };
 
   // The WebGL canvas, chosen by actually having a GL context rather than by
   // position — several of these tools also mount 2D canvases (charts, minimaps),
