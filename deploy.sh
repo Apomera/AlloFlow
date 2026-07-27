@@ -142,7 +142,7 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   node dev-tools/check_oss_credits.cjs
   echo "  ✓ OSS attribution intact (every credited library carries a copyright notice in THIRD_PARTY_LICENSES.md + bundled license text; blocks a dependency shipping uncredited; 2026-07-21)."
   node dev-tools/check_retired_paths.cjs --quiet
-  echo "  ✓ no retired tree growing back (prismflow-deploy/ rebuilt itself from the reading-library sync scripts and reached 3,536 tracked files before anyone noticed; the vitest guard that covered it never ran here; 2026-07-26)."
+  echo "  ✓ no retired tree growing back (the pre-rename web-app dir rebuilt itself from the reading-library sync scripts and reached 3,536 tracked files before anyone noticed; the vitest guard that covered it never ran here; 2026-07-26)."
   # Self-healing (2026-07-20): this gate names its own fix — run it instead of
   # aborting. A stale block regenerates + stages, then the check must pass.
   if ! node dev-tools/gen_docsuite_theme.cjs --check; then
