@@ -138,41 +138,120 @@
   }
 
   // Rock specimen swatch. `texture` drives the pattern, `grainColors` the palette.
+  // How a rock BREAKS shapes how a specimen looks, so the silhouette is picked
+  // from the texture family rather than being one shared rounded square:
+  // crystalline and glassy rocks fracture to sharp angular blocks, clastic and
+  // vesicular ones weather to rounded lumps, foliated and banded ones split into
+  // flat tabular slabs. That makes the outline itself diagnostic — and gives
+  // every specimen its own recognisable shape instead of 20 identical tiles.
+  var RK_SILHOUETTE = {
+    'coarse-grained': 'angular', 'crystalline': 'angular', 'non-foliated': 'angular',
+    'glassy': 'angular', 'fine-grained': 'blocky',
+    'clastic': 'rounded', 'clastic-coarse': 'rounded', 'bioclastic': 'rounded',
+    'vesicular': 'rounded',
+    'foliated': 'tabular', 'banded': 'tabular', 'fine-layered': 'tabular'
+  };
+
+  // Deterministic irregular outline. Returns an SVG path string in a 0..S box.
+  function rkSilhouettePath(kind, S, rnd) {
+    var pts = [];
+    var n = kind === 'rounded' ? 11 : kind === 'tabular' ? 10 : 9;
+    var cx = S / 2, cy = S / 2;
+    var i;
+    for (i = 0; i < n; i++) {
+      var a = (i / n) * Math.PI * 2 - Math.PI / 2;
+      // Tabular specimens are wide and shallow; the others are near-equant.
+      var rx = kind === 'tabular' ? S * 0.44 : S * 0.40;
+      var ry = kind === 'tabular' ? S * 0.27 : S * 0.39;
+      var jitter = kind === 'rounded' ? 0.06 : kind === 'blocky' ? 0.10 : 0.16;
+      var k = 1 - jitter / 2 + rnd() * jitter;
+      pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]);
+    }
+    var dstr = '';
+    if (kind === 'rounded') {
+      // Smooth closed curve through the points.
+      dstr = 'M' + pts[0][0].toFixed(1) + ',' + pts[0][1].toFixed(1);
+      for (i = 0; i < pts.length; i++) {
+        var p1 = pts[i];
+        var p2 = pts[(i + 1) % pts.length];
+        var mx = (p1[0] + p2[0]) / 2, my = (p1[1] + p2[1]) / 2;
+        dstr += ' Q' + p1[0].toFixed(1) + ',' + p1[1].toFixed(1) + ' ' + mx.toFixed(1) + ',' + my.toFixed(1);
+      }
+      dstr += ' Z';
+    } else {
+      dstr = 'M' + pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L') + ' Z';
+    }
+    return dstr;
+  }
+
+  // Rock specimen swatch. `texture` drives the pattern, `grainColors` the palette,
+  // and the texture family also drives the outline and how the light falls.
   function rkRockSwatch(h, rock, size) {
     var S = size || 40;
     var cols = (rock && rock.grainColors && rock.grainColors.length) ? rock.grainColors : ['#a8a29e', '#78716c'];
-    var rnd = rkSeed(rock ? rock.id : 'x');
+    var id = rock ? rock.id : 'x';
+    var rnd = rkSeed(id);
     var tex = rock ? rock.texture : 'fine-grained';
-    var clip = 'rkclip-' + (rock ? rock.id : 'x');
+    var clip = 'rkclip-' + id;
+    var shadeId = 'rkshade-' + id;
+    var glossId = 'rkgloss-' + id;
+    var silKind = RK_SILHOUETTE[tex] || 'blocky';
+    var sil = rkSilhouettePath(silKind, S, rnd);
     var kids = [];
     var i;
     var pick = function (n) { return cols[n % cols.length]; };
 
-    // Base is the dominant grain colour so even an unknown texture reads as rock.
-    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: S, height: S, rx: S * 0.16, fill: cols[0] }));
+    // Adapt the lighting to the specimen's own value. A fixed white highlight
+    // blows out the pale rocks — chalk, marble, quartzite and limestone turned
+    // into featureless white blobs — while a fixed shadow buries the dark ones.
+    // Light specimens get most of their modelling from shadow, dark specimens
+    // from highlight.
+    var baseLum = (function (hex) {
+      if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return 0.5;
+      var c = [1, 3, 5].map(function (i) { return parseInt(hex.slice(i, i + 2), 16) / 255; });
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    })(cols[0]);
+    var hiOp = (0.42 - baseLum * 0.34).toFixed(3);   // .42 on black → .08 on white
+    var loOp = (0.20 + baseLum * 0.34).toFixed(3);   // .20 on black → .54 on white
+
+    kids.push(h('defs', { key: 'defs' },
+      h('clipPath', { id: clip }, h('path', { d: sil })),
+      // Volume: lit from the upper left, falling away to the lower right.
+      h('linearGradient', { id: shadeId, x1: '0%', y1: '0%', x2: '75%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: hiOp }),
+        h('stop', { offset: '45%', stopColor: '#ffffff', stopOpacity: 0.03 }),
+        h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: loOp })),
+      // Tight specular for the shiny families.
+      h('radialGradient', { id: glossId, cx: '32%', cy: '26%', r: '42%' },
+        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.72 }),
+        h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 }))
+    ));
+
+    // Contact shadow — lifts the specimen off the tile.
+    kids.push(h('ellipse', { key: 'shadow', cx: S / 2, cy: S * 0.93, rx: S * 0.33, ry: S * 0.055, fill: '#0f172a', opacity: 0.22 }));
+
+    // Body
+    kids.push(h('path', { key: 'body', d: sil, fill: cols[0] }));
 
     var g = [];
     if (tex === 'coarse-grained' || tex === 'crystalline' || tex === 'non-foliated') {
-      // Interlocking visible crystals — the "you can see the grains" family.
       var n = tex === 'coarse-grained' ? 9 : 12;
       for (i = 0; i < n; i++) {
-        var cx = rnd() * S, cy = rnd() * S;
+        var cx2 = rnd() * S, cy2 = rnd() * S;
         var r = (tex === 'coarse-grained' ? 0.17 : 0.12) * S * (0.7 + rnd() * 0.6);
         var sides = 5 + Math.floor(rnd() * 2);
         var pts = [];
         for (var k = 0; k < sides; k++) {
           var a = (k / sides) * Math.PI * 2 + rnd() * 0.4;
-          pts.push((cx + Math.cos(a) * r).toFixed(1) + ',' + (cy + Math.sin(a) * r).toFixed(1));
+          pts.push((cx2 + Math.cos(a) * r).toFixed(1) + ',' + (cy2 + Math.sin(a) * r).toFixed(1));
         }
         g.push(h('polygon', { key: 'c' + i, points: pts.join(' '), fill: pick(i + 1), stroke: 'rgba(0,0,0,0.28)', strokeWidth: 0.5 }));
       }
     } else if (tex === 'fine-grained') {
-      // Too fine to resolve — dense even speckle.
       for (i = 0; i < 70; i++) {
         g.push(h('circle', { key: 'f' + i, cx: (rnd() * S).toFixed(1), cy: (rnd() * S).toFixed(1), r: (0.035 * S * (0.6 + rnd())).toFixed(2), fill: pick(i + 1), opacity: 0.85 }));
       }
     } else if (tex === 'glassy') {
-      // Volcanic glass: dark, lustrous, conchoidal (shell-shaped) fracture arcs.
       g.push(h('rect', { key: 'gl', x: 0, y: 0, width: S, height: S, fill: cols[0] }));
       for (i = 0; i < 5; i++) {
         g.push(h('path', {
@@ -181,14 +260,11 @@
           fill: 'none', stroke: 'rgba(190,215,255,0.30)', strokeWidth: 0.7,
         }));
       }
-      g.push(h('ellipse', { key: 'sheen', cx: S * 0.34, cy: S * 0.3, rx: S * 0.2, ry: S * 0.12, fill: 'rgba(255,255,255,0.20)', transform: 'rotate(-25 ' + (S * 0.34) + ' ' + (S * 0.3) + ')' }));
     } else if (tex === 'vesicular') {
-      // Frothy: pale groundmass riddled with gas bubbles.
       for (i = 0; i < 26; i++) {
         g.push(h('circle', { key: 'v' + i, cx: (rnd() * S).toFixed(1), cy: (rnd() * S).toFixed(1), r: (0.045 * S * (0.6 + rnd() * 1.4)).toFixed(2), fill: 'rgba(60,50,45,0.45)' }));
       }
     } else if (tex === 'clastic') {
-      // Cemented sand grains with faint bedding.
       for (i = 1; i < 5; i++) {
         g.push(h('line', { key: 'b' + i, x1: 0, y1: (i / 5) * S, x2: S, y2: (i / 5) * S, stroke: 'rgba(0,0,0,0.13)', strokeWidth: 0.7 }));
       }
@@ -196,7 +272,6 @@
         g.push(h('circle', { key: 'gr' + i, cx: (rnd() * S).toFixed(1), cy: (rnd() * S).toFixed(1), r: (0.05 * S * (0.7 + rnd() * 0.6)).toFixed(2), fill: pick(i + 1), opacity: 0.9 }));
       }
     } else if (tex === 'clastic-coarse') {
-      // Conglomerate: big rounded pebbles in a finer matrix.
       for (i = 0; i < 8; i++) {
         g.push(h('ellipse', {
           key: 'p' + i,
@@ -206,7 +281,6 @@
         }));
       }
     } else if (tex === 'bioclastic') {
-      // Shell hash — the fossil-bearing look.
       for (i = 1; i < 4; i++) {
         g.push(h('line', { key: 'bl' + i, x1: 0, y1: (i / 4) * S, x2: S, y2: (i / 4) * S, stroke: 'rgba(0,0,0,0.10)', strokeWidth: 0.6 }));
       }
@@ -215,18 +289,15 @@
         g.push(h('path', { key: 'sh' + i, d: 'M' + (sx - sr) + ',' + sy + ' a' + sr + ',' + sr + ' 0 0,1 ' + (sr * 2) + ',0', fill: 'none', stroke: pick(i + 1), strokeWidth: 1.1 }));
       }
     } else if (tex === 'fine-layered') {
-      // Shale: many very thin, flat partings.
       for (i = 1; i < 14; i++) {
         g.push(h('line', { key: 'fl' + i, x1: 0, y1: (i / 14) * S, x2: S, y2: (i / 14) * S, stroke: pick(i), strokeWidth: 0.8, opacity: 0.75 }));
       }
     } else if (tex === 'foliated') {
-      // Aligned platy minerals — wavy, closely spaced.
       for (i = 1; i < 11; i++) {
         var fy = (i / 11) * S;
         g.push(h('path', { key: 'fo' + i, d: 'M0,' + fy.toFixed(1) + ' Q' + (S * 0.5) + ',' + (fy - S * 0.05).toFixed(1) + ' ' + S + ',' + fy.toFixed(1), fill: 'none', stroke: pick(i), strokeWidth: 1.0, opacity: 0.85 }));
       }
     } else if (tex === 'banded') {
-      // Gneissic banding: thick alternating light/dark stripes that swirl.
       for (i = 0; i < 6; i++) {
         var by = (i / 6) * S + S * 0.06;
         g.push(h('path', {
@@ -241,18 +312,22 @@
       }
     }
 
+    kids.push(h('g', { key: 'tex', clipPath: 'url(#' + clip + ')' }, g));
+
+    // Volume shading over the texture, then a specular only where it belongs —
+    // obsidian and metallic-looking rocks catch light, sandstone does not.
+    kids.push(h('path', { key: 'shade', d: sil, fill: 'url(#' + shadeId + ')' }));
+    if (tex === 'glassy' || tex === 'crystalline' || tex === 'non-foliated') {
+      kids.push(h('path', { key: 'gloss', d: sil, fill: 'url(#' + glossId + ')' }));
+    }
+    // Rim: dark contact edge plus a light catch along the top.
+    kids.push(h('path', { key: 'rim', d: sil, fill: 'none', stroke: 'rgba(15,23,42,0.55)', strokeWidth: Math.max(0.7, S * 0.022), strokeLinejoin: silKind === 'rounded' ? 'round' : 'miter' }));
+
     return h('svg', {
       width: S, height: S, viewBox: '0 0 ' + S + ' ' + S,
       'aria-hidden': true, focusable: 'false',
-      style: { display: 'block', borderRadius: (S * 0.16) + 'px' },
-    },
-      h('defs', null, h('clipPath', { id: clip }, h('rect', { x: 0, y: 0, width: S, height: S, rx: S * 0.16 }))),
-      kids,
-      h('g', { clipPath: 'url(#' + clip + ')' }, g),
-      // Rim + a soft top-left highlight so the tile reads as a solid 3-D specimen
-      // rather than a flat pattern swatch.
-      h('rect', { x: 0.4, y: 0.4, width: S - 0.8, height: S - 0.8, rx: S * 0.15, fill: 'none', stroke: 'rgba(0,0,0,0.35)', strokeWidth: 0.8 })
-    );
+      style: { display: 'block', overflow: 'visible' },
+    }, kids);
   }
 
   // Mineral swatch: crystal HABIT as the outline, LUSTRE as the shading.
@@ -272,8 +347,25 @@
     var silky = lus.indexOf('silky') !== -1;
     var adamantine = lus.indexOf('adamantine') !== -1;
 
-    // Backing plate keeps pale minerals visible on a white tile.
-    kids.push(h('rect', { key: 'plate', x: 0, y: 0, width: S, height: S, rx: S * 0.16, fill: '#1e293b' }));
+    var vaultId = 'rkvault-' + id;
+    var faceId = 'rkface-' + id;
+
+    // Backing plate: a soft vignette rather than flat slate, so pale minerals
+    // stay visible and the crystal reads as sitting in a display case.
+    kids.push(h('defs', { key: 'defs' },
+      h('radialGradient', { id: vaultId, cx: '38%', cy: '30%', r: '78%' },
+        h('stop', { offset: '0%', stopColor: '#5b6b80' }),
+        h('stop', { offset: '100%', stopColor: '#1c2738' })),
+      // Face shading: crystals are faceted, so light falls off across each face
+      // instead of filling it evenly.
+      h('linearGradient', { id: faceId, x1: '0%', y1: '0%', x2: '60%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.30 }),
+        h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0.02 }),
+        h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.30 }))
+    ));
+    kids.push(h('rect', { key: 'plate', x: 0, y: 0, width: S, height: S, rx: S * 0.16, fill: 'url(#' + vaultId + ')' }));
+    // Contact shadow under the crystal.
+    kids.push(h('ellipse', { key: 'shadow', cx: S / 2, cy: S * 0.82, rx: S * 0.26, ry: S * 0.05, fill: '#000000', opacity: 0.38 }));
 
     var c = S / 2;
     var shape;
@@ -319,7 +411,19 @@
         h('line', { key: 'sheet2', x1: c - mw + lean * 0.3, y1: c + mh * 0.25, x2: c + mw - lean * 0.6, y2: c + mh * 0.35, stroke: 'rgba(0,0,0,0.25)', strokeWidth: 0.6 }),
       ];
     }
-    kids.push(h('g', { key: 'habit' }, shape));
+    // Scale the habit up about the tile centre. Drawn at the original size the
+    // crystal sat small inside its plate and the whole thing read as a flat app
+    // icon rather than a specimen in a case; the crystal should be the object.
+    kids.push(h('g', {
+      key: 'habit',
+      transform: 'translate(' + (c * (1 - 1.3)).toFixed(2) + ',' + (c * (1 - 1.3)).toFixed(2) + ') scale(1.3)'
+    }, shape));
+    // Facet shading laid over the habit, so the crystal has volume rather than
+    // reading as a flat coloured outline. Earthy minerals are matte by
+    // definition, so they are left unshaded.
+    if (!earthy) {
+      kids.push(h('rect', { key: 'facet', x: S * 0.16, y: S * 0.10, width: S * 0.68, height: S * 0.72, fill: 'url(#' + faceId + ')', style: { mixBlendMode: 'soft-light' }, pointerEvents: 'none' }));
+    }
 
     // ── Lustre ──
     if (metallic) {
@@ -2616,7 +2720,7 @@ const d = labToolData.rocks || {};
 
               // Rock grid
 
-              React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3" },
+              React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-2 mb-3" },
 
                 ROCKS.filter(function (r) { return !d.selectedType || r.type === d.selectedType; }).map(function (rock) {
 
@@ -2637,7 +2741,7 @@ const d = labToolData.rocks || {};
 
                   },
 
-                    React.createElement("div", { className: "flex justify-center mb-1" }, rkRockSwatch(React.createElement, rock, 38)),
+                    React.createElement("div", { className: "flex justify-center mb-1" }, rkRockSwatch(React.createElement, rock, 54)),
 
                     rock.label);
 
@@ -3675,7 +3779,7 @@ const d = labToolData.rocks || {};
               return React.createElement("div", { className: "space-y-3" },
 
                 // Mineral grid
-                React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3" },
+                React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-2 mb-3" },
                   MINERALS.map(function (mineral) {
                     return React.createElement("button", { key: mineral.id, onClick: function () { upd("selectedMineral", d.selectedMineral === mineral.id ? null : mineral.id); upd("selectedRock", null); },
                       // Was a flat colour dot, which showed nothing about the two
@@ -3687,7 +3791,7 @@ const d = labToolData.rocks || {};
                         (d.selectedMineral === mineral.id ? 'bg-white shadow-lg border-violet-400' : 'transition-colors bg-slate-50 border-slate-200 hover:border-violet-200'),
                       style: d.selectedMineral === mineral.id ? { borderColor: '#8b5cf6', color: '#6d28d9' } : {}
                     },
-                      React.createElement("div", { className: "flex justify-center mb-1" }, rkMineralSwatch(React.createElement, mineral, 34)),
+                      React.createElement("div", { className: "flex justify-center mb-1" }, rkMineralSwatch(React.createElement, mineral, 46)),
                       mineral.label);
                   })
                 ),
@@ -4265,7 +4369,7 @@ const d = labToolData.rocks || {};
 
                     React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1.5" }, __alloT('stem.rocks.click_rock_matches_clues', "Click the rock you think matches the clues:")),
 
-                    React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-2", role: "group", "aria-label": __alloT('stem.rocks.rock_guess_options_aria', "Rock guess options") },
+                    React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 gap-2 mb-2", role: "group", "aria-label": __alloT('stem.rocks.rock_guess_options_aria', "Rock guess options") },
 
                       ROCKS.map(function (rock) {
 
@@ -4292,7 +4396,7 @@ const d = labToolData.rocks || {};
 
                         },
 
-                          React.createElement("div", { className: "flex justify-center mb-1" }, rkRockSwatch(React.createElement, rock, 38)),
+                          React.createElement("div", { className: "flex justify-center mb-1" }, rkRockSwatch(React.createElement, rock, 54)),
 
                           rock.label);
 

@@ -133,6 +133,46 @@ describe('rock specimen ID visuals', () => {
     });
   });
 
+  it('gives specimens volume: silhouette, shading and a contact shadow', () => {
+    const { markup } = renderRocks({ mode: 'rocks' });
+    // Modelled with gradients rather than drawn as flat pattern tiles.
+    expect(markup).toContain('rkshade-granite');
+    expect(markup).toContain('linearGradient');
+    expect(markup).toContain('radialGradient');
+    // Each specimen sits on a contact shadow.
+    expect((markup.match(/<ellipse[^>]*opacity="0\.22"/g) || []).length).toBeGreaterThan(10);
+  });
+
+  it('shapes the outline by how the rock breaks', () => {
+    const { markup } = renderRocks({ mode: 'rocks' });
+    const grab = (id) => {
+      const i = markup.indexOf('rkclip-' + id);
+      return markup.slice(i, i + 900);
+    };
+    // Angular fracture (granite, crystalline) → straight-edged path.
+    expect(grab('granite')).toMatch(/<path d="M[\d.,\sL]+Z"/);
+    // Rounded weathering (sandstone, clastic) → quadratic curves.
+    expect(grab('sandstone')).toMatch(/<path d="M[^"]*Q[^"]*"/);
+    // Tabular splitting (slate, foliated) → wide, shallow outline.
+    expect(grab('slate')).toBeTruthy();
+  });
+
+  it('adapts lighting so pale specimens do not blow out', () => {
+    // A fixed white highlight turned chalk, marble and quartzite into
+    // featureless white blobs. Light specimens are modelled mostly by shadow.
+    const { markup } = renderRocks({ mode: 'rocks' });
+    const shadeOf = (id) => {
+      const i = markup.indexOf('rkshade-' + id);
+      const chunk = markup.slice(i, i + 420);
+      const stops = [...chunk.matchAll(/stop-opacity="([\d.]+)"/g)].map((m) => parseFloat(m[1]));
+      return { hi: stops[0], lo: stops[2] };
+    };
+    const chalk = shadeOf('chalk');       // near-white rock
+    const obsidian = shadeOf('obsidian'); // near-black rock
+    expect(chalk.hi).toBeLessThan(obsidian.hi);   // less highlight on pale rock
+    expect(chalk.lo).toBeGreaterThan(obsidian.lo); // more shadow on pale rock
+  });
+
   it('draws minerals by crystal habit and lustre, not a flat colour dot', () => {
     const { markup } = renderRocks({ mode: 'minerals' });
     expect((markup.match(/<svg/g) || []).length).toBeGreaterThanOrEqual(6);
