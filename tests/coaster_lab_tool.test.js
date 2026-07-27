@@ -1607,7 +1607,8 @@ describe('coaster lab — the train is a length, not a point', () => {
 
   it.each(TOOL_PATHS)('%s: the sim samples every car, and says what it does not model', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
-    expect(src).toContain('const TRAIN_CARS = 5, CAR_GAP = 2.6;');
+    expect(src).toContain('let TRAIN_CARS = 5;');
+    expect(src).toContain('const CAR_GAP = 2.6;');
     // the reference car reuses the force already computed; the rest are sampled
     expect(src).toContain('const trc = trackAt(sc);');
     expect(src).toContain('for(let c = 0; c < TRAIN_CARS; c++) ySum += trackAt(sim.S - c * CAR_GAP).y;');
@@ -1620,8 +1621,8 @@ describe('coaster lab — the train is a length, not a point', () => {
     expect(src).toContain('Certification and the headline figures above use the point-mass physics your');
     expect(src).toContain('html += renderSeatCard(tele);');
     // the train mesh and the physics agree on how many cars there are
-    expect(src).toContain('for(let c = 0; c < TRAIN_CARS; c++){');
-    expect(src).toContain('if(c === TRAIN_CARS - 1){');
+    // the rake is built to the maximum; syncTrainLength decides how much runs
+    expect(src).toContain('for(let c = 0; c < DESIGN_BOUNDS.carsMax; c++){');
     expect(src).toContain('const Sc = sim.S - c * CAR_GAP;');
   });
 });
@@ -1753,6 +1754,49 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
     // and the pasteable summary gained the same facts plus the generator seed
     expect(src).toContain('`Restraint the forces demand: ${f.spec.name}`');
     expect(src).toContain("(f.seed ? ' · generated #' + f.seed : '')");
+  });
+
+  it.each(TOOL_PATHS)('%s: how long the train is, is part of the design', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('id=\\"clab-trainLen\\"');
+    expect(src).toContain('function syncTrainLength(){');
+    // the whole rake is built once and only the cars in service are shown
+    expect(src).toContain('for(let c = 0; c < DESIGN_BOUNDS.carsMax; c++){');
+    expect(src).toContain('for(let c = 0; c < cars.length; c++) cars[c].visible = c < TRAIN_CARS;');
+    expect(src).toContain('tailLights[c].visible = c === TRAIN_CARS - 1;');
+    // the row picker follows, so "back row" always means the row at the back
+    expect(src).toContain("[[0, 'Front row'], [mid, 'Middle row'], [TRAIN_CARS - 1, 'Back row']]");
+    expect(src).toContain('rideSeat = Math.min(rideSeat, TRAIN_CARS - 1);');
+    // and it runs from the one rebuild funnel, before anything reads TRAIN_CARS
+    expect(src).toContain('function fullRebuild(){\n  stopTelemetryReplay(true);\n  syncTrainLength();');
+    // the checkpoint math quotes the train the student actually built
+    expect(src).toContain('cars: TRAIN_CARS,');
+  });
+
+  it('train length is validated, clamped, and survives a round trip', () => {
+    const src = readFileSync(resolve(process.cwd(), TOOL_PATHS[0]), 'utf8');
+    const s = src.indexOf('/* @clab-design-normalize-start');
+    const e = src.indexOf('/* @clab-design-normalize-end');
+    const api = new Function(src.slice(s, e) + '\nreturn { normalizeDesign, DESIGN_BOUNDS };')();
+    const pts = Array.from({ length: 8 }, (_, i) => ({ x: i * 10, y: 4, z: 0, bank: 0 }));
+    const B = api.DESIGN_BOUNDS;
+    // a design that predates train length still loads, at the standard length
+    expect(api.normalizeDesign({ points: pts }).cars).toBe(B.carsDefault);
+    // in range it is kept; out of range it is clamped, never rejected
+    expect(api.normalizeDesign({ points: pts, cars: 3 }).cars).toBe(3);
+    expect(api.normalizeDesign({ points: pts, cars: 8 }).cars).toBe(8);
+    expect(api.normalizeDesign({ points: pts, cars: 99 }).cars).toBe(B.carsMax);
+    expect(api.normalizeDesign({ points: pts, cars: 0 }).cars).toBe(B.carsMin);
+    expect(api.normalizeDesign({ points: pts, cars: 6.7 }).cars).toBe(6);
+    for (const junk of [null, 'five', NaN, Infinity, undefined]) {
+      expect(api.normalizeDesign({ points: pts, cars: junk }).cars).toBe(B.carsDefault);
+    }
+    // and it survives an export/import round trip
+    const round = api.normalizeDesign(JSON.parse(JSON.stringify(api.normalizeDesign({ points: pts, cars: 7 }))));
+    expect(round.cars).toBe(7);
+    // the mesh budget the train is built to has to cover the maximum
+    expect(B.carsMax).toBeGreaterThan(B.carsDefault);
+    expect(B.carsMin).toBeLessThan(B.carsDefault);
   });
 
   it.each(TOOL_PATHS)('%s: three missions are graded row by row', (p) => {
