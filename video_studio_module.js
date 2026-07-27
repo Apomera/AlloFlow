@@ -3057,6 +3057,312 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       });
     } catch (_) {}
   }
+  // ── Demo Autopilot bridge (MODULE SCOPE, deliberately) ──────────────
+  // These handlers must outlive the panel. A demo step that opens any other
+  // panel makes ANTI's closeOtherPanels() run videoStudio's closer, which
+  // unmounts this component (CDNModuleGate returns null when isOpen is false).
+  // While these lived in the component's useEffect the listener was torn down
+  // with it, so 'allostudio-demostop' was dropped and AlloFlow kept driving
+  // itself through the rest of the plan off-camera with nothing able to stop
+  // it. Same "sole ingester" reasoning as vsBackgroundBridgeReceiver above.
+  var vsDemoHost = { current: {} }; // latest panel props; NOT cleared on unmount
+  var vsDemoRunRef = { current: { running: false, stop: false, kind: null, cleanupAfterStop: false } };
+  var vsDemoPlanRef = { current: { id: null, controller: null, cancelled: false } };
+  var VS_DEMO_BRIDGE_TYPES = [
+    'allostudio-official-tutorial-request',
+    'allostudio-official-tutorial-run-request',
+    'allostudio-official-tutorial-cleanup',
+    'allostudio-demoplan-request',
+    'allostudio-demoplan-cancel',
+    'allostudio-demoscript-request',
+    'allostudio-demovalidate-request',
+    'allostudio-demorun-request',
+    'allostudio-demostop',
+    'allostudio-closed'
+  ];
+
+  function vsPostToStudio(win, msg) {
+    try {
+      if (!win || win.closed) return false;
+      var token = vsTakeStore.token;
+      var payload = token ? Object.assign({ bridge: token }, msg || {}) : (msg || {});
+      win.postMessage(payload, STUDIO_ORIGIN);
+      return true;
+    } catch (_) {}
+    return false;
+  }
+
+  function vsDemoBridgeReceiver(ev) {
+    try {
+      if (!ev || !ev.data || typeof ev.data.type !== 'string') return;
+      if (VS_DEMO_BRIDGE_TYPES.indexOf(ev.data.type) < 0) return;
+      if (!vsTakeStore.token || ev.data.bridge !== vsTakeStore.token) return;
+      if (ev.origin && ev.origin !== STUDIO_ORIGIN) return;
+      if (vsTakeStore.studioWin && !vsTakeStore.studioWin.closed && ev.source !== vsTakeStore.studioWin) return;
+      // Aliases so the handler bodies below read exactly as they did inside the
+      // component — they were moved verbatim, only re-indented.
+      var propsRef = vsDemoHost;
+      var demoRunRef = vsDemoRunRef;
+      var demoPlanRef = vsDemoPlanRef;
+      var postToStudio = vsPostToStudio;
+      var studioWinRef = { current: (ev.source && typeof ev.source.postMessage === 'function') ? ev.source : vsTakeStore.studioWin };
+
+      if (ev.data.type === 'allostudio-closed') {
+        // Demo half of the popup-closed teardown. The component keeps the
+        // half that resets its own view state.
+        var closingPlan = demoPlanRef.current;
+        if (closingPlan && closingPlan.controller) { closingPlan.cancelled = true; try { closingPlan.controller.abort(); } catch (_) {} }
+        demoPlanRef.current = { id: null, controller: null, cancelled: false };
+        var closeCleanupFn = propsRef.current.onCleanupOfficialTutorial;
+        if (demoRunRef.current.running) {
+          demoRunRef.current.stop = true;
+          if (demoRunRef.current.kind === 'official') demoRunRef.current.cleanupAfterStop = true;
+        } else if (typeof closeCleanupFn === 'function') {
+          try { closeCleanupFn(); } catch (_) {}
+        }
+        return;
+      }
+
+      if (ev.data.type === 'allostudio-official-tutorial-request') {
+        var otReq = ev.data;
+        var otReplyTo = studioWinRef.current;
+        var otRespond = function (payload) {
+          postToStudio(otReplyTo, Object.assign({ type: 'allostudio-official-tutorial-response', id: otReq.id }, payload));
+        };
+        var tutorialFn = propsRef.current.onGetOfficialTutorial;
+        if (typeof tutorialFn !== 'function') { otRespond({ error: 'official-tutorial-unavailable' }); return; }
+        Promise.resolve().then(function () { return tutorialFn(String(otReq.tutorialId || '').slice(0, 60)); }).then(function (out) {
+          var steps = (out && Array.isArray(out.steps) ? out.steps : []).slice(0, 8).map(function (s) {
+            var beats = Array.isArray(s && s.beats) ? s.beats.slice(0, 4).map(function (beat) {
+              return { kind: beat && beat.kind === 'success' ? 'success' : 'action', text: String((beat && beat.text) || '').slice(0, 220) };
+            }).filter(function (beat) { return beat.text; }) : [];
+            var stepId = String((s && (s.id || s.commandId)) || '').slice(0, 60);
+            return { id: stepId, commandId: stepId, anchorId: String((s && s.anchorId) || '').slice(0, 90), label: String((s && s.label) || stepId).slice(0, 90), why: 'Release-matched official tutorial', beats: beats };
+          }).filter(function (s) { return s.id && s.beats.length; });
+          otRespond({ steps: steps, generatedFrom: (out && out.generatedFrom) || 'GUIDED_STEPS' });
+        }).catch(function (e) {
+          otRespond({ error: String((e && e.message) || e).slice(0, 200) });
+        });
+      } else if (ev.data.type === 'allostudio-demoplan-request') {
+        // Demo Autopilot: goal TEXT only goes to the app's planner (which
+        // reuses AlloBot's planUtterance over the command registry).
+        var dpReq = ev.data;
+        var dpReplyTo = studioWinRef.current;
+        var dpRespond = function (payload) {
+          postToStudio(dpReplyTo, Object.assign({ type: 'allostudio-demoplan-response', id: dpReq.id }, payload));
+        };
+        var planFn = propsRef.current.onPlanDemo;
+        if (typeof planFn !== 'function') { dpRespond({ error: 'demo-planner-unavailable' }); return; }
+        var previousPlan = demoPlanRef.current;
+        if (previousPlan && previousPlan.controller) { previousPlan.cancelled = true; try { previousPlan.controller.abort(); } catch (_) {} }
+        var planController = typeof AbortController === 'function' ? new AbortController() : null;
+        var planState = { id: String(dpReq.id || '').slice(0, 100), controller: planController, cancelled: false };
+        demoPlanRef.current = planState;
+        var releasePlan = function () {
+          if (demoPlanRef.current === planState) demoPlanRef.current = { id: null, controller: null, cancelled: false };
+        };
+        Promise.resolve().then(function () { return planFn(String(dpReq.goal || '').slice(0, 300), { signal: planController ? planController.signal : null, requestId: planState.id }); }).then(function (out) {
+          if (planState.cancelled || demoPlanRef.current !== planState) { releasePlan(); return; }
+          var steps = (out && Array.isArray(out.steps)) ? out.steps.slice(0, 8).map(function (s) {
+            return { commandId: String((s && s.commandId) || '').slice(0, 60), params: (s && s.params && typeof s.params === 'object') ? s.params : {}, paramNames: Array.isArray(s && s.paramNames) ? s.paramNames.slice(0, 8).map(function (p) { return String(p).slice(0, 40); }) : [], why: String((s && s.why) || '').slice(0, 120), label: String((s && s.label) || (s && s.commandId) || '').slice(0, 90) };
+          }).filter(function (s) { return s.commandId; }) : [];
+          dpRespond({ steps: steps });
+          releasePlan();
+        }).catch(function (e) {
+          if (planState.cancelled || (e && e.name === 'AbortError')) { releasePlan(); return; }
+          dpRespond({ error: String((e && e.message) || e).slice(0, 200) });
+          releasePlan();
+        });
+      } else if (ev.data.type === 'allostudio-demoscript-request') {
+        // Script assistance is text-only and teacher-triggered. The popup sends
+        // the reviewed goal and step metadata, never captured video or audio.
+        var dsReq = ev.data;
+        var dsReplyTo = studioWinRef.current;
+        var dsRespond = function (payload) {
+          postToStudio(dsReplyTo, Object.assign({ type: 'allostudio-demoscript-response', id: dsReq.id }, payload));
+        };
+        if (typeof propsRef.current.callGemini !== 'function') { dsRespond({ error: 'ai-unavailable' }); return; }
+        var dsStyleMap = { teacher: 'clear teacher walkthrough', concise: 'direct and concise', coach: 'warm and encouraging coach', accessible: 'accessibility-first with explicit orientation and plain language' };
+        var dsDetailMap = { short: '6-12 words', standard: '10-18 words', detailed: '16-26 words' };
+        var dsStyle = Object.prototype.hasOwnProperty.call(dsStyleMap, dsReq.style) ? dsReq.style : 'teacher';
+        var dsDetail = Object.prototype.hasOwnProperty.call(dsDetailMap, dsReq.detail) ? dsReq.detail : 'standard';
+        var dsSteps = (Array.isArray(dsReq.steps) ? dsReq.steps : []).slice(0, 8).map(function (s, index) {
+          var params = {};
+          if (s && s.params && typeof s.params === 'object' && !Array.isArray(s.params)) {
+            Object.keys(s.params).slice(0, 8).forEach(function (key) {
+              var value = s.params[key];
+              if (typeof value === 'string') params[String(key).slice(0, 40)] = value.slice(0, 160);
+              else if ((typeof value === 'number' && isFinite(value)) || typeof value === 'boolean') params[String(key).slice(0, 40)] = value;
+            });
+          }
+          return { index: index, commandId: String((s && s.commandId) || '').slice(0, 60), label: String((s && s.label) || '').slice(0, 90), why: String((s && s.why) || '').slice(0, 160), currentScript: String((s && s.script) || '').replace(/[\r\n]+/g, ' ').slice(0, 400), params: params };
+        }).filter(function (s) { return s.commandId; });
+        if (!dsSteps.length) { dsRespond({ error: 'no-script-steps' }); return; }
+        var dsFocus = Math.round(Number(dsReq.focusIndex));
+        if (!isFinite(dsFocus) || dsFocus < 0 || dsFocus >= dsSteps.length) dsFocus = -1;
+        var dsReturnRule = dsFocus >= 0
+          ? 'Return exactly one item for index ' + dsFocus + '; use every supplied step only as narrative context.'
+          : 'Return exactly one item for every supplied step, in order.';
+        var dsPrompt = 'Write polished spoken narration for an AlloFlow product demo.\n' +
+          'Return ONLY JSON in this shape: {"scripts":[{"index":0,"text":"..."}]}. ' + dsReturnRule + '\n' +
+          'Tone: ' + dsStyleMap[dsStyle] + '. Target length per line: ' + dsDetailMap[dsDetail] + '.\n' +
+          'Describe the visible action or result accurately. Build a natural progression across lines, vary openings, preserve product and subject terms, and use plain language. Do not invent features, outcomes, people, student data, or screen details. Do not add greetings, a closing, stage directions, quotation marks, or claims not supported by the step metadata. Improve the current script rather than merely paraphrasing labels. Each text must be one line and at most 400 characters.\n' +
+          'Demo goal: ' + String(dsReq.goal || '').replace(/[\r\n]+/g, ' ').slice(0, 300) + '\n' +
+          'Reviewed steps JSON:\n' + JSON.stringify(dsSteps).slice(0, 12000);
+        // callGemini(prompt, jsonMode, useSearch) — see gemini_api_module.js:462.
+        // Every AI call in this module asks the model for JSON and works only on
+        // the teacher's own transcript / captions / demo steps, so jsonMode is ON
+        // and search is OFF. These all read (prompt, false, true) for a long time,
+        // which silently meant JSON mode OFF and Google Search grounding ON.
+        Promise.resolve().then(function () { return propsRef.current.callGemini(dsPrompt, true, false); }).then(function (res) {
+          var rawText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
+          var parsed = null;
+          try { parsed = JSON.parse(rawText); } catch (_) {
+            var match = /\{[\s\S]*\}/.exec(String(rawText || ''));
+            if (match) { try { parsed = JSON.parse(match[0]); } catch (_2) {} }
+          }
+          var scripts = (parsed && Array.isArray(parsed.scripts) ? parsed.scripts : []).slice(0, dsSteps.length).map(function (item) {
+            var index = Math.round(Number(item && item.index));
+            var line = String((item && item.text) || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 400);
+            return { index: index, text: line };
+          }).filter(function (item) { return item.index >= 0 && item.index < dsSteps.length && item.text && (dsFocus < 0 || item.index === dsFocus); });
+          dsRespond({ scripts: scripts });
+        }).catch(function (e) {
+          dsRespond({ error: String((e && e.message) || e).slice(0, 200) });
+        });
+      } else if (ev.data.type === 'allostudio-demoplan-cancel') {
+        var cancelPlanId = String(ev.data.requestId || '').slice(0, 100);
+        var activePlan = demoPlanRef.current;
+        if (activePlan && activePlan.id === cancelPlanId) {
+          activePlan.cancelled = true;
+          if (activePlan.controller) { try { activePlan.controller.abort(); } catch (_) {} }
+        }
+      } else if (ev.data.type === 'allostudio-demovalidate-request') {
+        // Non-mutating readiness check shared with AlloBot. The app validates
+        // command safety, live guards, declared prerequisites, and parameters.
+        var dvReq = ev.data;
+        var dvReplyTo = studioWinRef.current;
+        var dvRespond = function (payload) {
+          postToStudio(dvReplyTo, Object.assign({ type: 'allostudio-demovalidate-response', id: dvReq.id }, payload));
+        };
+        var validateFn = propsRef.current.onValidateDemoPlan;
+        if (typeof validateFn !== 'function') { dvRespond({ error: 'demo-validator-unavailable' }); return; }
+        var dvSteps = (Array.isArray(dvReq.steps) ? dvReq.steps : []).slice(0, 8).map(function (s) {
+          var params = {};
+          if (s && s.params && typeof s.params === 'object') {
+            Object.keys(s.params).slice(0, 8).forEach(function (k) {
+              var pv = s.params[k];
+              if (typeof pv === 'string') params[String(k).slice(0, 40)] = pv.slice(0, 200);
+              else if ((typeof pv === 'number' && isFinite(pv)) || typeof pv === 'boolean') params[String(k).slice(0, 40)] = pv;
+            });
+          }
+          return { commandId: String((s && s.commandId) || '').slice(0, 60), params: params, why: String((s && s.why) || '').slice(0, 120) };
+        }).filter(function (s) { return s.commandId; });
+        Promise.resolve().then(function () { return validateFn(dvSteps); }).then(function (report) {
+          var items = (report && Array.isArray(report.items) ? report.items : []).slice(0, 8).map(function (item) {
+            var contract = item && item.contract && typeof item.contract === 'object' ? item.contract : {};
+            return {
+              commandId: String((item && item.commandId) || '').slice(0, 60),
+              label: String((item && item.label) || (item && item.commandId) || '').slice(0, 90),
+              status: item && item.status === 'block' ? 'block' : (item && item.status === 'warn' ? 'warn' : 'ready'),
+              detail: String((item && item.detail) || '').slice(0, 200),
+              params: (item && item.params && typeof item.params === 'object') ? item.params : {},
+              contract: { params: Array.isArray(contract.params) ? contract.params.slice(0, 8).map(function (p) { return String(p).slice(0, 40); }) : [] }
+            };
+          });
+          dvRespond({ report: { ok: !!(report && report.ok), blockingCount: Math.max(0, Number(report && report.blockingCount) || 0), warningCount: Math.max(0, Number(report && report.warningCount) || 0), items: items } });
+        }).catch(function (e) {
+          dvRespond({ error: String((e && e.message) || e).slice(0, 200) });
+        });
+      } else if (ev.data.type === 'allostudio-official-tutorial-run-request') {
+        var otrReq = ev.data;
+        var otrReplyTo = studioWinRef.current;
+        var otrRespond = function (payload) {
+          postToStudio(otrReplyTo, Object.assign({ type: 'allostudio-official-tutorial-run-response', id: otrReq.id }, payload));
+        };
+        var officialRunFn = propsRef.current.onRunOfficialTutorial;
+        if (typeof officialRunFn !== 'function') { otrRespond({ error: 'official-tutorial-runner-unavailable' }); return; }
+        if (demoRunRef.current.running) { otrRespond({ error: 'a demo is already running' }); return; }
+        var officialSteps = (Array.isArray(otrReq.steps) ? otrReq.steps : []).slice(0, 8).map(function (s) {
+          var beats = Array.isArray(s && s.beats) ? s.beats.slice(0, 4).map(function (beat) {
+            return { kind: beat && beat.kind === 'success' ? 'success' : 'action', text: String((beat && beat.text) || '').slice(0, 220) };
+          }).filter(function (beat) { return beat.text; }) : [];
+          return { id: String((s && (s.id || s.commandId)) || '').slice(0, 60), anchorId: String((s && s.anchorId) || '').slice(0, 90), label: String((s && s.label) || '').slice(0, 90), beats: beats, script: String((s && s.script) || '').slice(0, 400), pauseAfter: Math.round(Math.max(0.5, Math.min(8, Number(s && s.pauseAfter) || 2.2)) * 10) / 10 };
+        }).filter(function (s) { return s.id && s.beats.length; });
+        if (!officialSteps.length) { otrRespond({ error: 'no tutorial steps' }); return; }
+        demoRunRef.current = { running: true, stop: false, kind: 'official', cleanupAfterStop: false };
+        Promise.resolve().then(function () {
+          return officialRunFn(String(otrReq.tutorialId || '').slice(0, 60), officialSteps, {
+            shouldStop: function () { return demoRunRef.current.stop; },
+            cursorEmphasis: !(otrReq.polish && otrReq.polish.cursorEmphasis === false),
+            onStep: function (i, phase, label, narration) {
+              postToStudio(otrReplyTo, { type: 'allostudio-demostep', id: otrReq.id, index: i, phase: phase, label: String(label || '').slice(0, 120), narration: String(narration || '').slice(0, 220) });
+            }
+          });
+        }).then(function (result) {
+          var cleanupAfterStop = !!demoRunRef.current.cleanupAfterStop;
+          demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
+          if (cleanupAfterStop) { var delayedCleanup = propsRef.current.onCleanupOfficialTutorial; if (typeof delayedCleanup === 'function') { try { delayedCleanup(); } catch (_) {} } }
+          otrRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null });
+        }).catch(function (e) {
+          var cleanupAfterError = !!demoRunRef.current.cleanupAfterStop;
+          demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
+          if (cleanupAfterError) { var delayedErrorCleanup = propsRef.current.onCleanupOfficialTutorial; if (typeof delayedErrorCleanup === 'function') { try { delayedErrorCleanup(); } catch (_) {} } }
+          otrRespond({ error: String((e && e.message) || e).slice(0, 200) });
+        });
+      } else if (ev.data.type === 'allostudio-demorun-request') {
+        var drReq = ev.data;
+        var drReplyTo = studioWinRef.current;
+        var drRespond = function (payload) {
+          postToStudio(drReplyTo, Object.assign({ type: 'allostudio-demorun-response', id: drReq.id }, payload));
+        };
+        var runFn = propsRef.current.onRunDemoPlan;
+        if (typeof runFn !== 'function') { drRespond({ error: 'demo-runner-unavailable' }); return; }
+        if (demoRunRef.current.running) { drRespond({ error: 'a demo is already running' }); return; }
+        // Steps are re-clamped here and re-validated against the live
+        // registry inside runPlan (unknown ids fail the step) — the popup
+        // can only ever pick from what the registry offers.
+        var drSteps = (Array.isArray(drReq.steps) ? drReq.steps : []).slice(0, 8).map(function (s) {
+          var params = {};
+          if (s && s.params && typeof s.params === 'object') {
+            Object.keys(s.params).slice(0, 8).forEach(function (k) {
+              var pv = s.params[k];
+              if (typeof pv === 'string') params[String(k).slice(0, 40)] = pv.slice(0, 200);
+              else if ((typeof pv === 'number' && isFinite(pv)) || typeof pv === 'boolean') params[String(k).slice(0, 40)] = pv;
+            });
+          }
+          return { commandId: String((s && s.commandId) || '').slice(0, 60), params: params, script: String((s && s.script) || '').slice(0, 400), pauseAfter: Math.round(Math.max(0.5, Math.min(8, Number(s && s.pauseAfter) || 2.2)) * 10) / 10 };
+        }).filter(function (s) { return s.commandId; });
+        if (!drSteps.length) { drRespond({ error: 'no runnable steps' }); return; }
+        demoRunRef.current = { running: true, stop: false, kind: 'generic', cleanupAfterStop: false };
+        Promise.resolve().then(function () {
+          return runFn(drSteps, {
+            shouldStop: function () { return demoRunRef.current.stop; },
+            cursorEmphasis: !(drReq.polish && drReq.polish.cursorEmphasis === false),
+            onStep: function (i, phase, label, narration) {
+              postToStudio(drReplyTo, { type: 'allostudio-demostep', id: drReq.id, index: i, phase: phase, label: String(label || '').slice(0, 120), narration: String(narration || '').slice(0, 160) });
+            }
+          }, { rehearsal: !!drReq.rehearsal, cursorEmphasis: !(drReq.polish && drReq.polish.cursorEmphasis === false) });
+        }).then(function (result) {
+          demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
+          drRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), timedOut: !!(result && result.timedOut), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null });
+        }).catch(function (e) {
+          demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
+          drRespond({ error: String((e && e.message) || e).slice(0, 200) });
+        });
+      } else if (ev.data.type === 'allostudio-demostop') {
+        demoRunRef.current.stop = true;
+      } else if (ev.data.type === 'allostudio-official-tutorial-cleanup') {
+        var cleanupFn = propsRef.current.onCleanupOfficialTutorial;
+        if (typeof cleanupFn === 'function') { try { cleanupFn(String(ev.data.tutorialId || '').slice(0, 60)); } catch (_) {} }
+      }
+    } catch (_) {}
+  }
+  // Registered BEFORE vsBackgroundBridgeReceiver on purpose: that handler
+  // clears vsTakeStore.token on 'allostudio-closed', and this one's token
+  // guard must still pass when the popup announces it is closing.
+  window.addEventListener('message', vsDemoBridgeReceiver);
+
   window.addEventListener('message', vsBackgroundBridgeReceiver);
 
   function studioUrlWithBridge(token) {
@@ -3196,6 +3502,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     // for toasts). Everything inside those closures must go through propsRef.
     var propsRef = useRef(props);
     propsRef.current = props;
+    vsDemoHost.current = props; // keeps the module-scope demo bridge on live props
     var onClose = props.onClose || function () {};
     var addToast = function (msg, kind) {
       var f = propsRef.current.addToast;
@@ -3220,8 +3527,6 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     cancelRemovalRef.current = function () { setPendingRemoval(null); };
     useVideoStudioDialogFocus(rootRef, true, closeButtonRef, onCloseRef, returnFocusRef);
     useVideoStudioDialogFocus(removalDialogRef, !!pendingRemoval, removalCancelRef, cancelRemovalRef, removalReturnFocusRef);
-    var demoRunRef = useRef({ running: false, stop: false, kind: null, cleanupAfterStop: false });
-    var demoPlanRef = useRef({ id: null, controller: null, cancelled: false });
 
     function postToStudio(win, msg) {
       try {
@@ -3265,7 +3570,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             'Rules: at most 8 suggestions; only clearly beneficial ones; an empty array [] is a good answer for a clean video; never invent timestamps outside 0-' + durSec + 's.\n' +
             'Video duration: ' + durSec + ' seconds. Current title: ' + String(req.title || '(none)').slice(0, 120) + '\n' +
             'Transcript with [start-end] second markers:\n' + String(req.transcript || '').slice(0, 24000);
-          Promise.resolve().then(function () { return propsRef.current.callGemini(prompt, false, true); }).then(function (res) {
+          Promise.resolve().then(function () { return propsRef.current.callGemini(prompt, true, false); }).then(function (res) {
             var text = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
             var parsed = null;
             try { parsed = JSON.parse(text); } catch (_) {
@@ -3300,7 +3605,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             'Line to rewrite: ' + String(slReq.text || '').replace(/[\r\n]+/g, ' ').slice(0, 220) + '\n' +
             'Next line: ' + String(slReq.next || '').replace(/[\r\n]+/g, ' ').slice(0, 220) + '\n' +
             'Pronunciation glossary JSON: ' + JSON.stringify(slGlossary).slice(0, 5000);
-          Promise.resolve().then(function () { return propsRef.current.callGemini(slPrompt, false, true); }).then(function (res) {
+          Promise.resolve().then(function () { return propsRef.current.callGemini(slPrompt, true, false); }).then(function (res) {
             var slText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
             var slParsed = null;
             try { slParsed = JSON.parse(slText); } catch (_) {
@@ -3337,7 +3642,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             'Current video title: ' + String(sgReq.title || '').replace(/[\r\n]+/g, ' ').slice(0, 160) + '\n' +
             'Teacher brief:\n' + sgBrief + '\n' +
             (sgContext ? ('Current captions/source text for grounding:\n' + sgContext) : 'No source captions were supplied; stay strictly within the brief.');
-          Promise.resolve().then(function () { return propsRef.current.callGemini(sgPrompt, false, true); }).then(function (res) {
+          Promise.resolve().then(function () { return propsRef.current.callGemini(sgPrompt, true, false); }).then(function (res) {
             var sgText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
             var sgParsed = null;
             try { sgParsed = JSON.parse(sgText); } catch (_) {
@@ -3451,7 +3756,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
               lRespond({ error: String((e && e.message) || e).slice(0, 200) });
             });
           } else if (typeof propsRef.current.callGemini === 'function') {
-            Promise.resolve().then(function () { return propsRef.current.callGemini(lPrompt, false, true); }).then(parseLesson).catch(function (e) {
+            Promise.resolve().then(function () { return propsRef.current.callGemini(lPrompt, true, false); }).then(parseLesson).catch(function (e) {
               lRespond({ error: String((e && e.message) || e).slice(0, 200) });
             });
           } else {
@@ -3487,7 +3792,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             '{"targetLanguage":"...","style":"literal|natural|interpreter|family|bilingual","title":"translated title","speakerMap":[{"speaker":"Teacher","translatedLabel":"..."}],"captions":[{"start":S,"end":E,"speaker":"...","originalText":"...","text":"translated subtitle"}],"chapters":[{"start":S,"title":"translated chapter"}],"inserts":[{"type":"title_card|pause_prompt|callout|sticker|visual_card","start":S,"duration":D,"text":"translated overlay","note":"optional translated support","theme":"blue|green|amber|pink|slate"}],"visualDescriptions":[{"start":S,"end":E,"description":"translated visual description","basis":"observed|inferred|source-supported|needs-review","confidence":"high|medium|low","checked":true}],"narration":[{"start":S,"end":E,"speaker":"Interpreter","originalText":"...","text":"spoken interpreted line"}],"reviewNotes":["short teacher checks"]}\n' +
             'Interpret speaker intent naturally for the target language. Preserve meaning, examples, quantities, math/science terms, names, and safety/privacy boundaries. Do not invent new facts, identities, visuals, or curriculum claims. If speaker identity is unclear, use "Speaker". If bilingual style is requested, include concise original + translated subtitle text in each caption. Keep narration short enough to speak in its timestamp window. Translate all provided chapters, overlays, visual descriptions, and captions. Respect glossary locks exactly.\n' +
             'Source payload JSON:\n' + JSON.stringify(locPayload).slice(0, 28000);
-          Promise.resolve().then(function () { return propsRef.current.callGemini(locPrompt, false, true); }).then(function (res) {
+          Promise.resolve().then(function () { return propsRef.current.callGemini(locPrompt, true, false); }).then(function (res) {
             var text = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
             var parsed = null;
             try { parsed = JSON.parse(text); } catch (_) {
@@ -3519,7 +3824,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             'Rules: at most 10 inserts; keep text classroom-friendly; timestamps must be within 0-' + iDur + 's; prefer fewer, useful inserts over decoration.\n' +
             'Current title: ' + String(ireq.title || '(none)').slice(0, 120) + '\n' +
             'Transcript with [start-end] second markers:\n' + String(ireq.transcript || '').slice(0, 24000);
-          Promise.resolve().then(function () { return propsRef.current.callGemini(iPrompt, false, true); }).then(function (res) {
+          Promise.resolve().then(function () { return propsRef.current.callGemini(iPrompt, true, false); }).then(function (res) {
             var text = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
             var parsed = null;
             try { parsed = JSON.parse(text); } catch (_) {
@@ -3586,233 +3891,6 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           } else {
             fRespond({ error: 'image-edit-unavailable' });
           }
-        } else if (ev.data.type === 'allostudio-official-tutorial-request') {
-          var otReq = ev.data;
-          var otReplyTo = studioWinRef.current;
-          var otRespond = function (payload) {
-            postToStudio(otReplyTo, Object.assign({ type: 'allostudio-official-tutorial-response', id: otReq.id }, payload));
-          };
-          var tutorialFn = propsRef.current.onGetOfficialTutorial;
-          if (typeof tutorialFn !== 'function') { otRespond({ error: 'official-tutorial-unavailable' }); return; }
-          Promise.resolve().then(function () { return tutorialFn(String(otReq.tutorialId || '').slice(0, 60)); }).then(function (out) {
-            var steps = (out && Array.isArray(out.steps) ? out.steps : []).slice(0, 8).map(function (s) {
-              var beats = Array.isArray(s && s.beats) ? s.beats.slice(0, 4).map(function (beat) {
-                return { kind: beat && beat.kind === 'success' ? 'success' : 'action', text: String((beat && beat.text) || '').slice(0, 220) };
-              }).filter(function (beat) { return beat.text; }) : [];
-              var stepId = String((s && (s.id || s.commandId)) || '').slice(0, 60);
-              return { id: stepId, commandId: stepId, anchorId: String((s && s.anchorId) || '').slice(0, 90), label: String((s && s.label) || stepId).slice(0, 90), why: 'Release-matched official tutorial', beats: beats };
-            }).filter(function (s) { return s.id && s.beats.length; });
-            otRespond({ steps: steps, generatedFrom: (out && out.generatedFrom) || 'GUIDED_STEPS' });
-          }).catch(function (e) {
-            otRespond({ error: String((e && e.message) || e).slice(0, 200) });
-          });
-        } else if (ev.data.type === 'allostudio-demoplan-request') {
-          // Demo Autopilot: goal TEXT only goes to the app's planner (which
-          // reuses AlloBot's planUtterance over the command registry).
-          var dpReq = ev.data;
-          var dpReplyTo = studioWinRef.current;
-          var dpRespond = function (payload) {
-            postToStudio(dpReplyTo, Object.assign({ type: 'allostudio-demoplan-response', id: dpReq.id }, payload));
-          };
-          var planFn = propsRef.current.onPlanDemo;
-          if (typeof planFn !== 'function') { dpRespond({ error: 'demo-planner-unavailable' }); return; }
-          var previousPlan = demoPlanRef.current;
-          if (previousPlan && previousPlan.controller) { previousPlan.cancelled = true; try { previousPlan.controller.abort(); } catch (_) {} }
-          var planController = typeof AbortController === 'function' ? new AbortController() : null;
-          var planState = { id: String(dpReq.id || '').slice(0, 100), controller: planController, cancelled: false };
-          demoPlanRef.current = planState;
-          var releasePlan = function () {
-            if (demoPlanRef.current === planState) demoPlanRef.current = { id: null, controller: null, cancelled: false };
-          };
-          Promise.resolve().then(function () { return planFn(String(dpReq.goal || '').slice(0, 300), { signal: planController ? planController.signal : null, requestId: planState.id }); }).then(function (out) {
-            if (planState.cancelled || demoPlanRef.current !== planState) { releasePlan(); return; }
-            var steps = (out && Array.isArray(out.steps)) ? out.steps.slice(0, 8).map(function (s) {
-              return { commandId: String((s && s.commandId) || '').slice(0, 60), params: (s && s.params && typeof s.params === 'object') ? s.params : {}, paramNames: Array.isArray(s && s.paramNames) ? s.paramNames.slice(0, 8).map(function (p) { return String(p).slice(0, 40); }) : [], why: String((s && s.why) || '').slice(0, 120), label: String((s && s.label) || (s && s.commandId) || '').slice(0, 90) };
-            }).filter(function (s) { return s.commandId; }) : [];
-            dpRespond({ steps: steps });
-            releasePlan();
-          }).catch(function (e) {
-            if (planState.cancelled || (e && e.name === 'AbortError')) { releasePlan(); return; }
-            dpRespond({ error: String((e && e.message) || e).slice(0, 200) });
-            releasePlan();
-          });
-        } else if (ev.data.type === 'allostudio-demoscript-request') {
-          // Script assistance is text-only and teacher-triggered. The popup sends
-          // the reviewed goal and step metadata, never captured video or audio.
-          var dsReq = ev.data;
-          var dsReplyTo = studioWinRef.current;
-          var dsRespond = function (payload) {
-            postToStudio(dsReplyTo, Object.assign({ type: 'allostudio-demoscript-response', id: dsReq.id }, payload));
-          };
-          if (typeof propsRef.current.callGemini !== 'function') { dsRespond({ error: 'ai-unavailable' }); return; }
-          var dsStyleMap = { teacher: 'clear teacher walkthrough', concise: 'direct and concise', coach: 'warm and encouraging coach', accessible: 'accessibility-first with explicit orientation and plain language' };
-          var dsDetailMap = { short: '6-12 words', standard: '10-18 words', detailed: '16-26 words' };
-          var dsStyle = Object.prototype.hasOwnProperty.call(dsStyleMap, dsReq.style) ? dsReq.style : 'teacher';
-          var dsDetail = Object.prototype.hasOwnProperty.call(dsDetailMap, dsReq.detail) ? dsReq.detail : 'standard';
-          var dsSteps = (Array.isArray(dsReq.steps) ? dsReq.steps : []).slice(0, 8).map(function (s, index) {
-            var params = {};
-            if (s && s.params && typeof s.params === 'object' && !Array.isArray(s.params)) {
-              Object.keys(s.params).slice(0, 8).forEach(function (key) {
-                var value = s.params[key];
-                if (typeof value === 'string') params[String(key).slice(0, 40)] = value.slice(0, 160);
-                else if ((typeof value === 'number' && isFinite(value)) || typeof value === 'boolean') params[String(key).slice(0, 40)] = value;
-              });
-            }
-            return { index: index, commandId: String((s && s.commandId) || '').slice(0, 60), label: String((s && s.label) || '').slice(0, 90), why: String((s && s.why) || '').slice(0, 160), currentScript: String((s && s.script) || '').replace(/[\r\n]+/g, ' ').slice(0, 400), params: params };
-          }).filter(function (s) { return s.commandId; });
-          if (!dsSteps.length) { dsRespond({ error: 'no-script-steps' }); return; }
-          var dsFocus = Math.round(Number(dsReq.focusIndex));
-          if (!isFinite(dsFocus) || dsFocus < 0 || dsFocus >= dsSteps.length) dsFocus = -1;
-          var dsReturnRule = dsFocus >= 0
-            ? 'Return exactly one item for index ' + dsFocus + '; use every supplied step only as narrative context.'
-            : 'Return exactly one item for every supplied step, in order.';
-          var dsPrompt = 'Write polished spoken narration for an AlloFlow product demo.\n' +
-            'Return ONLY JSON in this shape: {"scripts":[{"index":0,"text":"..."}]}. ' + dsReturnRule + '\n' +
-            'Tone: ' + dsStyleMap[dsStyle] + '. Target length per line: ' + dsDetailMap[dsDetail] + '.\n' +
-            'Describe the visible action or result accurately. Build a natural progression across lines, vary openings, preserve product and subject terms, and use plain language. Do not invent features, outcomes, people, student data, or screen details. Do not add greetings, a closing, stage directions, quotation marks, or claims not supported by the step metadata. Improve the current script rather than merely paraphrasing labels. Each text must be one line and at most 400 characters.\n' +
-            'Demo goal: ' + String(dsReq.goal || '').replace(/[\r\n]+/g, ' ').slice(0, 300) + '\n' +
-            'Reviewed steps JSON:\n' + JSON.stringify(dsSteps).slice(0, 12000);
-          Promise.resolve().then(function () { return propsRef.current.callGemini(dsPrompt, false, true); }).then(function (res) {
-            var rawText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
-            var parsed = null;
-            try { parsed = JSON.parse(rawText); } catch (_) {
-              var match = /\{[\s\S]*\}/.exec(String(rawText || ''));
-              if (match) { try { parsed = JSON.parse(match[0]); } catch (_2) {} }
-            }
-            var scripts = (parsed && Array.isArray(parsed.scripts) ? parsed.scripts : []).slice(0, dsSteps.length).map(function (item) {
-              var index = Math.round(Number(item && item.index));
-              var line = String((item && item.text) || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 400);
-              return { index: index, text: line };
-            }).filter(function (item) { return item.index >= 0 && item.index < dsSteps.length && item.text && (dsFocus < 0 || item.index === dsFocus); });
-            dsRespond({ scripts: scripts });
-          }).catch(function (e) {
-            dsRespond({ error: String((e && e.message) || e).slice(0, 200) });
-          });
-        } else if (ev.data.type === 'allostudio-demoplan-cancel') {
-          var cancelPlanId = String(ev.data.requestId || '').slice(0, 100);
-          var activePlan = demoPlanRef.current;
-          if (activePlan && activePlan.id === cancelPlanId) {
-            activePlan.cancelled = true;
-            if (activePlan.controller) { try { activePlan.controller.abort(); } catch (_) {} }
-          }
-        } else if (ev.data.type === 'allostudio-demovalidate-request') {
-          // Non-mutating readiness check shared with AlloBot. The app validates
-          // command safety, live guards, declared prerequisites, and parameters.
-          var dvReq = ev.data;
-          var dvReplyTo = studioWinRef.current;
-          var dvRespond = function (payload) {
-            postToStudio(dvReplyTo, Object.assign({ type: 'allostudio-demovalidate-response', id: dvReq.id }, payload));
-          };
-          var validateFn = propsRef.current.onValidateDemoPlan;
-          if (typeof validateFn !== 'function') { dvRespond({ error: 'demo-validator-unavailable' }); return; }
-          var dvSteps = (Array.isArray(dvReq.steps) ? dvReq.steps : []).slice(0, 8).map(function (s) {
-            var params = {};
-            if (s && s.params && typeof s.params === 'object') {
-              Object.keys(s.params).slice(0, 8).forEach(function (k) {
-                var pv = s.params[k];
-                if (typeof pv === 'string') params[String(k).slice(0, 40)] = pv.slice(0, 200);
-                else if ((typeof pv === 'number' && isFinite(pv)) || typeof pv === 'boolean') params[String(k).slice(0, 40)] = pv;
-              });
-            }
-            return { commandId: String((s && s.commandId) || '').slice(0, 60), params: params, why: String((s && s.why) || '').slice(0, 120) };
-          }).filter(function (s) { return s.commandId; });
-          Promise.resolve().then(function () { return validateFn(dvSteps); }).then(function (report) {
-            var items = (report && Array.isArray(report.items) ? report.items : []).slice(0, 8).map(function (item) {
-              var contract = item && item.contract && typeof item.contract === 'object' ? item.contract : {};
-              return {
-                commandId: String((item && item.commandId) || '').slice(0, 60),
-                label: String((item && item.label) || (item && item.commandId) || '').slice(0, 90),
-                status: item && item.status === 'block' ? 'block' : (item && item.status === 'warn' ? 'warn' : 'ready'),
-                detail: String((item && item.detail) || '').slice(0, 200),
-                params: (item && item.params && typeof item.params === 'object') ? item.params : {},
-                contract: { params: Array.isArray(contract.params) ? contract.params.slice(0, 8).map(function (p) { return String(p).slice(0, 40); }) : [] }
-              };
-            });
-            dvRespond({ report: { ok: !!(report && report.ok), blockingCount: Math.max(0, Number(report && report.blockingCount) || 0), warningCount: Math.max(0, Number(report && report.warningCount) || 0), items: items } });
-          }).catch(function (e) {
-            dvRespond({ error: String((e && e.message) || e).slice(0, 200) });
-          });
-        } else if (ev.data.type === 'allostudio-official-tutorial-run-request') {
-          var otrReq = ev.data;
-          var otrReplyTo = studioWinRef.current;
-          var otrRespond = function (payload) {
-            postToStudio(otrReplyTo, Object.assign({ type: 'allostudio-official-tutorial-run-response', id: otrReq.id }, payload));
-          };
-          var officialRunFn = propsRef.current.onRunOfficialTutorial;
-          if (typeof officialRunFn !== 'function') { otrRespond({ error: 'official-tutorial-runner-unavailable' }); return; }
-          if (demoRunRef.current.running) { otrRespond({ error: 'a demo is already running' }); return; }
-          var officialSteps = (Array.isArray(otrReq.steps) ? otrReq.steps : []).slice(0, 8).map(function (s) {
-            var beats = Array.isArray(s && s.beats) ? s.beats.slice(0, 4).map(function (beat) {
-              return { kind: beat && beat.kind === 'success' ? 'success' : 'action', text: String((beat && beat.text) || '').slice(0, 220) };
-            }).filter(function (beat) { return beat.text; }) : [];
-            return { id: String((s && (s.id || s.commandId)) || '').slice(0, 60), anchorId: String((s && s.anchorId) || '').slice(0, 90), label: String((s && s.label) || '').slice(0, 90), beats: beats, script: String((s && s.script) || '').slice(0, 400), pauseAfter: Math.round(Math.max(0.5, Math.min(8, Number(s && s.pauseAfter) || 2.2)) * 10) / 10 };
-          }).filter(function (s) { return s.id && s.beats.length; });
-          if (!officialSteps.length) { otrRespond({ error: 'no tutorial steps' }); return; }
-          demoRunRef.current = { running: true, stop: false, kind: 'official', cleanupAfterStop: false };
-          Promise.resolve().then(function () {
-            return officialRunFn(String(otrReq.tutorialId || '').slice(0, 60), officialSteps, {
-              shouldStop: function () { return demoRunRef.current.stop; },
-              cursorEmphasis: !(otrReq.polish && otrReq.polish.cursorEmphasis === false),
-              onStep: function (i, phase, label, narration) {
-                postToStudio(otrReplyTo, { type: 'allostudio-demostep', id: otrReq.id, index: i, phase: phase, label: String(label || '').slice(0, 120), narration: String(narration || '').slice(0, 220) });
-              }
-            });
-          }).then(function (result) {
-            var cleanupAfterStop = !!demoRunRef.current.cleanupAfterStop;
-            demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
-            if (cleanupAfterStop) { var delayedCleanup = propsRef.current.onCleanupOfficialTutorial; if (typeof delayedCleanup === 'function') { try { delayedCleanup(); } catch (_) {} } }
-            otrRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null });
-          }).catch(function (e) {
-            var cleanupAfterError = !!demoRunRef.current.cleanupAfterStop;
-            demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
-            if (cleanupAfterError) { var delayedErrorCleanup = propsRef.current.onCleanupOfficialTutorial; if (typeof delayedErrorCleanup === 'function') { try { delayedErrorCleanup(); } catch (_) {} } }
-            otrRespond({ error: String((e && e.message) || e).slice(0, 200) });
-          });
-        } else if (ev.data.type === 'allostudio-demorun-request') {
-          var drReq = ev.data;
-          var drReplyTo = studioWinRef.current;
-          var drRespond = function (payload) {
-            postToStudio(drReplyTo, Object.assign({ type: 'allostudio-demorun-response', id: drReq.id }, payload));
-          };
-          var runFn = propsRef.current.onRunDemoPlan;
-          if (typeof runFn !== 'function') { drRespond({ error: 'demo-runner-unavailable' }); return; }
-          if (demoRunRef.current.running) { drRespond({ error: 'a demo is already running' }); return; }
-          // Steps are re-clamped here and re-validated against the live
-          // registry inside runPlan (unknown ids fail the step) — the popup
-          // can only ever pick from what the registry offers.
-          var drSteps = (Array.isArray(drReq.steps) ? drReq.steps : []).slice(0, 8).map(function (s) {
-            var params = {};
-            if (s && s.params && typeof s.params === 'object') {
-              Object.keys(s.params).slice(0, 8).forEach(function (k) {
-                var pv = s.params[k];
-                if (typeof pv === 'string') params[String(k).slice(0, 40)] = pv.slice(0, 200);
-                else if ((typeof pv === 'number' && isFinite(pv)) || typeof pv === 'boolean') params[String(k).slice(0, 40)] = pv;
-              });
-            }
-            return { commandId: String((s && s.commandId) || '').slice(0, 60), params: params, script: String((s && s.script) || '').slice(0, 400), pauseAfter: Math.round(Math.max(0.5, Math.min(8, Number(s && s.pauseAfter) || 2.2)) * 10) / 10 };
-          }).filter(function (s) { return s.commandId; });
-          if (!drSteps.length) { drRespond({ error: 'no runnable steps' }); return; }
-          demoRunRef.current = { running: true, stop: false, kind: 'generic', cleanupAfterStop: false };
-          Promise.resolve().then(function () {
-            return runFn(drSteps, {
-              shouldStop: function () { return demoRunRef.current.stop; },
-              cursorEmphasis: !(drReq.polish && drReq.polish.cursorEmphasis === false),
-              onStep: function (i, phase, label, narration) {
-                postToStudio(drReplyTo, { type: 'allostudio-demostep', id: drReq.id, index: i, phase: phase, label: String(label || '').slice(0, 120), narration: String(narration || '').slice(0, 160) });
-              }
-            }, { rehearsal: !!drReq.rehearsal, cursorEmphasis: !(drReq.polish && drReq.polish.cursorEmphasis === false) });
-          }).then(function (result) {
-            demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
-            drRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), timedOut: !!(result && result.timedOut), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null });
-          }).catch(function (e) {
-            demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
-            drRespond({ error: String((e && e.message) || e).slice(0, 200) });
-          });
-        } else if (ev.data.type === 'allostudio-demostop') {
-          demoRunRef.current.stop = true;
-        } else if (ev.data.type === 'allostudio-official-tutorial-cleanup') {
-          var cleanupFn = propsRef.current.onCleanupOfficialTutorial;
-          if (typeof cleanupFn === 'function') { try { cleanupFn(String(ev.data.tutorialId || '').slice(0, 60)); } catch (_) {} }
         } else if (ev.data.type === 'allostudio-resource-cues-request') {
           var creq = ev.data;
           var cReplyTo = studioWinRef.current;
@@ -3875,16 +3953,6 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             addToast(T('video_studio.cinematic_unavailable', 'Cinematic Studio is not available from this view.'), 'error');
           }
         } else if (ev.data.type === 'allostudio-closed') {
-          var closingPlan = demoPlanRef.current;
-          if (closingPlan && closingPlan.controller) { closingPlan.cancelled = true; try { closingPlan.controller.abort(); } catch (_) {} }
-          demoPlanRef.current = { id: null, controller: null, cancelled: false };
-          var closeCleanupFn = propsRef.current.onCleanupOfficialTutorial;
-          if (demoRunRef.current.running) {
-            demoRunRef.current.stop = true;
-            if (demoRunRef.current.kind === 'official') demoRunRef.current.cleanupAfterStop = true;
-          } else if (typeof closeCleanupFn === 'function') {
-            try { closeCleanupFn(); } catch (_) {}
-          }
           studioWinRef.current = null;
           bridgeTokenRef.current = null;
           setStudioState('closed');

@@ -2307,8 +2307,24 @@ describe('take persistence + export hardening wiring', () => {
     const m = moduleText();
     expect(m).toContain("ev.data.type === 'allostudio-demoplan-request'");
     expect(m).toContain("ev.data.type === 'allostudio-demoplan-cancel'");
-    expect(m).toContain('var demoPlanRef = useRef(');
+    expect(m).toContain('var vsDemoPlanRef = { current:');
     expect(m).toContain("typeof AbortController === 'function' ? new AbortController() : null");
+    // The demo bridge lives at MODULE scope so it outlives panel unmount. A demo
+    // step that opens any other panel makes ANTI's closeOtherPanels() close Video
+    // Studio; an in-component listener took 'allostudio-demostop' down with it and
+    // AlloFlow kept driving itself off-camera with nothing able to stop it.
+    expect(m).toContain('function vsDemoBridgeReceiver(ev)');
+    expect(m).toContain("window.addEventListener('message', vsDemoBridgeReceiver);");
+    // Exactly one handler per demo type, and it sits inside the module-scope
+    // receiver — i.e. before that receiver is registered — not in the component's
+    // useEffect listener further down the file.
+    expect(m.split("ev.data.type === 'allostudio-demorun-request'")).toHaveLength(2);
+    expect(m.indexOf("ev.data.type === 'allostudio-demorun-request'"))
+      .toBeLessThan(m.indexOf("window.addEventListener('message', vsDemoBridgeReceiver);"));
+    // ...and it must register BEFORE vsBackgroundBridgeReceiver, which clears the
+    // shared bridge token on 'allostudio-closed' — the token guard must still pass.
+    expect(m.indexOf("window.addEventListener('message', vsDemoBridgeReceiver);"))
+      .toBeLessThan(m.indexOf("window.addEventListener('message', vsBackgroundBridgeReceiver);"));
     expect(m).toContain("planFn(String(dpReq.goal || '').slice(0, 300), { signal:");
     expect(m).toContain("ev.data.type === 'allostudio-demorun-request'");
     expect(m).toContain("ev.data.type === 'allostudio-demostop'");
@@ -2355,6 +2371,72 @@ describe('take persistence + export hardening wiring', () => {
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
     expect(anti).toContain('AC.routeUtterance(_alloCmdCtx(), cleanGoal, { allowAi: true, preview: true, signal: options.signal || null })');
     expect(anti).toContain('The command planner is still loading — wait a moment and try again.');
+  });
+  it('every module Gemini call requests JSON mode, not Google Search grounding', () => {
+    const m = moduleText();
+    // Signature is callGemini(prompt, jsonMode, useSearch) — gemini_api_module.js.
+    // (prompt, false, true) silently meant JSON mode OFF and web-search grounding
+    // ON: it broke the JSON contract every one of these prompts asks for, and put
+    // the teacher's transcript and captions into a search-grounded request.
+    expect(m).not.toMatch(/callGemini\(\w+, false, true\)/);
+    expect(m.match(/callGemini\(\w+, true, false\)/g) || []).toHaveLength(7);
+  });
+  it('the demo bridge halts a run with no panel mounted', async () => {
+    // Regression: these handlers used to live in the panel's useEffect. A demo
+    // step that opens any other panel makes ANTI's closeOtherPanels() close Video
+    // Studio, unmounting the panel and removing the listener — so 'demostop' was
+    // dropped and AlloFlow kept driving itself off-camera. This exercises the
+    // module-scope receiver with NO component ever mounted.
+    const m = moduleText();
+    const start = m.indexOf('  var vsDemoHost = { current: {} };');
+    const endMark = "  window.addEventListener('message', vsDemoBridgeReceiver);";
+    const end = m.indexOf(endMark);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    const src = m.slice(start, end + endMark.length);
+
+    const listeners = [];
+    const fakeWindow = { addEventListener: (t, fn) => { if (t === 'message') listeners.push(fn); } };
+    const posted = [];
+    const studioWin = { closed: false, postMessage: (msg) => posted.push(msg) };
+    const vsTakeStore = { token: 'tok', studioWin };
+    const ORIGIN = 'https://alloflow-cdn.example';
+
+    const factory = new Function(
+      'window', 'vsTakeStore', 'STUDIO_ORIGIN',
+      src + '\nreturn { host: vsDemoHost, run: vsDemoRunRef };'
+    );
+    const api = factory(fakeWindow, vsTakeStore, ORIGIN);
+    expect(listeners).toHaveLength(1);
+    const onMsg = listeners[0];
+
+    let stopSeenByRunner = null;
+    api.host.current = {
+      onRunDemoPlan: (steps, hooks) => new Promise((resolve) => {
+        setTimeout(() => {
+          stopSeenByRunner = hooks.shouldStop();
+          resolve({ ok: false, stopped: true, completed: 0 });
+        }, 0);
+      }),
+    };
+
+    const env = { bridge: 'tok' };
+    onMsg({
+      origin: ORIGIN, source: studioWin,
+      data: Object.assign({}, env, {
+        type: 'allostudio-demorun-request', id: 'r1',
+        steps: [{ commandId: 'open_educator_hub', params: {} }],
+      }),
+    });
+    expect(api.run.current.running).toBe(true);
+
+    // The panel is gone at this point; the popup presses Stop.
+    onMsg({ origin: ORIGIN, source: studioWin, data: Object.assign({}, env, { type: 'allostudio-demostop' }) });
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(stopSeenByRunner).toBe(true);
+    expect(api.run.current.running).toBe(false);
+    expect(posted.some((p) => p.type === 'allostudio-demorun-response' && p.stopped === true)).toBe(true);
   });
   it('ships the fixture-safe official Text Adaptation tutorial and narration recovery controls', () => {
     const html = popup();

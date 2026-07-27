@@ -12687,6 +12687,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       }
       setStatus($('demoStatus'), 'Verified tab capture: ' + ((demoState.captureValidation && demoState.captureValidation.label) || captureTrackLabel || 'AlloFlow tab') + '. Switch to that tab now; AlloFlow will wait until it is visible.', 'ok');
       setDemoPrivacyIndicator('recording the verified AlloFlow tab only. Video stays local; completed narration text may be sent to the configured speech provider.', 'ok');
+      // Re-arm Stop for THIS run. The click handler disables the button, and the
+      // only re-enable lives in the rehearsal branch — which never runs, because
+      // demoState.rehearsing is never set true. Without this, the second demo of a
+      // session came up with Stop already dead and could not be halted at all.
+      $('demoStopBtn').disabled = false;
       $('demoStopBtn').hidden = false;
       // Liveness watchdog: if the AlloFlow tab closes or reloads mid-run, its
       // response never comes — recover locally instead of wedging the panel
@@ -12726,6 +12731,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       syncDemoPlanSourceControls();
       syncDemoExecutionControls();
       $('demoStopBtn').hidden = true;
+      $('demoStopBtn').disabled = false;
       var hasPlan = !!(demoState.steps && demoState.steps.length);
       $('demoStartBtn').disabled = !hasPlan;
       $('demoRehearseBtn').disabled = !hasPlan;
@@ -12745,6 +12751,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     syncDemoPlanSourceControls();
     syncDemoExecutionControls();
     $('demoStopBtn').hidden = true;
+    $('demoStopBtn').disabled = false;
     var hasPlan = !!(demoState.steps && demoState.steps.length);
     $('demoStartBtn').disabled = !hasPlan;
     $('demoRehearseBtn').disabled = !hasPlan;
