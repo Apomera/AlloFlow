@@ -14,12 +14,12 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
 
 exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for base10 1`] = `
 {
-  "buttons": 51,
+  "buttons": 52,
   "circles": 0,
   "inputs": 1,
-  "lengthBucket": 97,
+  "lengthBucket": 100,
   "rects": 0,
-  "sha": "d54c61ef08c3bfc6",
+  "sha": "88bf1989380e2258",
   "svgs": 0,
 }
 `;
@@ -110,12 +110,12 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
 
 exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for volume 1`] = `
 {
-  "buttons": 32,
+  "buttons": 33,
   "circles": 0,
   "inputs": 6,
-  "lengthBucket": 184,
+  "lengthBucket": 189,
   "rects": 0,
-  "sha": "72fd5b09437baa65",
+  "sha": "3335b4eab5cfe254",
   "svgs": 0,
 }
 `;

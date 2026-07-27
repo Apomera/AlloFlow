@@ -6,7 +6,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 5,
   "lengthBucket": 66,
   "selects": 0,
-  "sha": "f7902f58f1c9f45e",
+  "sha": "749fca71b5b72086",
   "svgs": 0,
 }
 `;
@@ -39,7 +39,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 1,
   "lengthBucket": 732,
   "selects": 0,
-  "sha": "79857494fb182e49",
+  "sha": "879acb777b9f2d9c",
   "svgs": 2,
 }
 `;
@@ -50,7 +50,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 1,
   "lengthBucket": 75,
   "selects": 0,
-  "sha": "b26732be411f56c6",
+  "sha": "6ed5a29fea114f81",
   "svgs": 0,
 }
 `;
@@ -79,11 +79,11 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for plateTectonics 1`] = `
 {
-  "buttons": 25,
+  "buttons": 27,
   "inputs": 5,
-  "lengthBucket": 136,
+  "lengthBucket": 141,
   "selects": 0,
-  "sha": "dfa8907f3857999a",
+  "sha": "97d434ccc613f598",
   "svgs": 0,
 }
 `;
@@ -94,7 +94,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 0,
   "lengthBucket": 225,
   "selects": 0,
-  "sha": "bf9fd3493b281ee2",
+  "sha": "ed17b4b56cf068aa",
   "svgs": 2,
 }
 `;
@@ -105,7 +105,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 1,
   "lengthBucket": 127,
   "selects": 0,
-  "sha": "2611eaee2f72befd",
+  "sha": "6f5427af213dc16e",
   "svgs": 1,
 }
 `;
@@ -114,9 +114,9 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 64,
   "inputs": 3,
-  "lengthBucket": 202,
+  "lengthBucket": 203,
   "selects": 0,
-  "sha": "8480722f75089412",
+  "sha": "af9f72500d801db6",
   "svgs": 0,
 }
 `;
@@ -127,7 +127,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 1,
   "lengthBucket": 83,
   "selects": 0,
-  "sha": "90c4a4b84df4280c",
+  "sha": "a44e059865eeec72",
   "svgs": 0,
 }
 `;

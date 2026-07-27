@@ -36,7 +36,7 @@ exports[`Lumen — focus subset (anti-cherry-picking) > focused state is structu
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -323,7 +323,7 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -620,7 +620,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -788,7 +788,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -976,7 +976,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -1172,7 +1172,7 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -1369,7 +1369,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -1533,7 +1533,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -1650,7 +1650,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -1976,7 +1976,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -2140,7 +2140,7 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
 <button aria-expanded="false" aria-controls="lumen-paste-box" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
@@ -2209,7 +2209,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -2501,7 +2501,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -2648,7 +2648,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -2788,7 +2788,7 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 </label>
 <label class="text-xs text-slate-600 flex flex-col">Series (category)<input type="text" class="w-28 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -2945,7 +2945,7 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -3038,7 +3038,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 </label>
 <label class="text-xs text-slate-600 flex flex-col">Comprehension (y2)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -3167,7 +3167,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 </label>
 <label class="text-xs text-slate-600 flex flex-col">Comprehension (y2)<input type="number" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -3248,7 +3248,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -3412,7 +3412,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove the most recently added data point.">↩ Undo last</button>
 <button class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Remove every data point and start fresh.">🗑 Clear all</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
@@ -3558,7 +3558,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 </label>
 <label class="text-xs text-slate-600 flex flex-col" title="Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.">Phase (optional)<input type="text" placeholder="e.g. before" class="w-24 px-2 py-1 border rounded" value=""/>
 </label>
-<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">+ Add</button>
+<button class="px-3 py-1 text-sm font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">+ Add</button>
 <button aria-expanded="false" aria-controls="lumen-practice-box" class="px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50" title="Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.">⚗ Practice data…</button>
 <button aria-expanded="false" aria-controls="lumen-paste-box" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50" title="Paste a block of CSV / TSV / JSON text directly — no file needed.">⎘ Paste data…</button>
 <label for="lumen-file-input" class="px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50 cursor-pointer" title="Import a CSV, TSV, JSON, or single-sheet spreadsheet (Excel/ODS) file. Headers are previewed; you map x/y/phase before binding.">⇪ Import file…</label>
@@ -3569,7 +3569,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 <div class="text-sm font-semibold text-slate-700">⇪ Map columns from reyna_orf_weeks_01_10.csv · csv · delim &quot;,&quot;</div>
 <div class="flex gap-2">
 <button class="px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50">Cancel</button>
-<button class="px-3 py-1 text-xs font-semibold rounded bg-amber-600 text-white hover:bg-amber-500">Confirm + bind</button>
+<button class="px-3 py-1 text-xs font-semibold rounded bg-amber-700 text-white hover:bg-amber-800">Confirm + bind</button>
 </div>
 </div>
 <div class="mt-2 grid grid-cols-2 md:grid-cols-5 gap-2">
