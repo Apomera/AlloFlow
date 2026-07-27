@@ -15296,7 +15296,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const WHITEBOARD_ORIGIN = 'https://alloflow-cdn.pages.dev';
   const openWhiteboard = React.useCallback(() => {
     try {
-      const w = window.open(WHITEBOARD_ORIGIN + '/whiteboard/whiteboard.html?v=2', 'alloflow-whiteboard', 'width=1280,height=860');
+      const w = window.open(WHITEBOARD_ORIGIN + '/whiteboard/whiteboard.html?v=3', 'alloflow-whiteboard', 'width=1280,height=860');
       if (!w) { try { window.alert(t('educator_hub.whiteboard_popup_blocked') || 'Allow pop-ups for this page, then open the Whiteboard again.'); } catch (_a) {} return; }
       whiteboardWinRef.current = w;
       try { w.focus(); } catch (_f) {}

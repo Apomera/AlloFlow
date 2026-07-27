@@ -26,7 +26,17 @@
 
   NOTE (2026-07-06): Excalidraw@0.17.6 UMD (window.ExcalidrawLib) +
   convertToExcalidrawElements + exportToBlob verified present on the CDN, and
-  React 18 UMD loads, but the full canvas render is NOT yet browser-smoke-tested.
+  React 18 UMD loads. Canvas render + AI diagram mode smoke-tested by the user.
+
+  2026-07-27 — "🎬 Record drawing": the same Gemini diagram plan, revealed a
+  piece at a time onto an OFFSCREEN canvas that MediaRecorder captures, giving an
+  explainer video of the diagram being drawn. Deliberately not a screen capture:
+  no getDisplayMedia permission, no tab picking, nothing else on screen can leak
+  into the frame, and the render is reproducible at any resolution. Two invisible
+  1x1 anchor elements pin the export bounds so the camera cannot drift while the
+  drawing grows. Output is .webm + a .vtt of step captions — Video Studio already
+  imports both by drag-and-drop, so this feeds its trim/narrate/export pipeline
+  without needing a bridge of its own.
 -->
 <style>
   :root { --bg:#0f172a; --panel:#1e293b; --line:#334155; --text:#e2e8f0; --dim:#94a3b8; --accent:#6366f1; --accent2:#4f46e5; }
@@ -87,12 +97,13 @@
   <span class="ailabel">✨ AI assist</span>
   <input id="aiPrompt" class="hdr aiinput" type="text" maxlength="600" placeholder="Describe a diagram or image to add — e.g. “water cycle” or “a friendly robot”…" aria-label="Describe what the AI should draw or generate" />
   <button class="hdr" id="aiDiagramBtn" aria-label="Generate a labeled diagram from your description">◇ Diagram</button>
+  <button class="hdr" id="aiRecordBtn" aria-label="Generate a diagram and record it being drawn as a video">🎬 Record drawing</button>
   <button class="hdr" id="aiImageBtn" aria-label="Generate a picture from your description">🖼️ Image</button>
   <button class="hdr" id="aiEditImgBtn" aria-label="Edit the selected image with AI" disabled>✏️ Edit selected image</button>
   <span id="aiStatus" class="aistatus" role="status" aria-live="polite"></span>
 </div>
 <div id="excal"><div class="loadmsg" id="loadmsg">Loading the whiteboard…</div></div>
-<div class="privacy">Private by default: your drawing stays in this window. <strong>Export PNG</strong> and Excalidraw’s own Save (top-left, for an editable .excalidraw file or SVG) keep it on this device. <strong>Save to AlloFlow</strong> hands this drawing to your AlloFlow window so it joins your resource history — use that only when you want it saved there. <strong>AI assist</strong> sends your prompt (and, for image edits, the selected image) to Google’s Gemini through AlloFlow.</div>
+<div class="privacy">Private by default: your drawing stays in this window. <strong>Export PNG</strong> and Excalidraw’s own Save (top-left, for an editable .excalidraw file or SVG) keep it on this device. <strong>Save to AlloFlow</strong> hands this drawing to your AlloFlow window so it joins your resource history — use that only when you want it saved there. <strong>AI assist</strong> sends your prompt (and, for image edits, the selected image) to Google’s Gemini through AlloFlow. <strong>Record drawing</strong> renders the diagram to an offscreen canvas on this device — it never captures your screen, so nothing else you have open can appear in the video.</div>
 
 <script>window.EXCALIDRAW_ASSET_PATH = "https://cdn.jsdelivr.net/npm/@excalidraw/excalidraw@0.17.6/dist/";</script>
 <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" crossorigin></script>
@@ -280,6 +291,7 @@
     aiBusyFlag = busy;
     var diag = document.getElementById('aiDiagramBtn'); if (diag) diag.disabled = busy;
     var img = document.getElementById('aiImageBtn'); if (img) img.disabled = busy;
+    var rec = document.getElementById('aiRecordBtn'); if (rec) rec.disabled = busy;
     updateAiButtons();
   }
   function scheduleAiButtonSync() {
@@ -305,21 +317,24 @@
       return { element: el, dataURL: f.dataURL };
     } catch (_) { return null; }
   }
-  function aiRequest(mode) {
+  function aiRequest(mode, opts) {
     if (!window.opener || window.opener.closed) { aiStatus('Open the Whiteboard from AlloFlow to use AI assist.', false); return; }
     if (!excalidrawAPI) return;
+    var record = !!(opts && opts.record);
     var promptEl = document.getElementById('aiPrompt');
     var prompt = (promptEl && promptEl.value || '').trim();
     if (mode !== 'edit-image' && !prompt) { aiStatus('Type what you want first.', false); return; }
+    // The recorded variant asks for the same diagram plan; only the way the
+    // result is applied differs.
     var payload = { type: 'allocwb-ai-request', requestId: 'r' + Date.now() + Math.random().toString(36).slice(2, 7), mode: mode, prompt: prompt };
     if (mode === 'edit-image') {
       var sel = getSelectedImage();
       if (!sel) { aiStatus('Select exactly one image on the canvas first.', false); return; }
       payload.imageDataUrl = sel.dataURL;
     }
-    aiPending[payload.requestId] = { mode: mode };
+    aiPending[payload.requestId] = { mode: mode, record: record, prompt: prompt };
     setAiBusy(true);
-    aiStatus(mode === 'image' ? 'Generating image…' : mode === 'edit-image' ? 'Editing image…' : 'Drawing diagram…', null);
+    aiStatus(mode === 'image' ? 'Generating image…' : mode === 'edit-image' ? 'Editing image…' : record ? 'Planning the drawing…' : 'Drawing diagram…', null);
     toOpener(payload);
   }
 
@@ -348,18 +363,270 @@
     });
     return out;
   }
-  function applyDiagram(plan) {
+  function applyDiagram(plan, record, promptText) {
     var list = Array.isArray(plan) ? plan : (plan && Array.isArray(plan.elements) ? plan.elements : null);
     var skel = sanitizeSkeleton(list || []);
-    if (!skel.length) { aiStatus('The AI didn’t return anything drawable — try rephrasing.', false); return; }
+    // Every bail-out below must release the controls the recorded path left
+    // disabled, or the AI bar stays dead for the rest of the session.
+    if (!skel.length) { aiStatus('The AI didn’t return anything drawable — try rephrasing.', false); if (record) setAiBusy(false); return; }
     try {
       var newEls = (typeof E.convertToExcalidrawElements === 'function') ? E.convertToExcalidrawElements(skel) : skel;
+      if (record) {
+        // recordDiagramBuild reveals these onto its own canvas and puts the
+        // finished scene on the board itself when it is done.
+        recordDiagramBuild(newEls, promptText).then(function () { setAiBusy(false); });
+        return;
+      }
       var cur = excalidrawAPI.getSceneElements() || [];
       excalidrawAPI.updateScene({ elements: cur.concat(newEls) });
       try { excalidrawAPI.scrollToContent(newEls, { fitToContent: true }); } catch (_) {}
       aiStatus('Diagram added ✓ — edit or move anything you like.', true);
-    } catch (e) { console.warn('[Whiteboard] diagram apply failed', e); aiStatus('Could not add the diagram.', false); }
+    } catch (e) { console.warn('[Whiteboard] diagram apply failed', e); aiStatus('Could not add the diagram.', false); if (record) setAiBusy(false); }
   }
+  // ── Record the AI drawing as a video ───────────────────────────────────────
+  // "Agentic explainer": the same Gemini diagram plan, revealed a piece at a time
+  // onto an offscreen canvas that MediaRecorder captures. Deliberately NOT a
+  // screen capture — no getDisplayMedia permission, no tab picking, nothing on
+  // screen can leak into the frame, and the result is reproducible at any size.
+  //
+  // The output is a .webm plus a .vtt of step captions, which Video Studio already
+  // imports by drag-and-drop — so this feeds straight into trimming, narration
+  // and the normal export pipeline without needing a bridge of its own.
+  var REC_W = 1280, REC_H = 720;
+
+  function elementBounds(el) {
+    var x1 = Number(el.x) || 0, y1 = Number(el.y) || 0;
+    var x2 = x1 + (Number(el.width) || 0), y2 = y1 + (Number(el.height) || 0);
+    if (Array.isArray(el.points)) {
+      el.points.forEach(function (p) {
+        var px = x1 + (Number(p && p[0]) || 0), py = y1 + (Number(p && p[1]) || 0);
+        if (px < x1) x1 = px;
+        if (py < y1) y1 = py;
+        if (px > x2) x2 = px;
+        if (py > y2) y2 = py;
+      });
+    }
+    return [x1, y1, x2, y2];
+  }
+  function sceneBounds(els) {
+    var b = null;
+    (els || []).forEach(function (el) {
+      var e = elementBounds(el);
+      if (!b) { b = e.slice(); return; }
+      if (e[0] < b[0]) b[0] = e[0];
+      if (e[1] < b[1]) b[1] = e[1];
+      if (e[2] > b[2]) b[2] = e[2];
+      if (e[3] > b[3]) b[3] = e[3];
+    });
+    return b || [0, 0, 100, 100];
+  }
+  // Two invisible 1x1 marks at the FINAL corners. exportToCanvas frames to the
+  // bounding box of whatever it is given, so without these the camera would zoom
+  // and pan on every reveal as the drawing grew. Opacity 0 keeps them off-screen
+  // while still counting toward the bounds.
+  function frameAnchors(bounds, pad) {
+    var skel = [
+      { type: 'rectangle', x: bounds[0] - pad, y: bounds[1] - pad, width: 1, height: 1, strokeColor: '#ffffff', backgroundColor: 'transparent' },
+      { type: 'rectangle', x: bounds[2] + pad, y: bounds[3] + pad, width: 1, height: 1, strokeColor: '#ffffff', backgroundColor: 'transparent' }
+    ];
+    var made = (typeof E.convertToExcalidrawElements === 'function') ? E.convertToExcalidrawElements(skel) : skel;
+    return made.map(function (el) { return Object.assign({}, el, { opacity: 0, locked: true }); });
+  }
+  // Walk the polyline by cumulative length so a line/arrow is drawn ON rather
+  // than popped in — this is what makes it read as "being drawn".
+  function partialPoints(points, t) {
+    if (!Array.isArray(points) || points.length < 2) return points;
+    if (t >= 1) return points;
+    var segs = [], total = 0, i;
+    for (i = 1; i < points.length; i++) {
+      var dx = (points[i][0] || 0) - (points[i - 1][0] || 0);
+      var dy = (points[i][1] || 0) - (points[i - 1][1] || 0);
+      var len = Math.sqrt(dx * dx + dy * dy);
+      segs.push(len); total += len;
+    }
+    if (!(total > 0)) return points;
+    var want = total * Math.max(0, t), acc = 0;
+    var out = [points[0].slice()];
+    for (i = 0; i < segs.length; i++) {
+      if (acc + segs[i] >= want) {
+        var f = segs[i] > 0 ? (want - acc) / segs[i] : 0;
+        out.push([
+          (points[i][0] || 0) + ((points[i + 1][0] || 0) - (points[i][0] || 0)) * f,
+          (points[i][1] || 0) + ((points[i + 1][1] || 0) - (points[i][1] || 0)) * f
+        ]);
+        return out;
+      }
+      acc += segs[i];
+      out.push(points[i + 1].slice());
+    }
+    return out;
+  }
+  function revealElement(el, t) {
+    if (t >= 1) return el;
+    if (t <= 0) return Object.assign({}, el, { opacity: 0 });
+    try {
+      if (Array.isArray(el.points) && el.points.length > 1) {
+        var pts = partialPoints(el.points, t);
+        var xs = pts.map(function (p) { return p[0] || 0; });
+        var ys = pts.map(function (p) { return p[1] || 0; });
+        return Object.assign({}, el, {
+          points: pts,
+          width: Math.max(1, Math.max.apply(null, xs) - Math.min.apply(null, xs)),
+          height: Math.max(1, Math.max.apply(null, ys) - Math.min.apply(null, ys))
+        });
+      }
+      if (el.type === 'text' && typeof el.text === 'string' && el.text.length) {
+        // Typewriter. The anchors hold the frame, so the shrinking text box is safe.
+        return Object.assign({}, el, { text: el.text.slice(0, Math.max(1, Math.round(el.text.length * t))) });
+      }
+    } catch (_) {}
+    return Object.assign({}, el, { opacity: Math.max(1, Math.round(100 * t)) });
+  }
+  function renderSceneToCanvas(els, files) {
+    var appState = { viewBackgroundColor: '#ffffff', exportBackground: true, exportWithDarkMode: false };
+    if (typeof E.exportToCanvas === 'function') {
+      return Promise.resolve(E.exportToCanvas({ elements: els, appState: appState, files: files || {}, exportPadding: 24 }));
+    }
+    // Fallback for builds without exportToCanvas: slower (encode + decode per
+    // frame) but keeps the feature working rather than failing outright.
+    return E.exportToBlob({ elements: els, appState: appState, files: files || {}, mimeType: 'image/png', quality: 0.92, exportPadding: 24 })
+      .then(function (blob) { return createImageBitmap(blob); });
+  }
+  function paintLetterboxed(ctx, src) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, REC_W, REC_H);
+    var sw = src.width || 1, sh = src.height || 1;
+    var scale = Math.min(REC_W / sw, REC_H / sh);
+    var dw = Math.max(1, Math.round(sw * scale)), dh = Math.max(1, Math.round(sh * scale));
+    try { ctx.drawImage(src, Math.round((REC_W - dw) / 2), Math.round((REC_H - dh) / 2), dw, dh); } catch (_) {}
+  }
+  function vttTime(s) {
+    s = Math.max(0, Number(s) || 0);
+    var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + sec.toFixed(3).padStart(6, '0');
+  }
+  function buildVtt(cues) {
+    var out = ['WEBVTT', ''];
+    (cues || []).forEach(function (c, i) {
+      out.push(String(i + 1));
+      out.push(vttTime(c.start) + ' --> ' + vttTime(c.end));
+      out.push(String(c.text || '').replace(/[\r\n]+/g, ' '));
+      out.push('');
+    });
+    return out.join('\n');
+  }
+  function cueTextFor(el, index) {
+    var txt = (typeof el.text === 'string' && el.text.trim()) ? el.text.trim() : '';
+    if (txt) return txt.slice(0, 120);
+    var kind = el.type === 'arrow' ? 'Connecting' : el.type === 'line' ? 'Drawing a line' : 'Adding a ' + String(el.type || 'shape');
+    return kind + ' (step ' + (index + 1) + ')';
+  }
+  function downloadBlob(blob, filename) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 4000);
+  }
+  function pickRecorderMime() {
+    var candidates = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+    for (var i = 0; i < candidates.length; i++) {
+      try { if (window.MediaRecorder && MediaRecorder.isTypeSupported(candidates[i])) return candidates[i]; } catch (_) {}
+    }
+    return '';
+  }
+
+  var recordBusy = false;
+  function recordDiagramBuild(newEls, promptText) {
+    if (recordBusy) return Promise.resolve();
+    if (!window.MediaRecorder) { aiStatus('This browser cannot record video (no MediaRecorder).', false); return Promise.resolve(); }
+    recordBusy = true;
+    var baseEls = (excalidrawAPI.getSceneElements() || []).slice();
+    var files = excalidrawAPI.getFiles() || {};
+    var finalEls = baseEls.concat(newEls);
+    var anchors = frameAnchors(sceneBounds(finalEls), 24);
+    // Pace: enough to follow, capped so a big diagram does not run long.
+    var perEl = 0.7, holdEnd = 1.4;
+    var drawSec = Math.min(90, Math.max(3, newEls.length * perEl));
+    var totalSec = drawSec + holdEnd;
+
+    var cv = document.createElement('canvas');
+    cv.width = REC_W; cv.height = REC_H;
+    var ctx = cv.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, REC_W, REC_H);
+
+    var stream = cv.captureStream(30);
+    var track = stream.getVideoTracks()[0] || null;
+    var mime = pickRecorderMime();
+    var mr;
+    try { mr = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 4000000 } : undefined); }
+    catch (e) { recordBusy = false; aiStatus('Could not start the recorder.', false); return Promise.resolve(); }
+    var chunks = [];
+    var recorded = new Promise(function (resolve) {
+      mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+      mr.onstop = function () { resolve(new Blob(chunks, { type: mr.mimeType || 'video/webm' })); };
+    });
+
+    var cues = [];
+    if (promptText) cues.push({ start: 0, end: Math.min(3.5, drawSec), text: String(promptText).slice(0, 120) });
+    var lastCueFor = -1;
+
+    mr.start(500);
+    aiStatus('Recording the drawing…', null);
+
+    var startedAt = performance.now();
+    function step() {
+      var elapsed = (performance.now() - startedAt) / 1000;
+      var t = Math.min(1, elapsed / drawSec);
+      var cursor = t * newEls.length;          // how many elements are in play
+      var frameEls = baseEls.slice();
+      for (var i = 0; i < newEls.length; i++) {
+        var local = Math.max(0, Math.min(1, cursor - i));
+        frameEls.push(local <= 0 ? Object.assign({}, newEls[i], { opacity: 0 }) : revealElement(newEls[i], local));
+      }
+      var active = Math.min(newEls.length - 1, Math.floor(cursor));
+      if (active > lastCueFor && active >= 0) {
+        lastCueFor = active;
+        var at = (active / newEls.length) * drawSec;
+        cues.push({ start: at, end: Math.min(totalSec, at + Math.max(1.2, perEl * 1.4)), text: cueTextFor(newEls[active], active) });
+      }
+      return renderSceneToCanvas(frameEls.concat(anchors), files).then(function (src) {
+        paintLetterboxed(ctx, src);
+        try { if (track && track.requestFrame) track.requestFrame(); } catch (_) {}
+        if (elapsed >= totalSec) return null;
+        return new Promise(function (r) { requestAnimationFrame(r); }).then(step);
+      });
+    }
+
+    return step().then(function () {
+      try { if (mr.state === 'recording' && mr.requestData) mr.requestData(); } catch (_) {}
+      return new Promise(function (r) { setTimeout(r, 350); });
+    }).then(function () {
+      try { mr.stop(); } catch (_) {}
+      return recorded;
+    }).then(function (blob) {
+      try { stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
+      if (!blob || !blob.size) { aiStatus('The recording came out empty.', false); return; }
+      // Leave the finished diagram on the canvas too — the teacher asked for a
+      // drawing as well as a video of it.
+      try {
+        excalidrawAPI.updateScene({ elements: finalEls });
+        excalidrawAPI.scrollToContent(newEls, { fitToContent: true });
+      } catch (_) {}
+      var stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+      var base = 'alloflow-diagram-' + stamp;
+      downloadBlob(blob, base + '.webm');
+      if (cues.length) downloadBlob(new Blob([buildVtt(cues)], { type: 'text/vtt' }), base + '.vtt');
+      aiStatus('Recorded ✓ — drop the .webm and .vtt into Video Studio to narrate or trim.', true);
+      toOpener({ type: 'allocwb-recorded', seconds: Math.round(totalSec), elementCount: newEls.length, cues: cues.length });
+    }).catch(function (e) {
+      console.warn('[Whiteboard] record failed', e);
+      try { if (mr.state !== 'inactive') mr.stop(); } catch (_) {}
+      try { stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
+      aiStatus('Could not record the drawing.', false);
+    }).then(function () { recordBusy = false; });
+  }
+
   function makeImageElement(fileId, x, y, w, h) {
     var now = Date.now();
     return {
@@ -419,10 +686,19 @@
   // AI assist needs the AlloFlow app (it holds the key/quota); hide it if opened standalone.
   var aibar = document.getElementById('aibar');
   if (aibar && !window.opener) aibar.style.display = 'none';
-  var wireAi = function (id, mode) { var b = document.getElementById(id); if (b) b.addEventListener('click', function () { aiRequest(mode); }); };
+  var wireAi = function (id, mode, opts) { var b = document.getElementById(id); if (b) b.addEventListener('click', function () { aiRequest(mode, opts); }); };
   wireAi('aiDiagramBtn', 'diagram');
   wireAi('aiImageBtn', 'image');
   wireAi('aiEditImgBtn', 'edit-image');
+  wireAi('aiRecordBtn', 'diagram', { record: true });
+  // Recording needs MediaRecorder + canvas.captureStream; say so up front rather
+  // than failing after the teacher has waited for a plan.
+  (function () {
+    var rec = document.getElementById('aiRecordBtn');
+    if (!rec) return;
+    var ok = !!window.MediaRecorder && typeof document.createElement('canvas').captureStream === 'function';
+    if (!ok) { rec.disabled = true; rec.title = 'This browser cannot record canvas video.'; }
+  })();
   var aiPromptEl = document.getElementById('aiPrompt');
   if (aiPromptEl) aiPromptEl.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); aiRequest('diagram'); } });
 
@@ -445,7 +721,14 @@
         return;
       }
       if (d.type === 'allocwb-ai-plan' && d.requestId && aiPending[d.requestId]) {
-        delete aiPending[d.requestId]; setAiBusy(false); applyDiagram(d.plan); return;
+        var pend = aiPending[d.requestId];
+        delete aiPending[d.requestId];
+        // For a recorded build the controls stay disabled until the recording
+        // finishes (applyDiagram re-enables them), so nothing can start a second
+        // pass mid-capture.
+        if (!pend.record) setAiBusy(false);
+        applyDiagram(d.plan, pend.record, pend.prompt);
+        return;
       }
       if (d.type === 'allocwb-ai-error' && d.requestId && aiPending[d.requestId]) {
         delete aiPending[d.requestId]; setAiBusy(false); aiStatus(d.message || 'AI is unavailable right now.', false); return;
