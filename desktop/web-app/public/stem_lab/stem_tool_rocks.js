@@ -846,6 +846,9 @@
     Fe: { color: 0xa16207, r: 0.38, label: 'Iron (Fe)' },
     Mg: { color: 0x34d399, r: 0.34, label: 'Magnesium (Mg)' },
     Al: { color: 0xc084fc, r: 0.34, label: 'Aluminium (Al)' },
+    // K+ is a big, weakly-held ion sitting in the framework cavities — drawn
+    // large to match, and distinct from Al so the substitution reads.
+    K:  { color: 0x818cf8, r: 0.44, label: 'Potassium (K⁺)' },
     X:  { color: 0x93c5fd, r: 0.30, label: 'Lattice point' }
   };
 
@@ -862,6 +865,7 @@
     talc:      { kind: 'sheet',     a: 'Mg', b: 'Si', exact: true,  why: 'Silicate sheets with almost nothing holding one sheet to the next, so they slide over each other. That is why talc is the softest mineral at Mohs 1 and feels slippery.' },
     quartz:    { kind: 'silica',    a: 'Si', b: 'O',  exact: true,  why: 'Every silicon sits at the centre of an oxygen tetrahedron, and every tetrahedron shares all four corners with its neighbours. The framework has no weak plane, so quartz fractures like glass instead of cleaving.' },
     gypsum:    { kind: 'sheet',     a: 'Ca', b: 'O',  exact: false, why: 'Layers of calcium sulfate separated by sheets of water molecules. The water layers are the weak planes gypsum splits along.' },
+    feldspar:  { kind: 'framework', a: 'K',  b: 'Si', exact: true,  why: 'A framework of corner-linked tetrahedra, like quartz — except aluminium substitutes for some of the silicon. Aluminium carries one less positive charge, so potassium, sodium or calcium sits in the cavities to balance it. That substitution is the entire difference from quartz, and it is why feldspar breaks along two clean planes while quartz has none.' },
     sulfur:    { kind: 'rings',     a: 'S',  b: 'S',  exact: true,  why: 'Sulfur is a MOLECULAR crystal: eight atoms bonded into a puckered S₈ crown, and only weak attractions holding one ring to the next. Strong bonds inside the ring, almost nothing between them — which is why sulfur is Mohs 2, crumbles easily, and melts at just 115 °C.' },
     olivine:   { kind: 'isolated',  a: 'Mg', b: 'Si', exact: true,  why: 'A nesosilicate: no SiO₄ tetrahedron shares an oxygen with another one. They are islands, and the magnesium and iron bonded between them are the only thing linking the structure. With no linked framework and no sheets, olivine has no good cleavage direction — and those exposed cation sites are why it weathers away faster than any other common silicate.' },
     corundum:  { kind: 'closepacked', a: 'Al', b: 'O', exact: true, why: 'Oxygen packed as tightly as spheres can be, with aluminium filling two thirds of the gaps between them. Dense packing plus short, strong Al–O bonds in every direction is what makes corundum Mohs 9 — ruby and sapphire are this structure with a trace of chromium or iron for colour.' },
@@ -870,15 +874,21 @@
 
   // Cell geometry per crystal system, for minerals whose real structure is not
   // drawn. Axis lengths and the shear used to convey the system's shape.
+  // Axis ratios are deliberately exaggerated. Real ratios vary mineral to
+  // mineral and the true differences are a few percent — at the auto-fit scale
+  // this view uses, a cubic cell and an orthorhombic one were indistinguishable,
+  // which defeats the only thing this fallback is for. The claim being made is
+  // equal-vs-unequal and right-angled-vs-inclined, so those are what is drawn
+  // legibly, the way a textbook crystal-system diagram does.
   var RK_CELL_GEOMETRY = {
     'cubic':        { ax: [1, 1, 1],       shear: 0,    note: 'three equal axes, all at right angles' },
     'isometric':    { ax: [1, 1, 1],       shear: 0,    note: 'three equal axes, all at right angles' },
-    'hexagonal':    { ax: [1, 1, 1.35],    shear: 0,    hex: true, note: 'six-fold symmetry about a long vertical axis' },
-    'trigonal':     { ax: [1, 1, 1.1],     shear: 0.22, note: 'three-fold symmetry, axes equally inclined' },
-    'rhombohedral': { ax: [1, 1, 1.1],     shear: 0.22, note: 'three equal axes, none at right angles' },
-    'orthorhombic': { ax: [0.8, 1, 1.25],  shear: 0,    note: 'three unequal axes, all at right angles' },
-    'monoclinic':   { ax: [0.9, 1, 1.2],   shear: 0.26, note: 'three unequal axes, one pair not at right angles' },
-    'triclinic':    { ax: [0.9, 1, 1.15],  shear: 0.30, note: 'three unequal axes, none at right angles' }
+    'hexagonal':    { ax: [1, 1, 1.75],    shear: 0,    hex: true, note: 'six-fold symmetry about a long vertical axis' },
+    'trigonal':     { ax: [1, 1, 1],       shear: 0.42, note: 'three-fold symmetry, axes equally inclined' },
+    'rhombohedral': { ax: [1, 1, 1],       shear: 0.42, note: 'three equal axes, none at right angles' },
+    'orthorhombic': { ax: [0.58, 1, 1.5],  shear: 0,    note: 'three unequal axes, all at right angles' },
+    'monoclinic':   { ax: [0.72, 1, 1.3],  shear: 0.46, note: 'three unequal axes, one pair not at right angles' },
+    'triclinic':    { ax: [0.70, 1, 1.25], shear: 0.52, note: 'three unequal axes, none at right angles' }
   };
 
   function rkCellGeometryFor(crystalStr) {
@@ -964,6 +974,23 @@
         push(B, cx, cy - 0.40, cz + 0.42);
         push(B, cx, cy - 0.40, cz - 0.42);
       }
+    } else if (kind === 'framework') {
+      // Tectosilicate: the same corner-linked tetrahedra as quartz, but with
+      // aluminium substituting for some of the silicon. Al carries one less
+      // positive charge than Si, so a cation (K, Na or Ca) sits in the cavities
+      // to balance it — that substitution is the whole difference from quartz.
+      var fr = 6;
+      for (i = 0; i < fr; i++) {
+        var fa = (i / fr) * Math.PI * 2;
+        var fx = Math.cos(fa) * 1.12, fz = Math.sin(fa) * 1.12;
+        var fy = (i % 2) * 0.55;
+        push(i === 0 || i === 3 ? 'Al' : B, fx, fy, fz);
+        push('O', fx + 0.42, fy + 0.40, fz);
+        push('O', fx - 0.42, fy + 0.40, fz);
+        push('O', fx, fy - 0.40, fz + 0.42);
+        push('O', fx, fy - 0.40, fz - 0.42);
+      }
+      push(A, 0, 0.28, 0);   // cation in the cavity
     } else if (kind === 'rings') {
       // Native sulfur is a MOLECULAR crystal: puckered S8 crowns stacked with
       // only weak forces holding one ring to the next. Drawing the gap between
@@ -1011,10 +1038,18 @@
   }
 
   // Generic unit-cell lattice points for a crystal system.
+  // Corners carry their (i,j,k) index so the scene can draw the cell's twelve
+  // EDGES and nothing else. Bonding every pair within a cutoff — which is right
+  // for an atomic structure — drew the face and body diagonals too, and that
+  // scribble hid the one thing this fallback exists to show: the SHAPE of the
+  // cell. A cubic cell and a sheared monoclinic one looked identical.
   function rkCellAtoms(geo) {
     var out = [];
     for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) for (var k = 0; k < 2; k++) {
-      out.push({ sp: 'X', x: i * geo.ax[0], y: j * geo.ax[1] + i * geo.shear, z: k * geo.ax[2] });
+      out.push({
+        sp: 'X', cell: true, i: i, j: j, k: k,
+        x: i * geo.ax[0], y: j * geo.ax[1] + i * geo.shear, z: k * geo.ax[2]
+      });
     }
     return out;
   }
@@ -1042,6 +1077,7 @@
         : spec.kind === 'rings' ? 1.15
         : spec.kind === 'isolated' ? 1.10
         : spec.kind === 'closepacked' ? 1.05
+        : spec.kind === 'framework' ? 0.95
         : 1.15;
     } else {
       atoms = rkCellAtoms(rkCellGeometryFor(m.crystal).geo);
@@ -1103,11 +1139,20 @@
     var placed = 0;
     for (var i = 0; i < atoms.length && placed < 220; i++) {
       for (var j = i + 1; j < atoms.length && placed < 220; j++) {
+        // Unit-cell corners connect along the cell's EDGES only — neighbours
+        // differing in exactly one axis index. A distance cutoff would also
+        // catch the face and body diagonals and bury the cell's shape.
+        if (atoms[i].cell && atoms[j].cell) {
+          var steps = (atoms[i].i !== atoms[j].i ? 1 : 0)
+            + (atoms[i].j !== atoms[j].j ? 1 : 0)
+            + (atoms[i].k !== atoms[j].k ? 1 : 0);
+          if (steps !== 1) continue;
+        }
         var dx = (atoms[i].x - atoms[j].x) * SCALE;
         var dy = (atoms[i].y - atoms[j].y) * SCALE;
         var dz = (atoms[i].z - atoms[j].z) * SCALE;
         var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        if (dist > bondLen * SCALE || dist < 0.0001) continue;
+        if (!(atoms[i].cell && atoms[j].cell) && (dist > bondLen * SCALE || dist < 0.0001)) continue;
         var bond = new THREE.Mesh(bondGeo, bondMat);
         bond.position.set(
           ((atoms[i].x + atoms[j].x) / 2 - cx) * SCALE,

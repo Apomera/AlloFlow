@@ -1883,8 +1883,16 @@
       function _questAutoLabel(type, toolId, params) {
         var toolName = 'this tool';
         if (toolId) {
-          var found = _allStemTools.find(function(t2) { return t2.id === toolId; });
-          if (found) toolName = found.label || toolId;
+          // Resolve from the plugin registry, NOT from _allStemTools: that array
+          // is declared inside the explore-tab render branch (`stemLabTab ===
+          // 'explore' && ... (() => { var _allStemTools = [...] })()`) and does
+          // not exist in this scope. Every call with a toolId threw
+          // ReferenceError, which took the whole quest builder down —
+          // "Auto-generate smart quests" could never fire at all, and the
+          // builder's live preview crashed the moment a tool was chosen.
+          var reg = (typeof window !== 'undefined' && window.StemLab && window.StemLab._registry) || {};
+          var found = reg[toolId];
+          if (found && (found.label || found.name)) toolName = found.label || found.name;
         }
         switch(type) {
           case 'xpThreshold': return 'Earn ' + (params.threshold || 50) + ' XP in ' + toolName;
