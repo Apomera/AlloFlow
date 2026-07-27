@@ -49,11 +49,20 @@ describe('Geometry World session report', () => {
       expect(flagged.length).toBeGreaterThanOrEqual(2);
     });
 
-    it(`reports the question-level count without redefining existing keys — ${p}`, () => {
+    it(`reports the question-level count and preserves the attempt totals — ${p}`, () => {
+      // UPDATED 2026-07-27. This used to assert questionsCorrect === correct.length,
+      // pinning the attempt-level definition. Aaron has since decided the RTI score
+      // should count the MAIN question only, scored on first attempt, with follow-ups
+      // treated as unscored instructional scaffolding — so questionsCorrect now means
+      // that, and pinning the old meaning would pin a decision that was reversed.
+      // See geometry_world_scoring_model.test.js for the model itself.
       expect(src).toContain('questionsCompleted: questionsCompleted,');
-      // The long-standing keys the longitudinal JSON export depends on survive.
-      expect(src).toContain('questionsCorrect: correct.length,');
-      expect(src).toContain('questionsWrong: wrong.length,');
+      expect(src).toContain("scoringModel: 'main-question-first-attempt',");
+      expect(src).toContain('questionsCorrect: questionsRightFirstTry,');
+      // Nothing is lost: the attempt-level totals are still exported, under names
+      // that say what they actually count.
+      expect(src).toContain('answerAttemptsCorrect: correct.length,');
+      expect(src).toContain('answerAttemptsWrong: wrong.length,');
       expect(src).toContain('totalAttempts: totalAttempts,');
       expect(src).toContain('rtiTierSuggestion: rtiTier,');
     });

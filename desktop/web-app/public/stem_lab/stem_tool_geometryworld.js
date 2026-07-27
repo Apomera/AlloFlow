@@ -5193,8 +5193,38 @@
           var completions = log.filter(function(e) { return e.type === 'lesson_complete'; });
           var lessons = log.filter(function(e) { return e.type === 'lesson_load'; });
 
+          // ── Scoring model: main question only, first attempt (Aaron's call) ──
+          // Previously accuracy counted every ANSWER ATTEMPT, and answer_correct fires
+          // once per follow-up STEP. Follow-ups are only reachable AFTER the step
+          // before was answered correctly, and they are by design the gentlest items
+          // in the lesson — so a student who got the main question right banked extra
+          // easy corrects, while a student who kept missing it never reached them.
+          // That widened the gap rather than measuring it, inside a number presented
+          // as an RTI tier. Follow-ups are now treated as instructional scaffolding
+          // and are not scored at all.
+          //
+          // Each NPC's main question (step 0) is scored on the student's FIRST
+          // attempt, which is what makes it probe-like rather than a persistence
+          // measure. Keyed by npc + question text so one NPC re-asked across a
+          // reload is not counted twice.
+          var mainAttempts = log.filter(function(e) {
+            return (e.type === 'answer_correct' || e.type === 'answer_wrong') && e.data && e.data.step === 0;
+          });
+          var firstAttemptByQuestion = {};
+          mainAttempts.forEach(function(e) {
+            var key = String(e.data.npc || '') + '|' + String(e.data.question || '');
+            if (!Object.prototype.hasOwnProperty.call(firstAttemptByQuestion, key)) {
+              firstAttemptByQuestion[key] = (e.type === 'answer_correct');
+            }
+          });
+          var scoredKeys = Object.keys(firstAttemptByQuestion);
+          var questionsScored = scoredKeys.length;
+          var questionsRightFirstTry = scoredKeys.filter(function(k) { return firstAttemptByQuestion[k]; }).length;
+          var accuracy = questionsScored > 0 ? Math.round((questionsRightFirstTry / questionsScored) * 100) : 0;
+
+          // The old attempt-level totals are still reported, under names that say what
+          // they actually count, so nothing is lost and a reviewer can see both.
           var totalAttempts = correct.length + wrong.length;
-          var accuracy = totalAttempts > 0 ? Math.round((correct.length / totalAttempts) * 100) : 0;
           // Real elapsed time, not the timestamp of the last logged event. A student who
           // worked for two minutes and then sat idle for ten reported a 2-minute session,
           // which inflated the questions-per-minute rate below — a rate presented
@@ -5222,14 +5252,27 @@
             lessonsAttempted: lessons.length,
             lessonsCompleted: completions.length,
 
-            // Performance metrics
-            questionsCorrect: correct.length,
-            questionsWrong: wrong.length,
-            totalAttempts: totalAttempts,
+            // ── Performance metrics ──
+            // scoringModel stamps the definition into every export. A longitudinal
+            // file whose meaning changed silently is worse than no file: exports
+            // written before 2026-07-27 have no such field, which is exactly how a
+            // reviewer can tell them apart from these. Never change the accuracy
+            // definition without changing this string too.
+            scoringModel: 'main-question-first-attempt',
+            questionsScored: questionsScored,
+            questionsCorrect: questionsRightFirstTry,
+            questionsWrong: questionsScored - questionsRightFirstTry,
             accuracy: accuracy + '%',
             questionsPerMinute: questionsPerMinute,
-            // questionsCorrect above counts ANSWER ATTEMPTS (one per follow-up step).
-            // This counts whole questions carried to their final step.
+
+            // Attempt-level totals, kept so nothing is lost and a reviewer can see
+            // both views. These count every answer press, follow-up steps included —
+            // which is what `accuracy` used to be derived from.
+            answerAttemptsCorrect: correct.length,
+            answerAttemptsWrong: wrong.length,
+            totalAttempts: totalAttempts,
+            // Whole questions carried to their final step (scaffolding completed),
+            // as distinct from questionsCorrect, which is first-attempt mastery.
             questionsCompleted: questionsCompleted,
 
             // Skill indicators
@@ -5295,8 +5338,12 @@
           h += '<div class="tier">' + r.rtiTierSuggestion + '</div>';
 
           h += '<h2>Performance Metrics</h2><div>';
-          h += '<div class="metric"><div class="val">' + r.accuracy + '</div><div class="lbl">Accuracy</div></div>';
-          h += '<div class="metric"><div class="val">' + r.questionsCorrect + '/' + r.totalAttempts + '</div><div class="lbl">Correct</div></div>';
+          // Numerator and denominator must come from the SAME model. This printed
+          // questionsCorrect over totalAttempts, which after the scoring change would
+          // read like "3/17" — first-attempt corrects over every answer press — and
+          // could exceed 100% against the accuracy beside it.
+          h += '<div class="metric"><div class="val">' + r.accuracy + '</div><div class="lbl">Accuracy<br><span style="font-size:8px;opacity:.7">first attempt, main question</span></div></div>';
+          h += '<div class="metric"><div class="val">' + r.questionsCorrect + '/' + r.questionsScored + '</div><div class="lbl">Questions right</div></div>';
           h += '<div class="metric"><div class="val">' + r.questionsPerMinute + '</div><div class="lbl">Q/min</div></div>';
           h += '<div class="metric"><div class="val">' + r.measurementsTaken + '</div><div class="lbl">Measurements</div></div>';
           h += '<div class="metric"><div class="val">' + (r.predictionsMade ? r.predictionsWithin10Percent + '/' + r.predictionsMade : '&mdash;') + '</div><div class="lbl">Predictions within 10%</div></div>';
@@ -5405,7 +5452,12 @@
           h += '<div style="font-size:13px;line-height:1.6">';
           h += 'Given access to AlloFlow Geometry World with teacher support, [Student] will demonstrate understanding of ' + goalArea;
           h += ' by correctly calculating the volume of rectangular prisms with <strong>' + targetAcc + '% accuracy</strong>';
-          h += ' across <strong>3 consecutive sessions</strong>, as measured by the Geometry World MTSS Progress Monitoring Report.';
+          // An IEP goal has to be operationally defined — "80% accuracy" is not
+          // measurable unless the report says accuracy OF WHAT. Naming the scoring
+          // model here means the goal can still be interpreted years later, and
+          // against exports written under a different model.
+          h += ' across <strong>3 consecutive sessions</strong>, as measured by the Geometry World MTSS Progress Monitoring Report';
+          h += ' (accuracy = main questions answered correctly on the first attempt; scaffolded follow-up prompts are instructional support and are not scored).';
           h += '</div></div>';
 
           // Tier-specific goal variant
