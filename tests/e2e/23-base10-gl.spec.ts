@@ -31,17 +31,15 @@ const HARNESS = `<!doctype html>
 <script src="/desktop/web-app/node_modules/react/umd/react.production.min.js"></script>
 <script src="/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js"></script>
 <script src="/vendor/three-r128/three.min.js"></script>
+<script src="/stem_lab/stem_lab_module.js"></script>
 <script>
   window.__events = { errors: [] };
   window.addEventListener('error', function (e) { window.__events.errors.push(String(e.message)); });
-  window.StemLab = {
-    _registry: {}, _order: [],
-    registerTool: function (id, cfg) { cfg.id = id; this._registry[id] = cfg; },
-    isRegistered: function (id) { return !!this._registry[id]; },
-    loadScriptResilient: function () { return new Promise(function () {}); },
-    ensureThree: function () { return Promise.resolve(window.THREE); },
-    getRegisteredTools: function () { return []; }
-  };
+  // Real host module, not a stub: the tools get makeVoxelBatch from it, so a
+  // hand-rolled StemLab would bypass the very code under test (and its two
+  // r128 traps). Only the CDN-facing bits are replaced.
+  window.StemLab.ensureThree = function () { return Promise.resolve(window.THREE); };
+  window.StemLab.loadScriptResilient = function () { return new Promise(function () {}); };
 </script>
 <script src="/stem_lab/stem_tool_manipulatives.js"></script>
 <script>

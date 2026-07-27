@@ -790,6 +790,127 @@
             status: function () { return status; }
           };
         },
+        // One canonical way to draw a large batch of identical, individually
+        // coloured little solids — unit cubes for the Volume explorer and the
+        // base-ten blocks, spheres for earthquake foci in Plate Tectonics.
+        //
+        // Extracted after the third tool needed it. The mechanics are dull,
+        // but BOTH r128 traps below were found the hard way, each costing a
+        // debugging session, and neither is visible to a jsdom test:
+        //
+        //   1. instanceColor must exist BEFORE the first render. r128 decides
+        //      whether to compile USE_INSTANCING_COLOR into the shader from
+        //      whether the attribute is null at compile time, then caches the
+        //      program. Tools whose first frame is empty (freeform Volume, an
+        //      empty base-ten board, a boundary with no quakes yet) would
+        //      cache a colourless program and silently drop every colour set
+        //      afterwards — solids render white and read as the wrong thing.
+        //   2. Outlines must be real box edges. `wireframe: true` draws the
+        //      TRIANGLE edges, putting an X through every face, which destroys
+        //      the countability that is the whole point of a voxel view.
+        //
+        // Also defaults frustumCulled off: r128 InstancedMesh has no
+        // per-instance bounds, so culling tests the whole batch against one
+        // unit-sized sphere at the origin and pops the model out of view.
+        //
+        // Usage:
+        //   var batch = StemLab.makeVoxelBatch(THREE, { capacity: n, edges: true });
+        //   batch.set(i, x, y, z, scale, '#2563eb');   // or 0x2563eb
+        //   batch.commit(count);  scene.add(batch.mesh); scene.add(batch.edges);
+        makeVoxelBatch: function (THREE, opts) {
+          opts = opts || {};
+          var capacity = Math.max(1, opts.capacity || 64);
+          var clip = opts.clippingPlanes || null;
+          var geo = opts.geometry || new THREE.BoxGeometry(
+            opts.size || 0.94, opts.size || 0.94, opts.size || 0.94);
+          var mat = opts.material || new THREE.MeshLambertMaterial({
+            color: 0xffffff,
+            side: opts.doubleSided ? THREE.DoubleSide : THREE.FrontSide,
+            clippingPlanes: clip
+          });
+
+          var mesh = new THREE.InstancedMesh(geo, mat, capacity);
+          mesh.frustumCulled = opts.frustumCulled === true;
+          mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+          if (opts.castShadow) mesh.castShadow = true;
+          if (opts.receiveShadow) mesh.receiveShadow = true;
+
+          // Trap 1. Allocate the colour attribute up front.
+          if (typeof mesh.setColorAt === 'function') {
+            var seed = new THREE.Color(0xffffff);
+            for (var s = 0; s < capacity; s++) mesh.setColorAt(s, seed);
+            if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+          }
+
+          // Trap 2. The twelve edges of a unit cube as twenty-four endpoints.
+          var edges = null, epos = null;
+          var CORNERS = [[-0.5,-0.5,-0.5],[0.5,-0.5,-0.5],[0.5,-0.5,0.5],[-0.5,-0.5,0.5],
+                         [-0.5,0.5,-0.5],[0.5,0.5,-0.5],[0.5,0.5,0.5],[-0.5,0.5,0.5]];
+          var PAIRS = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+          var TEMPLATE = [];
+          PAIRS.forEach(function (p) { TEMPLATE.push(CORNERS[p[0]], CORNERS[p[1]]); });
+
+          if (opts.edges) {
+            var eg = new THREE.BufferGeometry();
+            eg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(capacity * 24 * 3), 3));
+            edges = new THREE.LineSegments(eg, new THREE.LineBasicMaterial({
+              color: opts.edgeColor != null ? opts.edgeColor : 0x0f172a,
+              transparent: true,
+              opacity: opts.edgeOpacity != null ? opts.edgeOpacity : 0.3,
+              clippingPlanes: clip
+            }));
+            edges.frustumCulled = false;
+            epos = eg.attributes.position;
+          }
+
+          var dummy = new THREE.Object3D();
+          var tmpColor = new THREE.Color();
+
+          return {
+            mesh: mesh,
+            edges: edges,
+            capacity: capacity,
+            set: function (i, x, y, z, scale, color) {
+              if (i >= capacity) return;
+              var sc = scale == null ? 1 : scale;
+              dummy.position.set(x, y, z);
+              dummy.rotation.set(0, 0, 0);
+              dummy.scale.set(sc, sc, sc);
+              dummy.updateMatrix();
+              mesh.setMatrixAt(i, dummy.matrix);
+              if (color != null && typeof mesh.setColorAt === 'function') {
+                if (typeof color === 'number') tmpColor.setHex(color);
+                else tmpColor.setStyle(color);
+                mesh.setColorAt(i, tmpColor);
+              }
+              if (epos) {
+                for (var k = 0; k < 24; k++) {
+                  var e = TEMPLATE[k];
+                  epos.array[(i * 24 + k) * 3]     = x + e[0] * sc;
+                  epos.array[(i * 24 + k) * 3 + 1] = y + e[1] * sc;
+                  epos.array[(i * 24 + k) * 3 + 2] = z + e[2] * sc;
+                }
+              }
+            },
+            commit: function (n) {
+              mesh.count = n;
+              mesh.instanceMatrix.needsUpdate = true;
+              if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+              if (edges) {
+                epos.needsUpdate = true;
+                edges.geometry.setDrawRange(0, n * 24);
+              }
+            },
+            drawnCount: function () { return mesh.count; },
+            outlinedCount: function () { return edges ? edges.geometry.drawRange.count / 24 : 0; },
+            addTo: function (scene) { scene.add(mesh); if (edges) scene.add(edges); },
+            dispose: function (scene) {
+              if (scene) { scene.remove(mesh); if (edges) scene.remove(edges); }
+              mesh.geometry.dispose(); mesh.material.dispose();
+              if (edges) { edges.geometry.dispose(); edges.material.dispose(); }
+            }
+          };
+        },
         registerTool: function(id, config) {
           config.id = id;
           config.ready = config.ready !== false;

@@ -697,7 +697,7 @@
     var T = null;
     var state = 'idle';              // idle | loading | ready | failed
     var canvasEl = null, renderer = null, scene = null, camera = null;
-    var plateGroup = null, slabMesh = null, quakeMesh = null, arcGroup = null, scaleGroup = null;
+    var plateGroup = null, slabMesh = null, quakeBatch = null, arcGroup = null, scaleGroup = null;
     var clipPlane = null, dirLight = null;
     var rafId = 0, capacity = 0, resizeObs = null;
     var dummy = null, colorTmp = null;
@@ -956,34 +956,22 @@
     }
 
     function ensureQuakes(n) {
-      if (quakeMesh && capacity >= n) return;
-      if (quakeMesh) { scene.remove(quakeMesh); quakeMesh.geometry.dispose(); quakeMesh.material.dispose(); }
+      if (quakeBatch && capacity >= n) return;
+      if (quakeBatch) quakeBatch.dispose(scene);
       capacity = Math.max(48, n);
       // Unlit on purpose. A focus marker's colour IS its depth class, keyed to
       // the same legend the 2D view prints, so it must not be modulated by
       // scene lighting — a lit violet marker washes out to white and reads as
       // a different category. Markers are also drawn well above true scale
       // (a hypocentre is a point) so they stay visible across a 1200 km block.
-      quakeMesh = new T.InstancedMesh(
-        new T.SphereGeometry(1.7, 12, 8),
-        new T.MeshBasicMaterial({ color: 0xffffff, clippingPlanes: [clipPlane] }),
-        capacity
-      );
-      quakeMesh.frustumCulled = false;   // r128 has no per-instance bounds
-      quakeMesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
-      // Allocate instanceColor NOW, before the first render. r128 decides
-      // whether to compile USE_INSTANCING_COLOR into the shader from whether
-      // instanceColor is null at compile time, and the compiled program is
-      // then cached. The first frame here has zero foci, so if the attribute
-      // were left until the first setColorAt the program would already be
-      // cached colourless and every depth colour would be silently dropped —
-      // markers render white and read as the wrong depth class.
-      if (typeof quakeMesh.setColorAt === 'function') {
-        var seed = new T.Color(0xffffff);
-        for (var ci = 0; ci < capacity; ci++) quakeMesh.setColorAt(ci, seed);
-        if (quakeMesh.instanceColor) quakeMesh.instanceColor.needsUpdate = true;
-      }
-      scene.add(quakeMesh);
+      // No outline cage: these are points, not countable units.
+      quakeBatch = window.StemLab.makeVoxelBatch(T, {
+        capacity: capacity,
+        geometry: new T.SphereGeometry(1.7, 12, 8),
+        material: new T.MeshBasicMaterial({ color: 0xffffff, clippingPlanes: [clipPlane] }),
+        edges: false
+      });
+      quakeBatch.addTo(scene);
     }
 
     function apply(m) {
@@ -996,24 +984,14 @@
         // Same depth colour ramp the 2D markers use, so the two views read as
         // one dataset: shallow red, intermediate orange, deep violet.
         var hex = q.depthKm >= 300 ? 0xa78bfa : q.depthKm >= 70 ? 0xfb923c : 0xf43f5e;
-        dummy.position.set(
+        quakeBatch.set(i,
           (q.distKm || 0) * TECT_KM,      // +x: down-dip, matching the section
           -(q.depthKm || 0) * TECT_KM,
-          (q.strikeKm || 0) * TECT_KM
-        );
-        dummy.rotation.set(0, 0, 0);
-        var sc = 0.6 + (q.m || 4) * 0.16;
-        dummy.scale.set(sc, sc, sc);
-        dummy.updateMatrix();
-        quakeMesh.setMatrixAt(i, dummy.matrix);
-        if (typeof quakeMesh.setColorAt === 'function') {
-          colorTmp.setHex(hex);
-          quakeMesh.setColorAt(i, colorTmp);
-        }
+          (q.strikeKm || 0) * TECT_KM,
+          0.6 + (q.m || 4) * 0.16,
+          hex);
       }
-      quakeMesh.count = qs.length;
-      quakeMesh.instanceMatrix.needsUpdate = true;
-      if (quakeMesh.instanceColor) quakeMesh.instanceColor.needsUpdate = true;
+      quakeBatch.commit(qs.length);
 
       // Cut along strike. At full extent the plane is outside the block, so
       // nothing is clipped; sliding it in carves out the 2D section.
@@ -1081,7 +1059,7 @@
           state: state,
           mode: pending ? pending.mode : null,
           slabSample: slabSample,
-          quakeCount: quakeMesh ? quakeMesh.count : 0,
+          quakeCount: quakeBatch ? quakeBatch.drawnCount() : 0,
           plateCount: plateGroup ? plateGroup.children.length : 0,
           hasSlab: !!slabMesh,
           // Dip is conventionally a positive angle from horizontal; the mesh
@@ -1128,9 +1106,9 @@
         if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
         if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
         else window.removeEventListener('resize', resize);
-        if (scene) { clearGroup(plateGroup); clearGroup(arcGroup); clearGroup(scaleGroup); }
+        if (scene) { clearGroup(plateGroup); clearGroup(arcGroup); clearGroup(scaleGroup); if (quakeBatch) quakeBatch.dispose(scene); }
         if (renderer) { try { renderer.dispose(); } catch (e) {} }
-        plateGroup = arcGroup = scaleGroup = slabMesh = quakeMesh = null;
+        plateGroup = arcGroup = scaleGroup = slabMesh = quakeBatch = null;
         renderer = scene = camera = null; canvasEl = null; pending = null;
         capacity = 0; appliedSig = ''; appliedCamSig = '';
         if (state !== 'failed') state = 'idle';

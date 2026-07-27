@@ -222,6 +222,695 @@
             return opts.orbitRequired ? orbit : orbit.catch(function () { console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls'); return true; });
           }).then(function () { return window.THREE; });
         },
+        // Shared 3D viewer shell — see makeBayViewer usage in stem_tool_autorepair
+        // and stem_tool_firstresponse. Lives here, beside ensureThree, because the
+        // host always loads before any tool and needs no loader-order change.
+
+        // Generic 3D viewer shell — everything that is NOT scene content: attach and
+        // teardown, pause-when-unseen, WebGL context-loss recovery, theme rebuild,
+        // drag + raycast picking, keyboard camera, and label chips with de-overlap.
+        //
+        // Scene content comes from cfg.buildScene, so the tyre-change module reuses
+        // this whole lifecycle rather than copying ~200 lines of it. cfg is:
+        //   parts      — [{id, label, ...}] used for labels and pick mapping
+        //   buildScene — (THREE, api) => { meshes: {id: Group}, picks: [Mesh], anchor: Mesh }
+        //   home       — { yaw, pitch, dist } default camera
+        makeBayViewer: function (cfg) {
+          var S = null;                 // live scene state, null when detached
+          var props = { selected: null, onPick: null, onStatus: null, dark: true, contrast: false };
+          var status = 'idle';          // idle | loading | ready | failed
+          var restoreAttempts = 0;      // WebGL context-loss rebuilds, capped at 1
+
+          function setStatus(next) {
+            if (status === next) return;
+            status = next;
+            if (props.onStatus) { try { props.onStatus(next); } catch (e) {} }
+          }
+
+          function partColor(p) {
+            if (props.contrast) return '#ffffff';
+            return p.color;
+          }
+
+          function partLabel(id) {
+            for (var i = 0; i < cfg.parts.length; i++) {
+              if (cfg.parts[i].id === id) return cfg.parts[i].label;
+            }
+            return id;
+          }
+
+          function build(THREE, node) {
+            var renderer;
+            try {
+              renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            } catch (e) {
+              return null;              // no WebGL on this device — 2D list carries on
+            }
+            var w = node.clientWidth || 480;
+            var hgt = node.clientHeight || 340;
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            renderer.setSize(w, hgt);
+            node.appendChild(renderer.domElement);
+            renderer.domElement.style.display = 'block';
+            renderer.domElement.style.width = '100%';
+            renderer.domElement.style.height = '100%';
+            renderer.domElement.style.borderRadius = '10px';
+            // pan-y, NOT none. With touch-action:none a full-width canvas swallows
+            // every vertical swipe, so on a phone or tablet the student cannot
+            // scroll past the bay to reach the parts list underneath — the canvas
+            // becomes a scroll trap. pan-y gives vertical swipes back to the page
+            // and keeps horizontal drag for rotation; the ▲▼ buttons and arrow keys
+            // still cover tilt.
+            renderer.domElement.style.touchAction = 'pan-y';
+            renderer.domElement.setAttribute('aria-hidden', 'true');
+
+            // Floating label chip. Owned by this module and mutated directly in the
+            // RAF loop — routing a per-frame screen position through React state
+            // would re-render the whole tool 60 times a second.
+            // One chip per part, created once and positioned in the RAF loop. The
+            // "label everything" mode turns the bay into the map the module claims
+            // to be, which is exactly what a first-time owner staring at an unlabelled
+            // engine actually needs.
+            function chipCss(strong) {
+              return 'position:absolute;pointer-events:none;padding:' + (strong ? '3px 8px' : '2px 6px') +
+                ';border-radius:999px;font:' + (strong ? '700 11px' : '600 10px') + '/1.3 system-ui,sans-serif;' +
+                'white-space:nowrap;transform:translate(-50%,-50%);opacity:0;' +
+                'transition:opacity .12s linear;z-index:2;' +
+                (props.contrast
+                  ? 'background:#000;color:#fff;border:' + (strong ? '2px' : '1px') + ' solid #fff;'
+                  : strong
+                    ? 'background:rgba(15,23,42,.94);color:#fbbf24;border:1px solid #fbbf24;'
+                    : 'background:rgba(15,23,42,.72);color:#e2e8f0;border:1px solid rgba(148,163,184,.55);');
+            }
+            var labels = {};
+            cfg.parts.forEach(function (p) {
+              var el = document.createElement('div');
+              el.setAttribute('aria-hidden', 'true');
+              el.textContent = p.label;
+              el.style.cssText = chipCss(false);
+              node.appendChild(el);
+              labels[p.id] = el;
+            });
+
+            // Shadows are what make a box read as an OBJECT SITTING IN a bay rather
+            // than a sprite floating on a background. Cheap here: a dozen casters.
+            // Skipped in high-contrast, where soft grey gradients fight the mode.
+            var wantShadow = !props.contrast;
+            if (wantShadow) {
+              renderer.shadowMap.enabled = true;
+              renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            }
+
+            var scene = new THREE.Scene();
+            scene.background = new THREE.Color(props.contrast ? 0x000000 : (props.dark ? 0x0b1220 : 0xdfe6ef));
+            if (!props.contrast) {
+              scene.fog = new THREE.Fog(props.dark ? 0x0b1220 : 0xdfe6ef, 5.2, 11.0);
+            }
+
+            var camera = new THREE.PerspectiveCamera(42, w / hgt, 0.1, 100);
+
+            scene.add(new THREE.AmbientLight(0xffffff, props.contrast ? 0.95 : 0.44));
+            var key = new THREE.DirectionalLight(0xfff4e0, props.contrast ? 0.4 : 0.92);
+            key.position.set(2.4, 4.6, 2.8);
+            if (wantShadow) {
+              key.castShadow = true;
+              key.shadow.mapSize.width = 1024;
+              key.shadow.mapSize.height = 1024;
+              var sc = key.shadow.camera;
+              sc.left = -3.2; sc.right = 3.2; sc.top = 3.2; sc.bottom = -3.2;
+              sc.near = 0.5; sc.far = 14;
+              key.shadow.bias = -0.0012;
+            }
+            scene.add(key);
+            var fill = new THREE.DirectionalLight(0xbcd4ff, props.contrast ? 0.2 : 0.34);
+            fill.position.set(-2.6, 1.6, -2.0);
+            scene.add(fill);
+            // Low warm bounce off the bay floor — stops undersides going pure black.
+            var bounce = new THREE.DirectionalLight(0xffd9a0, props.contrast ? 0 : 0.20);
+            bounce.position.set(-0.6, -1.8, 1.2);
+            scene.add(bounce);
+
+            // ── Scene content ──
+            // Everything above is generic. What actually gets modelled comes from the
+            // caller, which is how the engine bay and the wheel corner share one
+            // viewer. Shared material helpers go in so both scenes look alike.
+            function trim(hex, shiny) {
+              return new THREE.MeshPhongMaterial({
+                color: props.contrast ? 0xffffff : hex,
+                shininess: props.contrast ? 0 : (shiny == null ? 30 : shiny),
+                specular: props.contrast ? 0x000000 : 0x6b7688
+              });
+            }
+            var content = cfg.buildScene(THREE, {
+              scene: scene, contrast: props.contrast, dark: props.dark,
+              wantShadow: wantShadow, trim: trim, partColor: partColor, parts: cfg.parts,
+              phase: props.phase || null,
+              // Arbitrary caller state for scenes that vary by more than a step
+              // count (e.g. which body-position tab is open, adult vs infant).
+              // Rebuilds are driven by props.sceneKey, so the caller decides
+              // what counts as a change rather than us deep-comparing.
+              sceneProps: props.sceneProps || null
+            });
+            var meshes = content.meshes;
+            var picks = content.picks;
+            var anchor = content.anchor;
+
+            // Selection cage. Emissive alone is not enough — on the pale translucent
+            // reservoirs an amber glow washes straight out, and the selected part is
+            // often behind the radiator from the default angle. A wireframe box with
+            // depthTest off reads on ANY part colour and shows through occluders,
+            // which is the whole job: "the thing you asked about is HERE."
+            // In high-contrast mode every part is flattened to white, so a white cage
+            // would be invisible against them. Yellow is the tool's contrast accent
+            // and sits at ~19:1 on black.
+            var selBox = new THREE.BoxHelper(anchor, props.contrast ? 0xffff00 : 0xfbbf24);
+            selBox.material.depthTest = false;
+            selBox.material.transparent = true;
+            selBox.material.linewidth = 2;
+            selBox.renderOrder = 999;
+            selBox.visible = false;
+            scene.add(selBox);
+
+            return {
+              THREE: THREE, node: node, renderer: renderer, scene: scene, camera: camera,
+              labels: labels, chipCss: chipCss, meshes: meshes, picks: picks, selBox: selBox,
+              raycaster: new THREE.Raycaster(), pointer: new THREE.Vector2(),
+              builtDark: props.dark, builtContrast: props.contrast, builtPhase: (props.phase || 0),
+              builtSceneKey: (props.sceneKey || ''),
+              paused: false, io: null,
+              yaw: cfg.home.yaw, pitch: cfg.home.pitch, dist: cfg.home.dist,
+              dragging: false, lastX: 0, lastY: 0, moved: 0,
+              hovered: null, t0: 0, raf: 0, handlers: [],
+              reduced: (function () {
+                try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+                catch (e) { return false; }
+              })()
+            };
+          }
+
+          function placeCamera() {
+            var cy = Math.max(0.12, Math.min(1.35, S.pitch));
+            S.camera.position.set(
+              Math.sin(S.yaw) * Math.cos(cy) * S.dist,
+              Math.sin(cy) * S.dist,
+              Math.cos(S.yaw) * Math.cos(cy) * S.dist
+            );
+            S.camera.lookAt(0, 0.30, 0);
+          }
+
+          // Screen-space position of a part, for the HTML label chip. Returns null
+          // when the part is behind the camera.
+          function project(id) {
+            var g = S.meshes[id];
+            if (!g) return null;
+            var v = new S.THREE.Vector3();
+            g.getWorldPosition(v);
+            v.y += 0.30;
+            v.project(S.camera);
+            if (v.z > 1) return null;
+            var r = S.renderer.domElement;
+            return { x: (v.x * 0.5 + 0.5) * r.clientWidth, y: (-v.y * 0.5 + 0.5) * r.clientHeight };
+          }
+
+          // Rendering pauses when the bay is off-screen or the tab is hidden. This
+          // tool's audience is on school Chromebooks, often with a dozen tabs open;
+          // spinning a WebGL loop for a canvas nobody can see burns battery and
+          // frame budget for nothing.
+          function pauseLoop() {
+            if (!S || S.paused) return;
+            S.paused = true;
+            if (S.raf) cancelAnimationFrame(S.raf);
+            S.raf = 0;
+          }
+          function resumeLoop() {
+            if (!S || !S.paused) return;
+            S.paused = false;
+            S.raf = requestAnimationFrame(frame);
+          }
+
+          function frame() {
+            if (!S || S.paused) return;
+
+            // Scene colours are baked at build time from the theme. If the user
+            // toggles dark/light/high-contrast while sitting in this module, rebuild
+            // rather than leaving a stale background. Done here, not in sync(),
+            // because sync() runs during React's render pass and must not touch DOM.
+            // Theme AND phase are baked at build time. The tyre scene changes shape
+            // as the procedure advances (car lifts, wheel comes off), so a phase
+            // change rebuilds exactly like a theme change does.
+            if (S.builtDark !== props.dark || S.builtContrast !== props.contrast ||
+                S.builtPhase !== (props.phase || 0) ||
+                S.builtSceneKey !== (props.sceneKey || '')) {
+              var node = S.node;
+              var keep = { yaw: S.yaw, pitch: S.pitch, dist: S.dist };
+              teardown();
+              if (window.THREE && node && node.isConnected) {
+                start(window.THREE, node);
+                if (S) { S.yaw = keep.yaw; S.pitch = keep.pitch; S.dist = keep.dist; }
+              }
+              return;
+            }
+
+            S.raf = requestAnimationFrame(frame);
+            S.t0 += 1;
+            placeCamera();
+
+            var sel = props.selected;
+            // Repair Bay marks already-inspected parts green so the student can see
+            // what ground they have covered without leaving the 3D view.
+            var marks = props.marks || {};
+            // Selection has to be unmistakable at a glance: bright emissive + a
+            // small scale bump, with everything else only GENTLY pushed back. An
+            // earlier build dimmed non-selected parts to 0.35 and the whole bay just
+            // read as fog — recede the context, don't erase it.
+            var pulse = S.reduced ? 1 : (0.78 + 0.22 * Math.sin(S.t0 * 0.08));
+            for (var id in S.meshes) {
+              if (!S.meshes.hasOwnProperty(id)) continue;
+              var isSel = (id === sel);
+              var isHov = (id === S.hovered && !isSel);
+              var recede = (sel && !isSel);
+              var g = S.meshes[id];
+
+              var wantScale = isSel ? (S.reduced ? 1.12 : 1.06 + 0.06 * pulse) : 1;
+              g.scale.setScalar(g.scale.x + (wantScale - g.scale.x) * 0.25);
+
+              g.traverse(function (o) {
+                if (!o.isMesh || !o.material) return;
+                if (o.material.emissive) {
+                  // Restrained on purpose. The wireframe cage answers "where is it";
+                  // a hot emissive on top of that just repaints the part gold and
+                  // destroys the colour cue the student is meant to transfer to a
+                  // real engine bay.
+                  if (isSel) o.material.emissive.setRGB(0.26 * pulse, 0.19 * pulse, 0.03 * pulse);
+                  else if (isHov) o.material.emissive.setRGB(0.16, 0.17, 0.20);
+                  else if (marks[id] === 'checked') o.material.emissive.setRGB(0.02, 0.13, 0.07);
+                  else o.material.emissive.setRGB(0, 0, 0);
+                }
+                if (o.material.userData._baseOpacity === undefined) {
+                  o.material.userData._baseOpacity = (o.material.opacity === undefined) ? 1 : o.material.opacity;
+                }
+                var base = o.material.userData._baseOpacity;
+                var want = recede ? base * 0.70 : base;
+                if (Math.abs(o.material.opacity - want) > 0.01) {
+                  o.material.opacity = want;
+                  var nextTransparent = want < 1;
+                  if (o.material.transparent !== nextTransparent) {
+                    o.material.transparent = nextTransparent;
+                    o.material.needsUpdate = true;   // only on the actual flip
+                  }
+                }
+              });
+            }
+
+            if (sel && S.meshes[sel]) {
+              S.selBox.visible = true;
+              S.selBox.setFromObject(S.meshes[sel]);
+              S.selBox.material.opacity = S.reduced ? 1 : (0.6 + 0.4 * pulse);
+            } else if (S.selBox.visible) {
+              S.selBox.visible = false;
+            }
+
+            S.renderer.render(S.scene, S.camera);
+
+            // Label chips. Focused chip (selected/hovered) always shows; the rest
+            // only in "label everything" mode, and dimmer so focus still reads.
+            var focusId = sel || S.hovered;
+            var showAll = !!props.showAllLabels;
+            var placed = [];
+            var viewW = S.renderer.domElement.clientWidth;
+            var viewH = S.renderer.domElement.clientHeight;
+
+            for (var li = 0; li < cfg.parts.length; li++) {
+              var pid = cfg.parts[li].id;
+              var el = S.labels[pid];
+              var strong = (pid === focusId);
+              var want = strong || showAll;
+              if (!want) {
+                if (el.style.opacity !== '0') el.style.opacity = '0';
+                continue;
+              }
+              var at = project(pid);
+              if (!at) { if (el.style.opacity !== '0') el.style.opacity = '0'; continue; }
+              if (el._strong !== strong) {
+                el._strong = strong;
+                el.style.cssText = S.chipCss(strong);
+                el._w = 0;                       // restyle changes the measured size
+              }
+              // Measure once per style; offsetWidth forces layout, so never per-frame.
+              if (!el._w) {
+                el.style.opacity = '0.01';
+                el._w = el.offsetWidth || 90;
+                el._h = el.offsetHeight || 18;
+              }
+              placed.push({ el: el, x: at.x, y: at.y, w: el._w, h: el._h, strong: strong });
+            }
+
+            // Label-everything mode put twelve chips on a small canvas and several
+            // landed on top of each other, which defeats the point of a map. Greedy
+            // de-overlap: keep the focused chip anchored, nudge the rest downward
+            // until they clear. O(n²) over twelve items — nothing.
+            placed.sort(function (a, b) { return (b.strong ? 1 : 0) - (a.strong ? 1 : 0) || a.y - b.y; });
+            var settled = [];
+            for (var pi2 = 0; pi2 < placed.length; pi2++) {
+              var c = placed[pi2];
+              if (!c.strong) {
+                var guard = 0;
+                while (guard++ < 14) {
+                  var hit = false;
+                  for (var si = 0; si < settled.length; si++) {
+                    var o = settled[si];
+                    if (Math.abs(c.x - o.x) < (c.w + o.w) / 2 + 4 &&
+                        Math.abs(c.y - o.y) < (c.h + o.h) / 2 + 3) { hit = true; break; }
+                  }
+                  if (!hit) break;
+                  c.y += c.h + 4;
+                }
+                // Pushed off the bottom? Better to hide it than to stack it on the edge.
+                if (c.y > viewH - c.h / 2) { c.el.style.opacity = '0'; continue; }
+              }
+              // Keep chips inside the viewport horizontally.
+              c.x = Math.max(c.w / 2 + 2, Math.min(viewW - c.w / 2 - 2, c.x));
+              settled.push(c);
+              c.el.style.left = c.x + 'px';
+              c.el.style.top = c.y + 'px';
+              c.el.style.opacity = c.strong ? '1' : '0.92';
+            }
+          }
+
+          function bind() {
+            var el = S.renderer.domElement;
+            function on(target, type, fn, opts) {
+              target.addEventListener(type, fn, opts || false);
+              S.handlers.push([target, type, fn, opts || false]);
+            }
+            function ndc(ev) {
+              var r = el.getBoundingClientRect();
+              S.pointer.x = ((ev.clientX - r.left) / r.width) * 2 - 1;
+              S.pointer.y = -((ev.clientY - r.top) / r.height) * 2 + 1;
+            }
+            function hit() {
+              S.raycaster.setFromCamera(S.pointer, S.camera);
+              var xs = S.raycaster.intersectObjects(S.picks, false);
+              return xs.length ? xs[0].object.userData.partId : null;
+            }
+            on(el, 'pointerdown', function (ev) {
+              S.dragging = true; S.moved = 0;
+              S.lastX = ev.clientX; S.lastY = ev.clientY;
+              try { el.setPointerCapture(ev.pointerId); } catch (e) {}
+            });
+            on(el, 'pointermove', function (ev) {
+              if (S.dragging) {
+                var dx = ev.clientX - S.lastX, dy = ev.clientY - S.lastY;
+                S.moved += Math.abs(dx) + Math.abs(dy);
+                S.yaw -= dx * 0.008;
+                S.pitch = Math.max(0.12, Math.min(1.35, S.pitch + dy * 0.006));
+                S.lastX = ev.clientX; S.lastY = ev.clientY;
+              } else {
+                ndc(ev);
+                var over = hit();
+                if (over !== S.hovered) {
+                  S.hovered = over;
+                  el.style.cursor = over ? 'pointer' : 'grab';
+                }
+              }
+            });
+            on(el, 'pointerup', function (ev) {
+              var wasDrag = S.moved > 6;
+              S.dragging = false;
+              try { el.releasePointerCapture(ev.pointerId); } catch (e) {}
+              if (wasDrag) return;                       // rotating, not picking
+              ndc(ev);
+              var id = hit();
+              if (id && props.onPick) { try { props.onPick(id); } catch (e) {} }
+            });
+            on(el, 'pointerleave', function () {
+              S.dragging = false;
+              if (S.hovered) { S.hovered = null; el.style.cursor = 'grab'; }
+            });
+            on(el, 'wheel', function (ev) {
+              ev.preventDefault();
+              S.dist = Math.max(2.6, Math.min(8.5, S.dist + (ev.deltaY > 0 ? 0.4 : -0.4)));
+            }, { passive: false });
+            el.style.cursor = 'grab';
+
+            var onResize = function () {
+              if (!S || !S.node) return;
+              var w = S.node.clientWidth, hh = S.node.clientHeight;
+              if (!w || !hh) return;
+              S.renderer.setSize(w, hh);
+              S.camera.aspect = w / hh;
+              S.camera.updateProjectionMatrix();
+            };
+            on(window, 'resize', onResize);
+
+            on(el, 'pointercancel', function () {
+              // Fires when the browser takes the gesture over for scrolling
+              // (touch-action: pan-y). Without this the scene stays stuck in
+              // "dragging" and the next pointermove yanks the camera.
+              S.dragging = false;
+            });
+
+            // ── Context loss ──
+            // Real on low-memory Chromebooks: the GPU process drops contexts under
+            // pressure. Previously this was a permanent "failed". Now we rebuild
+            // once, and only fall back to the 2D list if the rebuild also fails.
+            on(el, 'webglcontextlost', function (ev) {
+              ev.preventDefault();
+              console.warn('[AutoRepair] WebGL context lost — attempting one rebuild');
+              var node = S ? S.node : null;
+              var keep = S ? { yaw: S.yaw, pitch: S.pitch, dist: S.dist } : null;
+              teardown();
+              if (restoreAttempts >= 1 || !node || !node.isConnected) { setStatus('failed'); return; }
+              restoreAttempts++;
+              setStatus('loading');
+              window.setTimeout(function () {
+                if (!node.isConnected) return;
+                try {
+                  start(window.THREE, node);
+                  if (S && keep) { S.yaw = keep.yaw; S.pitch = keep.pitch; S.dist = keep.dist; }
+                } catch (e) { setStatus('failed'); }
+              }, 350);
+            }, false);
+
+            // ── Pause when unseen ──
+            var onVis = function () {
+              if (document.hidden) pauseLoop(); else resumeLoop();
+            };
+            on(document, 'visibilitychange', onVis);
+
+            if (typeof IntersectionObserver === 'function') {
+              try {
+                S.io = new IntersectionObserver(function (entries) {
+                  for (var i = 0; i < entries.length; i++) {
+                    if (entries[i].isIntersecting && !document.hidden) resumeLoop();
+                    else if (!entries[i].isIntersecting) pauseLoop();
+                  }
+                }, { threshold: 0.01 });
+                S.io.observe(S.node);
+              } catch (e) { S.io = null; }
+            }
+          }
+
+          function teardown() {
+            if (!S) return;
+            if (S.raf) cancelAnimationFrame(S.raf);
+            if (S.io) { try { S.io.disconnect(); } catch (e) {} S.io = null; }
+            S.handlers.forEach(function (hd) {
+              try { hd[0].removeEventListener(hd[1], hd[2], hd[3]); } catch (e) {}
+            });
+            try {
+              S.scene.traverse(function (o) {
+                if (o.geometry && o.geometry.dispose) o.geometry.dispose();
+                if (o.material) {
+                  var ms = Array.isArray(o.material) ? o.material : [o.material];
+                  ms.forEach(function (m) { if (m && m.dispose) m.dispose(); });
+                }
+              });
+              if (S.renderer.domElement && S.renderer.domElement.parentNode) {
+                S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
+              }
+              Object.keys(S.labels || {}).forEach(function (k) {
+                var el = S.labels[k];
+                if (el && el.parentNode) el.parentNode.removeChild(el);
+              });
+              S.renderer.dispose();
+              if (S.renderer.forceContextLoss) S.renderer.forceContextLoss();
+            } catch (e) {}
+            S = null;
+            status = 'idle';
+          }
+
+          function start(THREE, node) {
+            var built = build(THREE, node);
+            if (!built) { setStatus('failed'); return; }
+            S = built;
+            bind();
+            placeCamera();
+            setStatus('ready');
+            S.raf = requestAnimationFrame(frame);
+          }
+
+          return {
+            // STABLE identity — never recreate this function.
+            attach: function (node) {
+              if (!node) { teardown(); return; }
+              if (S && S.node === node) return;
+              teardown();
+              restoreAttempts = 0;      // fresh visit gets its own context-loss retry
+              setStatus('loading');
+              if (window.THREE) { start(window.THREE, node); return; }
+              if (!window.StemLab || !window.StemLab.ensureThree) { setStatus('failed'); return; }
+              window.StemLab.ensureThree({
+                orbit: false,
+                failMessage: 'The 3D engine could not load. School network filters sometimes block CDNs. The full labelled parts list below remains available.'
+              }).then(function (THREE) {
+                if (!node.isConnected) return;           // navigated away mid-load
+                start(THREE, node);
+              }).catch(function () {
+                console.warn('[AutoRepair] Three.js failed to load — under-hood tour falling back to the 2D list');
+                setStatus('failed');
+              });
+            },
+            sync: function (next) { props = next; },
+            nudge: function (dYaw, dPitch) {
+              if (!S) return;
+              S.yaw += dYaw;
+              S.pitch = Math.max(0.12, Math.min(1.35, S.pitch + dPitch));
+            },
+            // Zoom was wheel-only, which left keyboard, touch and switch users with
+            // no way to get closer. Same clamp as the wheel handler.
+            zoom: function (delta) {
+              if (!S) return;
+              S.dist = Math.max(2.6, Math.min(8.5, S.dist + delta));
+            },
+            reset: function () {
+              if (!S) return;
+              S.yaw = cfg.home.yaw; S.pitch = cfg.home.pitch; S.dist = cfg.home.dist;
+            },
+            status: function () { return status; }
+          };
+        },
+        // One canonical way to draw a large batch of identical, individually
+        // coloured little solids — unit cubes for the Volume explorer and the
+        // base-ten blocks, spheres for earthquake foci in Plate Tectonics.
+        //
+        // Extracted after the third tool needed it. The mechanics are dull,
+        // but BOTH r128 traps below were found the hard way, each costing a
+        // debugging session, and neither is visible to a jsdom test:
+        //
+        //   1. instanceColor must exist BEFORE the first render. r128 decides
+        //      whether to compile USE_INSTANCING_COLOR into the shader from
+        //      whether the attribute is null at compile time, then caches the
+        //      program. Tools whose first frame is empty (freeform Volume, an
+        //      empty base-ten board, a boundary with no quakes yet) would
+        //      cache a colourless program and silently drop every colour set
+        //      afterwards — solids render white and read as the wrong thing.
+        //   2. Outlines must be real box edges. `wireframe: true` draws the
+        //      TRIANGLE edges, putting an X through every face, which destroys
+        //      the countability that is the whole point of a voxel view.
+        //
+        // Also defaults frustumCulled off: r128 InstancedMesh has no
+        // per-instance bounds, so culling tests the whole batch against one
+        // unit-sized sphere at the origin and pops the model out of view.
+        //
+        // Usage:
+        //   var batch = StemLab.makeVoxelBatch(THREE, { capacity: n, edges: true });
+        //   batch.set(i, x, y, z, scale, '#2563eb');   // or 0x2563eb
+        //   batch.commit(count);  scene.add(batch.mesh); scene.add(batch.edges);
+        makeVoxelBatch: function (THREE, opts) {
+          opts = opts || {};
+          var capacity = Math.max(1, opts.capacity || 64);
+          var clip = opts.clippingPlanes || null;
+          var geo = opts.geometry || new THREE.BoxGeometry(
+            opts.size || 0.94, opts.size || 0.94, opts.size || 0.94);
+          var mat = opts.material || new THREE.MeshLambertMaterial({
+            color: 0xffffff,
+            side: opts.doubleSided ? THREE.DoubleSide : THREE.FrontSide,
+            clippingPlanes: clip
+          });
+
+          var mesh = new THREE.InstancedMesh(geo, mat, capacity);
+          mesh.frustumCulled = opts.frustumCulled === true;
+          mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+          if (opts.castShadow) mesh.castShadow = true;
+          if (opts.receiveShadow) mesh.receiveShadow = true;
+
+          // Trap 1. Allocate the colour attribute up front.
+          if (typeof mesh.setColorAt === 'function') {
+            var seed = new THREE.Color(0xffffff);
+            for (var s = 0; s < capacity; s++) mesh.setColorAt(s, seed);
+            if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+          }
+
+          // Trap 2. The twelve edges of a unit cube as twenty-four endpoints.
+          var edges = null, epos = null;
+          var CORNERS = [[-0.5,-0.5,-0.5],[0.5,-0.5,-0.5],[0.5,-0.5,0.5],[-0.5,-0.5,0.5],
+                         [-0.5,0.5,-0.5],[0.5,0.5,-0.5],[0.5,0.5,0.5],[-0.5,0.5,0.5]];
+          var PAIRS = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+          var TEMPLATE = [];
+          PAIRS.forEach(function (p) { TEMPLATE.push(CORNERS[p[0]], CORNERS[p[1]]); });
+
+          if (opts.edges) {
+            var eg = new THREE.BufferGeometry();
+            eg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(capacity * 24 * 3), 3));
+            edges = new THREE.LineSegments(eg, new THREE.LineBasicMaterial({
+              color: opts.edgeColor != null ? opts.edgeColor : 0x0f172a,
+              transparent: true,
+              opacity: opts.edgeOpacity != null ? opts.edgeOpacity : 0.3,
+              clippingPlanes: clip
+            }));
+            edges.frustumCulled = false;
+            epos = eg.attributes.position;
+          }
+
+          var dummy = new THREE.Object3D();
+          var tmpColor = new THREE.Color();
+
+          return {
+            mesh: mesh,
+            edges: edges,
+            capacity: capacity,
+            set: function (i, x, y, z, scale, color) {
+              if (i >= capacity) return;
+              var sc = scale == null ? 1 : scale;
+              dummy.position.set(x, y, z);
+              dummy.rotation.set(0, 0, 0);
+              dummy.scale.set(sc, sc, sc);
+              dummy.updateMatrix();
+              mesh.setMatrixAt(i, dummy.matrix);
+              if (color != null && typeof mesh.setColorAt === 'function') {
+                if (typeof color === 'number') tmpColor.setHex(color);
+                else tmpColor.setStyle(color);
+                mesh.setColorAt(i, tmpColor);
+              }
+              if (epos) {
+                for (var k = 0; k < 24; k++) {
+                  var e = TEMPLATE[k];
+                  epos.array[(i * 24 + k) * 3]     = x + e[0] * sc;
+                  epos.array[(i * 24 + k) * 3 + 1] = y + e[1] * sc;
+                  epos.array[(i * 24 + k) * 3 + 2] = z + e[2] * sc;
+                }
+              }
+            },
+            commit: function (n) {
+              mesh.count = n;
+              mesh.instanceMatrix.needsUpdate = true;
+              if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+              if (edges) {
+                epos.needsUpdate = true;
+                edges.geometry.setDrawRange(0, n * 24);
+              }
+            },
+            drawnCount: function () { return mesh.count; },
+            outlinedCount: function () { return edges ? edges.geometry.drawRange.count / 24 : 0; },
+            addTo: function (scene) { scene.add(mesh); if (edges) scene.add(edges); },
+            dispose: function (scene) {
+              if (scene) { scene.remove(mesh); if (edges) scene.remove(edges); }
+              mesh.geometry.dispose(); mesh.material.dispose();
+              if (edges) { edges.geometry.dispose(); edges.material.dispose(); }
+            }
+          };
+        },
         registerTool: function(id, config) {
           config.id = id;
           config.ready = config.ready !== false;
@@ -4052,6 +4741,14 @@
               { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', color: 'orange', ready: true },
               { id: 'geologyExplorer', icon: '⛰️', label: 'Geology Explorer', desc: 'Dig a 3D voxel cross-section of the crust — identify rocks, read the layers, and find the pluton that cuts them.', color: 'amber', ready: true },
               { id: 'astronomy', icon: '🔭', label: 'Night Sky & Astronomy', desc: 'Earth & Space Science: constellations (with Wabanaki + cross-cultural sky traditions), moon phases, planets, seasons, stars, galaxies, eclipses, observing practice, light-pollution awareness. NGSS MS-ESS1 + HS-ESS1. Place-based for Maine. Printable observing checklists.', color: 'indigo', ready: true },
+              // gisStudio registers itself in stem_tool_gisstudio.js but had NO tile here,
+              // so a finished, tested, mirrored tool was unreachable from the picker —
+              // check_stem_tile_catalog and stem_plugin_fallback_allowlist were both red
+              // on exactly this. Icon written as escapes (matching how the tool declares
+              // its own icon) so it cannot be re-encoded into mojibake.
+              // NB: no apostrophes in comments inside this array — the catalog gate
+              // tracks quote state as it scans and an unpaired one blinds it.
+              { id: 'gisStudio', icon: '🗺️', label: 'GIS Studio', desc: 'Build, compare, animate, save, and privacy-review accessible GIS projects: import CSV/GeoJSON, join attributes, choropleth breaks, buffers, change-over-time, and an accessible data-table twin.', color: 'teal', ready: true },
 
               { id: '_cat_AdvancedMathLogic', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', category: true },
               { id: 'geometryProver', icon: '\uD83D\uDCD0', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
@@ -5503,6 +6200,10 @@
             behaviorLab: true, schoolBehaviorToolkit: true, dataStudio: true, economicsLab: true, logicLab: true, timelineStudio: true,
             // Geography
             geoQuiz: true, geometryProver: true, geometryWorld: true,
+            // gisStudio: without this the new catalog tile would open a BLANK content
+            // area — the same failure the arccity note above records. A tile and a
+            // fallback entry are both required for a plugin-only tool to be reachable.
+            gisStudio: true,
             // Applied
             a11yAuditor: true, lifeSkills: true, physics: true, wave: true,
             worldBuilder: true,

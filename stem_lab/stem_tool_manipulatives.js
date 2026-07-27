@@ -326,7 +326,7 @@ window.StemLab = window.StemLab || {
     var T = null;
     var state = 'idle';
     var canvasEl = null, renderer = null, scene = null, camera = null;
-    var cubeMesh = null, edgeMesh = null, groundMesh = null;
+    var batch = null, groundMesh = null;
     var rafId = 0, capacity = 0, resizeObs = null;
     var dummy = null, colorTmp = null;
     var pending = null, appliedSig = '', appliedCamSig = '', dirty = true;
@@ -391,80 +391,28 @@ window.StemLab = window.StemLab || {
     }
 
     function ensureCapacity(n) {
-      if (cubeMesh && capacity >= n) return;
-      [cubeMesh, edgeMesh].forEach(function (m) {
-        if (!m) return;
-        scene.remove(m); m.geometry.dispose(); m.material.dispose();
-      });
+      if (batch && capacity >= n) return;
+      if (batch) batch.dispose(scene);
       capacity = Math.max(64, n);
-      cubeMesh = new T.InstancedMesh(
-        new T.BoxGeometry(0.92, 0.92, 0.92),
-        new T.MeshLambertMaterial({ color: 0xffffff }),
-        capacity
-      );
-      cubeMesh.frustumCulled = false;
-      cubeMesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
-      // Seed instanceColor before the first render — r128 bakes
-      // USE_INSTANCING_COLOR into the cached program based on whether this is
-      // null at compile time, and the board opens empty.
-      if (typeof cubeMesh.setColorAt === 'function') {
-        var seed = new T.Color(0xffffff);
-        for (var i = 0; i < capacity; i++) cubeMesh.setColorAt(i, seed);
-        if (cubeMesh.instanceColor) cubeMesh.instanceColor.needsUpdate = true;
-      }
-      scene.add(cubeMesh);
-
-      // Real box edges (not wireframe:true, which draws triangle diagonals and
-      // puts an X through every face). These grooves are what make a block
-      // countable, which is the difference between a pink box and 1000.
-      var eg = new T.BufferGeometry();
-      eg.setAttribute('position', new T.BufferAttribute(new Float32Array(capacity * 24 * 3), 3));
-      edgeMesh = new T.LineSegments(eg, new T.LineBasicMaterial({
-        color: 0x0f172a, transparent: true, opacity: 0.28
-      }));
-      edgeMesh.frustumCulled = false;
-      scene.add(edgeMesh);
+      // Host helper: instancing, per-instance colour and crisp box outlines,
+      // with the two r128 traps (instanceColor timing, wireframe diagonals)
+      // handled in one place. See StemLab.makeVoxelBatch.
+      batch = window.StemLab.makeVoxelBatch(T, {
+        capacity: capacity, size: 0.92, edges: true, edgeOpacity: 0.28
+      });
+      batch.addTo(scene);
     }
-
-    var EDGES = (function () {
-      var c = [[-0.5,-0.5,-0.5],[0.5,-0.5,-0.5],[0.5,-0.5,0.5],[-0.5,-0.5,0.5],
-               [-0.5,0.5,-0.5],[0.5,0.5,-0.5],[0.5,0.5,0.5],[-0.5,0.5,0.5]];
-      var pairs = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
-      var out = [];
-      pairs.forEach(function (p) { out.push(c[p[0]], c[p[1]]); });
-      return out;
-    })();
 
     function apply(m) {
       var cubes = layout(m.counts);
       var n = cubes.length;
       ensureCapacity(n);
       var ox = bounds.w / 2, oz = bounds.d / 2;
-      var epos = edgeMesh.geometry.attributes.position;
       for (var i = 0; i < n; i++) {
         var c = cubes[i];
-        var px = c.x - ox + 0.5, py = c.y + 0.5, pz = c.z - oz + 0.5;
-        dummy.position.set(px, py, pz);
-        dummy.rotation.set(0, 0, 0);
-        dummy.scale.set(1, 1, 1);
-        dummy.updateMatrix();
-        cubeMesh.setMatrixAt(i, dummy.matrix);
-        if (typeof cubeMesh.setColorAt === 'function') {
-          colorTmp.setHex(B10_COLORS[c.place]);
-          cubeMesh.setColorAt(i, colorTmp);
-        }
-        for (var k = 0; k < 24; k++) {
-          var e = EDGES[k];
-          epos.array[(i * 24 + k) * 3]     = px + e[0];
-          epos.array[(i * 24 + k) * 3 + 1] = py + e[1];
-          epos.array[(i * 24 + k) * 3 + 2] = pz + e[2];
-        }
+        batch.set(i, c.x - ox + 0.5, c.y + 0.5, c.z - oz + 0.5, 1, B10_COLORS[c.place]);
       }
-      cubeMesh.count = n;
-      cubeMesh.instanceMatrix.needsUpdate = true;
-      if (cubeMesh.instanceColor) cubeMesh.instanceColor.needsUpdate = true;
-      epos.needsUpdate = true;
-      edgeMesh.geometry.setDrawRange(0, n * 24);
+      batch.commit(n);
 
       // Keep the "sitting on a table" cue without letting the plane's far edge
       // cut a visible horizon across the frame at close camera distances.
@@ -535,8 +483,8 @@ window.StemLab = window.StemLab || {
         var gl = renderer.getContext();
         return {
           state: state,
-          cubeCount: cubeMesh ? cubeMesh.count : 0,
-          edgeCount: edgeMesh ? edgeMesh.geometry.drawRange.count / 24 : 0,
+          cubeCount: batch ? batch.drawnCount() : 0,
+          edgeCount: batch ? batch.outlinedCount() : 0,
           bounds: bounds,
           extent: extent,
           camera: camera ? { x: camera.position.x, y: camera.position.y, z: camera.position.z } : null,
@@ -575,12 +523,10 @@ window.StemLab = window.StemLab || {
         if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
         if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
         else window.removeEventListener('resize', resize);
-        [cubeMesh, edgeMesh, groundMesh].forEach(function (m) {
-          if (!m || !scene) return;
-          scene.remove(m); m.geometry.dispose(); m.material.dispose();
-        });
+        if (batch && scene) batch.dispose(scene);
+        if (groundMesh && scene) { scene.remove(groundMesh); groundMesh.geometry.dispose(); groundMesh.material.dispose(); }
         if (renderer) { try { renderer.dispose(); } catch (e) {} }
-        cubeMesh = edgeMesh = groundMesh = null;
+        batch = groundMesh = null;
         renderer = scene = camera = null; canvasEl = null; pending = null;
         capacity = 0; appliedSig = ''; appliedCamSig = '';
         if (state !== 'failed') state = 'idle';

@@ -288,7 +288,7 @@ window.StemLab = window.StemLab || {
     var T = null;                    // window.THREE once loaded
     var state = 'idle';              // 'idle' | 'loading' | 'ready' | 'failed'
     var canvasEl = null, renderer = null, scene = null, camera = null;
-    var solidMesh = null, edgeMesh = null, analyticMesh = null, shadowPlane = null, gridHelper = null;
+    var batch = null, analyticMesh = null, shadowPlane = null, gridHelper = null;
     var clipPlane = null, dirLight = null;
     var rafId = 0, capacity = 0, resizeObs = null;
     var dummy = null, colorTmp = null, raycaster = null, ndc = null;
@@ -354,59 +354,28 @@ window.StemLab = window.StemLab || {
     // Voxel body + a coincident wireframe cage. The cage is what keeps the
     // stack *countable* — without it a lit voxel blob reads as one solid lump
     // and the whole "volume = how many unit cubes" idea is lost.
+    // Voxel body + a coincident outline cage. The cage is what keeps the
+    // stack *countable* — without it a lit voxel blob reads as one solid lump
+    // and the whole "volume = how many unit cubes" idea is lost. Both live in
+    // the host helper now (StemLab.makeVoxelBatch), which also carries the two
+    // r128 traps: instanceColor must exist before the first render, and
+    // outlines must be real box edges rather than wireframe:true.
     function ensureCapacity(n) {
-      if (solidMesh && capacity >= n) return;
-      disposeMesh(solidMesh); disposeMesh(edgeMesh);
+      if (batch && capacity >= n) return;
+      if (batch) batch.dispose(scene);
       capacity = Math.max(16, n);
-
-      var body = new T.BoxGeometry(0.94, 0.94, 0.94);
-      var bodyMat = new T.MeshLambertMaterial({
-        color: 0xffffff, side: T.DoubleSide, clippingPlanes: [clipPlane]
+      batch = window.StemLab.makeVoxelBatch(T, {
+        capacity: capacity,
+        size: 0.94,
+        doubleSided: true,          // keeps cross-sectioned cubes reading solid
+        clippingPlanes: [clipPlane],
+        castShadow: true,
+        receiveShadow: true,
+        edges: true,
+        edgeOpacity: 0.3
       });
-      solidMesh = new T.InstancedMesh(body, bodyMat, capacity);
-      solidMesh.castShadow = true;
-      solidMesh.receiveShadow = true;
-      // r128's InstancedMesh has no per-instance bounding volume, so frustum
-      // culling would test the whole stack against ONE unit-cube sphere at the
-      // origin and pop the model out of view. Culling a <=640 instance draw
-      // buys nothing anyway.
-      solidMesh.frustumCulled = false;
-      solidMesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
-      // Allocate instanceColor NOW, before the first render. r128 compiles
-      // USE_INSTANCING_COLOR based on whether instanceColor is null at compile
-      // time and then caches the program. Freeform mode opens with zero blocks,
-      // so deferring this to the first setColorAt would cache a colourless
-      // program and every layer colour placed afterwards would be dropped —
-      // blocks render white and the layer-colour teaching cue is lost.
-      if (typeof solidMesh.setColorAt === 'function') {
-        var seedColor = new T.Color(0xffffff);
-        for (var si = 0; si < capacity; si++) solidMesh.setColorAt(si, seedColor);
-        if (solidMesh.instanceColor) solidMesh.instanceColor.needsUpdate = true;
-      }
-      scene.add(solidMesh);
-
-      // Real box edges, not `wireframe: true` — a wireframe material draws the
-      // TRIANGLE edges, so every face gets an X through it and the stack stops
-      // reading as unit cubes. 12 edges per cube, batched into one LineSegments.
-      var edgeGeo = new T.BufferGeometry();
-      edgeGeo.setAttribute('position', new T.BufferAttribute(new Float32Array(capacity * 24 * 3), 3));
-      var edgeMat = new T.LineBasicMaterial({
-        color: 0x0f172a, transparent: true, opacity: 0.3, clippingPlanes: [clipPlane]
-      });
-      edgeMesh = new T.LineSegments(edgeGeo, edgeMat);
-      edgeMesh.frustumCulled = false;
-      scene.add(edgeMesh);
+      batch.addTo(scene);
     }
-
-    // The 12 edges of a unit cube as 24 endpoints, reused for every voxel.
-    var EDGE_TEMPLATE = (function () {
-      var c = [[-0.5, -0.5, -0.5], [0.5, -0.5, -0.5], [0.5, -0.5, 0.5], [-0.5, -0.5, 0.5],
-               [-0.5, 0.5, -0.5], [0.5, 0.5, -0.5], [0.5, 0.5, 0.5], [-0.5, 0.5, 0.5]];
-      var pairs = [[0,1],[1,2],[2,3],[3,0], [4,5],[5,6],[6,7],[7,4], [0,4],[1,5],[2,6],[3,7]];
-      var out = [];
-      pairs.forEach(function (p) { out.push(c[p[0]], c[p[1]]); });
-      return out;
-    })();
 
     // The smooth mathematical solid the formula actually describes. Rendered
     // translucent around the voxel stack so the overshoot/undershoot of the
@@ -445,31 +414,11 @@ window.StemLab = window.StemLab || {
       var vox = mdl.voxels, n = vox.length;
       ensureCapacity(n);
       var ox = (mdl.gl - 1) / 2, oz = (mdl.gw - 1) / 2;
-      var epos = edgeMesh.geometry.attributes.position;
       for (var i = 0; i < n; i++) {
         var v = vox[i];
-        var px = v.x - ox, py = v.z + 0.5, pz = v.y - oz;
-        dummy.position.set(px, py, pz);
-        dummy.rotation.set(0, 0, 0);
-        dummy.scale.set(1, 1, 1);
-        dummy.updateMatrix();
-        solidMesh.setMatrixAt(i, dummy.matrix);
-        if (typeof solidMesh.setColorAt === 'function') {
-          colorTmp.setStyle(v.color);
-          solidMesh.setColorAt(i, colorTmp);
-        }
-        for (var k = 0; k < 24; k++) {
-          var e = EDGE_TEMPLATE[k];
-          epos.array[(i * 24 + k) * 3]     = px + e[0];
-          epos.array[(i * 24 + k) * 3 + 1] = py + e[1];
-          epos.array[(i * 24 + k) * 3 + 2] = pz + e[2];
-        }
+        batch.set(i, v.x - ox, v.z + 0.5, v.y - oz, 1, v.color);
       }
-      solidMesh.count = n;
-      solidMesh.instanceMatrix.needsUpdate = true;
-      epos.needsUpdate = true;
-      edgeMesh.geometry.setDrawRange(0, n * 24);
-      if (solidMesh.instanceColor) solidMesh.instanceColor.needsUpdate = true;
+      batch.commit(n);
 
       buildAnalytic(mdl);
 
@@ -536,7 +485,7 @@ window.StemLab = window.StemLab || {
     // which needs separate "+" targets for the same three actions.
     function pick(ev) {
       var mdl = pending;
-      if (!mdl || !mdl.isFreeform || state !== 'ready' || !solidMesh) return;
+      if (!mdl || !mdl.isFreeform || state !== 'ready' || !batch) return;
       var rect = canvasEl.getBoundingClientRect();
       if (!rect.width || !rect.height) return;
       ndc.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
@@ -544,7 +493,7 @@ window.StemLab = window.StemLab || {
       raycaster.setFromCamera(ndc, camera);
 
       var ox = (mdl.gl - 1) / 2, oz = (mdl.gw - 1) / 2;
-      var hits = raycaster.intersectObject(solidMesh, false);
+      var hits = raycaster.intersectObject(batch.mesh, false);
       if (hits.length && hits[0].instanceId != null) {
         var v = mdl.voxels[hits[0].instanceId];
         if (!v) return;
@@ -609,8 +558,8 @@ window.StemLab = window.StemLab || {
         var gl = renderer.getContext();
         return {
           state: state,
-          instanceCount: solidMesh ? solidMesh.count : 0,
-          edgeCount: edgeMesh ? edgeMesh.geometry.drawRange.count / 24 : 0,
+          instanceCount: batch ? batch.drawnCount() : 0,
+          edgeCount: batch ? batch.outlinedCount() : 0,
           hasAnalytic: !!analyticMesh,
           analyticShape: analyticMesh ? analyticMesh.geometry.type : null,
           clipConstant: clipPlane ? clipPlane.constant : null,
@@ -667,9 +616,9 @@ window.StemLab = window.StemLab || {
         if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
         else window.removeEventListener('resize', resize);
         if (canvasEl) canvasEl.removeEventListener('webglcontextlost', onContextLost, false);
-        if (scene) { disposeMesh(solidMesh); disposeMesh(edgeMesh); disposeMesh(analyticMesh); disposeMesh(shadowPlane); disposeMesh(gridHelper); }
+        if (scene) { if (batch) batch.dispose(scene); disposeMesh(analyticMesh); disposeMesh(shadowPlane); disposeMesh(gridHelper); }
         if (renderer) { try { renderer.dispose(); } catch (e) {} }
-        solidMesh = edgeMesh = analyticMesh = shadowPlane = gridHelper = null;
+        batch = null; analyticMesh = shadowPlane = gridHelper = null;
         renderer = scene = camera = null; canvasEl = null; pending = null;
         capacity = 0; appliedSig = ''; appliedCamSig = ''; appliedViewSig = '';
         if (state !== 'failed') state = 'idle';
