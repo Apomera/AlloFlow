@@ -169,7 +169,7 @@
 
 
   <div class="kbd">
-    Keyboard: <kbd>↑</kbd>/<kbd>↓</kbd> stretch &amp; collapse · <kbd>→</kbd>/<kbd>←</kbd> grow &amp; shrink · <kbd>A</kbd> axis · <kbd>U</kbd> undo · <kbd>Y</kbd> redo · <kbd>C</kbd> center workspace · <kbd>R</kbd> reset · <kbd>Shift</kbd>+<kbd>R</kbd> start over · <kbd>M</kbd> boundary measures · <kbd>F</kbd> focus next step · <kbd>1</kbd>–<kbd>4</kbd> missions<br>Scene handles: click the active handle to grow · <kbd>Shift</kbd>+click to shrink · rapid resizes group into one undo step · target crossings snap exactly
+    Shape: <kbd>↑</kbd>/<kbd>↓</kbd> stretch &amp; collapse · <kbd>→</kbd>/<kbd>←</kbd> grow &amp; shrink · <kbd>A</kbd> axis · <kbd>U</kbd> undo · <kbd>Y</kbd> redo · <kbd>C</kbd> center workspace · <kbd>R</kbd> reset · <kbd>Shift</kbd>+<kbd>R</kbd> start over · <kbd>M</kbd> boundary measures · <kbd>F</kbd> focus next step · <kbd>1</kbd>–<kbd>4</kbd> missions<br>Move &amp; look: <kbd>W</kbd>/<kbd>S</kbd> walk forward &amp; back · <kbd>Q</kbd>/<kbd>E</kbd> step left &amp; right · <kbd>J</kbd>/<kbd>L</kbd> turn · <kbd>I</kbd>/<kbd>K</kbd> look up &amp; down · <kbd>H</kbd> back to the start · drag with the mouse to look<br>Scene handles: click the active handle to grow · <kbd>Shift</kbd>+click to shrink · rapid resizes group into one undo step · target crossings snap exactly
   </div>
 
   <div class="credit">
@@ -989,6 +989,71 @@ window.addEventListener('load', function () {
   wireSpatialButton(vrMission, nextMission, 'Mission navigation is unavailable.');
   wireSpatialButton(vrMeasure, function () { toggleBoundaryMeasures(!showBoundary, true); }, 'Boundary measures are unavailable.');
 
+  // ── Camera: move and look without a mouse or a headset ──
+  //
+  // wasd-controls is disabled on the camera (and cannot simply be switched on: it
+  // also claims the arrow keys, which this lab already uses to stretch and grow the
+  // shape). look-controls is present, so a mouse user can DRAG to look — but nothing
+  // could move the viewpoint at all, by any input. A student could stretch a plane
+  // into a solid and then never walk around it to see the far face.
+  //
+  // Yaw turns the RIG rather than the camera: look-controls rewrites the camera's
+  // rotation every tick from its own internal objects, so anything written straight
+  // onto the camera is erased on the next frame. Pitch has to go through those same
+  // internal objects, guarded so a future A-Frame version that renames them degrades
+  // to "pitch does nothing" instead of throwing.
+  var rigEl = document.getElementById('rig');
+  var camEl = document.getElementById('camera');
+  var MOVE_STEP = 0.4;                 // metres per press
+  var TURN_STEP = Math.PI / 18;        // 10 degrees
+  var PITCH_LIMIT = Math.PI * 0.45;    // short of straight up/down, which flips the view
+
+  function lookControls() {
+    return (camEl && camEl.components && camEl.components['look-controls']) || null;
+  }
+
+  function moveRig(forward, strafe) {
+    if (!rigEl || !window.THREE) return;
+    // A camera looks down its own -Z. NOT getWorldDirection(): that returns the
+    // object's POSITIVE z-axis, so using it here walked the student backwards and
+    // strafed them the wrong way — caught by driving the real page and checking the
+    // sign, not by reading the code.
+    var q = camEl.object3D.getWorldQuaternion(new THREE.Quaternion());
+    var dir = new THREE.Vector3(0, 0, -1).applyQuaternion(q);
+    dir.y = 0;
+    if (dir.lengthSq() < 1e-6) return;   // looking straight up or down
+    dir.normalize();
+    // right = forward x up, the same convention the other movement code uses.
+    var right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
+    rigEl.object3D.position.addScaledVector(dir, forward * MOVE_STEP);
+    rigEl.object3D.position.addScaledVector(right, strafe * MOVE_STEP);
+  }
+
+  function turnRig(dir) {
+    if (!rigEl) return;
+    rigEl.object3D.rotation.y -= dir * TURN_STEP;
+  }
+
+  function pitchView(dir) {
+    var lc = lookControls();
+    if (!lc || !lc.pitchObject) return;
+    var next = lc.pitchObject.rotation.x + dir * TURN_STEP;
+    lc.pitchObject.rotation.x = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, next));
+  }
+
+  function resetView() {
+    if (rigEl) {
+      rigEl.object3D.position.set(0, 0, 0);
+      rigEl.object3D.rotation.set(0, 0, 0);
+    }
+    var lc = lookControls();
+    if (lc) {
+      if (lc.pitchObject) lc.pitchObject.rotation.x = 0;
+      if (lc.yawObject) lc.yawObject.rotation.y = 0;
+    }
+    if (live) live.textContent = 'View reset to the starting position.';
+  }
+
   // Keyboard path (no mouse or headset required — the accessibility route)
   window.addEventListener('keydown', function (e) {
     var textEntry = e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName) && e.target.type !== 'range';
@@ -1008,6 +1073,17 @@ window.addEventListener('load', function () {
       case 'a': case 'A': doAxis(1);   break;
       case 'u': case 'U': doUndo();    break;
       case 'y': case 'Y': doRedo();    break;
+      // Move and look. W/S/Q/E rather than WASD because A is already the axis
+      // toggle; I/J/K/L look; H returns home when a student gets lost.
+      case 'w': case 'W': moveRig(1, 0);  break;
+      case 's': case 'S': moveRig(-1, 0); break;
+      case 'q': case 'Q': moveRig(0, -1); break;
+      case 'e': case 'E': moveRig(0, 1);  break;
+      case 'j': case 'J': turnRig(-1);    break;
+      case 'l': case 'L': turnRig(1);     break;
+      case 'i': case 'I': pitchView(1);   break;
+      case 'k': case 'K': pitchView(-1);  break;
+      case 'h': case 'H': resetView();    break;
       case 'c': case 'C': recenterSpatialPanel(true); break;
       case 'm': case 'M': toggleBoundaryMeasures(!showBoundary, true); break;
       case 'f': case 'F': focusMissionStep(); break;
