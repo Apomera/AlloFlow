@@ -164,6 +164,23 @@
   var CER_PART_FOR_STRENGTH = { claim: 'claim', evidence: 'evidence', reasoning: 'reasoning', safety: null, uncertainty: null };
   var CER_PART_FOR_MOVE = { askEvidence: 'evidence', explainLink: 'reasoning', clarifyAction: null, transfer: null, considerUncertainty: null };
 
+  // One signed-number formatter for every panel. Rounding here rather than trusting each
+  // caller is what keeps binary-float noise out of learner-facing text: the storyline once
+  // printed "+3.699999999999932 hPa" because it formatted a raw subtraction, and three other
+  // formatters were one unrounded caller away from the same thing.
+  // Knockout halo so a label stays legible wherever it crosses a rule, a mark or a fill.
+  // The backdrop is a parameter because each panel sits on its own surface colour.
+  function textHalo(backdrop, width) {
+    return { paintOrder: 'stroke', stroke: backdrop, strokeWidth: width || 3, strokeLinejoin: 'round' };
+  }
+
+  function signedNumber(value, unit, places) {
+    var numeric = Number(value);
+    if (!isFinite(numeric)) return 'n/a';
+    var rounded = round(numeric, places == null ? 1 : places);
+    return (rounded > 0 ? '+' : '') + rounded + (unit || '');
+  }
+
   function cerReviewFocus(strengthId, moveId) {
     return {
       strength: CER_PART_FOR_STRENGTH[strengthId] || null,
@@ -4420,7 +4437,10 @@ var geographyGroup = new THREE.Group();
         ? { temperature: '#d95926', dewPoint: '#199e70', seaLevelPressure: '#9085e9', windSpeed: '#008300', precipPotential: '#3987e5', cloudCover: '#d55181' }
         : { temperature: '#eb6834', dewPoint: '#1baf7a', seaLevelPressure: '#4a3aa7', windSpeed: '#008300', precipPotential: '#2a78d6', cloudCover: '#e87ba4' };
       var chartInk = dark ? '#e2e8f0' : '#0f172a';
-      var chartMutedInk = dark ? '#94a3b8' : '#64748b';
+      // #64748b measured 4.46:1 on the sky-50 backing several of these panels — just under
+      // AA for 11px axis text. Stepped one notch darker so the same token clears 4.5:1 on
+      // every light surface the charts land on (white 5.01, sky-50 4.70, emerald-50 4.75).
+      var chartMutedInk = dark ? '#94a3b8' : '#61708a';
       var chartGrid = dark ? '#1e293b' : '#e2e8f0';
       var chartBaseline = dark ? '#334155' : '#cbd5e1';
       var chartSurface = dark ? '#0f172a' : '#ffffff';
@@ -4729,8 +4749,8 @@ var geographyGroup = new THREE.Group();
             h('line', { x1: tempX, y1: 30, x2: tempX, y2: 64, stroke: seriesColor.temperature, strokeWidth: 3, strokeLinecap: 'round' }),
             // Near saturation the two markers almost touch, so the labels swing outward and
             // anchor away from the pair instead of overprinting each other.
-            h('text', { x: tight ? clamp(dewX - 9, 4, RIGHT) : dewX, y: 22, textAnchor: tight ? 'end' : 'middle', fill: chartInk, fontSize: 11, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums', paintOrder: 'stroke', stroke: dark ? '#020617' : '#f0f9ff', strokeWidth: 3, strokeLinejoin: 'round' } }, 'dew ' + dewPoint + '°'),
-            h('text', { x: tight ? clamp(tempX + 9, 0, 694) : tempX, y: 22, textAnchor: tight ? 'start' : 'middle', fill: chartInk, fontSize: 11, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums', paintOrder: 'stroke', stroke: dark ? '#020617' : '#f0f9ff', strokeWidth: 3, strokeLinejoin: 'round' } }, 'air ' + temperature + '°'),
+            h('text', { x: tight ? clamp(dewX - 9, 4, RIGHT) : dewX, y: 22, textAnchor: tight ? 'end' : 'middle', fill: chartInk, fontSize: 11, fontWeight: 700, style: Object.assign({ fontVariantNumeric: 'tabular-nums' }, textHalo(dark ? '#020617' : '#f0f9ff')) }, 'dew ' + dewPoint + '°'),
+            h('text', { x: tight ? clamp(tempX + 9, 0, 694) : tempX, y: 22, textAnchor: tight ? 'start' : 'middle', fill: chartInk, fontSize: 11, fontWeight: 700, style: Object.assign({ fontVariantNumeric: 'tabular-nums' }, textHalo(dark ? '#020617' : '#f0f9ff')) }, 'air ' + temperature + '°'),
             spread >= 0.4 && h('text', { x: clamp((dewX + tempX) / 2, 56, RIGHT - 16), y: 90, textAnchor: 'middle', fill: chartInk, fontSize: 11, fontWeight: 800, style: { fontVariantNumeric: 'tabular-nums' } }, '← cool ' + spread + '°C →'),
             h('text', { x: 694, y: 58, textAnchor: 'end', fill: chartMutedInk, fontSize: 10, fontWeight: 700 }, 'warmer →')
           ),
@@ -4782,10 +4802,10 @@ var geographyGroup = new THREE.Group();
         var analysis = stationNetworkAnalysis(state);
         var checked = !!d.boundaryResult;
         var correct = checked && d.boundaryGuess === analysis.strongest.id;
-        var textColor = dark ? '#e2e8f0' : '#0f172a';
-        var mutedColor = dark ? '#94a3b8' : '#475569';
-        var surfaceColor = dark ? '#0f172a' : '#ffffff';
-        var gridColor = dark ? '#1e293b' : '#e2e8f0';
+        var textColor = chartInk;
+        var mutedColor = chartMutedInk;
+        var surfaceColor = chartSurface;
+        var gridColor = chartGrid;
         function xFor(value) { return 70 + clamp((value - 0.18) / 0.6, 0, 1) * 580; }
 
         // Temperature is polarity here, not identity: warmer or colder than the rest of the
@@ -4833,7 +4853,7 @@ var geographyGroup = new THREE.Group();
             viewBox: '0 0 720 250', className: 'mt-2 h-auto w-full', role: 'img',
             'aria-label': 'West-to-east station transect. ' + networkSummary + (checked ? '. Strongest modeled contrast is ' + analysis.strongest.label + '.' : '. Boundary result is hidden until checked.')
           },
-            h('line', { x1: 70, y1: 92, x2: 650, y2: 92, stroke: dark ? '#334155' : '#cbd5e1', strokeWidth: 5, strokeLinecap: 'round' }),
+            h('line', { x1: 70, y1: 92, x2: 650, y2: 92, stroke: chartBaseline, strokeWidth: 5, strokeLinecap: 'round' }),
             checked && analysis.hasFront && h('g', null,
               h('line', { x1: strongestMid, y1: 38, x2: strongestMid, y2: 155, stroke: '#f59e0b', strokeWidth: 2 }),
               h('rect', { x: strongestMid - 62, y: 14, width: 124, height: 17, rx: 8, fill: '#f59e0b' }),
@@ -5452,7 +5472,7 @@ var geographyGroup = new THREE.Group();
                 return h('text', {
                   key: item.text + index,
                   x: item.x, y: item.y, textAnchor: 'middle', fill: textColor, fontSize: 13, fontWeight: 800,
-                  style: { paintOrder: 'stroke', stroke: dark ? '#0b1830' : '#e0f2fe', strokeWidth: 4, strokeLinejoin: 'round' }
+                  style: textHalo(dark ? '#0b1830' : '#e0f2fe', 4)
                 }, item.text);
               }),
               h('g', { transform: 'translate(' + cloudX + ' ' + cloudTop + ')' },
@@ -5508,7 +5528,7 @@ var geographyGroup = new THREE.Group();
         var series = stationTimeSeries(state, station, 12, 1);
         var points = series.points;
         var passageVisible = series.passageHour != null && series.passageHour <= 12;
-        function signed(value, unit) { return (value > 0 ? '+' : '') + value + unit; }
+        function signed(value, unit) { return signedNumber(value, unit); }
 
         if (band === 'K-2') {
           var storyHours = passageVisible ? [Math.max(0, Math.floor(series.passageHour - 2)), Math.round(series.passageHour), Math.min(12, Math.ceil(series.passageHour + 2))] : [0, 6, 12];
@@ -5666,7 +5686,7 @@ var geographyGroup = new THREE.Group();
               // Captions ride above every rule with a surface halo, so the front marker
               // crossing a lane gap can never slice through the words.
               lanes.map(function (lane) {
-                var halo = { paintOrder: 'stroke', stroke: surfaceColor, strokeWidth: 3, strokeLinejoin: 'round' };
+                var halo = textHalo(surfaceColor);
                 return h('g', { key: 'caption-' + lane.key },
                   h('text', { x: PLOT_LEFT, y: lane.top + 8, fill: textColor, fontSize: 11, fontWeight: 700, style: halo }, lane.label),
                   h('text', { x: PLOT_RIGHT, y: lane.top + 8, textAnchor: 'end', fill: mutedColor, fontSize: 10, style: Object.assign({ fontVariantNumeric: 'tabular-nums' }, halo) }, lane.low + ' to ' + lane.high + lane.unit)
@@ -5794,10 +5814,7 @@ var geographyGroup = new THREE.Group();
         var precipChange = next.precipPotential - now.precipPotential;
         // Subtracting two already-rounded projections leaks binary-float noise, which was
         // reaching learners as "temperature changed -1.3000000000000007°C".
-        function signed(value, unit) {
-          var rounded = round(value, 1);
-          return (rounded > 0 ? '+' : '') + rounded + unit;
-        }
+        function signed(value, unit) { return signedNumber(value, unit); }
         function conditionsLine(point) {
           return point.temperature + '\u00B0C | ' + point.pressure + ' hPa | ' + point.precipPotential + '% precipitation potential';
         }
@@ -5990,9 +6007,7 @@ var geographyGroup = new THREE.Group();
           if (Math.abs(delta) < threshold) return { icon: '→', label: 'Steady' };
           return delta > 0 ? { icon: '↑', label: 'Rising' } : { icon: '↓', label: 'Falling' };
         }
-        function signedValue(value, unit) {
-          return (value > 0 ? '+' : '') + value + unit;
-        }
+        function signedValue(value, unit) { return signedNumber(value, unit); }
         // Hues come from the shared per-measure palette, so these cards match the meteogram
         // lines they summarise. The previous cyan/sky pair measured ΔE 6.4 for normal vision —
         // wind and precipitation were genuinely hard to tell apart.
@@ -6755,8 +6770,7 @@ var geographyGroup = new THREE.Group();
           var verifiedCount = statuses.filter(function (item) { return item.result.ready; }).length;
           var pendingCount = statuses.filter(function (item) { return item.result.code === 'pending'; }).length;
           function signedMetric(metric) {
-            if (!metric) return 'Not available';
-            return (metric.error > 0 ? '+' : '') + metric.error + metric.unit;
+            return metric ? signedNumber(metric.error, metric.unit) : 'Not available';
           }
           // Full-scale error used to size the bias bar for each metric, so a 2-degree miss and
           // a 20-hectopascal miss are not drawn the same length.
@@ -7437,11 +7451,11 @@ var geographyGroup = new THREE.Group();
           // so it stays neutral and lets the two ends carry identity.
           var baseColor = dark ? '#3987e5' : '#2a78d6';
           var testColor = dark ? '#d95926' : '#eb6834';
-          var textColor = dark ? '#e2e8f0' : '#0f172a';
-          var mutedColor = dark ? '#94a3b8' : '#64748b';
-          var gridColor = dark ? '#1e293b' : '#e2e8f0';
+          var textColor = chartInk;
+          var mutedColor = chartMutedInk;
+          var gridColor = chartGrid;
           var connectorColor = dark ? '#475569' : '#cbd5e1';
-          var surfaceColor = dark ? '#0f172a' : '#ffffff';
+          var surfaceColor = chartSurface;
           var summary = metrics.map(function (metric) {
             return metric.label + ' ' + result.control[metric.key] + ' to ' + result.test[metric.key] + metric.unit;
           }).join(', ');
@@ -7480,8 +7494,8 @@ var geographyGroup = new THREE.Group();
                 h('polygon', { points: x2 + ',' + (y - 8) + ' ' + (x2 + 8) + ',' + y + ' ' + x2 + ',' + (y + 8) + ' ' + (x2 - 8) + ',' + y, fill: testColor, stroke: surfaceColor, strokeWidth: 2 }),
                 // Values ride in ink; the coloured mark beside them carries identity. A held
                 // variable prints its value once — repeating it either side reads as noise.
-                moved && h('text', { x: x1, y: y - 12, textAnchor: 'middle', fill: mutedColor, fontSize: 11, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums', paintOrder: 'stroke', stroke: surfaceColor, strokeWidth: 3, strokeLinejoin: 'round' } }, controlValue + metric.unit),
-                h('text', { x: x2, y: y + 22, textAnchor: 'middle', fill: textColor, fontSize: 11, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums', paintOrder: 'stroke', stroke: surfaceColor, strokeWidth: 3, strokeLinejoin: 'round' } }, testValue + metric.unit),
+                moved && h('text', { x: x1, y: y - 12, textAnchor: 'middle', fill: mutedColor, fontSize: 11, fontWeight: 700, style: Object.assign({ fontVariantNumeric: 'tabular-nums' }, textHalo(surfaceColor)) }, controlValue + metric.unit),
+                h('text', { x: x2, y: y + 22, textAnchor: 'middle', fill: textColor, fontSize: 11, fontWeight: 700, style: Object.assign({ fontVariantNumeric: 'tabular-nums' }, textHalo(surfaceColor)) }, testValue + metric.unit),
                 // The signed change is the answer to "what did one variable do", so it gets
                 // its own aligned column instead of being left for the reader to subtract.
                 h('text', { x: 690, y: y + 4, textAnchor: 'end', fill: moved ? textColor : mutedColor, fontSize: 12, fontWeight: moved ? 800 : 600, style: { fontVariantNumeric: 'tabular-nums' } }, moved ? (delta > 0 ? '+' : '') + delta + metric.unit : 'no change')

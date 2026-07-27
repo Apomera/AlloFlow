@@ -2524,6 +2524,63 @@ describe('Weather Systems immersive 3D scene', () => {
   });
 });
 
+describe('Weather Systems chart ink tokens', () => {
+  const { readFileSync } = require('node:fs');
+  const { resolve } = require('node:path');
+  const source = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weathersystems.js'), 'utf8');
+
+  const luminance = (hex) => {
+    const c = hex.replace('#', '');
+    const channel = (i) => {
+      const v = parseInt(c.slice(i, i + 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+  };
+  const contrast = (a, b) => {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  it('keeps muted axis text above AA on every surface the charts sit on', () => {
+    const text = source();
+    const light = (text.match(/var chartMutedInk = dark \? '#[0-9a-f]{6}' : '(#[0-9a-f]{6})'/) || [])[1];
+    const darkInk = (text.match(/var chartMutedInk = dark \? '(#[0-9a-f]{6})'/) || [])[1];
+    expect(light).toBeTruthy();
+    // These are the light backdrops the charts actually render on: the plain panel, the
+    // sky tint used by the saturation and cloud panels, and the emerald readiness tint.
+    [['#ffffff', 'panel'], ['#f0f9ff', 'sky-50'], ['#ecfdf5', 'emerald-50']].forEach(([surface, name]) => {
+      expect(contrast(light, surface), 'muted ink on ' + name).toBeGreaterThanOrEqual(4.5);
+    });
+    expect(contrast(darkInk, '#0f172a'), 'muted ink on slate-900').toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('declares the chart ink tokens once rather than per panel', () => {
+    const text = source();
+    // Panels used to re-declare these, and one drifted to a different muted value.
+    expect((text.match(/var chartMutedInk =/g) || [])).toHaveLength(1);
+    expect((text.match(/var chartInk =/g) || [])).toHaveLength(1);
+    expect(text).not.toMatch(/var mutedColor = dark \? '#[0-9a-f]{6}' : '#[0-9a-f]{6}'/);
+    expect(text).not.toMatch(/var textColor = dark \? '#[0-9a-f]{6}' : '#[0-9a-f]{6}'/);
+  });
+
+  it('formats every signed value through one rounding helper', () => {
+    const text = source();
+    // Four near-copies existed; one did not round, which is how float noise reached prose.
+    expect(text).toContain('function signedNumber(value, unit, places)');
+    expect((text.match(/\(rounded > 0 \? '\+' : ''\)/g) || [])).toHaveLength(1);
+    expect(text).not.toMatch(/\(value > 0 \? '\+' : ''\) \+ value \+ unit/);
+    expect(text).not.toMatch(/\(metric\.error > 0 \? '\+' : ''\)/);
+  });
+
+  it('builds every knockout halo from one helper', () => {
+    const text = source();
+    expect(text).toContain('function textHalo(backdrop, width)');
+    // Only the helper itself still names the paint-order trick.
+    expect((text.match(/paintOrder: 'stroke'/g) || [])).toHaveLength(1);
+  });
+});
+
 describe('Weather Systems concept diagrams', () => {
   const render = (weatherSystems, grade) => renderTool('weatherSystems', { weatherSystems }, { gradeLevel: grade || '8th Grade' });
   const sat = (html) => (html.match(/data-weather-saturation-diagram[\s\S]*?<\/div>\s*<\/div>/) || [''])[0];
