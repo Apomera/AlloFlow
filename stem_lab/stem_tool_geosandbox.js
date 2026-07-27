@@ -618,8 +618,21 @@ window.StemLab = window.StemLab || {
     revolver:        { icon: '\uD83C\uDF00',  name: 'Solid of Revolution',  desc: 'Spin a shape into a round solid' }
   };
 
+  // ⚠ TRAP — read before "cleaning up" the mutation below.
+  // This awards XP, plays a sound and toasts from INSIDE a setLabToolData updater,
+  // and React may invoke an updater more than once (StrictMode in dev, a replayed
+  // render under concurrency). It does not double-award today, but only by
+  // accident: callers shallow-copy _geoExt, so `ext.badges` is the SAME object as
+  // the previous state's, and marking it IN PLACE means a replayed updater sees the
+  // badge already earned and skips it. Probed both ways — copy `ext.badges`
+  // properly, which is the obvious fix for mutating React state, and a single badge
+  // pays out twice: 20 XP and two toasts.
+  // The real fix is to make this pure (return the newly-earned ids) and fire the
+  // rewards after the state settles, at all six call sites. Until then
+  // geosandbox_math_audit pins the OUTCOME — awarded exactly once under a
+  // double-invoked updater — so the trap cannot spring silently either way.
   function checkGeoBadges(ext, updates, awardXP, addToast) {
-    var newBadges = ext.badges || {};
+    var newBadges = ext.badges || {};   // deliberately shared — see the trap note above
     var changed = false;
     var checks = {
       firstShape:      function() { return (ext.shapesExplored || []).length >= 1; },
@@ -2201,6 +2214,7 @@ window.StemLab = window.StemLab || {
       taperRect: taperRect, taperCorners: taperCorners, geoPyramidSurfaceArea: geoPyramidSurfaceArea,
       geoEffectiveAxis: geoEffectiveAxis, geoVerbApplies: geoVerbApplies,
       geoShortcutAllowed: geoShortcutAllowed,
+      checkGeoBadges: checkGeoBadges,
       revolveRect: revolveRect, revolutionVolume: revolutionVolume,
       revolutionValidity: revolutionValidity, revolutionAxisOptions: revolutionAxisOptions,
       revolutionTriangles: revolutionTriangles,

@@ -330,6 +330,68 @@ describe('no AI path fails silently', () => {
   });
 });
 
+// checkGeoBadges awards XP, plays a sound and toasts from inside a setLabToolData
+// updater, and React may invoke an updater more than once. It does not double-award
+// today — but only because callers shallow-copy _geoExt, so ext.badges IS the
+// previous state's object and marking it in place makes a replayed updater a no-op.
+// Probed: copy that object properly, which is the obvious fix for mutating React
+// state, and one badge pays out 20 XP and two toasts.
+//
+// These pin the OUTCOME rather than the mechanism, so they stay honest whichever
+// way the code is eventually structured — and they turn a silent regression into a
+// red test that names the trap.
+describe('a badge pays out exactly once, even if React replays the updater', () => {
+  // The call sites, verbatim in shape:
+  //   var exObj = Object.assign({}, g._geoExt || {});
+  //   exObj.usedExport = true;
+  //   var updates = checkGeoBadges(exObj, {}, awardXP, addToast);
+  // React hands the updater the SAME prev on every invocation — it does not commit
+  // in between. Modelling it as sequential committed updates makes this test
+  // vacuous: it then passes no matter how the badges object is copied.
+  const replay = (times, priorExt) => {
+    const awards = [];
+    const toasts = [];
+    const g = { _geoExt: priorExt };
+    for (let i = 0; i < times; i++) {
+      const exObj = Object.assign({}, g._geoExt || {});   // shallow, as every call site does
+      P.checkGeoBadges(exObj, {}, (tool, xp, name) => awards.push({ tool, xp, name }), (m) => toasts.push(m));
+    }
+    return { awards, toasts };
+  };
+
+  it('awards once when the updater runs once', () => {
+    const { awards, toasts } = replay(1, { badges: {}, shapesExplored: ['box'] });
+    expect(awards.length).toBe(1);
+    expect(toasts.length).toBe(1);
+    expect(awards[0]).toMatchObject({ tool: 'geoSandbox', xp: 10 });
+  });
+
+  it('still awards once when React invokes the same updater twice', () => {
+    const { awards, toasts } = replay(2, { badges: {}, shapesExplored: ['box'] });
+    expect(awards.length).toBe(1);
+    expect(toasts.length).toBe(1);
+  });
+
+  it('never re-awards a badge already earned', () => {
+    const { awards } = replay(3, { badges: { firstShape: true }, shapesExplored: ['box'] });
+    expect(awards).toEqual([]);
+  });
+
+  it('awards each distinct badge exactly once when several land together', () => {
+    // All 7 shapes explored earns firstShape AND allShapes in one pass.
+    const { awards } = replay(2, { badges: {}, shapesExplored: ['box', 'sphere', 'cylinder', 'cone', 'pyramid', 'torus', 'prism'] });
+    const names = awards.map((a) => a.name);
+    expect(names.length).toBe(new Set(names).size);
+    expect(names.length).toBe(2);
+  });
+
+  it('reports the earned badges in updates so the state can persist them', () => {
+    const ext = { badges: {}, shapesExplored: ['box'] };
+    const updates = P.checkGeoBadges(Object.assign({}, ext), {}, () => {}, () => {});
+    expect(updates.badges.firstShape).toBe(true);
+  });
+});
+
 // The pure verdict is worth nothing if the student never sees it. These render the
 // real panel, the way geosandbox_panel_render does, and check the warning is on
 // screen BEFORE the press — a refusal that only arrives after the click teaches
