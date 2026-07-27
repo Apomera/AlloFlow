@@ -902,12 +902,23 @@ window.StemLab = window.StemLab || {
       : ('r=' + nn(size[0]) + ', h=' + nn(size[1]));
     return { name: m.name, dims: dimStr, vol: m.vol, sa: m.sa, volFormula: fm.vol, saFormula: fm.sa };
   }
-  function geoSculptMeasure(recipe) {
+  // The sculpture is DRAWN at this many world units per recipe unit, on the same
+  // 1-unit grid that single and stretch mode draw against 1:1. It has to be one
+  // constant shared by the renderer and the readout: they disagreed by 2.6³ ≈ 17.6×
+  // (a 1×1×1 part spans 2.6 grid squares while the panel stated "V 1.00 u³"), which
+  // is exactly the numbers-vs-picture gap this tool exists to close.
+  var SCULPT_GRID_UNIT = 2.6;
+  // worldUnit defaults to 1 — the pure recipe-unit measurement. Display callers pass
+  // SCULPT_GRID_UNIT so the numbers describe what is actually on the grid. Scaling
+  // the size array is equivalent to scaling vol by f³ and sa by f², and it fixes the
+  // printed dimensions too, which a separate multiplier would have left behind.
+  function geoSculptMeasure(recipe, worldUnit) {
     if (!recipe || !recipe.parts || !recipe.parts.length) return { parts: [], totalVol: 0, totalSA: 0, scale: 1 };
-    var scale = recipe.scale || 1, s3 = scale * scale * scale, s2 = scale * scale;
+    var scale = recipe.scale || 1;
+    var f = scale * (worldUnit > 0 ? worldUnit : 1);
     var parts = recipe.parts.map(function(p) {
-      var pm = geoPrimitiveMeasure(p.shape, p.size || []);
-      return { shape: p.shape, name: pm.name, dims: pm.dims, volFormula: pm.volFormula, saFormula: pm.saFormula, vol: pm.vol * s3, sa: pm.sa * s2 };
+      var pm = geoPrimitiveMeasure(p.shape, (p.size || []).map(function(s) { return (s || 0) * f; }));
+      return { shape: p.shape, name: pm.name, dims: pm.dims, volFormula: pm.volFormula, saFormula: pm.saFormula, vol: pm.vol, sa: pm.sa };
     });
     return {
       parts: parts, scale: scale,
@@ -1771,7 +1782,7 @@ window.StemLab = window.StemLab || {
         ' Explain the selected object or the dimensional progression from point to line to plane to solid. Ask one short guiding question and do not invent measurements.';
     }
     if (mode === 'sculpt') {
-      var sm = geoSculptMeasure(sculptRecipe);
+      var sm = geoSculptMeasure(sculptRecipe, SCULPT_GRID_UNIT);
       if (!sm.parts.length) return intro + 'The AI sculpture scene is empty. Suggest one simple object to build from two or three geometric primitives and ask which primitive the student would start with.';
       var partText = sm.parts.slice(0, 12).map(function(p) { return p.name + ' (' + p.dims + ')'; }).join(', ');
       return intro + 'The student is editing a sculpture named ' + ((sculptRecipe && sculptRecipe.name) || 'untitled') + '. Parts: ' + partText +
@@ -1866,7 +1877,7 @@ window.StemLab = window.StemLab || {
   }
 
   function sculptRecipeLabelText(recipe, unitShort) {
-    var sm = geoSculptMeasure(recipe);
+    var sm = geoSculptMeasure(recipe, SCULPT_GRID_UNIT);
     var units = unitShort || 'u';
     return 'Sculpt total' +
       '\nV sum: ' + (Math.round(sm.totalVol * 100) / 100) + ' ' + units + '^3' +
@@ -2204,6 +2215,7 @@ window.StemLab = window.StemLab || {
       geoCrossSection: geoCrossSection, geoConicSection: geoConicSection,
       geoShapeNet: geoShapeNet, geoRealWorldScale: geoRealWorldScale,
       geoPrimitiveMeasure: geoPrimitiveMeasure, geoSculptMeasure: geoSculptMeasure,
+      SCULPT_GRID_UNIT: SCULPT_GRID_UNIT,
       geoPrismNet: geoPrismNet
     };
   } catch (e) {}
@@ -3245,7 +3257,7 @@ window.StemLab = window.StemLab || {
           if (!P3D) { ensurePrim3d(function(ok) { if (ok) setPrim3dReady(true); }); }
           else if (sculptRecipe) {
             try {
-              var sg = P3D.buildObject(window.THREE, sculptRecipe, { unit: 2.6 });   // ~2.5 units tall on the grid
+              var sg = P3D.buildObject(window.THREE, sculptRecipe, { unit: SCULPT_GRID_UNIT });   // ~2.5 units tall on the grid
               if (sg) {
                 sg.position.y = 0;
                 sg.traverse(function(o){ if(o.isMesh){ o.castShadow = true; } });
@@ -3635,7 +3647,7 @@ window.StemLab = window.StemLab || {
 
             // ═══ SCULPT MATH — per-part formulas for the primitives in a sculpt ═══
             mode === 'sculpt' && sculptRecipe && sculptRecipe.parts && sculptRecipe.parts.length > 0 && (function() {
-              var sm = geoSculptMeasure(sculptRecipe);
+              var sm = geoSculptMeasure(sculptRecipe, SCULPT_GRID_UNIT);
               return h('div', { className: 'bg-gradient-to-br from-emerald-900/30 to-slate-900/40 rounded-xl p-3 border border-emerald-500/40 space-y-2' },
                 h('div', { className: 'text-xs font-bold text-emerald-200 uppercase tracking-wider' }, t('stem.geosandbox.sculpt_math', '🧮 Sculpt math')),
                 h('p', { className: 'text-[10.5px] text-emerald-200/70' },
@@ -3654,7 +3666,8 @@ window.StemLab = window.StemLab || {
                 ),
                 h('div', { className: 'flex justify-between text-[11px] font-bold pt-1.5 border-t border-emerald-500/30' },
                   h('span', { className: 'text-emerald-200' }, t('stem.geosandbox.sculpt_total', 'Sum of parts')),
-                  h('span', { className: 'font-mono text-emerald-300' }, 'V ' + sm.totalVol.toFixed(2) + ' u³ · SA ' + sm.totalSA.toFixed(1) + ' u²')
+                  h('span', { className: 'font-mono text-emerald-300' },
+                    'V ' + sm.totalVol.toFixed(2) + ' ' + unitDef.short + '³ · SA ' + sm.totalSA.toFixed(1) + ' ' + unitDef.short + '²')
                 ),
                 h('div', { className: 'text-[10px] text-emerald-200/60 italic' },
                   t('stem.geosandbox.sculpt_overlap_note', 'This is the sum of the parts — where pieces overlap, the real solid’s volume is a little less. Good to notice!'))

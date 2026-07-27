@@ -123,6 +123,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ no NEW source/module drift — a *_source.jsx committed without rebuilding its hand-built module DOES NOT SHIP, and every test reads the source, so nothing else can see it (cost four remediation fixes; 2026-07-27)."
   node dev-tools/check_keyless_map.cjs --quiet
   echo "  ✓ no keyless list children in CDN modules / STEM tools."
+  node dev-tools/check_search_queries.cjs
+  echo "  ✓ every search-grounded callGemini supplies its own web query (Canvas fetches results client-side, so an omitted query gets regex-scraped from the prompt — Find-standards searched 'main ideas', the timeline searched 'title'; 2026-07-27)."
   node dev-tools/check_stem_render.cjs --quiet
   echo "  ✓ all STEM tools render without throwing (render-phase smoke)."
   node dev-tools/check_sel_render.cjs --quiet

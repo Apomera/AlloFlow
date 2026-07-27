@@ -162,6 +162,87 @@ describe('the rendered mesh and the stated volume agree', () => {
   });
 });
 
+// AI Sculpt drew the sculpture at 2.6 world units per recipe unit, on the SAME
+// 1-unit grid that single and stretch mode draw against 1:1 — while the panel stated
+// volumes in raw recipe units and hard-coded "u³". A 1×1×1 part therefore spanned
+// 2.6 grid squares and reported "V 1.00 u³": off by 2.6³ ≈ 17.6×. One shared
+// constant now feeds both the renderer and the readout.
+describe('sculpt measurements describe what is actually on the grid', () => {
+  it('exposes one grid-unit constant', () => {
+    expect(P.SCULPT_GRID_UNIT).toBeGreaterThan(0);
+  });
+
+  it('measures in recipe units by default — the pure contract other tests rely on', () => {
+    const m = P.geoSculptMeasure({ scale: 1, parts: [{ shape: 'box', size: [2, 2, 2] }] });
+    expect(m.totalVol).toBeCloseTo(8, 6);
+  });
+
+  it('measures in grid units when the display unit is passed', () => {
+    const u = P.SCULPT_GRID_UNIT;
+    const m = P.geoSculptMeasure({ scale: 1, parts: [{ shape: 'box', size: [1, 1, 1] }] }, u);
+    expect(m.totalVol).toBeCloseTo(u * u * u, 6);
+    expect(m.totalSA).toBeCloseTo(6 * u * u, 6);
+  });
+
+  it('scales the printed dimensions too, not just the totals', () => {
+    // A separate ×f³ multiplier would have fixed the volume and left "1×1×1" behind.
+    const u = P.SCULPT_GRID_UNIT;
+    const m = P.geoSculptMeasure({ scale: 1, parts: [{ shape: 'box', size: [1, 1, 1] }] }, u);
+    expect(m.parts[0].dims).toContain(String(Math.round(u * 100) / 100));
+    expect(m.parts[0].dims).not.toBe('1×1×1');
+  });
+
+  it('still composes with the recipe’s own scale', () => {
+    const u = P.SCULPT_GRID_UNIT;
+    const one = P.geoSculptMeasure({ scale: 1, parts: [{ shape: 'box', size: [2, 2, 2] }] }, u);
+    const two = P.geoSculptMeasure({ scale: 2, parts: [{ shape: 'box', size: [2, 2, 2] }] }, u);
+    expect(two.totalVol).toBeCloseTo(one.totalVol * 8, 6);
+    expect(two.totalSA).toBeCloseTo(one.totalSA * 4, 6);
+  });
+
+  // The invariant, checked against the geometry the renderer really asks for rather
+  // than against the constant — so changing 2.6 in one place and not the other fails.
+  it('states the volume of the box the renderer actually draws', () => {
+    loadAlloModule('prim3d_module.js');
+    const P3D = window.AlloModules && window.AlloModules.Prim3D;
+    expect(P3D, 'Prim3D module did not attach').toBeTruthy();
+
+    const drawn = [];
+    const THREE = {
+      Group: function () {
+        this.children = []; this.userData = {};
+        this.scale = { setScalar: (s) => { this.scaleValue = s; } };
+        this.rotation = { y: 0 }; this.position = { y: 0 };
+        this.add = (c) => this.children.push(c);
+        this.traverse = (fn) => { fn(this); this.children.forEach(fn); };
+      },
+      BoxGeometry: function (w, h, d) { drawn.push([w, h, d]); },
+      SphereGeometry: function () {}, CylinderGeometry: function () {},
+      ConeGeometry: function () {}, TorusGeometry: function () {},
+      Mesh: function (g) {
+        this.geometry = g; this.isMesh = true;
+        this.position = { set: () => {} }; this.rotation = { set: () => {} };
+        this.traverse = (fn) => fn(this);
+      },
+      MeshStandardMaterial: function () {}, Color: function () { this.multiply = () => {}; },
+    };
+
+    const recipe = { name: 'probe', scale: 1, parts: [{ shape: 'box', size: [1, 1, 1], position: [0, 0.5, 0], rotation: [0, 0, 0], color: '#60a5fa' }] };
+    const group = P3D.buildObject(THREE, recipe, { unit: P.SCULPT_GRID_UNIT });
+    expect(group).toBeTruthy();
+
+    // What ends up on the grid: geometry extents × the group's scale.
+    const [w, h, d] = drawn[0];
+    const s = group.scaleValue;
+    const drawnVolume = (w * s) * (h * s) * (d * s);
+
+    const stated = P.geoSculptMeasure(recipe, P.SCULPT_GRID_UNIT).totalVol;
+    expect(stated).toBeCloseTo(drawnVolume, 6);
+    // And it is emphatically not the old recipe-unit answer.
+    expect(stated).not.toBeCloseTo(1, 2);
+  });
+});
+
 // The pure verdict is worth nothing if the student never sees it. These render the
 // real panel, the way geosandbox_panel_render does, and check the warning is on
 // screen BEFORE the press — a refusal that only arrives after the click teaches

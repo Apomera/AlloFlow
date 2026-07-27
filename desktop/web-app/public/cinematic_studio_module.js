@@ -632,9 +632,17 @@
 
   // One swarm call: callGemini swallows errors to '' -> we treat '' as a STAGE
   // FAILURE (never empty success), and require parseable JSON. Stage-attributed errors.
-  function callSwarmStage(callGemini, stageLabel, prompt) {
+  //
+  // searchQuery is explicit because these prompts lead with instructions, not the
+  // subject. WebSearchProvider's regex extractor scraped the SCENE stage down to
+  // its scene type — literally searching the web for "comparison" — since that is
+  // the first quoted string in the prompt. Under the old google_search grounding
+  // Gemini formed its own query from the whole prompt; the Canvas transport
+  // fetches client-side, so the caller owns the query now. (Same root cause as
+  // the Find-standards bug, 2026-07-27.)
+  function callSwarmStage(callGemini, stageLabel, prompt, searchQuery) {
     if (!callGemini) return Promise.reject(new Error(stageLabel + ': AI is not available here'));
-    return Promise.resolve().then(function () { return callGemini(prompt, false, true); }).then(function (res) {
+    return Promise.resolve().then(function () { return callGemini(prompt, false, true, null, searchQuery || null); }).then(function (res) {
       var text = (typeof res === 'string') ? res : (res && res.text) ? res.text : '';
       if (!text || !text.trim()) throw new Error(stageLabel + ': the AI returned nothing');
       var obj = parseAiJsonObject(text);
@@ -671,7 +679,7 @@
       + 'Return ONLY JSON: {"title": string, "scenes": [{"type": one allowed type, "heading": short label, "narrationIntent": one sentence, "estDurationSec": number 3-20}]}. '
       + 'Use 5-10 scenes in a clear arc (open, build, close). Content scenes must be grounded in the document.\n\n'
       + 'BRIEF:\n"""\n' + briefSummary(f) + '\n"""\n\nSOURCE DOCUMENT:\n"""\n' + String(doc).slice(0, DOC_LIMIT) + '\n"""';
-    return callSwarmStage(callGemini, 'Stage 2 (outline)', prompt);
+    return callSwarmStage(callGemini, 'Stage 2 (outline)', prompt, f && f.topic);
   }
   function stageScene(callGemini, doc, f, spec, idx, total) {
     var prompt = SWARM_GUARD
@@ -680,7 +688,7 @@
       + 'EVERY fact in the narration must be supported by the source document. '
       + 'Return ONLY JSON: {"narration": string (1-3 grade-appropriate sentences), "onScreenText": [short lines], "props": ' + propHint(spec.type) + ', "sourceAnchors": [VERBATIM quotes copied exactly from the document that support the narration], "durationSec": number 3-20}.\n\n'
       + 'SOURCE DOCUMENT:\n"""\n' + String(doc).slice(0, DOC_LIMIT) + '\n"""';
-    return callSwarmStage(callGemini, 'Stage 3 (scene ' + (idx + 1) + ')', prompt).then(function (obj) {
+    return callSwarmStage(callGemini, 'Stage 3 (scene ' + (idx + 1) + ')', prompt, f && f.topic).then(function (obj) {
       obj.type = spec.type; obj.id = 's' + (idx + 1); return obj;
     });
   }
@@ -828,7 +836,10 @@
         + 'There is no editing after generation, so the prompt must be precise. Improve the steering prompt below: keep it concise, concrete, and faithful to the teacher\'s intent; strengthen any vague guidance; keep all accuracy and accessibility constraints; do not add new topics the teacher did not ask for. '
         + 'Return ONLY the improved steering prompt as plain text, with no preamble, no headings, and no commentary.\n\n--- STEERING PROMPT ---\n' + assembled;
       Promise.resolve()
-        .then(function () { return callGemini(meta, false, true); })
+        // useSearch=false: rewriting the teacher's own prompt needs no facts from
+        // the web. It previously ran grounded, which spent a search credit per
+        // click and injected untrusted web evidence into a pure text-rewrite.
+        .then(function () { return callGemini(meta, false, false); })
         .then(function (res) {
           var text = '';
           if (typeof res === 'string') text = res;
@@ -853,7 +864,9 @@
       setReBusy(true);
       var meta = 'A teacher regenerated a NotebookLM cinematic video and it had problems. Tighten the REVISION PROMPT below so the next regeneration fixes those problems while keeping what worked. Return ONLY the improved revision prompt as plain text, no preamble or commentary.\n\n--- REVISION PROMPT ---\n' + base;
       Promise.resolve()
-        .then(function () { return callGemini(meta, false, true); })
+        // useSearch=false — same reasoning as improvePrompt: tightening the
+        // teacher's revision prompt is a text rewrite, not a research task.
+        .then(function () { return callGemini(meta, false, false); })
         .then(function (res) {
           var text = (typeof res === 'string') ? res : (res && res.text) ? res.text : '';
           text = (text || '').trim();
@@ -926,7 +939,11 @@
       var prompt = 'Translate each caption line into ' + capLang + ' for a K-12 classroom audience. '
         + 'Keep the SAME number of lines in the SAME order. Keep each line natural and concise so it works as a subtitle. '
         + 'Return ONLY a JSON array of strings (the translations in order), nothing else.\n\nLINES:\n' + JSON.stringify(arr);
-      Promise.resolve().then(function () { return callGemini(prompt, false, true); }).then(function (res) {
+      // useSearch=false: translation needs no web retrieval. Grounded, the
+      // extractor scraped a caption line out of the JSON array and injected
+      // unrelated web evidence (behind a security-boundary preamble) into a
+      // task that must render the SAME lines in the SAME order.
+      Promise.resolve().then(function () { return callGemini(prompt, false, false); }).then(function (res) {
         var text = (typeof res === 'string') ? res : (res && res.text) ? res.text : '';
         var parsed = parseJsonArrayLoose(text, segs.length);
         if (parsed && parsed.length === segs.length) {

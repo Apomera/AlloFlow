@@ -238,8 +238,22 @@
     // JSON responseMimeType is rejected in production. The verifier's prompt
     // already demands a JSON array and parses via cleanJson (→ cleanJsonLocal),
     // which strips fences and extracts the array.
+    // The web query must be supplied explicitly. The verifier's prompt describes
+    // the ORDERING PRINCIPLE, not the subject, so WebSearchProvider's regex
+    // extractor scrapes it down to the first quoted string — "chronological
+    // order" — and the "independent retrieval pass" retrieves nothing about the
+    // actual events. Worse than useless: it still attaches whatever came back as
+    // sources, so sourcedCount rises and the UI implies the dates were checked.
+    //
+    // This did not bite under google_search grounding, where Gemini formulated
+    // its own query from the whole prompt. The Canvas transport fetches results
+    // client-side, so the caller now owns the query. (Same root cause as the
+    // Find-standards bug, 2026-07-27.)
+    var verifyQuery = (events || []).map(function (e) {
+      return (e && e.text && e.text.headline) || '';
+    }).filter(Boolean).slice(0, 6).join('; ').slice(0, 180);
     var groundedCallGemini = function (prompt) {
-      return Promise.resolve(callGemini(prompt, false, true, 0.2)).then(function (r) {
+      return Promise.resolve(callGemini(prompt, false, true, 0.2, verifyQuery || null)).then(function (r) {
         return (r && typeof r === 'object' && typeof r.text === 'string') ? r.text : r;
       });
     };
@@ -552,7 +566,19 @@
       Promise.resolve().then(function () {
         // jsonMode=false: grounded search is incompatible with JSON responseMimeType
         // in production. The prompt demands JSON-only; coerceTimeline strips fences.
-        return callGemini(buildTopicResearchPrompt(topicText, period, mustInclude, grade), false, true, 0.3);
+        //
+        // The 5th arg is the web query and it is NOT optional here. The prompt
+        // writes `Topic: <topic>` UNQUOTED, and WebSearchProvider's extractor
+        // only matches a QUOTED `Topic: "..."` — so it fell through to its
+        // first-quoted-string fallback and searched the web for **"title"**,
+        // lifted from the JSON shape example further down the prompt. Every
+        // topic-mode timeline was therefore researched from results about the
+        // word "title". Build the query from the actual topic + period.
+        var researchQuery = [String(topicText || '').slice(0, 160), String(period || '').slice(0, 60)]
+          .map(function (s) { return s.trim(); })
+          .filter(Boolean)
+          .join(' ');
+        return callGemini(buildTopicResearchPrompt(topicText, period, mustInclude, grade), false, true, 0.3, researchQuery || null);
       }).then(function (res) {
         var rawText = (res && typeof res === 'object' && typeof res.text === 'string') ? res.text : res;
         meta = (res && typeof res === 'object') ? res.groundingMetadata : null;
