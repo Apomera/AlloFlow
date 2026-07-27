@@ -2989,7 +2989,7 @@ const d = labToolData.solarSystem || {};
             if (alreadySelected) {
               // Toggle follow mode on repeat-click
               st._followBody = !st._followBody ? b.id : null;
-              try { _toast && _toast(st._followBody ? ('🎯 Following ' + b.name) : 'Follow mode off'); } catch (e) {}
+              try { addToast && addToast(st._followBody ? ('🎯 Following ' + b.name) : 'Follow mode off'); } catch (e) {}
             } else {
               // Fresh selection → start zoom animation, clear any prior follow
               st._followBody = null;

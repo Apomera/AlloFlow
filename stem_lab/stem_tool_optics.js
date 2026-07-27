@@ -3106,38 +3106,38 @@
         },
         d.mode === 'home' && _renderHome(d, upd, h),
         d.mode === 'reflection' && _renderTopicPanel({
-          d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'reflection',
+          d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, isMounted: _mounted, tab:'reflection',
           title: t('stem.optics.reflection_plane_curved_mirrors', '🪞 Reflection — plane + curved mirrors'),
           sim: _renderReflectionSim(d, upd, h),
           calc: _renderReflectionCalc(d, upd, h, addToast, awardXP)
         }),
         d.mode === 'refraction' && _renderTopicPanel({
-          d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'refraction',
+          d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, isMounted: _mounted, tab:'refraction',
           title: t('stem.optics.refraction_snell_s_law_total_internal_', "🌊 Refraction — Snell's law + total internal reflection"),
           sim: _renderRefractionSim(d, upd, h),
           calc: _renderRefractionCalc(d, upd, h)
         }),
         d.mode === 'lenses' && _renderTopicPanel({
-          d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'lenses',
+          d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, isMounted: _mounted, tab:'lenses',
           title: t('stem.optics.lenses_converging_diverging_thin_lens_', '🔍 Lenses — converging + diverging, thin lens equation'),
           sim: _renderLensSim(d, upd, h),
           calc: _renderLensCalc(d, upd, h, addToast, awardXP)
         }),
         d.mode === 'interference' && _renderTopicPanel({
-          d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'interference',
+          d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, isMounted: _mounted, tab:'interference',
           title: t('stem.optics.interference_young_s_double_slit', "✨ Interference — Young's double-slit"),
           sim: _renderInterferenceSim(d, upd, h),
           calc: _renderInterferenceCalc(d, upd, h),
           extra: _renderPhQuantumTwist(d, upd, h)
         }),
         d.mode === 'diffraction' && _renderTopicPanel({
-          d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'diffraction',
+          d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, isMounted: _mounted, tab:'diffraction',
           title: t('stem.optics.diffraction_single_slit_grating', '〰 Diffraction — single slit + grating'),
           sim: _renderDiffractionSim(d, upd, h),
           calc: _renderDiffractionCalc(d, upd, h)
         }),
         d.mode === 'polarization' && _renderTopicPanel({
-          d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'polarization',
+          d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, isMounted: _mounted, tab:'polarization',
           title: t('stem.optics.polarization_malus_s_law', "↕ Polarization — Malus's law"),
           sim: _renderPolarizationSim(d, upd, h),
           calc: _renderPolarizationCalc(d, upd, h)
@@ -3481,7 +3481,14 @@
       })
     );
   }
-  function _renderAiGrader(tab, d, upd, h, addToast, awardXP, callGemini) {
+  // isMounted is threaded in from the component that owns the ref. The two
+  // post-await guards below read _mounted directly, but this function lives at
+  // module scope and never could see it — so both threw inside the promise
+  // handlers, which meant an AI grade request always ended in an unhandled
+  // rejection instead of rendering a result. Defaults to "still mounted" so a
+  // caller that omits it behaves as before rather than silently dropping work.
+  function _renderAiGrader(tab, d, upd, h, addToast, awardXP, callGemini, isMounted) {
+    var stillMounted = function () { return !isMounted || isMounted.current !== false; };
     function grade() {
       if (!callGemini) {
         if (addToast) addToast('AI grading unavailable in this environment.', 'error');
@@ -3513,7 +3520,7 @@
         '5. Clarity for a peer studying for the AP exam\n\n' +
         'Return JSON: {"score": 0-10, "strengths": ["..."], "issues": ["..."], "improved_version": "a model 2-3 sentence explanation"}';
       callGemini(prompt, true).then(function(text) {
-        if (!_mounted.current) return;
+        if (!stillMounted()) return;
         var parsed = null;
         try {
           var jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -3525,7 +3532,7 @@
         if (awardXP) awardXP(10, 'OpticsLab — AI graded explanation', 'opticsLab');
         if (addToast) addToast('AI feedback ready', 'success');
       }).catch(function(err) {
-        if (!_mounted.current) return;
+        if (!stillMounted()) return;
         upd({ aiLoadingTab: null, aiResponse: { error: 'AI request failed: ' + (err.message || 'unknown') }, aiResponseTab: tab });
       });
     }
@@ -4303,7 +4310,7 @@
       // Pedagogical layers
       _renderMisconceptionsPanel(tab, h),
       _renderGlossaryPanel(tab, d, upd, h),
-      _renderAiGrader(tab, d, upd, h, opts.addToast, opts.awardXP, opts.callGemini)
+      _renderAiGrader(tab, d, upd, h, opts.addToast, opts.awardXP, opts.callGemini, opts.isMounted)
     );
   }
 

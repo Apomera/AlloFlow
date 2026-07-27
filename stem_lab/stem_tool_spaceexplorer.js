@@ -900,6 +900,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var minigameResult = d.minigameResult || null;
       var missionDossier = d.missionDossier || (destination ? buildMissionDossier(destination, resources, crew, unlockedTech) : null);
       var missionEvidence = d.missionEvidence || [];
+      // Read like its siblings. The turn resolver writes protocolLog back but
+      // never had a local to read it from — see the note where it is written.
+      var protocolLog = d.protocolLog || [];
       var missionIntent = d.missionIntent || '';
       var missionReflection = d.missionReflection || '';
       var missionIntentAssessment = missionDossier ? assessMissionIntent(missionIntent, missionEvidence, missionDossier) : null;
@@ -1168,6 +1171,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           category: event.category || null
         });
         var newTurn = turn + 1;
+        // newProtocolLog and protocolResult were referenced below but never
+        // computed, so resolving ANY event threw "newProtocolLog is not
+        // defined" — the turn never advanced. Deciding what counts as
+        // satisfying the mission protocol is a curriculum question, not one to
+        // guess at, so this carries the log forward unchanged and records no
+        // result. Net effect matches what students see today (the protocol
+        // objective, which scores on protocolLog.length, stays where it is),
+        // except the turn now resolves. Wire the real rule in here.
+        var protocolResult = null;
+        var newProtocolLog = protocolLog.slice();
         updAll({
           resources: newRes,
           decisionLog: newDecLog,

@@ -8976,7 +8976,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
     }
 
-    function updateAudioSynth() {
+    // dt (seconds since the last frame) is read below to scale the rain-tick
+    // probability, but was never a parameter and no caller has one — so the
+    // rainy-weather branch threw. tick() runs on a frame cadence, so default to
+    // a 60fps frame, which keeps the original intent of roughly 2% per second.
+    function updateAudioSynth(dt) {
+      dt = (typeof dt === 'number' && dt > 0) ? dt : 1 / 60;
       if (!audioCtx || audioCtx.state === 'suspended') return;
       
       var absSpeed = Math.abs(boatState.speed);

@@ -1561,6 +1561,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // 60 days to repair + recertify or stop driving. This module is the
   // pre-inspection self-walk: what they look at, what fails, what you can DIY.
   // ─────────────────────────────────────────────────────────
+  // Two panels — the used-car triage rubric and carburettor basics — were
+  // written with real headings and intro copy, then map over content that was
+  // never authored. Reading an undeclared name throws during render, so both
+  // tabs blanked AutoRepair rather than showing a partial panel.
+  //
+  // Declared empty so nothing throws; the tab BUTTONS are withdrawn alongside
+  // (see tabBtn near rubricTab/carbsTab) so students do not land on a heading
+  // with no content. Authoring an inspection rubric and carburettor curriculum
+  // is Aaron's call, not something to invent here. To restore: fill the array
+  // and re-add its tabBtn line — the panels themselves are intact.
+  var BUILD_TRIAGE_RUBRIC = [];
+  var CARB_BASICS = [];
+
   var INSPECTION_ITEMS = [
     { id: 'brakes', icon: '🛑', area: 'Brakes',
       whatTheyCheck: 'Pad thickness (minimum ~3/32" / 2.4mm), rotor thickness vs minimum spec, brake-line corrosion, parking brake function, hydraulic leaks, ABS warning light.',
@@ -5906,6 +5919,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var picked = d.inspectionPicked || null;
         var pickedItem = picked ? INSPECTION_ITEMS.find(function(i) { return i.id === picked; }) : null;
         var checked = d.inspectionChecked || {};
+        // Read by the self-check button's label but never declared, so that
+        // button threw while rendering. Its own onClick toggles
+        // checked[pickedItem.id], which is exactly the state being described.
+        var isChecked = !!(pickedItem && checked[pickedItem.id]);
         var doneCount = Object.keys(checked).filter(function(k) { return checked[k]; }).length;
         var totalCount = INSPECTION_ITEMS.length;
         var pct = Math.round((doneCount / totalCount) * 100);
@@ -7817,7 +7834,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.project_car_sections', 'Project car sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('phases', '📋 6 phases'),
-            tabBtn('rubric', '🎯 Triage rubric')
           ),
           bView === 'phases' && phasesTab(),
           bView === 'rubric' && rubricTab(),
@@ -8137,7 +8153,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             tabBtn('overview', 'Overview'),
             tabBtn('platforms', '🏷️ Platforms'),
             tabBtn('strokes', '⚙️ 2-vs-4'),
-            tabBtn('carbs', '🔧 Carbs')
           ),
           pView === 'overview' && pOverview(),
           pView === 'platforms' && platformsTab(),

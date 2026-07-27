@@ -2221,12 +2221,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     mCtx.strokeStyle = '#facc15'; mCtx.lineWidth = 1.5;
                     mCtx.strokeRect(vpX, vpY, vpW2, vpH2);
                       // ── Map Pickups ──
+                      // This block was written against the MAIN map — it offset by
+                      // camX/camY and sized against vw/vh/cs, none of which exist
+                      // in the minimap's ref callback. Every pickup therefore
+                      // threw "vw is not defined" and the minimap lost its
+                      // pickups. Re-expressed in the minimap's own terms: absolute
+                      // map coordinates times mTile, exactly like the tile and
+                      // colony-marker draws above and below.
                       Object.keys(mapPickups).forEach(function(pk) {
-                        var pxy = pk.split(','); var ppx = parseInt(pxy[0]) - camX; var ppy = parseInt(pxy[1]) - camY;
-                        if (ppx >= 0 && ppx < vw && ppy >= 0 && ppy < vh) {
-                          var pItem = mapPickups[pk]; var psx = ppx * cs + cs/2; var psy = ppy * cs + cs/2;
+                        var pxy = pk.split(','); var ppx = parseInt(pxy[0]); var ppy = parseInt(pxy[1]);
+                        if (ppx >= 0 && ppx < mapSize && ppy >= 0 && ppy < mapSize) {
+                          var pItem = mapPickups[pk]; var psx = ppx * mTile + mTile/2; var psy = ppy * mTile + mTile/2;
                           var pColor = pItem.rarity === 'epic' ? '#f59e0b' : pItem.rarity === 'rare' ? '#8b5cf6' : '#22c55e';
-                          var pSize = pItem.rarity === 'epic' ? cs*0.4 : pItem.rarity === 'rare' ? cs*0.35 : cs*0.25;
+                          // Floor the radius: mTile is only a few px on a 120px
+                          // minimap, so the raw fractions would round away.
+                          var pSize = Math.max(1.5, pItem.rarity === 'epic' ? mTile*0.4 : pItem.rarity === 'rare' ? mTile*0.35 : mTile*0.25);
                           mCtx.save(); mCtx.globalAlpha = 0.7 + 0.3 * Math.sin(Date.now()/500 + parseInt(pxy[0]));
                           mCtx.fillStyle = pColor; mCtx.shadowColor = pColor; mCtx.shadowBlur = pItem.rarity === 'epic' ? 12 : 6;
                           mCtx.beginPath();

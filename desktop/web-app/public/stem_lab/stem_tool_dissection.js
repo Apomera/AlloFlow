@@ -1216,8 +1216,13 @@ var d = labToolData.dissection || {};
           var activeFunctionalTraceLabel = { circulation: 'Circulatory', digestion: 'Digestive', respiration: 'Respiratory', excretory: 'Excretory' }[activeFunctionalTraceKey] || '';
 
           // Nearest-target hit testing also treats laid-out labels as interactive targets.
-          function closestVisibleOrganAt(x, y, radius) {
-            var labelHit = (canvas && canvas._hotspotLabelBoxes || []).find(function (box) {
+          // canvasEl is a parameter now. `canvas` was read here as a free
+          // identifier, so every call threw — and this function backs organ
+          // selection, hover and the lens target, i.e. most of the interaction.
+          // Optional on purpose: nothing populates _hotspotLabelBoxes today, so
+          // omitting it gives `[] ` and the same behaviour, minus the crash.
+          function closestVisibleOrganAt(x, y, radius, canvasEl) {
+            var labelHit = (canvasEl && canvasEl._hotspotLabelBoxes || []).find(function (box) {
               return x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height;
             });
             if (labelHit) {

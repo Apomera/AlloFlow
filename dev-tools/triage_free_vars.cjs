@@ -81,7 +81,12 @@ for (const rel of files) {
       const line = ref.identifier.loc.start.line;
       const text = (lines[line - 1] || '').trim();
       const esc = name.replace(/\$/g, '\\$');
-      const guarded = new RegExp('typeof\\s+' + esc + '(?![\\w$])').test(text);
+      // The guard is often on an earlier line — `if (typeof cb === 'function') {`
+      // opening a block whose body calls cb. Money Math looked like a finding
+      // until this window was widened. Three lines back covers the idiom without
+      // swallowing unrelated guards.
+      const window3 = lines.slice(Math.max(0, line - 4), line).join('\n');
+      const guarded = new RegExp('typeof\\s+' + esc + '(?![\\w$])').test(window3);
       const write = ref.isWrite() && !ref.isRead();
       hits.push({ name, line, text: text.slice(0, 96), kind: guarded ? 'guarded' : write ? 'assign' : 'THROWS' });
     }

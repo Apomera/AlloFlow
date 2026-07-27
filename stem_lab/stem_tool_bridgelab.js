@@ -1339,6 +1339,11 @@
           var V = cLoad * cSpan / 2;
           var Tmax = Math.sqrt(H * H + V * V);
           var sagRatio = cSag / cSpan;
+          // Used below to colour the sag/span readout and pick its sub-label,
+          // but never defined — so the suspension readout threw. The band is
+          // not invented here: the readout's own text names it as the typical
+          // 1/14 to 1/6 range for real suspension bridges.
+          var sagRatioGood = sagRatio >= 1 / 14 && sagRatio <= 1 / 6;
           var cableLen = cSpan * (1 + (8 / 3) * sagRatio * sagRatio - (32 / 5) * Math.pow(sagRatio, 4));
           var angleAtSupport = Math.atan2(V, H) * 180 / Math.PI;
 

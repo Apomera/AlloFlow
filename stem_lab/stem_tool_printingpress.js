@@ -11857,7 +11857,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           Object.keys(ch.stats || {}).forEach(function(k) {
             newStats[k] = Math.max(0, Math.min(100, (newStats[k] || 0) + ch.stats[k]));
           });
-          if (k === 'money') {} // not used; just safety
           setAjStats(newStats);
           var nc = Object.assign({}, ajChoices);
           nc[year + '_' + decId] = choiceId;
