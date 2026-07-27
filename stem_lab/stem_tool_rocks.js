@@ -59,6 +59,53 @@
   // keeps them in scope everywhere. `check` now takes its state explicitly —
   // the old `s || d || {}` fallback closed over the rocks tool's `d`, which is
   // exactly what could not be hoisted; the sole call site always passes state.
+  // ── Stable callback ref for the landscape canvas (rocks tool) ──
+  // Same defect the rockCycle canvas had: the ref was an inline function that
+  // called the initialiser and rebound the zone-click handler, so React saw a
+  // new identity on every commit and did ref(null) → cleanup → ref(el). In this
+  // tool the teardown is heavier — it cancels the rAF loop, removes the
+  // mousemove/click/keydown listeners, disconnects a ResizeObserver and drops
+  // the visibilitychange listener — and the rebuild resets `tick` to 0 and
+  // `hoverZone` to null. So the landscape animation restarted and the hover
+  // highlight was lost on EVERY state update in the rocks tool.
+  //
+  // _rocksSelectBox keeps the zone-click handler current without touching ref
+  // identity: the element gets a thin forwarder bound once at mount that always
+  // dispatches into the LATEST render's closure.
+  var _rocksInitBox = { fn: null };
+  var _rocksSelectBox = { fn: null };
+  var _rocksLastCanvas = null;
+  function rocksLandscapeCanvasRef(canvasEl) {
+    if (!canvasEl) {
+      if (_rocksLastCanvas && _rocksLastCanvas._rocksCleanup) { _rocksLastCanvas._rocksCleanup(); }
+      if (_rocksLastCanvas) {
+        _rocksLastCanvas._rocksInit = false;
+        if (_rocksLastCanvas._rocksRO) { try { _rocksLastCanvas._rocksRO.disconnect(); } catch (e) {} }
+      }
+      _rocksLastCanvas = null;
+      return;
+    }
+    _rocksLastCanvas = canvasEl;
+    if (canvasEl._rocksInit) return;
+    canvasEl._onSelectRock = function (rockId, type) {
+      if (_rocksSelectBox.fn) _rocksSelectBox.fn(rockId, type);
+    };
+    if (_rocksInitBox.fn) _rocksInitBox.fn(canvasEl);
+  }
+
+  // Belt-and-braces sweep on the tool root. Must ALSO be identity-stable: as an
+  // inline ref it fired on every commit and tore the landscape canvas down by
+  // querySelector, which kept the re-init bug alive even after the canvas ref
+  // itself was stabilised.
+  function rocksRootCleanupRef(el) {
+    if (el) return;
+    var old = typeof document !== 'undefined' ? document.querySelector('[data-rocks-canvas]') : null;
+    if (old && old._rocksCleanup) {
+      old._rocksCleanup();
+      if (old._rocksRO) { try { old._rocksRO.disconnect(); } catch (e) {} }
+    }
+  }
+
   // ══ Specimen art: deterministic SVG swatches for rock + mineral ID ══
   // WHY: the rocks grid, the Mystery Rock guess grid and the quiz all drew a
   // specimen as its ROCK-TYPE emoji — so all 20 rocks rendered as one of only
@@ -1065,25 +1112,30 @@ const d = labToolData.rocks || {};
 
 
 
-          // ── Canvas ref for landscape ──
-
-          var _lastRocksCanvas = null;
+          // ── Landscape canvas initialiser ──
+          // Re-created each render (it closes over the current upd/ROCKS), but NOT
+          // handed to React. It is published into _rocksInitBox and invoked by the
+          // identity-stable rocksLandscapeCanvasRef, so the canvas — and its rAF
+          // loop, four listeners, ResizeObserver, tick and hover state — survives
+          // re-renders instead of being torn down and rebuilt by every upd().
 
           const landscapeRef = function (canvasEl) {
 
-            if (!canvasEl) {
-
-              if (_lastRocksCanvas && _lastRocksCanvas._rocksCleanup) { _lastRocksCanvas._rocksCleanup(); _lastRocksCanvas._rocksInit = false; }
-
-              _lastRocksCanvas = null;
-
-              return;
-
-            }
-
-            _lastRocksCanvas = canvasEl;
+            if (!canvasEl) return;
 
             if (canvasEl._rocksInit) return;
+
+            // Zero-size guard: we now initialise once per mount, so a canvas
+            // measured before layout would stay blank forever.
+            if (!canvasEl.offsetWidth || !canvasEl.offsetHeight) {
+              if (typeof requestAnimationFrame === 'function' && !canvasEl._rocksSizeRetry) {
+                canvasEl._rocksSizeRetry = requestAnimationFrame(function () {
+                  canvasEl._rocksSizeRetry = null;
+                  if (canvasEl.isConnected) rocksLandscapeCanvasRef(canvasEl);
+                });
+              }
+              return;
+            }
 
             canvasEl._rocksInit = true;
 
@@ -1752,9 +1804,30 @@ const d = labToolData.rocks || {};
               canvasEl._rocksRO = null;
               canvasEl._rocksCleanup = null;
               canvasEl._rocksInit = false;
+              if (canvasEl._rocksSizeRetry && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvasEl._rocksSizeRetry);
+              canvasEl._rocksSizeRetry = null;
 
             };
 
+          };
+
+          // Publish for the stable ref. Property assignment, so the ref React
+          // holds keeps its identity and the canvas stays mounted.
+          _rocksInitBox.fn = landscapeRef;
+
+          // Zone clicks dispatch through here, so the canvas's handler is bound
+          // once at mount but always runs the CURRENT render's closure.
+          _rocksSelectBox.fn = function (rockId, type) {
+            upd("selectedRock", rockId);
+            upd("selectedType", type);
+            upd("mode", "rocks");
+            if (typeof canvasNarrate === 'function') {
+              canvasNarrate('rocks', 'zone_select', {
+                first: 'Exploring ' + type + ' rocks. Selected ' + rockId + ' from the ' + (type === 'igneous' ? 'volcano zone' : type === 'sedimentary' ? 'river delta zone' : 'mountain core zone') + '.',
+                repeat: type + ' rock: ' + rockId + '.',
+                terse: rockId + '.'
+              }, { debounce: 500 });
+            }
           };
 
 
@@ -2018,23 +2091,16 @@ const d = labToolData.rocks || {};
 
 
 
-          // Cleanup ref
-
-          const cleanupRef = function (el) {
-
-            if (!el) {
-
-              const old = document.querySelector('[data-rocks-canvas]');
-
-              if (old && old._rocksCleanup) { old._rocksCleanup(); if (old._rocksRO) old._rocksRO.disconnect(); }
-
-            }
-
-          };
+          // Cleanup ref — see rocksRootCleanupRef at module scope. This was the
+          // OTHER half of the landscape re-init bug: making the canvas ref stable
+          // was not enough, because this root-level ref was also inline. React
+          // detached it on every commit, and its null branch reaches the canvas
+          // by querySelector and runs the full teardown — so the animation was
+          // still being destroyed on every render from here.
 
 
 
-          return React.createElement("div", { ref: cleanupRef, className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+          return React.createElement("div", { ref: rocksRootCleanupRef, className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
 
             // Header
 
@@ -2152,27 +2218,9 @@ const d = labToolData.rocks || {};
                   role: "img", tabIndex: 0, "aria-label": __alloT('stem.rocks.rock_cycle_diagram_aria', "Rock cycle diagram — click a rock type or process to explore how rocks transform."),
                   "data-rocks-canvas": "true",
 
-                  ref: function (el) {
-
-                    landscapeRef(el);
-
-                    if (el) {
-
-                      el._onSelectRock = function (rockId, type) {
-
-                        upd("selectedRock", rockId);
-
-                        upd("selectedType", type);
-
-                        upd("mode", "rocks");
-
-                        if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'zone_select', { first: 'Exploring ' + type + ' rocks. Selected ' + rockId + ' from the ' + (type === 'igneous' ? 'volcano zone' : type === 'sedimentary' ? 'river delta zone' : 'mountain core zone') + '.', repeat: type + ' rock: ' + rockId + '.', terse: rockId + '.' }, { debounce: 500 }); }
-
-                      };
-
-                    }
-
-                  },
+                  // Identity-stable (see rocksLandscapeCanvasRef). An inline
+                  // function here re-initialised the whole canvas every render.
+                  ref: rocksLandscapeCanvasRef,
 
                   style: { width: '100%', height: '100%' }
 

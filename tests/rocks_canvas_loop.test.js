@@ -11,7 +11,9 @@ describe('rocks canvas animation loops', () => {
     ROCKS_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('if (_lastRocksCanvas && _lastRocksCanvas._rocksCleanup) { _lastRocksCanvas._rocksCleanup(); _lastRocksCanvas._rocksInit = false; }');
+      // Cleanup still runs on real unmount, but from the module-scope stable ref
+      // rather than a per-render inline closure (see the stable-ref test below).
+      expect(source).toContain('if (_rocksLastCanvas && _rocksLastCanvas._rocksCleanup) { _rocksLastCanvas._rocksCleanup(); }');
       expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
       expect(source).toContain('function isRocksHidden()');
       expect(source).toContain('function cancelRocksFrame()');
@@ -82,6 +84,41 @@ describe('rocks canvas animation loops', () => {
       // papered over by the next render, so it must retry rather than latch.
       expect(source).toContain('if (!canvasEl.offsetWidth || !canvasEl.offsetHeight)');
       expect(source).toContain('canvasEl._rcSizeRetry = requestAnimationFrame(');
+    });
+  });
+
+  // ── Regression: the landscape canvas re-initialised every render ──
+  // Same defect as the rock-cycle canvas, but with a heavier teardown: the ref
+  // was `ref: function (el) { landscapeRef(el); ... }` — inline, so a new
+  // identity on every commit. Every state update in the rocks tool cancelled the rAF
+  // loop, removed the mousemove/click/keydown listeners, disconnected the
+  // ResizeObserver, then rebuilt all of it with tick reset to 0 and hoverZone
+  // dropped — so the landscape animation restarted and the hover highlight
+  // vanished on every interaction.
+  it('hands React an identity-stable landscape ref', () => {
+    ROCKS_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('function rocksLandscapeCanvasRef(canvasEl)');
+      expect(source).toContain('ref: rocksLandscapeCanvasRef');
+      expect(source).toContain('var _rocksInitBox = { fn: null };');
+      expect(source).toContain('_rocksInitBox.fn = landscapeRef;');
+
+      // The inline ref (and its per-render _onSelectRock rebind) must be gone.
+      // Scoped to the landscape canvas — the quiz panel has its own harmless
+      // inline focus ref that only reads a flag off the element.
+      expect(source).not.toContain('landscapeRef(el);');
+      expect(source).not.toContain('el._onSelectRock = function (rockId, type) {');
+
+      // Zone clicks forward into the CURRENT render's closure, so binding the
+      // element handler once at mount does not staleness-trap the callback.
+      expect(source).toContain('var _rocksSelectBox = { fn: null };');
+      expect(source).toContain('if (_rocksSelectBox.fn) _rocksSelectBox.fn(rockId, type);');
+      expect(source).toContain('_rocksSelectBox.fn = function (rockId, type) {');
+
+      // Initialising once per mount needs the 0x0 retry guard.
+      expect(source).toContain('if (!canvasEl.offsetWidth || !canvasEl.offsetHeight)');
+      expect(source).toContain('canvasEl._rocksSizeRetry = requestAnimationFrame(');
     });
   });
 
