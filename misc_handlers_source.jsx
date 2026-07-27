@@ -1185,6 +1185,24 @@ async function runAutoFixLoop(maxRounds, deps) {
     pdfAutoContinueAbortCtrlRef, pdfAutoContinueAbortRef, pdfFixResultRef, pdfHtmlRevisionRef, setPdfAutoContinueRunning, setPdfFixLoading, setPdfFixResult, setPdfFixStep, pdfFixLoading, pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, waitForGeminiCalm, runAxeAudit, runEqualAccessAudit, deriveVerificationState, createVerificationHtmlBinding, applyVerificationHtmlBinding, isLiveVerificationHtmlBound, enforceVerificationHtmlBinding, formatVerificationReason, auditOutputAccessibility, recomputeIssueResolution, recomputeContentFidelity, _docPipeline, sanitizeStyleForWCAG, attachVerificationHtmlProof, saveProjectToFile, addToast, pdfAutoSaveProject, t, warnLog,
   } = deps;
 
+  // L12 (audit 2026-07-26): the round's commit-or-revert and no-progress decisions now live in the
+  // pipeline's golden-tested _alloLoopPolicy, so the SHIPPED decision is what the tests call. The
+  // inline fallback is byte-for-byte the previous logic and exists for the module-older-than-host
+  // case — it must never be "improved" independently, or the drift this extraction removes comes
+  // straight back.
+  const _loopPolicy = (typeof window !== 'undefined'
+    && window.AlloModules && window.AlloModules.createDocPipeline
+    && window.AlloModules.createDocPipeline.loopPolicy) || {
+    roundRegressed: (p) => {
+      const detRegressed = (p.newDet !== null && p.newDet !== undefined) && (typeof p.prevDet === 'number') && p.newDet < (p.prevDet - 1);
+      const moreIssues = (p.violations === 0) && ((p.newIssues || 0) > (p.prevIssues || 0));
+      return !!(detRegressed || moreIssues);
+    },
+    roundProgressed: (p) => !!(p.violations < p.prevViolations
+      || (typeof p.newDet === 'number' && p.newDet > (p.prevDet + 1))
+      || (p.violations === 0 && (p.newIssues || 0) < (p.prevIssues || 0))),
+  };
+
   // Some focused tests load only this function body. Keep a local fail-safe so
   // redaction remains effective even when the module-level helper is absent.
   const _safeDiagnosticError = typeof _miscDiagnosticErrorSummary === 'function'
@@ -1311,7 +1329,12 @@ async function runAutoFixLoop(maxRounds, deps) {
           : ((_curAxe !== null) ? (_curEa !== null ? Math.min(_curAxe, _curEa) : _curAxe) : _curEa); // null when NEITHER engine scored — never a fabricated 100 (review #3)
         // det progress only when the baseline is a real number; gate the AI-issue term to the axe-CLEAN
         // branch so noisy AI enumeration in the violation branch can't reset the stall counter (review #2).
-        const _progressed = _vio < lastViolations || (typeof _curDet === 'number' && _curDet > (lastDet + 1)) || (_vio === 0 && _aiIssues.length < lastIssues);
+        // L12: same delegation for the no-progress check that ends the loop.
+        const _progressed = _loopPolicy.roundProgressed({
+          violations: _vio, prevViolations: lastViolations,
+          newDet: _curDet, prevDet: lastDet,
+          newIssues: _aiIssues.length, prevIssues: lastIssues,
+        });
         if (!_progressed) { stagnantRounds++; if (stagnantRounds >= 2) break; }
         else stagnantRounds = 0;
         lastViolations = _vio;
@@ -1467,11 +1490,15 @@ async function runAutoFixLoop(maxRounds, deps) {
         // DETERMINISTIC component (axe ∧ EqualAccess — reproducible) dropped, OR the AI flagged
         // strictly MORE issues than before. A blend dip with deterministic held and no new issues is
         // noise — keep the round. (Content loss is gated INSIDE aiFixChunked, not here.)
-        const _detRegressed = (_det !== null) && (typeof _curDet === 'number') && _det < (_curDet - 1);
+        // L12 (audit 2026-07-26): delegated to the golden-tested policy so the SHIPPED decision is
+        // what the tests call, instead of a hand-written mirror of it in the test file.
         // Gate AI-issue count ONLY in the axe-CLEAN (AI-fix) branch — in the axe-violation branch the
         // fix is deterministic, so AI-enumeration noise must not revert a legit axe fix (review F5).
-        const _moreIssues = (_vio === 0) && ((reVerify.issues ? reVerify.issues.length : 0) > _aiIssues.length);
-        if (!result._auditOnly && (_detRegressed || _moreIssues)) {
+        const _roundRegressed = _loopPolicy.roundRegressed({
+          newDet: _det, prevDet: _curDet, violations: _vio,
+          newIssues: reVerify.issues ? reVerify.issues.length : 0, prevIssues: _aiIssues.length,
+        });
+        if (!result._auditOnly && _roundRegressed) {
           warnLog('[AutoContinue] round ' + (round + 1) + ' REAL regression (det ' + _det + ' vs ' + _curDet + ', issues ' + (reVerify.issues ? reVerify.issues.length : 0) + ' vs ' + _aiIssues.length + ') — reverting this round.');
           // Do NOT increment stagnantRounds here — the revert leaves `cur` unchanged, so the next
           // round's top-of-loop no-progress check counts this stall exactly once (avoids the old

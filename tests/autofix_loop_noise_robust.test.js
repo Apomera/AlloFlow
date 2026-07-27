@@ -10,23 +10,36 @@
 // undefined cur.axeScore), is stamped exactly each round (_detScore), and is null (never a fabricated
 // 100) when no engine scored. Contrast (1.4.3) routes to sanitizeStyleForWCAG.
 
-import { describe, it, expect } from 'vitest';
+// @vitest-environment jsdom
+//
+// L12 (audit 2026-07-26): these two decisions used to be tested through hand-written MIRRORS of
+// the loop's inline logic. A mirror proves the mirror self-consistent and nothing else — and these
+// are the decisions that keep or throw away a round of a teacher's work. They now live in the
+// pipeline's golden-tested _alloLoopPolicy, and these tests call the REAL exported functions; the
+// loop delegates to the same ones, with a byte-identical inline fallback only for the
+// module-older-than-host case (pinned below).
+import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
 
 const src = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8') /* extracted-sources appended 2026-07-20 */ + ['misc_handlers_source.jsx','view_export_preview_source.jsx','udl_chat_source.jsx'].map(f => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n');
 const pipelineSrc = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
-// ── Mirrors of the shipped loop decisions ──
-const shouldRevert = (detNew, detPrev, issuesNew, issuesPrev, vio) => {
-  const detRegressed = (detNew !== null) && (typeof detPrev === 'number') && detNew < (detPrev - 1);
-  const moreIssues = (vio === 0) && (issuesNew > issuesPrev); // AI-fix branch only
-  return detRegressed || moreIssues;
-};
+let policy;
+beforeAll(() => {
+  loadAlloModule('doc_pipeline_module.js');
+  policy = window.AlloModules.createDocPipeline.loopPolicy;
+});
+
+// Thin argument adapters over the REAL policy — same call shapes the old mirrors had, so the cases
+// below read unchanged, but every one now exercises shipped code.
+const shouldRevert = (detNew, detPrev, issuesNew, issuesPrev, vio) =>
+  policy.roundRegressed({ newDet: detNew, prevDet: detPrev, newIssues: issuesNew, prevIssues: issuesPrev, violations: vio });
 // progress takes NO score arg (the noisy blend is not a signal); det term is null-safe; the
 // AI-issue term is gated to the axe-CLEAN branch (vio===0).
 const progressed = (vio, lastVio, det, lastDet, issues, lastIssues) =>
-  vio < lastVio || (typeof det === 'number' && det > (lastDet + 1)) || (vio === 0 && issues < lastIssues);
+  policy.roundProgressed({ violations: vio, prevViolations: lastVio, newDet: det, prevDet: lastDet, newIssues: issues, prevIssues: lastIssues });
 
 describe('noise-aware commit-or-revert', () => {
   it('KEEPS a round when the blend dipped on AI noise but deterministic held + no new issues', () => {
@@ -84,14 +97,27 @@ describe('anti-drift: the loop carries the corrected logic', () => {
     expect(pipelineSrc).toContain('_detScore: _det,');
     expect(src).toContain('const _det = _mergedRound._detScore;');
   });
-  it('progress excludes the noisy blend, is null-safe, and gates the issue term to the axe-clean branch', () => {
-    expect(src).toContain("const _progressed = _vio < lastViolations || (typeof _curDet === 'number' && _curDet > (lastDet + 1)) || (_vio === 0 && _aiIssues.length < lastIssues);");
+  // L12: both decisions are now the pipeline's, so the anti-drift job is to prove the LOOP
+  // delegates rather than to re-assert an inline expression the cases above already exercise.
+  it('the loop delegates BOTH round decisions to the golden-tested policy', () => {
+    expect(src).toContain('const _progressed = _loopPolicy.roundProgressed({');
+    expect(src).toContain('const _roundRegressed = _loopPolicy.roundRegressed({');
+    expect(src).toContain('if (!result._auditOnly && _roundRegressed) {');
+    expect(src).not.toContain('if (newScore < (cur.afterScore || 0)) {'); // the original blend-gated bug
   });
-  it('revert keys on deterministic regression (baseline-guarded) / more issues (AI-branch-gated), not the blend', () => {
-    expect(src).toContain("const _detRegressed = (_det !== null) && (typeof _curDet === 'number') && _det < (_curDet - 1);");
-    expect(src).toContain("const _moreIssues = (_vio === 0) && ((reVerify.issues ? reVerify.issues.length : 0) > _aiIssues.length);");
-    expect(src).toContain('if (!result._auditOnly && (_detRegressed || _moreIssues)) {');
-    expect(src).not.toContain('if (newScore < (cur.afterScore || 0)) {');
+
+  it('the policy is resolved from the pipeline, with an inline fallback for an older module', () => {
+    expect(src).toContain('window.AlloModules.createDocPipeline.loopPolicy) || {');
+    // The fallback must stay byte-equivalent to the policy, never independently "improved" —
+    // that is exactly the drift this extraction removes.
+    expect(src).toContain('must never be "improved" independently');
+  });
+
+  it('the shipped policy is what these tests call', () => {
+    expect(pipelineSrc).toContain('roundRegressed: function (p) {');
+    expect(pipelineSrc).toContain('roundProgressed: function (p) {');
+    expect(typeof policy.roundRegressed).toBe('function');
+    expect(typeof policy.roundProgressed).toBe('function');
   });
   it('AI-flagged contrast is routed to the deterministic fixer in the axe-clean branch', () => {
     expect(src).toContain('const _sr = sanitizeStyleForWCAG(_fixedHtml);');

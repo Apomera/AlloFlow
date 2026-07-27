@@ -544,6 +544,36 @@ var _alloLoopPolicy = {
       ? ('introduced ' + (p.newAxe - p.bestAxe) + ' new axe/WCAG violation(s) despite AI gains')
       : ((aiWorse && !axeWorse) ? ('AI rubric dropped ' + p.bestAi + '→' + p.newAi + ' without fixing any axe violation') : 'both scores got worse');
   },
+  // ── L12 (audit 2026-07-26): the AUTO-CONTINUE round's two decisions ──────────────────────
+  // These lived inline in runAutoFixLoop and were tested only through hand-written mirrors in
+  // tests/autofix_loop_noise_robust.test.js — a mirror proves the mirror self-consistent and
+  // nothing else. They are the decisions that keep or throw away a round of a teacher's work, so
+  // they belong here with the rest of the golden-tested policy, where the real function is what
+  // the tests call.
+  //
+  // roundRegressed: revert ONLY on a REAL regression. The blended score wobbles on AI noise, and
+  // reverting on that stalled the loop short of target. "Real" means the DETERMINISTIC component
+  // (axe ∧ Equal Access — reproducible) dropped beyond tolerance, or the AI flagged strictly MORE
+  // issues than before. The issue-count half is gated to the axe-CLEAN branch: in the
+  // axe-violation branch the fix is deterministic, so AI-enumeration noise must not revert a
+  // legitimate axe fix. Content loss is gated inside aiFixChunked, not here.
+  roundRegressed: function (p) {
+    var detTol = (p.detTol == null) ? 1 : p.detTol;
+    var detRegressed = (p.newDet !== null && p.newDet !== undefined)
+      && (typeof p.prevDet === 'number')
+      && p.newDet < (p.prevDet - detTol);
+    var moreIssues = (p.violations === 0) && ((p.newIssues || 0) > (p.prevIssues || 0));
+    return !!(detRegressed || moreIssues);
+  },
+  // roundProgressed: did this round move ANY needle? Fewer axe violations, a meaningfully higher
+  // deterministic score, or — when axe is already clean — fewer AI-flagged issues. Two consecutive
+  // rounds without progress end the loop.
+  roundProgressed: function (p) {
+    var detTol = (p.detTol == null) ? 1 : p.detTol;
+    return !!(p.violations < p.prevViolations
+      || (typeof p.newDet === 'number' && p.newDet > (p.prevDet + detTol))
+      || (p.violations === 0 && (p.newIssues || 0) < (p.prevIssues || 0)));
+  },
   // Keep-best promotion: a genuinely at-least-as-good pass — higher AI score, or fewer axe
   // violations without an AI regression. Under a PARTIAL audit the AI score is inflated, so
   // promote only on a real (full-doc) axe gain.
