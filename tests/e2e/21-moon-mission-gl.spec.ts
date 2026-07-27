@@ -118,6 +118,53 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     expect(after.steps, 'ArrowUp does not walk').toBeGreaterThan(before.steps);
   });
 
+  test('every rock you pick up stays in the bag', async ({ page }) => {
+    // THE state bug. The collection handler lives inside the EVA render loop, whose
+    // closure captures ctx.toolData ONCE at canvas mount and never sees a later
+    // commit. It rebuilt the array from that frozen snapshot on every pickup, so
+    // each rock REPLACED the one before it: the bag never held more than one, and
+    // "collect 4 samples" (a quest hook), Lunar Geologist and Sample Return were all
+    // unreachable no matter how long a student explored. Nothing in jsdom can reach
+    // this — the loop needs WebGL and real rAF frames.
+    //
+    // Determinism comes from pinning Math.random into a narrow band before the page
+    // loads: the orb scatter is `8 + (rand - 0.5) * 60`, so a band around 0.4133
+    // parks every sample within half a unit of the astronaut's spawn at (3, 3),
+    // inside the 2-unit pickup radius. It stays a BAND rather than a constant so
+    // three.js still generates distinct object UUIDs.
+    await page.addInitScript(() => {
+      let n = 1;
+      Math.random = function () {
+        n = (n * 1103515245 + 12345) % 2147483648;
+        return 0.4105 + (n % 1000) / 1000 * 0.006;
+      };
+    });
+    await harness.mount(page, AT_EVA, EVA_READY);
+    expect(await page.evaluate(() => (window as any).__focusEva())).toBe(true);
+
+    const bag = () => page.evaluate(() =>
+      ((((window as any).__toolData || {}).moonMission || {}).lunarSamples || []).map((s: any) => String(s.name)));
+
+    expect(await bag(), 'started the EVA with rocks already collected').toEqual([]);
+
+    // Hold F down rather than tapping it: the pickup cooldown is 60 FRAMES, and
+    // SwiftShader renders well short of 60fps, so a fixed tap interval collects on
+    // some presses and not others. Holding lets the loop bank one rock per cooldown
+    // however fast it happens to be running.
+    await page.keyboard.down('KeyF');
+    await page.waitForTimeout(12000);
+    await page.keyboard.up('KeyF');
+    await page.waitForTimeout(300);
+
+    const names = await bag();
+    expect(names.length, 'pressing F never collected anything — the orbs are out of reach')
+      .toBeGreaterThan(0);
+    expect(names.length, 'the collection is being REPLACED rather than appended: ' + JSON.stringify(names))
+      .toBeGreaterThanOrEqual(3);
+    expect(new Set(names).size, 'the same rock was banked twice: ' + JSON.stringify(names))
+      .toBe(names.length);
+  });
+
   test('the EVA canvas stays put and fits its parent', async ({ page }) => {
     // Geometry World's canvas climbed ~8px every 220ms because a ResizeObserver fed
     // its own output back in. This one declares display:block, which is the fix.
@@ -147,6 +194,25 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     // EVA is genuinely phase-gated rather than always present.
     await harness.mount(page, { moonMission: { missionPhase: 0 } }, undefined, { expectCanvas: false });
     expect(await page.evaluate(() => !!document.querySelector('canvas[data-eva-canvas="true"]'))).toBe(false);
+
+    const errs: string[] = (await page.evaluate(() => (window as any).__events.errors))
+      .filter((m: string) => !/ResizeObserver loop/.test(m));
+    expect(errs).toEqual([]);
+  });
+
+  test('the trans-Earth coast paints its own 2D canvas', async ({ page }) => {
+    // Phase 8 is 2D, not WebGL, so expectCanvas is off — the harness would otherwise
+    // sit waiting for a GL context that this phase never creates. Worth a browser
+    // check anyway: a ref callback that throws is swallowed into a blank rectangle,
+    // and no jsdom test renders past phase 0.
+    await harness.mount(page, { moonMission: { missionPhase: 8 } }, undefined, { expectCanvas: false });
+    await page.waitForTimeout(1500); // let the coast animate past its opening frames
+
+    const canvas = page.locator('canvas[data-teicoast-canvas="true"]');
+    expect(await canvas.count(), 'trans-Earth coast canvas never mounted').toBe(1);
+
+    const shot = await canvas.screenshot({ timeout: 60000 });
+    expect(shot.length, 'the coast canvas is blank').toBeGreaterThan(6000);
 
     const errs: string[] = (await page.evaluate(() => (window as any).__events.errors))
       .filter((m: string) => !/ResizeObserver loop/.test(m));
