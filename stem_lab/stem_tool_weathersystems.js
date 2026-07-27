@@ -5003,6 +5003,70 @@ var geographyGroup = new THREE.Group();
       // why each one follows from what that hazard actually does to people outdoors. It
       // deliberately does not mark which hazard is present: identifying that from the
       // evidence is the task.
+      // Three completion cards side by side say what the parts are but not how they relate.
+      // The part learners skip is precisely the link: reasoning is what carries evidence to
+      // a claim, so the diagram draws it as that bridge rather than a third item in a list.
+      function cerStructureDiagram(steps) {
+        function stepById(id) { return steps.filter(function (item) { return item.id === id; })[0] || { complete: false }; }
+        var evidence = stepById('evidence');
+        var reasoning = stepById('reasoning');
+        var claimStep = stepById('claim');
+        var readyFill = dark ? '#10b981' : '#0d9488';
+        var idleStroke = dark ? '#475569' : '#cbd5e1';
+        var idleFill = dark ? 'rgba(15,23,42,.6)' : '#ffffff';
+        var cerArrowId = 'weather-cer-arrow-' + (reasoning.complete ? 'ready' : 'idle');
+        function block(x, width, step, label, hint) {
+          return h('g', null,
+            h('rect', {
+              x: x, y: 62, width: width, height: 54, rx: 10,
+              fill: step.complete ? readyFill : idleFill,
+              fillOpacity: step.complete ? 0.16 : 1,
+              stroke: step.complete ? readyFill : idleStroke,
+              strokeWidth: 2,
+              strokeDasharray: step.complete ? undefined : '5 4'
+            }),
+            h('text', { x: x + width / 2, y: 84, textAnchor: 'middle', fill: chartInk, fontSize: 12, fontWeight: 800 }, label),
+            h('text', { x: x + width / 2, y: 102, textAnchor: 'middle', fill: chartMutedInk, fontSize: 10 }, hint)
+          );
+        }
+        return h('div', { 'data-weather-cer-structure': true },
+          h('svg', {
+            viewBox: '0 0 700 140', className: 'h-auto w-full', role: 'img',
+            'aria-label': 'Structure of the explanation: evidence on the left, claim on the right, and reasoning drawn as the bridge that carries one to the other. '
+              + 'Evidence is ' + (evidence.complete ? 'ready' : 'not yet built') + ', reasoning is ' + (reasoning.complete ? 'ready' : 'not yet built') + ', claim is ' + (claimStep.complete ? 'ready' : 'not yet built') + '.'
+          },
+            // Marker ids are document-wide, so the id carries the state it was defined for.
+            // A single shared id would let one instance's arrowhead colour win everywhere.
+            h('defs', null,
+              h('marker', { id: cerArrowId, markerWidth: 9, markerHeight: 9, refX: 7, refY: 3.2, orient: 'auto' },
+                h('path', { d: 'M0,0 L0,6.4 L8,3.2 z', fill: reasoning.complete ? readyFill : idleStroke })
+              )
+            ),
+            block(14, 196, evidence, 'EVIDENCE', 'what you observed'),
+            block(490, 196, claimStep, 'CLAIM', 'what you predict'),
+            // The shaft is the reasoning: it only becomes solid once the link is written.
+            h('line', {
+              x1: 218, y1: 89, x2: 480, y2: 89,
+              stroke: reasoning.complete ? readyFill : idleStroke, strokeWidth: 3,
+              strokeDasharray: reasoning.complete ? undefined : '6 5',
+              markerEnd: 'url(#' + cerArrowId + ')'
+            }),
+            h('rect', {
+              x: 246, y: 16, width: 208, height: 44, rx: 10,
+              fill: reasoning.complete ? readyFill : idleFill,
+              fillOpacity: reasoning.complete ? 0.16 : 1,
+              stroke: reasoning.complete ? readyFill : idleStroke,
+              strokeWidth: 2,
+              strokeDasharray: reasoning.complete ? undefined : '5 4'
+            }),
+            h('line', { x1: 350, y1: 60, x2: 350, y2: 87, stroke: reasoning.complete ? readyFill : idleStroke, strokeWidth: 2, strokeDasharray: reasoning.complete ? undefined : '4 4' }),
+            h('text', { x: 350, y: 36, textAnchor: 'middle', fill: chartInk, fontSize: 12, fontWeight: 800 }, 'REASONING'),
+            h('text', { x: 350, y: 52, textAnchor: 'middle', fill: chartMutedInk, fontSize: 10 }, 'why this evidence supports that claim'),
+            h('text', { x: 350, y: 132, textAnchor: 'middle', fill: chartMutedInk, fontSize: 10, fontWeight: 700 }, reasoning.complete ? 'The link is written' : 'Without the link, the parts are just a list')
+          )
+        );
+      }
+
       function readinessDecisionGuide() {
         // The pairing is read from the same function the scorer uses, so the guide cannot
         // teach one answer while the forecast is marked against another.
@@ -6485,7 +6549,8 @@ var geographyGroup = new THREE.Group();
               )
             ),
             h('div', { className: 'p-3' },
-              h('div', { className: 'grid gap-2 sm:grid-cols-3' }, steps.map(function (step) {
+              cerStructureDiagram(steps),
+              h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3' }, steps.map(function (step) {
                 return h('article', { key: step.id, className: 'rounded-lg border p-3 ' + (step.complete ? (dark ? 'border-emerald-400/25 bg-emerald-400/10' : 'border-emerald-200 bg-emerald-50') : (dark ? 'border-slate-700 bg-slate-950/50' : 'border-slate-200 bg-white')) },
                   h('div', { className: 'flex items-center justify-between gap-2' },
                     h('span', { className: 'text-lg', 'aria-hidden': true }, step.icon),

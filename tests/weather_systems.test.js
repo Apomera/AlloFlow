@@ -2590,6 +2590,38 @@ describe('Weather Systems concept diagrams', () => {
     expect(html).toContain('Air sinks and spreads outward.');
   });
 
+  it('draws reasoning as the link from evidence to claim, not a third item in a list', () => {
+    const html = render({ tab: 'forecast', scenario: 'coldFront', simHour: 4 });
+    const block = (html.match(/data-weather-cer-structure[\s\S]*?<\/svg>/) || [''])[0];
+    expect(block).toBeTruthy();
+    expect(block).toContain('EVIDENCE');
+    expect(block).toContain('CLAIM');
+    expect(block).toContain('REASONING');
+    // The shaft runs evidence -> claim and carries an arrowhead, so the direction of
+    // support is drawn rather than implied by card order.
+    expect(block).toMatch(/marker-end="url\(#weather-cer-arrow-/);
+    expect(block).toContain('why this evidence supports that claim');
+  });
+
+  it('shows the link as unbuilt until the reasoning is actually written', () => {
+    const empty = render({ tab: 'forecast', scenario: 'coldFront', simHour: 4 });
+    const done = render({
+      tab: 'forecast', scenario: 'coldFront', simHour: 4,
+      predictionPrecip: 'rain', predictionTiming: '4-6',
+      evidence: ['pressure', 'clouds', 'tempDew'],
+      reasoning: 'Pressure fell steadily while the dew point rose, so the air is approaching saturation ahead of the boundary and rain should begin within a few hours.',
+    });
+    const cer = (html) => (html.match(/data-weather-cer-structure[\s\S]*?<\/svg>/) || [''])[0];
+    expect(cer(empty)).toContain('Without the link, the parts are just a list');
+    expect(cer(done)).toContain('The link is written');
+    // Dashed while unbuilt, solid once written.
+    expect(cer(empty)).toContain('stroke-dasharray');
+    expect(cer(done)).not.toContain('stroke-dasharray');
+    // Marker ids are document-wide, so each state defines its own rather than sharing one.
+    expect(cer(empty)).toContain('weather-cer-arrow-idle');
+    expect(cer(done)).toContain('weather-cer-arrow-ready');
+  });
+
   it('teaches the same hazard-to-action pairing the forecast is scored against', () => {
     const { readinessActionForHazard } = window.WeatherSystemsKernel;
     const html = render({ tab: 'forecast', scenario: 'coldFront', simHour: 4 });
