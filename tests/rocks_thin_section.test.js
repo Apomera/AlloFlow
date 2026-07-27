@@ -160,7 +160,9 @@ describe('thin section — the texture has to match the caption', () => {
     const rows = [...block.matchAll(/^\s{4}(\w+):\s*\{ mag: \d+, fabric: '(\w+)'/gm)];
     expect(rows.length).toBe(20);
     rows.forEach((r) => {
-      expect(['interlocking', 'clastic', 'foliated'], `${r[1]}`).toContain(r[2]);
+      // 'shards' is fragmental like clastic but keeps angular edges — ash was
+      // never transported, so nothing rounded it.
+      expect(['interlocking', 'clastic', 'shards', 'foliated'], `${r[1]}`).toContain(r[2]);
     });
   });
 
@@ -188,6 +190,33 @@ describe('thin section — the texture has to match the caption', () => {
     // stretched along it — that alignment is what the cleavage IS.
     expect(src).toContain("rot: fabric === 'foliated' ? FOLIATION + (rnd() - 0.5) * 26 : rnd() * 180");
     expect(src).toContain("elong: fabric === 'foliated' ? 1.75 + rnd() * 0.6 : 1");
+  });
+
+  it('draws pumice as mostly holes, because that is what it is', () => {
+    // Its caption already said "mostly holes" while the render showed a solid
+    // mass indistinguishable from obsidian. The voids are the whole identity of
+    // the rock — they are why it floats.
+    const pum = section(render('pumice', { xpl: false, stage: 0 }));
+    const obs = section(render('obsidian', { xpl: false, stage: 0 }));
+    const vesicles = (pum.match(/<ellipse/g) || []).length;
+    expect(vesicles).toBeGreaterThan(12);
+    // Obsidian is the same glass with no bubbles — the contrast is the point.
+    expect((obs.match(/<ellipse/g) || []).length).toBe(0);
+  });
+
+  it('keeps ash shards angular — they were never transported', () => {
+    // Tuff is fragmental, but tagging it clastic gave it a rounding history it
+    // never had. Sandstone's grains were rounded by transport; ash shards were
+    // blown out of a vent and welded where they fell.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    expect(src).toContain("fabric: 'shards'");
+    expect(src).toContain("sides: fabric === 'clastic' ? 9 : fabric === 'shards' ? 4 :");
+    // Both are fragmental, so both get a matrix...
+    const CEMENT = '#efe9dd';
+    expect(section(render('tuff', { xpl: false, stage: 0 }))).toContain(CEMENT);
+    // ...but they must not look the same.
+    expect(section(render('tuff', { xpl: false, stage: 0 })))
+      .not.toEqual(section(render('sandstone', { xpl: false, stage: 0 })));
   });
 
   it('makes the three fabrics visibly different from each other', () => {

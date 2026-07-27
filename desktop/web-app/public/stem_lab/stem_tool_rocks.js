@@ -536,8 +536,11 @@
     andesite:     { mag: 100, fabric: 'interlocking', parts: [['feldspar', 0.52], ['amphibole', 0.24], ['pyroxene', 0.16], ['glass', 0.08]], look: 'A few larger crystals sitting in a much finer groundmass: two cooling rates recorded in one rock.' },
     rhyolite:     { mag: 100, fabric: 'interlocking', parts: [['quartz', 0.28], ['feldspar', 0.40], ['glass', 0.32]], look: 'Glassy groundmass with scattered quartz and feldspar — erupted, not intruded.' },
     obsidian:     { mag: 100, fabric: 'interlocking', parts: [['glass', 1.0]], look: 'No crystals at all. Under crossed polars the whole field stays black however far you rotate, because glass is not a crystal.' },
-    pumice:       { mag: 40, fabric: 'interlocking',  parts: [['glass', 0.92], ['feldspar', 0.08]], look: 'Glass threaded with frozen gas bubbles — mostly holes.' },
-    tuff:         { mag: 40, fabric: 'clastic',  parts: [['glass', 0.55], ['feldspar', 0.20], ['quartz', 0.15], ['clay', 0.10]], look: 'Broken shards of volcanic glass welded together — an ash fall turned to rock.' },
+    pumice:       { mag: 40, fabric: 'interlocking', vesicles: 0.42,  parts: [['glass', 0.92], ['feldspar', 0.08]], look: 'Glass threaded with frozen gas bubbles — mostly holes. Those voids are why it floats.' },
+    // 'shards', not 'clastic': tuff IS fragmental, but its fragments were never
+    // transported, so they are sharp and cuspate rather than rounded. Tagging it
+    // clastic gave it a rounding history it never had.
+    tuff:         { mag: 40, fabric: 'shards',  parts: [['glass', 0.55], ['feldspar', 0.20], ['quartz', 0.15], ['clay', 0.10]], look: 'Broken shards of volcanic glass welded together — an ash fall turned to rock. The fragments are angular because they were never carried anywhere.' },
     sandstone:    { mag: 40, fabric: 'clastic',  parts: [['quartz', 0.70], ['feldspar', 0.12], ['cement', 0.18]], look: 'ROUNDED grains with cement between them — the rounding happened during transport, and the space between grains is the giveaway that this was once loose sand.' },
     conglom:      { mag: 20, fabric: 'clastic',  parts: [['quartz', 0.45], ['feldspar', 0.18], ['clay', 0.15], ['cement', 0.22]], look: 'Large rounded clasts of several different rocks, set in a finer matrix.' },
     shale:        { mag: 200, fabric: 'foliated', parts: [['clay', 0.78], ['quartz', 0.16], ['mica', 0.06]], look: 'Clay too fine to resolve even at this magnification, with the flakes weakly lined up.' },
@@ -591,7 +594,10 @@
 
     // Clastic rocks sit in a cement matrix, so paint that first and leave the
     // grains smaller than their cell — the gaps ARE the diagnostic.
-    if (fabric === 'clastic') {
+    // 'shards' is fragmental like clastic — matrix plus separate fragments — but
+    // the fragments keep their angular edges.
+    var fragmental = fabric === 'clastic' || fabric === 'shards';
+    if (fragmental) {
       kids.push(h('circle', {
         key: 'matrix', cx: CX, cy: CY, r: R,
         fill: xpl ? '#15151b' : (RK_OPTICS.cement.ppl)
@@ -600,13 +606,13 @@
 
     for (var gy = -R; gy < R + STEP; gy += STEP) {
       for (var gx = -R; gx < R + STEP; gx += STEP) {
-        var jitter = fabric === 'clastic' ? 0.5 : 0.7;
+        var jitter = fragmental ? 0.5 : 0.7;
         var jx = CX + gx + (rnd() - 0.5) * STEP * jitter;
         var jy = CY + gy + (rnd() - 0.5) * STEP * jitter;
         if (Math.sqrt((jx - CX) * (jx - CX) + (jy - CY) * (jy - CY)) > R + STEP) continue;
         var mineral = pool[Math.floor(rnd() * pool.length)];
         // In a clastic rock the cement is the matrix, not a grain.
-        if (fabric === 'clastic' && mineral === 'cement') continue;
+        if (fragmental && mineral === 'cement') continue;
         grains.push({
           x: jx, y: jy,
           m: mineral,
@@ -614,9 +620,10 @@
           // rotated into one plane, so they scatter only slightly around it.
           rot: fabric === 'foliated' ? FOLIATION + (rnd() - 0.5) * 26 : rnd() * 180,
           // Clastic grains are separated by cement; interlocking ones fill the cell.
-          r: STEP * (fabric === 'clastic' ? (0.34 + rnd() * 0.20) : (0.55 + rnd() * 0.35)),
-          // Rounded by transport, angular when crystallised, platy when foliated.
-          sides: fabric === 'clastic' ? 9 : 5 + Math.floor(rnd() * 3),
+          r: STEP * (fragmental ? (0.34 + rnd() * 0.20) : (0.55 + rnd() * 0.35)),
+          // Rounded ONLY where transport did the rounding. Ash shards were never
+          // carried anywhere, so they stay sharp; crystallised grains interlock.
+          sides: fabric === 'clastic' ? 9 : fabric === 'shards' ? 4 : 5 + Math.floor(rnd() * 3),
           elong: fabric === 'foliated' ? 1.75 + rnd() * 0.6 : 1,
           wob: rnd()
         });
@@ -700,6 +707,32 @@
         }
       }
     });
+
+    // Vesicles — frozen gas bubbles. Pumice's caption already said "mostly
+    // holes" while the render showed a solid mass indistinguishable from
+    // obsidian. The voids are the whole identity of the rock: they are why it
+    // floats, and in a real section they are simply empty, so they read as
+    // bright in plane light and stay black under crossed polars like any other
+    // non-crystalline space.
+    if (sec.vesicles) {
+      var vRnd = rkSeed(id + '-vesicles');
+      var vN = Math.round(46 * sec.vesicles);
+      for (var vi = 0; vi < vN; vi++) {
+        var va = vRnd() * Math.PI * 2;
+        var vd = Math.sqrt(vRnd()) * (R - 8);
+        g.push(h('ellipse', {
+          key: 'ves' + vi,
+          cx: (CX + Math.cos(va) * vd).toFixed(1),
+          cy: (CY + Math.sin(va) * vd).toFixed(1),
+          rx: (5 + vRnd() * 13).toFixed(1),
+          ry: (4 + vRnd() * 11).toFixed(1),
+          transform: 'rotate(' + (vRnd() * 180).toFixed(0) + ' ' + (CX + Math.cos(va) * vd).toFixed(1) + ' ' + (CY + Math.sin(va) * vd).toFixed(1) + ')',
+          fill: xpl ? '#07070a' : '#ffffff',
+          stroke: xpl ? 'rgba(90,90,110,0.45)' : 'rgba(120,110,95,0.55)',
+          strokeWidth: 1
+        }));
+      }
+    }
 
     kids.push(h('g', { key: 'grains', clipPath: 'url(#' + clip + ')' }, g));
 
