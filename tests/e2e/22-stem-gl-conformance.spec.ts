@@ -47,6 +47,17 @@ const MANIFEST: ToolEntry[] = [
   { id: 'geoSandbox', file: 'stem_lab/stem_tool_geosandbox.js' },
   { id: 'geologyExplorer', file: 'stem_lab/stem_tool_geologyexplorer.js' },
   { id: 'echoTrainer', file: 'stem_lab/stem_tool_echotrainer.js', note: 'also mounts a 2D canvas' },
+  // First entry that needs STATE to reach its 3D. RoadReady opens on a menu; the
+  // driving view builds the scene via StemLab.ensureThree({orbit:false}) and a
+  // WebGLRenderer. It is the largest STEM tool (32.9k lines) and had no browser
+  // coverage at all. State shape taken from the existing jsdom fixture in
+  // tests/roadready_canvas_alternatives_a11y.js, then confirmed by running this.
+  {
+    id: 'roadReady',
+    file: 'stem_lab/stem_tool_roadready.js',
+    state: { roadReady: { view: 'driving', scenario: 'residential', vehicle: 'sedan' } },
+    note: 'also mounts 2D HUD//minimap canvases; needs state to reach the 3D view',
+  },
 ];
 
 // NOT in the manifest, and why:
