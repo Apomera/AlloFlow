@@ -30,6 +30,11 @@ const eslintScope = require('eslint-scope');
 // Transform JSX → plain JS via the esbuild CLI (it isn't reliably require()-able here, but `npx esbuild`
 // is what the rest of the toolchain uses). Reads from stdin, writes JS to stdout.
 const jsxToJs = (src) => execSync('npx esbuild --loader=jsx --format=cjs', { input: src, maxBuffer: 64 * 1024 * 1024 }).toString();
+// .js files are already plain JS — the STEM tools build their UI with
+// React.createElement / h(), never JSX. Skipping the transform for them avoids
+// 129 npx spawns per run (~30s) and one whole class of failure; acorn parses
+// all 129 directly in ~3s.
+const needsJsx = (rel) => /\.jsx$/i.test(rel);
 
 // Browser + JS built-in globals that legitimately appear unresolved (the runtime provides them).
 const KNOWN_GLOBALS = new Set([
@@ -67,7 +72,36 @@ const files = args.filter((a) => a !== '--update');
 // (and never passed in the deps bag either), so the local-backend standards path
 // threw ReferenceError instead of searching. Nothing caught it because this file
 // was outside the gate's default set.
-if (!files.length) files.push('doc_pipeline_source.jsx', 'view_pdf_audit_source.jsx', 'gemini_api_source.jsx', 'immersive_reader_source.jsx', 'phase_o_misc_handlers_source.jsx', 'quickstart_source.jsx');
+// stem_lab/stem_lab_module.js joined the list 2026-07-27. It is the STEM Lab
+// HOST — it owns registerTool, ensureThree and (since the 3D work) the shared
+// viewer shell makeBayViewer, so a dangler here breaks tools rather than one
+// screen. Two were sitting in it, both invisible to every other gate:
+//   · `_allStemTools` in _questAutoLabel — declared inside the explore-tab
+//     render branch, so the quest builder's "Auto-generate smart quests" button
+//     threw ReferenceError on every click and the live preview crashed as soon
+//     as a tool was picked. Fixed.
+//   · `sourceText` — typeof-guarded so it cannot throw, but dead: the fallback
+//     always yields ''. Baselined, not fixed; see the note in the module.
+// Unlike the *_source.jsx fragments this is a standalone IIFE, so a free
+// variable here is far more likely to be a real bug than an injection contract.
+// ALL stem_lab tools joined the list 2026-07-27. Until then the gate only saw
+// the handful of files named above, so 129 tools went unexamined — and that is
+// not theoretical: sweeping them by hand turned up ReferenceErrors in eighteen,
+// including a quiz that awarded no XP for a correct answer (watercycle), an
+// event system that threw on every random event (epidemic), seven Fraction Lab
+// tabs that blanked the tool, and a GPU leak hidden behind a best-effort catch
+// (weldlab). Every one of those was a live bug reaching students that no other
+// gate could see. The backlog is empty as of a77d1acba, so this baseline
+// captures only genuine injection-contract names.
+if (!files.length) {
+  files.push('doc_pipeline_source.jsx', 'view_pdf_audit_source.jsx', 'gemini_api_source.jsx', 'immersive_reader_source.jsx', 'phase_o_misc_handlers_source.jsx', 'quickstart_source.jsx', 'stem_lab/stem_lab_module.js');
+  const stemDir = path.resolve(__dirname, '..', 'stem_lab');
+  if (fs.existsSync(stemDir)) {
+    for (const f of fs.readdirSync(stemDir).sort()) {
+      if (/^stem_tool_.*\.js$/.test(f)) files.push('stem_lab/' + f);
+    }
+  }
+}
 
 const BASELINE_PATH = path.resolve(__dirname, 'free_vars_baseline.json');
 const baseline = (!UPDATE && fs.existsSync(BASELINE_PATH)) ? JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8')) : {};
@@ -79,7 +113,7 @@ for (const rel of files) {
   const src = fs.readFileSync(file, 'utf8');
   let js;
   try {
-    js = jsxToJs(src);
+    js = needsJsx(rel) ? jsxToJs(src) : src;
   } catch (e) { console.error('  ! esbuild failed for ' + rel + ': ' + e.message); totalBad++; continue; }
 
   let ast;
