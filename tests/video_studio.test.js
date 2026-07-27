@@ -2391,6 +2391,52 @@ describe('take persistence + export hardening wiring', () => {
     expect(m).not.toMatch(/callGemini\(\w+, false, true\)/);
     expect(m.match(/callGemini\(\w+, true, false\)/g) || []).toHaveLength(7);
   });
+  it('long-running export stages are cancellable and do not poison the next attempt', () => {
+    const html = popup();
+    // The whole input video lives in the ffmpeg wasm heap. Deleting it only on
+    // success meant a failed conversion left it resident, and the cached FFmpeg
+    // instance is reused — so the retry OOMed on a clip that should have fit.
+    const conv = html.slice(html.indexOf('async function convertBlobToMp4'), html.indexOf('async function maybeConvertStrictMp4'));
+    expect(conv).toContain('} finally {');
+    expect(conv.indexOf('deleteFile(inputName)')).toBeGreaterThan(conv.indexOf('} finally {'));
+    expect(html).toContain('try { resetMp4Converter(); } catch (_) {}');
+    // decodeAudioData / startRendering / the Opus pass are not abortable, but they
+    // sit behind awaits — without a check at each boundary the whole mix ran to
+    // completion after Cancel while the UI claimed it had stopped.
+    expect(html).toContain('async function renderExportAudioOffline(take, seg, cardDur, totalDur, audioCfg, musicBed, shouldCancel)');
+    expect(html.match(/abortIfAsked\(\)/g) || []).toHaveLength(6); // one per await boundary in the mix
+    expect(html).toContain('renderExportAudioOffline(take, seg, cardDur, totalDur, audioCfg, musicBed, function () { return canceled; })');
+    expect(html).toContain("if (canceled) throw exportAbortError('Export canceled');");
+  });
+  it('autosave uses one connection and reports its own failures', () => {
+    const html = popup();
+    // saveDraft is bound to `input` on continuous sliders, so a single drag used
+    // to open dozens of IndexedDB connections that were never closed.
+    expect(html).toContain('var dbConn = null, dbOpening = null;');
+    expect(html).not.toMatch(/req\.onerror = function \(\) \{\};/);
+    // A quota error left the shelf promising autosave while everything was lost.
+    expect(html).toContain('function reportDraftSaveFailure(err)');
+    expect(html).toContain('tx.onabort = function () { reportDraftSaveFailure(');
+    expect(html).toContain('Autosave FAILED');
+  });
+  it('a playing video does not rebuild the timeline out from under the keyboard', () => {
+    const html = popup();
+    // Only the playhead depends on the clock, so a tick must not wipe the lane
+    // strip — while it did, its buttons could not be reached by Tab at all.
+    expect(html).toContain('function updateTimelineLanePlayheads()');
+    const tickAt = html.indexOf("addEventListener('timeupdate', function () { updateEditCaptionPreview()");
+    expect(tickAt).toBeGreaterThan(-1);
+    const tick = html.slice(tickAt, tickAt + 400);
+    expect(tick).toContain('updateTimelineLanePlayheads()');
+    expect(tick).not.toContain('renderTimelineLanes()');
+    // The edit map still rebuilds (its "upcoming" scope is time-dependent), so it
+    // has to put focus back where it was.
+    expect(html).toContain('function focusKeyWithin(host)');
+    expect(html).toContain('function restoreFocusWithin(host, key)');
+    expect(html).toContain('restoreFocusWithin(listHost, mapFocusKey)');
+    expect(html).toContain('seg.dataset.focusKey =');
+    expect(html).toContain('btn.dataset.focusKey =');
+  });
   it('consent and destination are honest about what leaves the device', () => {
     const html = popup();
     // The acks read "I checked that no student faces or records are visible" —

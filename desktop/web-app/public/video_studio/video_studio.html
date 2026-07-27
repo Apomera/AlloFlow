@@ -4408,14 +4408,22 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       '-movflags', 'faststart',
       outputName
     ];
-    var code = await ffmpeg.exec(args);
-    throwIfMp4Canceled();
-    if (code) throw new Error('the MP4 converter stopped before finishing');
-    var data = await ffmpeg.readFile(outputName);
-    try { await ffmpeg.deleteFile(inputName); } catch (_) {}
-    try { await ffmpeg.deleteFile(outputName); } catch (_) {}
-    if (onProgress) onProgress('MP4 conversion complete.', 100);
-    return new Blob([data], { type: 'video/mp4' });
+    // The whole input video is now inside the wasm heap. Deleting it only on the
+    // success path meant a failed conversion (typically libx264 running out of
+    // heap on a long take) left the entire file resident — and because the
+    // FFmpeg instance is cached and reused, the NEXT attempt started with the
+    // previous one's file still there and OOMed on a clip that should have fit.
+    try {
+      var code = await ffmpeg.exec(args);
+      throwIfMp4Canceled();
+      if (code) throw new Error('the MP4 converter stopped before finishing');
+      var data = await ffmpeg.readFile(outputName);
+      if (onProgress) onProgress('MP4 conversion complete.', 100);
+      return new Blob([data], { type: 'video/mp4' });
+    } finally {
+      try { await ffmpeg.deleteFile(inputName); } catch (_) {}
+      try { await ffmpeg.deleteFile(outputName); } catch (_) {}
+    }
   }
   async function maybeConvertStrictMp4(blob, requested, statusEl) {
     if (sanitizeExportContainer(requested) !== 'mp4_convert' || blobIsMp4(blob)) {
@@ -4437,6 +4445,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         setMp4ConversionUi(false);
         throw mp4AbortError();
       }
+      // Drop the cached FFmpeg instance after a real failure. It is reused
+      // across exports, and a run that died part-way (usually libx264 exhausting
+      // the wasm heap) leaves that heap fragmented or exhausted, so the retry the
+      // teacher is about to attempt would fail on a clip that should have fit.
+      // Reloading costs a few seconds; reusing a poisoned instance costs the
+      // export. (Cancellation already terminates it, above.)
+      try { resetMp4Converter(); } catch (_) {}
       var friendly = mp4ConverterTroubleshootingMessage(e);
       if (statusEl) setStatus(statusEl, friendly, 'warn');
       return {
@@ -8457,6 +8472,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var status = $('editMapStatus'), countHost = $('editMapCounts'), listHost = $('editMapList');
     if (!status || !countHost || !listHost) return;
     var t = currentTake();
+    // The "upcoming" scope genuinely changes as the clock advances, so this list
+    // still rebuilds on a tick — keep the teacher's place across the rebuild.
+    var mapFocusKey = focusKeyWithin(listHost);
     countHost.innerHTML = '';
     listHost.innerHTML = '';
     if (!t) {
@@ -8505,6 +8523,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       btn.className = 'edit-map-item';
       btn.setAttribute('aria-label', 'Open ' + entry.label + ' at ' + fmtClock(entry.start));
       btn.setAttribute('aria-current', String(now >= entry.start - 0.04 && now <= entry.end + 0.04));
+      btn.dataset.focusKey = entry.lane + '@' + entry.start;
       var time = document.createElement('span');
       time.className = 'time';
       time.textContent = fmtClock(entry.start);
@@ -8520,10 +8539,39 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       btn.addEventListener('click', function () { openTimelineEntry(entry); });
       listHost.appendChild(btn);
     });
+    restoreFocusWithin(listHost, mapFocusKey);
+  }
+  // These list renderers wipe and rebuild their DOM, which drops focus to <body>
+  // if the teacher was on one of the buttons. Note the key BEFORE the wipe and
+  // put focus back on the same entry afterwards.
+  function focusKeyWithin(host) {
+    try {
+      var active = document.activeElement;
+      if (host && active && active !== document.body && host.contains(active)) return active.getAttribute('data-focus-key');
+    } catch (_) {}
+    return null;
+  }
+  function restoreFocusWithin(host, key) {
+    if (!host || !key) return;
+    try {
+      var again = host.querySelector('[data-focus-key="' + String(key).replace(/["\\]/g, '\\$&') + '"]');
+      if (again && typeof again.focus === 'function') again.focus();
+    } catch (_) {}
+  }
+  // Only the playheads depend on the clock, so a tick does not need a rebuild.
+  function updateTimelineLanePlayheads() {
+    var host = $('timelineLaneSummary'); if (!host) return;
+    var t = currentTake(); if (!t) return;
+    var dur = Math.max(0.01, Number(t.duration) || 0.01);
+    var now = Math.max(0, Math.min(dur, $('editVideo').currentTime || 0));
+    var left = (now / dur * 100).toFixed(3) + '%';
+    var heads = host.querySelectorAll('.timeline-lane-playhead');
+    for (var i = 0; i < heads.length; i++) heads[i].style.left = left;
   }
   function renderTimelineLanes() {
     var host = $('timelineLaneSummary'); if (!host) return;
     var t = currentTake();
+    var laneFocusKey = focusKeyWithin(host);
     host.innerHTML = '';
     if (!t) { renderEditMap(); return; }
     var dur = Math.max(0.01, Number(t.duration) || 0.01);
@@ -8550,6 +8598,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         seg.style.background = item.color;
         seg.title = item.label ? item.label + ' (' + fmtClock(item.start) + ')' : fmtClock(item.start);
         seg.setAttribute('aria-label', 'Open ' + (item.label || lane.label) + ' at ' + fmtClock(item.start));
+        seg.dataset.focusKey = lane.label + '@' + item.start;
         seg.addEventListener('click', function () { openTimelineEntry(item); });
         track.appendChild(seg);
       });
@@ -8561,6 +8610,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       row.appendChild(track);
       host.appendChild(row);
     });
+    restoreFocusWithin(host, laneFocusKey);
     updateTimelineNavStatus();
     renderEditMap();
   }
@@ -8659,8 +8709,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   $('editVideo').addEventListener('play', function () { cancelAnimationFrame(waveRaf); waveRaf = requestAnimationFrame(waveFollow); });
   $('editVideo').addEventListener('pause', function () { cancelAnimationFrame(waveRaf); drawWave(); });
   $('editVideo').addEventListener('seeked', drawWave);
-  $('editVideo').addEventListener('timeupdate', function () { updateEditCaptionPreview(); updateEditOverlayPreview(); renderTimelineLanes(); });
-  $('editVideo').addEventListener('seeked', function () { updateEditCaptionPreview(); updateEditOverlayPreview(); renderTimelineLanes(); });
+  // A tick only moves the playhead. Rebuilding the whole lane strip ~4x/second
+  // meant its buttons could not be reached by Tab at all while the video played,
+  // and pressing Enter on one ('seeked' fires) threw focus to <body>.
+  $('editVideo').addEventListener('timeupdate', function () { updateEditCaptionPreview(); updateEditOverlayPreview(); updateTimelineLanePlayheads(); updateTimelineNavStatus(); renderEditMap(); });
+  $('editVideo').addEventListener('seeked', function () { updateEditCaptionPreview(); updateEditOverlayPreview(); updateTimelineLanePlayheads(); updateTimelineNavStatus(); renderEditMap(); });
   $('editVideo').addEventListener('loadedmetadata', function () { updateEditCaptionPreview(); updateEditOverlayPreview(); renderTimelineLanes(); });
   window.addEventListener('resize', drawWave);
   ['trimStart', 'trimEnd'].forEach(function (id) { $(id).addEventListener('input', function () { drawWave(); refreshExportDecisionPreview(); }); });
@@ -13887,7 +13940,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // sound clips at their take times, music bed with speech ducking and loop.
   // A broken clip is skipped (live-path tolerance); an undecodable ORIGINAL
   // track throws so doExport falls back to the real-time encoder.
-  async function renderExportAudioOffline(take, seg, cardDur, totalDur, audioCfg, musicBed) {
+  // shouldCancel lets the caller abort between stages. decodeAudioData and
+  // OfflineAudioContext.startRendering are not themselves abortable, but they sit
+  // behind awaits — without a check at each boundary the whole mix (decode of the
+  // full take, a full-length offline render, then a complete Opus pass) ran to
+  // completion after the teacher pressed Cancel, pinning the CPU for up to a
+  // minute and a half while the UI claimed the export was cancelled.
+  async function renderExportAudioOffline(take, seg, cardDur, totalDur, audioCfg, musicBed, shouldCancel) {
+    var abortIfAsked = function () {
+      if (typeof shouldCancel === 'function' && shouldCancel()) throw exportAbortError('Export canceled');
+    };
     var removeAudio = !!(audioCfg && audioCfg.removeAll);
     var mixItems = [];
     if (take.narration && take.narration.blob) mixItems.push({ kind: 'speech', blob: take.narration.blob, at: 0, vol: take.narration.volume });
@@ -13899,7 +13961,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var oac = new OfflineAudioContext(2, Math.max(1, Math.ceil(totalDur * sr)), sr);
     var segLen = seg.end - seg.start;
     if (!removeAudio) {
+      abortIfAsked();
       var srcBuf = await oac.decodeAudioData(await take.blob.arrayBuffer());
+      abortIfAsked();
       var src = oac.createBufferSource(); src.buffer = srcBuf;
       var g = oac.createGain();
       var n = Math.max(2, Math.ceil(segLen / 0.01));
@@ -13913,6 +13977,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     for (var mi = 0; mi < mixItems.length; mi++) {
       var m = mixItems[mi];
       var mBuf;
+      abortIfAsked();
       try { mBuf = await oac.decodeAudioData(await m.blob.arrayBuffer()); } catch (_) { continue; }
       var mSrc = oac.createBufferSource(); mSrc.buffer = mBuf;
       var mGain = oac.createGain();
@@ -13945,7 +14010,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         mSrc.start(when2, offset2, Math.min(mBuf.duration - offset2, maxDur));
       }
     }
+    abortIfAsked();
     var rendered = await oac.startRendering();
+    abortIfAsked();
     var chunks = [];
     var encError = null;
     var aenc = new AudioEncoder({
@@ -13961,6 +14028,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var chL = rendered.getChannelData(0);
     var chR = rendered.numberOfChannels > 1 ? rendered.getChannelData(1) : chL;
     for (var off = 0; off < frames; off += FR) {
+      // Long takes are tens of thousands of 20ms frames; check periodically so a
+      // cancel does not have to wait for the whole Opus pass.
+      if ((off / FR) % 200 === 0) abortIfAsked();
       var nn = Math.min(FR, frames - off);
       var data = new Float32Array(nn * 2);
       data.set(chL.subarray(off, off + nn), 0);
@@ -14028,7 +14098,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           });
           venc.configure({ codec: 'vp8', width: w, height: hgt, bitrate: exportVideoBitrate(w, hgt), framerate: fps });
           setReencodeUi(true, 'Fast export: rendering the audio mix…');
-          var audioTrack = await renderExportAudioOffline(take, seg, cardDur, totalDur, audioCfg, musicBed);
+          var audioTrack = await renderExportAudioOffline(take, seg, cardDur, totalDur, audioCfg, musicBed, function () { return canceled; });
           if (canceled) throw exportAbortError('Export canceled');
           var framesSinceKey = 0;
           function encodeCanvasFrame(tsSec, keyHint) {
@@ -14118,6 +14188,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           venc.close(); venc = null;
           if (vErr) throw vErr;
           if (!videoChunks.length) throw new Error('no frames were encoded');
+          // vsMuxWebm is one synchronous pass that copies the whole file several
+          // times, so it cannot be interrupted — but there is no reason to start
+          // it for an export the teacher has already cancelled.
+          if (canceled) throw exportAbortError('Export canceled');
           var webm = vsMuxWebm({
             durationMs: Math.round(totalDur * 1000),
             video: { codec: 'vp8', width: w, height: hgt, chunks: videoChunks },
@@ -14526,22 +14600,65 @@ function vsPcmToWav(pcmBytes, sampleRate) {
 
   // ── IndexedDB drafts (this popup's origin persists, unlike Canvas) ──
   var DB_NAME = 'allo_video_studio', STORE = 'takes';
-  function withDb(fn) {
-    try {
-      var req = indexedDB.open(DB_NAME, 1);
-      req.onupgradeneeded = function () { req.result.createObjectStore(STORE, { keyPath: 'id' }); };
-      req.onsuccess = function () { fn(req.result); };
-      req.onerror = function () {};
-    } catch (_) {}
+  // ONE connection for the page. withDb used to indexedDB.open() on every call
+  // and never close(), and saveDraft is bound to `input` on continuous sliders
+  // (music-bed volume, clip volume), so a single drag opened dozens of
+  // connections that stayed open for the life of the popup.
+  var dbConn = null, dbOpening = null;
+  function withDb(fn, onError) {
+    if (dbConn) { try { fn(dbConn); } catch (e) { if (onError) onError(e); } return; }
+    if (!dbOpening) {
+      dbOpening = new Promise(function (resolve, reject) {
+        try {
+          var req = indexedDB.open(DB_NAME, 1);
+          req.onupgradeneeded = function () { req.result.createObjectStore(STORE, { keyPath: 'id' }); };
+          req.onsuccess = function () {
+            dbConn = req.result;
+            // A version change from another tab invalidates this handle.
+            try { dbConn.onclose = function () { dbConn = null; dbOpening = null; }; } catch (_) {}
+            try { dbConn.onversionchange = function () { try { dbConn.close(); } catch (_) {} dbConn = null; dbOpening = null; }; } catch (_) {}
+            resolve(dbConn);
+          };
+          req.onerror = function () { dbOpening = null; reject(req.error || new Error('storage unavailable')); };
+        } catch (e) { dbOpening = null; reject(e); }
+      });
+    }
+    dbOpening.then(function (db) {
+      try { fn(db); } catch (e) { if (onError) onError(e); }
+    }).catch(function (e) { if (onError) onError(e); });
+  }
+  // Autosave failures used to be swallowed entirely — no tx.onerror, an empty
+  // req.onerror, and a bare try/catch — while the Project shelf kept promising
+  // "Video Studio will autosave it here". A teacher who hit the storage quota
+  // lost every edit made afterwards and was told nothing.
+  var draftSaveFailed = false;
+  function reportDraftSaveFailure(err) {
+    var msg = String((err && (err.name || err.message)) || err || 'unknown error');
+    if (!draftSaveFailed) {
+      draftSaveFailed = true;
+      announce('Autosave failed. Download this take to keep it.');
+    }
+    if ($('projectStatus')) {
+      setStatus($('projectStatus'), 'Autosave FAILED (' + msg.slice(0, 80) + '). This take is not being saved to this device — use Download or Save .allopack before closing this window.', 'bad');
+    }
   }
   function saveDraft(take) {
     withDb(function (db) {
       try {
         var tx = db.transaction(STORE, 'readwrite');
+        tx.onerror = function () { reportDraftSaveFailure(tx.error); };
+        tx.onabort = function () { reportDraftSaveFailure(tx.error || new Error('transaction aborted')); };
         tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, transcriptEdits: vsSanitizeTranscriptEdits(take.transcriptEdits || [], take.duration || 0), transcriptWords: vsSanitizeTranscriptWords(take.transcriptWords || [], take.duration || 0), transcriptCleanupQueue: normalizeWordCleanupQueue(take, wordCleanupWords(take)), visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], localizations: take.localizations || [], scenePlan: take.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(take.mediaCredits || []), finishReview: take.finishReview || {}, isDemo: !!take.isDemo, demoSeriesId: String(take.demoSeriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || null, demoSeriesPart: Math.max(0, Math.round(Number(take.demoSeriesPart) || 0)), demoPolish: take.demoPolish ? cleanDemoPolish(take.demoPolish) : null, demoAudioMode: take.demoAudioMode || null, demoExpectedNarrationCount: Math.max(0, Number(take.demoExpectedNarrationCount) || 0), demoQualityScore: Math.max(0, Number(take.demoQualityScore) || 0), zooms: take.zooms || [], audio: cleanAudioState(take.audio, take.duration || 0), musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
-        tx.oncomplete = refreshProjectShelfSoon;
-      } catch (_) {}
-    });
+        tx.oncomplete = function () {
+          // Recovered after an earlier failure — stop showing the red warning.
+          if (draftSaveFailed) {
+            draftSaveFailed = false;
+            if ($('projectStatus')) setStatus($('projectStatus'), 'Autosave is working again.', 'ok');
+          }
+          refreshProjectShelfSoon();
+        };
+      } catch (e) { reportDraftSaveFailure(e); }
+    }, reportDraftSaveFailure);
   }
   function deleteDraft(id) {
     withDb(function (db) {
