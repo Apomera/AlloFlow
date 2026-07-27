@@ -318,8 +318,12 @@ const handleFindStandards = async (gradeContext = null, deps) => {
                 - You are a JSON generator. You are NOT a chatbot.
                 - Return ONLY the raw JSON array of objects, same format as above.
               `;
+              // Explicit query — see the note in handleWizardStandardLookup.
+              // The prompt's `User Query/Skill: "..."` line otherwise regex-scrapes
+              // down to the bare skill, losing the grade and framework.
+              const searchQuery = `${aiStandardRegion || 'CCSS'} ${effectiveGrade} "${aiStandardQuery}" educational standard`;
               try {
-                  const result = await callGemini(prompt, false, true);
+                  const result = await callGemini(prompt, false, true, null, searchQuery);
                   if (typeof result === 'object' && result.text) {
                       textToParse = result.text;
                   } else if (typeof result === 'string') {
@@ -559,6 +563,21 @@ const handleWizardStandardLookup = async (grade, goal, region, deps) => {
                 }
             ]
           `;
+          // The web query must be built explicitly. Left to itself,
+          // WebSearchProvider._extractSearchQuery regex-scrapes the prompt and
+          // matches `Learning Goal: "..."` — which yields the BARE goal ("main
+          // ideas"), dropping the grade and the framework. Searching the open
+          // web for "main ideas" returns reading-comprehension blogs with no
+          // standard codes in them, so the model has nothing to extract and the
+          // Find button returns an empty list.
+          //
+          // This did not bite under the old google_search grounding, where
+          // Gemini itself decided what to search from the full prompt. The
+          // Canvas transport injects results the client fetched, so the client
+          // is now responsible for asking a good question.
+          //
+          // Same query the local-backend branch above already builds.
+          const searchQuery = `${region || 'CCSS'} ${grade} "${goal}" educational standard`;
           // Grounded first. When the environment has no web-search transport
           // (Canvas since the maintainer proxy was retired), callGemini throws
           // allo/search-unavailable rather than silently returning ungrounded
@@ -570,7 +589,7 @@ const handleWizardStandardLookup = async (grade, goal, region, deps) => {
           let textToParse = "";
           let webVerified = true;
           try {
-              const result = await callGemini(prompt, false, true);
+              const result = await callGemini(prompt, false, true, null, searchQuery);
               if (typeof result === 'object' && result.text) {
                   textToParse = result.text;
               } else {

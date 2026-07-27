@@ -47,6 +47,38 @@ beforeAll(() => {
 });
 
 describe('wizard standards lookup', () => {
+  it('sends an explicit web query carrying grade + framework, not the bare goal', async () => {
+    // The Canvas search transport fetches results client-side, so the query is
+    // whatever this handler supplies. Left to WebSearchProvider's regex
+    // extractor, the prompt's `Learning Goal: "main ideas"` line scrapes down to
+    // just "main ideas" — which searches the open web for reading-comprehension
+    // blogs containing no standard codes, and the Find button returns nothing.
+    const callGemini = vi.fn(async () => ({ text: '[]' }));
+
+    await handleWizardStandardLookup('3rd Grade', 'main ideas', 'CCSS', makeDeps({ callGemini }));
+
+    const [, jsonMode, useSearch, temperature, searchQuery] = callGemini.mock.calls[0];
+    expect(useSearch).toBe(true);
+    expect(searchQuery).toBeTruthy();
+    expect(searchQuery).toContain('CCSS');
+    expect(searchQuery).toContain('3rd Grade');
+    expect(searchQuery).toContain('main ideas');
+    expect(searchQuery).toMatch(/standard/i);
+    // Must not be the bare goal — that is the failure mode this pins.
+    expect(searchQuery.trim()).not.toBe('main ideas');
+  });
+
+  it('falls back to CCSS in the query when no region is given', async () => {
+    const callGemini = vi.fn(async () => ({ text: '[]' }));
+
+    await handleWizardStandardLookup('5th Grade', 'fractions', '', makeDeps({ callGemini }));
+
+    const searchQuery = callGemini.mock.calls[0][4];
+    expect(searchQuery).toContain('CCSS');
+    expect(searchQuery).toContain('5th Grade');
+    expect(searchQuery).toContain('fractions');
+  });
+
   it('marks grounded results as web-verified', async () => {
     const callGemini = vi.fn(async () => ({
       text: JSON.stringify([{ code: 'CCSS.ELA-LITERACY.RI.3.2', description: 'Determine the main idea.', framework: 'CCSS' }]),
