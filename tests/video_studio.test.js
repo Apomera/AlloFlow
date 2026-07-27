@@ -2386,6 +2386,53 @@ describe('take persistence + export hardening wiring', () => {
     expect(m).not.toMatch(/callGemini\(\w+, false, true\)/);
     expect(m.match(/callGemini\(\w+, true, false\)/g) || []).toHaveLength(7);
   });
+  it('keyboard activation is not swallowed by row containers', () => {
+    const html = popup();
+    // Three list renderers put a bubble-phase Enter/Space handler on the row and
+    // called preventDefault() unconditionally, which cancelled the default action
+    // of every real control inside — takes could not be deleted from the
+    // keyboard, and every SPACE typed into a teaching insert's text field was
+    // eaten, so "Pause and try it" became "Pauseandtryit" in the exported video.
+    const rowKeydowns = html.match(/row\.addEventListener\('keydown'[^\n]*/g) || [];
+    expect(rowKeydowns.length).toBeGreaterThanOrEqual(2);
+    rowKeydowns.forEach((line) => expect(line).toContain('ev.target !== row'));
+    // The take row carried role="button" + tabindex while CONTAINING a real
+    // Delete button (nested interactive). The control moved to the name span.
+    expect(html).not.toMatch(/row\.setAttribute\('role', 'button'\);\s*\n\s*row\.setAttribute\('tabindex', '0'\)/);
+    expect(html).toContain("nm.setAttribute('role', 'button')");
+    expect(html).toContain("nm.setAttribute('tabindex', '0')");
+  });
+  it('switching takes clears transcript and word selections', () => {
+    const html = popup();
+    // These are maps of caption-line INDICES, so leaving them set re-targeted the
+    // same line numbers at the newly selected take: "Silence selection" would
+    // redact unrelated audio on the wrong video.
+    const start = html.indexOf('  function selectTake(id) {');
+    expect(start).toBeGreaterThan(-1);
+    const body = html.slice(start, start + 1400);
+    expect(body).toContain('transcriptSelection = {}');
+    expect(body).toContain('wordRippleSelection = {}');
+  });
+  it('export progress is announced on a throttle, not on every tick', () => {
+    const html = popup();
+    // #exportProgressDetail is rewritten every 300ms by the realtime encoder and
+    // once per encoded frame by the fast path. As an aria-live region that
+    // queued thousands of screen-reader announcements per export.
+    const detail = html.slice(html.indexOf('id="exportProgressDetail"'), html.indexOf('id="exportProgressDetail"') + 120);
+    expect(detail).not.toContain('aria-live');
+    expect(html).toContain('function announceExportProgress(msg)');
+    expect(html).toContain('EXPORT_ANNOUNCE_MS');
+  });
+  it('the music bed loops for the whole export, and a cancelled fast export settles', () => {
+    const html = popup();
+    // vsSanitizeMusicBed defaults loop:true but nothing set it on the media
+    // element, and the per-frame re-seek cannot restart an element that ENDED —
+    // so the bed played once and went silent while the editor preview looped.
+    expect(html.match(/\.loop = !!m\.loop/g) || []).toHaveLength(2); // single-take + scene mixers
+    // Cancelling while the encoder was draining cleared the interval without
+    // settling the promise: paused video, no frame callback, no 'ended' event.
+    expect(html).toContain("if (canceled) { clearInterval(drain); fail(exportAbortError('Export canceled')); return; }");
+  });
   it('scene export mixes each clip\'s narration, sound clips and music at take-absolute time', () => {
     // Regression: the scene renderer built its audio graph from the clip <video>
     // elements alone, so a narrated demo run through a ripple cut exported silent.

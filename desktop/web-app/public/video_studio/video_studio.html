@@ -1206,7 +1206,12 @@
         <span class="status" id="exportStatus"></span>
       </div>
       <progress id="exportProgress" max="100" value="0" hidden style="margin-top:10px"></progress>
-      <div class="export-progress-detail" id="exportProgressDetail" hidden aria-live="polite">
+      <!-- Deliberately NOT aria-live: this panel's text is rewritten every 300ms
+           by the realtime encoder and once per encoded frame by the fast path, so
+           a live region here queued thousands of announcements and made a long
+           export unusable with a screen reader. Progress is announced on a
+           throttle through the #live region instead (announceExportProgress). -->
+      <div class="export-progress-detail" id="exportProgressDetail" hidden>
         <strong id="exportProgressTitle">Preparing export</strong>
         <span id="exportProgressText">Keep this window visible while Video Studio finishes the file.</span>
       </div>
@@ -4283,6 +4288,21 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (activeReencodeCancel) { activeReencodeCancel(); return; }
     cancelMp4Conversion();
   }
+  // Screen-reader pacing for export progress. The visual text still updates as
+  // fast as the encoder reports; only the SPOKEN update is rate-limited, so a
+  // long export gives periodic reassurance instead of a continuous stream.
+  var _exportAnnounceAt = 0, _exportAnnounceMsg = '';
+  var EXPORT_ANNOUNCE_MS = 20000;
+  function resetExportAnnounce() { _exportAnnounceAt = 0; _exportAnnounceMsg = ''; }
+  function announceExportProgress(msg) {
+    var text = String(msg || '').trim();
+    if (!text || text === _exportAnnounceMsg) return;
+    var now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    if (_exportAnnounceAt && now - _exportAnnounceAt < EXPORT_ANNOUNCE_MS) return;
+    _exportAnnounceAt = now;
+    _exportAnnounceMsg = text;
+    announce(text);
+  }
   function setReencodeUi(active, message) {
     if ($('exportCancelBtn')) {
       $('exportCancelBtn').textContent = active ? 'Cancel export' : 'Cancel MP4 conversion';
@@ -4291,6 +4311,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if ($('exportProgressDetail')) $('exportProgressDetail').hidden = !active;
     if ($('exportProgressTitle')) $('exportProgressTitle').textContent = active ? 'Re-encoding video' : 'Preparing export';
     if ($('exportProgressText')) $('exportProgressText').textContent = message || 'Keep this window visible while Video Studio finishes the file.';
+    if (!active) resetExportAnnounce();
+    else announceExportProgress(message);
   }
   function mp4ConverterTroubleshootingMessage(err) {
     var msg = String(err && (err.message || err) || '');
@@ -4307,6 +4329,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if ($('exportProgressDetail')) $('exportProgressDetail').hidden = !active;
     if ($('exportProgressTitle')) $('exportProgressTitle').textContent = active ? 'Building MP4' : 'Preparing export';
     if ($('exportProgressText')) $('exportProgressText').textContent = message || 'Video Studio is converting the finished video into MP4.';
+    if (!active) resetExportAnnounce();
+    else announceExportProgress(message || 'Video Studio is converting the finished video into MP4.');
     if ($('exportProgress')) {
       $('exportProgress').hidden = !active;
       if (!active) $('exportProgress').value = 0;
@@ -6141,7 +6165,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       row.setAttribute('aria-label', 'Select zoom ' + (idx + 1));
       if (selectedEditItem && selectedEditItem.kind === 'zoom' && selectedEditItem.id === z.id) row.classList.add('edit-row-selected');
       row.addEventListener('click', function () { selectEditItem('zoom', z.id); });
-      row.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectEditItem('zoom', z.id); } });
+      // Only when the ROW itself is the target. This is a role="group" holding
+      // real controls, and an unconditional preventDefault() here cancelled the
+      // default action of every Enter/Space that bubbled up from them — so Aim
+      // and Delete could not be activated from the keyboard.
+      row.addEventListener('keydown', function (ev) { if (ev.target !== row) return; if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectEditItem('zoom', z.id); } });
       var mkNum = function (label, field, step, min, max) {
         var l = document.createElement('label'); l.textContent = label + ' ';
         var inp = document.createElement('input');
@@ -6393,7 +6421,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       row.setAttribute('aria-label', 'Select ' + insertTypeLabel(ins.type) + ' ' + (idx + 1));
       if (selectedEditItem && selectedEditItem.kind === 'insert' && selectedEditItem.id === ins.id) row.classList.add('edit-row-selected');
       row.addEventListener('click', function () { selectEditItem('insert', ins.id); });
-      row.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectEditItem('insert', ins.id); } });
+      // Row-only, as above. This row contains an <input type="text"> for the
+      // insert's on-screen wording: every SPACE keydown bubbled here and was
+      // preventDefault()ed, so "Pause and try it" was typed as "Pauseandtryit"
+      // and that is what got burned into the exported video.
+      row.addEventListener('keydown', function (ev) { if (ev.target !== row) return; if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectEditItem('insert', ins.id); } });
       var type = document.createElement('select');
       type.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
       [['title_card', 'Title card'], ['pause_prompt', 'Pause'], ['callout', 'Callout'], ['sticker', 'Sticker'], ['visual_card', 'Visual'], ['image_overlay', 'Image overlay']].forEach(function (pair) {
@@ -8770,10 +8802,18 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     takes.forEach(function (t) {
       var row = document.createElement('div');
       row.className = 'take';
-      row.setAttribute('role', 'button');
-      row.setAttribute('tabindex', '0');
+      row.dataset.takeId = t.id;
       row.setAttribute('aria-current', String(t.id === selectedTakeId));
+      // The row used to be role="button" + tabindex="0" while CONTAINING a real
+      // Delete button — nested interactive controls — and its keydown handler
+      // preventDefault()ed Enter/Space, which cancelled the inner button's own
+      // activation. A keyboard user could select a take but never delete one.
+      // Put the control on the NAME instead: still a <span>, so the visuals are
+      // unchanged, and Delete becomes a sibling rather than a descendant.
       var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = t.name;
+      nm.setAttribute('role', 'button');
+      nm.setAttribute('tabindex', '0');
+      nm.setAttribute('aria-label', 'Select ' + t.name);
       var meta = document.createElement('span'); meta.className = 'meta'; meta.textContent = fmtBytes(t.blob.size) + ' · ' + t.captions.length + ' cues';
       var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Delete'; del.setAttribute('aria-label', 'Delete ' + t.name);
       del.addEventListener('click', function (ev) {
@@ -8801,7 +8841,18 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         renderTakes();
       });
       row.addEventListener('click', function () { selectTake(t.id); renderTakes(); });
-      row.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectTake(t.id); renderTakes(); } });
+      nm.addEventListener('keydown', function (ev) {
+        if (ev.key !== 'Enter' && ev.key !== ' ') return;
+        ev.preventDefault();
+        selectTake(t.id); renderTakes();
+        // renderTakes() rebuilds the list, so the element that had focus is gone.
+        // Put focus back on the take the teacher just chose instead of dumping it
+        // to <body> and losing their place in the list.
+        try {
+          var again = list.querySelector('[data-take-id="' + t.id + '"] .nm');
+          if (again) again.focus();
+        } catch (_) {}
+      });
       row.appendChild(nm); row.appendChild(meta); row.appendChild(del);
       list.appendChild(row);
     });
@@ -8810,9 +8861,20 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
 
   function selectTake(id) {
+    var switchingTake = selectedTakeId !== id;
     selectedTakeId = id;
     var t = currentTake();
     if (!t) return;
+    // transcriptSelection / wordRippleSelection are maps of caption-line INDICES,
+    // not ids. Switching takes re-applied the SAME indices to the new take's
+    // cues: the new transcript rendered with lines already ticked that the
+    // teacher never chose, with Silence/Trim/Clip still enabled — so "Silence
+    // selection" would redact unrelated content on the wrong video while the
+    // take she meant to redact stayed untouched.
+    if (switchingTake) {
+      transcriptSelection = {};
+      wordRippleSelection = {};
+    }
     if (t.demoPolish) {
       var demoPolish = cleanDemoPolish(t.demoPolish);
       if (demoPolish.openingTitle) $('titleInput').value = demoPolish.openingTitle;
@@ -9477,9 +9539,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         } catch (_) {}
       } else if (m._el && m.kind === 'music' && m._started) {
         if (tSec > m.end || tSec < m.start) { try { m._el.pause(); } catch (_) {} }
-        else if (m.loop && isFinite(m._el.duration) && m._el.duration > 0.1) {
-          var wantMusic = Math.max(0, tSec - m.start) % m._el.duration;
-          if (Math.abs(m._el.currentTime - wantMusic) > 0.35) { try { m._el.currentTime = wantMusic; } catch (_) {} }
+        else {
+          if (m.loop && isFinite(m._el.duration) && m._el.duration > 0.1) {
+            var wantMusic = Math.max(0, tSec - m.start) % m._el.duration;
+            if (Math.abs(m._el.currentTime - wantMusic) > 0.35) { try { m._el.currentTime = wantMusic; } catch (_) {} }
+          }
+          // Re-entering the window after being paused at its edge.
+          if (m._el.paused) { try { m._el.play(); } catch (_) {} }
         }
       }
     }
@@ -9843,6 +9909,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
               mel.src = URL.createObjectURL(m.blob);
               sceneMixUrls.push(mel.src);
               mel.preload = 'auto';
+              mel.loop = !!m.loop; // see the single-take mixer: without this the bed plays once
               var mgain = ac.createGain();
               mgain.gain.value = Math.max(0, Math.min(2, Number(m.vol != null ? m.vol : 1)));
               ac.createMediaElementSource(mel).connect(mgain);
@@ -13534,6 +13601,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             el.src = URL.createObjectURL(m.blob);
             mixUrls.push(el.src);
             el.preload = 'auto';
+            // The music bed defaults to loop:true, but nothing ever set it on the
+            // element. The per-frame re-seek below only nudges currentTime when it
+            // drifts, and a media element that has ENDED is paused — so the bed
+            // played once and then went silent, while the editor preview (which
+            // does loop) kept the teacher believing it played throughout.
+            el.loop = !!m.loop;
             var g = ac.createGain();
             g.gain.value = Math.max(0, Math.min(2, Number(m.vol != null ? m.vol : 1)));
             ac.createMediaElementSource(el).connect(g);
@@ -13629,9 +13702,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                 } catch (_) {}
               } else if (m2._el && m2.kind === 'music' && m2._started) {
                 if (v.currentTime > m2.end || v.currentTime < m2.start) { try { m2._el.pause(); } catch (_) {} }
-                else if (m2.loop && isFinite(m2._el.duration) && m2._el.duration > 0.1) {
-                  var wantMusic = Math.max(0, v.currentTime - m2.start) % m2._el.duration;
-                  if (Math.abs(m2._el.currentTime - wantMusic) > 0.35) { try { m2._el.currentTime = wantMusic; } catch (_) {} }
+                else {
+                  if (m2.loop && isFinite(m2._el.duration) && m2._el.duration > 0.1) {
+                    var wantMusic = Math.max(0, v.currentTime - m2.start) % m2._el.duration;
+                    if (Math.abs(m2._el.currentTime - wantMusic) > 0.35) { try { m2._el.currentTime = wantMusic; } catch (_) {} }
+                  }
+                  // Re-entering the window after being paused at its edge.
+                  if (m2._el.paused) { try { m2._el.play(); } catch (_) {} }
                 }
               }
             }
@@ -13929,7 +14006,15 @@ function vsPcmToWav(pcmBytes, sampleRate) {
               if (venc.encodeQueueSize > 24 && !v.paused) {
                 try { v.pause(); } catch (_) {}
                 var drain = setInterval(function () {
-                  if (done || canceled) { clearInterval(drain); return; }
+                  if (done) { clearInterval(drain); return; }
+                  // Cancelling DURING a drain used to clear this interval and
+                  // return without settling the promise. The video is paused, so
+                  // no further frame callback runs and 'ended' never fires — the
+                  // export hung forever with the button disabled and the only
+                  // recovery was reloading the popup (losing the take). Cancel is
+                  // only turned into a rejection inside the frame callback, so it
+                  // has to be raised here too.
+                  if (canceled) { clearInterval(drain); fail(exportAbortError('Export canceled')); return; }
                   if (venc.encodeQueueSize <= 8) {
                     clearInterval(drain);
                     v.play().catch(function () { fail(new Error('playback blocked')); });
