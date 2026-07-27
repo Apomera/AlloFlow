@@ -2524,6 +2524,68 @@ describe('Weather Systems immersive 3D scene', () => {
   });
 });
 
+describe('Weather Systems concept diagrams', () => {
+  const render = (weatherSystems, grade) => renderTool('weatherSystems', { weatherSystems }, { gradeLevel: grade || '8th Grade' });
+  const sat = (html) => (html.match(/data-weather-saturation-diagram[\s\S]*?<\/div>\s*<\/div>/) || [''])[0];
+
+  it('draws the dew-point spread as a distance on a temperature axis', () => {
+    // The spread is referenced by the station panel, station model, meteogram and the
+    // reasoning questions, and was explained in prose everywhere.
+    const html = render({ tab: 'map', scenario: 'fair', simHour: 4, selectedStation: 'central' });
+    expect(html).toContain('data-weather-saturation-diagram');
+    expect(sat(html)).toMatch(/dew [-\d.]+°/);
+    expect(sat(html)).toMatch(/air [-\d.]+°/);
+    expect(sat(html)).toMatch(/cool [\d.]+°C/);
+    // The reading is framed as cooling toward saturation, which is what a dew point is.
+    expect(html).toContain('must cool');
+  });
+
+  it('separates the two markers when the air is close to saturation', () => {
+    // Anchor of the dew/air labels themselves — the axis "warmer" label is end-anchored
+    // in both cases, so the block as a whole cannot be the assertion.
+    const anchorOf = (html, prefix) => {
+      const tag = (sat(html).match(new RegExp('<text[^>]*>' + prefix + ' [^<]*</text>')) || [''])[0];
+      return (tag.match(/text-anchor="([a-z]+)"/) || [])[1] || 'middle';
+    };
+    const near = render({ tab: 'map', scenario: 'warmFront', simHour: 6, selectedStation: 'central' });
+    expect(anchorOf(near, 'dew')).toBe('end');
+    expect(anchorOf(near, 'air')).toBe('start');
+    // With the markers far apart each label just centres on its own mark.
+    const wide = render({ tab: 'map', scenario: 'fair', simHour: 4, selectedStation: 'central' });
+    expect(anchorOf(wide, 'dew')).toBe('middle');
+    expect(anchorOf(wide, 'air')).toBe('middle');
+  });
+
+  it('picks a cloud family that matches the weather the scenario produces', () => {
+    const { likelyCloudFamily, resolvedState, projectConditions, cloudFamilyById } = window.WeatherSystemsKernel;
+    const pick = (scenario, simHour) => {
+      const state = resolvedState({ scenario, simHour });
+      return likelyCloudFamily(state, projectConditions(state, simHour));
+    };
+    expect(pick('summerStorm', 3)).toBe('cumulonimbus');
+    expect(pick('coldFront', 6)).toBe('cumulonimbus');
+    // Overrunning warm-front precipitation is layered, not convective.
+    expect(pick('warmFront', 6)).toBe('nimbostratus');
+    expect(pick('winterStorm', 6)).toBe('nimbostratus');
+    // A high-pressure day gets high thin cloud, and the cold front clears to the same.
+    expect(pick('fair', 4)).toBe('cirrus');
+    expect(pick('coldFront', 12)).toBe('cirrus');
+    expect(cloudFamilyById('nimbostratus').height).toContain('3 km');
+  });
+
+  it('renders every family on a height axis and says what it is not claiming', () => {
+    const html = render({ tab: 'map', scenario: 'warmFront', simHour: 6 });
+    expect(html).toContain('data-weather-cloud-guide');
+    ['Cirrus', 'Altostratus', 'Nimbostratus', 'Stratus', 'Cumulus', 'Cumulonimbus'].forEach((name) => {
+      expect(html, name).toContain(name);
+    });
+    expect(html).toContain('13 km');
+    // Scientific honesty: the model does not resolve cloud genera and says so.
+    expect(html).toContain('identified by shape and height in the real sky, not by this model');
+    expect(html).toContain('Fits now: Nimbostratus');
+  });
+});
+
 describe('Weather Systems map readiness detection', () => {
   const { readFileSync } = require('node:fs');
   const { resolve } = require('node:path');

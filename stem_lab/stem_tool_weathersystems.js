@@ -128,6 +128,35 @@
     return clamp(Math.round((Number(cloudCoverPercent) || 0) / 12.5), 0, 8);
   }
 
+  // Cloud families are identified by shape and height, not by anything this model computes.
+  // The guide names the family that conditions like these commonly produce; it never claims
+  // the simulation resolves cloud genera. Heights are the conventional mid-latitude ranges.
+  var CLOUD_FAMILIES = [
+    { id: 'cirrus', name: 'Cirrus', level: 'high', height: 'about 6-13 km', look: 'Thin, wispy, made of ice crystals.', signal: 'Often the first sign that a warm front is on the way.' },
+    { id: 'altostratus', name: 'Altostratus', level: 'middle', height: 'about 2-7 km', look: 'Grey sheet; the sun shows through as a dim disc.', signal: 'Thickening mid-level cloud ahead of steady precipitation.' },
+    { id: 'nimbostratus', name: 'Nimbostratus', level: 'low', height: 'base below about 3 km', look: 'Thick, dark and featureless.', signal: 'Continuous rain or snow lasting hours.' },
+    { id: 'stratus', name: 'Stratus', level: 'low', height: 'below about 2 km', look: 'Flat grey layer, like fog that never reached the ground.', signal: 'Damp and overcast; drizzle at most.' },
+    { id: 'cumulus', name: 'Cumulus', level: 'vertical', height: 'base below about 2 km', look: 'Detached and puffy with a flat base.', signal: 'Fair weather while they stay small and separated.' },
+    { id: 'cumulonimbus', name: 'Cumulonimbus', level: 'vertical', height: 'base low, top to about 12 km', look: 'Towering, with a spreading anvil top.', signal: 'Thunder, hail, gusty wind and heavy rain.' }
+  ];
+
+  function cloudFamilyById(id) {
+    return CLOUD_FAMILIES.filter(function (item) { return item.id === id; })[0] || CLOUD_FAMILIES[0];
+  }
+
+  function likelyCloudFamily(state, conditions) {
+    var instability = Number(state && state.instability) || 0;
+    var cover = conditions ? conditions.cloudCover : 0;
+    var potential = conditions ? conditions.precipPotential : 0;
+    if (conditions && conditions.precipType === 'storms') return 'cumulonimbus';
+    if (instability >= 65 && cover >= 40) return 'cumulonimbus';
+    if (potential >= 55 && instability < 45) return 'nimbostratus';
+    if (cover >= 70) return 'altostratus';
+    if (cover >= 30 && instability >= 35) return 'cumulus';
+    if (cover >= 30) return 'stratus';
+    return 'cirrus';
+  }
+
   function scenarioById(id) {
     for (var i = 0; i < SCENARIOS.length; i += 1) {
       if (SCENARIOS[i].id === id) return SCENARIOS[i];
@@ -1756,6 +1785,9 @@ var GEOGRAPHY_PROFILES = {
     mixColor: mixColor,
     windBarbSpec: windBarbSpec,
     skyCoverOktas: skyCoverOktas,
+    cloudFamilies: CLOUD_FAMILIES,
+    cloudFamilyById: cloudFamilyById,
+    likelyCloudFamily: likelyCloudFamily,
     sceneAppearance: sceneAppearance,
     drawWeatherScene: drawWeatherScene,
     resolvedState: resolvedState
@@ -4637,6 +4669,60 @@ var geographyGroup = new THREE.Group();
         );
       }
 
+      // The dew point is a temperature, not an abstract index: it is how cool the air must
+      // get before its water vapour condenses. Drawing both values on one temperature axis
+      // makes the spread a visible distance, and makes "cool it this far and you get cloud"
+      // the obvious reading. Every panel in this tool leans on this idea in prose only.
+      function saturationDiagram(reading, spread) {
+        var temperature = reading.temperature;
+        var dewPoint = reading.dewPoint;
+        var axisLow = Math.floor(Math.min(dewPoint, temperature) - 6);
+        var axisHigh = Math.ceil(Math.max(dewPoint, temperature) + 6);
+        var axisSpan = Math.max(1, axisHigh - axisLow);
+        var LEFT = 40;
+        var RIGHT = 660;
+        function xFor(value) { return LEFT + clamp((value - axisLow) / axisSpan, 0, 1) * (RIGHT - LEFT); }
+        var dewX = xFor(dewPoint);
+        var tempX = xFor(temperature);
+        var tight = Math.abs(tempX - dewX) < 96;
+        var saturated = spread < 3;
+        var caption = band === 'K-2'
+          ? (saturated ? 'The air is almost full of water. Clouds or fog can form.' : 'The air would need to cool ' + spread + ' degrees before clouds form.')
+          : (saturated
+            ? 'Only ' + spread + '°C of cooling separates this air from saturation, so cloud or fog formation is favoured where air is lifted.'
+            : 'This air must cool ' + spread + '°C to reach its dew point. Until then it stays unsaturated and cloud is less likely.');
+        return h('div', { className: 'mt-3 rounded-lg p-3 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50'), 'data-weather-saturation-diagram': true },
+          h('p', { className: 'text-[11px] font-black uppercase tracking-wide ' + skyAccentClass }, band === 'K-2' ? 'How close to cloudy?' : 'Distance to saturation'),
+          h('svg', {
+            viewBox: '0 0 700 96', className: 'mt-1 h-auto w-full', role: 'img',
+            'aria-label': 'Temperature axis from ' + axisLow + ' to ' + axisHigh + ' degrees Celsius. Dew point is ' + dewPoint + ' degrees and air temperature is ' + temperature + ' degrees, a spread of ' + spread + ' degrees. ' + caption
+          },
+            h('line', { x1: LEFT, y1: 54, x2: RIGHT, y2: 54, stroke: chartBaseline, strokeWidth: 2 }),
+            [axisLow, Math.round((axisLow + axisHigh) / 2), axisHigh].map(function (tick) {
+              // Drop a tick that would print under the markers rather than let them overprint.
+              var tickX = xFor(tick);
+              if (Math.min(Math.abs(tickX - dewX), Math.abs(tickX - tempX)) < 34) return null;
+              return h('g', { key: tick },
+                h('line', { x1: tickX, y1: 54, x2: tickX, y2: 60, stroke: chartBaseline, strokeWidth: 1 }),
+                h('text', { x: tickX, y: 72, textAnchor: 'middle', fill: chartMutedInk, fontSize: 10, style: { fontVariantNumeric: 'tabular-nums' } }, tick + '°')
+              );
+            }),
+            // The gap itself is the measurement, so it is drawn as a span rather than left
+            // to be inferred from two separate marks.
+            h('rect', { x: dewX, y: 44, width: Math.max(1, tempX - dewX), height: 20, rx: 4, fill: saturated ? seriesColor.precipPotential : seriesColor.dewPoint, fillOpacity: saturated ? 0.3 : 0.16 }),
+            h('line', { x1: dewX, y1: 30, x2: dewX, y2: 64, stroke: seriesColor.dewPoint, strokeWidth: 3, strokeLinecap: 'round' }),
+            h('line', { x1: tempX, y1: 30, x2: tempX, y2: 64, stroke: seriesColor.temperature, strokeWidth: 3, strokeLinecap: 'round' }),
+            // Near saturation the two markers almost touch, so the labels swing outward and
+            // anchor away from the pair instead of overprinting each other.
+            h('text', { x: tight ? clamp(dewX - 9, 4, RIGHT) : dewX, y: 22, textAnchor: tight ? 'end' : 'middle', fill: chartInk, fontSize: 11, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums', paintOrder: 'stroke', stroke: dark ? '#020617' : '#f0f9ff', strokeWidth: 3, strokeLinejoin: 'round' } }, 'dew ' + dewPoint + '°'),
+            h('text', { x: tight ? clamp(tempX + 9, 0, 694) : tempX, y: 22, textAnchor: tight ? 'start' : 'middle', fill: chartInk, fontSize: 11, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums', paintOrder: 'stroke', stroke: dark ? '#020617' : '#f0f9ff', strokeWidth: 3, strokeLinejoin: 'round' } }, 'air ' + temperature + '°'),
+            spread >= 0.4 && h('text', { x: clamp((dewX + tempX) / 2, 56, RIGHT - 16), y: 90, textAnchor: 'middle', fill: chartInk, fontSize: 11, fontWeight: 800, style: { fontVariantNumeric: 'tabular-nums' } }, '← cool ' + spread + '°C →'),
+            h('text', { x: 694, y: 58, textAnchor: 'end', fill: chartMutedInk, fontSize: 10, fontWeight: 700 }, 'warmer →')
+          ),
+          h('p', { className: 'mt-1 text-xs leading-relaxed ' + mutedClass }, caption)
+        );
+      }
+
       function stationPanel() {
         var spread = round(observation.temperature - observation.dewPoint, 1);
         var sky = observation.cloudCover < 20 ? 'Clear' : observation.cloudCover < 55 ? 'Partly cloudy' : observation.cloudCover < 85 ? 'Mostly cloudy' : 'Overcast';
@@ -4665,6 +4751,7 @@ var geographyGroup = new THREE.Group();
               );
             })
           ),
+          saturationDiagram(observation, spread),
           h('p', { className: 'mt-3 text-xs leading-relaxed ' + mutedClass },
             band === 'K-2'
               ? 'The air is ' + (spread < 3 ? 'nearly full of water vapor, so clouds are likely.' : 'not full yet, so fewer clouds may form.')
@@ -4905,6 +4992,119 @@ var geographyGroup = new THREE.Group();
               })
             )
           )
+        );
+      }
+
+      function cloudTypeGuide() {
+        var likelyId = likelyCloudFamily(state, current);
+        var likely = cloudFamilyById(likelyId);
+        var GROUND = 268;
+        var TOP = 30;
+        // Altitude axis, drawn to scale against the conventional 0-13 km cloud range.
+        function yForKm(km) { return GROUND - clamp(km / 13, 0, 1) * (GROUND - TOP); }
+        var sky = dark ? '#0b1830' : '#e0f2fe';
+        var cloudLight = dark ? '#e2e8f0' : '#ffffff';
+        var cloudMid = dark ? '#94a3b8' : '#cbd5e1';
+        var cloudDark = dark ? '#475569' : '#94a3b8';
+        // Six families across one axis: each slot is sized so no glyph or label overlaps its
+        // neighbour, and none of them reach back over the height labels on the left.
+        var slots = [
+          { id: 'cirrus', x: 140 },
+          { id: 'altostratus', x: 248 },
+          { id: 'cumulonimbus', x: 378 },
+          { id: 'nimbostratus', x: 500 },
+          { id: 'stratus', x: 604 },
+          { id: 'cumulus', x: 684 }
+        ];
+        function glyph(id, x, highlighted) {
+          var tone = highlighted ? 1 : 0.66;
+          if (id === 'cirrus') {
+            return h('g', { key: id, opacity: tone },
+              [0, 1, 2].map(function (i) {
+                var y = yForKm(10.4 - i * 0.9);
+                return h('path', { key: i, d: 'M' + (x - 44 + i * 6) + ' ' + y + ' q 21 -7 42 2 q 18 7 36 -3', fill: 'none', stroke: cloudLight, strokeWidth: 3, strokeLinecap: 'round' });
+              })
+            );
+          }
+          if (id === 'altostratus') {
+            return h('g', { key: id, opacity: tone },
+              h('rect', { x: x - 60, y: yForKm(4.6), width: 120, height: 24, rx: 11, fill: cloudMid, fillOpacity: 0.85 }),
+              h('rect', { x: x - 46, y: yForKm(5.4), width: 92, height: 14, rx: 7, fill: cloudMid, fillOpacity: 0.55 })
+            );
+          }
+          if (id === 'nimbostratus') {
+            var nimbTop = yForKm(2.9);
+            return h('g', { key: id, opacity: tone },
+              h('rect', { x: x - 55, y: nimbTop, width: 110, height: 36, rx: 11, fill: cloudDark }),
+              [-34, -12, 10, 30].map(function (dx) {
+                return h('line', { key: dx, x1: x + dx, y1: nimbTop + 40, x2: x + dx - 6, y2: Math.min(GROUND - 3, nimbTop + 68), stroke: seriesColor.precipPotential, strokeWidth: 2.5, strokeLinecap: 'round', opacity: 0.75 });
+              })
+            );
+          }
+          if (id === 'stratus') {
+            return h('g', { key: id, opacity: tone },
+              h('rect', { x: x - 40, y: yForKm(1.4), width: 80, height: 18, rx: 9, fill: cloudMid, fillOpacity: 0.9 })
+            );
+          }
+          if (id === 'cumulus') {
+            var cuBase = yForKm(1.6);
+            return h('g', { key: id, opacity: tone },
+              h('circle', { cx: x - 13, cy: cuBase - 5, r: 11, fill: cloudLight }),
+              h('circle', { cx: x + 1, cy: cuBase - 13, r: 14, fill: cloudLight }),
+              h('circle', { cx: x + 16, cy: cuBase - 4, r: 10, fill: cloudLight }),
+              h('rect', { x: x - 23, y: cuBase - 7, width: 40, height: 9, rx: 3, fill: cloudLight })
+            );
+          }
+          // Cumulonimbus spans the whole depth, which is the point of it.
+          var cbTop = yForKm(11.4);
+          var cbBase = yForKm(1.2);
+          return h('g', { key: id, opacity: tone },
+            h('ellipse', { cx: x, cy: cbTop + 12, rx: 46, ry: 12, fill: cloudLight, fillOpacity: 0.92 }),
+            h('path', { d: 'M' + (x - 27) + ' ' + cbBase + ' L' + (x - 20) + ' ' + (cbTop + 18) + ' Q' + x + ' ' + (cbTop + 5) + ' ' + (x + 20) + ' ' + (cbTop + 18) + ' L' + (x + 27) + ' ' + cbBase + ' Z', fill: cloudMid, fillOpacity: 0.95 }),
+            h('rect', { x: x - 30, y: cbBase - 5, width: 60, height: 10, rx: 4, fill: cloudDark })
+          );
+        }
+        return h('section', { className: panelClass + ' p-4', 'data-weather-cloud-guide': true, 'aria-labelledby': 'weather-cloud-guide-title' },
+          h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+            h('div', null,
+              h('p', { className: 'text-xs font-black uppercase tracking-widest ' + skyAccentClass }, 'Read the sky'),
+              h('h3', { id: 'weather-cloud-guide-title', className: 'text-base font-black' }, 'Cloud families by height'),
+              h('p', { className: 'mt-1 text-xs ' + mutedClass }, band === 'K-2' ? 'Clouds have names. Where they sit in the sky is a clue about the weather.' : 'Cloud height and shape are evidence. Match what you see outside to the family, then check whether it fits your forecast.')
+            ),
+            h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (dark ? 'bg-sky-950 text-sky-300' : 'bg-sky-100 text-sky-800') }, 'Fits now: ' + likely.name)
+          ),
+          h('svg', {
+            viewBox: '0 0 720 300', className: 'mt-3 h-auto w-full', role: 'img',
+            'aria-label': 'Cloud families drawn on a height axis from the ground to 13 kilometres: ' + CLOUD_FAMILIES.map(function (item) { return item.name + ', ' + item.height; }).join('; ') + '. Conditions like the current model state most commonly produce ' + likely.name + '.'
+          },
+            h('rect', { x: 46, y: TOP - 10, width: 674, height: GROUND - TOP + 10, rx: 12, fill: sky }),
+            [13, 7, 2, 0].map(function (km) {
+              return h('g', { key: km },
+                h('line', { x1: 46, y1: yForKm(km), x2: 714, y2: yForKm(km), stroke: dark ? 'rgba(148,163,184,.22)' : 'rgba(15,23,42,.12)', strokeWidth: 1 }),
+                h('text', { x: 40, y: yForKm(km) + 4, textAnchor: 'end', fill: chartMutedInk, fontSize: 10, fontWeight: 700, style: { fontVariantNumeric: 'tabular-nums' } }, km + ' km')
+              );
+            }),
+            h('text', { x: 52, y: yForKm(10) - 6, fill: chartMutedInk, fontSize: 10, fontWeight: 800 }, 'HIGH'),
+            h('text', { x: 52, y: yForKm(5.6) - 6, fill: chartMutedInk, fontSize: 10, fontWeight: 800 }, 'MIDDLE'),
+            h('text', { x: 52, y: yForKm(1.1) - 6, fill: chartMutedInk, fontSize: 10, fontWeight: 800 }, 'LOW'),
+            slots.map(function (slot) { return glyph(slot.id, slot.x, slot.id === likelyId); }),
+            h('line', { x1: 46, y1: GROUND, x2: 714, y2: GROUND, stroke: dark ? '#94a3b8' : '#475569', strokeWidth: 3 }),
+            slots.map(function (slot) {
+              var family = cloudFamilyById(slot.id);
+              var chosen = slot.id === likelyId;
+              return h('text', {
+                key: 'label-' + slot.id,
+                x: clamp(slot.x, 60, 668), y: GROUND + (slot.id === 'cumulonimbus' ? 32 : 18),
+                textAnchor: 'middle', fill: chosen ? chartInk : chartMutedInk,
+                fontSize: chosen ? 12 : 11, fontWeight: chosen ? 800 : 600
+              }, (chosen ? '▸ ' : '') + family.name);
+            })
+          ),
+          h('div', { className: 'mt-3 rounded-lg p-3 ' + (dark ? 'bg-slate-950/70' : 'bg-sky-50') },
+            h('p', { className: 'text-xs font-black' }, likely.name + ' · ' + likely.height),
+            h('p', { className: 'mt-1 text-xs ' + mutedClass }, likely.look + ' ' + likely.signal)
+          ),
+          h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, 'Cloud families are identified by shape and height in the real sky, not by this model. The highlighted family is the one conditions like these commonly produce, so treat it as something to check outdoors rather than a model output.')
         );
       }
 
@@ -5884,6 +6084,7 @@ var geographyGroup = new THREE.Group();
             patternCompareStudio(),
             atmosphereStoryline(),
             frontCrossSectionPanel(),
+            cloudTypeGuide(),
             stationPanel(),
             stationNetworkPanel(),
             stationModelPanel(),
