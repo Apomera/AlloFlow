@@ -157,6 +157,20 @@
     return 'cirrus';
   }
 
+  // Peer-review choices land on the same three parts the author just assembled, so they can
+  // be shown on that structure instead of as an unrelated form. Safety, uncertainty and
+  // transfer are real review dimensions but sit outside the claim-evidence-reasoning core,
+  // and map to null rather than being forced onto a part they do not belong to.
+  var CER_PART_FOR_STRENGTH = { claim: 'claim', evidence: 'evidence', reasoning: 'reasoning', safety: null, uncertainty: null };
+  var CER_PART_FOR_MOVE = { askEvidence: 'evidence', explainLink: 'reasoning', clarifyAction: null, transfer: null, considerUncertainty: null };
+
+  function cerReviewFocus(strengthId, moveId) {
+    return {
+      strength: CER_PART_FOR_STRENGTH[strengthId] || null,
+      focus: CER_PART_FOR_MOVE[moveId] || null
+    };
+  }
+
   function scenarioById(id) {
     for (var i = 0; i < SCENARIOS.length; i += 1) {
       if (SCENARIOS[i].id === id) return SCENARIOS[i];
@@ -1788,6 +1802,7 @@ var GEOGRAPHY_PROFILES = {
     cloudFamilies: CLOUD_FAMILIES,
     cloudFamilyById: cloudFamilyById,
     likelyCloudFamily: likelyCloudFamily,
+    cerReviewFocus: cerReviewFocus,
     sceneAppearance: sceneAppearance,
     drawWeatherScene: drawWeatherScene,
     resolvedState: resolvedState
@@ -5006,7 +5021,7 @@ var geographyGroup = new THREE.Group();
       // Three completion cards side by side say what the parts are but not how they relate.
       // The part learners skip is precisely the link: reasoning is what carries evidence to
       // a claim, so the diagram draws it as that bridge rather than a third item in a list.
-      function cerStructureDiagram(steps) {
+      function cerStructureDiagram(steps, review) {
         function stepById(id) { return steps.filter(function (item) { return item.id === id; })[0] || { complete: false }; }
         var evidence = stepById('evidence');
         var reasoning = stepById('reasoning');
@@ -5014,19 +5029,37 @@ var geographyGroup = new THREE.Group();
         var readyFill = dark ? '#10b981' : '#0d9488';
         var idleStroke = dark ? '#475569' : '#cbd5e1';
         var idleFill = dark ? 'rgba(15,23,42,.6)' : '#ffffff';
-        var cerArrowId = 'weather-cer-arrow-' + (reasoning.complete ? 'ready' : 'idle');
-        function block(x, width, step, label, hint) {
+        var focusStroke = '#f59e0b';
+        var reviewing = !!review;
+        var cerArrowId = 'weather-cer-arrow-' + (reviewing ? 'review' : (reasoning.complete ? 'ready' : 'idle'));
+        function partTag(partId) {
+          if (!reviewing) return null;
+          if (review.strength === partId) return { text: 'STRENGTH', colour: readyFill };
+          if (review.focus === partId) return { text: 'NEXT STEP', colour: focusStroke };
+          return null;
+        }
+        var reasoningTag = reviewing
+          ? (review.strength === 'reasoning' ? { text: 'STRENGTH', colour: readyFill }
+            : review.focus === 'reasoning' ? { text: 'NEXT STEP', colour: focusStroke } : null)
+          : null;
+        var reviewCaption = !reviewing ? ''
+          : (review.strength || review.focus)
+            ? 'Marked on the same structure the author built'
+            : 'This review focused outside claim, evidence and reasoning';
+        function block(x, width, step, label, hint, partId) {
+          var tag = partTag(partId);
           return h('g', null,
             h('rect', {
               x: x, y: 62, width: width, height: 54, rx: 10,
-              fill: step.complete ? readyFill : idleFill,
-              fillOpacity: step.complete ? 0.16 : 1,
-              stroke: step.complete ? readyFill : idleStroke,
-              strokeWidth: 2,
-              strokeDasharray: step.complete ? undefined : '5 4'
+              fill: tag ? tag.colour : (!reviewing && step.complete ? readyFill : idleFill),
+              fillOpacity: tag ? 0.18 : (!reviewing && step.complete ? 0.16 : 1),
+              stroke: tag ? tag.colour : (!reviewing && step.complete ? readyFill : idleStroke),
+              strokeWidth: tag ? 3 : 2,
+              strokeDasharray: (tag || reviewing || step.complete) ? undefined : '5 4'
             }),
-            h('text', { x: x + width / 2, y: 84, textAnchor: 'middle', fill: chartInk, fontSize: 12, fontWeight: 800 }, label),
-            h('text', { x: x + width / 2, y: 102, textAnchor: 'middle', fill: chartMutedInk, fontSize: 10 }, hint)
+            h('text', { x: x + width / 2, y: tag ? 82 : 84, textAnchor: 'middle', fill: chartInk, fontSize: 12, fontWeight: 800 }, label),
+            h('text', { x: x + width / 2, y: tag ? 98 : 102, textAnchor: 'middle', fill: chartMutedInk, fontSize: 10 }, hint),
+            tag && h('text', { x: x + width / 2, y: 112, textAnchor: 'middle', fill: tag.colour, fontSize: 9, fontWeight: 800 }, tag.text)
           );
         }
         return h('div', { 'data-weather-cer-structure': true },
@@ -5042,27 +5075,28 @@ var geographyGroup = new THREE.Group();
                 h('path', { d: 'M0,0 L0,6.4 L8,3.2 z', fill: reasoning.complete ? readyFill : idleStroke })
               )
             ),
-            block(14, 196, evidence, 'EVIDENCE', 'what you observed'),
-            block(490, 196, claimStep, 'CLAIM', 'what you predict'),
+            block(14, 196, evidence, 'EVIDENCE', 'what you observed', 'evidence'),
+            block(490, 196, claimStep, 'CLAIM', 'what you predict', 'claim'),
             // The shaft is the reasoning: it only becomes solid once the link is written.
             h('line', {
               x1: 218, y1: 89, x2: 480, y2: 89,
-              stroke: reasoning.complete ? readyFill : idleStroke, strokeWidth: 3,
-              strokeDasharray: reasoning.complete ? undefined : '6 5',
+              stroke: reasoningTag ? reasoningTag.colour : (!reviewing && reasoning.complete ? readyFill : idleStroke), strokeWidth: reasoningTag ? 4 : 3,
+              strokeDasharray: (reasoningTag || reviewing || reasoning.complete) ? undefined : '6 5',
               markerEnd: 'url(#' + cerArrowId + ')'
             }),
             h('rect', {
               x: 246, y: 16, width: 208, height: 44, rx: 10,
-              fill: reasoning.complete ? readyFill : idleFill,
-              fillOpacity: reasoning.complete ? 0.16 : 1,
-              stroke: reasoning.complete ? readyFill : idleStroke,
-              strokeWidth: 2,
-              strokeDasharray: reasoning.complete ? undefined : '5 4'
+              fill: reasoningTag ? reasoningTag.colour : (!reviewing && reasoning.complete ? readyFill : idleFill),
+              fillOpacity: reasoningTag ? 0.18 : (!reviewing && reasoning.complete ? 0.16 : 1),
+              stroke: reasoningTag ? reasoningTag.colour : (!reviewing && reasoning.complete ? readyFill : idleStroke),
+              strokeWidth: reasoningTag ? 3 : 2,
+              strokeDasharray: (reasoningTag || reviewing || reasoning.complete) ? undefined : '5 4'
             }),
-            h('line', { x1: 350, y1: 60, x2: 350, y2: 87, stroke: reasoning.complete ? readyFill : idleStroke, strokeWidth: 2, strokeDasharray: reasoning.complete ? undefined : '4 4' }),
+            h('line', { x1: 350, y1: 60, x2: 350, y2: 87, stroke: reasoningTag ? reasoningTag.colour : (!reviewing && reasoning.complete ? readyFill : idleStroke), strokeWidth: 2, strokeDasharray: (reasoningTag || reviewing || reasoning.complete) ? undefined : '4 4' }),
             h('text', { x: 350, y: 36, textAnchor: 'middle', fill: chartInk, fontSize: 12, fontWeight: 800 }, 'REASONING'),
             h('text', { x: 350, y: 52, textAnchor: 'middle', fill: chartMutedInk, fontSize: 10 }, 'why this evidence supports that claim'),
-            h('text', { x: 350, y: 132, textAnchor: 'middle', fill: chartMutedInk, fontSize: 10, fontWeight: 700 }, reasoning.complete ? 'The link is written' : 'Without the link, the parts are just a list')
+            reasoningTag && h('text', { x: 350, y: 12, textAnchor: 'middle', fill: reasoningTag.colour, fontSize: 9, fontWeight: 800 }, reasoningTag.text),
+            h('text', { x: 350, y: 132, textAnchor: 'middle', fill: chartMutedInk, fontSize: 10, fontWeight: 700 }, reviewing ? reviewCaption : (reasoning.complete ? 'The link is written' : 'Without the link, the parts are just a list'))
           )
         );
       }
@@ -6990,6 +7024,24 @@ var geographyGroup = new THREE.Group();
                 h('div', { className: 'h-2 overflow-hidden rounded-full ' + (dark ? 'bg-slate-800' : 'bg-indigo-100'), role: 'progressbar', 'aria-label': 'Peer review completeness', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': completedParts },
                   h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-400 transition-all motion-reduce:transition-none', style: { width: progress + '%' } })
                 )
+              ),
+              // Feedback lands on the same structure the author assembled, so a review reads
+              // as "this part is strong, work on that part" rather than an unrelated form.
+              (strength || revisionMove) && h('div', { className: 'mb-4 rounded-xl border p-3 ' + (dark ? 'border-slate-700 bg-slate-950/50' : 'border-slate-200 bg-white'), 'data-weather-peer-review-map': true },
+                h('p', { className: 'mb-1 text-[11px] font-black uppercase tracking-wide ' + indigoAccentClass }, 'Where this feedback lands'),
+                cerStructureDiagram(
+                  [
+                    { id: 'claim', complete: true },
+                    { id: 'evidence', complete: true },
+                    { id: 'reasoning', complete: true }
+                  ],
+                  cerReviewFocus(strength, revisionMove)
+                ),
+                (function () {
+                  var mapped = cerReviewFocus(strength, revisionMove);
+                  if (mapped.strength || mapped.focus) return null;
+                  return h('p', { className: 'mt-1 text-[11px] leading-relaxed ' + mutedClass }, 'Readiness, uncertainty and transfer are worth reviewing too — they simply sit outside the claim-evidence-reasoning core shown here.');
+                }())
               ),
               h('fieldset', { disabled: !unlocked },
                 h('legend', { className: 'text-sm font-black' }, band === 'K-2' ? '1. What was strong?' : '1. Which part of the forecast is strongest?'),

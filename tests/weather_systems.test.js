@@ -2622,6 +2622,46 @@ describe('Weather Systems concept diagrams', () => {
     expect(cer(done)).toContain('weather-cer-arrow-ready');
   });
 
+  it('maps peer-review choices onto the parts they actually refer to', () => {
+    const { cerReviewFocus } = window.WeatherSystemsKernel;
+    expect(cerReviewFocus('evidence', 'explainLink')).toEqual({ strength: 'evidence', focus: 'reasoning' });
+    expect(cerReviewFocus('claim', 'askEvidence')).toEqual({ strength: 'claim', focus: 'evidence' });
+    expect(cerReviewFocus('reasoning', 'clarifyAction')).toEqual({ strength: 'reasoning', focus: null });
+    // Readiness, uncertainty and transfer are real review dimensions that sit outside the
+    // claim-evidence-reasoning core, so they map to nothing rather than being forced onto it.
+    expect(cerReviewFocus('safety', 'transfer')).toEqual({ strength: null, focus: null });
+    expect(cerReviewFocus('uncertainty', 'considerUncertainty')).toEqual({ strength: null, focus: null });
+    expect(cerReviewFocus('', '')).toEqual({ strength: null, focus: null });
+  });
+
+  it('shows a review on the same structure the author assembled', () => {
+    const reviewed = render({
+      tab: 'forecast', scenario: 'coldFront', simHour: 4, forecastsIssued: 1,
+      peerReviewStrength: 'evidence', peerReviewMove: 'explainLink',
+    });
+    const map = (html) => {
+      const at = html.indexOf('data-weather-peer-review-map');
+      return at === -1 ? '' : html.slice(at, at + 4000);
+    };
+    const block = map(reviewed);
+    expect(block).toContain('Where this feedback lands');
+    expect(block).toContain('STRENGTH');
+    expect(block).toContain('NEXT STEP');
+    expect(block).toContain('Marked on the same structure the author built');
+
+    // With nothing chosen there is nothing to place, so the map stays out of the way.
+    const untouched = render({ tab: 'forecast', scenario: 'coldFront', simHour: 4, forecastsIssued: 1 });
+    expect(untouched).not.toContain('data-weather-peer-review-map');
+
+    // A review aimed outside the core says so rather than mislabelling a part.
+    const outside = render({
+      tab: 'forecast', scenario: 'coldFront', simHour: 4, forecastsIssued: 1,
+      peerReviewStrength: 'safety', peerReviewMove: 'transfer',
+    });
+    expect(map(outside)).toContain('sit outside the claim-evidence-reasoning core');
+    expect(map(outside)).not.toContain('STRENGTH');
+  });
+
   it('teaches the same hazard-to-action pairing the forecast is scored against', () => {
     const { readinessActionForHazard } = window.WeatherSystemsKernel;
     const html = render({ tab: 'forecast', scenario: 'coldFront', simHour: 4 });
