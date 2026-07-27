@@ -1358,8 +1358,9 @@ describe('M4 — batch files are recorded', () => {
   });
 
   it('a COMPLETED batch file is classified by the same rule single files use', () => {
-    // Otherwise one reliability number would mean two different things.
-    expect(anti).toContain("_docPipeline.remediationOutcome(_res || {}, { targetScore: pdfTargetScore })");
+    // Otherwise one reliability number would mean two different things. (The target comes from a
+    // ref rather than the render scope — see the M4 follow-up block below for why.)
+    expect(anti).toContain('_docPipeline.remediationOutcome(_res || {}, { targetScore: pdfTargetScoreRef.current })');
   });
 
   it('rows are deduped by runId so a re-render cannot double-count a file', () => {
@@ -1418,5 +1419,31 @@ describe('M20 — the auto-continue loop owns an identity the watchdog can see',
     const iOwnsClose = fin.indexOf('}', fin.indexOf('pdfAutoContinueAbortCtrlRef.current = null;'));
     expect(iRelease).toBeGreaterThan(iOwns);
     expect(iRelease).toBeGreaterThan(iOwnsClose);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// M4 follow-up — the batch-outcome listener must not freeze the target score.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('M4 follow-up — the batch listener reads a LIVE target score', () => {
+  const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+
+  it('classification reads the ref, not the captured render value', () => {
+    // The listener lives in a `[]`-deps effect, so anything it reads from the render scope is
+    // frozen at FIRST render — it would have graded every batch row against the 95 default for a
+    // teacher who changed their target.
+    expect(anti).toContain('remediationOutcome(_res || {}, { targetScore: pdfTargetScoreRef.current })');
+    expect(anti).not.toContain('remediationOutcome(_res || {}, { targetScore: pdfTargetScore })');
+  });
+
+  it('the ref is kept in sync by its own effect', () => {
+    expect(anti).toContain('const pdfTargetScoreRef = React.useRef(95);');
+    expect(anti).toContain('useEffect(() => { pdfTargetScoreRef.current = pdfTargetScore; }, [pdfTargetScore]);');
+  });
+
+  it('the single-file lane still uses the render value — it is not in a [] effect', () => {
+    // That effect re-runs on pdfFixResult, so its capture is fresh; only the batch listener needed
+    // the ref. Pinning this keeps someone from "consistently" changing the wrong one.
+    expect(anti).toContain('_docPipeline.remediationOutcome(cur, { targetScore: pdfTargetScore })');
   });
 });

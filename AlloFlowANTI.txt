@@ -19666,7 +19666,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // number means one thing. Failed/cancelled files carry their outcome verbatim.
       const _outcome = d.outcome === 'completed'
         ? (((_docPipeline && typeof _docPipeline.remediationOutcome === 'function')
-          ? _docPipeline.remediationOutcome(_res || {}, { targetScore: pdfTargetScore })
+          ? _docPipeline.remediationOutcome(_res || {}, { targetScore: pdfTargetScoreRef.current })
           : { state: 'incomplete' }).state)
         : d.outcome;
       setPdfRunHistory((prev) => {
@@ -19736,6 +19736,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfRunHistory, setPdfRunHistory] = useState([]);
   const pdfRunHistoryRef = React.useRef([]);
   useEffect(() => { pdfRunHistoryRef.current = pdfRunHistory; }, [pdfRunHistory]);
+  // M4 follow-up (2026-07-27): the batch-outcome listener lives in a `[]`-deps effect, so anything
+  // it reads from the render scope is frozen at FIRST render. It classifies each completed batch
+  // file against the teacher's target score — captured that way it would forever use the 95
+  // default, silently mis-grading every batch row for a teacher who changed their target. Mirror
+  // it into a ref the listener reads at event time instead.
+  const pdfTargetScoreRef = React.useRef(95);
+  useEffect(() => { pdfTargetScoreRef.current = pdfTargetScore; }, [pdfTargetScore]);
   useEffect(() => {
     const cur = pdfFixResult;
     // M3 (audit 2026-07-26): a run that finishes with NO verified score is the outcome a reviewer
