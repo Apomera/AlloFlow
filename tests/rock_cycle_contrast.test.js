@@ -115,6 +115,38 @@ describe('rock cycle colour contrast', () => {
     });
   });
 
+  // The mirror of the data-driven-TEXT blind spot above. A panel that takes its
+  // background from the data is just as invisible to a class-scanning audit —
+  // and worse here: the mineral property cards used
+  // style={{ background: selMineral.color }} behind slate-800 text, so every
+  // dark mineral was unreadable. Magnetite was 1.00:1 — its text colour and its
+  // background were the same colour.
+  it('never paints a panel background from mineral data', () => {
+    PATHS.forEach((p) => {
+      const src = readFileSync(p, 'utf8');
+      expect(src).not.toMatch(/style:\s*\{\s*background:\s*selMineral\.color\s*\}/);
+      expect(src).not.toMatch(/style:\s*\{\s*background:\s*mineral\.color\s*\}/);
+    });
+  });
+
+  it('keeps mineral colour free to mean the specimen colour', () => {
+    // With the panel neutral, `color` is read only as the specimen's own colour
+    // (swatch, cross-section, 3D base, and the streak lab's "looks like" chip).
+    // It had been pale UI tints to survive as a background — pyrite showed as
+    // cream when the streak lesson depends on it looking brassy.
+    PATHS.forEach((p) => {
+      const src = readFileSync(p, 'utf8');
+      const minerals = src.slice(src.indexOf('const MINERALS = ['), src.indexOf('const QUIZ_BANK'));
+      const pyrite = minerals.slice(minerals.indexOf("{ id: 'pyrite'"));
+      const hex = /color:\s*'(#[0-9a-fA-F]{6})'/.exec(pyrite);
+      expect(hex, 'pyrite needs a colour').toBeTruthy();
+      // Brass is a mid-tone; the old #fef3c7 was near-white.
+      const lum = luminance(hex[1]);
+      expect(lum, `pyrite ${hex[1]} should read as brass, not cream`).toBeLessThan(0.55);
+      expect(lum).toBeGreaterThan(0.15);
+    });
+  });
+
   it('lets the mode tabs wrap instead of overflowing a phone', () => {
     // Six mode tabs on one non-wrapping row measured 441px, so a 390px phone
     // scrolled the whole tool sideways and the last tabs sat off-screen.
