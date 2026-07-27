@@ -1707,6 +1707,28 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
     expect(src).toContain('alt="Trackside photo of your train at ${s.where}');
   });
 
+  it.each(TOOL_PATHS)('%s: Explore predicts the restraint and the worst row, graded from the real run', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('function renderExplore(){');
+    const e = src.indexOf('\nfunction checkPredictions(){', s);
+    expect(s).toBeGreaterThan(-1);
+    const lane = src.slice(s, e);
+    // both questions are asked, in language a young rider can answer
+    expect(lane).toContain("card('q5', 'Prediction 5 · What holds you in'");
+    expect(lane).toContain("card('q6', 'Prediction 6 · Where you sit'");
+    expect(lane).toContain("['harness', 'A harness over the shoulders']");
+    expect(lane).toContain("['same', 'About the same in every row']");
+    // and both are required before the run, like every other prediction
+    expect(lane).toContain("const need = ['q1', 'q2', 'q3', 'q5', 'q6']");
+    // graded against what the ride measured, never against the design
+    expect(lane).toContain('const spec = restraintSpec(tele);');
+    expect(lane).toContain("judge('q5', spec.key,");
+    expect(lane).toContain("const truth = seats.gSpread < 0.08 ? 'same'");
+    expect(lane).toContain("(seats.worstIdx === 0 ? 'front' : (seats.worstIdx === seats.n - 1 ? 'back' : 'mid'))");
+    // "about the same" is a real answer on a symmetrical layout, not a cop-out
+    expect(lane).toContain('your hills are close to symmetrical');
+  });
+
   it.each(TOOL_PATHS)('%s: three missions are graded row by row', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     for (const id of ['lapbar', 'ejector', 'evenkeel']) expect(src).toContain(`id: '${id}'`);
