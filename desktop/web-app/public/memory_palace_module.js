@@ -2598,6 +2598,11 @@
     }
     function showFallback(msg) {
       routeVisible = true;
+      // Tell the host, so it can stop offering controls that cannot work without
+      // the 3D walk. The synchronous `fellBack` on the returned handle only covers
+      // the no-WebGL case; a three.js load failure or a GL mount throw happens
+      // later, and used to leave every button enabled and silently inert.
+      if (typeof opts.onFallback === 'function') { try { opts.onFallback(msg); } catch (e) {} }
       routeEl.style.cssText = 'color:#e2e8f0;padding:8px 16px;max-height:100%;overflow:auto;';
       var note = document.createElement('div');
       note.setAttribute('role', 'status');

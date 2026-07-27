@@ -148,8 +148,10 @@
     let touched = false;
     const next = { ...data };
     const palace = next.memoryPalace;
-    if (palace && typeof palace === 'object' && (palace.images || palace.depths)) {
-      const { images, depths, ...keep } = palace;
+    // `covered` holds the illustration a decorative stamp is sitting on, so it is
+    // base64 too and has to go with the rest of the artwork.
+    if (palace && typeof palace === 'object' && (palace.images || palace.depths || palace.covered)) {
+      const { images, depths, covered, ...keep } = palace;
       next.memoryPalace = keep;
       touched = true;
     }

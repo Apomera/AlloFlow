@@ -2847,6 +2847,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const palaceRef = React.useRef(null);
   const [ready, setReady] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
+  const [noWalk, setNoWalk] = React.useState(false);
   const [presenting, setPresenting] = React.useState(false);
   const [glbReady, setGlbReady] = React.useState(false);
   const [furnishing, setFurnishing] = React.useState(null);
@@ -2875,7 +2876,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const currentRef = React.useRef(null);
   const mpRef = React.useRef(null);
   mpRef.current = data?.memoryPalace || {};
-  const _PALACE_OWNED = ["images", "depths", "objects", "stamps", "myMnemonics", "mastery"];
+  const _PALACE_OWNED = ["images", "depths", "objects", "stamps", "myMnemonics", "mastery", "covered"];
   const persistPalace = (store) => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     if (!persist) return;
@@ -3055,6 +3056,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       return void 0;
     }
     const activeRouteOrder = routePreview || data?.memoryPalace?.routeOrder || void 0;
+    setNoWalk(false);
     palaceRef.current = MP.buildPalace(data || {}, { routeOrder: activeRouteOrder });
     handleRef.current = MP.render(hostRef.current, data, {
       t,
@@ -3065,6 +3067,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       objects: _withoutStale(data?.memoryPalace?.objects),
       decor: decorLabels,
       // screen-reader names for placed decorations (a11y parity)
+      onFallback: () => setNoWalk(true),
       // Build mode: a click on a room floor comes back here as a room-local
       // spot; null means the click landed in the hub or outside the walls.
       onFloorPlace: (spot) => {
@@ -3550,7 +3553,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       return;
     }
     if (handleRef.current && handleRef.current.setLocusImage) handleRef.current.setLocusImage(cur.id, img);
+    const prevImg = mpRef.current && mpRef.current.images ? mpRef.current.images[cur.id] : null;
+    const prevDepth = mpRef.current && mpRef.current.depths ? mpRef.current.depths[cur.id] : null;
+    const alreadyStamped = !!(mpRef.current && mpRef.current.stamps && mpRef.current.stamps[cur.id]);
     const nx = { ...mpRef.current || {}, images: { ...mpRef.current && mpRef.current.images || {}, [cur.id]: img } };
+    if (prevImg && !alreadyStamped) {
+      nx.covered = { ...mpRef.current && mpRef.current.covered || {}, [cur.id]: { image: prevImg, depth: prevDepth || null } };
+    }
     if (nx.depths && nx.depths[cur.id]) {
       const d = { ...nx.depths };
       delete d[cur.id];
@@ -3564,16 +3573,27 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const cur = currentRef.current;
     if (!cur || cur.id === "__entry" || !persist) return;
     const keep = { ...mpRef.current || {} };
-    ["images", "depths", "objects", "stamps"].forEach((k) => {
+    const buried = keep.covered ? keep.covered[cur.id] : null;
+    ["images", "depths", "objects", "stamps", "covered"].forEach((k) => {
       if (keep[k] && keep[k][cur.id] !== void 0) {
         const o = { ...keep[k] };
         delete o[cur.id];
         keep[k] = o;
       }
     });
+    if (buried && buried.image) {
+      keep.images = { ...keep.images || {}, [cur.id]: buried.image };
+      if (buried.depth) keep.depths = { ...keep.depths || {}, [cur.id]: buried.depth };
+    }
     persistPalace(keep);
     if (handleRef.current && handleRef.current.clearLocus) handleRef.current.clearLocus(cur.id);
-    if (addToast) addToast(t("memory_palace.decorate_removed") || "Removed \u2014 the locus is back to its numbered card.", "info");
+    if (buried && buried.image && handleRef.current) {
+      if (buried.depth && handleRef.current.setLocusRelief) handleRef.current.setLocusRelief(cur.id, buried.image, buried.depth);
+      else if (handleRef.current.setLocusImage) handleRef.current.setLocusImage(cur.id, buried.image);
+    }
+    if (addToast) {
+      addToast(buried && buried.image ? t("memory_palace.decorate_restored") || "Stamp removed \u2014 your illustration is back." : t("memory_palace.decorate_removed") || "Removed \u2014 the locus is back to its numbered card.", "info");
+    }
   };
   const [directMode, setDirectMode] = React.useState(false);
   const [directType, setDirectType] = React.useState("image");
@@ -3797,6 +3817,22 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     persist(Object.keys(store).length ? store : null, "memoryPalace");
     setNonce((n) => n + 1);
     if (addToast) addToast(t("memory_palace.stale_cleared") || "Cleared the work whose spots had changed.", "info");
+  };
+  const roomOfCurrent = () => {
+    const p = palaceRef.current;
+    if (!p || !current || current.entry) return null;
+    const l = (p.loci || []).find((x) => x.id === current.id);
+    const room = l ? (p.rooms || [])[l.roomIdx] : null;
+    return room ? { key: room.key, label: room.label } : null;
+  };
+  const addSpotHere = () => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    const room = roomOfCurrent();
+    if (!MP || !persist || !room) return;
+    const used = mineLoci.filter((e) => e && String(e.room) === room.key).length;
+    const spot = MP.extraSpotFor ? MP.extraSpotFor(used) : { lx: 0, lz: 0 };
+    setSpotLabel("");
+    setPendingSpot({ roomKey: room.key, roomLabel: room.label, lx: spot.lx, lz: spot.lz });
   };
   const saveNewSpot = () => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
@@ -4334,7 +4370,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
     },
     t("memory_palace.recall_exit") || "Exit recall"
-  )) : /* @__PURE__ */ React.createElement(React.Fragment, null, hasContent && !failed && recallEligible && /* @__PURE__ */ React.createElement(
+  )) : /* @__PURE__ */ React.createElement(React.Fragment, null, hasContent && !failed && !noWalk && recallEligible && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => startRecall("bank", false),
@@ -4344,7 +4380,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F9E0} ",
     t("memory_palace.recall_play") || "Recall walk"
-  ), hasContent && !failed && recallEligible && /* @__PURE__ */ React.createElement(
+  ), hasContent && !failed && !noWalk && recallEligible && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => startRecall("self", false),
@@ -4364,7 +4400,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u2328 ",
     t("memory_palace.recall_expert") || "Expert recall"
-  ), hasContent && !failed && /* @__PURE__ */ React.createElement(
+  ), hasContent && !failed && !noWalk && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -4404,7 +4440,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u26F6 ",
     t("memory_palace.presentation") || "Present palace"
-  ), hasContent && !failed && persist && /* @__PURE__ */ React.createElement(
+  ), hasContent && !failed && !noWalk && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setCustomizeOpen((o) => !o),
@@ -4428,7 +4464,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u270D\uFE0F ",
     t("memory_palace.direct_toggle") || "Direct the AI"
-  ), hasContent && !failed && persist && /* @__PURE__ */ React.createElement(
+  ), hasContent && !failed && !noWalk && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setDecorMode((d) => !d),
@@ -4438,7 +4474,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F381} ",
     t("memory_palace.decorate_toggle") || "Decorate"
-  ), hasContent && !failed && persist && /* @__PURE__ */ React.createElement(
+  ), hasContent && !failed && !noWalk && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -4453,7 +4489,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F9F1} ",
     t("memory_palace.build_toggle") || "Build"
-  ), hasContent && !failed && canImagen && persist && /* @__PURE__ */ React.createElement(
+  ), hasContent && !failed && !noWalk && canImagen && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setReliefOn((r) => !r),
@@ -4463,7 +4499,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F5FF} ",
     t("memory_palace.relief_toggle") || "Relief"
-  ), hasContent && !failed && canImagen && persist && /* @__PURE__ */ React.createElement(
+  ), hasContent && !failed && !noWalk && canImagen && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleFurnish,
@@ -4483,7 +4519,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F5FF} ",
     sculpting ? (t("memory_palace.sculpting") || "Sculpting {done}/{total}\u2026").replace("{done}", String(sculpting.done)).replace("{total}", String(sculpting.total)) : t("memory_palace.sculpt") || "Sculpt 3D objects"
-  )), hasContent && !failed && persist && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 border border-slate-200", role: "group", "aria-label": t("memory_palace.theme_label") || "Palace setting" }, (window.AlloModules && window.AlloModules.MemoryPalace && window.AlloModules.MemoryPalace.THEME_KEYS || ["gallery", "pasture", "space"]).map((thm) => {
+  )), hasContent && !failed && !noWalk && persist && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 border border-slate-200", role: "group", "aria-label": t("memory_palace.theme_label") || "Palace setting" }, (window.AlloModules && window.AlloModules.MemoryPalace && window.AlloModules.MemoryPalace.THEME_KEYS || ["gallery", "pasture", "space"]).map((thm) => {
     const on = paletteTheme === thm;
     const icon = thm === "gallery" ? "\u{1F3DB}" : thm === "pasture" ? "\u{1F33F}" : "\u{1FA90}";
     const label = thm === "gallery" ? t("memory_palace.theme_gallery") || "Gallery" : thm === "pasture" ? t("memory_palace.theme_pasture") || "Pasture" : t("memory_palace.theme_space") || "Space";
@@ -4511,7 +4547,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u23F9 ",
     t("memory_palace.gen_stop") || "Stop"
-  ), hasContent && !failed && persist && (imageCount > 0 || objectCount > 0) && !furnishing && !sculpting && /* @__PURE__ */ React.createElement(
+  ), hasContent && !failed && !noWalk && persist && (imageCount > 0 || objectCount > 0) && !furnishing && !sculpting && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -4529,7 +4565,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u21BA ",
     t("memory_palace.clear_generated") || "Clear generated art"
-  )))), !presenting && !recall && staleIds.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900", role: "status" }, /* @__PURE__ */ React.createElement("span", null, "\u26A0\uFE0F ", (t("memory_palace.stale_notice") || "{count} spot(s) now hold different facts than when you worked on them, so that work is being held back rather than shown on the wrong locus.").replace("{count}", String(staleIds.length))), persist && /* @__PURE__ */ React.createElement(
+  )))), !presenting && noWalk && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700", role: "status" }, "\u{1F5A5} ", t("memory_palace.no_walk_notice") || "This device cannot show the 3D palace, so the walking route is listed below instead. Making art, decorating, building and the recall walk all need the 3D walk and are turned off here \u2014 the printable study sheet still works."), !presenting && !recall && staleIds.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900", role: "status" }, /* @__PURE__ */ React.createElement("span", null, "\u26A0\uFE0F ", (t("memory_palace.stale_notice") || "{count} spot(s) now hold different facts than when you worked on them, so that work is being held back rather than shown on the wrong locus.").replace("{count}", String(staleIds.length))), persist && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -4921,7 +4957,18 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   ), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !roomName.trim(), className: "rounded-full bg-sky-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-40" }, t("memory_palace.build_room_add") || "Add room"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     setAddingRoom(false);
     setRoomName("");
-  }, className: "rounded-full border border-sky-300 bg-white px-3 py-1.5 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100" }, t("common.cancel") || "Cancel"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-sky-900" }, "\u{1F9F1} ", t("memory_palace.build_hint") || "Point at the floor inside any room and click to add a new spot. Rooms you add are yours to keep \u2014 the palace grows, and nothing you already learned moves."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setAddingRoom(true), className: "rounded-full border border-sky-300 bg-white px-3 py-1 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100" }, "\u2795 ", t("memory_palace.build_new_room") || "New room"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-sky-800" }, (t("memory_palace.build_count") || "You have added {rooms} room(s) and {spots} spot(s).").replace("{rooms}", String(mineRooms.length)).replace("{spots}", String(mineLoci.length)))))), !presenting && !recall && !directMode && current && !current.entry && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 mb-0.5" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", current.label), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.picture_this") || "Picture this:"), " ", current.mnemonic, current.source === "self" && /* @__PURE__ */ React.createElement("span", { className: "ml-1.5 inline-block rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" }, t("memory_palace.own_badge") || "Yours")), current.mine && persist && /* @__PURE__ */ React.createElement(
+  }, className: "rounded-full border border-sky-300 bg-white px-3 py-1.5 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100" }, t("common.cancel") || "Cancel"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-sm text-sky-900" }, "\u{1F9F1} ", t("memory_palace.build_hint") || "Point at the floor inside any room and click to add a new spot. Rooms you add are yours to keep \u2014 the palace grows, and nothing you already learned moves."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: addSpotHere,
+      disabled: !current || current.entry,
+      title: t("memory_palace.build_here_tip") || "Add a spot to the room you are standing in \u2014 no pointer needed",
+      className: "rounded-full border border-sky-300 bg-white px-3 py-1 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-40"
+    },
+    "\u2795 ",
+    t("memory_palace.build_here") || "Add a spot in this room"
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setAddingRoom(true), className: "rounded-full border border-sky-300 bg-white px-3 py-1 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100" }, "\u2795 ", t("memory_palace.build_new_room") || "New room"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-sky-800" }, (t("memory_palace.build_count") || "You have added {rooms} room(s) and {spots} spot(s).").replace("{rooms}", String(mineRooms.length)).replace("{spots}", String(mineLoci.length)))))), !presenting && !recall && !directMode && current && !current.entry && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 mb-0.5" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", current.label), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.picture_this") || "Picture this:"), " ", current.mnemonic, current.source === "self" && /* @__PURE__ */ React.createElement("span", { className: "ml-1.5 inline-block rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" }, t("memory_palace.own_badge") || "Yours")), current.mine && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

@@ -16573,6 +16573,24 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                         }
                         parsedData = { ...rest, sceneImage: null, inventory: cleanInventory };
                     }
+                    // Memory Palace artwork is the single largest thing a history
+                    // item can hold (a furnished 16-locus palace is ~425KB, ~850KB
+                    // with relief depth maps), and this quota-exceeded retry did not
+                    // know about it — so the retry saved the SAME size and the whole
+                    // local write failed. For a student that is the only durable
+                    // store there is: cloud sync is teacher-only. Drop the pictures,
+                    // keep the palace (loci, mnemonics, mastery, built rooms).
+                    if (parsedData && typeof parsedData === 'object' && parsedData.memoryPalace) {
+                        const mp = parsedData.memoryPalace;
+                        if (mp && typeof mp === 'object' && (mp.images || mp.depths || mp.covered)) {
+                            const { images, depths, covered, ...keepPalace } = mp;
+                            parsedData = { ...parsedData, memoryPalace: keepPalace };
+                        }
+                    }
+                    if (parsedData && typeof parsedData === 'object' && parsedData.conceptArt) {
+                        const { conceptArt, ...restArt } = parsedData;
+                        parsedData = restArt;
+                    }
                 }
                 const serializedItem = {
                     id: item.id || Date.now().toString(),

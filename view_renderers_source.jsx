@@ -3664,6 +3664,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const palaceRef = React.useRef(null);
     const [ready, setReady] = React.useState(false);
     const [failed, setFailed] = React.useState(false);
+    // True when the palace fell back to the walking-route list: no WebGL, three.js
+    // failed to load, or the GL mount threw. Everything that is driven by walking
+    // (making art, decorating, building, the recall walk) cannot work in that
+    // state, and used to stay enabled and do nothing at all.
+    const [noWalk, setNoWalk] = React.useState(false);
     const [presenting, setPresenting] = React.useState(false);
     const [glbReady, setGlbReady] = React.useState(false);      // CC0 collectibles library loaded (declared early: the decor-label memo depends on it)
     const [furnishing, setFurnishing] = React.useState(null);   // {done, total} | null
@@ -3704,7 +3709,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     // label at save time lets buildPalace refuse to apply work whose content has
     // since changed, instead of quietly attaching it to the wrong thing.
     // Existing palaces self-heal: they get fingerprinted on their next save.
-    const _PALACE_OWNED = ['images', 'depths', 'objects', 'stamps', 'myMnemonics', 'mastery'];
+    const _PALACE_OWNED = ['images', 'depths', 'objects', 'stamps', 'myMnemonics', 'mastery', 'covered'];
 
     const persistPalace = (store) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
@@ -3871,6 +3876,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (!MP) { setFailed(true); return undefined; }
         const activeRouteOrder = routePreview || data?.memoryPalace?.routeOrder || undefined;
+        setNoWalk(false);
         palaceRef.current = MP.buildPalace(data || {}, { routeOrder: activeRouteOrder });
         handleRef.current = MP.render(hostRef.current, data, {
             t,
@@ -3880,6 +3886,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             depths: _withoutStale(data?.memoryPalace?.depths),
             objects: _withoutStale(data?.memoryPalace?.objects),
             decor: decorLabels,   // screen-reader names for placed decorations (a11y parity)
+            onFallback: () => setNoWalk(true),
             // Build mode: a click on a room floor comes back here as a room-local
             // spot; null means the click landed in the hub or outside the walls.
             onFloorPlace: (spot) => {
@@ -4362,7 +4369,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const img = _mpStampImage(stamp.e, paletteTheme);   // themed card so it reads in every setting
         if (!img) { if (addToast) addToast(t('memory_palace.decorate_failed') || 'Could not place that here — try another.', 'error'); return; }
         if (handleRef.current && handleRef.current.setLocusImage) handleRef.current.setLocusImage(cur.id, img);
+        const prevImg = (mpRef.current && mpRef.current.images) ? mpRef.current.images[cur.id] : null;
+        const prevDepth = (mpRef.current && mpRef.current.depths) ? mpRef.current.depths[cur.id] : null;
+        const alreadyStamped = !!(mpRef.current && mpRef.current.stamps && mpRef.current.stamps[cur.id]);
         const nx = { ...(mpRef.current || {}), images: { ...((mpRef.current && mpRef.current.images) || {}), [cur.id]: img } };
+        // A stamp overwrites `images`, which is where generated artwork lives. Keep
+        // what it covered — restamping does not bury the original a second time —
+        // so removing the stamp restores the illustration instead of losing it.
+        if (prevImg && !alreadyStamped) {
+            nx.covered = { ...((mpRef.current && mpRef.current.covered) || {}), [cur.id]: { image: prevImg, depth: prevDepth || null } };
+        }
         // a flat stamp replaces any relief pair — drop the stale depth map with it
         if (nx.depths && nx.depths[cur.id]) { const d = { ...nx.depths }; delete d[cur.id]; nx.depths = d; }
         // record the stamp id so screen readers can name it (the data-URL alone is opaque)
@@ -4374,12 +4390,27 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const cur = currentRef.current;
         if (!cur || cur.id === '__entry' || !persist) return;
         const keep = { ...(mpRef.current || {}) };
-        ['images', 'depths', 'objects', 'stamps'].forEach((k) => {
+        const buried = keep.covered ? keep.covered[cur.id] : null;
+        ['images', 'depths', 'objects', 'stamps', 'covered'].forEach((k) => {
             if (keep[k] && keep[k][cur.id] !== undefined) { const o = { ...keep[k] }; delete o[cur.id]; keep[k] = o; }
         });
+        // Put back the illustration the stamp was sitting on rather than leaving the
+        // locus blank — it may have cost credits to generate.
+        if (buried && buried.image) {
+            keep.images = { ...(keep.images || {}), [cur.id]: buried.image };
+            if (buried.depth) keep.depths = { ...(keep.depths || {}), [cur.id]: buried.depth };
+        }
         persistPalace(keep);
         if (handleRef.current && handleRef.current.clearLocus) handleRef.current.clearLocus(cur.id);
-        if (addToast) addToast(t('memory_palace.decorate_removed') || 'Removed — the locus is back to its numbered card.', 'info');
+        if (buried && buried.image && handleRef.current) {
+            if (buried.depth && handleRef.current.setLocusRelief) handleRef.current.setLocusRelief(cur.id, buried.image, buried.depth);
+            else if (handleRef.current.setLocusImage) handleRef.current.setLocusImage(cur.id, buried.image);
+        }
+        if (addToast) {
+            addToast(buried && buried.image
+                ? (t('memory_palace.decorate_restored') || 'Stamp removed — your illustration is back.')
+                : (t('memory_palace.decorate_removed') || 'Removed — the locus is back to its numbered card.'), 'info');
+        }
     };
     // ── Direct-the-AI mode: the student writes the prompt; an AI stage rejects /
     //    enhances / approves it before generating (generation effect + prompt craft). ──
@@ -4563,6 +4594,26 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         persist(Object.keys(store).length ? store : null, 'memoryPalace');
         setNonce((n) => n + 1);
         if (addToast) addToast(t('memory_palace.stale_cleared') || 'Cleared the work whose spots had changed.', 'info');
+    };
+
+    // Build mode's only input was aiming a pointer at a floor. This is the
+    // keyboard/switch equivalent: it adds a spot to the room you are standing in,
+    // at the next free position in that room's grid.
+    const roomOfCurrent = () => {
+        const p = palaceRef.current;
+        if (!p || !current || current.entry) return null;
+        const l = (p.loci || []).find((x) => x.id === current.id);
+        const room = l ? (p.rooms || [])[l.roomIdx] : null;
+        return room ? { key: room.key, label: room.label } : null;
+    };
+    const addSpotHere = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const room = roomOfCurrent();
+        if (!MP || !persist || !room) return;
+        const used = mineLoci.filter((e) => e && String(e.room) === room.key).length;
+        const spot = MP.extraSpotFor ? MP.extraSpotFor(used) : { lx: 0, lz: 0 };
+        setSpotLabel('');
+        setPendingSpot({ roomKey: room.key, roomLabel: room.label, lx: spot.lx, lz: spot.lz });
     };
 
     const saveNewSpot = () => {
@@ -5096,7 +5147,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         </>
                     ) : (
                         <>
-                            {hasContent && !failed && recallEligible && (
+                            {hasContent && !failed && !noWalk && recallEligible && (
                                 <button
                                     onClick={() => startRecall('bank', false)}
                                     disabled={!!furnishing || !!sculpting || routeEditing}
@@ -5106,7 +5157,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     🧠 {t('memory_palace.recall_play') || 'Recall walk'}
                                 </button>
                             )}
-                            {hasContent && !failed && recallEligible && (
+                            {hasContent && !failed && !noWalk && recallEligible && (
                                 <button
                                     onClick={() => startRecall('self', false)}
                                     disabled={!!furnishing || !!sculpting || routeEditing}
@@ -5126,7 +5177,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     ⌨ {t('memory_palace.recall_expert') || 'Expert recall'}
                                 </button>
                             )}
-                            {hasContent && !failed && (
+                            {hasContent && !failed && !noWalk && (
                                 <button
                                     type="button"
                                     data-palace-tour-control="true"
@@ -5161,7 +5212,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     ⛶ {t('memory_palace.presentation') || 'Present palace'}
                                 </button>
                             )}
-                            {hasContent && !failed && persist && (
+                            {hasContent && !failed && !noWalk && persist && (
                                 <button
                                     onClick={() => setCustomizeOpen((o) => !o)}
                                     aria-expanded={customizeOpen ? 'true' : 'false'}
@@ -5184,7 +5235,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     ✍️ {t('memory_palace.direct_toggle') || 'Direct the AI'}
                                 </button>
                             )}
-                            {hasContent && !failed && persist && (
+                            {hasContent && !failed && !noWalk && persist && (
                                 <button
                                     onClick={() => setDecorMode((d) => !d)}
                                     aria-pressed={decorMode ? 'true' : 'false'}
@@ -5194,7 +5245,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     🎁 {t('memory_palace.decorate_toggle') || 'Decorate'}
                                 </button>
                             )}
-                            {hasContent && !failed && persist && (
+                            {hasContent && !failed && !noWalk && persist && (
                                 <button
                                     onClick={() => { setBuildMode((b) => !b); setPendingSpot(null); setDecorMode(false); setDirectMode(false); }}
                                     aria-pressed={buildMode ? 'true' : 'false'}
@@ -5204,7 +5255,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     🧱 {t('memory_palace.build_toggle') || 'Build'}
                                 </button>
                             )}
-                            {hasContent && !failed && canImagen && persist && (
+                            {hasContent && !failed && !noWalk && canImagen && persist && (
                                 <button
                                     onClick={() => setReliefOn((r) => !r)}
                                     aria-pressed={reliefOn ? 'true' : 'false'}
@@ -5214,7 +5265,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     🗿 {t('memory_palace.relief_toggle') || 'Relief'}
                                 </button>
                             )}
-                            {hasContent && !failed && canImagen && persist && (
+                            {hasContent && !failed && !noWalk && canImagen && persist && (
                                 <button
                                     onClick={handleFurnish}
                                     disabled={!!furnishing || !!sculpting}
@@ -5240,7 +5291,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             )}
                                 </>
                             )}
-                            {hasContent && !failed && persist && (
+                            {hasContent && !failed && !noWalk && persist && (
                                 <div className="flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 border border-slate-200" role="group" aria-label={t('memory_palace.theme_label') || 'Palace setting'}>
                                     {((window.AlloModules && window.AlloModules.MemoryPalace && window.AlloModules.MemoryPalace.THEME_KEYS) || ['gallery', 'pasture', 'space']).map((thm) => {
                                         const on = paletteTheme === thm;
@@ -5264,7 +5315,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     ⏹ {t('memory_palace.gen_stop') || 'Stop'}
                                 </button>
                             )}
-                            {hasContent && !failed && persist && (imageCount > 0 || objectCount > 0) && !furnishing && !sculpting && (
+                            {hasContent && !failed && !noWalk && persist && (imageCount > 0 || objectCount > 0) && !furnishing && !sculpting && (
                                 <button
                                     onClick={() => {
                                         // Drop ONLY the generated art — keep the spaced-repetition mastery
@@ -5284,6 +5335,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     )}
                 </div>
             </div>
+            {!presenting && noWalk && (
+                <div className="mt-3 rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700" role="status">
+                    🖥 {t('memory_palace.no_walk_notice') || 'This device cannot show the 3D palace, so the walking route is listed below instead. Making art, decorating, building and the recall walk all need the 3D walk and are turned off here — the printable study sheet still works.'}
+                </div>
+            )}
             {!presenting && !recall && staleIds.length > 0 && (
                 <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">
                     <span>
@@ -5725,6 +5781,15 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 🧱 {t('memory_palace.build_hint') || 'Point at the floor inside any room and click to add a new spot. Rooms you add are yours to keep — the palace grows, and nothing you already learned moves.'}
                             </div>
                             <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                <button
+                                    type="button"
+                                    onClick={addSpotHere}
+                                    disabled={!current || current.entry}
+                                    title={t('memory_palace.build_here_tip') || 'Add a spot to the room you are standing in — no pointer needed'}
+                                    className="rounded-full border border-sky-300 bg-white px-3 py-1 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                    ➕ {t('memory_palace.build_here') || 'Add a spot in this room'}
+                                </button>
                                 <button type="button" onClick={() => setAddingRoom(true)} className="rounded-full border border-sky-300 bg-white px-3 py-1 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100">
                                     ➕ {t('memory_palace.build_new_room') || 'New room'}
                                 </button>

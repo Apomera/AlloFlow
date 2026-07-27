@@ -1216,3 +1216,52 @@ describe('MemoryPalace — recall answer leaks and announcements', () => {
     expect(v).toContain('text-[11px] font-black text-slate-900');
   });
 });
+
+// ── Degradation, keyboard access, and not destroying work ─────────────────
+describe('MemoryPalace — graceful degradation and reachability', () => {
+  const view = () => readFileSync(resolve(process.cwd(), 'view_renderers_source.jsx'), 'utf8');
+  const mod = () => readFileSync(resolve(process.cwd(), 'memory_palace_module.js'), 'utf8');
+
+  it('the engine tells the host every time it falls back to the route list', () => {
+    expect(mod()).toContain("if (typeof opts.onFallback === 'function')");
+    // fires from showFallback, which covers no-WebGL, load failure and mount throw
+    const src = mod();
+    const fn = src.slice(src.indexOf('function showFallback'), src.indexOf('function showFallback') + 700);
+    expect(fn).toContain('opts.onFallback');
+  });
+
+  it('controls that need the 3D walk are withdrawn, not left inert', () => {
+    const v = view();
+    expect(v).toContain('onFallback: () => setNoWalk(true)');
+    expect(v).toContain("t('memory_palace.no_walk_notice')");
+    expect(v).toContain('{hasContent && !failed && !noWalk && recallEligible && (');
+    expect(v).toContain('{hasContent && !failed && !noWalk && persist && (');
+  });
+
+  it('build mode has a keyboard path, not just a floor click', () => {
+    const v = view();
+    expect(v).toContain('const addSpotHere = () =>');
+    expect(v).toContain('MP.extraSpotFor(used)');
+    expect(v).toContain("t('memory_palace.build_here')");
+  });
+
+  it('a decorative stamp no longer destroys the illustration underneath it', () => {
+    const v = view();
+    expect(v).toContain('const prevImg =');
+    expect(v).toContain('nx.covered =');
+    expect(v).toContain("t('memory_palace.decorate_restored')");
+    // restamping must not bury the original twice
+    expect(v).toContain('if (prevImg && !alreadyStamped)');
+  });
+
+  it('the covered artwork is stripped from BOTH the cloud and local quota paths', () => {
+    const sync = readFileSync(resolve(process.cwd(), 'firestore_sync_module.js'), 'utf8');
+    expect(sync).toContain('const { images, depths, covered, ...keep } = palace;');
+    // the local IndexedDB retry is the only durable store a student has
+    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+    expect(anti).toContain('const { images, depths, covered, ...keepPalace } = mp;');
+    // and the generated twin must carry the same fix
+    const app = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/App.jsx'), 'utf8');
+    expect(app).toContain('const { images, depths, covered, ...keepPalace } = mp;');
+  });
+});
