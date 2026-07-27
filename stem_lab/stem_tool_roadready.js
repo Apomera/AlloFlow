@@ -4139,6 +4139,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   function parkingAngleDeltaDeg(a, b) {
     return Math.abs(((a - b) + 540) % 360 - 180);
   }
+  // ── One keyboard contract for every driving drill ──────────────────────────
+  // Four drills (ScenarioParking, Parking, ThreePoint, BackingDrill) each carried
+  // their own near-identical keydown handler, and the copies had DRIFTED: the
+  // preventDefault lists were 11, 10, 9 and 5 keys long. The 5-key one cost a
+  // student real control — BackingDrillMode neither read nor suppressed the arrow
+  // keys, so a driver steering with arrows in the backing drill got no response
+  // AND scrolled the page out from under the canvas while reversing. Its three
+  // siblings all accept arrows, so the capability simply went missing in one copy.
+  // Arrows are not a nicety here: WASD assumes one hand position, and arrows are
+  // the conventional alternative for anyone who cannot use it.
+  // Shared so the next drill inherits the contract instead of re-deriving it.
+  var DRILL_KEYS = ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'shift', 'r'];
+  function attachDrillKeys(keysRef, onReset) {
+    // Don't steal keys from form fields. The main driving view already learned
+    // this the hard way — its comment records that typing "was" into a shared
+    // modal's text input paused the sim and throttled the car — but none of the
+    // four drills carried the guard, and their listeners are on `window` too.
+    var fromTextField = function(e) {
+      var t = e.target, tag = t && t.tagName;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || !!(t && t.isContentEditable);
+    };
+    var onDown = function(e) {
+      if (fromTextField(e)) return;
+      var k = String(e.key || '').toLowerCase();
+      if (DRILL_KEYS.indexOf(k) !== -1) e.preventDefault();   // arrows and space scroll the page otherwise
+      if (e.repeat) return;
+      keysRef.current[k] = true;
+      if (k === 'r' && typeof onReset === 'function') onReset();
+    };
+    var onUp = function(e) {
+      if (fromTextField(e)) return;
+      keysRef.current[String(e.key || '').toLowerCase()] = false;
+    };
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    return function() {
+      window.removeEventListener('keydown', onDown);
+      window.removeEventListener('keyup', onUp);
+    };
+  }
   // ScenarioParkingMode: parameterized variant of ParkingMode for the new scenarios.
   // Uses the same bicycle-model integrator and hit detection patterns. Each scenario's
   // stepCheck (above) determines completion. Score starts at 100, -25 per obstacle hit,
@@ -4177,19 +4217,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }
 
     useEffect(function() {
-      var onDown = function(e) {
-        if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','shift','r'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
-        if (e.repeat) return;
-        keysRef.current[e.key.toLowerCase()] = true;
-        if (e.key.toLowerCase() === 'r') resetCar();
-      };
-      var onUp = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
-      window.addEventListener('keydown', onDown);
-      window.addEventListener('keyup', onUp);
-      return function() {
-        window.removeEventListener('keydown', onDown);
-        window.removeEventListener('keyup', onUp);
-      };
+      return attachDrillKeys(keysRef, resetCar);   // one shared key contract — see DRILL_KEYS
     }, []);
 
     useEffect(function() {
@@ -4458,19 +4486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     ];
 
     useEffect(function() {
-      var onDown = function(e) {
-        if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
-        if (e.repeat) return;
-        keysRef.current[e.key.toLowerCase()] = true;
-        if (e.key.toLowerCase() === 'r') resetCar();
-      };
-      var onUp = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
-      window.addEventListener('keydown', onDown);
-      window.addEventListener('keyup', onUp);
-      return function() {
-        window.removeEventListener('keydown', onDown);
-        window.removeEventListener('keyup', onUp);
-      };
+      return attachDrillKeys(keysRef, resetCar);   // one shared key contract — see DRILL_KEYS
     }, []);
 
     function resetCar() {
@@ -4702,16 +4718,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     ];
 
     useEffect(function() {
-      var onD = function(e) {
-        if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
-        if (e.repeat) return;
-        keysRef.current[e.key.toLowerCase()] = true;
-        if (e.key.toLowerCase() === 'r') resetCar();
-      };
-      var onU = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
-      window.addEventListener('keydown', onD);
-      window.addEventListener('keyup', onU);
-      return function() { window.removeEventListener('keydown', onD); window.removeEventListener('keyup', onU); };
+      return attachDrillKeys(keysRef, resetCar);   // one shared key contract — see DRILL_KEYS
     }, []);
 
     function resetCar() {
@@ -4919,10 +4926,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var CONES = conesRef.current;
 
     useEffect(function() {
-      var onD = function(e) { if (['w','a','s','d','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault(); if (e.repeat) return; keysRef.current[e.key.toLowerCase()] = true; if (e.key.toLowerCase() === 'r') resetCar(); };
-      var onU = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
-      window.addEventListener('keydown', onD); window.addEventListener('keyup', onU);
-      return function() { window.removeEventListener('keydown', onD); window.removeEventListener('keyup', onU); };
+      return attachDrillKeys(keysRef, resetCar);   // one shared key contract — see DRILL_KEYS
     }, []);
 
     function resetCar() {
@@ -4945,10 +4949,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var update = function() {
         var car = carRef.current;
         var k = keysRef.current;
-        var rev = (k['s'] || k['shift']) ? 1 : 0;
-        var fwd = (k['w']) ? 1 : 0;
-        var left = (k['a']) ? 1 : 0;
-        var right = (k['d']) ? 1 : 0;
+        // Arrows as well as WASD, matching the other three drills. This drill read
+        // WASD alone, so a student steering with arrows got no response at all.
+        var rev = (k['s'] || k['arrowdown'] || k['shift']) ? 1 : 0;
+        var fwd = (k['w'] || k['arrowup']) ? 1 : 0;
+        var left = (k['a'] || k['arrowleft']) ? 1 : 0;
+        var right = (k['d'] || k['arrowright']) ? 1 : 0;
         car.steering += ((right - left) * 0.5 - car.steering) * 0.12;
         car.speed += (fwd - rev) * 25 * 0.016;
         car.speed *= 0.92;
@@ -32795,6 +32801,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // window.__testHooks live-sim hook, but for module-scope logic.
   if (typeof window !== 'undefined' && window.__RR_TEST_EXPORTS__) {
     window.__RR_TEST_EXPORTS__.roadReady = {
+      // shared drill keyboard contract (the four drills had drifted apart)
+      DRILL_KEYS: DRILL_KEYS, attachDrillKeys: attachDrillKeys,
       // constants
       MPH_TO_MS: MPH_TO_MS, MS_TO_MPH: MS_TO_MPH, FT_PER_M: FT_PER_M,
       METERS_PER_MILE: METERS_PER_MILE, AIR_DENSITY: AIR_DENSITY,
