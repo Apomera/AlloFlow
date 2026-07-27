@@ -2433,7 +2433,9 @@ describe('Weather Systems ensemble, verification and storyline visuals', () => {
     const spread = (html.match(/data-weather-ensemble-spread[\s\S]*?sensitivity to starting conditions/) || [''])[0];
     // Two strips, nine dots each.
     expect((spread.match(/<circle/g) || []).length).toBe(18);
-    expect(spread).toContain('All nine members fall between');
+    // Describes how the members are distributed, not merely the range they occupy.
+    expect(spread).toContain('across the teaching ensemble');
+    expect(spread).toMatch(/9 members span/);
     // Each strip wears its own measure's hue.
     expect(spread).toContain('#eb6834');
     expect(spread).toContain('#4a3aa7');
@@ -2469,8 +2471,10 @@ describe('Weather Systems ensemble, verification and storyline visuals', () => {
     const sparks = (html.match(/data-weather-storyline-sparklines[\s\S]*?Evidence cue/) || [''])[0];
     // One small multiple per measure — never two scales sharing a plot.
     expect((sparks.match(/<svg/g) || []).length).toBe(3);
-    expect(sparks).toContain('across the 24-hour model window runs from');
-    expect(sparks).toContain('at the current chapter T plus 6 hours');
+    expect(sparks).toContain('across the 24-hour model window');
+    // The direction the line travels is stated, not left to the mark alone.
+    expect(sparks).toMatch(/rises steadily|falls steadily|climbs to a peak|dips to a low|stays flat/);
+    expect(sparks).toContain('at the current chapter, T plus 6 hours');
   });
 
   it('never prints raw float noise in the storyline prose', () => {
@@ -2553,6 +2557,49 @@ describe('Weather Systems chart ink tokens', () => {
       expect(contrast(light, surface), 'muted ink on ' + name).toBeGreaterThanOrEqual(4.5);
     });
     expect(contrast(darkInk, '#0f172a'), 'muted ink on slate-900').toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('puts the shape of a distribution into words, not just its range', () => {
+    const { describeSpread } = window.WeatherSystemsKernel;
+    // A range alone hides whether members agree or split — which is the whole point of the
+    // ensemble strip, and all a sighted reader needs one glance to see.
+    expect(describeSpread([10, 10.4, 10.8, 11.2, 11.6, 12], '°C')).toContain('spread fairly evenly');
+    expect(describeSpread([10, 10.2, 10.3, 18.5, 18.8, 19], '°C')).toContain('two groups');
+    expect(describeSpread([10, 10.2, 10.3, 18.5, 18.8, 19], '°C')).toMatch(/3 below and 3 above/);
+    expect(describeSpread([12, 12, 12], '°C')).toContain('same value');
+    expect(describeSpread([], '°C')).toContain('No members');
+    expect(describeSpread([5, 9], ' hPa')).toContain('2 members span 5 to 9 hPa');
+  });
+
+  it('puts the direction a line travels into words', () => {
+    const { describeTrajectory } = window.WeatherSystemsKernel;
+    expect(describeTrajectory([1, 2, 3, 4, 5], '%')).toContain('rises steadily');
+    expect(describeTrajectory([5, 4, 3, 2, 1], '%')).toContain('falls steadily');
+    // A front passage peaks mid-window; saying only "0 to 88" would lose that entirely.
+    expect(describeTrajectory([10, 40, 88, 40, 0], '%')).toContain('climbs to a peak of 88%');
+    expect(describeTrajectory([10, 40, 88, 40, 0], '%')).toContain('around hour 2');
+    expect(describeTrajectory([20, 8, 4, 9, 21], ' hPa')).toContain('dips to a low of 4 hPa');
+    expect(describeTrajectory([7, 7, 7], '°C')).toContain('stays flat');
+    expect(describeTrajectory([3], '°C')).toBe('');
+  });
+
+  it('names what moved and what held in a controlled test', () => {
+    const html = renderTool('weatherSystems', {
+      weatherSystems: {
+        tab: 'experiment', scenario: 'coldFront', experimentVariable: 'humidity',
+        experimentResult: {
+          hour: 6, variable: 'humidity', baselineValue: 72, testValue: 90, direction: 'increase',
+          deltas: { precipPotential: 12 },
+          control: { temperature: 20, humidity: 72, pressure: 1008, windSpeed: 24, cloudCover: 60, precipPotential: 55 },
+          test: { temperature: 20, humidity: 90, pressure: 1008, windSpeed: 24, cloudCover: 78, precipPotential: 67 },
+        },
+      },
+    }, { gradeLevel: '8th Grade' });
+    const label = (html.match(/aria-label="(Controlled experiment comparison[^"]*)"/) || [])[1] || '';
+    // The held variables are the evidence that the test was fair.
+    expect(label).toContain('Moved: humidity +18%');
+    expect(label).toContain('3 of 6 measures held steady');
+    expect(label).toContain('temperature, pressure, wind speed');
   });
 
   it('declares the chart ink tokens once rather than per panel', () => {

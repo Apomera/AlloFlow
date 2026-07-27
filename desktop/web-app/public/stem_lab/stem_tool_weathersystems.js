@@ -170,6 +170,53 @@
   // formatters were one unrounded caller away from the same thing.
   // Knockout halo so a label stays legible wherever it crosses a rule, a mark or a fill.
   // The backdrop is a parameter because each panel sits on its own surface colour.
+  // A chart description has to carry what the mark's SHAPE says, not just its range. These
+  // turn the two things a reader sees at a glance — how a set of points is distributed, and
+  // which way a line travels — into words, so the non-visual reading is the same reading.
+  function describeSpread(values, unit) {
+    var sorted = (values || []).map(Number).filter(isFinite).sort(function (a, b) { return a - b; });
+    if (!sorted.length) return 'No members to compare.';
+    var low = sorted[0];
+    var high = sorted[sorted.length - 1];
+    var span = high - low;
+    var head = sorted.length + ' members span ' + round(low, 1) + ' to ' + round(high, 1) + unit + '. ';
+    if (span < 0.05) return head + 'Every member landed on the same value.';
+    var widestGap = 0;
+    var gapAt = 0;
+    for (var i = 1; i < sorted.length; i += 1) {
+      var gap = sorted[i] - sorted[i - 1];
+      if (gap > widestGap) { widestGap = gap; gapAt = i; }
+    }
+    if (widestGap > span * 0.4) {
+      return head + 'They fall into two groups, ' + gapAt + ' below and ' + (sorted.length - gapAt) + ' above a clear gap.';
+    }
+    if (widestGap < span * 0.22) return head + 'They are spread fairly evenly across that range.';
+    return head + 'They are grouped unevenly, with the widest gap near ' + round(sorted[gapAt - 1], 1) + unit + '.';
+  }
+
+  function describeTrajectory(values, unit) {
+    var series = (values || []).map(Number).filter(isFinite);
+    if (series.length < 2) return '';
+    var first = series[0];
+    var last = series[series.length - 1];
+    var maxValue = Math.max.apply(Math, series);
+    var minValue = Math.min.apply(Math, series);
+    var span = maxValue - minValue;
+    if (span < 0.05) return 'It stays flat across the window.';
+    var peakAt = series.indexOf(maxValue);
+    var troughAt = series.indexOf(minValue);
+    var interior = function (index) { return index > 0 && index < series.length - 1; };
+    if (interior(peakAt) && maxValue - Math.max(first, last) > span * 0.15) {
+      return 'It climbs to a peak of ' + round(maxValue, 1) + unit + ' around hour ' + peakAt + ', then falls back to ' + round(last, 1) + unit + '.';
+    }
+    if (interior(troughAt) && Math.min(first, last) - minValue > span * 0.15) {
+      return 'It dips to a low of ' + round(minValue, 1) + unit + ' around hour ' + troughAt + ', then recovers to ' + round(last, 1) + unit + '.';
+    }
+    return last > first
+      ? 'It rises steadily from ' + round(first, 1) + unit + ' to ' + round(last, 1) + unit + '.'
+      : 'It falls steadily from ' + round(first, 1) + unit + ' to ' + round(last, 1) + unit + '.';
+  }
+
   function textHalo(backdrop, width) {
     return { paintOrder: 'stroke', stroke: backdrop, strokeWidth: width || 3, strokeLinejoin: 'round' };
   }
@@ -1820,6 +1867,9 @@ var GEOGRAPHY_PROFILES = {
     cloudFamilyById: cloudFamilyById,
     likelyCloudFamily: likelyCloudFamily,
     cerReviewFocus: cerReviewFocus,
+    describeSpread: describeSpread,
+    describeTrajectory: describeTrajectory,
+    signedNumber: signedNumber,
     sceneAppearance: sceneAppearance,
     drawWeatherScene: drawWeatherScene,
     resolvedState: resolvedState
@@ -5903,7 +5953,7 @@ var geographyGroup = new THREE.Group();
                 ),
                 h('svg', {
                   viewBox: '0 0 200 48', className: 'mt-1 h-auto w-full', role: 'img',
-                  'aria-label': track.label + ' across the 24-hour model window runs from ' + round(low, 1) + track.unit + ' to ' + round(high, 1) + track.unit + ', and reads ' + now[track.id] + track.unit + ' at the current chapter T plus ' + state.simHour + ' hours.'
+                  'aria-label': track.label + ' across the 24-hour model window, from ' + round(low, 1) + track.unit + ' to ' + round(high, 1) + track.unit + '. ' + describeTrajectory(values, track.unit) + ' It reads ' + now[track.id] + track.unit + ' at the current chapter, T plus ' + state.simHour + ' hours.'
                 },
                   h('line', { x1: 6, y1: 44, x2: 194, y2: 44, stroke: dark ? 'rgba(255,255,255,.18)' : 'rgba(15,23,42,.15)', strokeWidth: 1 }),
                   h('path', { d: path, fill: 'none', stroke: track.color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
@@ -6742,7 +6792,7 @@ var geographyGroup = new THREE.Group();
                 ),
                 h('svg', {
                   viewBox: '0 0 300 26', className: 'mt-1 h-auto w-full', role: 'img',
-                  'aria-label': 'All nine members fall between ' + round(low, 1) + ' and ' + round(high, 1) + axis.unit + '.'
+                  'aria-label': axis.label + ' across the teaching ensemble. ' + describeSpread(ensemble.members.map(function (member) { return member[axis.id]; }), axis.unit)
                 },
                   h('line', { x1: 8, y1: 13, x2: 292, y2: 13, stroke: chartBaseline, strokeWidth: 1 }),
                   ensemble.members.map(function (member) {
@@ -7456,9 +7506,18 @@ var geographyGroup = new THREE.Group();
           var gridColor = chartGrid;
           var connectorColor = dark ? '#475569' : '#cbd5e1';
           var surfaceColor = chartSurface;
+          // Which rows moved and which held is the visible result of a fair test — a sighted
+          // reader gets it from the three "no change" rows at a glance, so say it outright
+          // rather than leaving it to be derived from six before-and-after pairs.
+          var movedMetrics = metrics.filter(function (metric) { return Math.abs(result.test[metric.key] - result.control[metric.key]) > 0.05; });
+          var heldMetrics = metrics.filter(function (metric) { return movedMetrics.indexOf(metric) === -1; });
           var summary = metrics.map(function (metric) {
             return metric.label + ' ' + result.control[metric.key] + ' to ' + result.test[metric.key] + metric.unit;
-          }).join(', ');
+          }).join(', ') + '. '
+            + (movedMetrics.length
+              ? 'Moved: ' + movedMetrics.map(function (metric) { return metric.label.toLowerCase() + ' ' + signedNumber(result.test[metric.key] - result.control[metric.key], metric.unit); }).join(', ') + '. '
+              : 'Nothing moved. ')
+            + (heldMetrics.length ? heldMetrics.length + ' of ' + metrics.length + ' measures held steady: ' + heldMetrics.map(function (metric) { return metric.label.toLowerCase(); }).join(', ') + '.' : 'Every measure moved.');
           return h('svg', {
             viewBox: '0 0 700 350',
             className: 'mt-4 h-auto w-full',
