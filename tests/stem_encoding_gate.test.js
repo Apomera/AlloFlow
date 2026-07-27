@@ -119,7 +119,7 @@ describe('STEM Lab source encoding', () => {
         .map(([file, hits]) =>
           file + ' x' + hits.length + '  first: line ' + hits[0].line + ' ' + JSON.stringify(hits[0].run) +
           ' -> ' + JSON.stringify(looksLikeMojibake(hits[0].run)));
-      expect(report, 'run  node C:/tmp/mojibake_fix.cjs --apply <files>  to repair').toEqual([]);
+      expect(report, 'repair with:  node dev-tools/fix_mojibake.cjs --apply <files>').toEqual([]);
     }, 60000);
 
     it('holds the deferred files at exactly their known count in ' + dir, () => {
