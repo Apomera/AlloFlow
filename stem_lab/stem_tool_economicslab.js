@@ -122,7 +122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
       { id: 'explore_3_tabs', label: 'Explore 3 economics topics', icon: '\uD83C\uDF0D', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3 topics'; } }
     ],
     render: function(ctx) {
-      // Aliases â€” maps ctx properties to original variable names
+      // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -162,7 +162,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
       var props = ctx.props;
       var canvasNarrate = ctx.canvasNarrate;
 
-      // â”€â”€ Tool body (economicsLab) â”€â”€
+      // ── Tool body (economicsLab) ──
       return (function() {
 var d = labToolData || {};
 
@@ -185,7 +185,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Supply & Demand State â”€â”€
+          // ── Supply & Demand State ──
 
           var sdDemandShift = d.sdDemandShift || 0;
 
@@ -208,7 +208,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Personal Finance Life Sim State â”€â”€
+          // ── Personal Finance Life Sim State ──
 
           var pfAge = d.pfAge || 22;
 
@@ -222,7 +222,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Personal Finance Budget Breakdown â”€â”€
+          // ── Personal Finance Budget Breakdown ──
 
           var pfIncome = Math.round((d.pfSalary || 35000) / 12);
 
@@ -243,7 +243,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Stock Market State â”€â”€
+          // ── Stock Market State ──
 
           var smCash = d.smCash !== undefined ? d.smCash : 10000;
 
@@ -259,14 +259,14 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Entrepreneur State â”€â”€
+          // ── Entrepreneur State ──
 
           // Legacy lemonade-stand state (enDay/enCash/enPrice/enCups/enAdBudget/
           // enWeather/enHistory) removed — the live sim is d.enBusiness + enBiz*.
 
 
 
-          // â”€â”€ National Economy (Macro) State â”€â”€
+          // ── National Economy (Macro) State ──
 
           var macroGDP = d.macroGDP || 2.1;
 
@@ -284,7 +284,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Achievement Tracking â”€â”€
+          // ── Achievement Tracking ──
 
           // Net worth = liquid cash + home equity + investment portfolio \u2212 debt.
           // The "Net worth" achievements check this, not raw cash, so investing
@@ -565,7 +565,7 @@ var d = labToolData || {};
 
 
 
-          // â”€â”€ Canvas Rendering â”€â”€ (non-hook: setTimeout to avoid conditional hook)
+          // ── Canvas Rendering ── (non-hook: setTimeout to avoid conditional hook)
 
           setTimeout(function () {
 
@@ -587,7 +587,7 @@ var d = labToolData || {};
 
             if (econTab === 'supplyDemand') {
 
-              // â”€â”€ Supply & Demand Graph â”€â”€
+              // ── Supply & Demand Graph ──
 
               // NB: the canvas is a 2x supersample (drawn at offsetWidth*2 / 500,
               // displayed at offsetWidth / 250), so font px here render at HALF
@@ -946,7 +946,7 @@ var d = labToolData || {};
 
             else if (econTab === 'personalFinance') {
 
-              // â”€â”€ Life Sim Net Worth Chart â”€â”€
+              // ── Life Sim Net Worth Chart ──
 
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
 
@@ -1093,7 +1093,7 @@ var d = labToolData || {};
 
             else if (econTab === 'stockMarket') {
 
-              // â”€â”€ Stock Market Chart â”€â”€
+              // ── Stock Market Chart ──
 
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
 
@@ -1302,7 +1302,7 @@ var d = labToolData || {};
 
             else if (econTab === 'macro') {
 
-              // â”€â”€ National Economy Dashboard â”€â”€
+              // ── National Economy Dashboard ──
 
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
 

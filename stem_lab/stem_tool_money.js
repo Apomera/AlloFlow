@@ -1624,7 +1624,7 @@ window.StemLab = window.StemLab || {
               }
             };
 
-            // â”€â”€ Fewest coins challenge â”€â”€
+            // ── Fewest coins challenge ──
             var genFewestCoinsChallenge = function () {
               var maxC = isJPY ? 5000 : gc.maxPrice;
               var target = isJPY ? (Math.floor(Math.random() * 49 + 1) * 100 + Math.floor(Math.random() * 10) * 10) : (Math.round((Math.random() * maxC + 0.10) * 100) / 100);

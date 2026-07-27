@@ -320,7 +320,7 @@
 // Extracted from stem_tool_science.js as a standalone module
 // Uses window.StemLab.registerTool() plugin architecture
 
-  // â•â•â• ðŸ”¬ dissection (dissection) â•â•â•
+  // ═══ 🔬 dissection (dissection) ═══
   // ── Dissection Lab Audio System ──
   var _disAC = null;
   var _disSaveTimer = null;
@@ -359,7 +359,7 @@
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       console.log('[Dissection Plugin] render() called, has React:', !!ctx.React, 'has toolData:', !!ctx.toolData);
-      // Aliases â€” maps ctx properties to original variable names
+      // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -394,7 +394,7 @@
       var canvasNarrate = ctx.canvasNarrate;
       var props = ctx.props;
 
-      // â”€â”€ Tool body (dissection) â”€â”€
+      // ── Tool body (dissection) ──
       return (function() {
 var d = labToolData.dissection || {};
 
@@ -482,7 +482,7 @@ var d = labToolData.dissection || {};
 
 
 
-          // â•â•â•â•â•â•â•â• SPECIMEN DATABASE â•â•â•â•â•â•â•â•
+          // ════════ SPECIMEN DATABASE ════════
 
           var SPECIMENS = {
 
@@ -490,7 +490,7 @@ var d = labToolData.dissection || {};
 
               name: 'Frog (Rana)', icon: '\uD83D\uDC38',
 
-              desc: 'Classic vertebrate â€” 3-chambered heart, cutaneous respiration, metamorphosis.',
+              desc: 'Classic vertebrate — 3-chambered heart, cutaneous respiration, metamorphosis.',
 
               objectives: [
                 'Identify the 3-chambered heart and trace blood flow',
@@ -796,15 +796,15 @@ var d = labToolData.dissection || {};
 
                   { id: 'ribs_p', name: 'Ribs', x: 0.43, y: 0.39, fn: '14-15 pairs (vs 12 human). Cartilaginous in fetus. Protect thoracic organs.', clinical: '"Spare ribs" in cooking come from this ventral rib region.' },
 
-                  { id: 'pelvis_p', name: 'Pelvis', x: 0.68, y: 0.43, fn: 'Ilium, ischium, pubis â€” largely cartilaginous in fetus. Same tripartite structure as human pelvis but horizontally oriented for quadrupedal stance.', clinical: 'Pig pelvis is oriented horizontally vs vertically in bipedal humans â€” key comparative anatomy difference.' },
+                  { id: 'pelvis_p', name: 'Pelvis', x: 0.68, y: 0.43, fn: 'Ilium, ischium, pubis — largely cartilaginous in fetus. Same tripartite structure as human pelvis but horizontally oriented for quadrupedal stance.', clinical: 'Pig pelvis is oriented horizontally vs vertically in bipedal humans — key comparative anatomy difference.' },
 
-                  { id: 'scapula_p', name: 'Scapula', x: 0.36, y: 0.39, fn: 'Triangular shoulder blade with prominent spine and acromion. Cartilaginous in fetus. Attachment for supraspinatus and infraspinatus muscles.', clinical: 'Pig scapula is more vertically oriented than human â€” adaptation for quadrupedal weight bearing.' },
+                  { id: 'scapula_p', name: 'Scapula', x: 0.36, y: 0.39, fn: 'Triangular shoulder blade with prominent spine and acromion. Cartilaginous in fetus. Attachment for supraspinatus and infraspinatus muscles.', clinical: 'Pig scapula is more vertically oriented than human — adaptation for quadrupedal weight bearing.' },
 
-                  { id: 'humerus_p', name: 'Forelimb Bones', x: 0.37, y: 0.55, fn: 'Humerus (upper), radius and ulna (lower). Articulate with shoulder and carpals. Ulna has prominent olecranon process for triceps attachment.', clinical: 'Pig limb proportions differ from human but bone homology is exact â€” used in orthopedic research.' },
+                  { id: 'humerus_p', name: 'Forelimb Bones', x: 0.37, y: 0.55, fn: 'Humerus (upper), radius and ulna (lower). Articulate with shoulder and carpals. Ulna has prominent olecranon process for triceps attachment.', clinical: 'Pig limb proportions differ from human but bone homology is exact — used in orthopedic research.' },
 
-                  { id: 'femur_p', name: 'Hindlimb Bones', x: 0.68, y: 0.55, fn: 'Femur (thigh), tibia and fibula (leg). Terminates in cloven hoof (digits III and IV). Other digits are vestigial dewclaws.', clinical: 'Pig walks on digits III-IV â€” an even-toed ungulate (Artiodactyla). Humans walk on entire foot sole.' },
+                  { id: 'femur_p', name: 'Hindlimb Bones', x: 0.68, y: 0.55, fn: 'Femur (thigh), tibia and fibula (leg). Terminates in cloven hoof (digits III and IV). Other digits are vestigial dewclaws.', clinical: 'Pig walks on digits III-IV — an even-toed ungulate (Artiodactyla). Humans walk on entire foot sole.' },
 
-                  { id: 'sternum_p', name: 'Sternum', x: 0.45, y: 0.47, fn: 'Segmented breastbone with 6-7 sternebrae. Largely cartilaginous in fetus with ossification centers. Ribs articulate laterally.', clinical: 'Segmented pig sternum reveals the fetal ossification process â€” each sternebra starts as cartilage.' }
+                  { id: 'sternum_p', name: 'Sternum', x: 0.45, y: 0.47, fn: 'Segmented breastbone with 6-7 sternebrae. Largely cartilaginous in fetus with ossification centers. Ribs articulate laterally.', clinical: 'Segmented pig sternum reveals the fetal ossification process — each sternebra starts as cartilage.' }
 
                 ],
 
@@ -1136,7 +1136,7 @@ var d = labToolData.dissection || {};
 
 
 
-          // â•â•â•â•â•â•â•â• ACTIVE STATE â•â•â•â•â•â•â•â•
+          // ════════ ACTIVE STATE ════════
 
           var specimen = d.specimen || 'frog';
 
@@ -2076,7 +2076,7 @@ var d = labToolData.dissection || {};
 
             canvas._drawGuidedStep = guidedStep;
 
-            // If animation loop is already running, just update state â€” don't restart
+            // If animation loop is already running, just update state — don't restart
 
             if (canvas._dissAnim && canvas._dissCleanup) return;
             if (canvas._dissCleanup) canvas._dissCleanup();
@@ -2533,7 +2533,7 @@ var d = labToolData.dissection || {};
 
 
 
-// €â€ Draw organ pins â€â€”€â”€ Draw specimen body based on bodyShape â”€â”€
+// €â€ Draw organ pins â€â€”€â”€ Draw specimen body based on bodyShape ──
 
               if (spec.bodyShape === 'frog') {
                 // Frog: integrated head-and-torso silhouette with articulated limbs and nested anatomy.
@@ -3286,7 +3286,7 @@ var d = labToolData.dissection || {};
 
                   ctx.strokeStyle = boneColor; ctx.lineWidth = 1.5;
 
-    // €â€ Draw organ pins â€â€”€â”€ Skull â”€â”€
+    // €â€ Draw organ pins â€â€”€â”€ Skull ──
 
                   ctx.beginPath(); ctx.ellipse(cx - W * 0.24, cy - H * 0.02, W * 0.07, H * 0.06, -0.2, 0, Math.PI * 2);
 
@@ -3306,7 +3306,7 @@ var d = labToolData.dissection || {};
 
                   ctx.strokeStyle = boneColor; ctx.lineWidth = 1.2; ctx.stroke();
 
-    // €â€ Draw organ pins â€â€”€â”€ Spine (vertebral column) â”€â”€
+    // €â€ Draw organ pins â€â€”€â”€ Spine (vertebral column) ──
 
                   ctx.beginPath(); ctx.moveTo(cx - W * 0.17, cy - H * 0.02);
 
@@ -3332,7 +3332,7 @@ var d = labToolData.dissection || {};
 
                   }
 
-    // €â€ Draw organ pins â€â€”€â”€ Ribs (extending from vertebrae down to sternum) â”€â”€
+    // €â€ Draw organ pins â€â€”€â”€ Ribs (extending from vertebrae down to sternum) ──
 
                   for (var pr = 0; pr < 8; pr++) {
 
@@ -3348,7 +3348,7 @@ var d = labToolData.dissection || {};
 
                   }
 
-    // €â€ Draw organ pins â€â€”€â”€ Sternum (connecting rib tips ventrally) â”€â”€
+    // €â€ Draw organ pins â€â€”€â”€ Sternum (connecting rib tips ventrally) ──
 
                   ctx.beginPath();
 
@@ -3372,7 +3372,7 @@ var d = labToolData.dissection || {};
 
                   }
 
-    // €â€ Draw organ pins â€â€”€â”€ Scapula (shoulder blade â€” inside body outline) â”€â”€
+    // €â€ Draw organ pins â€â€”€â”€ Scapula (shoulder blade — inside body outline) ──
 
                   ctx.beginPath();
 
@@ -3396,7 +3396,7 @@ var d = labToolData.dissection || {};
 
                   ctx.strokeStyle = boneColor; ctx.lineWidth = 1; ctx.stroke();
 
-    // €â€ Draw organ pins â€â€”€â”€ Pelvis (ilium-ischium-pubis, inside body) â”€â”€
+    // €â€ Draw organ pins â€â€”€â”€ Pelvis (ilium-ischium-pubis, inside body) ──
 
                   ctx.beginPath();
 
@@ -3426,7 +3426,7 @@ var d = labToolData.dissection || {};
 
                   ctx.strokeStyle = boneColor;
 
-    // €â€ Draw organ pins â€â€”€â”€ Forelimb bones â”€â”€
+    // €â€ Draw organ pins â€â€”€â”€ Forelimb bones ──
 
                   // Humerus + radius/ulna for each front leg
 
@@ -3458,7 +3458,7 @@ var d = labToolData.dissection || {};
 
                   });
 
-    // €â€ Draw organ pins â€â€”€â”€ Hindlimb bones â”€â”€
+    // €â€ Draw organ pins â€â€”€â”€ Hindlimb bones ──
 
                   // Femur + tibia/fibula for each rear leg
 
@@ -3490,7 +3490,7 @@ var d = labToolData.dissection || {};
 
                   });
 
-    // €â€ Draw organ pins â€â€”€â”€ Hoof bones (distal phalanges) â”€â”€
+    // €â€ Draw organ pins â€â€”€â”€ Hoof bones (distal phalanges) ──
 
                   [cx - W * 0.135, cx - W * 0.105, cx + W * 0.115, cx + W * 0.145].forEach(function (hx) {
 
@@ -3729,7 +3729,7 @@ var d = labToolData.dissection || {};
                 ctx.strokeStyle = layerStroke; ctx.lineWidth = 1; ctx.stroke();
 
 
-  // €â€ Draw organ pins â€â€”€â”€ Scale pattern â”€â”€
+  // €â€ Draw organ pins â€â€”€â”€ Scale pattern ──
 
                 ctx.globalAlpha = 0.12;
 
@@ -3751,7 +3751,7 @@ var d = labToolData.dissection || {};
 
                 ctx.globalAlpha = 1;
 
-  // €â€ Draw organ pins â€â€”€â”€ Caudal fin rays â”€â”€
+  // €â€ Draw organ pins â€â€”€â”€ Caudal fin rays ──
 
                 ctx.globalAlpha = 0.25;
 
@@ -3767,7 +3767,7 @@ var d = labToolData.dissection || {};
 
                 ctx.globalAlpha = 1;
 
-  // €â€ Draw organ pins â€â€”€â”€ Lateral line â”€â”€
+  // €â€ Draw organ pins â€â€”€â”€ Lateral line ──
 
                 ctx.globalAlpha = 0.3;
 
@@ -3781,7 +3781,7 @@ var d = labToolData.dissection || {};
 
                 ctx.globalAlpha = 1;
 
-  // €â€ Draw organ pins â€â€”€â”€ Perch vertical bars â”€â”€
+  // €â€ Draw organ pins â€â€”€â”€ Perch vertical bars ──
 
                 ctx.globalAlpha = 0.08;
 
@@ -3797,7 +3797,7 @@ var d = labToolData.dissection || {};
 
                 ctx.globalAlpha = 1;
 
-  // €â€ Draw organ pins â€â€”€â”€ Layer overlays â”€â”€
+  // €â€ Draw organ pins â€â€”€â”€ Layer overlays ──
 
                 if (activeLayer === 'organs') {
                   // Perch internal cutaway: dorsal buoyancy/excretory organs and ventral viscera share one coelomic cavity.
@@ -5632,7 +5632,7 @@ var d = labToolData.dissection || {};
 
                   ctx.strokeStyle = '#a855f7';
 
-                  // Brain â†’ spinal cord
+                  // Brain → spinal cord
 
                   ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.25); // brain
 
@@ -5744,7 +5744,7 @@ var d = labToolData.dissection || {};
 
                   ctx.strokeStyle = '#a855f7';
 
-                  // Brain â†’ ventral cord
+                  // Brain → ventral cord
 
                   ctx.beginPath(); ctx.moveTo(cx - W * 0.20, cy); // brain
 
@@ -5803,7 +5803,7 @@ var d = labToolData.dissection || {};
 
                   ctx.strokeStyle = '#84cc16';
 
-                  // Kidneys â†’ ureters â†’ bladder â†’ cloaca
+                  // Kidneys → ureters → bladder → cloaca
 
                   [-1, 1].forEach(function (s) {
 
@@ -5811,7 +5811,7 @@ var d = labToolData.dissection || {};
 
                     ctx.moveTo(cx + s * W * 0.06, cy + H * 0.08); // kidney
 
-                    ctx.quadraticCurveTo(cx + s * W * 0.03, cy + H * 0.12, cx, cy + H * 0.15); // ureter â†’ bladder
+                    ctx.quadraticCurveTo(cx + s * W * 0.03, cy + H * 0.12, cx, cy + H * 0.15); // ureter → bladder
 
                     ctx.stroke();
 
@@ -5913,7 +5913,7 @@ var d = labToolData.dissection || {};
 
                 if (spec.bodyShape === 'frog') {
 
-                  // Heart â†’ Arteries (red, oxygenated)
+                  // Heart → Arteries (red, oxygenated)
 
                   ctx.lineDashOffset = -systemTraceTick * 0.6;
 
@@ -5921,13 +5921,13 @@ var d = labToolData.dissection || {};
 
                   ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.12); // heart
 
-                  ctx.quadraticCurveTo(cx - W * 0.08, cy - H * 0.18, cx - W * 0.04, cy - H * 0.24); // carotid â†’ head
+                  ctx.quadraticCurveTo(cx - W * 0.08, cy - H * 0.18, cx - W * 0.04, cy - H * 0.24); // carotid → head
 
                   ctx.stroke();
 
                   ctx.beginPath(); ctx.moveTo(cx, cy - H * 0.12);
 
-                  ctx.quadraticCurveTo(cx + W * 0.05, cy - H * 0.05, cx + W * 0.03, cy + H * 0.06); // systemic â†’ body
+                  ctx.quadraticCurveTo(cx + W * 0.05, cy - H * 0.05, cx + W * 0.03, cy + H * 0.06); // systemic → body
 
                   ctx.stroke();
 
@@ -5943,7 +5943,7 @@ var d = labToolData.dissection || {};
 
                   ctx.stroke();
 
-                  // Veins (blue, deoxygenated) â†’ back to heart
+                  // Veins (blue, deoxygenated) → back to heart
 
                   ctx.lineDashOffset = systemTraceTick * 0.6;
 
@@ -6059,7 +6059,7 @@ var d = labToolData.dissection || {};
 
                   ctx.strokeStyle = '#38bdf8';
 
-                  // Air path: nares â†’ glottis â†’ lungs
+                  // Air path: nares → glottis → lungs
 
                   ctx.beginPath();
 
@@ -7830,7 +7830,7 @@ var d = labToolData.dissection || {};
 
 
 
-          // â”€â”€ Render â”€â”€
+          // ── Render ──
 
           return React.createElement("div", { className: "space-y-3", "data-dissection-root": true },
 

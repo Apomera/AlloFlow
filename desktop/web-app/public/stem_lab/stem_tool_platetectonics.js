@@ -1207,7 +1207,7 @@
     )
   );
   };
-  // â•â•â• ðŸ”¬ plateTectonics (plateTectonics) â•â•â•
+  // ═══ 🔬 plateTectonics (plateTectonics) ═══
   window.StemLab.registerTool('plateTectonics', {
     icon: '\uD83C\uDF0B',
     label: 'Plate Tectonics',
@@ -1220,7 +1220,7 @@
       { id: 'myth_3', label: 'Bust 3 tectonics myths (True or False)', icon: '🧠', check: function(d) { return (d.ptMythsDone || 0) >= 3; }, progress: function(d) { return (d.ptMythsDone || 0) + '/3 myths'; } }
     ],
     render: function(ctx) {
-      // Aliases â€” maps ctx properties to original variable names
+      // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -1255,7 +1255,7 @@
       var props = Object.assign({}, ctx.props || {}, { darkMode: !!ctx.isDark || !!ctx.isContrast, isContrast: !!ctx.isContrast, palette: ctx.pal || null });
       var canvasNarrate = ctx.canvasNarrate;
 
-      // â”€â”€ Tool body (plateTectonics) â”€â”€
+      // ── Tool body (plateTectonics) ──
       return (function() {
 var d = labToolData.plateTectonics || {};
 
@@ -1370,7 +1370,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-          // â”€â”€ Plate data â”€â”€
+          // ── Plate data ──
 
 
           // ═══════════════════════════════════════════════════════════
@@ -5556,7 +5556,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-          // â”€â”€ Canvas ref callback â”€â”€
+          // ── Canvas ref callback ──
 
           var canvasRef = function(canvasEl) {
 
@@ -6031,7 +6031,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-              // â”€â”€ Convection currents â”€â”€
+              // ── Convection currents ──
 
               if (showConvection) {
 
@@ -6312,7 +6312,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-              // â”€â”€ Volcano particles â”€â”€
+              // ── Volcano particles ──
 
               for (var vi = volcanoParticles.length - 1; vi >= 0; vi--) {
 
@@ -6493,7 +6493,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-              // â”€â”€ Drag hint â”€â”€
+              // ── Drag hint ──
 
               if (tick < 120) {
 
@@ -6534,7 +6534,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-          // â”€â”€ Seismograph canvas â”€â”€
+          // ── Seismograph canvas ──
 
           var seismoRef = function(canvasEl) {
 
@@ -6663,7 +6663,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-          // â”€â”€ render â”€â”€
+          // ── render ──
 
           // ── Keyboard shortcuts (WCAG 2.1.1): 1-4 switch tabs ──
           var _PT_TABS = ['sim', 'earthquake', 'timeline', 'quiz'];
@@ -7037,7 +7037,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-            // â•â•â• TAB 2: EARTHQUAKE LAB â•â•â•
+            // ═══ TAB 2: EARTHQUAKE LAB ═══
 
             simTab === 'earthquake' && React.createElement("div", { className: "space-y-4" },
 
@@ -7252,7 +7252,7 @@ var d = labToolData.plateTectonics || {};
 
             ),
 
-            // â•â•â• EARTH TIMELAPSE CANVAS â•â•â•
+            // ═══ EARTH TIMELAPSE CANVAS ═══
 
             React.createElement("div", { className: "rounded-2xl border-2 border-red-200 overflow-hidden mt-4", style: { background: 'linear-gradient(135deg, #0c0a2a, #1e1b4b)' } },
 
@@ -7290,7 +7290,7 @@ var d = labToolData.plateTectonics || {};
 
             ),
 
-            // â”€â”€â”€ Earth canvas renderer (async) â”€â”€â”€
+            // ─── Earth canvas renderer (async) ───
 
             (function () {
   // WCAG 4.1.3: Status live region for dynamic content announcements
@@ -7754,7 +7754,7 @@ var d = labToolData.plateTectonics || {};
 
             })(),
 
-            // â•â•â• TAB 4: QUIZ â•â•â•
+            // ═══ TAB 4: QUIZ ═══
 
             simTab === 'quiz' && (function() {
 
@@ -7935,7 +7935,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-            // â•â•â• EDUCATIONAL PANEL â•â•â•
+            // ═══ EDUCATIONAL PANEL ═══
 
             React.createElement("div", { className: "mt-6" },
 
@@ -21946,7 +21946,7 @@ var d = labToolData.plateTectonics || {};
             ),
 
 
-            // â•â•â• BACK BUTTON â•â•â•
+            // ═══ BACK BUTTON ═══
 
             // === H7b'' inquiry widget: plate boundary stress ===
             simTab === 'boundaryHunt' && (function() {

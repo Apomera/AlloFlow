@@ -19090,7 +19090,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   )
                 ),
 
-                // â”€â”€ Plant Management Panel â”€â”€
+                // ── Plant Management Panel ──
 
                 React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 via-green-50 to-lime-50 rounded-2xl p-4 border border-emerald-200/60 shadow-sm" },
 

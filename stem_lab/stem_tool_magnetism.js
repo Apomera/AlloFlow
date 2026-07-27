@@ -2235,7 +2235,7 @@
         function setProbe(axis, value) { var next = Object.assign({}, state.probe); next[axis] = value; commitElectro3D({ electro3dProbe: next }); }
         return card('3D Electromagnet Engineering Lab', h('div', null,
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
-            'Watch the fields from many current loops superpose into one solenoid field. Orange arrows follow conventional current around the helix; rose field arrows point toward the electromagnetâ€™s north end.'),
+            'Watch the fields from many current loops superpose into one solenoid field. Orange arrows follow conventional current around the helix; rose field arrows point toward the electromagnet’s north end.'),
           sceneViewport(h('canvas', { key: 'electro3d-' + (d.electro3dAttempt || 0), ref: electro3DCanvasRef, className: 'mag-electro3d', role: 'img',
             'aria-label': 'Interactive three-dimensional solenoid, current helix, field lines, pole markers, and movable field probe.',
             'aria-describedby': 'mag-electro3d-status mag-electro3d-summary',
@@ -2253,16 +2253,16 @@
             h('button', { 'aria-pressed': state.vectors ? 'true' : 'false', onClick: function () { commitElectro3D({ electro3dVectors: !state.vectors }); }, style: btn(state.vectors) }, 'Vectors: ' + (state.vectors ? 'on' : 'off')),
             h('button', { 'aria-pressed': state.lines ? 'true' : 'false', onClick: function () { commitElectro3D({ electro3dLines: !state.lines }); }, style: btn(state.lines) }, 'Field lines: ' + (state.lines ? 'on' : 'off'))),
           h('div', { className: 'mag-observe' },
-            h('span', { 'aria-hidden': 'true' }, 'âœ‹'),
+            h('span', { 'aria-hidden': 'true' }, '✋'),
             h('span', null, h('b', null, 'Right-hand rule: '), 'curl your right-hand fingers with the orange current arrows. Your thumb points with the interior field toward the north pole. Reverse either current or winding and the poles swap; reverse both and they return.')),
           electro3DSaturationGraph(),
           h('div', { className: 'mag-observe' },
             h('span', { 'aria-hidden': 'true' }, 'NI'),
             h('div', null,
-              h('b', null, 'Equal ampere-turn engineering comparison: '), 'both setups make NI = 160 AÂ·turns in the same geometry, but their wire length and IÂ² heating differ.',
+              h('b', null, 'Equal ampere-turn engineering comparison: '), 'both setups make NI = 160 A·turns in the same geometry, but their wire length and I² heating differ.',
               h('div', { role: 'group', 'aria-label': 'Compare equal ampere-turn coil designs', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 7 } },
-                h('button', { onClick: function () { commitElectro3D({ turns: 40, current: 4 }, 'Selected 40 turns at 4 amps: 160 ampere-turns.'); }, style: btn(state.turns === 40 && state.current === 4) }, '40 turns Ã— 4 A'),
-                h('button', { onClick: function () { commitElectro3D({ turns: 160, current: 1 }, 'Selected 160 turns at 1 amp: 160 ampere-turns.'); }, style: btn(state.turns === 160 && state.current === 1) }, '160 turns Ã— 1 A')))),
+                h('button', { onClick: function () { commitElectro3D({ turns: 40, current: 4 }, 'Selected 40 turns at 4 amps: 160 ampere-turns.'); }, style: btn(state.turns === 40 && state.current === 4) }, '40 turns × 4 A'),
+                h('button', { onClick: function () { commitElectro3D({ turns: 160, current: 1 }, 'Selected 160 turns at 1 amp: 160 ampere-turns.'); }, style: btn(state.turns === 160 && state.current === 1) }, '160 turns × 1 A')))),
           h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 12, alignItems: 'start' } },
             h('section', { 'aria-label': 'Coil engineering controls' },
               h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 7 } }, 'Engineer the coil'),
@@ -2286,11 +2286,11 @@
                   h('br'), 'Relative magnitude ' + probeMagnitude.toFixed(2) + '. Direction and return path are meaningful; this off-axis display uses a loop-dipole approximation.')))
           ),
           h('div', { className: 'mag-observe', role: 'status' },
-            h('span', { 'aria-hidden': 'true' }, 'âš™'),
+            h('span', { 'aria-hidden': 'true' }, '⚙'),
             h('span', null,
-              h('b', null, 'NI = ' + (state.turns * state.current).toFixed(0) + ' AÂ·turns Â· finite-coil center field ' + (centerB * 1000).toFixed(centerB < 0.01 ? 2 : 0) + ' mT Â· points ' + fieldDir + '.'),
+              h('b', null, 'NI = ' + (state.turns * state.current).toFixed(0) + ' A·turns · finite-coil center field ' + (centerB * 1000).toFixed(centerB < 0.01 ? 2 : 0) + ' mT · points ' + fieldDir + '.'),
               h('br'), 'Air-core geometry gives ' + (airB * 1000).toFixed(2) + ' mT versus ' + (idealAir * 1000).toFixed(2) + ' mT from the long-solenoid approximation.',
-              h('br'), material.name + ' effective gain ' + gain.toFixed(1) + 'Ã—' + (state.material === 'air' ? '.' : ' Â· saturation ' + Math.round(saturation * 100) + '%.') + ' Wire length ' + wireLength.toFixed(1) + ' m; relative heating index ' + heat.toFixed(1) + ' (scales with IÂ² and wire length).')),
+              h('br'), material.name + ' effective gain ' + gain.toFixed(1) + '×' + (state.material === 'air' ? '.' : ' · saturation ' + Math.round(saturation * 100) + '%.') + ' Wire length ' + wireLength.toFixed(1) + ' m; relative heating index ' + heat.toFixed(1) + ' (scales with I² and wire length).')),
           disclosure('The center-field calculation uses the finite-solenoid axis formula and a smooth saturation model for representative core materials. Exact core behavior depends on alloy, shape, air gaps, temperature, and magnetic history. The 3D off-axis field is a softened stack-of-loop-dipoles model for topology and direction, not precision magnet design.')
         ), '#f59e0b');
       }
@@ -3566,7 +3566,7 @@
           h('line', { x1: xAt(samples.length - 1), y1: 12, x2: xAt(samples.length - 1), y2: 177, stroke: 'rgba(52,211,153,.55)', strokeWidth: 1, strokeDasharray: '4 3' }),
           h('circle', { cx: xAt(samples.length - 1), cy: topMid - currentFlux / maxFlux * 29, r: 4, fill: INSTRUMENT, stroke: '#fb7185', strokeWidth: 2 }),
           h('rect', { x: xAt(samples.length - 1) - 3.5, y: bottomMid - currentEMF / maxEMF * 29 - 3.5, width: 7, height: 7, fill: INSTRUMENT, stroke: '#fbbf24', strokeWidth: 2, transform: 'rotate(45 ' + xAt(samples.length - 1) + ' ' + (bottomMid - currentEMF / maxEMF * 29) + ')' }),
-          h('text', { x: W - right, y: 186, fill: SOFT, fontSize: 11, textAnchor: 'end' }, 'motion samples â†’'),
+          h('text', { x: W - right, y: 186, fill: SOFT, fontSize: 11, textAnchor: 'end' }, 'motion samples →'),
           h('text', { x: W - right, y: 17, fill: SOFT, fontSize: 11, textAnchor: 'end' }, 'current ' + currentFlux.toFixed(2)),
           h('text', { x: W - right, y: 102, fill: SOFT, fontSize: 11, textAnchor: 'end' }, 'current ' + currentEMF.toFixed(2)));
       }
@@ -3578,7 +3578,7 @@
         function cameraButton(id, label) {
           return h('button', { key: id, onClick: function () { if (_induction3DCanvas && typeof _induction3DCanvas._induction3dSetView === 'function') _induction3DCanvas._induction3dSetView(id); announceToSR(label + ' induction view selected.'); }, style: btn() }, label);
         }
-        return card('3D Induction Lab â€” field through a coil', h('div', null,
+        return card('3D Induction Lab — field through a coil', h('div', null,
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
             'Move the magnet through a real three-dimensional coil surface. The translucent disk represents the area used to calculate magnetic flux; the gold arrow and bulb appear only while changing flux drives current.'),
           sceneViewport(h('canvas', {
@@ -3601,14 +3601,14 @@
             cameraButton('perspective', 'Perspective'), cameraButton('axis', 'Along coil axis'), cameraButton('side', 'Side'), cameraButton('top', 'Top')),
           induction3DGraph(),
           h('div', { className: 'mag-observe' },
-            h('span', { 'aria-hidden': 'true' }, 'âˆ’dÎ¦/dt'),
+            h('span', { 'aria-hidden': 'true' }, '−dΦ/dt'),
             h('span', null, h('b', null, 'Read the linked curves: '), 'voltage responds to the slope of the flux curve. It peaks where flux changes fastest, crosses zero at a flux extreme, and reverses when the change reverses.')),
           h('section', { 'aria-label': 'Controlled 3D induction trials', style: { marginBottom: 10 } },
             h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 6 } }, 'Controlled passage trials'),
             h('p', { style: { color: SOFT, fontSize: 11.5, margin: '0 0 7px', lineHeight: 1.4 } }, 'Predict first: if the path and coil stay identical, which pass should produce the taller voltage peaks?'),
             h('div', { role: 'group', 'aria-label': 'Pass magnet through coil', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-              h('button', { disabled: d.ind3dRunning, onClick: function () { runInduction3DPass('slow'); }, style: btn() }, 'Slow pass Â· 2.00 s'),
-              h('button', { disabled: d.ind3dRunning, onClick: function () { runInduction3DPass('fast'); }, style: btn(true) }, 'Fast pass Â· 0.50 s'),
+              h('button', { disabled: d.ind3dRunning, onClick: function () { runInduction3DPass('slow'); }, style: btn() }, 'Slow pass · 2.00 s'),
+              h('button', { disabled: d.ind3dRunning, onClick: function () { runInduction3DPass('fast'); }, style: btn(true) }, 'Fast pass · 0.50 s'),
               h('button', { disabled: d.ind3dRunning, onClick: function () { runInduction3DPass('reverse'); }, style: btn() }, 'Reverse pass'),
               h('button', { disabled: d.ind3dRunning, onClick: holdInduction3DStill, style: btn() }, 'Hold still'),
               d.ind3dRunning ? h('button', { onClick: stopInduction3DPass, style: btn() }, 'Stop trial') : null),
@@ -3621,8 +3621,8 @@
               slider('Magnet z', magnet.z, -2, 2, 0.2, function (v) { moveInduction3DMagnet({ z: v }); }),
               slider('Magnet yaw', Math.round((magnet.yaw || 0) * 180 / Math.PI), -180, 180, 15, function (v) { moveInduction3DMagnet({ yaw: v * Math.PI / 180 }); }),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 9 } },
-                h('button', { onClick: function () { moveInduction3DMagnet({ pitch: Math.max(-Math.PI / 2, (magnet.pitch || 0) - Math.PI / 12) }, 'Tilted the magnet down 15 degrees.'); }, style: btn() }, 'Pitch âˆ’15Â°'),
-                h('button', { onClick: function () { moveInduction3DMagnet({ pitch: Math.min(Math.PI / 2, (magnet.pitch || 0) + Math.PI / 12) }, 'Tilted the magnet up 15 degrees.'); }, style: btn() }, 'Pitch +15Â°'),
+                h('button', { onClick: function () { moveInduction3DMagnet({ pitch: Math.max(-Math.PI / 2, (magnet.pitch || 0) - Math.PI / 12) }, 'Tilted the magnet down 15 degrees.'); }, style: btn() }, 'Pitch −15°'),
+                h('button', { onClick: function () { moveInduction3DMagnet({ pitch: Math.min(Math.PI / 2, (magnet.pitch || 0) + Math.PI / 12) }, 'Tilted the magnet up 15 degrees.'); }, style: btn() }, 'Pitch +15°'),
                 h('button', { onClick: function () { moveInduction3DMagnet({ polarity: magnet.polarity < 0 ? 1 : -1 }, 'Flipped the magnet poles; signed flux and voltage reversed.'); }, style: btn() }, 'Flip poles')),
               slider('Time per manual step (s)', d.ind3dStepTime, 0.1, 1.5, 0.1, function (v) { upd({ ind3dStepTime: v, ind3dUsed: true }); })),
             h('section', { 'aria-label': 'Three-dimensional coil controls' },
@@ -3632,13 +3632,13 @@
               slider('Coil yaw', Math.round((d.ind3dCoilYaw || 0) * 180 / Math.PI), -90, 90, 15, function (v) { updateInduction3DSetup({ ind3dCoilYaw: v * Math.PI / 180 }); }),
               slider('Coil pitch', Math.round((d.ind3dCoilPitch || 0) * 180 / Math.PI), -75, 75, 15, function (v) { updateInduction3DSetup({ ind3dCoilPitch: v * Math.PI / 180 }); }),
               h('div', { className: 'mag-observe', role: 'status' },
-                h('span', { 'aria-hidden': 'true' }, 'Î¦'),
+                h('span', { 'aria-hidden': 'true' }, 'Φ'),
                 h('span', null,
-                  h('b', null, 'Flux ' + flux.toFixed(2) + ' Â· voltage ' + emf.toFixed(2) + ' relative V'),
+                  h('b', null, 'Flux ' + flux.toFixed(2) + ' · voltage ' + emf.toFixed(2) + ' relative V'),
                   h('br'), 'Current: ' + direction + '.',
                   h('br'), Math.abs(emf) < 0.005 ? 'A field alone is not enough: the flux must change.' : 'The gold arrow shows the induced direction; its field opposes the flux change.')))
           ),
-          disclosure('The coil flux is a numerical surface integral of a softened dipole field. Softening represents the finite magnet body and keeps the model finite during a pass. Values are relative, but Faradayâ€™s law, the sign reversal, orientation effects, turns scaling, and inverse-time scaling are preserved.')
+          disclosure('The coil flux is a numerical surface integral of a softened dipole field. Softening represents the finite magnet body and keeps the model finite during a pass. Values are relative, but Faraday’s law, the sign reversal, orientation effects, turns scaling, and inverse-time scaling are preserved.')
         ), '#f59e0b');
       }
       function initInduction3DCanvas(cv) {

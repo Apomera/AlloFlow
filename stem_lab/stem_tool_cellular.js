@@ -282,7 +282,7 @@
     var sTab = useState('life'); var tab = sTab[0], setTab = sTab[1];
     var sPatternFocus = useState('glider'); var patternFocusKey = sPatternFocus[0], setPatternFocusKey = sPatternFocus[1];
 
-    // Life â€” the canonical 2-D engine shared by science and creative exploration.
+    // Life — the canonical 2-D engine shared by science and creative exploration.
     var sLifeSize = useState(40); var lifeSize = sLifeSize[0], setLifeSize = sLifeSize[1];
     var ROWS = lifeSize, COLS = lifeSize, PX = Math.max(4, Math.floor(560 / lifeSize));
     var sGrid = useState(function () { return stampPattern(emptyGrid(ROWS, COLS), 'glider', 2, 2); });
@@ -390,7 +390,7 @@
     useEffect(function () {
       if (challengeStatus !== 'active' || !challengeInitialRef.current || gen < 1) return;
       var initial = challengeInitialRef.current, currentPop = countPop(grid), sig = gridSignature(grid), outcome = null;
-      if (challenge === 'still' && gen === 1) outcome = sig === initial.signature && currentPop > 0 ? ['success', 'Still life confirmed: unchanged after one generation.'] : ['fail', 'The pattern changed. Try a 2Ã—2 block.'];
+      if (challenge === 'still' && gen === 1) outcome = sig === initial.signature && currentPop > 0 ? ['success', 'Still life confirmed: unchanged after one generation.'] : ['fail', 'The pattern changed. Try a 2×2 block.'];
       else if (challenge === 'oscillator' && gen >= 2 && sig === initial.signature && currentPop > 0) outcome = ['success', 'Oscillator found with period ' + gen + '.'];
       else if (challenge === 'oscillator' && gen > 30) outcome = ['fail', 'No repeat within 30 generations. Try three cells in a row.'];
       else if (challenge === 'extinction' && initial.population === 0 && gen === 1) outcome = ['fail', 'Place at least one live cell before testing extinction.'];

@@ -356,7 +356,7 @@
           // Replay state: { historyIdx: number, stepIdx: number, playing: bool }
           var warRoomReplay = d.warRoomReplay || null;
 
-          // â”€â”€ Phishing Email Data (with investigation clues) â”€â”€
+          // ── Phishing Email Data (with investigation clues) ──
           var phishEmails = [
             // Easy
             { from: 'security@g00gle-support.com', fromDisplay: 'Google Security Team', subject: '\u26A0\uFE0F URGENT: Your account will be suspended!', body: t('stem.cyberdefense.dear_user_we_detected_unusual_activity', 'Dear user, we detected unusual activity on your account. Click below IMMEDIATELY or your account will be permanently deleted within 24 hours.'), link: 'http://g00gle-support.com/verify-now', isPhish: true, difficulty: 'easy',
@@ -466,7 +466,7 @@
           });
           var currentEmail = filteredEmails[phishIdx % filteredEmails.length];
 
-          // â”€â”€ Detective Rank System â”€â”€
+          // ── Detective Rank System ──
           var detectiveRanks = [
             { min: 0, rank: 'Rookie Analyst', icon: '\uD83D\uDD30', color: 'var(--allo-stem-text-soft, #94a3b8)' },
             { min: 3, rank: 'Junior Detective', icon: '\uD83D\uDD0D', color: '#22c55e' },
@@ -640,14 +640,14 @@
             try { window.addEventListener('keydown', window._cyberWarRoomKeydown); } catch(e) {}
           }
 
-          // â”€â”€ Clue discovery helper â”€â”€
+          // ── Clue discovery helper ──
           function handleClueClick(clueIdx) {
             if (cluesFound.indexOf(clueIdx) === -1) {
               upd('cluesFound', cluesFound.concat([clueIdx]));
             }
           }
 
-          // â”€â”€ Handle Verdict â”€â”€
+          // ── Handle Verdict ──
           function handleVerdict(isSafe) {
             var isCorrect = isSafe ? !activeEmail.isPhish : activeEmail.isPhish;
             var baseXP = 2;
@@ -665,7 +665,7 @@
             upd('casesClosed', casesClosed + 1);
           }
 
-          // â”€â”€ Advance to Next Case â”€â”€
+          // ── Advance to Next Case ──
           function advanceCase() {
             upd('phishIdx', phishIdx + 1);
             upd('phishAnswer', null);
@@ -676,12 +676,12 @@
             if (phishMode === 'triage') upd('triageActive', true);
           }
 
-          // â”€â”€ AI Email Generator (Gemini-powered with static fallback) â”€â”€
+          // ── AI Email Generator (Gemini-powered with static fallback) ──
           function generateAIEmail() {
             if (aiEmailLoading) return;
             if (!ctx.callGemini) {
-              // No Gemini available â€” silently use next static email
-              if (ctx.addToast) ctx.addToast('AI unavailable â€” using practice email', 'info');
+              // No Gemini available — silently use next static email
+              if (ctx.addToast) ctx.addToast('AI unavailable — using practice email', 'info');
               upd('aiGeneratedEmail', null);
               upd('phishIdx', phishIdx + 1);
               upd('phishAnswer', null);
@@ -737,18 +737,18 @@
               upd('phishAnswer', null);
               upd('cluesFound', []);
               upd('aiEmailLoading', false);
-              if (ctx.addToast) ctx.addToast('AI generation failed â€” here\'s a practice email instead', 'info');
+              if (ctx.addToast) ctx.addToast('AI generation failed — here\'s a practice email instead', 'info');
             }).catch(function() {
               upd('aiGeneratedEmail', null);
               upd('phishIdx', phishIdx + 1);
               upd('phishAnswer', null);
               upd('cluesFound', []);
               upd('aiEmailLoading', false);
-              if (ctx.addToast) ctx.addToast('AI generation failed â€” here\'s a practice email instead', 'info');
+              if (ctx.addToast) ctx.addToast('AI generation failed — here\'s a practice email instead', 'info');
             });
           }
 
-          // â”€â”€ Active Email (AI-generated overrides static pool) â”€â”€
+          // ── Active Email (AI-generated overrides static pool) ──
           var activeEmail = aiGeneratedEmail || currentEmail;
 
           if (activeEmail && !activeEmail.headers) {
@@ -801,7 +801,7 @@
             }
           }
 
-          // â”€â”€ Password Strength Calculator â”€â”€
+          // ── Password Strength Calculator ──
           function calcPasswordStrength(pw) {
             if (!pw) return { score: 0, label: t('stem.cyberdefense.empty', 'Empty'), color: 'var(--allo-stem-text-soft, #475569)', entropy: 0, crackTime: 'N/A', checks: {} };
             var len = pw.length;
@@ -845,7 +845,7 @@
             return { score: score, label: labels[score], color: colors[score], entropy: Math.round(entropy), crackTime: crackTime, checks: { length: len, hasLower: hasLower, hasUpper: hasUpper, hasDigit: hasDigit, hasSymbol: hasSymbol, isCommon: isCommon, poolSize: poolSize } };
           }
 
-          // â”€â”€ Cipher Functions â”€â”€
+          // ── Cipher Functions ──
           function caesarCipher(text, shift, encode) {
             var s = encode ? shift : (26 - shift) % 26;
             return text.split('').map(function(ch) {
@@ -2669,7 +2669,7 @@
             // Content Area
             el('div', { style: { padding: 24 } },
 
-              // â•â•â•â•â•â•â• CYBER DETECTIVE â•â•â•â•â•â•â•
+              // ═══════ CYBER DETECTIVE ═══════
               cyberTab === 'phish' && el('div', { style: { maxWidth: 680, margin: '0 auto' } },
 
                 // Detective Header Bar
@@ -3084,7 +3084,7 @@
                     })
                   )
               ),
-              // â•â•â•â•â•â•â• CIPHER PLAYGROUND â•â•â•â•â•â•â•
+              // ═══════ CIPHER PLAYGROUND ═══════
               cyberTab === 'cipher' && el('div', { style: { maxWidth: 640, margin: '0 auto' } },
                 // Cipher type selector
                 el('div', { style: { display: 'flex', gap: 8, marginBottom: 20 } },

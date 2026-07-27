@@ -11128,7 +11128,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 horn.stop(now + 1.8); horn2.stop(now + 1.8);
               } catch (rrAudioErr) {}
             }
-            // Wiper swoosh â€” filtered noise gated by a sweep, only in rain/snow.
+            // Wiper swoosh — filtered noise gated by a sweep, only in rain/snow.
             var wiperOn = currentScenario.weather === 'rain' || currentScenario.weather === 'snow';
             if (wiperOn) {
               if (!a._wiperNode) {

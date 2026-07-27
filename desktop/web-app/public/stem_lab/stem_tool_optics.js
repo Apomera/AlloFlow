@@ -2878,7 +2878,7 @@
         var result = snell(degToRad(d.refrTheta1 || 0), d.refrN1, d.refrN2);
         if (!result.tir) return;
         upd({ tirTriggered: true });
-        if (awardXP) awardXP(10, 'OpticsLab â€” TIR triggered', 'opticsLab');
+        if (awardXP) awardXP(10, 'OpticsLab — TIR triggered', 'opticsLab');
       }, [d.refrN1, d.refrN2, d.refrTheta1, d.tirTriggered]);
 
       React.useEffect(function() {
@@ -2889,10 +2889,10 @@
         if (result.error) return;
         if (result.isReal && !d.realImageFormed) {
           upd({ realImageFormed: true });
-          if (awardXP) awardXP(10, 'OpticsLab â€” formed a real image', 'opticsLab');
+          if (awardXP) awardXP(10, 'OpticsLab — formed a real image', 'opticsLab');
         } else if (!result.isReal && !d.virtualImageFormed) {
           upd({ virtualImageFormed: true });
-          if (awardXP) awardXP(10, 'OpticsLab â€” formed a virtual image', 'opticsLab');
+          if (awardXP) awardXP(10, 'OpticsLab — formed a virtual image', 'opticsLab');
         }
       }, [d.mode, d.lensType, d.lensFocal, d.lensDo, d.realImageFormed, d.virtualImageFormed]);
 

@@ -207,7 +207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       { id: 'quiz_8', label: 'Score 8+ on cosmic quiz', icon: '🧠', check: function(d) { return (d.quizScore || 0) >= 8; }, progress: function(d) { return (d.quizScore || 0) + '/8'; } }
     ],
     render: function(ctx) {
-      // Aliases â€” maps ctx properties to original variable names
+      // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -241,7 +241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       var props = ctx.props;
       var canvasNarrate = ctx.canvasNarrate;
 
-      // â”€â”€ Tool body (universe) â”€â”€
+      // ── Tool body (universe) ──
       return (function() {
       var d = labToolData.universe || {};
       var UNIVERSE_PRESENT_GYR = 13.8;
@@ -985,7 +985,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-          // â”€â”€ Cosmic epochs (enhanced) â”€â”€
+          // ── Cosmic epochs (enhanced) ──
 
           var EPOCHS = [
 
@@ -1131,7 +1131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-          // â”€â”€ Canvas visualization â”€â”€
+          // ── Canvas visualization ──
 
           var canvasRefCb = function (canvasEl) {
 
@@ -1261,7 +1261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // â”€â”€ Sky gradient (era-specific) â”€â”€
+                // ── Sky gradient (era-specific) ──
 
                 var skyGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, W * 0.7);
 
@@ -1376,7 +1376,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // â”€â”€ Big Bang: expanding shockwave rings â”€â”€
+                // ── Big Bang: expanding shockwave rings ──
 
                 if (t < 0.3) {
 
@@ -1460,7 +1460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // â”€â”€ CMB glow (recombination era: 0.2-1.0) â”€â”€
+                // ── CMB glow (recombination era: 0.2-1.0) ──
 
                 if (t > 0.15 && t < 1.0) {
 
@@ -1496,7 +1496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // â”€â”€ Stars (appear after Dark Ages) â”€â”€
+                // ── Stars (appear after Dark Ages) ──
 
                 var starBrightness = t < 0.4 ? 0 : Math.min(1, (t - 0.4) / 0.8);
 
@@ -1556,7 +1556,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // â”€â”€ Nebulae (after t > 2 Gyr, star-forming regions) â”€â”€
+                // ── Nebulae (after t > 2 Gyr, star-forming regions) ──
 
                 if (t > 2) {
 
@@ -1588,7 +1588,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // â”€â”€ Galaxies (after t > 1 Gyr) with spiral hints â”€â”€
+                // ── Galaxies (after t > 1 Gyr) with spiral hints ──
 
                 if (t > 1) {
 
@@ -1660,7 +1660,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // â”€â”€ Cosmic Web Filaments (dark matter structure connecting galaxies, t > 2) â”€â”€
+                // ── Cosmic Web Filaments (dark matter structure connecting galaxies, t > 2) ──
 
                 if (t > 2) {
 
@@ -1728,7 +1728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // â”€â”€ Dark Matter Halos (subtle glow behind galaxies) â”€â”€
+                // ── Dark Matter Halos (subtle glow behind galaxies) ──
 
                 if (t > 3) {
 
@@ -1860,7 +1860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // â”€â”€ Shooting Stars / Meteor Streaks (after t > 9, Solar System era) â”€â”€
+                // ── Shooting Stars / Meteor Streaks (after t > 9, Solar System era) ──
 
                 if (t > 9) {
 
@@ -1922,7 +1922,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // â”€â”€ Protoplanetary Disk (near Sun formation, t â‰ˆ 9.0â€“9.5) â”€â”€
+                // ── Protoplanetary Disk (near Sun formation, t ≈ 9.0–9.5) ──
 
                 if (t > 8.5 && t < 10) {
 
@@ -2026,7 +2026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // â”€â”€ Epoch label overlay (bottom-left HUD) â”€â”€
+                // ── Epoch label overlay (bottom-left HUD) ──
 
                 // Dark backdrop for readability
 
@@ -2253,7 +2253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
             ),
 
-            // â”€â”€ Current epoch info card (enhanced with dark theme + extra fields) â”€â”€
+            // ── Current epoch info card (enhanced with dark theme + extra fields) ──
 
             React.createElement("div", { className: "mt-3 rounded-xl border bg-slate-950 p-3 shadow-lg", style: { borderColor: 'rgba(244,114,182,0.28)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04), 0 18px 42px rgba(15,23,42,0.22)' } },
               React.createElement("div", { className: "flex flex-wrap items-start gap-3" },

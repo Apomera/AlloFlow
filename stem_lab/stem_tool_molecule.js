@@ -293,7 +293,7 @@ window.StemLab = window.StemLab || {
       { id: 'complete_3_challenges', label: 'Complete 3 chemistry challenges', icon: '\uD83C\uDFC6', check: function(d) { return (d.completedChallenges || []).length >= 3; }, progress: function(d) { return (d.completedChallenges || []).length + '/3'; } }
     ],
     render: function(ctx) {
-      // Aliases â€” maps ctx properties to original variable names
+      // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -906,7 +906,7 @@ window.StemLab = window.StemLab || {
             }
           };
 
-          // â”€â”€ Periodic Table Data (118 elements) â”€â”€
+          // ── Periodic Table Data (118 elements) ──
 
           const ELEMENTS = [
 
@@ -1036,13 +1036,13 @@ window.StemLab = window.StemLab || {
 
 
 
-          // â”€â”€ Element Details (descriptions, uses, compounds) â”€â”€
+          // ── Element Details (descriptions, uses, compounds) ──
 
           const ELEMENT_DETAILS = {
 
             H: { desc: t('stem.periodic.lightest_element_fuels_stars_via'), uses: ['Fuel cells', 'Rocket propellant', 'Ammonia production'], compounds: ['H₂O (Water)', 'HCl (Hydrochloric Acid)', 'NH₃ (Ammonia)', 'CH₄ (Methane)'] },
 
-            He: { desc: t('stem.periodic.inert_noble_gas_2nd_most'), uses: ['Balloons & blimps', 'MRI coolant', 'Deep-sea diving gas'], compounds: ['None (noble gas â€” does not form compounds)'] },
+            He: { desc: t('stem.periodic.inert_noble_gas_2nd_most'), uses: ['Balloons & blimps', 'MRI coolant', 'Deep-sea diving gas'], compounds: ['None (noble gas — does not form compounds)'] },
 
             Li: { desc: t('stem.periodic.lightest_metal_soft_enough_to'), uses: ['Rechargeable batteries', 'Mood-stabilizing medication', 'Ceramics & glass'], compounds: ['LiOH (Lithium Hydroxide)', 'Li₂CO₃ (Lithium Carbonate)'] },
 
@@ -1088,7 +1088,7 @@ window.StemLab = window.StemLab || {
 
             Ag: { desc: t('stem.periodic.best_conductor_of_electricity_among'), uses: ['Jewelry & silverware', 'Photography', 'Electronics'], compounds: ['AgNO₃ (Silver Nitrate)', 'AgCl (Silver Chloride)', 'Ag₂O (Silver Oxide)'] },
 
-            Au: { desc: t('stem.periodic.dense_soft_shiny_precious_metal'), uses: ['Jewelry', 'Electronics (connectors)', 'Currency reserves'], compounds: ['AuCl₃ (Gold Chloride) â€” gold rarely forms compounds'] },
+            Au: { desc: t('stem.periodic.dense_soft_shiny_precious_metal'), uses: ['Jewelry', 'Electronics (connectors)', 'Currency reserves'], compounds: ['AuCl₃ (Gold Chloride) — gold rarely forms compounds'] },
 
             Ti: { desc: t('stem.periodic.strong_as_steel_but_45'), uses: ['Aircraft & spacecraft', 'Joint replacements', 'Titanium white paint'], compounds: ['TiO₂ (Titanium Dioxide)', 'TiCl₄ (Titanium Tetrachloride)'] },
 
@@ -1124,7 +1124,7 @@ window.StemLab = window.StemLab || {
 
           const getEl = (sym) => ELEMENTS.find(e => e.s === sym);
 
-          // â”€â”€ Periodic Table layout (row, col) â”€â”€
+          // ── Periodic Table layout (row, col) ──
 
           const PT_LAYOUT = [
 
@@ -1170,7 +1170,7 @@ window.StemLab = window.StemLab || {
             { name: __alloT('stem.molecule.ammonium_chloride', 'Ammonium Chloride'), formula: 'NH₄Cl', recipe: { N: 1, H: 4, Cl: 1 }, desc: __alloT('stem.molecule.solder_flux_cough_drops', 'Solder flux & cough drops'), emoji: '🧪' },
             { name: __alloT('stem.molecule.calcium_hydroxide', 'Calcium Hydroxide'), formula: 'Ca(OH)₂', recipe: { Ca: 1, O: 2, H: 2 }, desc: __alloT('stem.molecule.slaked_lime_for_mortar', 'Slaked lime for mortar'), emoji: '🪨' }];
 
-          // â”€â”€ Compound Recipes â”€â”€
+          // ── Compound Recipes ──
 
           const COMPOUNDS = [
 
@@ -1575,7 +1575,7 @@ window.StemLab = window.StemLab || {
 
           const catColors = { nonmetal: 'bg-blue-100 text-blue-700 border-blue-200', noble: 'bg-purple-100 text-purple-700 border-purple-200', alkali: 'bg-red-100 text-red-700 border-red-200', alkaline: 'bg-yellow-100 text-yellow-700 border-yellow-200', transition: 'bg-orange-100 text-orange-700 border-orange-200', metal: 'bg-slate-200 text-slate-700 border-slate-300', metalloid: 'bg-emerald-100 text-emerald-700 border-emerald-200', halogen: 'bg-teal-100 text-teal-700 border-teal-200', lanthanide: 'bg-violet-100 text-violet-700 border-violet-200', actinide: 'bg-pink-100 text-pink-700 border-pink-200' };
 
-          // â”€â”€ Molecule Viewer presets â”€â”€
+          // ── Molecule Viewer presets ──
 
           const viewerPresets = [
 
@@ -1846,7 +1846,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               );
             })(),
 
-            // â”€â”€ Viewer Mode â”€â”€
+            // ── Viewer Mode ──
 
             mode === 'viewer' && React.createElement("div", null,
 
@@ -1981,7 +1981,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             ),
 
-            // â”€â”€ Compound Creator Mode â”€â”€
+            // ── Compound Creator Mode ──
 
             mode === 'creator' && React.createElement("div", null,
 
@@ -2081,7 +2081,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             ),
 
-            // â”€â”€ Build Mode â”€â”€
+            // ── Build Mode ──
 
             mode === 'build' && React.createElement("div", null,
 
@@ -2517,7 +2517,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200 active:scale-[0.97]')
                 }, "\uD83D\uDD17 " + ((d.buildBondMode || (d.buildBondFrom !== null && d.buildBondFrom !== undefined)) ? 'Exit Bond Mode' : 'Draw Bond')),
 
-                // Bond-from selector â€” click an atom first
+                // Bond-from selector — click an atom first
 
                 (d.buildAtoms || []).length >= 2 && d.buildBondFrom === null && React.createElement("div", { className: "flex gap-1" },
 
@@ -2737,7 +2737,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             ),
 
-            // â”€â”€ Periodic Table Mode â”€â”€
+            // ── Periodic Table Mode ──
 
             mode === 'table' && React.createElement("div", null,
 
@@ -2822,7 +2822,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                     ),
 
-                    // â”€â”€â”€ BOHR MODEL ATOM VISUALIZATION â”€â”€â”€
+                    // ─── BOHR MODEL ATOM VISUALIZATION ───
 
                     React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200/50" },
 
@@ -3320,7 +3320,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
               ),
 
-              // â”€â”€ Quiz: Element Hunt â”€â”€
+              // ── Quiz: Element Hunt ──
 
               (() => {
 
@@ -3356,9 +3356,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                    React.createElement("button", { "aria-label": __alloT('stem.molecule.start_element_quiz_or_get_next_questio', "Start element quiz or get next question"), onClick: function () { upd('elQuiz', makeElQuiz()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (elQuiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-700 text-white') + " hover:opacity-90 transition-all" }, elQuiz ? 'ðŸ”„ Next Question' : 'ðŸ”¬ Element Quiz'),
+                    React.createElement("button", { "aria-label": __alloT('stem.molecule.start_element_quiz_or_get_next_questio', "Start element quiz or get next question"), onClick: function () { upd('elQuiz', makeElQuiz()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (elQuiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-700 text-white') + " hover:opacity-90 transition-all" }, elQuiz ? '🔄 Next Question' : '🔬 Element Quiz'),
 
-                    elScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, 'â­ ' + elScore + ' | ðŸ”¥ ' + elStreak)
+                    elScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '⭐ ' + elScore + ' | 🔥 ' + elStreak)
 
                   ),
 
@@ -3393,7 +3393,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   ),
 
-                  elQuiz && elQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (elQuiz.chosen === elQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') }, elQuiz.chosen === elQuiz.answer ? 'âœ… Correct!' : 'âŒ Answer: ' + elQuiz.answer)
+                  elQuiz && elQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (elQuiz.chosen === elQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') }, elQuiz.chosen === elQuiz.answer ? '✅ Correct!' : '❌ Answer: ' + elQuiz.answer)
 
                 );
 
