@@ -1401,7 +1401,8 @@ describe('coaster lab — rider safety, restraints, and the height explainer', (
     expect(s).toBeGreaterThan(-1);
     expect(e).toBeGreaterThan(s);
     return new Function(src.slice(s, e) +
-      '\nreturn { sustainLimit, SUSTAIN_CURVES, freshSustain, sustainStep, restraintSpec, RESTRAINT_CLASSES, RIDER_KG };')();
+      '\nreturn { sustainLimit, SUSTAIN_CURVES, freshSustain, sustainStep, restraintSpec, RESTRAINT_CLASSES,' +
+      ' RIDER_KG, freshSeats, seatStep, seatLabel, seatSummary };')();
   }
   const run = (api, axis, mag, seconds, floor, sus) => {
     const s = sus || api.freshSustain();
@@ -1533,6 +1534,93 @@ describe('coaster lab — rider safety, restraints, and the height explainer', (
     expect(src).not.toContain('riders leave the rails');
     expect(src).toContain('upstop wheels grip the underside of the rail');
     expect(src).toContain('you hang in the restraint, while the upstop wheels hold the train on');
+  });
+});
+
+describe('coaster lab — the train is a length, not a point', () => {
+  function loadSafety(p) {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    const s = src.indexOf('/* @clab-safety-start');
+    const e = src.indexOf('/* @clab-safety-end');
+    return new Function(src.slice(s, e) +
+      '\nreturn { freshSeats, seatStep, seatLabel, seatSummary, restraintSpec, RIDER_KG };')();
+  }
+
+  it('rows are named from the ends in, whatever the train length', () => {
+    const { seatLabel } = loadSafety(TOOL_PATHS[0]);
+    expect(seatLabel(0, 5)).toBe('Front row');
+    expect(seatLabel(4, 5)).toBe('Back row');
+    expect(seatLabel(2, 5)).toBe('Row 3');
+    expect(seatLabel(0, 1)).toBe('Your seat');   // a one-car train has no front or back
+    expect(seatLabel(1, 2)).toBe('Back row');
+  });
+
+  it('each row keeps its own extremes and its own airtime', () => {
+    const { freshSeats, seatStep, seatSummary } = loadSafety(TOOL_PATHS[0]);
+    const seats = freshSeats(3);
+    // front row crests gently, back row is thrown out of the seat
+    seatStep(seats, 0, 0.4, 0.1, 0.1);
+    seatStep(seats, 0, 3.2, 0.2, 0.1);
+    seatStep(seats, 1, 0.1, 0.1, 0.1);
+    seatStep(seats, 2, -0.6, 0.3, 0.1);
+    seatStep(seats, 2, -0.4, 0.3, 0.1);
+    expect(seats[0].maxGV).toBeCloseTo(3.2, 5);
+    expect(seats[0].minGV).toBeCloseTo(0.4, 5);
+    expect(seats[0].airtime).toBeCloseTo(0, 5);        // 0.4 g is not airtime
+    expect(seats[2].minGV).toBeCloseTo(-0.6, 5);
+    expect(seats[2].airtime).toBeCloseTo(0.2, 5);      // both steps below the line
+    const sum = seatSummary(seats);
+    expect(sum.n).toBe(3);
+    expect(sum.worstIdx).toBe(2);                      // the back row is thrown hardest
+    expect(sum.bestIdx).toBe(2);                       // and gets the most airtime
+    expect(sum.worstMin).toBeCloseTo(-0.6, 5);
+    expect(sum.gSpread).toBeCloseTo(1.0, 5);           // 0.4 up front, -0.6 at the back
+    expect(sum.airSpread).toBeCloseTo(0.2, 5);
+    // an untouched or absent seat record must not invent a row
+    expect(seatSummary(freshSeats(4))).toBe(null);
+    expect(seatSummary(null)).toBe(null);
+    expect(seatSummary([])).toBe(null);
+    expect(() => seatStep(null, 0, 1, 0, 0.1)).not.toThrow();
+    expect(() => seatStep(seats, 99, 1, 0, 0.1)).not.toThrow();
+    expect(() => seatStep(seats, 0, NaN, 0, 0.1)).not.toThrow();
+  });
+
+  it('the restraint is sized for the worst row, not the row the sim drives from', () => {
+    const { freshSeats, seatStep, restraintSpec, RIDER_KG } = loadSafety(TOOL_PATHS[0]);
+    const seats = freshSeats(3);
+    seatStep(seats, 0, 0.4, 0.1, 0.1);      // the reference point never leaves the seat
+    seatStep(seats, 1, 0.1, 0.1, 0.1);
+    seatStep(seats, 2, -1.2, 0.1, 0.6);     // but the back row is ejected
+    // reference telemetry alone would call this a plain lap bar
+    expect(restraintSpec({ minGV: 0.4, inversions: 0, airtime: 0 }).key).toBe('simple');
+    // with the rows measured, it is a harness, and the load is the back row's
+    const r = restraintSpec({ minGV: 0.4, inversions: 0, airtime: 0, seats });
+    expect(r.key).toBe('harness');
+    expect(r.worstSeat).toBe('Back row');
+    expect(r.holdN).toBeCloseTo(1.2 * RIDER_KG * 9.81, 0);
+    // and a row with airtime promotes a lap bar to a latching one
+    const mild = freshSeats(2);
+    seatStep(mild, 0, 0.5, 0, 0.1);
+    seatStep(mild, 1, 0.1, 0, 0.9);
+    expect(restraintSpec({ minGV: 0.5, inversions: 0, airtime: 0, seats: mild }).key).toBe('ratchet');
+  });
+
+  it.each(TOOL_PATHS)('%s: the sim samples every car, and says what it does not model', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    expect(src).toContain('const TRAIN_CARS = 5, CAR_GAP = 2.6;');
+    // the reference car reuses the force already computed; the rest are sampled
+    expect(src).toContain('const trc = trackAt(sc);');
+    expect(src).toContain('for(let c = 0; c < TRAIN_CARS; c++) ySum += trackAt(sim.S - c * CAR_GAP).y;');
+    expect(src).toContain('seats: freshSeats(TRAIN_CARS)');
+    // the rendered card is honest about the boundary of the model
+    // the rigid-train energy statement, and the honest boundary of the model
+    expect(src).toContain('const vSeat2 = Math.max(0, sim.v * sim.v + 2 * G0 * (yRef - ySum / TRAIN_CARS));');
+    expect(src).toContain('Certification and the headline figures above use the point-mass physics your');
+    expect(src).toContain('html += renderSeatCard(tele);');
+    // the train mesh and the physics agree on how many cars there are
+    expect(src).toContain('for(let c = 0; c < TRAIN_CARS; c++){');
+    expect(src).toContain('if(c === TRAIN_CARS - 1){');
+    expect(src).toContain('const Sc = sim.S - c * CAR_GAP;');
   });
 });
 

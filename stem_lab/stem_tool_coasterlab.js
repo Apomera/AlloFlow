@@ -178,6 +178,7 @@ const LIFT_V = 3.5;              // chain release speed, m/s
 const MU_ROLL = 0.0065;          // rolling resistance coeff (scaled by normal force)
 const K_DRAG = 0.00045;          // quadratic drag, 1/m
 const BRAKE_LEN = 55, STOP_AT = 4;   // brake run starts before the final turn (m from lap end)
+const TRAIN_CARS = 5, CAR_GAP = 2.6;  // a real train is a LENGTH, not a point: 10.4 m nose to tail
 const LIM = { gvMax: 6.0, gvMin: -1.5, glat: 1.3 };  // comfort limits (ASTM-ish)
 const TOL = { v: 0.06, g: 0.35, bank: 5 };           // grading tolerances
 const COL = {
@@ -1026,7 +1027,7 @@ const trainWheels = [], restraintBars = [];
   const glowTail = new THREE.MeshBasicMaterial({ color: 0xff5a4d });
   const restraintMat = new THREE.MeshStandardMaterial({ color: 0x25384a, metalness: 0.48, roughness: 0.46 });
   const restraintGeo = new THREE.BoxGeometry(1.15, 0.09, 0.09);
-  for(let c = 0; c < 3; c++){
+  for(let c = 0; c < TRAIN_CARS; c++){
     const car = new THREE.Group();
     const body = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.5, 2.0), c === 0 ? MAT.carHead : MAT.car);
     body.position.y = 0.32;
@@ -1056,7 +1057,7 @@ const trainWheels = [], restraintBars = [];
       head.position.set(0, 0.5, 1.6);
       car.add(head);
     }
-    if(c === 2){
+    if(c === TRAIN_CARS - 1){
       const tail = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), glowTail);
       tail.position.set(0, 0.42, -1.05);
       car.add(tail);
@@ -2174,7 +2175,7 @@ function freshTele(){
     airtime: 0, latSec: 0, inversions: 0, wasInverted: false,
     heat: 0, status: null, duration: 0, violations: [], markers: {},
     trace: [], lastTraceS: -9, rolledBack: false, markSs: null,
-    sus: freshSustain()
+    sus: freshSustain(), seats: freshSeats(TRAIN_CARS)
   };
 }
 function startRun(cert){
@@ -2255,6 +2256,7 @@ function stepSim(dtFrame){
     const tr = trackAt(sim.S);
     const gV = tr.upY + sim.v * sim.v * tr.kUp / G0;
     const gLat = tr.sideY + sim.v * sim.v * tr.kSide / G0;
+    const yRef = tr.y;      // captured now: the seat pass below clobbers the shared lookup
     if(!launch && sim.S < t.sCrest){
       sim.v = LIFT_V;                       // chain-locked on the lift
     } else {
@@ -2289,6 +2291,25 @@ function stepSim(dtFrame){
     const inv = tr.upY < -0.5;
     if(inv && !tele.wasInverted) tele.inversions++;
     tele.wasInverted = inv;
+    /* Seat by seat. A rigid train shares ONE speed, and that speed belongs to the
+       whole train, not to whichever single point the sim integrates from. Taking
+       the reference car's speed straight across would be badly wrong exactly
+       where it matters: the moment the front car tips over the lift crest the
+       integrator starts accelerating down the drop, while the back car is still
+       ON the crest — crest curvature times drop speed, and the seat force blows
+       up. So the shared speed is restated at the train's mean height, which is
+       the rigid-train energy statement.
+       NOTE: `tr` is the shared TMP lookup, so nothing above may read it below. */
+    let ySum = 0;
+    for(let c = 0; c < TRAIN_CARS; c++) ySum += trackAt(sim.S - c * CAR_GAP).y;
+    const vSeat2 = Math.max(0, sim.v * sim.v + 2 * G0 * (yRef - ySum / TRAIN_CARS));
+    for(let c = 0; c < TRAIN_CARS; c++){
+      const sc = sim.S - c * CAR_GAP;
+      const trc = trackAt(sc);
+      seatStep(tele.seats, c,
+        trc.upY + vSeat2 * trc.kUp / G0,
+        trc.sideY + vSeat2 * trc.kSide / G0, h, sc);
+    }
 
     if(sim.S - tele.lastTraceS >= 2){
       tele.lastTraceS = sim.S;
@@ -2383,6 +2404,56 @@ function sustainStep(sus, axis, mag, dt, floor){
   const w = sus.worst[axis];
   if(ratio > w.ratio){ w.ratio = ratio; w.level = e.level; w.dur = e.dur; }
 }
+/* Seat by seat.
+
+   The sim drives the train from ONE point on the track, and that stays true: the
+   certification problems are built on point-mass energy conservation, and a full
+   distributed-mass model would move the measured speeds away from the numbers a
+   student predicts. What a rigid train does let us do exactly is the forces. All
+   the cars share one speed along the track — they are bolted together — so each
+   car's force is v² times ITS OWN curvature, at ITS OWN position.
+
+   That is enough to reproduce the thing every rider knows. The back row crosses a
+   crest a moment LATER than the front, by which point the front of the train has
+   already tipped over and pulled everyone faster — so the back row meets the same
+   crest at a higher speed, and gets thrown further out of its seat. */
+function freshSeats(n){
+  const out = [];
+  for(let i = 0; i < n; i++) out.push({ maxGV: -Infinity, minGV: Infinity, maxLat: 0, airtime: 0, sMin: null });
+  return out;
+}
+function seatStep(seats, i, gV, gLat, dt, atS){
+  const s = seats && seats[i];
+  if(!s || !Number.isFinite(gV)) return;
+  if(gV > s.maxGV) s.maxGV = gV;
+  if(gV < s.minGV){ s.minGV = gV; s.sMin = atS; }
+  const lat = Math.abs(gLat);
+  if(lat > s.maxLat) s.maxLat = lat;
+  if(gV < 0.25) s.airtime += dt;
+}
+function seatLabel(i, n){
+  if(n <= 1) return 'Your seat';
+  if(i === 0) return 'Front row';
+  if(i === n - 1) return 'Back row';
+  return 'Row ' + (i + 1);
+}
+function seatSummary(seats){
+  const rows = (seats || []).filter(s => s && Number.isFinite(s.minGV));
+  if(!rows.length) return null;
+  const n = rows.length;
+  let bestIdx = 0, worstIdx = 0;
+  for(let i = 1; i < n; i++){
+    if(rows[i].airtime > rows[bestIdx].airtime + 1e-9) bestIdx = i;
+    if(rows[i].minGV < rows[worstIdx].minGV) worstIdx = i;
+  }
+  return {
+    n, rows, bestIdx, worstIdx,
+    worstMin: rows[worstIdx].minGV,
+    // how much more the best seat gets than the worst — the whole point of the model
+    gSpread: Math.max(...rows.map(r => r.minGV)) - Math.min(...rows.map(r => r.minGV)),
+    airSpread: Math.max(...rows.map(r => r.airtime)) - Math.min(...rows.map(r => r.airtime))
+  };
+}
 const RIDER_KG = 45;   // a typical 12-year-old — the age band these rides are built around
 const RESTRAINT_CLASSES = {
   simple: {
@@ -2403,9 +2474,13 @@ const RESTRAINT_CLASSES = {
 };
 function restraintSpec(tele){
   const t = tele || {};
-  const minG = Number.isFinite(t.minGV) ? t.minGV : 1;
+  // Sized for the WORST SEAT, not the average one. A restraint that only holds
+  // the front row is not a restraint.
+  const seats = seatSummary(t.seats);
+  let minG = Number.isFinite(t.minGV) ? t.minGV : 1;
+  if(seats && seats.worstMin < minG) minG = seats.worstMin;
   const inversions = t.inversions || 0;
-  const airtime = t.airtime || 0;
+  const airtime = Math.max(t.airtime || 0, seats ? seats.rows[seats.bestIdx].airtime : 0);
   let key;
   if(inversions > 0 || minG < -1.0) key = 'harness';
   else if(minG < 0.25 || airtime > 0.4) key = 'ratchet';
@@ -2417,12 +2492,59 @@ function restraintSpec(tele){
   const holdN = pull * RIDER_KG * 9.81;
   return {
     key, name: spec.name, why: spec.why, band: spec.band,
-    inversions, minG, riderKg: RIDER_KG,
+    inversions, minG, riderKg: RIDER_KG, seats,
+    worstSeat: seats ? seatLabel(seats.worstIdx, seats.n) : null,
     holdN: Math.round(holdN),
     holdKg: Math.round(pull * RIDER_KG)
   };
 }
 /* @clab-safety-end */
+/* The seat card: the same ride, measured row by row. */
+function renderSeatCard(tele){
+  const sum = seatSummary(tele && tele.seats);
+  if(!sum || sum.n < 2) return '';
+  const worst = sum.rows[sum.worstIdx], best = sum.rows[sum.bestIdx];
+  const bars = sum.rows.map((s, i) => {
+    const air = s.airtime;
+    const lift = Math.max(0, 0.25 - s.minGV);            // how far below the airtime line it goes
+    const pct = Math.min(100, lift / 1.5 * 100);
+    const mine = (i === sum.worstIdx) ? ' style="color:var(--accent)"' : '';
+    return `<div class="rating"><div class="lbl"><span${mine}>${seatLabel(i, sum.n)}</span>
+      <span class="num">${(s.maxGV > 0 ? '+' : '') + fmt(s.maxGV, 1)} / ${fmt(s.minGV, 1)} g${air > 0.05 ? ' · ' + fmt(air, 1) + ' s air' : ''}</span></div>
+      <div class="rbar"><i style="width:${pct}%;background:var(--pe)"></i></div></div>`;
+  }).join('');
+  const front = sum.rows[0];
+  const liftsOut = worst.minGV < 0.25 && sum.gSpread >= 0.06;
+  const moreAir = sum.airSpread >= 0.15 && best !== front;
+  let lede;
+  if(liftsOut){
+    lede = `The <b>${seatLabel(sum.worstIdx, sum.n).toLowerCase()}</b> is thrown hardest out of the seat —
+      ${fmt(worst.minGV, 2)} g against ${fmt(front.minGV, 2)} g up front` +
+      (moreAir ? `, with ${fmt(sum.airSpread, 1)} s more airtime.` : '.');
+  } else if(moreAir){
+    lede = `Every row stays in its seat, but the <b>${seatLabel(sum.bestIdx, sum.n).toLowerCase()}</b>
+      gets ${fmt(sum.airSpread, 1)} s more airtime than the front.`;
+  } else if(sum.gSpread >= 0.06){
+    lede = `The rows differ by ${fmt(sum.gSpread, 2)} g — small, but the back is always the lighter ride
+      over a crest.`;
+  }
+  return `<div class="card">
+    <p class="eyebrow">Where you sit · row by row</p>
+    ${bars}
+    <p class="hint" style="margin:8px 0 0">${lede
+      ? `${lede}
+         Every car is bolted to one train, so they all share a single speed — and that speed belongs to
+         the train as a whole, not to any one car. What differs is the track underneath each row. The
+         rows pull apart wherever the profile is <b>lopsided</b>: after a crest with a steep drop, the
+         front of the train is already falling away as the back row reaches the top, so the back row
+         takes the sharper kick. Over a symmetrical hill every row feels much the same.`
+      : 'Every row feels almost the same ride on this layout — a sign the hills are close to symmetrical. Put a steep drop straight after a crest and the rows come apart, and the longer the train, the bigger the difference.'}</p>
+    <p class="chnote">Certification and the headline figures above use the point-mass physics your
+      predictions are built on. These row-by-row numbers add the one thing a real train has that a point
+      does not — length: the whole train shares one speed, set by where its middle sits, while each row
+      feels its own piece of track.</p>
+  </div>`;
+}
 /* The rider-safety card: what has to hold the rider down, how hard it has to
    pull, whether any force was HELD too long, and why real rides post a height. */
 function renderRiderSafety(tele){
@@ -2446,10 +2568,11 @@ function renderRiderSafety(tele){
     <h3 style="margin:0 0 6px">${r.name}</h3>
     <p class="hint" style="margin:0 0 8px">${r.why}</p>
     ${r.holdKg > 0
-      ? `<p class="hint" style="margin:0 0 8px">At the strongest airtime moment the restraint has to
+      ? `<p class="hint" style="margin:0 0 8px">At the strongest airtime moment${r.worstSeat ? ` — in the <b>${r.worstSeat.toLowerCase()}</b>` : ''} the restraint has to
            hold a <b>${r.riderKg} kg</b> rider with about <b>${r.holdN} N</b> — the pull of roughly
-           <b>${r.holdKg} kg</b> hanging upward. That force is what decides the restraint, not comfort.</p>`
-      : '<p class="hint" style="margin:0 0 8px">Seat force never goes negative on this ride, so the restraint is never loaded upward at all.</p>'}
+           <b>${r.holdKg} kg</b> hanging upward. Every seat gets the same restraint, so it is sized for
+           the worst one. That force is what decides the restraint, not comfort.</p>`
+      : '<p class="hint" style="margin:0 0 8px">Seat force never goes negative in any row on this ride, so the restraint is never loaded upward at all.</p>'}
     <p class="eyebrow" style="margin:10px 0 4px">Forces held over time</p>
     ${held.length
       ? `<div class="viol" style="margin-top:0">${held.join('')}</div>
@@ -2593,6 +2716,7 @@ function renderReport(tele){
   html += rating('Nausea',     nausea,     adj(nausea,     ['calm', 'queasy', 'spinny', 'rough', 'lawsuit']));
   html += '</div>';
   html += renderRiderSafety(tele);
+  html += renderSeatCard(tele);
   const insights = buildRideInsights(tele, sc);
   html += `<div class="card"><p class="eyebrow">Engineer next steps</p><ul class="clab-insights">${insights.map(tip => `<li>${tip}</li>`).join('')}</ul></div>`;
   if(tele.photo){
@@ -5169,7 +5293,7 @@ const _m = new THREE.Matrix4(), _side = new THREE.Vector3(), _chase = new THREE.
 
 function placeTrain(){
   for(let c = 0; c < cars.length; c++){
-    const Sc = sim.S - c * 2.3;
+    const Sc = sim.S - c * CAR_GAP;
     frameAt(Sc, _p, _t, _u);
     _side.crossVectors(_u, _t).normalize();
     _m.makeBasis(_side, _u, _t).setPosition(
