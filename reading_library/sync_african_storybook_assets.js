@@ -24,7 +24,6 @@ const files = Array.from(new Set([
 const destinations = [
   path.join(REPO, 'desktop', 'web-app', 'public', 'reading_library'),
   path.join(REPO, 'desktop', 'web-app', 'build', 'reading_library'),
-  path.join(REPO, 'prismflow-deploy', 'public', 'reading_library'),
 ];
 
 for (const destination of destinations) {
