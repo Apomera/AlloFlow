@@ -414,6 +414,9 @@
     };
   })();
 
+  // Hook-free tool, so the drag anchor lives at module scope alongside the
+  // renderer rather than in a useRef.
+  var archDrag = { current: null };
   function archGlRef(el) { if (el) ArchGL.mount(el); else ArchGL.unmount(); }
   try { window.__alloArchGL = ArchGL; } catch (e) {}
 
@@ -526,7 +529,10 @@
     materials.forEach(function (m) { matColorLookup[m.id] = m.color; matWeightLookup[m.id] = m.weight; matCostLookup[m.id] = m.cost; });
 
     // ── 3D building view (opt-in; the floor plans stay the floor) ──
-    var archShow3d = d.show3d === true;
+    // Always on: this drives the tool's MAIN viewport, which until now
+    // showed a spinner that never resolved. d.hide3d is an escape hatch the
+    // failure path sets, not a default.
+    var archShow3d = d.hide3d !== true;
     var archRot = d.rot3d || { rotX: -24, rotY: -38, scale: 1 };
     function archHexFor(b) {
       var own = String(b.color || '').trim();
@@ -545,7 +551,7 @@
         rotX: archRot.rotX, rotY: archRot.rotY, scale: archRot.scale || 1,
         onReady: function () { upd('gl3dReadyAt', Date.now()); },
         onFail: function () {
-          upd('show3d', false);
+          upd('hide3d', true);
           if (typeof addToast === 'function') addToast('The 3D view could not load. Showing floor plans.', 'info');
         },
         sig: blocks.map(function (b) {
@@ -2275,51 +2281,8 @@
             )
           ),
 
-          // ── The building itself, in 3D ──
-          // Sits above the floor plans rather than replacing them: a plan view
-          // is genuinely useful for placing blocks, it just never showed the
-          // result. The plans remain the guaranteed floor and are untouched.
-          el('div', null,
-            el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
-              el('div', { style: { fontSize: 10, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1.2, flex: 1 } }, '🏗️ 3D View'),
-              el('button', {
-                type: 'button',
-                'data-arch-view': archShow3d ? '3d' : 'plans',
-                'aria-pressed': archShow3d,
-                onClick: function () {
-                  upd('show3d', !archShow3d);
-                  if (typeof announceToSR === 'function') {
-                    announceToSR(archShow3d ? 'Hid the 3D view.' : 'Showing your build in 3D. Use the turn and tilt buttons to look around it.');
-                  }
-                },
-                style: { fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, cursor: 'pointer', border: '1px solid ' + (archShow3d ? '#fbbf24' : '#334155'), background: archShow3d ? '#b45309' : 'rgba(30,41,59,.6)', color: '#f8fafc' }
-              }, archShow3d ? 'Hide' : 'Show'),
-              archShow3d && [['Turn left', { rotY: archRot.rotY - 25 }], ['Turn right', { rotY: archRot.rotY + 25 }],
-                             ['Tilt up', { rotX: Math.max(-88, archRot.rotX - 15) }], ['Tilt down', { rotX: Math.min(88, archRot.rotX + 15) }]]
-                .map(function (b, i) {
-                  return el('button', {
-                    key: i, type: 'button', 'aria-label': b[0],
-                    onClick: function () { upd('rot3d', Object.assign({}, archRot, b[1])); },
-                    style: { width: 22, height: 22, fontSize: 9, borderRadius: 5, cursor: 'pointer', border: '1px solid #334155', background: 'rgba(30,41,59,.6)', color: '#cbd5e1' }
-                  }, ['◀', '▶', '▲', '▼'][i]);
-                })
-            ),
-            archShow3d && el('div', { style: { position: 'relative', width: '100%', height: 220, borderRadius: 8, overflow: 'hidden', border: '1px solid #334155', background: 'rgba(15,23,42,.6)' } },
-              el('canvas', {
-                ref: archGlRef,
-                'data-arch-gl': 'true',
-                role: 'img',
-                'data-a11y-static': 'true',
-                'aria-describedby': 'arch-gl-description',
-                'aria-label': archGlAlt,
-                style: { position: 'absolute', inset: 0, width: '100%', height: '100%', visibility: archGlLive ? 'visible' : 'hidden' }
-              }),
-              !archGlLive && el('div', { style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fcd34d' } }, 'Loading 3D view…'),
-              archShow3d && blocks.length === 0 && archGlLive && el('div', { style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#94a3b8' } }, 'Place a block to see it here.')
-            ),
-            el('p', { id: 'arch-gl-description', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' } },
-              'A three-dimensional view of the structure you have built, coloured by material. The floor plans below show the same blocks one storey at a time; this shows them assembled.')
-          ),
+          // (The 3D view lives in the main viewport, not here — a building in a
+          //  185px sidebar column was unreadable, and the main panel was empty.)
 
           // ── Multi-Floor Plan View ──
           showFloorPlans && floorPlans.length > 0 && el('div', null,
@@ -2356,22 +2319,64 @@
         // ── Main viewport area ──
         // ══════════════════════════════════════════════════════════
         el('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
-          // Three.js canvas
-          !threeReady
-            ? el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14 } },
-              el('div', { style: { textAlign: 'center' } },
-                el('div', { style: { fontSize: 32, marginBottom: 8, animation: 'spin 2s linear infinite' } }, '\u2699\uFE0F'),
-                'Loading 3D engine...'
-              )
+          // The build itself. This viewport previously rendered a spinner that
+          // never resolved: threeReady reads a host flag this tool never set,
+          // and the canvas behind it had no ref and no renderer anywhere in the
+          // file, so the panel was dead on both branches. The overlay below it
+          // has always promised "Drag - Orbit" and "Scroll - Zoom", so those are
+          // wired here rather than left as decoration.
+          archShow3d && el('canvas', {
+            ref: archGlRef,
+            id: 'arch-studio-canvas',
+            'data-arch-gl': 'true',
+            role: 'img',
+            'data-a11y-static': 'true',
+            'aria-describedby': 'arch-gl-description',
+            'aria-label': archGlAlt,
+            style: { flex: 1, width: '100%', display: 'block', minHeight: 260, visibility: archGlLive ? 'visible' : 'hidden', cursor: 'grab' },
+            onPointerDown: function (ev) {
+              archDrag.current = { x: ev.clientX, y: ev.clientY, rx: archRot.rotX, ry: archRot.rotY };
+              try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (_) {}
+            },
+            onPointerMove: function (ev) {
+              if (!archDrag.current) return;
+              upd('rot3d', Object.assign({}, archRot, {
+                rotX: Math.max(-88, Math.min(88, archDrag.current.rx + (ev.clientY - archDrag.current.y) * 0.4)),
+                rotY: archDrag.current.ry + (ev.clientX - archDrag.current.x) * 0.4
+              }));
+            },
+            onPointerUp: function (ev) {
+              archDrag.current = null;
+              try { ev.currentTarget.releasePointerCapture(ev.pointerId); } catch (_) {}
+            },
+            onPointerCancel: function () { archDrag.current = null; },
+            onWheel: function (ev) {
+              upd('rot3d', Object.assign({}, archRot, {
+                scale: Math.max(0.3, Math.min(3, (archRot.scale || 1) + (ev.deltaY > 0 ? -0.12 : 0.12)))
+              }));
+            }
+          }),
+          archShow3d && !archGlLive && el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14 } },
+            el('div', { style: { textAlign: 'center' } },
+              el('div', { style: { fontSize: 32, marginBottom: 8, animation: 'spin 2s linear infinite' } }, '⚙️'),
+              'Loading 3D engine...'
             )
-            : el('canvas', { id: 'arch-studio-canvas', 'aria-label': t('stem.archstudio.interactive_architecture_studio_3d_vis', 'Interactive architecture studio 3D visualization'), tabIndex: 0, style: { flex: 1, width: '100%', display: 'block', cursor: mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' } }),
+          ),
+          !archShow3d && el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, textAlign: 'center', padding: 20 } },
+            'The 3D view could not load on this device. The floor plans in the panel still show every storey of your build.'),
+          el('p', { id: 'arch-gl-description', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' } },
+            'A three-dimensional view of the structure you have built, coloured by material. Drag to orbit, scroll to zoom. The floor plans in the side panel show the same blocks one storey at a time.'),
 
           // Controls overlay (top-right)
           el('div', { style: { position: 'absolute', top: 8, right: 8, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
             el('div', null, '\uD83D\uDD04 Drag \u2014 Orbit'),
             el('div', null, '\uD83D\uDD0D Scroll \u2014 Zoom'),
-            el('div', null, '\u2747\uFE0F Right-drag \u2014 Pan'),
-            el('div', null, '\uD83D\uDC49 Click \u2014 ' + (mode === 'place' ? 'Place' : mode === 'erase' ? 'Erase' : 'Paint')),
+            // Pan and click-to-place are not implemented. They were listed here
+            // for as long as the viewport was a spinner, so nothing ever
+            // contradicted them; now that the panel actually responds, an
+            // unlisted gesture is better than an advertised one that does
+            // nothing. Blocks are placed from the side panel.
+            el('div', { style: { opacity: 0.65 } }, '\uD83E\uDDF1 Place blocks from the panel'),
             symmetryMode && el('div', { style: { color: '#f9a8d4', fontWeight: 700 } }, '\uD83E\uDE9E Symmetry ON')
           ),
 

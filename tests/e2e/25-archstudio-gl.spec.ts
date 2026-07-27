@@ -22,7 +22,8 @@ const MIME: Record<string, string> = {
 
 const HARNESS = `<!doctype html>
 <html><head><meta charset="utf-8"><title>archstudio harness</title>
-<style>html,body{margin:0;height:100%;background:#0f172a}#wrap{width:900px}</style></head>
+<style>html,body{margin:0;height:100%;background:#0f172a}
+#wrap{width:900px;height:620px;overflow:hidden}</style></head>
 <body><div id="wrap"></div>
 <script src="/desktop/web-app/node_modules/react/umd/react.production.min.js"></script>
 <script src="/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js"></script>
@@ -197,32 +198,49 @@ test.describe('Architecture Studio — real WebGL', () => {
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
-  test('is opt-in and leaves the floor plans alone', async ({ page }) => {
-    await page.goto(`${base}/__harness`);
-    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
-    await page.evaluate((b) => (window as any).__mount(b), { blocks: tower() } as never);
-    expect(await page.evaluate(() => (window as any).__planCount())).toBe(0);
-
-    await page.evaluate(() => (window as any).__click('[data-arch-view]'));
-    await page.waitForSelector('canvas[data-arch-gl="true"]', { timeout: 30000 });
-    expect(await page.evaluate(() => (window as any).__bucket().show3d)).toBe(true);
+  test('occupies the main viewport, with no spinner left behind', async ({ page }) => {
+    // The viewport used to render a spinner gated on a host flag this tool
+    // never set, behind which sat a canvas with no ref and no renderer. Both
+    // branches were dead, so the primary panel showed nothing, ever.
+    await mount3d(page, { blocks: tower() });
+    expect(await page.evaluate(() => (window as any).__planCount())).toBe(1);
+    expect(await page.evaluate(() => document.body.innerText)).not.toContain('Loading 3D engine');
+    // It really is the main viewport, not a thumbnail: the sidebar column this
+    // first landed in was 185px, which a building is not readable in.
+    const gl = await page.evaluate(() => (window as any).__gl());
+    expect(gl.canvas.w).toBeGreaterThan(400);
   });
 
-  test('rotate buttons move the camera without a mouse', async ({ page }) => {
+  test('drag orbits the camera, which the overlay has always claimed', async ({ page }) => {
     await mount3d(page, { blocks: tower() });
-    await page.evaluate(() => (window as any).__clickLabel('Turn left'));
+    const before = await page.evaluate(() => (window as any).__bucket().rot3d);
+
+    await page.evaluate(() => {
+      const c = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
+      const r = c.getBoundingClientRect();
+      const mk = (t: string, x: number, y: number) =>
+        new PointerEvent(t, { clientX: x, clientY: y, bubbles: true, cancelable: true, pointerId: 1 });
+      c.dispatchEvent(mk('pointerdown', r.left + r.width / 2, r.top + r.height / 2));
+      c.dispatchEvent(mk('pointermove', r.left + r.width / 2 + 80, r.top + r.height / 2));
+      c.dispatchEvent(mk('pointerup', r.left + r.width / 2 + 80, r.top + r.height / 2));
+    });
     await page.waitForTimeout(400);
+
+    const after = await page.evaluate(() => (window as any).__bucket().rot3d);
+    expect(after.rotY).toBeGreaterThan((before?.rotY ?? -38) + 10);
     const gl = await page.evaluate(() => (window as any).__gl());
     expect(gl.state).toBe('ready');
     expect(gl.contextLost).toBe(false);
-    expect(await page.evaluate(() => (window as any).__bucket().rot3d.rotY)).toBeLessThan(-38);
   });
 
   test('adding blocks does not remount the canvas', async ({ page }) => {
     await mount3d(page, { blocks: tower() });
     for (let i = 0; i < 3; i++) {
-      await page.evaluate(() => (window as any).__clickLabel('Turn right'));
-      await page.waitForTimeout(120);
+      await page.evaluate(() => {
+        const c = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
+        c.dispatchEvent(new WheelEvent('wheel', { deltaY: -100, bubbles: true }));
+      });
+      await page.waitForTimeout(150);
     }
     await page.waitForTimeout(300);
     expect(await page.evaluate(() => (window as any).__planCount())).toBe(1);
