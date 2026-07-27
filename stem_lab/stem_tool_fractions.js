@@ -10694,21 +10694,18 @@ window.StemLab = window.StemLab || {
       var items = [
         { id: 'calc', icon: '🧮', label: __alloT('stem.fractions.calculator_2', 'Calculator') },
         { id: 'factfam', icon: '👨', label: __alloT('stem.fractions.fact_families_2', 'Fact families') },
-        { id: 'equivchain', icon: '⛓', label: __alloT('stem.fractions.equivalent_chain_2', 'Equivalent chain') }
       ];
       return h('div', null,
         h('p', { className: 'text-[11px] text-violet-700 mb-2 italic' }, __alloT('stem.fractions.play_with_the_math_without_a_quiz_form', 'Play with the math without a quiz format.')),
         renderSubTabStrip(items, sub, function(id) { upd({ expSub: id }); }, 'violet'),
         sub === 'calc' && renderCalculatorTab(),
         sub === 'factfam' && renderFactFamiliesTab(),
-        sub === 'equivchain' && renderEquivChainTab()
       );
     };
 
     var renderDrillTab = function() {
       var sub = _f.drillSub || 'benchmarks';
       var items = [
-        { id: 'benchmarks', icon: '🎯', label: __alloT('stem.fractions.benchmarks_2', 'Benchmarks') },
         { id: 'pbank', icon: '📚', label: __alloT('stem.fractions.practice_bank_2', 'Practice bank') },
         { id: 'vocabquiz', icon: '📝', label: __alloT('stem.fractions.vocab_quiz_2', 'Vocab quiz') },
         { id: 'examprep', icon: '📝', label: __alloT('stem.fractions.exam_prep_2', 'Exam prep') },
@@ -10717,7 +10714,6 @@ window.StemLab = window.StemLab || {
       return h('div', null,
         h('p', { className: 'text-[11px] text-rose-700 mb-2 italic' }, __alloT('stem.fractions.timed_and_scored_practice_for_fluency', 'Timed and scored practice for fluency.')),
         renderSubTabStrip(items, sub, function(id) { upd({ drillSub: id }); }, 'rose'),
-        sub === 'benchmarks' && renderBenchmarkTab(),
         sub === 'pbank' && renderPracticeBankTab(),
         sub === 'vocabquiz' && renderVocabQuizTab(),
         sub === 'examprep' && renderExamPrepTab(),
@@ -10800,8 +10796,6 @@ window.StemLab = window.StemLab || {
     var renderMyAccountTab = function() {
       var sub = _f.maSub || 'settings';
       var items = [
-        { id: 'settings', icon: '⚙', label: __alloT('stem.fractions.settings_2', 'Settings') },
-        { id: 'sessions', icon: '📂', label: __alloT('stem.fractions.saved_sessions', 'Saved sessions') },
         { id: 'goals', icon: '🎯', label: __alloT('stem.fractions.goal_setter_3', 'Goal setter') },
         { id: 'daily', icon: '📅', label: __alloT('stem.fractions.daily_streak', 'Daily streak') },
         { id: 'mastery', icon: '⭐', label: __alloT('stem.fractions.mastery_3', 'Mastery') },
@@ -10810,8 +10804,6 @@ window.StemLab = window.StemLab || {
       return h('div', null,
         h('p', { className: 'text-[11px] text-slate-700 mb-2 italic' }, __alloT('stem.fractions.your_settings_progress_and_saved_work', 'Your settings, progress, and saved work.')),
         renderSubTabStrip(items, sub, function(id) { upd({ maSub: id }); }, 'slate'),
-        sub === 'settings' && renderSettingsTab(),
-        sub === 'sessions' && renderSessionsTab(),
         sub === 'goals' && renderGoalSetterTab(),
         sub === 'daily' && renderDailyPracticeTab(),
         sub === 'mastery' && renderMasteryTab(),
@@ -11024,11 +11016,16 @@ window.StemLab = window.StemLab || {
       // === PRACTICE ===
       { id: 'compare',        icon: '\uD83D\uDD0D', label: __alloT('stem.fractions.compare_3', 'Compare'),        group: 'practice' },
       { id: 'operations',     icon: '\u2795',       label: __alloT('stem.fractions.operations_3', 'Operations'),     group: 'practice' },
-      { id: 'opsproof',       icon: '\uD83D\uDD2C', label: __alloT('stem.fractions.op_proofs_2', 'Op proofs'),      group: 'practice' },
+      // 'opsproof', 'decimals' and 'percents' were listed here, but their
+      // render functions (renderVisualOperationProofs / renderDecimalsTab /
+      // renderPercentsTab) have never existed in this file's history \u2014 the tabs
+      // were added without the views. Clicking any of the three called an
+      // undefined function DURING RENDER, so Fraction Lab went blank, not just
+      // the panel. Withdrawn rather than left advertising features that break
+      // the tool; restore the entry and its dispatch line together once a view
+      // exists. See tests/fractions_tab_dispatch.test.js.
       { id: 'equivalents',    icon: '\uD83D\uDD17', label: __alloT('stem.fractions.equivalents_2', 'Equivalents'),    group: 'practice' },
       { id: 'converter',      icon: '\uD83D\uDD04', label: __alloT('stem.fractions.converter_3', 'Converter'),      group: 'practice' },
-      { id: 'decimals',       icon: '\uD83D\uDD22', label: __alloT('stem.fractions.decimals_2', 'Decimals'),       group: 'practice' },
-      { id: 'percents',       icon: '%',            label: __alloT('stem.fractions.percents_2', 'Percents'),       group: 'practice' },
       { id: 'explorers',      icon: '\uD83D\uDD0E', label: __alloT('stem.fractions.explorers', 'Explorers'),      group: 'practice' },
       { id: 'drill',          icon: '\uD83C\uDFAF', label: __alloT('stem.fractions.drill', 'Drill'),          group: 'practice' },
       // === APPLY ===
@@ -11239,13 +11236,8 @@ window.StemLab = window.StemLab || {
       // Active tab content (Practice group)
       tab === 'compare' && renderCompare(),
       tab === 'operations' && renderOperations(),
-      tab === 'opsproof' && renderVisualOperationProofs(),
       tab === 'equivalents' && renderEquivalents(),
-      tab === 'equivchain' && renderEquivChainTab(),
       tab === 'converter' && renderConverter(),
-      tab === 'decimals' && renderDecimalsTab(),
-      tab === 'percents' && renderPercentsTab(),
-      tab === 'benchmarks' && renderBenchmarkTab(),
       // Active tab content (Apply group)
       tab === 'wordproblems' && renderWordProblemsTab(),
       tab === 'games' && renderGamesTab(),
@@ -11357,8 +11349,6 @@ window.StemLab = window.StemLab || {
       tab === 'iep' && renderIEPGoalsTab(),
       tab === 'lessons' && renderLessonPlansTab(),
       tab === 'facts' && renderFactsTab(),
-      tab === 'sessions' && renderSessionsTab(),
-      tab === 'settings' && renderSettingsTab(),
 
       // Challenge section (visible in practice tab)
       tab === 'practice' && h('div', { className: 'bg-rose-50 rounded-xl p-4 border border-rose-200 space-y-3' },
