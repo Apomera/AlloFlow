@@ -291,6 +291,306 @@ window.StemLab = window.StemLab || {
   // ══════════════════════════════════════════════════════════════
   // ── REGISTER TOOL ──
   // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
+  // BASE-TEN BLOCKS IN 3D — progressive enhancement over the CSS blocks
+  // ───────────────────────────────────────────────────────────────────────
+  // The CSS path draws each block as a flat div with a repeating-gradient
+  // grid. That works for the unit, the rod and the flat, but it cannot draw
+  // the thousand: a cube and a flat both come out as a square with a 10x10
+  // grid, differing only in size and colour. So the one block whose value a
+  // learner is meant to READ OFF ITS SHAPE — 1000 because it is ten flats
+  // thick — is the one the flat renderer cannot express, while the legend
+  // right below it insists "Cube = 1000, Flat = 100".
+  //
+  // Here every block is built from actual unit cubes: 1, 10, 100, 1000 of
+  // them. Turn the thousand block and you can count ten flats of depth. That
+  // is the entire base-ten idea, and it is volumetric.
+  //
+  // Same contract as the Volume and Plate Tectonics views: the CSS blocks
+  // always render and stay the guaranteed floor, hidden rather than
+  // unmounted while GL is live; any failure flips back to them. Same module
+  // singleton + one stable ref callback, because an inline ref would rebuild
+  // the scene on every +/- click.
+  var B10_COLORS = { thousands: 0xdb2777, hundreds: 0x2563eb, tens: 0x059669, ones: 0xea580c };
+  // w, h, d in unit cubes. A rod stands on end and a flat lies down, matching
+  // both the physical manipulative and the proportions the CSS view uses.
+  var B10_SPEC = [
+    { place: 'thousands', w: 10, h: 10, d: 10 },
+    { place: 'hundreds',  w: 10, h: 1,  d: 10 },
+    { place: 'tens',      w: 1,  h: 10, d: 1  },
+    { place: 'ones',      w: 1,  h: 1,  d: 1  }
+  ];
+
+  var B10GL = (function () {
+    var DEG = Math.PI / 180;
+    var T = null;
+    var state = 'idle';
+    var canvasEl = null, renderer = null, scene = null, camera = null;
+    var cubeMesh = null, edgeMesh = null, groundMesh = null;
+    var rafId = 0, capacity = 0, resizeObs = null;
+    var dummy = null, colorTmp = null;
+    var pending = null, appliedSig = '', appliedCamSig = '', dirty = true;
+    var bounds = { w: 20, d: 20, h: 10 };
+    var extent = { w: 0, d: 0, h: 0 };
+
+    function fail(reason) {
+      state = 'failed';
+      if (pending && typeof pending.onFail === 'function') { try { pending.onFail(reason); } catch (e) {} }
+    }
+
+    // One unit cube per unit of value. This is the point of the whole view:
+    // the thousand block is not a labelled box, it is 1000 cubes.
+    function layout(counts) {
+      var out = [];
+      var cursorX = 0, maxD = 0, maxH = 0;
+      B10_SPEC.forEach(function (spec) {
+        var n = Math.max(0, Math.min(9, counts[spec.place] | 0));
+        if (!n) return;
+        var cols = Math.min(3, n), rows = Math.ceil(n / cols);
+        var stepX = spec.w + 1, stepZ = spec.d + 1;
+        for (var i = 0; i < n; i++) {
+          var ox = cursorX + (i % cols) * stepX;
+          var oz = Math.floor(i / cols) * stepZ;
+          for (var bx = 0; bx < spec.w; bx++) {
+            for (var by = 0; by < spec.h; by++) {
+              for (var bz = 0; bz < spec.d; bz++) {
+                out.push({ x: ox + bx, y: by, z: oz + bz, place: spec.place });
+              }
+            }
+          }
+          maxD = Math.max(maxD, oz + spec.d);
+          maxH = Math.max(maxH, spec.h);
+        }
+        cursorX += cols * stepX + 3;   // gap between place groups
+      });
+      // `bounds` carries minimums so the camera does not crash in on a single
+      // unit cube — it is a framing box, not a measurement. `extent` is the
+      // true content size in unit cubes, which is what actually says a
+      // thousand block is ten deep and a flat is one.
+      extent = { w: cursorX, d: maxD, h: maxH };
+      bounds = { w: Math.max(6, cursorX), d: Math.max(6, maxD), h: Math.max(4, maxH) };
+      return out;
+    }
+
+    function build() {
+      scene = new T.Scene();
+      camera = new T.PerspectiveCamera(45, 1, 0.1, 3000);
+      scene.add(new T.HemisphereLight(0xe0f2fe, 0x334155, 0.9));
+      var dir = new T.DirectionalLight(0xffffff, 0.6);
+      dir.position.set(30, 60, 40);
+      scene.add(dir);
+      groundMesh = new T.Mesh(
+        new T.PlaneGeometry(600, 600),
+        new T.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.12, depthWrite: false })
+      );
+      groundMesh.rotation.x = -Math.PI / 2;
+      groundMesh.position.y = -0.02;
+      scene.add(groundMesh);
+      dummy = new T.Object3D();
+      colorTmp = new T.Color();
+    }
+
+    function ensureCapacity(n) {
+      if (cubeMesh && capacity >= n) return;
+      [cubeMesh, edgeMesh].forEach(function (m) {
+        if (!m) return;
+        scene.remove(m); m.geometry.dispose(); m.material.dispose();
+      });
+      capacity = Math.max(64, n);
+      cubeMesh = new T.InstancedMesh(
+        new T.BoxGeometry(0.92, 0.92, 0.92),
+        new T.MeshLambertMaterial({ color: 0xffffff }),
+        capacity
+      );
+      cubeMesh.frustumCulled = false;
+      cubeMesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
+      // Seed instanceColor before the first render — r128 bakes
+      // USE_INSTANCING_COLOR into the cached program based on whether this is
+      // null at compile time, and the board opens empty.
+      if (typeof cubeMesh.setColorAt === 'function') {
+        var seed = new T.Color(0xffffff);
+        for (var i = 0; i < capacity; i++) cubeMesh.setColorAt(i, seed);
+        if (cubeMesh.instanceColor) cubeMesh.instanceColor.needsUpdate = true;
+      }
+      scene.add(cubeMesh);
+
+      // Real box edges (not wireframe:true, which draws triangle diagonals and
+      // puts an X through every face). These grooves are what make a block
+      // countable, which is the difference between a pink box and 1000.
+      var eg = new T.BufferGeometry();
+      eg.setAttribute('position', new T.BufferAttribute(new Float32Array(capacity * 24 * 3), 3));
+      edgeMesh = new T.LineSegments(eg, new T.LineBasicMaterial({
+        color: 0x0f172a, transparent: true, opacity: 0.28
+      }));
+      edgeMesh.frustumCulled = false;
+      scene.add(edgeMesh);
+    }
+
+    var EDGES = (function () {
+      var c = [[-0.5,-0.5,-0.5],[0.5,-0.5,-0.5],[0.5,-0.5,0.5],[-0.5,-0.5,0.5],
+               [-0.5,0.5,-0.5],[0.5,0.5,-0.5],[0.5,0.5,0.5],[-0.5,0.5,0.5]];
+      var pairs = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+      var out = [];
+      pairs.forEach(function (p) { out.push(c[p[0]], c[p[1]]); });
+      return out;
+    })();
+
+    function apply(m) {
+      var cubes = layout(m.counts);
+      var n = cubes.length;
+      ensureCapacity(n);
+      var ox = bounds.w / 2, oz = bounds.d / 2;
+      var epos = edgeMesh.geometry.attributes.position;
+      for (var i = 0; i < n; i++) {
+        var c = cubes[i];
+        var px = c.x - ox + 0.5, py = c.y + 0.5, pz = c.z - oz + 0.5;
+        dummy.position.set(px, py, pz);
+        dummy.rotation.set(0, 0, 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        cubeMesh.setMatrixAt(i, dummy.matrix);
+        if (typeof cubeMesh.setColorAt === 'function') {
+          colorTmp.setHex(B10_COLORS[c.place]);
+          cubeMesh.setColorAt(i, colorTmp);
+        }
+        for (var k = 0; k < 24; k++) {
+          var e = EDGES[k];
+          epos.array[(i * 24 + k) * 3]     = px + e[0];
+          epos.array[(i * 24 + k) * 3 + 1] = py + e[1];
+          epos.array[(i * 24 + k) * 3 + 2] = pz + e[2];
+        }
+      }
+      cubeMesh.count = n;
+      cubeMesh.instanceMatrix.needsUpdate = true;
+      if (cubeMesh.instanceColor) cubeMesh.instanceColor.needsUpdate = true;
+      epos.needsUpdate = true;
+      edgeMesh.geometry.setDrawRange(0, n * 24);
+
+      // Keep the "sitting on a table" cue without letting the plane's far edge
+      // cut a visible horizon across the frame at close camera distances.
+      var span = Math.max(bounds.w, bounds.d) * 1.6 + 8;
+      groundMesh.scale.set(span / 600, span / 600, 1);
+    }
+
+    function applyCam(m) {
+      var el = Math.max(-88, Math.min(88, -m.rotX)) * DEG;
+      var az = -m.rotY * DEG;
+      // Fit the PROJECTED bounding box, not a bounding sphere. The content is
+      // extremely flat and wide (9 units across is ~57 x 10 x 10), and a sphere
+      // around that has a radius set by the long axis, so a sphere fit left the
+      // blocks as a small clump in the middle of an empty frame.
+      var ca = Math.abs(Math.cos(az)), sa = Math.abs(Math.sin(az));
+      var projW = bounds.w * ca + bounds.d * sa;
+      var projH = bounds.h * Math.abs(Math.cos(el))
+                + (bounds.w * sa + bounds.d * ca) * Math.abs(Math.sin(el));
+      var halfV = Math.tan(22.5 * DEG);
+      var halfH = halfV * (camera.aspect || 1.6);
+      var dist = Math.max((projW / 2) / halfH, (projH / 2) / halfV) * 1.18
+                 / Math.max(0.25, m.scale);
+      var ty = bounds.h / 2;
+      camera.position.set(
+        dist * Math.cos(el) * Math.sin(az),
+        ty + dist * Math.sin(el),
+        dist * Math.cos(el) * Math.cos(az)
+      );
+      camera.lookAt(0, ty, 0);
+      camera.near = Math.max(0.05, dist * 0.02);
+      camera.far = dist * 6 + 100;
+      camera.updateProjectionMatrix();
+    }
+
+    function resize() {
+      if (!renderer || !canvasEl) return;
+      var w = canvasEl.clientWidth || 1, hh = canvasEl.clientHeight || 1;
+      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+      renderer.setSize(w, hh, false);
+      camera.aspect = w / hh;
+      camera.updateProjectionMatrix();
+      dirty = true;
+    }
+
+    function frame() {
+      rafId = requestAnimationFrame(frame);
+      if (state !== 'ready' || !pending) return;
+      var m = pending;
+      try {
+        if (m.sig !== appliedSig) { apply(m); appliedSig = m.sig; dirty = true; appliedCamSig = ''; }
+        var cs = m.rotX + ',' + m.rotY + ',' + m.scale;
+        if (cs !== appliedCamSig) { applyCam(m); appliedCamSig = cs; dirty = true; }
+        if (!dirty) return;
+        dirty = false;
+        renderer.render(scene, camera);
+      } catch (err) {
+        console.error('[base10] WebGL frame failed, falling back to flat blocks', err);
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        fail('frame');
+      }
+    }
+
+    return {
+      isReady: function () { return state === 'ready'; },
+      submit: function (m) { pending = m; },
+      debug: function () {
+        if (state !== 'ready' || !renderer) return { state: state };
+        var gl = renderer.getContext();
+        return {
+          state: state,
+          cubeCount: cubeMesh ? cubeMesh.count : 0,
+          edgeCount: edgeMesh ? edgeMesh.geometry.drawRange.count / 24 : 0,
+          bounds: bounds,
+          extent: extent,
+          camera: camera ? { x: camera.position.x, y: camera.position.y, z: camera.position.z } : null,
+          canvas: canvasEl ? { w: canvasEl.clientWidth, h: canvasEl.clientHeight } : null,
+          contextLost: gl ? gl.isContextLost() : null
+        };
+      },
+      mount: function (el) {
+        if (canvasEl === el) return;
+        canvasEl = el;
+        if (state === 'ready' || state === 'loading') return;
+        state = 'loading';
+        var loader = (window.StemLab && window.StemLab.ensureThree)
+          ? window.StemLab.ensureThree({ failMessage: 'The 3D engine could not load. The flat blocks still work.' })
+          : Promise.reject(new Error('no-loader'));
+        loader.then(function (three) {
+          if (!canvasEl) return;
+          T = three;
+          try {
+            renderer = new T.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+          } catch (e) { fail('no-webgl'); return; }
+          renderer.setClearColor(0x000000, 0);
+          build();
+          resize();
+          if (typeof ResizeObserver === 'function') {
+            resizeObs = new ResizeObserver(resize);
+            resizeObs.observe(canvasEl);
+          } else { window.addEventListener('resize', resize); }
+          state = 'ready';
+          appliedSig = ''; appliedCamSig = ''; dirty = true;
+          if (!rafId) rafId = requestAnimationFrame(frame);
+          if (pending && typeof pending.onReady === 'function') { try { pending.onReady(); } catch (e2) {} }
+        }).catch(function () { fail('cdn'); });
+      },
+      unmount: function () {
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
+        else window.removeEventListener('resize', resize);
+        [cubeMesh, edgeMesh, groundMesh].forEach(function (m) {
+          if (!m || !scene) return;
+          scene.remove(m); m.geometry.dispose(); m.material.dispose();
+        });
+        if (renderer) { try { renderer.dispose(); } catch (e) {} }
+        cubeMesh = edgeMesh = groundMesh = null;
+        renderer = scene = camera = null; canvasEl = null; pending = null;
+        capacity = 0; appliedSig = ''; appliedCamSig = '';
+        if (state !== 'failed') state = 'idle';
+      }
+    };
+  })();
+
+  function b10GlRef(el) { if (el) B10GL.mount(el); else B10GL.unmount(); }
+  try { window.__alloB10GL = B10GL; } catch (e) {}
+
   window.StemLab.registerTool('base10', {
     icon: '\uD83E\uDDEE', label: 'Math Manipulatives',
     desc: 'Base-10 blocks, abacus, slide rule & place value quiz.',
@@ -341,6 +641,32 @@ window.StemLab = window.StemLab || {
       var b10Feedback = _m.b10Feedback || null;
       var regroupFlash = _m.regroupFlash || null;
       var totalValue = b10.ones + b10.tens * 10 + b10.hundreds * 100 + b10.thousands * 1000;
+
+      // ── Solid base-ten blocks (WebGL) ──
+      // Opt-in: the flat view is fine for units, rods and flats, and stays the
+      // guaranteed floor. Hand the renderer plain data; the rAF loop uploads.
+      var b10Solid = _m.b10Solid === true;
+      var b10Rot = _m.b10Rot || { rotX: -24, rotY: -36, scale: 1 };
+      var b10CubeTotal = b10.ones + b10.tens * 10 + b10.hundreds * 100 + b10.thousands * 1000;
+      var b10GlAlt = 'Solid base-ten blocks: '
+        + [b10.thousands && (b10.thousands + ' thousand-cube' + (b10.thousands > 1 ? 's' : '')),
+           b10.hundreds && (b10.hundreds + ' flat' + (b10.hundreds > 1 ? 's' : '')),
+           b10.tens && (b10.tens + ' rod' + (b10.tens > 1 ? 's' : '')),
+           b10.ones && (b10.ones + ' unit' + (b10.ones > 1 ? 's' : ''))].filter(Boolean).join(', ')
+        + (b10CubeTotal ? ', built from ' + b10CubeTotal.toLocaleString() + ' unit cubes in total.' : 'none yet.');
+      if (b10Solid) {
+        B10GL.submit({
+          counts: b10,
+          rotX: b10Rot.rotX, rotY: b10Rot.rotY, scale: b10Rot.scale || 1,
+          onReady: function() { upd({ b10GlReadyAt: Date.now() }); },
+          onFail: function() {
+            upd({ b10Solid: false });
+            addToast && addToast('Solid blocks could not load. Showing flat blocks.', 'info');
+          },
+          sig: [b10.thousands, b10.hundreds, b10.tens, b10.ones].join('|')
+        });
+      }
+      var b10GlLive = b10Solid && B10GL.isReady();
       var diffLevel = _m.diffLevel || 'any';
       var showExpanded = _m.showExpanded != null ? _m.showExpanded : true;
       var b10AddMode = _m.b10AddMode || false;
@@ -1035,7 +1361,50 @@ window.StemLab = window.StemLab || {
               showExpanded && totalValue > 0 && h('div', { className: 'text-xs text-orange-500 font-mono mt-1' }, expandedForm(totalValue)),
               showExpanded && totalValue > 0 && totalValue < 10000 && h('div', { className: 'text-[11px] text-orange-400 italic mt-0.5' }, '"' + numberWords(totalValue) + '"'),
               h('span', { className: 'text-2xl text-slate-600 mx-3' }, '='),
-              h('div', { className: 'flex items-end gap-2 flex-wrap justify-center', style: { minHeight: '60px' } },
+              // ── Solid blocks (WebGL) ──
+              // Only offered where it teaches something the flat view cannot:
+              // a thousand block drawn flat is indistinguishable from a flat.
+              h('div', { className: 'flex items-center justify-center gap-2 mb-2' },
+                h('button', {
+                  type: 'button',
+                  'data-b10-view': b10Solid ? 'solid' : 'flat',
+                  'aria-pressed': b10Solid,
+                  onClick: function() {
+                    upd({ b10Solid: !b10Solid });
+                    announceToSR && announceToSR(b10Solid
+                      ? 'Switched to flat blocks.'
+                      : 'Switched to solid 3D blocks. Turn a thousand block to count ten flats of depth.');
+                  },
+                  className: 'px-3 py-1 text-[11px] font-bold rounded-lg border transition-colors ' + (b10Solid ? 'border-pink-400 bg-pink-600 text-white' : 'border-orange-300 bg-white text-orange-700 hover:bg-orange-50')
+                }, b10Solid ? '■ Solid blocks' : '▬ Flat blocks'),
+                b10Solid && [['Turn left', { rotY: b10Rot.rotY - 25 }], ['Turn right', { rotY: b10Rot.rotY + 25 }],
+                             ['Tilt up', { rotX: Math.max(-88, b10Rot.rotX - 15) }], ['Tilt down', { rotX: Math.min(88, b10Rot.rotX + 15) }]]
+                  .map(function(b, i) {
+                    return h('button', {
+                      key: i, type: 'button', 'aria-label': b[0],
+                      onClick: function() { upd({ b10Rot: Object.assign({}, b10Rot, b[1]) }); },
+                      className: 'w-8 h-7 text-[11px] rounded border border-orange-300 bg-white text-orange-700 hover:bg-orange-50'
+                    }, ['◀', '▶', '▲', '▼'][i]);
+                  })
+              ),
+              b10Solid && h('div', {
+                className: 'relative rounded-xl border-2 border-pink-200 bg-slate-900 overflow-hidden mb-2',
+                style: { aspectRatio: '16 / 9' }
+              },
+                h('canvas', {
+                  ref: b10GlRef,
+                  'data-b10-gl': 'true',
+                  role: 'img',
+                  'data-a11y-static': 'true',
+                  'aria-describedby': 'b10-gl-description',
+                  'aria-label': b10GlAlt,
+                  style: { position: 'absolute', inset: '0', width: '100%', height: '100%', visibility: b10GlLive ? 'visible' : 'hidden' }
+                }),
+                !b10GlLive && h('div', { className: 'absolute inset-0 flex items-center justify-center text-xs font-bold text-pink-200/80' }, 'Loading solid blocks…')
+              ),
+              h('p', { id: 'b10-gl-description', className: 'sr-only' },
+                'Solid base-ten blocks built from individual unit cubes. Use the turn and tilt buttons to rotate them. A thousand block is ten flats thick, which is why it is worth a thousand; a flat is one cube thick and worth a hundred.'),
+              h('div', { className: 'flex items-end gap-2 flex-wrap justify-center', style: { minHeight: '60px', visibility: b10GlLive ? 'hidden' : 'visible', height: b10GlLive ? 0 : undefined } },
                 renderBlock3D('#db2777', '#f472b6', 56, 56, b10.thousands, 10, 10),
                 b10.thousands > 0 && b10.hundreds > 0 && h('span', { className: 'w-px h-8 bg-slate-200 mx-0.5' }),
                 renderBlock3D('#2563eb', '#60a5fa', 48, 48, b10.hundreds, 10, 10),
