@@ -808,6 +808,288 @@
     }, kids);
   }
 
+  // ══ 3D crystal structure lab ══
+  // The tool teaches crystal HABIT (the outward shape) and lets students test
+  // hardness, streak and cleavage — all of which are consequences of how the
+  // atoms are stacked, which was never shown. This renders the arrangement
+  // itself, so "why does halite break into cubes?" and "why does mica peel into
+  // sheets?" have something to look at.
+  //
+  // Scale note: the sibling Geology Explorer is a CRUST-scale voxel
+  // cross-section. This is the opposite end — one unit cell — so the two do not
+  // overlap.
+  //
+  // HONESTY: several of these minerals have genuinely complicated structures.
+  // Where the real arrangement is simple and well known it is drawn (rock-salt,
+  // fluorite, diamond, sheet silicates, carbonate). Where it is not, the tool
+  // draws the UNIT-CELL GEOMETRY of that mineral's crystal system and says so,
+  // rather than inventing an atomic arrangement that would look authoritative
+  // and be wrong. `exact: false` drives that disclosure in the UI.
+  var RK_ATOM = {
+    Na: { color: 0x9c6ade, r: 0.30, label: 'Sodium (Na⁺)' },
+    Cl: { color: 0x6ee7b7, r: 0.46, label: 'Chloride (Cl⁻)' },
+    Pb: { color: 0x94a3b8, r: 0.42, label: 'Lead (Pb²⁺)' },
+    S:  { color: 0xfacc15, r: 0.34, label: 'Sulfur (S)' },
+    Ca: { color: 0x60a5fa, r: 0.38, label: 'Calcium (Ca²⁺)' },
+    F:  { color: 0x86efac, r: 0.26, label: 'Fluoride (F⁻)' },
+    C:  { color: 0x475569, r: 0.28, label: 'Carbon (C)' },
+    O:  { color: 0xf87171, r: 0.28, label: 'Oxygen (O)' },
+    Si: { color: 0xfb923c, r: 0.30, label: 'Silicon (Si)' },
+    Fe: { color: 0xa16207, r: 0.38, label: 'Iron (Fe)' },
+    Mg: { color: 0x34d399, r: 0.34, label: 'Magnesium (Mg)' },
+    Al: { color: 0xc084fc, r: 0.34, label: 'Aluminium (Al)' },
+    X:  { color: 0x93c5fd, r: 0.30, label: 'Lattice point' }
+  };
+
+  // Which structure each mineral gets, and whether it is that mineral's real
+  // atomic arrangement or its crystal system's cell geometry.
+  var RK_LATTICE = {
+    halite:    { kind: 'rocksalt',  a: 'Na', b: 'Cl', exact: true,  why: 'Na⁺ and Cl⁻ alternate in every direction. The bonds are equally strong along all three axes, so halite cleaves into perfect cubes.' },
+    galena:    { kind: 'rocksalt',  a: 'Pb', b: 'S',  exact: true,  why: 'Same rock-salt packing as halite, with lead and sulfur. That shared arrangement is why galena also breaks into cubes.' },
+    fluorite:  { kind: 'fluorite',  a: 'Ca', b: 'F',  exact: true,  why: 'Calcium sits on a face-centred cube with fluoride filling all eight tetrahedral holes. The weakest planes run diagonally, so fluorite cleaves into octahedra, not cubes.' },
+    diamond:   { kind: 'diamond',   a: 'C',  b: 'C',  exact: true,  why: 'Every carbon is bonded to four others in a rigid three-dimensional net. Nothing in the structure is weak, which is why diamond is the hardest mineral at Mohs 10.' },
+    pyrite:    { kind: 'pyrite',    a: 'Fe', b: 'S',  exact: true,  why: 'Iron on a face-centred cube with sulfur in bonded PAIRS (S₂). The paired sulfur is what makes it a disulfide rather than a simple sulfide.' },
+    calcite:   { kind: 'carbonate', a: 'Ca', b: 'O',  exact: true,  why: 'Layers of calcium alternate with flat triangular CO₃ groups. The layers are stacked at a slant, which is why calcite always breaks into leaning rhombs.' },
+    mica:      { kind: 'sheet',     a: 'Al', b: 'Si', exact: true,  why: 'Strongly bonded silicate sheets held together only weakly between layers. That contrast is the whole story: mica peels into transparent flakes but is tough within a sheet.' },
+    talc:      { kind: 'sheet',     a: 'Mg', b: 'Si', exact: true,  why: 'Silicate sheets with almost nothing holding one sheet to the next, so they slide over each other. That is why talc is the softest mineral at Mohs 1 and feels slippery.' },
+    quartz:    { kind: 'silica',    a: 'Si', b: 'O',  exact: true,  why: 'Every silicon sits at the centre of an oxygen tetrahedron, and every tetrahedron shares all four corners with its neighbours. The framework has no weak plane, so quartz fractures like glass instead of cleaving.' },
+    gypsum:    { kind: 'sheet',     a: 'Ca', b: 'O',  exact: false, why: 'Layers of calcium sulfate separated by sheets of water molecules. The water layers are the weak planes gypsum splits along.' }
+  };
+
+  // Cell geometry per crystal system, for minerals whose real structure is not
+  // drawn. Axis lengths and the shear used to convey the system's shape.
+  var RK_CELL_GEOMETRY = {
+    'cubic':        { ax: [1, 1, 1],       shear: 0,    note: 'three equal axes, all at right angles' },
+    'isometric':    { ax: [1, 1, 1],       shear: 0,    note: 'three equal axes, all at right angles' },
+    'hexagonal':    { ax: [1, 1, 1.35],    shear: 0,    hex: true, note: 'six-fold symmetry about a long vertical axis' },
+    'trigonal':     { ax: [1, 1, 1.1],     shear: 0.22, note: 'three-fold symmetry, axes equally inclined' },
+    'rhombohedral': { ax: [1, 1, 1.1],     shear: 0.22, note: 'three equal axes, none at right angles' },
+    'orthorhombic': { ax: [0.8, 1, 1.25],  shear: 0,    note: 'three unequal axes, all at right angles' },
+    'monoclinic':   { ax: [0.9, 1, 1.2],   shear: 0.26, note: 'three unequal axes, one pair not at right angles' },
+    'triclinic':    { ax: [0.9, 1, 1.15],  shear: 0.30, note: 'three unequal axes, none at right angles' }
+  };
+
+  function rkCellGeometryFor(crystalStr) {
+    var s = String(crystalStr || '').toLowerCase();
+    var keys = Object.keys(RK_CELL_GEOMETRY);
+    for (var i = 0; i < keys.length; i++) {
+      if (s.indexOf(keys[i]) !== -1) return { key: keys[i], geo: RK_CELL_GEOMETRY[keys[i]] };
+    }
+    return { key: 'cubic', geo: RK_CELL_GEOMETRY.cubic };
+  }
+
+  // The mineral currently being drawn. The host viewer builds its scene once per
+  // attach, so the container is re-keyed on mineral id to force a clean rebuild.
+  var _rkCrystalBox = { mineral: null };
+
+  // Build the atom list for a structure. All positions are in unit-cell space,
+  // recentred on the origin by the caller.
+  function rkLatticeAtoms(kind, A, B) {
+    var out = [];
+    var i, j, k;
+    var push = function (sp, x, y, z) { out.push({ sp: sp, x: x, y: y, z: z }); };
+
+    if (kind === 'rocksalt') {
+      // Alternating cations/anions on a 3x3x3 block of the simple cubic sublattice.
+      for (i = 0; i < 3; i++) for (j = 0; j < 3; j++) for (k = 0; k < 3; k++) {
+        push(((i + j + k) % 2 === 0) ? A : B, i, j, k);
+      }
+    } else if (kind === 'fluorite') {
+      // Ca on the FCC positions of one cell, F on all eight tetrahedral sites.
+      var fcc = [[0,0,0],[2,0,0],[0,2,0],[0,0,2],[2,2,0],[2,0,2],[0,2,2],[2,2,2],[1,1,0],[1,0,1],[0,1,1],[2,1,1],[1,2,1],[1,1,2]];
+      for (i = 0; i < fcc.length; i++) push(A, fcc[i][0], fcc[i][1], fcc[i][2]);
+      for (i = 0; i < 2; i++) for (j = 0; j < 2; j++) for (k = 0; k < 2; k++) {
+        push(B, 0.5 + i, 0.5 + j, 0.5 + k);
+      }
+    } else if (kind === 'diamond') {
+      var dfcc = [[0,0,0],[2,0,0],[0,2,0],[0,0,2],[2,2,0],[2,0,2],[0,2,2],[2,2,2],[1,1,0],[1,0,1],[0,1,1],[2,1,1],[1,2,1],[1,1,2]];
+      for (i = 0; i < dfcc.length; i++) push(A, dfcc[i][0], dfcc[i][1], dfcc[i][2]);
+      // Four of the eight tetrahedral sites — the diamond half-occupancy.
+      var tet = [[0.5,0.5,0.5],[1.5,1.5,0.5],[1.5,0.5,1.5],[0.5,1.5,1.5]];
+      for (i = 0; i < tet.length; i++) push(A, tet[i][0], tet[i][1], tet[i][2]);
+    } else if (kind === 'pyrite') {
+      var pf = [[0,0,0],[2,0,0],[0,2,0],[0,0,2],[2,2,0],[2,0,2],[0,2,2],[2,2,2],[1,1,0],[1,0,1],[0,1,1],[2,1,1],[1,2,1],[1,1,2]];
+      for (i = 0; i < pf.length; i++) push(A, pf[i][0], pf[i][1], pf[i][2]);
+      // S2 dumbbells straddling the tetrahedral sites.
+      var db = [[0.5,0.5,0.5],[1.5,1.5,0.5],[1.5,0.5,1.5],[0.5,1.5,1.5]];
+      for (i = 0; i < db.length; i++) {
+        push(B, db[i][0] - 0.16, db[i][1] - 0.16, db[i][2] - 0.16);
+        push(B, db[i][0] + 0.16, db[i][1] + 0.16, db[i][2] + 0.16);
+      }
+    } else if (kind === 'carbonate') {
+      // Calcium layers alternating with flat CO3 triangles, stacked with a lean.
+      for (k = 0; k < 3; k++) {
+        var lean = k * 0.42;
+        for (i = 0; i < 3; i++) for (j = 0; j < 3; j++) {
+          if (k % 2 === 0) {
+            push(A, i + lean, k * 0.9, j);
+          } else {
+            push('C', i + lean, k * 0.9, j);
+            push(B, i + lean + 0.34, k * 0.9, j);
+            push(B, i + lean - 0.17, k * 0.9, j + 0.30);
+            push(B, i + lean - 0.17, k * 0.9, j - 0.30);
+          }
+        }
+      }
+    } else if (kind === 'sheet') {
+      // Three strongly-bonded sheets with a wide, weak gap between them.
+      for (k = 0; k < 3; k++) {
+        for (i = 0; i < 4; i++) for (j = 0; j < 4; j++) {
+          push(B, i, k * 2.6, j);
+          push(A, i + 0.5, k * 2.6 + 0.34, j + 0.5);
+        }
+      }
+    } else if (kind === 'silica') {
+      // Corner-sharing SiO4 tetrahedra in a ring — the framework idea.
+      var ring = 6;
+      for (i = 0; i < ring; i++) {
+        var a = (i / ring) * Math.PI * 2;
+        var cx = Math.cos(a) * 1.12, cz = Math.sin(a) * 1.12;
+        var cy = (i % 2) * 0.55;
+        push(A, cx, cy, cz);
+        push(B, cx + 0.42, cy + 0.40, cz);
+        push(B, cx - 0.42, cy + 0.40, cz);
+        push(B, cx, cy - 0.40, cz + 0.42);
+        push(B, cx, cy - 0.40, cz - 0.42);
+      }
+    }
+    return out;
+  }
+
+  // Generic unit-cell lattice points for a crystal system.
+  function rkCellAtoms(geo) {
+    var out = [];
+    for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) for (var k = 0; k < 2; k++) {
+      out.push({ sp: 'X', x: i * geo.ax[0], y: j * geo.ax[1] + i * geo.shear, z: k * geo.ax[2] });
+    }
+    return out;
+  }
+
+  // Scene builder handed to the host viewer shell.
+  function rkBuildCrystalScene(THREE, api) {
+    var meshes = {};
+    var picks = [];
+    var m = _rkCrystalBox.mineral;
+    if (!m) return { meshes: meshes, picks: picks, anchor: null };
+
+    var anchor = new THREE.Group();
+    api.scene.add(anchor);
+
+    var spec = RK_LATTICE[m.id];
+    var atoms, bondLen;
+    if (spec) {
+      atoms = rkLatticeAtoms(spec.kind, spec.a, spec.b);
+      bondLen = spec.kind === 'sheet' ? 1.15 : spec.kind === 'silica' ? 0.95 : 1.15;
+    } else {
+      atoms = rkCellAtoms(rkCellGeometryFor(m.crystal).geo);
+      bondLen = 1.45;
+    }
+
+    // Recentre so the structure orbits about its own middle.
+    var cx = 0, cy = 0, cz = 0;
+    atoms.forEach(function (at) { cx += at.x; cy += at.y; cz += at.z; });
+    cx /= atoms.length; cy /= atoms.length; cz /= atoms.length;
+
+    // Auto-fit. A fixed scale suited the compact cubic lattices but clipped the
+    // tall ones — the layered sheet structures run three slabs high and ran off
+    // the top of the frame, cutting off the very gap they exist to show. Scale
+    // each structure to a common bounding radius instead, so every mineral
+    // arrives framed at the same home camera distance.
+    var maxR = 0.001;
+    atoms.forEach(function (at) {
+      var dx0 = at.x - cx, dy0 = at.y - cy, dz0 = at.z - cz;
+      var rr = Math.sqrt(dx0 * dx0 + dy0 * dy0 + dz0 * dz0);
+      if (rr > maxR) maxR = rr;
+    });
+    var SCALE = Math.max(0.22, Math.min(0.90, 1.65 / maxR));
+
+    // Radii in RK_ATOM are RELATIVE ionic sizes — chloride really is bigger than
+    // sodium, and that is worth seeing. But drawn at full scale against this
+    // lattice spacing the spheres overlap into a single blob and hide the very
+    // arrangement the panel exists to show, so they are shrunk uniformly to
+    // ball-and-stick proportions: relative sizes preserved, gaps and bonds
+    // visible, the cubic packing legible.
+    var ATOM_SCALE = 0.46;
+
+    var geoCache = {};
+    atoms.forEach(function (at, idx) {
+      var def = RK_ATOM[at.sp] || RK_ATOM.X;
+      var key = at.sp;
+      if (!geoCache[key]) geoCache[key] = new THREE.SphereGeometry(def.r * ATOM_SCALE, 20, 14);
+      var mat = new THREE.MeshPhongMaterial({
+        color: api.contrast ? 0xffffff : def.color,
+        shininess: 58,
+        specular: 0x333333,
+        emissive: api.contrast ? 0x000000 : def.color,
+        emissiveIntensity: api.dark ? 0.18 : 0.06
+      });
+      var mesh = new THREE.Mesh(geoCache[key], mat);
+      mesh.position.set((at.x - cx) * SCALE, (at.y - cy) * SCALE + 0.3, (at.z - cz) * SCALE);
+      if (api.wantShadow) { mesh.castShadow = true; mesh.receiveShadow = true; }
+      mesh.userData.partId = 'atom-' + at.sp;
+      anchor.add(mesh);
+      picks.push(mesh);
+      if (!meshes['atom-' + at.sp]) meshes['atom-' + at.sp] = mesh;
+      if (idx === 0) meshes.root = mesh;
+    });
+
+    // Bonds between near neighbours, so the arrangement reads as a framework
+    // rather than a cloud of loose spheres.
+    var bondMat = new THREE.MeshPhongMaterial({ color: api.contrast ? 0xffffff : 0x94a3b8, shininess: 20 });
+    var bondGeo = new THREE.CylinderGeometry(0.032, 0.032, 1, 8);
+    var placed = 0;
+    for (var i = 0; i < atoms.length && placed < 220; i++) {
+      for (var j = i + 1; j < atoms.length && placed < 220; j++) {
+        var dx = (atoms[i].x - atoms[j].x) * SCALE;
+        var dy = (atoms[i].y - atoms[j].y) * SCALE;
+        var dz = (atoms[i].z - atoms[j].z) * SCALE;
+        var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (dist > bondLen * SCALE || dist < 0.0001) continue;
+        var bond = new THREE.Mesh(bondGeo, bondMat);
+        bond.position.set(
+          ((atoms[i].x + atoms[j].x) / 2 - cx) * SCALE,
+          ((atoms[i].y + atoms[j].y) / 2 - cy) * SCALE + 0.3,
+          ((atoms[i].z + atoms[j].z) / 2 - cz) * SCALE
+        );
+        bond.scale.set(1, dist, 1);
+        bond.lookAt(new THREE.Vector3(
+          (atoms[i].x - cx) * SCALE,
+          (atoms[i].y - cy) * SCALE + 0.3,
+          (atoms[i].z - cz) * SCALE
+        ));
+        bond.rotateX(Math.PI / 2);
+        anchor.add(bond);
+        placed++;
+      }
+    }
+
+    return { meshes: meshes, picks: picks, anchor: anchor };
+  }
+
+  // Identity-stable ref, same discipline as the two canvases in this file: an
+  // inline ref would detach and rebuild the whole WebGL scene on every render.
+  // The host shell's attach() is documented as stable for exactly this reason.
+  function rkCrystalRef(node) {
+    RK_CRYSTAL_VIEWER.attach(node || null);
+  }
+
+  // Singleton viewer — one instance, and only one tool mounts at a time.
+  var RK_CRYSTAL_NULL = {
+    attach: function () {}, sync: function () {}, nudge: function () {},
+    zoom: function () {}, reset: function () {}, status: function () { return 'failed'; }
+  };
+  var RK_CRYSTAL_VIEWER = (function () {
+    var mk = window.StemLab && window.StemLab.makeBayViewer;
+    if (!mk) return RK_CRYSTAL_NULL;
+    return mk({
+      parts: Object.keys(RK_ATOM).map(function (sp) {
+        return { id: 'atom-' + sp, label: RK_ATOM[sp].label, color: RK_ATOM[sp].color };
+      }),
+      buildScene: rkBuildCrystalScene,
+      home: { yaw: -0.6, pitch: 0.62, dist: 5.0 }
+    });
+  })();
+
   var ROCKS_CHALLENGES = [
     { id: 'types_explored', name: 'Petrologist', desc: 'Examine all 3 rock types (Igneous, Sedimentary, Metamorphic)', icon: '⛰️', rp: 15, check: function(s) { var st = s || {}; return Object.keys(st.typesViewed || {}).length >= 3; } },
     { id: 'specimens_examined', name: 'Rock Collector', desc: 'Examine 5+ rock specimens', icon: '🔍', rp: 15, check: function(s) { var st = s || {}; return Object.keys(st.rocksViewed || {}).length >= 5; } },
@@ -3998,6 +4280,108 @@ const d = labToolData.rocks || {};
                   })()
                 ),
 
+                // ── 3D crystal structure lab ──
+                // Habit, hardness, streak and cleavage are all consequences of
+                // how the atoms are stacked, and that was the one thing the tool
+                // never showed. Runs on the host viewer shell, so it inherits the
+                // tested lifecycle: CDN load, context-loss retry, teardown, and a
+                // 'failed' status when WebGL or the network is unavailable.
+                (function () {
+                  _rkCrystalBox.mineral = selMineral;
+                  var spec = RK_LATTICE[selMineral.id];
+                  var cellInfo = rkCellGeometryFor(selMineral.crystal);
+                  var cs = d.crystal3d || {};
+                  var setCS = function (patch) { upd('crystal3d', Object.assign({}, cs, patch)); };
+
+                  var species = spec
+                    ? [spec.a, spec.b].filter(function (v, i, arr) { return arr.indexOf(v) === i; })
+                        .concat(spec.kind === 'carbonate' ? ['C'] : [])
+                    : ['X'];
+
+                  return React.createElement("div", { className: "border-t border-violet-100 pt-3 mt-3" },
+                    React.createElement("p", { className: "text-xs font-black text-violet-800 mb-1 flex items-center gap-1.5" },
+                      React.createElement("span", { "aria-hidden": true }, "🧊"),
+                      React.createElement("span", null, __alloT('stem.rocks.crystal3d_title', "3D crystal structure"))
+                    ),
+                    React.createElement("p", { className: "text-[11px] text-slate-700 mb-2" },
+                      spec
+                        ? __alloT('stem.rocks.crystal3d_intro_exact', "This is how the atoms are actually stacked inside the mineral. Drag to rotate.")
+                        : __alloT('stem.rocks.crystal3d_intro_cell', "Drag to rotate the unit cell — the smallest repeating box of this mineral's crystal system.")
+                    ),
+
+                    // The container is KEYED on the mineral id: the host viewer
+                    // builds its scene once per attach, so re-keying is what makes
+                    // React unmount and remount the node and get a clean rebuild
+                    // when the student picks a different mineral.
+                    React.createElement("div", {
+                      key: 'crystal-' + selMineral.id,
+                      ref: rkCrystalRef,
+                      className: "relative w-full rounded-xl overflow-hidden border-2 border-slate-700 bg-slate-900",
+                      style: { height: '240px' },
+                      role: "img",
+                      "aria-label": (spec
+                        ? selMineral.label + ' atomic structure: ' + spec.why
+                        : selMineral.label + ' unit cell: ' + cellInfo.geo.note + '.')
+                    }),
+
+                    // Controls. Rotation was drag-only, which excludes keyboard,
+                    // switch and most touch users.
+                    React.createElement("div", { className: "flex flex-wrap gap-1 mt-2", role: "group", "aria-label": __alloT('stem.rocks.crystal3d_controls', "Crystal view controls") },
+                      [
+                        ['◀', __alloT('stem.rocks.crystal3d_left', 'Rotate left'), function () { RK_CRYSTAL_VIEWER.nudge(-0.3, 0); }],
+                        ['▶', __alloT('stem.rocks.crystal3d_right', 'Rotate right'), function () { RK_CRYSTAL_VIEWER.nudge(0.3, 0); }],
+                        ['▲', __alloT('stem.rocks.crystal3d_up', 'Tilt up'), function () { RK_CRYSTAL_VIEWER.nudge(0, 0.2); }],
+                        ['▼', __alloT('stem.rocks.crystal3d_down', 'Tilt down'), function () { RK_CRYSTAL_VIEWER.nudge(0, -0.2); }],
+                        ['＋', __alloT('stem.rocks.crystal3d_in', 'Zoom in'), function () { RK_CRYSTAL_VIEWER.zoom(-0.6); }],
+                        ['－', __alloT('stem.rocks.crystal3d_out', 'Zoom out'), function () { RK_CRYSTAL_VIEWER.zoom(0.6); }],
+                        ['↺', __alloT('stem.rocks.crystal3d_reset', 'Reset view'), function () { RK_CRYSTAL_VIEWER.reset(); }]
+                      ].map(function (btn) {
+                        return React.createElement("button", {
+                          key: btn[1], type: "button", onClick: btn[2], "aria-label": btn[1], title: btn[1],
+                          className: "px-2.5 py-1 rounded-lg text-xs font-black border border-slate-400 bg-white text-slate-800 hover:bg-slate-100 transition-colors active:scale-[0.97]"
+                        }, btn[0]);
+                      })
+                    ),
+
+                    // Atom key — the spheres mean nothing without it.
+                    React.createElement("div", { className: "flex flex-wrap gap-2 mt-2" },
+                      species.map(function (sp) {
+                        var def = RK_ATOM[sp] || RK_ATOM.X;
+                        return React.createElement("span", { key: sp, className: "inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-800" },
+                          React.createElement("span", {
+                            "aria-hidden": true,
+                            style: {
+                              width: '12px', height: '12px', borderRadius: '9999px',
+                              background: '#' + def.color.toString(16).padStart(6, '0'),
+                              border: '1px solid #334155', display: 'inline-block'
+                            }
+                          }),
+                          def.label);
+                      })
+                    ),
+
+                    // Why the structure explains the property — the actual payoff.
+                    React.createElement("p", { className: "text-[11px] text-slate-800 leading-relaxed mt-2 bg-violet-50 border border-violet-200 rounded-lg p-2" },
+                      React.createElement("span", { className: "font-black text-violet-900" }, __alloT('stem.rocks.crystal3d_why', "Why it matters: ")),
+                      spec ? spec.why : (selMineral.label + ' crystallises in the ' + cellInfo.key + ' system — ' + cellInfo.geo.note + '. Its habit and cleavage follow from that symmetry.')
+                    ),
+
+                    // Say plainly when the drawing is the SYSTEM's cell rather than
+                    // this mineral's real atomic arrangement. Inventing an
+                    // authoritative-looking structure would be worse than saying so.
+                    !spec && React.createElement("p", { className: "text-[10px] text-slate-700 leading-snug mt-1.5 italic" },
+                      __alloT('stem.rocks.crystal3d_model_limit', "Model limit: this shows the unit-cell geometry of the ") + cellInfo.key +
+                      __alloT('stem.rocks.crystal3d_model_limit_b', " system, not this mineral's full atomic arrangement — that structure is more complex than this view is built to show.")
+                    ),
+
+                    // Rendered only when the 3D engine could not start, so the
+                    // panel degrades to something useful instead of a black box.
+                    React.createElement("p", { className: "text-[11px] text-slate-700 mt-1.5" },
+                      React.createElement("noscript", null),
+                      __alloT('stem.rocks.crystal3d_offline_note', "If the 3D view stays blank, the engine is served from a CDN your network may block — every other panel on this page still works offline.")
+                    )
+                  );
+                })(),
                 // Streak Test Lab
                 React.createElement("div", { className: "border-t border-violet-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-violet-700 mb-2 flex items-center gap-1.5" },

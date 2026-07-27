@@ -30,7 +30,8 @@ const TW = {
   'red-700': '#b91c1c', 'red-800': '#991b1b', 'red-900': '#7f1d1d',
   'blue-50': '#eff6ff', 'blue-500': '#3b82f6', 'blue-800': '#1e40af',
   'green-50': '#f0fdf4', 'green-600': '#16a34a', 'green-700': '#15803d', 'green-800': '#166534',
-  'violet-600': '#7c3aed', 'violet-700': '#6d28d9', 'violet-800': '#5b21b6',
+  'violet-50': '#f5f3ff', 'violet-600': '#7c3aed', 'violet-700': '#6d28d9',
+  'violet-800': '#5b21b6', 'violet-900': '#4c1d95',
 };
 
 function luminance(hex) {
